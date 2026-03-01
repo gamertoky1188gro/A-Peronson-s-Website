@@ -1,1 +1,70 @@
 @import "tailwindcss";
+
+:root {
+  --bg: #f4f7fb;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #475569;
+  --border: #cbd5e1;
+}
+
+:root.dark {
+  --bg: #020617;
+  --surface: #0f172a;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --border: #334155;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, sans-serif;
+}
+
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.top-actions { display: flex; gap: 0.5rem; }
+.feedback { color: var(--muted); }
+
+.grid { display: grid; gap: 1rem; }
+.two-col { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.full { grid-column: 1 / -1; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.stack { display: grid; gap: 0.5rem; }
+
+input, select, textarea, button {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  color: var(--text);
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+}
+
+button { cursor: pointer; }
+ul { padding-left: 1rem; }
+li { margin: 0.35rem 0; }
+
+@media (max-width: 900px) {
+  .two-col { grid-template-columns: 1fr; }
+}
