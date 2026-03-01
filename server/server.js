@@ -7,6 +7,7 @@ import requirementRoutes from './routes/requirementRoutes.js'
 import messageRoutes from './routes/messageRoutes.js'
 import documentRoutes from './routes/documentRoutes.js'
 import adminRoutes from './routes/adminRoutes.js'
+import systemRoutes from './routes/systemRoutes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { logInfo } from './utils/logger.js'
 
@@ -27,6 +28,7 @@ app.use('/api/requirements', requirementRoutes)
 app.use('/api/messages', messageRoutes)
 app.use('/api/documents', documentRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api', systemRoutes)
 app.use(errorHandler)
 
 app.listen(PORT, () => {
