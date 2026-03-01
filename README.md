@@ -1,54 +1,93 @@
-# GarTexHub Web App
+# Cross-Border B2B Textile Trust Platform (MVP)
 
-GarTexHub is a modern React + Vite web platform prototype for textile and garment sourcing workflows. It includes landing, discovery, communication, dashboard, profile, legal, and organization management pages.
+A focused MVP for structured cross-border textile sourcing:
 
-## Web Details
+- Buyer requirement posting
+- Rule-based AI-style factory matching
+- Structured negotiation inbox (priority/request-pool)
+- Trust workflow (verification, document sharing, status transitions)
+- Admin verification and audit
 
-### Stack
-- React 19 + React Router
-- Vite 8
-- Tailwind CSS utilities (via `@tailwindcss/vite`)
-- Font Awesome icons
+## Architecture
 
-### UX Updates Included
-- Global light/dark theming controlled from the top navigation.
-- Persistent theme preference saved in `localStorage` (`theme=light|dark`).
-- Mobile-friendly navigation menu with responsive behavior.
-- Modernized visual treatment (glassy navbar, soft gradients, stronger card depth).
-- Dark-mode harmonization for utility-based page layouts.
+```
+server/
+  controllers/
+  routes/
+  services/
+  middleware/
+  utils/
+  database/*.json
+  uploads/
+src/
+  App.jsx (single MVP dashboard)
+```
 
-### Route Map
-- `/` — Landing page
-- `/pricing` — Pricing
-- `/feed` — Main feed
-- `/search` — Search results
-- `/buyer/:id`, `/factory/:id`, `/buying-house/:id` — Profiles
-- `/member-management`, `/partner-network`, `/product-management`, `/buyer-requests`
-- `/chat`, `/call`, `/help`, `/contracts`, `/notifications`
-- `/org-settings`, `/insights`, `/owner`, `/agent`
-- `/about`, `/terms`, `/privacy`
-- `/login`, `/signup`
+## Tech Stack
 
-## Page Documentation
-Detailed per-page markdown documentation (theme behavior, structure, layout coordinates, and purpose notes) is available in:
+- Frontend: React + Vite
+- Backend: Node.js + Express
+- DB: JSON files (`server/database/*.json`)
+- Auth: JWT
+- Password hashing: bcrypt
+- Uploads: local storage (`server/uploads`)
 
-- `docs/pages/`
+## Data Files
 
-Each file corresponds to one page component under `src/pages/`.
+- `server/database/users.json`
+- `server/database/requirements.json`
+- `server/database/matches.json`
+- `server/database/messages.json`
+- `server/database/documents.json`
+- `server/database/metrics.json`
 
-## Development
+## API Overview
+
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/auth/logout`
+- `GET /api/users/me`
+- `PATCH /api/users/me/profile`
+- `POST /api/requirements` (buyer)
+- `GET /api/requirements`
+- `GET /api/requirements/:requirementId/matches`
+- `PATCH /api/requirements/:requirementId/matches/:factoryId/status`
+- `POST /api/messages/:matchId`
+- `GET /api/messages/:matchId`
+- `GET /api/messages/inbox`
+- `POST /api/documents/:matchId` (`multipart/form-data`, pdf only)
+- Admin: `GET /api/users`, `PATCH /api/users/:userId/verify`, `DELETE /api/users/:userId`, `DELETE /api/requirements/:requirementId`, `GET /api/admin/matches/audit`, `GET /api/admin/metrics`
+
+## Matching Logic (MVP)
+
+Scoring by:
+- category compatibility
+- MOQ <= requested quantity
+- certification overlap
+- lead time <= requested timeline
+
+Produces ranked matches and stores in `matches.json`.
+
+## Conversion Metric Tracking
+
+Tracked transitions:
+`requirement_created -> matched -> first_message_sent -> accepted/closed`
+
+Stored in `metrics.json`.
+
+## Run
 
 ```bash
 npm install
 npm run dev
+npm run server
 ```
 
-## Build
+Frontend: `http://localhost:5173`
+Backend: `http://localhost:4000`
+
+For frontend API, optional `.env`:
 
 ```bash
-npm run build
+VITE_API_URL=http://localhost:4000/api
 ```
-
-## Notes
-- Theme toggle is in the global `NavBar` and affects all routes.
-- For page-level metadata updates, edit docs in `docs/pages/` alongside page changes.
