@@ -59,3 +59,18 @@ Optional frontend env:
 ```bash
 VITE_API_URL=http://localhost:4000/api
 ```
+
+
+## Desktop App (Electron)
+
+Run the desktop app flow with one command:
+
+```bash
+npm run app
+```
+
+What it does:
+1. Builds React (`dist/`)
+2. Starts backend (`npm run server`)
+3. Waits for backend + dist readiness
+4. Launches Electron using `dist/index.html`
