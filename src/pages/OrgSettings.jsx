@@ -7,7 +7,7 @@ export default function OrgSettings(){
   const [isOwnerAdmin] = useState(true)
 
   return (
-    <div className="min-h-screen bg-white text-[#1A1A1A]">
+    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
       
       {/* Shared global NavBar */}
 
@@ -20,7 +20,7 @@ export default function OrgSettings(){
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow p-4">
+        <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow p-4">
           <div className="flex gap-4 border-b mb-4">
             <button onClick={()=>setTab('general')} className={`px-3 py-2 ${tab==='general'?'border-b-2 border-[#0A66C2]':''}`}>General Info</button>
             <button onClick={()=>setTab('verification')} className={`px-3 py-2 ${tab==='verification'?'border-b-2 border-[#0A66C2]':''}`}>Verification</button>

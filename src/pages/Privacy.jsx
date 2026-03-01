@@ -4,7 +4,7 @@ import FloatingAssistant from '../components/FloatingAssistant'
 
 export default function Privacy(){
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card">
       
       {/* Shared global NavBar */}
 

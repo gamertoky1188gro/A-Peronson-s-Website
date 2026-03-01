@@ -11,7 +11,7 @@ export default function NotificationsCenter(){
   ]
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card">
       
       {/* Shared global NavBar */}
 
@@ -36,7 +36,7 @@ export default function NotificationsCenter(){
 
           <div className="space-y-3">
             {items.filter(it => (tab==='all' || it.type===tab) && (!unreadOnly || it.unread)).map(i => (
-              <div key={i.id} className="bg-white border rounded p-3 flex items-center justify-between hover:bg-[#F4F9FF]">
+              <div key={i.id} className="bg-white neo-panel cyberpunk-card border rounded p-3 flex items-center justify-between hover:bg-[#F4F9FF]">
                 <div>
                   <div className="font-semibold">{i.title}</div>
                   <div className="text-sm text-[#5A5A5A]">{i.time}</div>
@@ -50,7 +50,7 @@ export default function NotificationsCenter(){
         </main>
 
         <aside className="lg:col-span-1">
-          <div className="bg-white rounded-xl shadow p-4">
+          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow p-4">
             <h4 className="font-semibold mb-2">Filters</h4>
             <label className="flex items-center gap-2"><input type="checkbox" checked={unreadOnly} onChange={(e)=>setUnreadOnly(e.target.checked)} /> Unread</label>
             <div className="mt-3">

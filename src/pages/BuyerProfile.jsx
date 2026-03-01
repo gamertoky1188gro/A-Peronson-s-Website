@@ -47,7 +47,7 @@ export default function BuyerProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-[#1A1A1A]">
+    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
       {/* TOP NAVIGATION */}
       
       {/* Shared global NavBar */}
@@ -59,7 +59,7 @@ export default function BuyerProfile() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* LEFT SIDEBAR */}
           <aside className="lg:col-span-1 sticky top-6 self-start">
-            <div className="bg-white rounded-xl shadow-md p-6">
+            <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
               <div className="flex items-center gap-4">
                 <div className="w-20 h-20 bg-gray-100 rounded-lg"></div>
                 <div>
@@ -91,7 +91,7 @@ export default function BuyerProfile() {
 
           {/* MAIN CONTENT */}
           <main className="lg:col-span-2 space-y-6">
-            <section className="bg-white rounded-xl shadow-md p-6">
+            <section className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
               <h3 className="font-semibold text-lg mb-2">About {buyer.name}</h3>
               <p className="text-[#5A5A5A] mb-3">{buyer.about}</p>
 
@@ -117,7 +117,7 @@ export default function BuyerProfile() {
               </div>
             </section>
 
-            <section className="bg-white rounded-xl shadow-md p-6">
+            <section className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
               <h3 className="font-semibold text-lg mb-4">Active Buyer Requests</h3>
               <div className="space-y-4">
                 {requests.map(r => (
@@ -143,7 +143,7 @@ export default function BuyerProfile() {
               </div>
             </section>
 
-            <section className="bg-white rounded-xl shadow-md p-6">
+            <section className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
               <h3 className="font-semibold text-lg mb-3">Past Deals</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div className="p-4 bg-[#F4F9FF] rounded-lg">
@@ -161,7 +161,7 @@ export default function BuyerProfile() {
               </div>
             </section>
 
-            <section className="bg-white rounded-xl shadow-md p-6">
+            <section className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
               <h3 className="font-semibold text-lg mb-3">Reviews</h3>
               <div className="mb-4">
                 <div className="flex items-center gap-2">

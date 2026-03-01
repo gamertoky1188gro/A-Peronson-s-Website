@@ -7,7 +7,7 @@ export default function BuyerRequestManagement(){
   const [form, setForm] = useState({ category:'', subcategory:'', quantity:'', price:'', deadline:'', fabric:'', gsm:'', cert:'', notes:'' })
 
   return (
-    <div className="min-h-screen bg-white text-[#1A1A1A]">
+    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
       
       {/* Shared global NavBar */}
 
@@ -18,7 +18,7 @@ export default function BuyerRequestManagement(){
           <div className="text-sm text-[#5A5A5A]">Step {step} of 3</div>
         </div>
 
-        <div className="bg-white rounded-xl shadow p-6">
+        <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow p-6">
           {step === 1 && (
             <div className="space-y-3">
               <label className="block text-sm">Category</label>

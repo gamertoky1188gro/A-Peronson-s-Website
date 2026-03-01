@@ -11,7 +11,7 @@ export default function PartnerNetwork(){
   const [tab, setTab] = useState('connected')
 
   return (
-    <div className="min-h-screen bg-white text-[#1A1A1A]">
+    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
       
       {/* Shared global NavBar */}
 
@@ -44,7 +44,7 @@ export default function PartnerNetwork(){
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {factories.map(f => (
-            <div key={f.id} className="bg-white border rounded-lg p-4 shadow-sm">
+            <div key={f.id} className="bg-white neo-panel cyberpunk-card border rounded-lg p-4 shadow-sm">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-gray-100 rounded"></div>

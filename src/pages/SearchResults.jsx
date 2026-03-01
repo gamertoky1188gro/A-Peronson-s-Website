@@ -57,7 +57,7 @@ export default function SearchResults() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen neo-page cyberpunk-page bg-gray-50 neo-panel cyberpunk-card">
       {/* TOP NAVBAR */}
       
       {/* Shared global NavBar */}
@@ -66,7 +66,7 @@ export default function SearchResults() {
       <div className="max-w-7xl mx-auto p-4">
         {/* FILTER PANEL */}
         {showFilters && (
-          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+          <div className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-6 mb-6">
             <h3 className="font-semibold text-gray-900 mb-4">Filter Results</h3>
 
             <div className="grid md:grid-cols-2 gap-6 mb-6">
@@ -207,7 +207,7 @@ export default function SearchResults() {
           {(activeTab === 'all' || activeTab === 'requests') && (
             <div>
               {buyerRequests.map(req => (
-                <div key={req.id} className="bg-white rounded-lg border border-gray-200 p-6 mb-4 hover:shadow-md transition">
+                <div key={req.id} className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-6 mb-4 hover:shadow-md transition">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
@@ -233,7 +233,7 @@ export default function SearchResults() {
           {(activeTab === 'all' || activeTab === 'companies') && (
             <div>
               {factories.map(factory => (
-                <div key={factory.id} className="bg-white rounded-lg border border-gray-200 p-6 mb-4 hover:shadow-md transition">
+                <div key={factory.id} className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-6 mb-4 hover:shadow-md transition">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">

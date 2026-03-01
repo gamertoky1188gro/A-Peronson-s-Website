@@ -10,7 +10,7 @@ export default function HelpCenter(){
   ]
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card">
       
       {/* Shared global NavBar */}
 
@@ -22,7 +22,7 @@ export default function HelpCenter(){
 
           <div className="space-y-3">
             {faqs.filter(f=>f.q.toLowerCase().includes(q.toLowerCase())).map((f,i)=> (
-              <details key={i} className="bg-white border rounded p-3">
+              <details key={i} className="bg-white neo-panel cyberpunk-card border rounded p-3">
                 <summary className="font-semibold">{f.q}</summary>
                 <p className="text-sm text-[#5A5A5A] mt-2">{f.a}</p>
               </details>
@@ -31,7 +31,7 @@ export default function HelpCenter(){
         </main>
 
         <aside>
-          <div className="bg-white rounded-xl shadow p-4">
+          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow p-4">
             <h4 className="font-semibold">Floating Assistant</h4>
             <p className="text-sm text-[#5A5A5A]">Ask a question or browse FAQs — assistant will match topics.</p>
           </div>

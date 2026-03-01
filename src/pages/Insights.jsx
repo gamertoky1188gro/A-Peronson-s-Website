@@ -5,7 +5,7 @@ import FloatingAssistant from '../components/FloatingAssistant'
 export default function Insights(){
   const [isEnterprise] = React.useState(false)
   return (
-    <div className="min-h-screen bg-white text-[#1A1A1A]">
+    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
       
       {/* Shared global NavBar */}
 
@@ -16,13 +16,13 @@ export default function Insights(){
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="p-4 bg-white rounded-xl shadow">Total Buyer Requests Handled<br/><strong className="text-2xl">1,234</strong></div>
-          <div className="p-4 bg-white rounded-xl shadow">Conversion Rate<br/><strong className="text-2xl">12%</strong></div>
-          <div className="p-4 bg-white rounded-xl shadow">Active Factories<br/><strong className="text-2xl">56</strong></div>
-          <div className="p-4 bg-white rounded-xl shadow">Response Time<br/><strong className="text-2xl">18h</strong></div>
+          <div className="p-4 bg-white neo-panel cyberpunk-card rounded-xl shadow">Total Buyer Requests Handled<br/><strong className="text-2xl">1,234</strong></div>
+          <div className="p-4 bg-white neo-panel cyberpunk-card rounded-xl shadow">Conversion Rate<br/><strong className="text-2xl">12%</strong></div>
+          <div className="p-4 bg-white neo-panel cyberpunk-card rounded-xl shadow">Active Factories<br/><strong className="text-2xl">56</strong></div>
+          <div className="p-4 bg-white neo-panel cyberpunk-card rounded-xl shadow">Response Time<br/><strong className="text-2xl">18h</strong></div>
         </div>
 
-        <div className="bg-white rounded-xl shadow p-4">
+        <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow p-4">
           {!isEnterprise ? (
             <div>
               <div className="text-sm text-[#5A5A5A]">Limited insights available on Free plan. Upgrade to Enterprise for full analytics.</div>

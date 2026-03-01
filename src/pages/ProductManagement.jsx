@@ -9,7 +9,7 @@ export default function ProductManagement(){
   ])
 
   return (
-    <div className="min-h-screen bg-white text-[#1A1A1A]">
+    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
       
       {/* Shared global NavBar */}
 
@@ -28,7 +28,7 @@ export default function ProductManagement(){
 
         <div className="space-y-3">
           {products.map(p => (
-            <div key={p.id} className="bg-white border rounded-lg p-4 shadow-sm flex items-center justify-between">
+            <div key={p.id} className="bg-white neo-panel cyberpunk-card border rounded-lg p-4 shadow-sm flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-20 h-16 bg-gray-100 rounded"></div>
                 <div>

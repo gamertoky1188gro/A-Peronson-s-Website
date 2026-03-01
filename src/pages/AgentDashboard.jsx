@@ -26,7 +26,7 @@ export default function AgentDashboard() {
   ]
 
   return (
-    <div className="min-h-screen bg-white text-[#1A1A1A]">
+    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
       {/* TOP NAVIGATION */}
       
       {/* Shared global NavBar */}
@@ -34,7 +34,7 @@ export default function AgentDashboard() {
 
       <div className="max-w-6xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
         <aside className="lg:col-span-1">
-          <div className="bg-white rounded-xl shadow-md p-4 space-y-3 sticky top-20">
+          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-4 space-y-3 sticky top-20">
             <Link to="/agent?tab=requests" className="block font-semibold text-[#0A66C2] cursor-pointer">📋 My Requests</Link>
             <div className="text-sm text-[#5A5A5A]">Assigned: 2</div>
             <div className="mt-2">
@@ -42,17 +42,17 @@ export default function AgentDashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-md p-4 mt-4 sticky top-56">
+          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-4 mt-4 sticky top-56">
             <Link to="/agent?tab=chats" className="block font-semibold text-[#0A66C2] cursor-pointer mb-3">💬 My Chats</Link>
             <div className="text-sm text-[#5A5A5A] mt-2">Active conversations: 3</div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-md p-4 mt-4">
+          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-4 mt-4">
             <Link to="/agent?tab=factories" className="block font-semibold text-[#0A66C2] cursor-pointer mb-3">🏭 Connected Factories</Link>
             <div className="text-sm text-[#5A5A5A]">12 connected (View Only)</div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-md p-4 mt-4">
+          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-4 mt-4">
             <h3 className="font-semibold mb-2">My Performance</h3>
             <div className="text-sm text-[#5A5A5A] space-y-1">
               <div>Completion Rate: <strong>90%</strong></div>
@@ -65,7 +65,7 @@ export default function AgentDashboard() {
         </aside>
 
         <main className="lg:col-span-3 space-y-4">
-          <div className="bg-white rounded-xl shadow-md p-4">
+          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-4">
             <div className="flex items-center justify-between mb-3 border-b pb-3">
               <h3 className="font-semibold">Assigned Requests</h3>
               <div className="flex gap-2">
@@ -108,7 +108,7 @@ export default function AgentDashboard() {
                         <Link to={`/agent/request/${r.id}`} className="px-3 py-1 bg-[#0A66C2] text-white rounded-md hover:bg-[#083B75]">
                           {r.claimed ? 'View' : 'Claim & Start'}
                         </Link>
-                        <Link to={`/agent/chat/${r.id}`} className="px-3 py-1 border rounded-md hover:bg-gray-50">Message</Link>
+                        <Link to={`/agent/chat/${r.id}`} className="px-3 py-1 border rounded-md hover:bg-gray-50 neo-panel cyberpunk-card">Message</Link>
                       </div>
                     </div>
                   </div>
@@ -118,7 +118,7 @@ export default function AgentDashboard() {
 
             {activeTab === 'chats' && (
               <div>
-                <div className="h-64 bg-gray-50 rounded-md p-3 text-sm text-[#5A5A5A] flex items-center justify-center">
+                <div className="h-64 bg-gray-50 neo-panel cyberpunk-card rounded-md p-3 text-sm text-[#5A5A5A] flex items-center justify-center">
                   <div>
                     <div className="text-center mb-4">💬 Chat with Buyer</div>
                     <div className="flex gap-2">

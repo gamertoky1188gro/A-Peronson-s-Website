@@ -167,7 +167,7 @@ export default function MvpDashboard() {
   }
 
   return (
-    <div className="page">
+    <div className="page neo-page cyberpunk-page">
       <header className="topbar">
         <div>
           <h1>GarTexHub Enterprise UX MVP</h1>

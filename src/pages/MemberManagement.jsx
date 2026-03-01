@@ -10,7 +10,7 @@ export default function MemberManagement(){
   ]
 
   return (
-    <div className="min-h-screen bg-white text-[#1A1A1A]">
+    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
       {/* Nav */}
       
       {/* Shared global NavBar */}
@@ -25,7 +25,7 @@ export default function MemberManagement(){
           <button className="px-4 py-2 bg-[#0A66C2] text-white rounded-md">+ Add New Member</button>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border p-4">
+        <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-sm border p-4">
           <div className="mb-4 flex items-center gap-3">
             <input value={search} onChange={(e)=>setSearch(e.target.value)} placeholder="Search members" className="px-3 py-2 border rounded w-64" />
             <div className="text-sm text-[#5A5A5A]">Free plan limit: 10 members</div>

@@ -27,7 +27,7 @@ export default function BuyingHouseProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-[#1A1A1A]">
+    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
       {/* TOP NAVIGATION */}
       
       {/* Shared global NavBar */}
@@ -36,7 +36,7 @@ export default function BuyingHouseProfile() {
       <div className="max-w-7xl mx-auto p-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <aside className="lg:col-span-1 sticky top-6">
-            <div className="bg-white rounded-xl shadow-md p-6">
+            <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
               <div className="flex items-center gap-4">
                 <div className="w-20 h-20 bg-gray-100 rounded-lg"></div>
                 <div>
@@ -65,7 +65,7 @@ export default function BuyingHouseProfile() {
           </aside>
 
           <main className="lg:col-span-2 space-y-6">
-            <section className="bg-white rounded-xl shadow-md p-6">
+            <section className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
               <h3 className="font-semibold text-lg">About</h3>
               <p className="text-[#5A5A5A] mt-2">{org.about}</p>
 
@@ -85,7 +85,7 @@ export default function BuyingHouseProfile() {
               </div>
             </section>
 
-            <section className="bg-white rounded-xl shadow-md p-6">
+            <section className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
               <h3 className="font-semibold text-lg">Partner Network Preview</h3>
               <div className="grid grid-cols-3 gap-3 mt-4">
                 {partners.map(p => (
@@ -97,7 +97,7 @@ export default function BuyingHouseProfile() {
               </div>
             </section>
 
-            <section className="bg-white rounded-xl shadow-md p-6">
+            <section className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
               <h3 className="font-semibold text-lg">Active Buyer Requests Handling</h3>
               <div className="space-y-3 mt-3">
                 {handling.map(h => (
@@ -114,7 +114,7 @@ export default function BuyingHouseProfile() {
               </div>
             </section>
 
-            <section className="bg-white rounded-xl shadow-md p-6">
+            <section className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
               <h3 className="font-semibold text-lg">Performance Metrics</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                 <div className="p-4 bg-[#F4F9FF] rounded-lg">
