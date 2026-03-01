@@ -30,34 +30,38 @@ import NavBar from './components/NavBar'
 function App() {
   return (
     <BrowserRouter>
-      <NavBar />
-      <Routes>
-        <Route path="/" element={<TexHub />} />
-        <Route path="/pricing" element={<Pricing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/feed" element={<MainFeed />} />
-        <Route path="/search" element={<SearchResults />} />
-        <Route path="/buyer/:id" element={<BuyerProfile />} />
-        <Route path="/factory/:id" element={<FactoryProfile />} />
-        <Route path="/buying-house/:id" element={<BuyingHouseProfile />} />
-        <Route path="/member-management" element={<MemberManagement />} />
-        <Route path="/partner-network" element={<PartnerNetwork />} />
-        <Route path="/product-management" element={<ProductManagement />} />
-        <Route path="/buyer-requests" element={<BuyerRequestManagement />} />
-        <Route path="/help" element={<HelpCenter />} />
-        <Route path="/contracts" element={<ContractVault />} />
-        <Route path="/notifications" element={<NotificationsCenter />} />
-        <Route path="/org-settings" element={<OrgSettings />} />
-        <Route path="/insights" element={<Insights />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/chat" element={<ChatInterface />} />
-        <Route path="/call" element={<CallInterface />} />
-        <Route path="/owner" element={<OwnerDashboard />} />
-        <Route path="/agent" element={<AgentDashboard />} />
-      </Routes>
+      <div className="app-shell min-h-screen">
+        <NavBar />
+        <main className="pb-10">
+          <Routes>
+            <Route path="/" element={<TexHub />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/feed" element={<MainFeed />} />
+            <Route path="/search" element={<SearchResults />} />
+            <Route path="/buyer/:id" element={<BuyerProfile />} />
+            <Route path="/factory/:id" element={<FactoryProfile />} />
+            <Route path="/buying-house/:id" element={<BuyingHouseProfile />} />
+            <Route path="/member-management" element={<MemberManagement />} />
+            <Route path="/partner-network" element={<PartnerNetwork />} />
+            <Route path="/product-management" element={<ProductManagement />} />
+            <Route path="/buyer-requests" element={<BuyerRequestManagement />} />
+            <Route path="/help" element={<HelpCenter />} />
+            <Route path="/contracts" element={<ContractVault />} />
+            <Route path="/notifications" element={<NotificationsCenter />} />
+            <Route path="/org-settings" element={<OrgSettings />} />
+            <Route path="/insights" element={<Insights />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/chat" element={<ChatInterface />} />
+            <Route path="/call" element={<CallInterface />} />
+            <Route path="/owner" element={<OwnerDashboard />} />
+            <Route path="/agent" element={<AgentDashboard />} />
+          </Routes>
+        </main>
+      </div>
     </BrowserRouter>
   )
 }

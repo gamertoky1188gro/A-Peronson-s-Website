@@ -1,18 +1,54 @@
-# React + Vite
+# GarTexHub Web App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+GarTexHub is a modern React + Vite web platform prototype for textile and garment sourcing workflows. It includes landing, discovery, communication, dashboard, profile, legal, and organization management pages.
 
-Currently, two official plugins are available:
+## Web Details
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Stack
+- React 19 + React Router
+- Vite 8
+- Tailwind CSS utilities (via `@tailwindcss/vite`)
+- Font Awesome icons
 
-## React Compiler
+### UX Updates Included
+- Global light/dark theming controlled from the top navigation.
+- Persistent theme preference saved in `localStorage` (`theme=light|dark`).
+- Mobile-friendly navigation menu with responsive behavior.
+- Modernized visual treatment (glassy navbar, soft gradients, stronger card depth).
+- Dark-mode harmonization for utility-based page layouts.
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+### Route Map
+- `/` — Landing page
+- `/pricing` — Pricing
+- `/feed` — Main feed
+- `/search` — Search results
+- `/buyer/:id`, `/factory/:id`, `/buying-house/:id` — Profiles
+- `/member-management`, `/partner-network`, `/product-management`, `/buyer-requests`
+- `/chat`, `/call`, `/help`, `/contracts`, `/notifications`
+- `/org-settings`, `/insights`, `/owner`, `/agent`
+- `/about`, `/terms`, `/privacy`
+- `/login`, `/signup`
 
-Note: This will impact Vite dev & build performances.
+## Page Documentation
+Detailed per-page markdown documentation (theme behavior, structure, layout coordinates, and purpose notes) is available in:
 
-## Expanding the ESLint configuration
+- `docs/pages/`
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Each file corresponds to one page component under `src/pages/`.
+
+## Development
+
+```bash
+npm install
+npm run dev
+```
+
+## Build
+
+```bash
+npm run build
+```
+
+## Notes
+- Theme toggle is in the global `NavBar` and affects all routes.
+- For page-level metadata updates, edit docs in `docs/pages/` alongside page changes.

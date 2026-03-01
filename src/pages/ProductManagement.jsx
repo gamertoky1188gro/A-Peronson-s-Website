@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import FloatingAssistant from '../components/FloatingAssistant'
 
 export default function ProductManagement(){
-  const [products, setProducts] = useState([
+  const [products] = useState([
     { id: 'P-100', title: 'Pique Polo', category: 'Knitwear', moq: 200, price: '$3 - $5' },
     { id: 'P-101', title: 'Denim Jacket', category: 'Woven', moq: 300, price: '$15 - $25' },
   ])
