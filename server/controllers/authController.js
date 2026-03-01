@@ -3,7 +3,7 @@ import { signToken } from '../middleware/auth.js'
 import { requireFields, validateEmail, validateRole } from '../utils/validators.js'
 
 export async function register(req, res) {
-  const missing = requireFields(req.body, ['company_name', 'email', 'password', 'role'])
+  const missing = requireFields(req.body, ['name', 'email', 'password', 'role'])
   if (missing.length) return res.status(400).json({ error: `Missing fields: ${missing.join(', ')}` })
   if (!validateEmail(req.body.email)) return res.status(400).json({ error: 'Invalid email' })
   if (!validateRole(req.body.role)) return res.status(400).json({ error: 'Invalid role' })

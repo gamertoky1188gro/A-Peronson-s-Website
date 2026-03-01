@@ -27,6 +27,7 @@ import CallInterface from './pages/CallInterface'
 import OwnerDashboard from './pages/OwnerDashboard'
 import AgentDashboard from './pages/AgentDashboard'
 import MvpDashboard from './pages/MvpDashboard'
+import FloatingAssistant from './components/FloatingAssistant'
 
 function App() {
   return (
@@ -63,6 +64,7 @@ function App() {
             <Route path="/mvp" element={<MvpDashboard />} />
           </Routes>
         </main>
+        <FloatingAssistant />
       </div>
     </BrowserRouter>
   )

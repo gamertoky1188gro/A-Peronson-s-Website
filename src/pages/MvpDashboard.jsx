@@ -1,332 +1,295 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import FloatingAssistant from '../components/FloatingAssistant'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
 
-const emptyRegistration = {
-  company_name: '',
-  email: '',
-  password: '',
-  role: 'buyer',
-  profile: { country: '', categories: [], certifications: [], moq: '', lead_time_days: '' },
-}
-
-const emptyRequirement = {
-  category: '',
-  fabric_type: '',
-  gsm: '',
-  quantity: '',
-  target_price: '',
-  certifications_required: [],
-  shipping_port: '',
-  timeline_days: '',
-}
-
-function api(path, method = 'GET', token = null, body = null, isForm = false) {
-  return fetch(`${API}${path}`, {
+async function api(path, method = 'GET', token = '', body = null, isForm = false) {
+  const res = await fetch(`${API}${path}`, {
     method,
     headers: {
       ...(isForm ? {} : { 'Content-Type': 'application/json' }),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: body ? (isForm ? body : JSON.stringify(body)) : undefined,
-  }).then(async (res) => {
-    const data = await res.json().catch(() => ({}))
-    if (!res.ok) throw new Error(data.error || 'Request failed')
-    return data
   })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(data.error || 'Request failed')
+  return data
 }
 
 export default function MvpDashboard() {
-  const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark')
-  const [auth, setAuth] = useState(() => {
-    const token = localStorage.getItem('jwt')
-    const user = localStorage.getItem('user')
-    return { token, user: user ? JSON.parse(user) : null }
+  const [token, setToken] = useState(() => localStorage.getItem('jwt') || '')
+  const [user, setUser] = useState(() => {
+    const raw = localStorage.getItem('user')
+    return raw ? JSON.parse(raw) : null
   })
-  const [reg, setReg] = useState(emptyRegistration)
-  const [loginData, setLoginData] = useState({ email: '', password: '' })
-  const [requirement, setRequirement] = useState(emptyRequirement)
-  const [requirements, setRequirements] = useState([])
-  const [matches, setMatches] = useState([])
-  const [inbox, setInbox] = useState({ priority: [], request_pool: [] })
-  const [messageText, setMessageText] = useState('')
-  const [selectedMatch, setSelectedMatch] = useState('')
-  const [messages, setMessages] = useState([])
-  const [adminUsers, setAdminUsers] = useState([])
-  const [metrics, setMetrics] = useState([])
   const [feedback, setFeedback] = useState('')
 
+  const [registerForm, setRegisterForm] = useState({ name: '', email: '', password: '', role: 'buyer' })
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' })
+
+  const [onboarding, setOnboarding] = useState({ profile_image: '', organization_name: '', categories: 'Shirts' })
+  const [requestForm, setRequestForm] = useState({ category: '', quantity: '', price_range: '', material: '', timeline_days: '', certifications_required: '', shipping_terms: '', custom_description: '' })
+  const [productForm, setProductForm] = useState({ title: '', category: 'Shirts', material: '', moq: '', lead_time_days: '', description: '', video_url: '' })
+
+  const [unique, setUnique] = useState(false)
+  const [feedType, setFeedType] = useState('all')
+  const [feed, setFeed] = useState({ tags: [], items: [] })
+
+  const [verificationStatus, setVerificationStatus] = useState(null)
+  const [subscription, setSubscription] = useState(null)
+  const [analytics, setAnalytics] = useState(null)
+
+  const [assistantQuestion, setAssistantQuestion] = useState('')
+  const [assistantResponse, setAssistantResponse] = useState('')
+
+  const [claimRequestId, setClaimRequestId] = useState('')
+  const [grantRequestId, setGrantRequestId] = useState('')
+  const [targetAgentId, setTargetAgentId] = useState('')
+
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', dark)
-    localStorage.setItem('theme', dark ? 'dark' : 'light')
-  }, [dark])
+    if (token) localStorage.setItem('jwt', token)
+    else localStorage.removeItem('jwt')
+  }, [token])
 
-  async function onRegister(e) {
+  useEffect(() => {
+    if (user) localStorage.setItem('user', JSON.stringify(user))
+    else localStorage.removeItem('user')
+  }, [user])
+
+  const canManageOrg = useMemo(() => user && (user.role === 'admin' || user.role === 'buying_house'), [user])
+
+  async function register(e) {
     e.preventDefault()
     try {
-      const payload = {
-        ...reg,
-        profile: {
-          ...reg.profile,
-          categories: reg.profile.categories.filter(Boolean),
-          certifications: reg.profile.certifications.filter(Boolean),
+      const data = await api('/auth/register', 'POST', '', registerForm)
+      setToken(data.token)
+      setUser(data.user)
+      setFeedback('Registered')
+    } catch (err) { setFeedback(err.message) }
+  }
+
+  async function login(e) {
+    e.preventDefault()
+    try {
+      const data = await api('/auth/login', 'POST', '', loginForm)
+      setToken(data.token)
+      setUser(data.user)
+      setFeedback('Logged in')
+    } catch (err) { setFeedback(err.message) }
+  }
+
+  function logout() { setToken(''); setUser(null); setFeedback('Logged out') }
+
+  async function completeOnboarding(e) {
+    e.preventDefault()
+    try {
+      await api('/onboarding', 'POST', token, { ...onboarding, categories: onboarding.categories.split(',').map((x) => x.trim()).filter(Boolean) })
+      setFeedback('Onboarding completed (3 steps saved)')
+    } catch (err) { setFeedback(err.message) }
+  }
+
+  async function createRequest(e) {
+    e.preventDefault()
+    try {
+      await api('/requirements', 'POST', token, { ...requestForm, certifications_required: requestForm.certifications_required.split(',').map((x) => x.trim()).filter(Boolean) })
+      setFeedback('Buyer request posted')
+      await loadFeed()
+    } catch (err) { setFeedback(err.message) }
+  }
+
+  async function createProduct(e) {
+    e.preventDefault()
+    try {
+      await api('/products', 'POST', token, productForm)
+      setFeedback('Company product posted')
+      await loadFeed()
+    } catch (err) { setFeedback(err.message) }
+  }
+
+  async function loadFeed() {
+    try {
+      const data = await api(`/feed?unique=${unique}&type=${feedType}`, 'GET', token)
+      setFeed(data)
+    } catch (err) { setFeedback(err.message) }
+  }
+
+  async function submitVerification() {
+    try {
+      const data = await api('/verification/me', 'POST', token, {
+        documents: {
+          company_registration: 'submitted',
+          trade_license: 'submitted',
+          tin_or_ein: 'submitted',
+          authorized_person_nid: 'submitted',
+          bank_proof: 'submitted',
+          erc_or_eori: 'submitted',
         },
-      }
-      const data = await api('/auth/register', 'POST', null, payload)
-      localStorage.setItem('jwt', data.token)
-      localStorage.setItem('user', JSON.stringify(data.user))
-      setAuth({ token: data.token, user: data.user })
-      setFeedback('Registered and logged in.')
-    } catch (error) {
-      setFeedback(error.message)
-    }
+      })
+      setVerificationStatus(data)
+      setFeedback('Verification submitted')
+    } catch (err) { setFeedback(err.message) }
   }
 
-  async function onLogin(e) {
+  async function refreshStatus() {
+    try {
+      const [v, s, a] = await Promise.all([
+        api('/verification/me', 'GET', token),
+        api('/subscriptions/me', 'GET', token),
+        api('/analytics/summary', 'GET', token),
+      ])
+      setVerificationStatus(v)
+      setSubscription(s)
+      setAnalytics(a)
+    } catch (err) { setFeedback(err.message) }
+  }
+
+  async function askAssistant(e) {
     e.preventDefault()
     try {
-      const data = await api('/auth/login', 'POST', null, loginData)
-      localStorage.setItem('jwt', data.token)
-      localStorage.setItem('user', JSON.stringify(data.user))
-      setAuth({ token: data.token, user: data.user })
-      setFeedback('Login success.')
-    } catch (error) {
-      setFeedback(error.message)
-    }
+      const res = await api('/assistant/ask', 'POST', token, { question: assistantQuestion })
+      setAssistantResponse(`${res.mode}: ${res.message}`)
+    } catch (err) { setFeedback(err.message) }
   }
 
-  function logout() {
-    localStorage.removeItem('jwt')
-    localStorage.removeItem('user')
-    setAuth({ token: null, user: null })
-    setFeedback('Logged out.')
-  }
-
-  async function postRequirement(e) {
-    e.preventDefault()
+  async function claimConversation() {
     try {
-      const payload = {
-        ...requirement,
-        certifications_required: requirement.certifications_required.filter(Boolean),
-      }
-      const data = await api('/requirements', 'POST', auth.token, payload)
-      setFeedback(`Requirement posted. Matches found: ${data.matches.length}`)
-      setRequirement(emptyRequirement)
-      await loadRequirements()
-    } catch (error) {
-      setFeedback(error.message)
-    }
+      const r = await api(`/conversations/${claimRequestId}/claim`, 'POST', token)
+      setFeedback(`Conversation ${r.status}`)
+    } catch (err) { setFeedback(err.message) }
   }
 
-  async function loadRequirements() {
+  async function grantConversation() {
     try {
-      const data = await api('/requirements', 'GET', auth.token)
-      setRequirements(data)
-      setFeedback(`Loaded ${data.length} requirements.`)
-    } catch (error) {
-      setFeedback(error.message)
-    }
-  }
-
-  async function loadMatches(requirementId) {
-    try {
-      const data = await api(`/requirements/${requirementId}/matches`, 'GET', auth.token)
-      setMatches(data)
-      setFeedback(`Loaded ${data.length} matches.`)
-    } catch (error) {
-      setFeedback(error.message)
-    }
-  }
-
-  async function loadInbox() {
-    try {
-      const data = await api('/messages/inbox', 'GET', auth.token)
-      setInbox(data)
-      setFeedback('Inbox loaded.')
-    } catch (error) {
-      setFeedback(error.message)
-    }
-  }
-
-  async function sendMessage(e) {
-    e.preventDefault()
-    try {
-      await api(`/messages/${selectedMatch}`, 'POST', auth.token, { message: messageText, type: 'text' })
-      setMessageText('')
-      await viewMessages(selectedMatch)
-      setFeedback('Message sent.')
-    } catch (error) {
-      setFeedback(error.message)
-    }
-  }
-
-  async function viewMessages(matchId) {
-    try {
-      const data = await api(`/messages/${matchId}`, 'GET', auth.token)
-      setMessages(data)
-      setSelectedMatch(matchId)
-    } catch (error) {
-      setFeedback(error.message)
-    }
-  }
-
-  async function uploadDoc(file, type = 'contract') {
-    if (!file || !selectedMatch) return
-    try {
-      const fd = new FormData()
-      fd.append('file', file)
-      fd.append('type', type)
-      await api(`/documents/${selectedMatch}`, 'POST', auth.token, fd, true)
-      setFeedback('Document uploaded.')
-    } catch (error) {
-      setFeedback(error.message)
-    }
-  }
-
-  async function loadAdmin() {
-    try {
-      const users = await api('/users', 'GET', auth.token)
-      const metricRows = await api('/admin/metrics', 'GET', auth.token)
-      setAdminUsers(users)
-      setMetrics(metricRows)
-      setFeedback('Admin data loaded.')
-    } catch (error) {
-      setFeedback(error.message)
-    }
-  }
-
-  async function verifyUser(userId, verified) {
-    try {
-      await api(`/users/${userId}/verify`, 'PATCH', auth.token, { verified })
-      await loadAdmin()
-    } catch (error) {
-      setFeedback(error.message)
-    }
+      await api(`/conversations/${grantRequestId}/grant`, 'POST', token, { target_agent_id: targetAgentId })
+      setFeedback('Access granted')
+    } catch (err) { setFeedback(err.message) }
   }
 
   return (
     <div className="page">
       <header className="topbar">
-        <h1>Cross-Border B2B Textile Trust Platform (MVP)</h1>
-        <div className="top-actions">
-          <button onClick={() => setDark(!dark)}>{dark ? '🌙 Dark' : '☀️ Light'}</button>
-          {auth.user ? <button onClick={logout}>Logout</button> : null}
+        <div>
+          <h1>GarTexHub Enterprise UX MVP</h1>
+          <p className="feedback">Behavioral architecture for trust-first B2B textile commerce.</p>
         </div>
+        {user ? <button onClick={logout}>Logout</button> : null}
       </header>
 
       <p className="feedback">{feedback}</p>
 
-      {!auth.user ? (
+      {!user ? (
         <section className="grid two-col">
-          <form onSubmit={onRegister} className="card">
+          <form className="card stack" onSubmit={register}>
             <h2>Register</h2>
-            <input placeholder="Company Name" value={reg.company_name} onChange={(e) => setReg({ ...reg, company_name: e.target.value })} required />
-            <input placeholder="Email" type="email" value={reg.email} onChange={(e) => setReg({ ...reg, email: e.target.value })} required />
-            <input placeholder="Password" type="password" value={reg.password} onChange={(e) => setReg({ ...reg, password: e.target.value })} required />
-            <select value={reg.role} onChange={(e) => setReg({ ...reg, role: e.target.value })}>
+            <input placeholder="Name" value={registerForm.name} onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })} required />
+            <input placeholder="Email" type="email" value={registerForm.email} onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })} required />
+            <input placeholder="Password" type="password" value={registerForm.password} onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })} required />
+            <select value={registerForm.role} onChange={(e) => setRegisterForm({ ...registerForm, role: e.target.value })}>
               <option value="buyer">Buyer</option><option value="factory">Factory</option><option value="buying_house">Buying House</option><option value="admin">Admin</option>
             </select>
-            <input placeholder="Country" value={reg.profile.country} onChange={(e) => setReg({ ...reg, profile: { ...reg.profile, country: e.target.value } })} />
-            <input placeholder="Factory Categories (comma separated)" onChange={(e) => setReg({ ...reg, profile: { ...reg.profile, categories: e.target.value.split(',').map((x) => x.trim()) } })} />
-            <input placeholder="Certifications (comma separated)" onChange={(e) => setReg({ ...reg, profile: { ...reg.profile, certifications: e.target.value.split(',').map((x) => x.trim()) } })} />
-            <input placeholder="MOQ" value={reg.profile.moq} onChange={(e) => setReg({ ...reg, profile: { ...reg.profile, moq: e.target.value } })} />
-            <input placeholder="Lead Time Days" value={reg.profile.lead_time_days} onChange={(e) => setReg({ ...reg, profile: { ...reg.profile, lead_time_days: e.target.value } })} />
-            <button type="submit">Create account</button>
+            <button type="submit">Create Account</button>
           </form>
-
-          <form onSubmit={onLogin} className="card">
+          <form className="card stack" onSubmit={login}>
             <h2>Login</h2>
-            <input placeholder="Email" type="email" value={loginData.email} onChange={(e) => setLoginData({ ...loginData, email: e.target.value })} required />
-            <input placeholder="Password" type="password" value={loginData.password} onChange={(e) => setLoginData({ ...loginData, password: e.target.value })} required />
+            <input placeholder="Email" type="email" value={loginForm.email} onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })} required />
+            <input placeholder="Password" type="password" value={loginForm.password} onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })} required />
             <button type="submit">Login</button>
           </form>
         </section>
       ) : (
         <main className="grid two-col">
-          <section className="card">
-            <h2>My Account</h2>
-            <p><strong>{auth.user.company_name}</strong> ({auth.user.role})</p>
-            <p>Status: {auth.user.verified ? 'Verified' : 'Unverified'}</p>
+          <section className="card stack">
+            <h2>Onboarding (3 Steps)</h2>
+            <form onSubmit={completeOnboarding} className="stack">
+              <input placeholder="1) Profile Image URL" value={onboarding.profile_image} onChange={(e) => setOnboarding({ ...onboarding, profile_image: e.target.value })} />
+              <input placeholder="2) Organization Name" value={onboarding.organization_name} onChange={(e) => setOnboarding({ ...onboarding, organization_name: e.target.value })} />
+              <input placeholder="3) Category Selection (comma separated)" value={onboarding.categories} onChange={(e) => setOnboarding({ ...onboarding, categories: e.target.value })} />
+              <button type="submit">Save Onboarding</button>
+            </form>
+            <p>Role: <strong>{user.role}</strong> | Verified badge: {user.verified ? '🔵 Blue Safe' : 'Unverified'}</p>
+            <button onClick={submitVerification}>Submit Verification Bundle</button>
+            <button onClick={refreshStatus}>Refresh Verification / Subscription / Analytics</button>
+            <p>Subscription: {subscription ? `${subscription.plan}` : 'N/A'}</p>
+            <p>Verification Missing: {(verificationStatus?.missing_required || []).join(', ') || 'none'}</p>
+            <p>Analytics events: {analytics?.total_events ?? 0}</p>
           </section>
 
-          {auth.user.role === 'buyer' ? (
-            <section className="card">
-              <h2>Create Requirement</h2>
-              <form onSubmit={postRequirement} className="stack">
-                <input placeholder="Category" value={requirement.category} onChange={(e) => setRequirement({ ...requirement, category: e.target.value })} required />
-                <input placeholder="Fabric Type" value={requirement.fabric_type} onChange={(e) => setRequirement({ ...requirement, fabric_type: e.target.value })} required />
-                <input placeholder="GSM" value={requirement.gsm} onChange={(e) => setRequirement({ ...requirement, gsm: e.target.value })} />
-                <input placeholder="Quantity" value={requirement.quantity} onChange={(e) => setRequirement({ ...requirement, quantity: e.target.value })} required />
-                <input placeholder="Target Price" value={requirement.target_price} onChange={(e) => setRequirement({ ...requirement, target_price: e.target.value })} />
-                <input placeholder="Certifications (comma separated)" onChange={(e) => setRequirement({ ...requirement, certifications_required: e.target.value.split(',').map((x) => x.trim()) })} />
-                <input placeholder="Shipping Port" value={requirement.shipping_port} onChange={(e) => setRequirement({ ...requirement, shipping_port: e.target.value })} />
-                <input placeholder="Timeline Days" value={requirement.timeline_days} onChange={(e) => setRequirement({ ...requirement, timeline_days: e.target.value })} />
-                <button type="submit">Post & Match</button>
+          {user.role === 'buyer' ? (
+            <section className="card stack">
+              <h2>Post Buyer Request</h2>
+              <form onSubmit={createRequest} className="stack">
+                <input placeholder="Category" value={requestForm.category} onChange={(e) => setRequestForm({ ...requestForm, category: e.target.value })} required />
+                <input placeholder="Quantity" value={requestForm.quantity} onChange={(e) => setRequestForm({ ...requestForm, quantity: e.target.value })} required />
+                <input placeholder="Price Range" value={requestForm.price_range} onChange={(e) => setRequestForm({ ...requestForm, price_range: e.target.value })} required />
+                <input placeholder="Material" value={requestForm.material} onChange={(e) => setRequestForm({ ...requestForm, material: e.target.value })} required />
+                <input placeholder="Timeline Days" value={requestForm.timeline_days} onChange={(e) => setRequestForm({ ...requestForm, timeline_days: e.target.value })} required />
+                <input placeholder="Certifications (comma separated)" value={requestForm.certifications_required} onChange={(e) => setRequestForm({ ...requestForm, certifications_required: e.target.value })} />
+                <input placeholder="Shipping Terms" value={requestForm.shipping_terms} onChange={(e) => setRequestForm({ ...requestForm, shipping_terms: e.target.value })} required />
+                <textarea placeholder="Custom Description" value={requestForm.custom_description} onChange={(e) => setRequestForm({ ...requestForm, custom_description: e.target.value })} />
+                <button type="submit">Publish Request</button>
               </form>
             </section>
           ) : (
-            <section className="card"><h2>Factory/Buying House Dashboard</h2><p>Use inbox and matches to negotiate verified opportunities.</p></section>
+            <section className="card stack">
+              <h2>Post Company Product</h2>
+              <form onSubmit={createProduct} className="stack">
+                <input placeholder="Title" value={productForm.title} onChange={(e) => setProductForm({ ...productForm, title: e.target.value })} required />
+                <select value={productForm.category} onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}>
+                  <option>Shirts</option><option>Knitwear</option><option>Denim</option><option>Women</option><option>Kids</option>
+                </select>
+                <input placeholder="Material" value={productForm.material} onChange={(e) => setProductForm({ ...productForm, material: e.target.value })} required />
+                <input placeholder="MOQ" value={productForm.moq} onChange={(e) => setProductForm({ ...productForm, moq: e.target.value })} />
+                <input placeholder="Lead Time Days" value={productForm.lead_time_days} onChange={(e) => setProductForm({ ...productForm, lead_time_days: e.target.value })} />
+                <textarea placeholder="Description" value={productForm.description} onChange={(e) => setProductForm({ ...productForm, description: e.target.value })} />
+                <input placeholder="Video URL (for gallery/reels)" value={productForm.video_url} onChange={(e) => setProductForm({ ...productForm, video_url: e.target.value })} />
+                <button type="submit">Publish Product</button>
+              </form>
+            </section>
           )}
 
-          <section className="card">
-            <h2>Requirements & Matches</h2>
-            <button onClick={loadRequirements}>Load Requirements</button>
+          <section className="card full stack">
+            <h2>Combined Feed (Buyer Requests + Company Products)</h2>
+            <div className="top-actions">
+              <label><input type="checkbox" checked={unique} onChange={(e) => setUnique(e.target.checked)} /> Unique Toggle</label>
+              <select value={feedType} onChange={(e) => setFeedType(e.target.value)}>
+                <option value="all">All</option><option value="requests">Buyer Requests</option><option value="products">Company Products</option>
+              </select>
+              <button onClick={loadFeed}>Load Feed</button>
+            </div>
+            <p>Tags: {(feed.tags || []).join(', ')}</p>
             <ul>
-              {requirements.map((r) => (
-                <li key={r.id}>
-                  <strong>{r.category}</strong> · Qty {r.quantity} · {r.status}
-                  <button onClick={() => loadMatches(r.id)}>View Matches</button>
-                </li>
+              {(feed.items || []).map((item) => (
+                <li key={item.id}>{item.icon} <strong>{item.feed_type}</strong> | {item.category} | {item.custom_description || item.description || item.title}</li>
               ))}
             </ul>
-            <ul>
-              {matches.map((m) => {
-                const key = `${m.requirement_id}:${m.factory_id}`
-                return (
-                  <li key={key}>
-                    Factory {m.factory_id.slice(0, 8)} · Score {m.score} · {m.status}
-                    <button onClick={() => setSelectedMatch(key)}>Select</button>
-                  </li>
-                )
-              })}
-            </ul>
           </section>
 
-          <section className="card">
-            <h2>Negotiation Dashboard</h2>
-            <button onClick={loadInbox}>Load Tiered Inbox</button>
-            <p>Priority: {inbox.priority.length} | Request Pool: {inbox.request_pool.length}</p>
-            <form onSubmit={sendMessage} className="stack">
-              <input placeholder="Selected Match ID (req:factory)" value={selectedMatch} onChange={(e) => setSelectedMatch(e.target.value)} required />
-              <textarea placeholder="Send structured negotiation message" value={messageText} onChange={(e) => setMessageText(e.target.value)} required />
-              <button type="submit">Send Message</button>
+          <section className="card stack">
+            <h2>Conversation Lock</h2>
+            <input placeholder="Request ID to claim" value={claimRequestId} onChange={(e) => setClaimRequestId(e.target.value)} />
+            <button onClick={claimConversation}>Start Conversation / Claim & Respond</button>
+            {canManageOrg ? (
+              <>
+                <input placeholder="Request ID to grant" value={grantRequestId} onChange={(e) => setGrantRequestId(e.target.value)} />
+                <input placeholder="Target Agent User ID" value={targetAgentId} onChange={(e) => setTargetAgentId(e.target.value)} />
+                <button onClick={grantConversation}>Grant Access</button>
+              </>
+            ) : null}
+          </section>
+
+          <section className="card stack">
+            <h2>Rule-Based AI Guidance</h2>
+            <form onSubmit={askAssistant} className="stack">
+              <input placeholder="Ask about setup, verification, premium, help" value={assistantQuestion} onChange={(e) => setAssistantQuestion(e.target.value)} />
+              <button type="submit">Ask Assistant</button>
             </form>
-            <input type="file" accept="application/pdf" onChange={(e) => uploadDoc(e.target.files?.[0])} />
-            <button onClick={() => viewMessages(selectedMatch)} disabled={!selectedMatch}>Refresh Conversation</button>
-            <ul>
-              {messages.map((m) => <li key={m.id}>{m.timestamp}: {m.message}</li>)}
-            </ul>
+            <p>{assistantResponse}</p>
           </section>
-
-          {auth.user.role === 'admin' ? (
-            <section className="card full">
-              <h2>Admin Panel</h2>
-              <button onClick={loadAdmin}>Load Admin Data</button>
-              <h3>Users</h3>
-              <ul>
-                {adminUsers.map((u) => (
-                  <li key={u.id}>
-                    {u.company_name} ({u.role}) · {u.verified ? 'verified' : 'unverified'}
-                    {!u.verified ? <button onClick={() => verifyUser(u.id, true)}>Verify</button> : null}
-                  </li>
-                ))}
-              </ul>
-              <h3>Conversion Transitions</h3>
-              <ul>{metrics.map((m) => <li key={m.id}>{m.requirement_id}: {m.to_status}</li>)}</ul>
-            </section>
-          ) : null}
         </main>
       )}
+
+      <FloatingAssistant />
     </div>
   )
 }

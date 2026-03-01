@@ -1,10 +1,11 @@
 import { Router } from 'express'
 import { allowRoles, requireAuth } from '../middleware/auth.js'
-import { auditMatches, conversionMetrics } from '../controllers/adminController.js'
+import { subscriptionsAudit, usersAudit, verificationAudit } from '../controllers/adminController.js'
 
 const router = Router()
 
-router.get('/matches/audit', requireAuth, allowRoles('admin'), auditMatches)
-router.get('/metrics', requireAuth, allowRoles('admin'), conversionMetrics)
+router.get('/users', requireAuth, allowRoles('admin'), usersAudit)
+router.get('/verification', requireAuth, allowRoles('admin'), verificationAudit)
+router.get('/subscriptions', requireAuth, allowRoles('admin'), subscriptionsAudit)
 
 export default router

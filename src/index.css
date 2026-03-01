@@ -1,9 +1,70 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-html, body, #root {
+html,
+body,
+#root {
   min-height: 100%;
+}
+
+:root {
+  color-scheme: light;
+}
+
+:root.dark {
+  color-scheme: dark;
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* Ensure dark mode applies to legacy utility-heavy pages */
+:root.dark .bg-white {
+  background-color: #0f172a !important;
+}
+
+:root.dark .bg-gray-50,
+:root.dark .bg-gray-100 {
+  background-color: #111827 !important;
+}
+
+:root.dark .bg-blue-50 {
+  background-color: #0b1f3a !important;
+}
+
+:root.dark .text-gray-900,
+:root.dark .text-gray-800,
+:root.dark .text-gray-700,
+:root.dark .text-\[\#1A1A1A\] {
+  color: #e2e8f0 !important;
+}
+
+:root.dark .text-gray-600,
+:root.dark .text-gray-500,
+:root.dark .text-\[\#5A5A5A\] {
+  color: #94a3b8 !important;
+}
+
+:root.dark .border,
+:root.dark .border-t,
+:root.dark .border-b,
+:root.dark .border-gray-200,
+:root.dark .border-gray-300 {
+  border-color: #334155 !important;
+}
+
+:root.dark .shadow,
+:root.dark .shadow-sm,
+:root.dark .shadow-md,
+:root.dark .shadow-lg,
+:root.dark .shadow-inner {
+  box-shadow: 0 8px 28px rgba(2, 6, 23, 0.5) !important;
+}
+
+:root.dark input,
+:root.dark select,
+:root.dark textarea {
+  background-color: #0b1220 !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
 }
