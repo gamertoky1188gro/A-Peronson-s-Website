@@ -1,18 +1,76 @@
-# React + Vite
+# GarTexHub – Behavioral Architecture & Enterprise UX (MVP)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A trust-first B2B textile marketplace engine with social-style feed UX.
 
-Currently, two official plugins are available:
+## What this MVP implements
+- Multi-role auth: Buyer, Factory, Buying House, Admin
+- 3-step onboarding: profile image, organization name, categories
+- Combined feed: buyer requests + company products
+- Unique toggle (diversified feed behavior)
+- Floating AI assistant with rule-based guidance
+- Conversation lock system for buying-house internal coordination
+- Verification + subscription-backed badge logic
+- Analytics summary tracking for key engagement events
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Backend architecture
 
-## React Compiler
+```
+server/
+  routes/
+  controllers/
+  services/
+  middleware/
+  utils/
+  database/
+```
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## JSON databases
+- `server/database/users.json`
+- `server/database/buyer_requests.json`
+- `server/database/company_products.json`
+- `server/database/subscriptions.json`
+- `server/database/verification.json`
+- `server/database/analytics.json`
+- `server/database/documents.json`
+- `server/database/conversation_locks.json`
 
-Note: This will impact Vite dev & build performances.
+## Key API groups
+- Auth: `/api/auth/*`
+- User/Profile: `/api/users/*`, `/api/onboarding`
+- Feed: `/api/feed`
+- Buyer Requests: `/api/requirements`
+- Company Products: `/api/products`
+- Verification: `/api/verification/*`
+- Subscriptions: `/api/subscriptions/*`
+- Conversation Lock: `/api/conversations/*`
+- Assistant: `/api/assistant/ask`
+- Analytics: `/api/analytics/summary`
 
-## Expanding the ESLint configuration
+## Run
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+npm run server
+npm run dev
+```
+
+Optional frontend env:
+
+```bash
+VITE_API_URL=http://localhost:4000/api
+```
+
+
+## Desktop App (Electron)
+
+Run the desktop app flow with one command:
+
+```bash
+npm run app
+```
+
+What it does:
+1. Builds React (`dist/`)
+2. Starts backend (`npm run server`)
+3. Waits for backend + dist readiness
+4. Launches Electron using `dist/index.html`
