@@ -6,28 +6,8 @@ export default function TexHub() {
   return (
     <div className="bg-white">
 
-      {/* 1. TOP NAVIGATION BAR */}
-      <nav id="top-nav" className="sticky top-0 z-50 bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center space-x-3">
-              <span className="font-bold text-lg text-[#0A66C2]">GarTexHub</span>
-            </Link>
+            {/* Landing content starts below global navigation */}
 
-            <div className="hidden md:flex items-center space-x-6">
-              <Link to="/" className="text-gray-700 hover:text-[#0A66C2]">About</Link>
-              <Link to="/feed" className="text-gray-700 hover:text-[#0A66C2]">Feed</Link>
-              <Link to="/pricing" className="text-gray-700 hover:text-[#0A66C2]">Pricing</Link>
-              <Link to="/login" className="px-4 py-2 rounded-md border border-[#0A66C2] text-[#0A66C2] bg-transparent hover:bg-[#F4F9FF]">Login</Link>
-              <Link to="/signup" className="px-4 py-2 rounded-md bg-[#0A66C2] text-white hover:bg-[#083B75]">Create Account</Link>
-            </div>
-
-            <div className="md:hidden">
-              <button className="text-gray-700">Menu</button>
-            </div>
-          </div>
-        </div>
-      </nav>
 
       {/* 2. HERO SECTION */}
       <header className="bg-white">

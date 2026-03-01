@@ -1,18 +1,93 @@
-# React + Vite
+# Cross-Border B2B Textile Trust Platform (MVP)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A focused MVP for structured cross-border textile sourcing:
 
-Currently, two official plugins are available:
+- Buyer requirement posting
+- Rule-based AI-style factory matching
+- Structured negotiation inbox (priority/request-pool)
+- Trust workflow (verification, document sharing, status transitions)
+- Admin verification and audit
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Architecture
 
-## React Compiler
+```
+server/
+  controllers/
+  routes/
+  services/
+  middleware/
+  utils/
+  database/*.json
+  uploads/
+src/
+  App.jsx (single MVP dashboard)
+```
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Tech Stack
 
-Note: This will impact Vite dev & build performances.
+- Frontend: React + Vite
+- Backend: Node.js + Express
+- DB: JSON files (`server/database/*.json`)
+- Auth: JWT
+- Password hashing: bcrypt
+- Uploads: local storage (`server/uploads`)
 
-## Expanding the ESLint configuration
+## Data Files
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- `server/database/users.json`
+- `server/database/requirements.json`
+- `server/database/matches.json`
+- `server/database/messages.json`
+- `server/database/documents.json`
+- `server/database/metrics.json`
+
+## API Overview
+
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/auth/logout`
+- `GET /api/users/me`
+- `PATCH /api/users/me/profile`
+- `POST /api/requirements` (buyer)
+- `GET /api/requirements`
+- `GET /api/requirements/:requirementId/matches`
+- `PATCH /api/requirements/:requirementId/matches/:factoryId/status`
+- `POST /api/messages/:matchId`
+- `GET /api/messages/:matchId`
+- `GET /api/messages/inbox`
+- `POST /api/documents/:matchId` (`multipart/form-data`, pdf only)
+- Admin: `GET /api/users`, `PATCH /api/users/:userId/verify`, `DELETE /api/users/:userId`, `DELETE /api/requirements/:requirementId`, `GET /api/admin/matches/audit`, `GET /api/admin/metrics`
+
+## Matching Logic (MVP)
+
+Scoring by:
+- category compatibility
+- MOQ <= requested quantity
+- certification overlap
+- lead time <= requested timeline
+
+Produces ranked matches and stores in `matches.json`.
+
+## Conversion Metric Tracking
+
+Tracked transitions:
+`requirement_created -> matched -> first_message_sent -> accepted/closed`
+
+Stored in `metrics.json`.
+
+## Run
+
+```bash
+npm install
+npm run dev
+npm run server
+```
+
+Frontend: `http://localhost:5173`
+Backend: `http://localhost:4000`
+
+For frontend API, optional `.env`:
+
+```bash
+VITE_API_URL=http://localhost:4000/api
+```
