@@ -8,21 +8,9 @@ export default function OrgSettings(){
 
   return (
     <div className="min-h-screen bg-white text-[#1A1A1A]">
-      <nav className="sticky top-0 z-50 bg-white border-b">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-[#0A66C2]">GarTexHub</Link>
-          <div className="flex items-center gap-4">
-            <input placeholder="Global Search..." className="px-3 py-2 rounded" />
-            <label className="flex items-center gap-2 text-sm">
-              <span className="text-gray-700 text-xs">Unique</span>
-              <input type="checkbox" className="h-4 w-8" />
-            </label>
-            <Link to="/owner" className="text-sm">Owner</Link>
-            <Link to="/member-management" className="text-sm">Members</Link>
-            <div className="w-9 h-9 bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] rounded-full"></div>
-          </div>
-        </div>
-      </nav>
+      
+      {/* Shared global NavBar */}
+
 
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-4">

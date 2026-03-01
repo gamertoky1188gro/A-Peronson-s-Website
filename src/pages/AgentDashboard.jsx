@@ -4,7 +4,6 @@ import FloatingAssistant from '../components/FloatingAssistant'
 
 export default function AgentDashboard() {
   const [activeTab, setActiveTab] = useState('requests')
-  const [searchQuery, setSearchQuery] = useState('')
   const requests = [
     { 
       id: 1, 
@@ -29,24 +28,9 @@ export default function AgentDashboard() {
   return (
     <div className="min-h-screen bg-white text-[#1A1A1A]">
       {/* TOP NAVIGATION */}
-      <nav className="sticky top-0 z-50 bg-white border-b border-gray-200">
-        <div className="max-w-full px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-[#0A66C2]">GarTexHub</Link>
+      
+      {/* Shared global NavBar */}
 
-          <input
-            type="text"
-            placeholder="Global Search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 mx-8 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
-          />
-
-          <div className="flex items-center gap-6">
-            <button className="relative p-2 hover:bg-gray-100 rounded-lg">🔔</button>
-            <div className="w-10 h-10 bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] rounded-full"></div>
-          </div>
-        </div>
-      </nav>
 
       <div className="max-w-6xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
         <aside className="lg:col-span-1">

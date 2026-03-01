@@ -8,15 +8,9 @@ export default function BuyerRequestManagement(){
 
   return (
     <div className="min-h-screen bg-white text-[#1A1A1A]">
-      <nav className="sticky top-0 z-50 bg-white border-b">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-[#0A66C2]">GarTexHub</Link>
-          <div className="flex items-center gap-4">
-            <Link to="/buyer-requests" className="text-sm font-semibold text-[#0A66C2]">Buyer Requests</Link>
-            <Link to="/feed" className="text-sm">Feed</Link>
-          </div>
-        </div>
-      </nav>
+      
+      {/* Shared global NavBar */}
+
 
       <div className="max-w-4xl mx-auto p-6">
         <div className="flex items-center justify-between mb-4">

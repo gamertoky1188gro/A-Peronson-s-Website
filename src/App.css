@@ -9,11 +9,11 @@
 }
 
 :root.dark {
-  --bg: #020617;
-  --surface: #0f172a;
-  --text: #e2e8f0;
-  --muted: #94a3b8;
-  --border: #334155;
+  --bg: #070b1f;
+  --surface: rgba(10, 18, 42, 0.82);
+  --text: #e8eeff;
+  --muted: #a4b5d8;
+  --border: rgba(103, 232, 249, 0.3);
 }
 
 body {
@@ -53,17 +53,116 @@ body {
 
 .stack { display: grid; gap: 0.5rem; }
 
-input, select, textarea, button {
+/* Modern 3D base for all elements */
+.card,
+.bg-white,
+.bg-gray-50,
+.bg-gray-100,
+[class*='rounded'] {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 10px 22px rgba(15, 23, 42, 0.08);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+button,
+.btn,
+a[class*='px-'],
+a[class*='py-'] {
   border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border-radius: 10px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 6px 14px rgba(15, 23, 42, 0.12);
+  transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease;
+}
+
+button:hover,
+.btn:hover,
+a:hover {
+  transform: translateY(-1px);
+}
+
+input, select, textarea {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
   color: var(--text);
   padding: 0.55rem 0.7rem;
-  border-radius: 8px;
+  border-radius: 10px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 6px 16px rgba(15, 23, 42, 0.06);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.16), 0 8px 24px rgba(14, 165, 233, 0.16);
+}
+
+img,
+video {
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+}
+
+table,
+thead,
+tbody,
+tr,
+th,
+td {
+  border-color: var(--border);
 }
 
 button { cursor: pointer; }
 ul { padding-left: 1rem; }
 li { margin: 0.35rem 0; }
+
+/* Shared 3D dark styling across every page */
+:root.dark .card,
+:root.dark .bg-white,
+:root.dark .bg-gray-50,
+:root.dark .bg-gray-100,
+:root.dark .bg-slate-900,
+:root.dark [class*='rounded'] {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 12px 24px rgba(0, 0, 0, 0.35),
+    0 0 18px rgba(103, 232, 249, 0.14),
+    0 0 30px rgba(139, 92, 246, 0.16);
+  transform: translateZ(0);
+}
+
+:root.dark button,
+:root.dark .btn,
+:root.dark a[class*='px-'],
+:root.dark a[class*='py-'] {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 6px 14px rgba(0, 0, 0, 0.35),
+    0 0 12px rgba(236, 72, 153, 0.2);
+}
+
+:root.dark button:hover,
+:root.dark .btn:hover,
+:root.dark a:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 9px 18px rgba(0, 0, 0, 0.42),
+    0 0 16px rgba(103, 232, 249, 0.32),
+    0 0 22px rgba(236, 72, 153, 0.26);
+}
+
+:root.dark input,
+:root.dark select,
+:root.dark textarea {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 10px 20px rgba(0, 0, 0, 0.3),
+    0 0 16px rgba(103, 232, 249, 0.12);
+}
 
 @media (max-width: 900px) {
   .two-col { grid-template-columns: 1fr; }

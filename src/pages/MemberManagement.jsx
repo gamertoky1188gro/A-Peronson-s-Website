@@ -12,18 +12,9 @@ export default function MemberManagement(){
   return (
     <div className="min-h-screen bg-white text-[#1A1A1A]">
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white border-b">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-[#0A66C2]">GarTexHub</Link>
-          <div className="flex items-center gap-4">
-            <Link to="/feed" className="text-sm text-[#1A1A1A]">Feed</Link>
-            <Link to="/search" className="text-sm text-[#1A1A1A]">Search</Link>
-            <Link to="/partner-network" className="text-sm text-[#1A1A1A]">Partner Network</Link>
-            <Link to="/member-management" className="text-sm font-semibold text-[#0A66C2]">Member Management</Link>
-            <Link to="/owner" className="text-sm">Owner</Link>
-          </div>
-        </div>
-      </nav>
+      
+      {/* Shared global NavBar */}
+
 
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-4">
