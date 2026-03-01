@@ -1,10 +1,8 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
 import FloatingAssistant from '../components/FloatingAssistant'
 
 export default function BuyerProfile() {
-  const [uniqueToggle, setUniqueToggle] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
 
   const buyer = {
     name: 'Global Apparel Co',
@@ -51,32 +49,9 @@ export default function BuyerProfile() {
   return (
     <div className="min-h-screen bg-white text-[#1A1A1A]">
       {/* TOP NAVIGATION */}
-      <nav className="sticky top-0 z-50 bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-[#0A66C2]">GarTexHub</Link>
+      
+      {/* Shared global NavBar */}
 
-          <input
-            type="text"
-            placeholder="Global Search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 mx-8 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
-          />
-
-          <div className="flex items-center gap-6">
-            <label className="inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only" checked={uniqueToggle} onChange={() => setUniqueToggle(!uniqueToggle)} />
-              <div className={`w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 ${uniqueToggle ? 'bg-[#0A66C2]' : ''}`}>
-                <div className={`bg-white w-4 h-4 rounded-full shadow transform ${uniqueToggle ? 'translate-x-4' : ''}`}></div>
-              </div>
-              <span className="ml-2 text-sm font-medium">{uniqueToggle ? 'On' : 'Off'}</span>
-            </label>
-
-            <button className="relative p-2 hover:bg-gray-100 rounded-lg">🔔</button>
-            <div className="w-10 h-10 bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] rounded-full"></div>
-          </div>
-        </div>
-      </nav>
 
       <div className="max-w-7xl mx-auto p-6">
 

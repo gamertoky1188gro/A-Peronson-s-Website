@@ -3,22 +3,16 @@ import { Link } from 'react-router-dom'
 import FloatingAssistant from '../components/FloatingAssistant'
 
 export default function ProductManagement(){
-  const [products, setProducts] = useState([
+  const [products] = useState([
     { id: 'P-100', title: 'Pique Polo', category: 'Knitwear', moq: 200, price: '$3 - $5' },
     { id: 'P-101', title: 'Denim Jacket', category: 'Woven', moq: 300, price: '$15 - $25' },
   ])
 
   return (
     <div className="min-h-screen bg-white text-[#1A1A1A]">
-      <nav className="sticky top-0 z-50 bg-white border-b">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-[#0A66C2]">GarTexHub</Link>
-          <div className="flex items-center gap-4">
-            <Link to="/product-management" className="text-sm font-semibold text-[#0A66C2]">Products</Link>
-            <Link to="/feed" className="text-sm">Feed</Link>
-          </div>
-        </div>
-      </nav>
+      
+      {/* Shared global NavBar */}
+
 
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-4">

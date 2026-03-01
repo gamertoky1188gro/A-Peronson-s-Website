@@ -163,22 +163,9 @@ export default function Pricing(){
     <div className="bg-gray-50 text-gray-900 min-h-screen">
 
       {/* NAVBAR */}
-      <nav className="sticky top-0 z-50 bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center space-x-3">
-              <span className="font-bold text-lg text-[#0A66C2]">GarTexHub</span>
-            </Link>
-            <div className="hidden md:flex items-center space-x-6">
-              <Link to="/feed" className="text-gray-700 hover:text-[#0A66C2]">Feed</Link>
-              <Link to="/search" className="text-gray-700 hover:text-[#0A66C2]">Search</Link>
-              <Link to="/pricing" className="text-gray-700 hover:text-[#0A66C2]">Pricing</Link>
-              <Link to="/login" className="px-4 py-2 rounded-md border border-[#0A66C2] text-[#0A66C2] bg-transparent hover:bg-[#F4F9FF]">Login</Link>
-              <Link to="/signup" className="px-4 py-2 rounded-md bg-[#0A66C2] text-white hover:bg-[#083B75]">Sign Up</Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      
+      {/* Shared global NavBar */}
+
 
       {/* HERO */}
       <header className="bg-white py-12">

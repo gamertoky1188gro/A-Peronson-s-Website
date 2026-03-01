@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import FloatingAssistant from '../components/FloatingAssistant'
 
 export default function ContractVault(){
-  const [query, setQuery] = useState('')
   const [filter, setFilter] = useState('all')
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
@@ -17,20 +16,9 @@ export default function ContractVault(){
 
   return (
     <div className="min-h-screen bg-white text-[#1A1A1A]">
-      <nav className="sticky top-0 z-50 bg-[#0F3D91] text-white">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold">GarTexHub</Link>
-          <div className="flex items-center gap-4">
-            <input placeholder="Search contracts..." value={query} onChange={(e)=>setQuery(e.target.value)} className="px-3 py-2 rounded" />
-            <label className="flex items-center gap-2 text-sm">
-              <span className="text-white text-xs">Unique</span>
-              <input type="checkbox" className="h-4 w-8" />
-            </label>
-            <Link to="/notifications" className="text-white">🔔</Link>
-            <Link to="/owner" className="text-white">👤</Link>
-          </div>
-        </div>
-      </nav>
+      
+      {/* Shared global NavBar */}
+
 
       <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
         <aside className="lg:col-span-1">
