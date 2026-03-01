@@ -3,22 +3,16 @@ import { Link } from 'react-router-dom'
 import FloatingAssistant from '../components/FloatingAssistant'
 
 export default function ProductManagement(){
-  const [products, setProducts] = useState([
+  const [products] = useState([
     { id: 'P-100', title: 'Pique Polo', category: 'Knitwear', moq: 200, price: '$3 - $5' },
     { id: 'P-101', title: 'Denim Jacket', category: 'Woven', moq: 300, price: '$15 - $25' },
   ])
 
   return (
-    <div className="min-h-screen bg-white text-[#1A1A1A]">
-      <nav className="sticky top-0 z-50 bg-white border-b">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-[#0A66C2]">GarTexHub</Link>
-          <div className="flex items-center gap-4">
-            <Link to="/product-management" className="text-sm font-semibold text-[#0A66C2]">Products</Link>
-            <Link to="/feed" className="text-sm">Feed</Link>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
+      
+      {/* Shared global NavBar */}
+
 
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-4">
@@ -34,7 +28,7 @@ export default function ProductManagement(){
 
         <div className="space-y-3">
           {products.map(p => (
-            <div key={p.id} className="bg-white border rounded-lg p-4 shadow-sm flex items-center justify-between">
+            <div key={p.id} className="bg-white neo-panel cyberpunk-card border rounded-lg p-4 shadow-sm flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-20 h-16 bg-gray-100 rounded"></div>
                 <div>

@@ -5,7 +5,7 @@ import FloatingAssistant from '../components/FloatingAssistant'
 export default function CallInterface(){
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center">
-      <div className="bg-white rounded-lg w-full max-w-4xl p-4">
+      <div className="bg-white neo-panel cyberpunk-card rounded-lg w-full max-w-4xl p-4">
         <div className="flex items-center justify-between mb-3">
           <div>
             <div className="font-semibold">Meeting: Supplier Intro</div>

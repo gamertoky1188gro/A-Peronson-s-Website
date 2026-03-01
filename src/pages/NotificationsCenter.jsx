@@ -11,27 +11,10 @@ export default function NotificationsCenter(){
   ]
 
   return (
-    <div className="min-h-screen bg-white">
-      <nav className="sticky top-0 z-50 bg-white border-b">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-[#0A66C2]">GarTexHub</Link>
-          <div className="flex items-center gap-4">
-            <input placeholder="Search notifications..." className="px-3 py-2 rounded" />
-            <label className="flex items-center gap-2 text-sm">
-              <span className="text-gray-700 text-xs">Unique</span>
-              <input type="checkbox" className="h-4 w-8" />
-            </label>
-            <Link to="/feed" className="text-sm">Feed</Link>
-            <Link to="/contracts" className="text-sm">Contracts</Link>
-            <Link to="/owner" className="text-sm">Owner</Link>
-            <div className="relative">
-              <button className="p-2 rounded-full hover:bg-gray-100">🔔</button>
-              <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1">3</span>
-            </div>
-            <div className="w-9 h-9 bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] rounded-full"></div>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card">
+      
+      {/* Shared global NavBar */}
+
 
       <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
         <main className="lg:col-span-3">
@@ -53,7 +36,7 @@ export default function NotificationsCenter(){
 
           <div className="space-y-3">
             {items.filter(it => (tab==='all' || it.type===tab) && (!unreadOnly || it.unread)).map(i => (
-              <div key={i.id} className="bg-white border rounded p-3 flex items-center justify-between hover:bg-[#F4F9FF]">
+              <div key={i.id} className="bg-white neo-panel cyberpunk-card border rounded p-3 flex items-center justify-between hover:bg-[#F4F9FF]">
                 <div>
                   <div className="font-semibold">{i.title}</div>
                   <div className="text-sm text-[#5A5A5A]">{i.time}</div>
@@ -67,7 +50,7 @@ export default function NotificationsCenter(){
         </main>
 
         <aside className="lg:col-span-1">
-          <div className="bg-white rounded-xl shadow p-4">
+          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow p-4">
             <h4 className="font-semibold mb-2">Filters</h4>
             <label className="flex items-center gap-2"><input type="checkbox" checked={unreadOnly} onChange={(e)=>setUnreadOnly(e.target.checked)} /> Unread</label>
             <div className="mt-3">
