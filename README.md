@@ -74,3 +74,8 @@ What it does:
 2. Starts backend (`npm run server`)
 3. Waits for backend + dist readiness
 4. Launches Electron using `dist/index.html`
+
+
+### Electron troubleshooting
+- The build now uses relative asset paths (`vite base: ./`) so Electron `loadFile()` can resolve JS/CSS correctly.
+- A CSP meta tag is included in `index.html` to reduce Electron security warnings.
