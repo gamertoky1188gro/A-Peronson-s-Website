@@ -4,8 +4,6 @@ import FloatingAssistant from '../components/FloatingAssistant'
 
 export default function FactoryProfile() {
   const [activeTab, setActiveTab] = useState('overview')
-  const [uniqueToggle, setUniqueToggle] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
 
   const factory = {
     name: 'Premier Textile Mills',
@@ -33,40 +31,17 @@ export default function FactoryProfile() {
   ]
 
   return (
-    <div className="min-h-screen bg-white text-[#1A1A1A]">
+    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
       {/* TOP NAVIGATION */}
-      <nav className="sticky top-0 z-50 bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-[#0A66C2]">GarTexHub</Link>
+      
+      {/* Shared global NavBar */}
 
-          <input
-            type="text"
-            placeholder="Global Search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 mx-8 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
-          />
-
-          <div className="flex items-center gap-6">
-            <label className="inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only" checked={uniqueToggle} onChange={() => setUniqueToggle(!uniqueToggle)} />
-              <div className={`w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 ${uniqueToggle ? 'bg-[#0A66C2]' : ''}`}>
-                <div className={`bg-white w-4 h-4 rounded-full shadow transform ${uniqueToggle ? 'translate-x-4' : ''}`}></div>
-              </div>
-              <span className="ml-2 text-sm font-medium">{uniqueToggle ? 'On' : 'Off'}</span>
-            </label>
-
-            <button className="relative p-2 hover:bg-gray-100 rounded-lg">🔔</button>
-            <div className="w-10 h-10 bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] rounded-full"></div>
-          </div>
-        </div>
-      </nav>
 
       <div className="max-w-7xl mx-auto p-6">
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <aside className="lg:col-span-1 sticky top-6 self-start">
-            <div className="bg-white rounded-xl shadow-md p-6">
+            <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
               <div className="flex items-center gap-4">
                 <div className="w-20 h-20 bg-gray-100 rounded-lg"></div>
                 <div>
@@ -96,13 +71,13 @@ export default function FactoryProfile() {
 
               <div className="mt-4 flex gap-2">
                 <Link to="/factory/chat" className="flex-1 bg-[#0A66C2] text-white py-2 rounded-xl text-center hover:bg-[#083B75]">Send Message</Link>
-                <Link to="/factory/products" className="flex-1 border border-gray-200 py-2 rounded-xl text-center hover:bg-gray-50">View Products</Link>
+                <Link to="/factory/products" className="flex-1 border border-gray-200 py-2 rounded-xl text-center hover:bg-gray-50 neo-panel cyberpunk-card">View Products</Link>
               </div>
             </div>
           </aside>
 
           <main className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-xl shadow-md p-4">
+            <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-4">
               <div className="flex gap-4 border-b border-gray-100 pb-3 mb-3">
                 <button onClick={() => setActiveTab('overview')} className={`px-4 py-2 ${activeTab === 'overview' ? 'border-b-2 border-[#0A66C2] text-[#0A66C2]' : 'text-[#5A5A5A]'}`}>Overview</button>
                 <button onClick={() => setActiveTab('products')} className={`px-4 py-2 ${activeTab === 'products' ? 'border-b-2 border-[#0A66C2] text-[#0A66C2]' : 'text-[#5A5A5A]'}`}>Products</button>
@@ -140,7 +115,7 @@ export default function FactoryProfile() {
               {activeTab === 'products' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-3">
                   {products.map(p => (
-                    <div key={p.id} className="bg-white border border-gray-100 rounded-lg p-3">
+                    <div key={p.id} className="bg-white neo-panel cyberpunk-card border border-gray-100 rounded-lg p-3">
                       <div className="w-full h-36 bg-gray-100 rounded-md mb-2"></div>
                       <div className="font-semibold">{p.name}</div>
                       <div className="text-sm text-[#5A5A5A]">{p.category} • MOQ {p.moq}</div>

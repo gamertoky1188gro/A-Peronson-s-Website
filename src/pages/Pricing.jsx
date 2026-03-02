@@ -83,7 +83,7 @@ function SubscriptionArea(){
   }
 
   return (
-    <div className="bg-white border rounded-lg p-6">
+    <div className="bg-white neo-panel cyberpunk-card border rounded-lg p-6">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-bold">Subscription Packages</h3>
@@ -160,28 +160,15 @@ function SubscriptionArea(){
 
 export default function Pricing(){
   return (
-    <div className="bg-gray-50 text-gray-900 min-h-screen">
+    <div className="bg-gray-50 neo-panel cyberpunk-card text-gray-900 min-h-screen">
 
       {/* NAVBAR */}
-      <nav className="sticky top-0 z-50 bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center space-x-3">
-              <span className="font-bold text-lg text-[#0A66C2]">GarTexHub</span>
-            </Link>
-            <div className="hidden md:flex items-center space-x-6">
-              <Link to="/feed" className="text-gray-700 hover:text-[#0A66C2]">Feed</Link>
-              <Link to="/search" className="text-gray-700 hover:text-[#0A66C2]">Search</Link>
-              <Link to="/pricing" className="text-gray-700 hover:text-[#0A66C2]">Pricing</Link>
-              <Link to="/login" className="px-4 py-2 rounded-md border border-[#0A66C2] text-[#0A66C2] bg-transparent hover:bg-[#F4F9FF]">Login</Link>
-              <Link to="/signup" className="px-4 py-2 rounded-md bg-[#0A66C2] text-white hover:bg-[#083B75]">Sign Up</Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      
+      {/* Shared global NavBar */}
+
 
       {/* HERO */}
-      <header className="bg-white py-12">
+      <header className="bg-white neo-panel cyberpunk-card py-12">
         <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-8 items-center">
           <div>
             <h1 className="text-3xl md:text-4xl font-extrabold">Power Your Buying House with Structured Growth</h1>
@@ -200,15 +187,15 @@ export default function Pricing(){
           </div>
 
           <div>
-            <div className="bg-gray-50 border rounded-lg p-6 shadow-sm">
+            <div className="bg-gray-50 neo-panel cyberpunk-card border rounded-lg p-6 shadow-sm">
               <div className="flex items-center justify-between mb-3">
                 <div className="h-4 w-24 bg-gray-100 rounded" />
                 <div className="h-4 w-16 bg-gray-100 rounded" />
               </div>
               <div className="space-y-3">
-                <div className="h-12 bg-white border rounded" />
-                <div className="h-12 bg-white border rounded" />
-                <div className="h-12 bg-white border rounded" />
+                <div className="h-12 bg-white neo-panel cyberpunk-card border rounded" />
+                <div className="h-12 bg-white neo-panel cyberpunk-card border rounded" />
+                <div className="h-12 bg-white neo-panel cyberpunk-card border rounded" />
               </div>
             </div>
           </div>
@@ -226,10 +213,10 @@ export default function Pricing(){
 
       <section className="max-w-6xl mx-auto px-4 py-12">
         <h2 className="text-2xl font-bold text-center">Feature Comparison</h2>
-        <div className="mt-6 overflow-x-auto bg-white border rounded-lg">
+        <div className="mt-6 overflow-x-auto bg-white neo-panel cyberpunk-card border rounded-lg">
           <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-gray-50">
+            <tr className="bg-gray-50 neo-panel cyberpunk-card">
               <th className="py-4 px-6">Feature</th>
               <th className="py-4 px-6">Free BH</th>
               <th className="py-4 px-6">Enterprise BH</th>
@@ -287,7 +274,7 @@ export default function Pricing(){
       </section>
 
       {/* WHY UPGRADE */}
-      <section className="py-12 bg-white">
+      <section className="py-12 bg-white neo-panel cyberpunk-card">
         <div className="max-w-6xl mx-auto px-4 text-center">
           <h2 className="text-2xl font-bold">Why Enterprise Matters?</h2>
           <div className="mt-8 grid md:grid-cols-3 gap-6">
@@ -308,7 +295,7 @@ export default function Pricing(){
       </section>
 
       {/* FAQ */}
-      <section className="py-12 bg-gray-50">
+      <section className="py-12 bg-gray-50 neo-panel cyberpunk-card">
         <div className="max-w-3xl mx-auto px-4">
           <h3 className="text-2xl font-bold text-center">FAQ</h3>
           <div className="mt-6 space-y-4">
@@ -343,7 +330,7 @@ export default function Pricing(){
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-white border-t">
+      <footer className="bg-white neo-panel cyberpunk-card border-t">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid md:grid-cols-3 gap-6">
           <div>
             <div className="font-bold text-lg">GarTexHub</div>

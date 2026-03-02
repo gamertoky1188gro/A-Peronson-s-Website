@@ -10,20 +10,14 @@ export default function ChatInterface(){
   ]
 
   return (
-    <div className="min-h-screen bg-white text-[#1A1A1A]">
-      <nav className="sticky top-0 z-50 bg-white border-b">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-[#0A66C2]">GarTexHub</Link>
-          <div className="flex items-center gap-4">
-            <Link to="/chat" className="text-sm font-semibold text-[#0A66C2]">Chat</Link>
-            <Link to="/feed" className="text-sm">Feed</Link>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
+      
+      {/* Shared global NavBar */}
+
 
       <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <aside className="lg:col-span-1">
-          <div className="bg-white rounded-xl shadow p-4">
+          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow p-4">
             <input className="w-full border px-3 py-2 rounded" placeholder="Search chats" />
             <div className="mt-4 space-y-2">
               {chats.map(c => (
@@ -42,7 +36,7 @@ export default function ChatInterface(){
         </aside>
 
         <main className="lg:col-span-2">
-          <div className="bg-white rounded-xl shadow p-4 h-[60vh] flex flex-col">
+          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow p-4 h-[60vh] flex flex-col">
             {active? (
               <>
                 <div className="flex items-center justify-between border-b pb-3 mb-3">
@@ -58,7 +52,7 @@ export default function ChatInterface(){
                 </div>
                 <div className="flex-1 overflow-auto mb-3">
                   <div className="space-y-3">
-                    <div className="self-start bg-white p-2 rounded shadow">Hello, we can supply samples.</div>
+                    <div className="self-start bg-white neo-panel cyberpunk-card p-2 rounded shadow">Hello, we can supply samples.</div>
                     <div className="self-end bg-[#0A66C2] text-white p-2 rounded">Thanks — please send specs.</div>
                     <div className="text-center text-sm text-[#5A5A5A]">System: Lead claimed by Agent Riz</div>
                   </div>
