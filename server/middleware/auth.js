@@ -1,9 +1,16 @@
 import jwt from 'jsonwebtoken'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'mvp-dev-secret'
+const JWT_ISSUER = process.env.JWT_ISSUER || 'gartexhub-api'
+const JWT_AUDIENCE = process.env.JWT_AUDIENCE || 'gartexhub-client'
 
 export function signToken(user) {
-  return jwt.sign({ id: user.id, role: user.role, email: user.email }, JWT_SECRET, { expiresIn: '7d' })
+  return jwt.sign({ id: user.id, role: user.role, email: user.email }, JWT_SECRET, {
+    expiresIn: '12h',
+    issuer: JWT_ISSUER,
+    audience: JWT_AUDIENCE,
+    subject: user.id,
+  })
 }
 
 export function requireAuth(req, res, next) {
@@ -12,7 +19,10 @@ export function requireAuth(req, res, next) {
   if (!token) return res.status(401).json({ error: 'Unauthorized' })
 
   try {
-    req.user = jwt.verify(token, JWT_SECRET)
+    req.user = jwt.verify(token, JWT_SECRET, {
+      issuer: JWT_ISSUER,
+      audience: JWT_AUDIENCE,
+    })
     return next()
   } catch {
     return res.status(401).json({ error: 'Invalid token' })

@@ -1,4 +1,4 @@
-import { findUserByEmail, registerUser, verifyPassword } from '../services/userService.js'
+import { findUserByEmail, findUserById, registerUser, verifyPassword } from '../services/userService.js'
 import { signToken } from '../middleware/auth.js'
 import { requireFields, validateEmail, validateRole } from '../utils/validators.js'
 
@@ -29,6 +29,15 @@ export async function login(req, res) {
   const { password_hash: _passwordHash, ...safeUser } = user
   const token = signToken(safeUser)
   return res.json({ user: safeUser, token })
+}
+
+
+export async function me(req, res) {
+  const user = await findUserById(req.user.id)
+  if (!user) return res.status(404).json({ error: 'User not found' })
+
+  const { password_hash: _passwordHash, ...safeUser } = user
+  return res.json({ user: safeUser })
 }
 
 export async function logout(req, res) {

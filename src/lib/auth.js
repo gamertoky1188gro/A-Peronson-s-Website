@@ -58,3 +58,9 @@ export function getRoleHome(role) {
       return '/feed'
   }
 }
+
+export async function fetchCurrentUser(token = getToken()) {
+  if (!token) return null
+  const data = await apiRequest('/auth/me', { token })
+  return data?.user || null
+}
