@@ -30,3 +30,16 @@ export async function deleteRequirement(req, res) {
   if (!ok) return res.status(404).json({ error: 'Requirement not found' })
   return res.json({ ok: true })
 }
+
+
+export async function searchRequirements(req, res) {
+  const all = await listRequirements({})
+  const q = String(req.query.q || '').toLowerCase().trim()
+  const results = all.filter((r) => {
+    if (q && !`${r.category} ${r.material} ${r.custom_description}`.toLowerCase().includes(q)) return false
+    if (req.query.category && String(r.category).toLowerCase() !== String(req.query.category).toLowerCase()) return false
+    if (req.query.verifiedOnly === 'true' && !r.verified) return false
+    return true
+  })
+  return res.json(results)
+}

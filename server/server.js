@@ -9,6 +9,7 @@ import adminRoutes from './routes/adminRoutes.js'
 import systemRoutes from './routes/systemRoutes.js'
 import notificationRoutes from './routes/notificationRoutes.js'
 import socialRoutes from './routes/socialRoutes.js'
+import searchRoutes from './routes/searchRoutes.js'
 import verificationRoutes from './routes/verificationRoutes.js'
 import subscriptionRoutes from './routes/subscriptionRoutes.js'
 import feedRoutes from './routes/feedRoutes.js'
@@ -47,6 +48,7 @@ app.use('/api/analytics', analyticsRoutes)
 app.use('/api/system', systemRoutes)
 app.use('/api/notifications', notificationRoutes)
 app.use('/api/social', socialRoutes)
+app.use('/api/search', searchRoutes)
 app.use(errorHandler)
 
 app.listen(PORT, () => {

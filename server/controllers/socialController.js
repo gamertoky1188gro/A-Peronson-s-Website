@@ -20,3 +20,14 @@ export async function createReport(req, res) {
 export async function getEntityInteractions(req, res) {
   return res.json(await listInteractions(req.params.entityType, req.params.entityId))
 }
+
+
+export async function createAction(req, res) {
+  const { entityType, entityId, action } = req.body || {}
+  if (!entityType || !entityId || !action) return res.status(400).json({ error: 'entityType, entityId, action required' })
+  if (action === 'comment') return createComment({ ...req, params: { entityType, entityId }, body: { text: 'Comment noted' } }, res)
+  if (action === 'share') return createShare({ ...req, params: { entityType, entityId } }, res)
+  if (action === 'report') return createReport({ ...req, params: { entityType, entityId }, body: { reason: 'Reported from feed action' } }, res)
+  const row = await addAction(req.user, entityType, entityId, action)
+  return res.status(201).json(row)
+}
