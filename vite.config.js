@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: './',
   plugins: [
     tailwindcss(),
     react({
@@ -13,6 +14,6 @@ export default defineConfig({
     }),
   ],
   server: {
-    allowedHosts: ["liable-marketplace-looked-fda.trycloudflare.com"],
-  }
+    allowedHosts: ['liable-marketplace-looked-fda.trycloudflare.com'],
+  },
 })

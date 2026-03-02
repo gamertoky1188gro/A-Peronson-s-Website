@@ -1,1 +1,333 @@
 @import "tailwindcss";
+
+:root {
+  --bg: #f4f7fb;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #475569;
+  --border: #cbd5e1;
+}
+
+:root.dark {
+  --bg: #070b1f;
+  --surface: rgba(14, 18, 48, 0.82);
+  --text: #f0eeff;
+  --muted: #b5b8e8;
+  --border: rgba(167, 139, 250, 0.42);
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, sans-serif;
+}
+
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.neo-page {
+  position: relative;
+  isolation: isolate;
+}
+
+.neo-page::before {
+  content: '';
+  position: fixed;
+  inset: -20% -10% auto -10%;
+  height: 65vh;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+  background:
+    conic-gradient(from 140deg at 30% 40%, rgba(139, 92, 246, 0.3), rgba(34, 211, 238, 0.24), rgba(236, 72, 153, 0.22), rgba(139, 92, 246, 0.3));
+  filter: blur(38px);
+  transition: opacity 240ms ease;
+}
+
+.neo-panel {
+  border-radius: 14px;
+}
+
+.cyberpunk-page {
+  position: relative;
+}
+
+.cyberpunk-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.cyberpunk-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(120deg, transparent 0%, rgba(196, 181, 253, 0.12) 28%, transparent 62%),
+    radial-gradient(circle at 92% 8%, rgba(34, 211, 238, 0.2), transparent 46%);
+  transition: opacity 220ms ease;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.top-actions { display: flex; gap: 0.5rem; }
+.feedback { color: var(--muted); }
+
+.grid { display: grid; gap: 1rem; }
+.two-col { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.full { grid-column: 1 / -1; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.stack { display: grid; gap: 0.5rem; }
+
+/* Fully modernized base for components/elements */
+.card,
+.bg-white,
+.bg-gray-50,
+.bg-gray-100,
+section,
+article,
+aside,
+dialog,
+[class*='rounded'] {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    0 14px 32px rgba(15, 23, 42, 0.1);
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease, filter 220ms ease;
+}
+
+button,
+.btn,
+a[class*='px-'],
+a[class*='py-'],
+a[class*='btn'] {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.58),
+    0 10px 20px rgba(15, 23, 42, 0.12);
+  transition: transform 160ms ease, box-shadow 180ms ease, filter 180ms ease, background 180ms ease;
+}
+
+button:hover,
+.btn:hover,
+a:hover {
+  transform: translateY(-2px);
+}
+
+input, select, textarea {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 95%, transparent);
+  color: var(--text);
+  padding: 0.6rem 0.75rem;
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 8px 18px rgba(15, 23, 42, 0.06);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.16), 0 10px 28px rgba(14, 165, 233, 0.16);
+}
+
+img,
+video,
+canvas {
+  border-radius: 14px;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.2);
+}
+
+table,
+thead,
+tbody,
+tr,
+th,
+td {
+  border-color: var(--border);
+}
+
+button { cursor: pointer; }
+ul { padding-left: 1rem; }
+li { margin: 0.35rem 0; }
+
+/* Shared 3D dark neon styling across every page */
+:root.dark body {
+  background:
+    radial-gradient(circle at 15% 12%, rgba(139, 92, 246, 0.34) 0%, transparent 34%),
+    radial-gradient(circle at 86% 14%, rgba(34, 211, 238, 0.24) 0%, transparent 36%),
+    radial-gradient(circle at 48% 84%, rgba(236, 72, 153, 0.2) 0%, transparent 34%),
+    linear-gradient(145deg, #050611 0%, #130a2b 50%, #0a1334 100%);
+}
+
+:root.dark .neo-page::before {
+  opacity: 0.8;
+}
+
+:root.dark .cyberpunk-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      110deg,
+      rgba(139, 92, 246, 0.05) 0 2px,
+      rgba(3, 8, 26, 0) 2px 22px
+    ),
+    radial-gradient(circle at 14% 82%, rgba(168, 85, 247, 0.2), transparent 38%),
+    radial-gradient(circle at 84% 20%, rgba(6, 182, 212, 0.18), transparent 34%);
+  mix-blend-mode: screen;
+}
+
+:root.dark .neo-panel {
+  background-image:
+    linear-gradient(145deg, rgba(129, 70, 245, 0.16), rgba(18, 40, 81, 0.4) 48%, rgba(236, 72, 153, 0.14));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 16px 34px rgba(0, 0, 0, 0.44),
+    0 0 22px rgba(139, 92, 246, 0.34),
+    0 0 36px rgba(34, 211, 238, 0.24);
+}
+
+:root.dark .cyberpunk-card {
+  border: 1px solid rgba(192, 132, 252, 0.38);
+  background:
+    linear-gradient(160deg, rgba(53, 25, 96, 0.48), rgba(17, 27, 64, 0.54) 52%, rgba(22, 63, 84, 0.35));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    inset 0 -1px 0 rgba(34, 211, 238, 0.14),
+    0 18px 34px rgba(3, 7, 18, 0.62),
+    0 0 26px rgba(168, 85, 247, 0.34),
+    0 0 40px rgba(6, 182, 212, 0.2);
+}
+
+:root.dark .cyberpunk-card::after {
+  opacity: 0.95;
+}
+
+:root.dark .cyberpunk-card:hover {
+  transform: translateY(-2px) scale(1.005);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 20px 34px rgba(4, 6, 15, 0.68),
+    0 0 30px rgba(168, 85, 247, 0.5),
+    0 0 46px rgba(34, 211, 238, 0.28),
+    0 0 54px rgba(236, 72, 153, 0.25);
+}
+
+:root.dark .card,
+:root.dark .bg-white,
+:root.dark .bg-gray-50,
+:root.dark .bg-gray-100,
+:root.dark .bg-slate-900,
+:root.dark nav,
+:root.dark header,
+:root.dark footer,
+:root.dark section,
+:root.dark article,
+:root.dark aside,
+:root.dark [class*='rounded'] {
+  background:
+    linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(14, 165, 233, 0.1) 35%, rgba(236, 72, 153, 0.12) 100%),
+    color-mix(in srgb, var(--surface) 94%, transparent);
+  border-color: rgba(167, 139, 250, 0.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 16px 30px rgba(0, 0, 0, 0.42),
+    0 0 24px rgba(139, 92, 246, 0.28),
+    0 0 38px rgba(34, 211, 238, 0.2),
+    0 0 46px rgba(236, 72, 153, 0.18);
+  transform: translateZ(0);
+}
+
+:root.dark button,
+:root.dark .btn,
+:root.dark [role='button'],
+:root.dark a[class*='px-'],
+:root.dark a[class*='py-'] {
+  background-image: linear-gradient(120deg, rgba(124, 58, 237, 0.82) 0%, rgba(6, 182, 212, 0.7) 50%, rgba(236, 72, 153, 0.74) 100%);
+  color: #f8f5ff;
+  border-color: rgba(196, 181, 253, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 10px 22px rgba(0, 0, 0, 0.38),
+    0 0 16px rgba(139, 92, 246, 0.42),
+    0 0 24px rgba(34, 211, 238, 0.3);
+}
+
+:root.dark button:hover,
+:root.dark .btn:hover,
+:root.dark a:hover {
+  transform: translateY(-2px) scale(1.01);
+  filter: saturate(1.2) brightness(1.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 14px 24px rgba(0, 0, 0, 0.44),
+    0 0 22px rgba(139, 92, 246, 0.55),
+    0 0 30px rgba(236, 72, 153, 0.36),
+    0 0 34px rgba(34, 211, 238, 0.38);
+}
+
+:root.dark input,
+:root.dark select,
+:root.dark textarea {
+  background:
+    linear-gradient(145deg, rgba(41, 22, 85, 0.55), rgba(7, 31, 62, 0.66));
+  color: #f0eeff;
+  border-color: rgba(167, 139, 250, 0.46);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 12px 22px rgba(0, 0, 0, 0.35),
+    0 0 18px rgba(139, 92, 246, 0.26);
+}
+
+:root.dark input:focus,
+:root.dark select:focus,
+:root.dark textarea:focus {
+  box-shadow:
+    0 0 0 3px rgba(167, 139, 250, 0.24),
+    0 0 18px rgba(139, 92, 246, 0.46),
+    0 0 28px rgba(34, 211, 238, 0.35);
+}
+
+:root.dark h1,
+:root.dark h2,
+:root.dark h3,
+:root.dark h4,
+:root.dark h5,
+:root.dark h6 {
+  color: #efe9ff;
+  text-shadow: 0 0 10px rgba(139, 92, 246, 0.35), 0 0 16px rgba(34, 211, 238, 0.18);
+}
+
+:root.dark .text-purple-600,
+:root.dark .text-purple-700,
+:root.dark .text-violet-600,
+:root.dark .text-fuchsia-600 {
+  color: #c4b5fd !important;
+  text-shadow: 0 0 12px rgba(167, 139, 250, 0.4);
+}
+
+@media (max-width: 900px) {
+  .two-col { grid-template-columns: 1fr; }
+}

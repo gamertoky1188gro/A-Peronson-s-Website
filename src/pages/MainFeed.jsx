@@ -1,11 +1,13 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import FloatingAssistant from '../components/FloatingAssistant'
+import { apiRequest, getToken } from '../lib/auth'
 
 export default function MainFeed() {
   const [uniqueToggle, setUniqueToggle] = useState(false)
   const [activeFilter, setActiveFilter] = useState('all')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [interactionState, setInteractionState] = useState({})
+  const [commentDraft, setCommentDraft] = useState({})
 
   // Sample posts/cards
   const posts = [
@@ -44,40 +46,44 @@ export default function MainFeed() {
     },
   ]
 
+
+
+  useEffect(() => {
+    const token = getToken()
+    if (!token) return
+    Promise.all(posts.map((post) => apiRequest(`/social/${post.type}/${post.id}`, { token }).catch(() => null))).then((rows) => {
+      const next = {}
+      rows.forEach((row, i) => {
+        if (!row) return
+        next[posts[i].id] = row
+      })
+      setInteractionState(next)
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  async function doAction(post, action) {
+    const token = getToken()
+    if (!token) return
+    const path = `/social/${post.type}/${post.id}/${action}`
+    const body = action === 'comment' ? { text: commentDraft[post.id] || '' } : {}
+    await apiRequest(path, { method: 'POST', token, body })
+    const latest = await apiRequest(`/social/${post.type}/${post.id}`, { token })
+    setInteractionState((prev) => ({ ...prev, [post.id]: latest }))
+    if (action === 'comment') setCommentDraft((prev) => ({ ...prev, [post.id]: '' }))
+  }
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen neo-page cyberpunk-page bg-gray-50 neo-panel cyberpunk-card">
       {/* TOP NAVBAR */}
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-[#0A66C2]">GarTexHub</Link>
-          <div className="flex-1 mx-8">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search garments, textile, factories, requests..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
-            />
-          </div>
-          <div className="flex items-center gap-4">
-            <label className="inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only" checked={uniqueToggle} onChange={() => setUniqueToggle(!uniqueToggle)} />
-              <div className={`w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 ${uniqueToggle ? 'bg-[#0A66C2]' : ''}`}>
-                <div className={`bg-white w-4 h-4 rounded-full shadow transform ${uniqueToggle ? 'translate-x-4' : ''}`}></div>
-              </div>
-              <span className="ml-2 text-sm font-medium">{uniqueToggle ? 'On' : 'Off'}</span>
-            </label>
-            <button className="relative p-2 hover:bg-gray-100 rounded-lg">🔔</button>
-            <Link to="/buyer/profile" className="w-10 h-10 bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] rounded-full block"></Link>
-          </div>
-        </div>
-      </nav>
+      
+      {/* Shared global NavBar */}
+
 
       <div className="max-w-7xl mx-auto grid grid-cols-12 gap-4 p-4">
         {/* LEFT SIDEBAR */}
         <div className="col-span-3 hidden lg:block space-y-4">
           {/* Profile Card */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-4">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full"></div>
               <div>
@@ -93,7 +99,7 @@ export default function MainFeed() {
           </div>
 
           {/* Unique Toggle */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-semibold text-gray-900 text-sm">Unique Algorithm</p>
@@ -106,7 +112,7 @@ export default function MainFeed() {
                 }`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white neo-panel cyberpunk-card transition ${
                     uniqueToggle ? 'translate-x-6' : 'translate-x-1'
                   }`}
                 />
@@ -115,7 +121,7 @@ export default function MainFeed() {
           </div>
 
           {/* Quick Filters */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-4">
             <p className="font-semibold text-gray-900 text-sm mb-3">Quick Filters</p>
             <div className="space-y-2">
               <button
@@ -149,7 +155,7 @@ export default function MainFeed() {
         {/* MAIN FEED */}
         <div className="col-span-12 lg:col-span-6 space-y-4">
           {posts.map(post => (
-            <div key={post.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition">
+            <div key={post.id} className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition">
               {/* Header */}
               <div className="p-4 border-b border-gray-100">
                 <div className="flex items-center justify-between">
@@ -189,11 +195,11 @@ export default function MainFeed() {
               </div>
 
               {/* Footer Actions */}
-              <div className="px-4 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between text-sm text-gray-600">
+              <div className="px-4 py-3 bg-gray-50 neo-panel cyberpunk-card border-t border-gray-100 flex items-center justify-between text-sm text-gray-600">
                 <div className="flex gap-4">
-                  <button className="hover:text-blue-600 transition">💬 Comment</button>
-                  <button className="hover:text-blue-600 transition">↗️ Share</button>
-                  <button className="hover:text-blue-600 transition">⭐ Save</button>
+                  <button onClick={() => doAction(post, 'comment')} className="hover:text-blue-600 transition">💬 Comment ({interactionState[post.id]?.comments?.length || 0})</button>
+                  <button onClick={() => doAction(post, 'share')} className="hover:text-blue-600 transition">↗️ Share ({interactionState[post.id]?.share_count || 0})</button>
+                  <button onClick={() => doAction(post, 'report')} className="hover:text-blue-600 transition">🚩 Report ({interactionState[post.id]?.report_count || 0})</button>
                 </div>
                 {post.type === 'buyer-request' && (
                   <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition">
@@ -205,6 +211,10 @@ export default function MainFeed() {
                     Message
                   </button>
                 )}
+              </div>
+
+              <div className="px-4 pb-3">
+                <input value={commentDraft[post.id] || ''} onChange={(e) => setCommentDraft((prev) => ({ ...prev, [post.id]: e.target.value }))} placeholder="Write comment..." className="w-full px-3 py-2 border rounded-lg" />
               </div>
 
               {post.deadline && (
@@ -219,7 +229,7 @@ export default function MainFeed() {
         {/* RIGHT SIDEBAR */}
         <div className="col-span-3 hidden xl:block space-y-4">
           {/* Suggested Connections */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-4">
             <p className="font-semibold text-gray-900 mb-3">Suggested Connections</p>
             <div className="space-y-3">
               {[1, 2, 3].map(i => (
@@ -235,7 +245,7 @@ export default function MainFeed() {
           </div>
 
           {/* Trending Categories */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-4">
             <p className="font-semibold text-gray-900 mb-3">Trending Categories</p>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between text-gray-600">
@@ -254,7 +264,7 @@ export default function MainFeed() {
           </div>
 
           {/* Recently Active Buyers */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-4">
             <p className="font-semibold text-gray-900 mb-3">Recently Active Buyers</p>
             <div className="space-y-2 text-sm">
               {[1, 2, 3].map(i => (

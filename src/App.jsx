@@ -1,5 +1,6 @@
 import React from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import NavBar from './components/NavBar'
 import TexHub from './pages/TexHub'
 import Pricing from './pages/Pricing'
 import Login from './pages/auth/Login'
@@ -9,14 +10,10 @@ import SearchResults from './pages/SearchResults'
 import BuyerProfile from './pages/BuyerProfile'
 import FactoryProfile from './pages/FactoryProfile'
 import BuyingHouseProfile from './pages/BuyingHouseProfile'
-import OwnerDashboard from './pages/OwnerDashboard'
-import AgentDashboard from './pages/AgentDashboard'
 import MemberManagement from './pages/MemberManagement'
 import PartnerNetwork from './pages/PartnerNetwork'
 import ProductManagement from './pages/ProductManagement'
 import BuyerRequestManagement from './pages/BuyerRequestManagement'
-import ChatInterface from './pages/ChatInterface'
-import CallInterface from './pages/CallInterface'
 import HelpCenter from './pages/HelpCenter'
 import ContractVault from './pages/ContractVault'
 import NotificationsCenter from './pages/NotificationsCenter'
@@ -25,39 +22,78 @@ import Insights from './pages/Insights'
 import About from './pages/About'
 import Terms from './pages/Terms'
 import Privacy from './pages/Privacy'
-import NavBar from './components/NavBar'
+import ChatInterface from './pages/ChatInterface'
+import CallInterface from './pages/CallInterface'
+import OwnerDashboard from './pages/OwnerDashboard'
+import AgentDashboard from './pages/AgentDashboard'
+import MvpDashboard from './pages/MvpDashboard'
+import FloatingAssistant from './components/FloatingAssistant'
+import AccessDenied from './pages/AccessDenied'
+import { getCurrentUser } from './lib/auth'
+
+function ProtectedRoute({ children, roles }) {
+  const location = useLocation()
+  const user = getCurrentUser()
+
+  if (!user) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />
+  }
+
+  if (Array.isArray(roles) && roles.length && !roles.includes(user.role)) {
+    return <Navigate to="/access-denied" replace state={{ from: location.pathname }} />
+  }
+
+  return children
+}
+
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<TexHub />} />
+      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/help" element={<HelpCenter />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/access-denied" element={<AccessDenied />} />
+
+      <Route path="/feed" element={<ProtectedRoute><MainFeed /></ProtectedRoute>} />
+      <Route path="/search" element={<ProtectedRoute><SearchResults /></ProtectedRoute>} />
+      <Route path="/buyer/:id" element={<ProtectedRoute><BuyerProfile /></ProtectedRoute>} />
+      <Route path="/factory/:id" element={<ProtectedRoute><FactoryProfile /></ProtectedRoute>} />
+      <Route path="/buying-house/:id" element={<ProtectedRoute><BuyingHouseProfile /></ProtectedRoute>} />
+      <Route path="/partner-network" element={<ProtectedRoute roles={['buying_house', 'admin', 'factory']}><PartnerNetwork /></ProtectedRoute>} />
+      <Route path="/product-management" element={<ProtectedRoute roles={['factory', 'buying_house', 'admin']}><ProductManagement /></ProtectedRoute>} />
+      <Route path="/buyer-requests" element={<ProtectedRoute roles={['buyer', 'buying_house', 'admin']}><BuyerRequestManagement /></ProtectedRoute>} />
+      <Route path="/contracts" element={<ProtectedRoute><ContractVault /></ProtectedRoute>} />
+      <Route path="/notifications" element={<ProtectedRoute><NotificationsCenter /></ProtectedRoute>} />
+      <Route path="/chat" element={<ProtectedRoute><ChatInterface /></ProtectedRoute>} />
+      <Route path="/call" element={<ProtectedRoute><CallInterface /></ProtectedRoute>} />
+
+      <Route path="/member-management" element={<ProtectedRoute roles={['buying_house', 'factory', 'admin']}><MemberManagement /></ProtectedRoute>} />
+      <Route path="/org-settings" element={<ProtectedRoute roles={['buying_house', 'factory', 'admin']}><OrgSettings /></ProtectedRoute>} />
+      <Route path="/insights" element={<ProtectedRoute roles={['buying_house', 'admin']}><Insights /></ProtectedRoute>} />
+      <Route path="/owner" element={<ProtectedRoute roles={['buying_house', 'admin']}><OwnerDashboard /></ProtectedRoute>} />
+      <Route path="/agent" element={<ProtectedRoute roles={['buying_house', 'admin']}><AgentDashboard /></ProtectedRoute>} />
+
+      <Route path="/mvp" element={<MvpDashboard />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
+}
 
 function App() {
   return (
     <BrowserRouter>
-      <NavBar />
-      <Routes>
-        <Route path="/" element={<TexHub />} />
-        <Route path="/pricing" element={<Pricing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/feed" element={<MainFeed />} />
-        <Route path="/search" element={<SearchResults />} />
-        <Route path="/buyer/:id" element={<BuyerProfile />} />
-        <Route path="/factory/:id" element={<FactoryProfile />} />
-        <Route path="/buying-house/:id" element={<BuyingHouseProfile />} />
-        <Route path="/member-management" element={<MemberManagement />} />
-        <Route path="/partner-network" element={<PartnerNetwork />} />
-        <Route path="/product-management" element={<ProductManagement />} />
-        <Route path="/buyer-requests" element={<BuyerRequestManagement />} />
-        <Route path="/help" element={<HelpCenter />} />
-        <Route path="/contracts" element={<ContractVault />} />
-        <Route path="/notifications" element={<NotificationsCenter />} />
-        <Route path="/org-settings" element={<OrgSettings />} />
-        <Route path="/insights" element={<Insights />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/chat" element={<ChatInterface />} />
-        <Route path="/call" element={<CallInterface />} />
-        <Route path="/owner" element={<OwnerDashboard />} />
-        <Route path="/agent" element={<AgentDashboard />} />
-      </Routes>
+      <div className="app-shell min-h-screen">
+        <NavBar />
+        <main className="pb-10">
+          <AppRoutes />
+        </main>
+        <FloatingAssistant />
+      </div>
     </BrowserRouter>
   )
 }

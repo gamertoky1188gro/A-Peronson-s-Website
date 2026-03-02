@@ -10,20 +10,11 @@ export default function MemberManagement(){
   ]
 
   return (
-    <div className="min-h-screen bg-white text-[#1A1A1A]">
+    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-white border-b">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-[#0A66C2]">GarTexHub</Link>
-          <div className="flex items-center gap-4">
-            <Link to="/feed" className="text-sm text-[#1A1A1A]">Feed</Link>
-            <Link to="/search" className="text-sm text-[#1A1A1A]">Search</Link>
-            <Link to="/partner-network" className="text-sm text-[#1A1A1A]">Partner Network</Link>
-            <Link to="/member-management" className="text-sm font-semibold text-[#0A66C2]">Member Management</Link>
-            <Link to="/owner" className="text-sm">Owner</Link>
-          </div>
-        </div>
-      </nav>
+      
+      {/* Shared global NavBar */}
+
 
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-4">
@@ -34,7 +25,7 @@ export default function MemberManagement(){
           <button className="px-4 py-2 bg-[#0A66C2] text-white rounded-md">+ Add New Member</button>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border p-4">
+        <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-sm border p-4">
           <div className="mb-4 flex items-center gap-3">
             <input value={search} onChange={(e)=>setSearch(e.target.value)} placeholder="Search members" className="px-3 py-2 border rounded w-64" />
             <div className="text-sm text-[#5A5A5A]">Free plan limit: 10 members</div>

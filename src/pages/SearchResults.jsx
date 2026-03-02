@@ -1,11 +1,11 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import FloatingAssistant from '../components/FloatingAssistant'
+import { apiRequest, getToken } from '../lib/auth'
 
 export default function SearchResults() {
-  const [searchQuery, setSearchQuery] = useState('cotton shirts MOQ 100+')
-  const [uniqueToggle, setUniqueToggle] = useState(false)
-  const [showFilters, setShowFilters] = useState(false)
+  const [searchQuery] = useState('cotton shirts MOQ 100+')
+  const [showFilters] = useState(false)
   const [activeTab, setActiveTab] = useState('all')
   const [filters, setFilters] = useState({
     primary: '',
@@ -16,6 +16,18 @@ export default function SearchResults() {
     orgType: '',
   })
 
+
+
+  useEffect(() => {
+    const token = getToken()
+    if (!token) return
+    apiRequest('/notifications/search-alerts', {
+      method: 'POST',
+      token,
+      body: { query: searchQuery, filters },
+    }).catch(() => {})
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery])
   // Sample results
   const buyerRequests = [
     {
@@ -58,47 +70,16 @@ export default function SearchResults() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen neo-page cyberpunk-page bg-gray-50 neo-panel cyberpunk-card">
       {/* TOP NAVBAR */}
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-[#0A66C2]">GarTexHub</Link>
-          <div className="flex-1 mx-8">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search garments, textile, factories, requests..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
-            />
-          </div>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-              title="Filter"
-            >
-              ⚙️
-            </button>
+      
+      {/* Shared global NavBar */}
 
-            <label className="inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only" checked={uniqueToggle} onChange={() => setUniqueToggle(!uniqueToggle)} />
-              <div className={`w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 ${uniqueToggle ? 'bg-[#0A66C2]' : ''}`}>
-                <div className={`bg-white w-4 h-4 rounded-full shadow transform ${uniqueToggle ? 'translate-x-4' : ''}`}></div>
-              </div>
-              <span className="ml-2 text-sm font-medium">{uniqueToggle ? 'On' : 'Off'}</span>
-            </label>
-
-            <button className="relative p-2 hover:bg-gray-100 rounded-lg">🔔</button>
-            <Link to="/buyer/profile" className="w-10 h-10 bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] rounded-full block"></Link>
-          </div>
-        </div>
-      </nav>
 
       <div className="max-w-7xl mx-auto p-4">
         {/* FILTER PANEL */}
         {showFilters && (
-          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+          <div className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-6 mb-6">
             <h3 className="font-semibold text-gray-900 mb-4">Filter Results</h3>
 
             <div className="grid md:grid-cols-2 gap-6 mb-6">
@@ -239,7 +220,7 @@ export default function SearchResults() {
           {(activeTab === 'all' || activeTab === 'requests') && (
             <div>
               {buyerRequests.map(req => (
-                <div key={req.id} className="bg-white rounded-lg border border-gray-200 p-6 mb-4 hover:shadow-md transition">
+                <div key={req.id} className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-6 mb-4 hover:shadow-md transition">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
@@ -265,7 +246,7 @@ export default function SearchResults() {
           {(activeTab === 'all' || activeTab === 'companies') && (
             <div>
               {factories.map(factory => (
-                <div key={factory.id} className="bg-white rounded-lg border border-gray-200 p-6 mb-4 hover:shadow-md transition">
+                <div key={factory.id} className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-6 mb-4 hover:shadow-md transition">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
