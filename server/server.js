@@ -7,6 +7,8 @@ import requirementRoutes from './routes/requirementRoutes.js'
 import documentRoutes from './routes/documentRoutes.js'
 import adminRoutes from './routes/adminRoutes.js'
 import systemRoutes from './routes/systemRoutes.js'
+import notificationRoutes from './routes/notificationRoutes.js'
+import socialRoutes from './routes/socialRoutes.js'
 import verificationRoutes from './routes/verificationRoutes.js'
 import subscriptionRoutes from './routes/subscriptionRoutes.js'
 import feedRoutes from './routes/feedRoutes.js'
@@ -42,7 +44,9 @@ app.use('/api/onboarding', onboardingRoutes)
 app.use('/api/assistant', assistantRoutes)
 app.use('/api/conversations', conversationRoutes)
 app.use('/api/analytics', analyticsRoutes)
-app.use('/api', systemRoutes)
+app.use('/api/system', systemRoutes)
+app.use('/api/notifications', notificationRoutes)
+app.use('/api/social', socialRoutes)
 app.use(errorHandler)
 
 app.listen(PORT, () => {

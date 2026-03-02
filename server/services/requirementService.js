@@ -2,6 +2,7 @@ import crypto from 'crypto'
 import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { logInfo } from '../utils/logger.js'
+import { emitNotificationsForEntity } from './notificationService.js'
 
 const FILE = 'requirements.json'
 
@@ -27,6 +28,7 @@ export async function createRequirement(buyerId, payload) {
   const requirement = normalizeRequirement(buyerId, payload)
   requirements.push(requirement)
   await writeJson(FILE, requirements)
+  await emitNotificationsForEntity('buyer_request', requirement)
   logInfo('Buyer request created', { requirement_id: requirement.id, buyer_id: buyerId, at: requirement.created_at })
   return requirement
 }
