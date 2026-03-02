@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import FloatingAssistant from '../components/FloatingAssistant'
 
 export default function ContractVault(){
-  const [query, setQuery] = useState('')
   const [filter, setFilter] = useState('all')
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
@@ -16,25 +15,14 @@ export default function ContractVault(){
   ]
 
   return (
-    <div className="min-h-screen bg-white text-[#1A1A1A]">
-      <nav className="sticky top-0 z-50 bg-[#0F3D91] text-white">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold">GarTexHub</Link>
-          <div className="flex items-center gap-4">
-            <input placeholder="Search contracts..." value={query} onChange={(e)=>setQuery(e.target.value)} className="px-3 py-2 rounded" />
-            <label className="flex items-center gap-2 text-sm">
-              <span className="text-white text-xs">Unique</span>
-              <input type="checkbox" className="h-4 w-8" />
-            </label>
-            <Link to="/notifications" className="text-white">🔔</Link>
-            <Link to="/owner" className="text-white">👤</Link>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
+      
+      {/* Shared global NavBar */}
+
 
       <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
         <aside className="lg:col-span-1">
-          <div className="bg-white rounded-xl shadow p-4">
+          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow p-4">
             <h3 className="font-semibold mb-3">Dashboard</h3>
             <nav className="space-y-2 text-sm">
               <Link to="/owner" className="block">Overview</Link>
@@ -69,7 +57,7 @@ export default function ContractVault(){
 
           <div className="grid gap-4">
             {contracts.map(c => (
-              <div key={c.id} className="bg-white rounded-lg shadow-sm p-4 flex items-center justify-between">
+              <div key={c.id} className="bg-white neo-panel cyberpunk-card rounded-lg shadow-sm p-4 flex items-center justify-between">
                 <div onClick={() => { setSelected(c); setDrawerOpen(true) }} className="cursor-pointer">
                   <div className="flex items-center gap-3">
                     <div className="font-semibold">{c.id}</div>
@@ -93,7 +81,7 @@ export default function ContractVault(){
       {drawerOpen && selected && (
         <div className="fixed inset-0 z-50 flex">
           <div className="flex-1" onClick={()=>{setDrawerOpen(false); setSelected(null)}}></div>
-          <aside className="w-96 bg-white border-l shadow-xl p-6 overflow-auto">
+          <aside className="w-96 bg-white neo-panel cyberpunk-card border-l shadow-xl p-6 overflow-auto">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="font-bold">{selected.id}</h3>

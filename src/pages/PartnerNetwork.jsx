@@ -11,17 +11,10 @@ export default function PartnerNetwork(){
   const [tab, setTab] = useState('connected')
 
   return (
-    <div className="min-h-screen bg-white text-[#1A1A1A]">
-      <nav className="sticky top-0 z-50 bg-white border-b">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-[#0A66C2]">GarTexHub</Link>
-          <div className="flex items-center gap-4">
-            <Link to="/partner-network" className="text-sm font-semibold text-[#0A66C2]">Partner Network</Link>
-            <Link to="/feed" className="text-sm">Feed</Link>
-            <Link to="/owner" className="text-sm">Owner</Link>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
+      
+      {/* Shared global NavBar */}
+
 
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-4">
@@ -51,7 +44,7 @@ export default function PartnerNetwork(){
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {factories.map(f => (
-            <div key={f.id} className="bg-white border rounded-lg p-4 shadow-sm">
+            <div key={f.id} className="bg-white neo-panel cyberpunk-card border rounded-lg p-4 shadow-sm">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-gray-100 rounded"></div>
