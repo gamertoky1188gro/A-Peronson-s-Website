@@ -1,9 +1,25 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import FloatingAssistant from '../components/FloatingAssistant'
 
+
+const API = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+
+function starsFromAverage(avg) {
+  const rounded = Math.round(Number(avg || 0))
+  return '★★★★★'.slice(0, rounded).padEnd(5, '☆')
+}
+
 export default function FactoryProfile() {
   const [activeTab, setActiveTab] = useState('overview')
+  const [ratingSummary, setRatingSummary] = useState(null)
+
+  useEffect(() => {
+    fetch(`${API}/ratings/profiles/factory:premier-textile-mills`)
+      .then((res) => res.json())
+      .then((data) => setRatingSummary(data))
+      .catch(() => setRatingSummary(null))
+  }, [])
 
   const factory = {
     name: 'Premier Textile Mills',
@@ -188,18 +204,19 @@ export default function FactoryProfile() {
                 <div className="space-y-3 p-3">
                   <div className="mb-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-3xl font-bold text-[#0A66C2]">4.8</span>
+                      <span className="text-3xl font-bold text-[#0A66C2]">{ratingSummary?.aggregate?.average_score || '0.0'}</span>
                       <div>
-                        <div className="text-lg">★★★★★</div>
-                        <div className="text-sm text-[#5A5A5A]">87 reviews</div>
+                        <div className="text-lg">{starsFromAverage(ratingSummary?.aggregate?.average_score)}</div>
+                        <div className="text-sm text-[#5A5A5A]">{ratingSummary?.aggregate?.total_count || 0} reviews</div>
                       </div>
                     </div>
                   </div>
-                  {reviews.map(r => (
+                  <div className="text-xs text-[#5A5A5A]">Breakdown: 5★ {ratingSummary?.breakdown?.[5] || 0} • 4★ {ratingSummary?.breakdown?.[4] || 0} • 3★ {ratingSummary?.breakdown?.[3] || 0} • 2★ {ratingSummary?.breakdown?.[2] || 0} • 1★ {ratingSummary?.breakdown?.[1] || 0}</div>
+                  {(ratingSummary?.recent_reviews?.length ? ratingSummary.recent_reviews : reviews).map(r => (
                     <div key={r.id} className="border border-gray-100 rounded-lg p-3">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="font-semibold">{r.buyer}</div>
+                          <div className="font-semibold">{r.buyer || 'Partner'}</div>
                           <div className="text-sm text-[#5A5A5A]">{r.text}</div>
                         </div>
                         <div className="text-sm font-semibold text-[#0A66C2]">{r.rating}★</div>

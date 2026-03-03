@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
+import { recordMilestone } from './ratingsService.js'
 
 const FILE = 'call_sessions.json'
 
@@ -70,6 +71,7 @@ export async function startCallSession(callId, userId) {
   }
   calls[idx] = next
   await writeJson(FILE, calls)
+
   return next
 }
 
@@ -89,6 +91,16 @@ export async function endCallSession(callId, userId, endReason = '') {
   }
   calls[idx] = next
   await writeJson(FILE, calls)
+
+  const participants = normalizeParticipantIds(call.participant_ids, call.created_by).filter((id) => id !== userId)
+  await Promise.all(participants.map((counterpartyId) => recordMilestone({
+    profileKey: `user:${userId}`,
+    counterpartyId,
+    interactionType: 'call',
+    milestone: 'communication_completed',
+    actorId: userId,
+  })))
+
   return next
 }
 
@@ -112,6 +124,7 @@ export async function markRecording(callId, userId, payload = {}) {
   }
   calls[idx] = next
   await writeJson(FILE, calls)
+
   return next
 }
 

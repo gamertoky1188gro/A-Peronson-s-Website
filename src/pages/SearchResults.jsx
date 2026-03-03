@@ -49,6 +49,11 @@ function normalizeRequest(raw) {
   }
 }
 
+
+function toProfileKey(name) {
+  return `factory:${String(name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`
+}
+
 function normalizeCompany(raw) {
   return {
     id: raw.id ?? raw._id,
@@ -56,6 +61,7 @@ function normalizeCompany(raw) {
     category: raw.category || raw.primary_category || raw.material || 'General',
     mediaReviewStatus: raw.video_review_status || 'approved',
     hasVideo: Boolean(raw.hasVideo || (raw.video_review_status === 'approved' && raw.video_url)),
+    profileKey: raw.profile_key || toProfileKey(raw.name || raw.organization_name || raw.org),
   }
 }
 
@@ -80,6 +86,7 @@ export default function SearchResults() {
   const [error, setError] = useState('')
   const [quotaMessage, setQuotaMessage] = useState('')
   const [alertFeedback, setAlertFeedback] = useState('')
+  const [ratingsByProfile, setRatingsByProfile] = useState({})
 
   const premiumLocked = plan !== 'premium'
   const totalResults = buyerRequests.length + companies.length
@@ -140,6 +147,18 @@ export default function SearchResults() {
   useEffect(() => {
     runSearch()
   }, [runSearch])
+
+  useEffect(() => {
+    const keys = companies.map((company) => company.profileKey).filter(Boolean)
+    if (!keys.length) {
+      setRatingsByProfile({})
+      return
+    }
+
+    api(`/ratings/profiles?profile_keys=${encodeURIComponent(keys.join(','))}`)
+      .then((data) => setRatingsByProfile(data || {}))
+      .catch(() => setRatingsByProfile({}))
+  }, [companies])
 
   async function handleSaveAlert() {
     setAlertFeedback('')
@@ -386,6 +405,8 @@ export default function SearchResults() {
                             <p className="text-sm text-gray-600">{company.category}</p>
                           </div>
                         </div>
+                        <div className="mt-2 text-sm text-gray-600">⭐ {ratingsByProfile?.[company.profileKey]?.aggregate?.average_score || '0.0'} ({ratingsByProfile?.[company.profileKey]?.aggregate?.total_count || 0} reviews)</div>
+                        <div className="mt-1 text-xs text-gray-500">Breakdown: 5★ {ratingsByProfile?.[company.profileKey]?.breakdown?.[5] || 0} • 4★ {ratingsByProfile?.[company.profileKey]?.breakdown?.[4] || 0} • 3★ {ratingsByProfile?.[company.profileKey]?.breakdown?.[3] || 0}</div>
                         {company.hasVideo && (
                           <div className="mt-3 flex items-center gap-2 text-sm text-gray-600">
                             <span>🎬</span>
