@@ -4,7 +4,7 @@ import AccessDeniedState from '../components/AccessDeniedState'
 import FloatingAssistant from '../components/FloatingAssistant'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 
-const emptyFaq = { question: '', answer: '', keywords: '' }
+const emptyKnowledge = { type: 'faq', question: '', answer: '', keywords: '' }
 
 export default function OrgSettings(){
   const [tab, setTab] = useState('general')
@@ -12,7 +12,7 @@ export default function OrgSettings(){
   const isOwnerAdmin = currentUser?.role === 'owner' || currentUser?.role === 'admin'
   const [remainingDays, setRemainingDays] = useState(4)
   const [entries, setEntries] = useState([])
-  const [faqForm, setFaqForm] = useState(emptyFaq)
+  const [knowledgeForm, setKnowledgeForm] = useState(emptyKnowledge)
   const [editingId, setEditingId] = useState('')
   const [faqFeedback, setFaqFeedback] = useState('')
 
@@ -35,13 +35,14 @@ export default function OrgSettings(){
   }, [])
 
   function resetForm() {
-    setFaqForm(emptyFaq)
+    setKnowledgeForm(emptyKnowledge)
     setEditingId('')
   }
 
   function selectForEdit(entry) {
     setEditingId(entry.id)
-    setFaqForm({
+    setKnowledgeForm({
+      type: entry.type || 'faq',
       question: entry.question || '',
       answer: entry.answer || '',
       keywords: Array.isArray(entry.keywords) ? entry.keywords.join(', ') : '',
@@ -57,18 +58,19 @@ export default function OrgSettings(){
     }
 
     const payload = {
-      question: faqForm.question,
-      answer: faqForm.answer,
-      keywords: faqForm.keywords.split(',').map((k) => k.trim()).filter(Boolean),
+      type: knowledgeForm.type,
+      question: knowledgeForm.question,
+      answer: knowledgeForm.answer,
+      keywords: knowledgeForm.keywords.split(',').map((k) => k.trim()).filter(Boolean),
     }
 
     try {
       if (editingId) {
         await apiRequest(`/assistant/knowledge/${editingId}`, { method: 'PUT', token, body: payload })
-        setFaqFeedback('FAQ entry updated')
+        setFaqFeedback('Knowledge entry updated')
       } else {
         await apiRequest('/assistant/knowledge', { method: 'POST', token, body: payload })
-        setFaqFeedback('FAQ entry added')
+        setFaqFeedback('Knowledge entry added')
       }
       resetForm()
       await loadFaqs()
@@ -124,7 +126,7 @@ export default function OrgSettings(){
             <button onClick={()=>setTab('security')} className={`px-3 py-2 ${tab==='security'?'border-b-2 border-[#0A66C2]':''}`}>Security</button>
             <button onClick={()=>setTab('members')} className={`px-3 py-2 ${tab==='members'?'border-b-2 border-[#0A66C2]':''}`}>Members</button>
             <button onClick={()=>setTab('subscription')} className={`px-3 py-2 ${tab==='subscription'?'border-b-2 border-[#0A66C2]':''}`}>Subscription</button>
-            <button onClick={()=> { setTab('assistant_faq'); loadFaqs() }} className={`px-3 py-2 ${tab==='assistant_faq'?'border-b-2 border-[#0A66C2]':''}`}>Assistant FAQ</button>
+            <button onClick={()=> { setTab('assistant_knowledge'); loadFaqs() }} className={`px-3 py-2 ${tab==='assistant_knowledge'?'border-b-2 border-[#0A66C2]':''}`}>Assistant Knowledge</button>
           </div>
 
           <div>
@@ -198,16 +200,21 @@ export default function OrgSettings(){
               </div>
             )}
 
-            {tab === 'assistant_faq' && (
+            {tab === 'assistant_knowledge' && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <form onSubmit={saveFaq} className="border rounded p-4">
-                  <h3 className="font-semibold mb-2">{editingId ? 'Edit FAQ Entry' : 'Add FAQ Entry'}</h3>
+                  <h3 className="font-semibold mb-2">{editingId ? 'Edit Knowledge Entry' : 'Add Knowledge Entry'}</h3>
+                  <label className="block text-sm">Entry Type</label>
+                  <select value={knowledgeForm.type} onChange={(e) => setKnowledgeForm({ ...knowledgeForm, type: e.target.value })} className="w-full border px-3 py-2 rounded mb-3">
+                    <option value="faq">FAQ</option>
+                    <option value="fact">Company Fact</option>
+                  </select>
                   <label className="block text-sm">Question</label>
-                  <input value={faqForm.question} onChange={(e) => setFaqForm({ ...faqForm, question: e.target.value })} className="w-full border px-3 py-2 rounded mb-3" required />
+                  <input value={knowledgeForm.question} onChange={(e) => setKnowledgeForm({ ...knowledgeForm, question: e.target.value })} className="w-full border px-3 py-2 rounded mb-3" required />
                   <label className="block text-sm">Answer</label>
-                  <textarea value={faqForm.answer} onChange={(e) => setFaqForm({ ...faqForm, answer: e.target.value })} className="w-full border px-3 py-2 rounded mb-3 min-h-28" required />
+                  <textarea value={knowledgeForm.answer} onChange={(e) => setKnowledgeForm({ ...knowledgeForm, answer: e.target.value })} className="w-full border px-3 py-2 rounded mb-3 min-h-28" required />
                   <label className="block text-sm">Keywords (comma separated)</label>
-                  <input value={faqForm.keywords} onChange={(e) => setFaqForm({ ...faqForm, keywords: e.target.value })} className="w-full border px-3 py-2 rounded mb-3" />
+                  <input value={knowledgeForm.keywords} onChange={(e) => setKnowledgeForm({ ...knowledgeForm, keywords: e.target.value })} className="w-full border px-3 py-2 rounded mb-3" />
                   <div className="flex items-center gap-2">
                     <button type="submit" className="px-3 py-2 bg-[#0A66C2] text-white rounded">{editingId ? 'Update' : 'Save'} Entry</button>
                     {editingId && <button type="button" onClick={resetForm} className="px-3 py-2 border rounded">Cancel edit</button>}
@@ -216,10 +223,11 @@ export default function OrgSettings(){
                 </form>
 
                 <div className="border rounded p-4">
-                  <h3 className="font-semibold mb-2">Assistant FAQ Entries ({entries.length})</h3>
+                  <h3 className="font-semibold mb-2">Assistant Knowledge Entries ({entries.length})</h3>
                   <div className="space-y-3 max-h-[420px] overflow-auto">
                     {entries.map((entry) => (
                       <div key={entry.id} className="border rounded p-3">
+                        <p className="text-xs uppercase tracking-wide text-[#5A5A5A]">{entry.type || 'faq'}</p>
                         <p className="font-semibold">{entry.question}</p>
                         <p className="text-sm text-[#5A5A5A] mt-1">{entry.answer}</p>
                         <p className="text-xs mt-2">Keywords: {(entry.keywords || []).join(', ') || 'None'}</p>
