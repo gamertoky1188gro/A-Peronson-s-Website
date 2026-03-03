@@ -3,6 +3,10 @@ import { readJson, updateJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 
 const FILE = 'assistant_knowledge.json'
+const KNOWLEDGE_TYPES = {
+  FAQ: 'faq',
+  FACT: 'fact',
+}
 
 const globalRules = [
   {
@@ -52,10 +56,16 @@ function scoreMatch(questionText, candidateQuestion, candidateKeywords = []) {
   return score
 }
 
+function normalizeType(type) {
+  const normalized = sanitizeString(type, 30).toLowerCase()
+  return normalized === KNOWLEDGE_TYPES.FACT ? KNOWLEDGE_TYPES.FACT : KNOWLEDGE_TYPES.FAQ
+}
+
 function mapKnowledgeRow(row) {
   return {
     id: row.id,
     org_id: row.org_id,
+    type: normalizeType(row.type),
     question: row.question,
     answer: row.answer,
     keywords: Array.isArray(row.keywords) ? row.keywords : [],
@@ -73,6 +83,7 @@ export async function listKnowledge(orgId) {
 }
 
 export async function createKnowledgeEntry(orgId, payload) {
+  const type = normalizeType(payload?.type)
   const question = sanitizeString(payload?.question, 280)
   const answer = sanitizeString(payload?.answer, 1200)
   const keywords = Array.isArray(payload?.keywords)
@@ -89,6 +100,7 @@ export async function createKnowledgeEntry(orgId, payload) {
   const entry = {
     id: crypto.randomUUID(),
     org_id: orgId,
+    type,
     question,
     answer,
     keywords,
@@ -114,6 +126,7 @@ export async function updateKnowledgeEntry(orgId, entryId, payload) {
     }
 
     const current = rows[index]
+    const type = payload?.type === undefined ? normalizeType(current.type) : normalizeType(payload.type)
     const question = payload?.question === undefined ? current.question : sanitizeString(payload.question, 280)
     const answer = payload?.answer === undefined ? current.answer : sanitizeString(payload.answer, 1200)
     const keywords = payload?.keywords === undefined
@@ -128,6 +141,7 @@ export async function updateKnowledgeEntry(orgId, entryId, payload) {
 
     updated = {
       ...current,
+      type,
       question,
       answer,
       keywords,
@@ -150,18 +164,21 @@ export async function deleteKnowledgeEntry(orgId, entryId) {
   return deleted
 }
 
-function buildMatchedResponse(matchedAnswer, source, score) {
+function buildMatchedResponse({ matchedAnswer, source, score, fallbackReason = null, matchedType = null }) {
   return {
     matched_answer: matchedAnswer,
     source,
     confidence: Number(Math.min(0.95, 0.45 + score * 0.1).toFixed(2)),
+    metadata: {
+      matched_source: source,
+      matched_type: matchedType,
+      confidence: Number(Math.min(0.95, 0.45 + score * 0.1).toFixed(2)),
+      fallback_reason: fallbackReason,
+    },
   }
 }
 
-export async function assistantReply(orgId, question = '') {
-  const questionText = sanitizeString(question, 800)
-  const entries = await listKnowledge(orgId)
-
+function findBestMatch(questionText, entries) {
   let bestEntry = null
   let bestEntryScore = 0
   for (const entry of entries) {
@@ -171,9 +188,28 @@ export async function assistantReply(orgId, question = '') {
       bestEntryScore = score
     }
   }
+  return { bestEntry, bestEntryScore }
+}
 
-  if (bestEntry && bestEntryScore > 0) {
-    return buildMatchedResponse(bestEntry.answer, 'org_knowledge', bestEntryScore)
+export async function assistantReply(orgId, question = '') {
+  const questionText = sanitizeString(question, 800)
+  const entries = await listKnowledge(orgId)
+  const faqEntries = entries.filter((entry) => normalizeType(entry.type) === KNOWLEDGE_TYPES.FAQ)
+  const factEntries = entries.filter((entry) => normalizeType(entry.type) === KNOWLEDGE_TYPES.FACT)
+
+  const { bestEntry: bestFaqEntry, bestEntryScore: bestFaqScore } = findBestMatch(questionText, faqEntries)
+  const { bestEntry: bestFactEntry, bestEntryScore: bestFactScore } = findBestMatch(questionText, factEntries)
+
+  const companyBestEntry = bestFaqScore >= bestFactScore ? bestFaqEntry : bestFactEntry
+  const companyBestScore = Math.max(bestFaqScore, bestFactScore)
+
+  if (companyBestEntry && companyBestScore > 0) {
+    return buildMatchedResponse({
+      matchedAnswer: companyBestEntry.answer,
+      source: `company_data:${companyBestEntry.type}`,
+      score: companyBestScore,
+      matchedType: companyBestEntry.type,
+    })
   }
 
   let bestRule = null
@@ -187,10 +223,22 @@ export async function assistantReply(orgId, question = '') {
   }
 
   if (bestRule && bestRuleScore > 0) {
-    return buildMatchedResponse(bestRule.response, bestRule.source, bestRuleScore)
+    return buildMatchedResponse({
+      matchedAnswer: bestRule.response,
+      source: bestRule.source,
+      score: bestRuleScore,
+      fallbackReason: 'no_company_data_match',
+      matchedType: 'global_rule',
+    })
   }
 
   return {
     forward_to_agent: true,
+    metadata: {
+      matched_source: null,
+      matched_type: null,
+      confidence: 0,
+      fallback_reason: 'no_keyword_match',
+    },
   }
 }
