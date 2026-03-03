@@ -46,6 +46,49 @@ server/
 - Assistant: `/api/assistant/ask`
 - Analytics: `/api/analytics/summary`
 
+## Frontend Routing
+
+### Public Pages
+- `/` → Landing page (`TexHub`)
+- `/pricing` → Pricing/Subscription page
+- `/about` → About page
+- `/terms` → Terms page
+- `/privacy` → Privacy page
+- `/help` → Help Center
+- `/login` → Login page
+- `/signup` → Signup page
+- `/access-denied` → Access denied page
+
+### Protected Pages (Login Required)
+#### Available to all authenticated roles (`buyer`, `buying_house`, `factory`, `owner`, `admin`, `agent`)
+- `/feed`
+- `/search`
+- `/buyer/:id`
+- `/factory/:id`
+- `/buying-house/:id`
+- `/contracts`
+- `/notifications`
+- `/chat`
+- `/call`
+- `/verification`
+- `/verification-center` (same page component as `/verification`)
+
+#### Role-specific Protected Pages
+- `/partner-network` → roles: `buying_house`, `admin`, `factory`, `agent`, `owner`
+- `/product-management` → roles: `factory`, `buying_house`, `admin`
+- `/buyer-requests` → roles: `buyer`, `buying_house`, `admin`
+- `/member-management` → roles: `owner`, `admin`, `buying_house`, `factory`
+- `/org-settings` → roles: `owner`, `admin`
+- `/insights` → roles: `owner`, `admin`
+- `/owner` → roles: `owner`, `admin`
+- `/agent` → roles: `buying_house`, `owner`, `admin`, `agent`
+
+### Extra/Dev Route
+- `/mvp` → MVP dashboard/test page
+
+### Fallback Behavior
+- Any unknown route (`*`) redirects to `/`.
+
 ## Run
 
 ```bash
