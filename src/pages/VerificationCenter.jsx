@@ -1,32 +1,33 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { API_BASE, apiRequest, getCurrentUser, getToken } from '../lib/auth'
+import { EU_COUNTRIES, isEuCountry } from '../../shared/config/geo.js'
 
 const DOCUMENT_MATRIX = {
   common: {
-    required: ['company_registration', 'trade_license', 'authorized_person_id'],
+    required: ['company_registration', 'authorized_person_id'],
     optional: ['bank_reference_letter'],
   },
   role: {
     factory: {
-      required: ['factory_compliance_certificate'],
+      required: ['trade_license', 'tin', 'factory_compliance_certificate', 'bank_proof', 'erc'],
       optional: ['production_floor_video'],
     },
     buying_house: {
-      required: ['agency_authorization'],
+      required: ['trade_license', 'tin', 'agency_authorization', 'bank_proof'],
       optional: ['buyer_reference_letter'],
     },
     buyer: {
-      required: ['importer_id'],
+      required: ['bank_proof'],
       optional: ['purchase_policy'],
     },
   },
   region: {
     eu: {
-      required: ['eori_or_vat'],
+      required: ['vat', 'eori'],
       optional: ['reach_compliance'],
     },
     us: {
-      required: ['ein_confirmation'],
+      required: ['ein', 'ior'],
       optional: ['ctpat_statement'],
     },
     apac: {
@@ -49,17 +50,23 @@ const LABELS = {
   production_floor_video: 'Production Floor Video',
   agency_authorization: 'Agency Authorization Letter',
   buyer_reference_letter: 'Buyer Reference Letter',
-  importer_id: 'Importer ID',
+  bank_proof: 'Company Bank Proof',
   purchase_policy: 'Purchase Policy',
-  eori_or_vat: 'EORI / VAT Document',
+  vat: 'VAT Registration',
+  eori: 'EORI Registration',
   reach_compliance: 'REACH Compliance',
-  ein_confirmation: 'EIN Confirmation',
+  ein: 'EIN Confirmation',
+  ior: 'Importer of Record (IOR)',
   ctpat_statement: 'C-TPAT Statement',
   export_license: 'Export License',
   origin_certificate: 'Certificate of Origin',
   cross_border_tax_document: 'Cross-border Tax Document',
   incoterms_declaration: 'Incoterms Declaration',
+  tin: 'TIN Certificate',
+  erc: 'ERC Certificate',
 }
+
+const EU_DOCUMENT_CREDIBILITY_GUIDANCE = 'For EU onboarding, provide VAT and EORI records issued by competent authorities, with matching legal entity names and recent bank proof on official letterhead. Documents that are recent, verifiable, and consistent across jurisdictions are accepted faster by international compliance teams.'
 
 function normalizeStatus(status) {
   const value = String(status || '').toLowerCase()
@@ -110,8 +117,16 @@ function subscriptionLabel(state) {
   return 'Expired'
 }
 
+function uiRegionFromVerification(buyerRegion) {
+  const normalized = String(buyerRegion || '').toUpperCase()
+  if (normalized === 'EU') return 'eu'
+  if (normalized === 'USA') return 'us'
+  return 'global'
+}
+
 export default function VerificationCenter() {
   const [region, setRegion] = useState('global')
+  const [buyerCountry, setBuyerCountry] = useState('')
   const [verification, setVerification] = useState(null)
   const [subscription, setSubscription] = useState(null)
   const [error, setError] = useState('')
@@ -122,17 +137,19 @@ export default function VerificationCenter() {
   const user = getCurrentUser()
 
   const role = user?.role || 'buyer'
+  const isBuyerEu = role === 'buyer' && isEuCountry(buyerCountry)
+  const effectiveRegion = isBuyerEu ? 'eu' : region
 
   const documentConfig = useMemo(() => {
     const common = DOCUMENT_MATRIX.common
     const roleConfig = DOCUMENT_MATRIX.role[role] || { required: [], optional: [] }
-    const regionConfig = DOCUMENT_MATRIX.region[region] || { required: [], optional: [] }
+    const regionConfig = DOCUMENT_MATRIX.region[effectiveRegion] || { required: [], optional: [] }
 
     return {
       required: [...new Set([...common.required, ...roleConfig.required, ...regionConfig.required])],
       optional: [...new Set([...common.optional, ...roleConfig.optional, ...regionConfig.optional])],
     }
-  }, [role, region])
+  }, [role, effectiveRegion])
 
   const statuses = useMemo(() => {
     const docs = verification?.documents || {}
@@ -162,6 +179,8 @@ export default function VerificationCenter() {
       ])
       setVerification(verificationData)
       setSubscription(subscriptionData)
+      setRegion(uiRegionFromVerification(verificationData?.buyer_region))
+      setBuyerCountry(String(verificationData?.documents?.buyer_country || ''))
       setError('')
     } catch (err) {
       setError(err.message || 'Could not load verification center data')
@@ -199,6 +218,10 @@ export default function VerificationCenter() {
       const updatedDocuments = {
         ...currentDocs,
         [documentKey]: 'uploaded',
+        ...(role === 'buyer' ? {
+          buyer_country: buyerCountry,
+          buyer_region: isBuyerEu ? 'EU' : (region === 'us' ? 'USA' : 'OTHER'),
+        } : {}),
       }
 
       await apiRequest('/verification/me', {
@@ -213,6 +236,36 @@ export default function VerificationCenter() {
       setError(err.message || 'Upload failed')
     } finally {
       setBusyDoc('')
+    }
+  }
+
+  async function saveBuyerCountry(nextCountry) {
+    if (!token || role !== 'buyer') return
+    setFeedback('')
+    setError('')
+
+    const currentDocs = verification?.documents || {}
+    const nextRegion = isEuCountry(nextCountry) ? 'EU' : (region === 'us' ? 'USA' : 'OTHER')
+
+    try {
+      const updatedDocuments = {
+        ...currentDocs,
+        buyer_country: nextCountry,
+        buyer_region: nextRegion,
+      }
+
+      const record = await apiRequest('/verification/me', {
+        method: 'POST',
+        token,
+        body: { documents: updatedDocuments },
+      })
+
+      setVerification(record)
+      setFeedback(nextRegion === 'EU'
+        ? 'EU country selected. buyer_region has been mapped to EU and EU requirements are now active.'
+        : 'Buyer country saved.')
+    } catch (err) {
+      setError(err.message || 'Could not save buyer country')
     }
   }
 
@@ -275,18 +328,47 @@ export default function VerificationCenter() {
       </section>
 
       <section className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
           <h2 className="text-lg font-semibold">Document Requirements</h2>
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-slate-600" htmlFor="region">Region</label>
-            <select id="region" value={region} onChange={(e) => setRegion(e.target.value)} className="text-sm border rounded-md px-2 py-1">
-              <option value="global">Global</option>
-              <option value="eu">EU</option>
-              <option value="us">US</option>
-              <option value="apac">APAC</option>
-            </select>
-          </div>
+          {role === 'buyer' ? (
+            <div className="flex items-center gap-2 flex-wrap justify-end">
+              <label className="text-sm text-slate-600" htmlFor="buyer-country">Buyer Country</label>
+              <select
+                id="buyer-country"
+                value={buyerCountry}
+                onChange={(e) => {
+                  const nextCountry = e.target.value
+                  setBuyerCountry(nextCountry)
+                  saveBuyerCountry(nextCountry)
+                }}
+                className="text-sm border rounded-md px-2 py-1"
+              >
+                <option value="">Select country</option>
+                {EU_COUNTRIES.map((country) => <option key={country} value={country}>{country}</option>)}
+              </select>
+              <span className={`text-xs rounded-full px-2.5 py-1 border ${isBuyerEu ? 'bg-green-50 text-green-700 border-green-300' : 'bg-slate-50 text-slate-600 border-slate-300'}`}>
+                buyer_region: {isBuyerEu ? 'EU' : 'OTHER'}
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-slate-600" htmlFor="region">Region</label>
+              <select id="region" value={region} onChange={(e) => setRegion(e.target.value)} className="text-sm border rounded-md px-2 py-1">
+                <option value="global">Global</option>
+                <option value="eu">EU</option>
+                <option value="us">US</option>
+                <option value="apac">APAC</option>
+              </select>
+            </div>
+          )}
         </div>
+
+        {isBuyerEu ? (
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900">
+            <p className="font-semibold">EU buyer documentation activated</p>
+            <p className="mt-1">Required for EU profile: Company Registration, VAT Registration, EORI Registration, and Company Bank Proof.</p>
+          </div>
+        ) : null}
 
         <div className="grid gap-3 md:grid-cols-2">
           <div className="space-y-2">
@@ -303,6 +385,7 @@ export default function VerificationCenter() {
       <section className="rounded-xl border border-slate-200 bg-white p-5">
         <h2 className="text-lg font-semibold">Credibility Score: {credibilityScore}/100</h2>
         <p className="text-sm text-slate-600 mt-2">Uploading and maintaining licensing proof increases international buyer trust and improves your match confidence across cross-border sourcing opportunities.</p>
+        {isBuyerEu ? <p className="text-sm text-slate-700 mt-3">{EU_DOCUMENT_CREDIBILITY_GUIDANCE}</p> : null}
       </section>
 
       <input ref={fileInputRef} type="file" className="hidden" onChange={onFileSelected} />

@@ -2,6 +2,7 @@ import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { isSubscriptionValid } from './subscriptionService.js'
 import { logInfo } from '../utils/logger.js'
+import { isEuCountry } from '../../shared/config/geo.js'
 
 const FILE = 'verification.json'
 
@@ -42,6 +43,7 @@ function emptyDocs() {
     erc: '',
     tin_or_ein: '',
     erc_or_eori: '',
+    buyer_country: '',
     optional_licenses: [],
   }
 }
@@ -63,6 +65,29 @@ function sanitizeDocsPatch(documentsPatch = {}) {
   }
 
   return out
+}
+
+function normalizeBuyerCountry(rawCountry) {
+  return sanitizeString(String(rawCountry || ''), 60)
+}
+
+function validateBuyerGeography(role, docs, buyerRegion) {
+  if (role !== 'buyer') return
+
+  const buyerCountry = normalizeBuyerCountry(docs?.buyer_country)
+  const countryIsEu = isEuCountry(buyerCountry)
+
+  if (countryIsEu && buyerRegion !== BUYER_REGIONS.EU) {
+    const err = new Error('Selected buyer country is in the EU. Set buyer_region to EU.')
+    err.statusCode = 400
+    throw err
+  }
+
+  if (buyerRegion === BUYER_REGIONS.EU && !countryIsEu) {
+    const err = new Error('buyer_region=EU requires selecting a valid EU country in buyer_country.')
+    err.statusCode = 400
+    throw err
+  }
 }
 
 function normalizeBuyerRegion(rawRegion) {
@@ -123,6 +148,8 @@ export async function upsertVerification(user, documentsPatch) {
   const buyerRegion = user.role === 'buyer'
     ? normalizeBuyerRegion(documentsPatch?.buyer_region || existing?.buyer_region)
     : ''
+
+  validateBuyerGeography(user.role, docs, buyerRegion)
 
   const required = getRequiredFields(user.role, buyerRegion)
   const missing_required = required.filter((key) => !hasDocument(docs, key))

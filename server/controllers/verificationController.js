@@ -9,8 +9,14 @@ export async function getMyVerification(req, res) {
 export async function submitMyVerification(req, res) {
   const user = await findUserById(req.user.id)
   if (!user) return res.status(404).json({ error: 'User not found' })
-  const rec = await upsertVerification(user, req.body?.documents || {})
-  return res.json(rec)
+
+  try {
+    const rec = await upsertVerification(user, req.body?.documents || {})
+    return res.json(rec)
+  } catch (error) {
+    const status = Number(error?.statusCode) || 400
+    return res.status(status).json({ error: error?.message || 'Verification data is invalid' })
+  }
 }
 
 export async function adminApprove(req, res) {
