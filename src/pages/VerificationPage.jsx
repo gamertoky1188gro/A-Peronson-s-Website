@@ -314,6 +314,7 @@ export default function VerificationPage() {
       <header className="rounded-xl border border-slate-200 bg-white p-5">
         <h1 className="text-2xl font-bold">Verification Center</h1>
         <p className="text-sm text-slate-600 mt-1">Role and region-specific verification requirements for trusted international sourcing.</p>
+        <p className="text-xs text-slate-500 mt-2">Need setup help? Visit the <a href="/help" className="underline text-slate-700">Help Center verification guide</a>.</p>
       </header>
 
       <section className="rounded-xl border border-slate-200 bg-white p-5 flex flex-wrap gap-4 items-center justify-between">
