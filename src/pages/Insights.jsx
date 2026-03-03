@@ -1,70 +1,59 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
 import FloatingAssistant from '../components/FloatingAssistant'
+import useAnalyticsDashboard from '../hooks/useAnalyticsDashboard'
 
-export default function Insights(){
-  const [isEnterprise] = React.useState(false)
+function StatCard({ label, value }) {
+  return <div className="p-4 bg-white neo-panel cyberpunk-card rounded-xl shadow">{label}<br /><strong className="text-2xl">{value}</strong></div>
+}
+
+export default function Insights() {
+  const { dashboard, subscription, isEnterprise, loading, error } = useAnalyticsDashboard()
+  const totals = dashboard?.totals || {}
+  const byType = dashboard?.analytics_events?.by_type || {}
+
   return (
     <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
-      
-      {/* Shared global NavBar */}
-
-
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">Insights & Analytics <span className="text-sm text-[#5A5A5A]">(Enterprise Only)</span></h1>
+          <h1 className="text-2xl font-bold">Insights & Analytics <span className="text-sm text-[#5A5A5A]">({isEnterprise ? 'Enterprise' : 'Free'} Plan)</span></h1>
         </div>
 
+        {loading ? <div className="mb-4 p-3 bg-white rounded-xl">Loading analytics…</div> : null}
+        {error ? <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl">{error}</div> : null}
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="p-4 bg-white neo-panel cyberpunk-card rounded-xl shadow">Total Buyer Requests Handled<br/><strong className="text-2xl">1,234</strong></div>
-          <div className="p-4 bg-white neo-panel cyberpunk-card rounded-xl shadow">Conversion Rate<br/><strong className="text-2xl">12%</strong></div>
-          <div className="p-4 bg-white neo-panel cyberpunk-card rounded-xl shadow">Active Factories<br/><strong className="text-2xl">56</strong></div>
-          <div className="p-4 bg-white neo-panel cyberpunk-card rounded-xl shadow">Response Time<br/><strong className="text-2xl">18h</strong></div>
+          <StatCard label="Total Buyer Requests" value={totals.buyer_requests ?? 0} />
+          <StatCard label="Active Chats" value={totals.chats ?? 0} />
+          <StatCard label="Connected Partners" value={totals.partner_network ?? 0} />
+          <StatCard label="Contracts / Documents" value={`${totals.contracts ?? 0} / ${totals.documents ?? 0}`} />
         </div>
 
         <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow p-4">
           {!isEnterprise ? (
             <div>
-              <div className="text-sm text-[#5A5A5A]">Limited insights available on Free plan. Upgrade to Enterprise for full analytics.</div>
+              <div className="text-sm text-[#5A5A5A]">You are currently on <strong>{subscription?.plan || 'free'}</strong>. Upgrade to Enterprise to unlock event-level analytics and export controls.</div>
               <div className="mt-4"><button className="px-3 py-2 bg-[#0A66C2] text-white rounded">Upgrade to Enterprise</button></div>
             </div>
           ) : (
             <>
-              <div className="text-sm text-[#5A5A5A]">Charts placeholder (line/bar/pie)</div>
+              <h3 className="font-semibold mb-3">Analytics Events by Type</h3>
+              <div className="space-y-2 text-sm">
+                {Object.keys(byType).length === 0 ? <div className="text-[#5A5A5A]">No analytics events recorded yet.</div> : null}
+                {Object.entries(byType).map(([type, count]) => (
+                  <div key={type} className="flex items-center justify-between border rounded-md p-2">
+                    <span>{type}</span>
+                    <span className="font-medium">{count}</span>
+                  </div>
+                ))}
+              </div>
+
               <div className="mt-4 flex gap-2">
                 <button className="px-3 py-2 border rounded">Export CSV</button>
                 <button className="px-3 py-2 border rounded">Download PDF Report</button>
               </div>
-
-              <div className="mt-6">
-                <h3 className="font-semibold mb-2">Agent Performance</h3>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-sm">
-                    <thead>
-                      <tr className="text-left">
-                        <th>Agent Name</th>
-                        <th>Requests</th>
-                        <th>Deals Closed</th>
-                        <th>Response Time</th>
-                        <th>Rating</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>Ali</td>
-                        <td>120</td>
-                        <td>34</td>
-                        <td>12h</td>
-                        <td>4.6</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
             </>
           )}
         </div>
-
       </div>
 
       <FloatingAssistant />
