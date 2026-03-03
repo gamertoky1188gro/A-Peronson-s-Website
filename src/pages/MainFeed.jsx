@@ -75,7 +75,11 @@ export default function MainFeed() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [actionFeedback, setActionFeedback] = useState('')
+  const [actionFeedbackType, setActionFeedbackType] = useState('info')
   const [user, setUser] = useState(null)
+  const [submittingActions, setSubmittingActions] = useState(new Set())
+  const [reportCooldowns, setReportCooldowns] = useState({})
+  const [now, setNow] = useState(Date.now())
 
   const filteredPosts = useMemo(() => {
     if (activeFilter === 'all') return posts
@@ -140,17 +144,92 @@ export default function MainFeed() {
     loadFeed()
   }, [loadFeed])
 
-  async function handleSocialAction(post, action) {
+  useEffect(() => {
+    const interval = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(interval)
+  }, [])
+
+  function buildActionKey(post, action) {
+    return `${post.entityType}-${post.id}-${action}`
+  }
+
+  function getReportKey(post) {
+    return `${post.entityType}-${post.id}`
+  }
+
+  function getReportCooldownLeftMs(post) {
+    const cooldownEndsAt = reportCooldowns[getReportKey(post)] || 0
+    return Math.max(0, cooldownEndsAt - now)
+  }
+
+  function isActionSubmitting(post, action) {
+    return submittingActions.has(buildActionKey(post, action))
+  }
+
+  function isReportDisabled(post) {
+    return isActionSubmitting(post, 'report') || getReportCooldownLeftMs(post) > 0
+  }
+
+  function getReportReason(post) {
+    const suggestion = post.entityType === 'buyer_request' ? 'Potentially fake or harmful buying request' : 'Product post appears misleading or inappropriate'
+    const reason = window.prompt('Please provide a reason for reporting this post (optional):', suggestion)
+    if (reason === null) {
+      return null
+    }
+
+    const cleanedReason = reason.trim()
+    if (cleanedReason.length >= 8) {
+      return cleanedReason
+    }
+
+    return suggestion
+  }
+
+  async function handleSocialAction(post, action, extraPayload = {}) {
+    const actionKey = buildActionKey(post, action)
+    if (submittingActions.has(actionKey)) {
+      return
+    }
+
     setActionFeedback('')
+    setActionFeedbackType('info')
+    setSubmittingActions((current) => new Set(current).add(actionKey))
+
     try {
       await api('/social/actions', {
         method: 'POST',
-        body: JSON.stringify({ entityId: post.id, entityType: post.entityType, action }),
+        body: JSON.stringify({ entityId: post.id, entityType: post.entityType, action, ...extraPayload }),
       })
+      setActionFeedbackType('success')
       setActionFeedback(`${action.replace('_', ' ')} recorded`)
+
+      if (action === 'report') {
+        const reportKey = getReportKey(post)
+        setReportCooldowns((current) => ({ ...current, [reportKey]: Date.now() + 15000 }))
+      }
     } catch (err) {
+      setActionFeedbackType('error')
       setActionFeedback(err.message || `Failed to ${action}`)
+    } finally {
+      setSubmittingActions((current) => {
+        const next = new Set(current)
+        next.delete(actionKey)
+        return next
+      })
     }
+  }
+
+  function handleReport(post) {
+    if (isReportDisabled(post)) {
+      return
+    }
+
+    const reason = getReportReason(post)
+    if (reason === null) {
+      return
+    }
+
+    handleSocialAction(post, 'report', { reason })
   }
 
   return (
@@ -195,7 +274,13 @@ export default function MainFeed() {
         </div>
 
         <div className="col-span-12 lg:col-span-6 space-y-4">
-          {actionFeedback && <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">{actionFeedback}</div>}
+          {actionFeedback && (
+            <div
+              className={`rounded-lg p-3 text-sm ${actionFeedbackType === 'error' ? 'border border-red-200 bg-red-50 text-red-700' : 'border border-blue-200 bg-blue-50 text-blue-700'}`}
+            >
+              {actionFeedback}
+            </div>
+          )}
           {loading && <div className="rounded-lg border border-gray-200 bg-white p-6 text-center text-gray-600">Loading feed...</div>}
           {!loading && error && <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center text-red-700">{error}</div>}
           {!loading && !error && filteredPosts.length === 0 && <div className="rounded-lg border border-gray-200 bg-white p-6 text-center text-gray-600">No feed items found for this filter.</div>}
@@ -226,14 +311,21 @@ export default function MainFeed() {
 
               <div className="px-4 py-3 bg-gray-50 neo-panel cyberpunk-card border-t border-gray-100 flex items-center justify-between text-sm text-gray-600">
                 <div className="flex gap-4">
-                  <button onClick={() => handleSocialAction(post, 'comment')} className="hover:text-blue-600 transition">💬 Comment</button>
-                  <button onClick={() => handleSocialAction(post, 'share')} className="hover:text-blue-600 transition">↗️ Share</button>
-                  <button onClick={() => handleSocialAction(post, 'save')} className="hover:text-blue-600 transition">⭐ Save</button>
+                  <button disabled={isActionSubmitting(post, 'comment')} onClick={() => handleSocialAction(post, 'comment')} className="hover:text-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed">💬 Comment</button>
+                  <button disabled={isActionSubmitting(post, 'share')} onClick={() => handleSocialAction(post, 'share')} className="hover:text-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed">↗️ Share</button>
+                  <button disabled={isActionSubmitting(post, 'save')} onClick={() => handleSocialAction(post, 'save')} className="hover:text-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed">⭐ Save</button>
+                  <button
+                    disabled={isReportDisabled(post)}
+                    onClick={() => handleReport(post)}
+                    className="hover:text-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    🚩 {getReportCooldownLeftMs(post) > 0 ? `Report (${Math.ceil(getReportCooldownLeftMs(post) / 1000)}s)` : 'Report'}
+                  </button>
                 </div>
                 {post.entityType === 'buyer_request' ? (
-                  <button onClick={() => handleSocialAction(post, 'take_lead')} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition">Take Lead</button>
+                  <button disabled={isActionSubmitting(post, 'take_lead')} onClick={() => handleSocialAction(post, 'take_lead')} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition disabled:opacity-50 disabled:cursor-not-allowed">Take Lead</button>
                 ) : (
-                  <button onClick={() => handleSocialAction(post, 'message')} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition">Message</button>
+                  <button disabled={isActionSubmitting(post, 'message')} onClick={() => handleSocialAction(post, 'message')} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition disabled:opacity-50 disabled:cursor-not-allowed">Message</button>
                 )}
               </div>
 
