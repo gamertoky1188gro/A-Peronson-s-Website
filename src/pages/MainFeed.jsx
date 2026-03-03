@@ -218,6 +218,43 @@ export default function MainFeed() {
     }
   }
 
+
+  async function handleExpressInterest(post) {
+    const action = 'express_interest'
+    const actionKey = buildActionKey(post, action)
+    if (submittingActions.has(actionKey)) return
+
+    setActionFeedback('')
+    setActionFeedbackType('info')
+    setSubmittingActions((current) => new Set(current).add(actionKey))
+
+    try {
+      const response = await api(`/conversations/${post.id}/claim`, { method: 'POST' })
+      const status = response?.status || 'claimed'
+      if (status === 'granted') {
+        setActionFeedbackType('success')
+        setActionFeedback('Conversation access already granted for this buyer request.')
+      } else {
+        setActionFeedbackType('success')
+        setActionFeedback('Interest recorded. Conversation lock claimed successfully.')
+      }
+    } catch (err) {
+      if (err.message.includes('locked')) {
+        setActionFeedbackType('error')
+        setActionFeedback('Conversation already claimed by another agent. Open chat to request access.')
+      } else {
+        setActionFeedbackType('error')
+        setActionFeedback(err.message || 'Failed to express interest')
+      }
+    } finally {
+      setSubmittingActions((current) => {
+        const next = new Set(current)
+        next.delete(actionKey)
+        return next
+      })
+    }
+  }
+
   function handleReport(post) {
     if (isReportDisabled(post)) {
       return
@@ -322,7 +359,13 @@ export default function MainFeed() {
                   </button>
                 </div>
                 {post.entityType === 'buyer_request' ? (
-                  <button disabled={isActionSubmitting(post, 'take_lead')} onClick={() => handleSocialAction(post, 'take_lead')} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition disabled:opacity-50 disabled:cursor-not-allowed">Take Lead</button>
+                  <button
+                    disabled={isActionSubmitting(post, 'express_interest')}
+                    onClick={() => handleExpressInterest(post)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isActionSubmitting(post, 'express_interest') ? 'Claiming...' : 'Express Interest'}
+                  </button>
                 ) : (
                   <button disabled={isActionSubmitting(post, 'message')} onClick={() => handleSocialAction(post, 'message')} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition disabled:opacity-50 disabled:cursor-not-allowed">Message</button>
                 )}

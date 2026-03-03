@@ -6,6 +6,7 @@ import { trackTransition } from '../utils/metrics.js'
 const FILE = 'messages.json'
 const USERS_FILE = 'users.json'
 const MESSAGE_REQUESTS_FILE = 'message_requests.json'
+const CONVERSATION_LOCKS_FILE = 'conversation_locks.json'
 
 function upsertRequestState(requests, threadId, updates = {}) {
   const existingIndex = requests.findIndex((request) => request.thread_id === threadId)
@@ -27,6 +28,58 @@ function upsertRequestState(requests, threadId, updates = {}) {
     ...updates,
   }
   return requests[existingIndex]
+}
+
+function requestIdFromMatchId(matchId = '') {
+  return String(matchId).split(':')[0] || ''
+}
+
+function buildLockMeta(lock, usersById, currentUserId) {
+  if (!lock) {
+    return {
+      status: 'unclaimed',
+      can_request_access: true,
+      claimed_by: null,
+      claimed_by_name: '',
+    }
+  }
+
+  const claimedByName = usersById.get(lock.locked_by)?.name || lock.locked_by
+  const isOwner = lock.locked_by === currentUserId
+  const isGranted = Array.isArray(lock.allowed_agents) && lock.allowed_agents.includes(currentUserId)
+
+  if (isOwner) {
+    return {
+      status: 'claimed',
+      can_request_access: false,
+      claimed_by: lock.locked_by,
+      claimed_by_name: claimedByName,
+    }
+  }
+
+  if (isGranted) {
+    return {
+      status: 'granted',
+      can_request_access: false,
+      claimed_by: lock.locked_by,
+      claimed_by_name: claimedByName,
+    }
+  }
+
+  return {
+    status: 'request_access',
+    can_request_access: true,
+    claimed_by: lock.locked_by,
+    claimed_by_name: claimedByName,
+  }
+}
+
+function withConversationMeta(message, usersById, lock, currentUserId) {
+  return {
+    ...message,
+    request_id: requestIdFromMatchId(message.match_id),
+    conversation_lock: buildLockMeta(lock, usersById, currentUserId),
+  }
 }
 
 export async function postMessage(matchId, senderId, message, type = 'text') {
@@ -59,10 +112,14 @@ export async function listMessagesByMatch(matchId) {
   return messages.filter((m) => m.match_id === matchId)
 }
 
-export async function tieredInbox(matchIds) {
+export async function tieredInbox(matchIds, currentUserId) {
   const users = await readJson(USERS_FILE)
+  const usersById = new Map(users.map((user) => [user.id, user]))
   const messages = await readJson(FILE)
   const messageRequests = await readJson(MESSAGE_REQUESTS_FILE)
+  const conversationLocks = await readJson(CONVERSATION_LOCKS_FILE)
+  const lockByRequestId = new Map(conversationLocks.map((lock) => [lock.request_id, lock]))
+
   const filtered = messages.filter((m) => matchIds.includes(m.match_id))
   const requestMap = new Map(messageRequests.map((request) => [request.thread_id, request]))
   const latestByThread = new Map()
@@ -83,9 +140,13 @@ export async function tieredInbox(matchIds) {
     const request = requestMap.get(m.match_id)
     if (request?.status === 'rejected') continue
 
-    const sender = users.find((u) => u.id === m.sender_id)
-    if (request?.status === 'accepted' || sender?.verified) priority.push(m)
-    else requestPool.push(m)
+    const sender = usersById.get(m.sender_id)
+    const requestId = requestIdFromMatchId(m.match_id)
+    const lock = lockByRequestId.get(requestId)
+    const withMeta = withConversationMeta(m, usersById, lock, currentUserId)
+
+    if (request?.status === 'accepted' || sender?.verified) priority.push(withMeta)
+    else requestPool.push(withMeta)
   }
   return { priority, request_pool: requestPool }
 }
