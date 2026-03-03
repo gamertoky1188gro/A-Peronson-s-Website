@@ -1,8 +1,24 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import FloatingAssistant from '../components/FloatingAssistant'
 
+
+const API = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+
+function starsFromAverage(avg) {
+  const rounded = Math.round(Number(avg || 0))
+  return '★★★★★'.slice(0, rounded).padEnd(5, '☆')
+}
+
 export default function BuyerProfile() {
+  const [ratingSummary, setRatingSummary] = useState(null)
+
+  useEffect(() => {
+    fetch(`${API}/ratings/profiles/buyer:global-apparel-co`)
+      .then((res) => res.json())
+      .then((data) => setRatingSummary(data))
+      .catch(() => setRatingSummary(null))
+  }, [])
 
   const buyer = {
     name: 'Global Apparel Co',
@@ -79,7 +95,7 @@ export default function BuyerProfile() {
               <div className="mt-4 space-y-2 text-sm text-[#5A5A5A]">
                 <div>Industry: <strong className="text-[#1A1A1A]">{buyer.industry}</strong></div>
                 <div>Organization: <strong className="text-[#1A1A1A]">{buyer.orgType}</strong></div>
-                <div>Rating: <strong className="text-[#1A1A1A]">4.6 / 5</strong></div>
+                <div>Rating: <strong className="text-[#1A1A1A]">{ratingSummary?.aggregate?.average_score || '0.0'} / 5</strong></div>
               </div>
 
               <div className="mt-4 flex gap-2">
@@ -165,22 +181,30 @@ export default function BuyerProfile() {
               <h3 className="font-semibold text-lg mb-3">Reviews</h3>
               <div className="mb-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-3xl font-bold text-[#0A66C2]">4.6</span>
+                  <span className="text-3xl font-bold text-[#0A66C2]">{ratingSummary?.aggregate?.average_score || '0.0'}</span>
                   <div>
-                    <div className="text-lg">★★★★☆</div>
-                    <div className="text-sm text-[#5A5A5A]">128 reviews</div>
+                    <div className="text-lg">{starsFromAverage(ratingSummary?.aggregate?.average_score)}</div>
+                    <div className="text-sm text-[#5A5A5A]">{ratingSummary?.aggregate?.total_count || 0} reviews</div>
                   </div>
                 </div>
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 text-xs text-[#5A5A5A]
+              ">
+                <div className="p-3 bg-[#F4F9FF] rounded-lg">Recent Avg: <strong>{ratingSummary?.aggregate?.recent_average_score || '0.0'}</strong></div>
+                <div className="p-3 bg-[#F4F9FF] rounded-lg">Reliability: <strong className="uppercase">{ratingSummary?.aggregate?.reliability?.confidence || 'low'}</strong></div>
+                <div className="p-3 bg-[#F4F9FF] rounded-lg">Qualified Ratings: <strong>{Math.round((ratingSummary?.aggregate?.reliability?.qualified_interaction_ratio || 0) * 100)}%</strong></div>
+              </div>
+
+              <div className="text-xs text-[#5A5A5A] mb-3">Breakdown: 5★ {ratingSummary?.breakdown?.[5] || 0} • 4★ {ratingSummary?.breakdown?.[4] || 0} • 3★ {ratingSummary?.breakdown?.[3] || 0} • 2★ {ratingSummary?.breakdown?.[2] || 0} • 1★ {ratingSummary?.breakdown?.[1] || 0}</div>
               <div className="space-y-3">
-                {pastDeals.reviews.map(r => (
+                {(ratingSummary?.recent_reviews?.length ? ratingSummary.recent_reviews : pastDeals.reviews).map(r => (
                   <div key={r.id} className="border border-gray-100 rounded-lg p-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="font-medium text-[#1A1A1A]">{r.text}</div>
                         <div className="text-xs text-[#5A5A5A] mt-1">— Factory Reviewer • 3 weeks ago</div>
                       </div>
-                      <div className="text-sm font-semibold text-[#0A66C2]">5★</div>
+                      <div className="text-sm font-semibold text-[#0A66C2]">{r.score || 5}★</div>
                     </div>
                   </div>
                 ))}

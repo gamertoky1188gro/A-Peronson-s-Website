@@ -1,0 +1,56 @@
+{
+  "ratings": [
+    {
+      "id": "r1",
+      "profile_key": "factory:premier-textile-mills",
+      "from_user_id": "buyer:retailco",
+      "interaction_type": "contract",
+      "score": 5,
+      "comment": "Excellent finishing and compliance checks.",
+      "reliability_flags": { "verified_counterparty": true, "qualified_milestone_pair": true },
+      "created_at": "2026-01-12T10:00:00.000Z"
+    },
+    {
+      "id": "r2",
+      "profile_key": "factory:premier-textile-mills",
+      "from_user_id": "buyer:streetstyle",
+      "interaction_type": "call",
+      "score": 4,
+      "comment": "Flexible with samples and responsive.",
+      "reliability_flags": { "verified_counterparty": true, "qualified_milestone_pair": true },
+      "created_at": "2026-01-20T10:00:00.000Z"
+    },
+    {
+      "id": "r3",
+      "profile_key": "buyer:global-apparel-co",
+      "from_user_id": "factory:alpha-mills",
+      "interaction_type": "deal",
+      "score": 5,
+      "comment": "Great communication and on-time delivery.",
+      "reliability_flags": { "verified_counterparty": true, "qualified_milestone_pair": true },
+      "created_at": "2026-01-17T10:00:00.000Z"
+    },
+    {
+      "id": "r4",
+      "profile_key": "buyer:global-apparel-co",
+      "from_user_id": "factory:beta-garments",
+      "interaction_type": "deal",
+      "score": 5,
+      "comment": "High-quality finishing and consistent sizing.",
+      "reliability_flags": { "verified_counterparty": true, "qualified_milestone_pair": true },
+      "created_at": "2026-01-25T10:00:00.000Z"
+    },
+    {
+      "id": "r5",
+      "profile_key": "buying_house:atlas-buying-house",
+      "from_user_id": "factory:delta-fashion",
+      "interaction_type": "contract",
+      "score": 4,
+      "comment": "Good handling and transparent updates.",
+      "reliability_flags": { "verified_counterparty": true, "qualified_milestone_pair": false },
+      "created_at": "2026-01-15T10:00:00.000Z"
+    }
+  ],
+  "milestones": [],
+  "feedback_requests": []
+}

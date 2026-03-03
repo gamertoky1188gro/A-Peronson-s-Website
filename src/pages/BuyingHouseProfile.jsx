@@ -1,8 +1,20 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import FloatingAssistant from '../components/FloatingAssistant'
 
+
+const API = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+
 export default function BuyingHouseProfile() {
+  const [ratingSummary, setRatingSummary] = useState(null)
+
+  useEffect(() => {
+    fetch(`${API}/ratings/profiles/buying_house:atlas-buying-house`)
+      .then((res) => res.json())
+      .then((data) => setRatingSummary(data))
+      .catch(() => setRatingSummary(null))
+  }, [])
+
   const org = {
     name: 'Atlas Buying House',
     verified: true,
@@ -23,7 +35,7 @@ export default function BuyingHouseProfile() {
   const metrics = {
     completionRate: '94%',
     avgDealTime: '22 days',
-    rating: '4.7',
+    rating: ratingSummary?.aggregate?.average_score || '0.0',
   }
 
   return (
@@ -83,6 +95,7 @@ export default function BuyingHouseProfile() {
                   <div className="font-medium">{partners.length}</div>
                 </div>
               </div>
+              <div className="text-xs text-[#5A5A5A] mt-3">Breakdown: 5★ {ratingSummary?.breakdown?.[5] || 0} • 4★ {ratingSummary?.breakdown?.[4] || 0} • 3★ {ratingSummary?.breakdown?.[3] || 0} • 2★ {ratingSummary?.breakdown?.[2] || 0} • 1★ {ratingSummary?.breakdown?.[1] || 0}</div>
             </section>
 
             <section className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
@@ -128,6 +141,7 @@ export default function BuyingHouseProfile() {
                 <div className="p-4 bg-[#F4F9FF] rounded-lg">
                   <div className="text-xs text-[#5A5A5A]">Rating Score</div>
                   <div className="font-semibold">{metrics.rating}</div>
+                  <div className="text-xs text-[#5A5A5A] mt-2">{ratingSummary?.aggregate?.total_count || 0} reviews • {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence</div>
                 </div>
               </div>
             </section>

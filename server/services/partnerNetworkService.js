@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 import { readJson, updateJson } from '../utils/jsonStore.js'
 import { findUserById, listUsers } from './userService.js'
+import { recordMilestone } from './ratingsService.js'
 import {
   canManagePartnerNetwork,
   canViewPartnerNetwork,
@@ -165,6 +166,25 @@ export async function updatePartnerRequestStatus(user, requestId, action) {
     updatedRow = next
     return rows
   })
+
+  if (updatedRow && nextStatus === 'connected') {
+    await Promise.all([
+      recordMilestone({
+        profileKey: `user:${updatedRow.requester_id}`,
+        counterpartyId: updatedRow.target_id,
+        interactionType: 'contract',
+        milestone: 'contract_signed',
+        actorId: user.id,
+      }),
+      recordMilestone({
+        profileKey: `user:${updatedRow.target_id}`,
+        counterpartyId: updatedRow.requester_id,
+        interactionType: 'contract',
+        milestone: 'contract_signed',
+        actorId: user.id,
+      }),
+    ])
+  }
 
   return updatedRow
 }
