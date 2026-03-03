@@ -22,6 +22,8 @@ async function api(path, options = {}) {
     const error = new Error(data?.error || data?.message || `Request failed (${res.status})`)
     error.code = data?.code
     error.quota = data?.quota
+    error.requirements = data?.requirements
+    error.capabilities = data?.capabilities
     error.remainingQuota = data?.remaining_quota
     throw error
   }
@@ -71,6 +73,7 @@ export default function SearchResults() {
   const [showFilters, setShowFilters] = useState(false)
   const [activeTab, setActiveTab] = useState('all')
   const [plan, setPlan] = useState('free')
+  const [upgradePrompt, setUpgradePrompt] = useState('')
   const [filters, setFilters] = useState({
     primary: '',
     category: '',
@@ -85,6 +88,7 @@ export default function SearchResults() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [quotaMessage, setQuotaMessage] = useState('')
+  const [capabilityMessage, setCapabilityMessage] = useState('')
   const [alertFeedback, setAlertFeedback] = useState('')
   const [ratingsByProfile, setRatingsByProfile] = useState({})
 
@@ -107,6 +111,7 @@ export default function SearchResults() {
     setLoading(true)
     setError('')
     setQuotaMessage('')
+    setUpgradePrompt('')
 
     try {
       const [requestRes, companyRes] = await Promise.all([
@@ -119,12 +124,18 @@ export default function SearchResults() {
 
       const requirementQuota = requestRes?.quota
       const productQuota = companyRes?.quota
+      const requirementPlan = requestRes?.plan || plan
+      const hasAdvancedAccess = Boolean(requestRes?.capabilities?.filters?.advanced)
+      setPlan(requirementPlan === 'premium' ? 'premium' : 'free')
+      setCapabilityMessage(hasAdvancedAccess ? 'Advanced filters enabled for your plan.' : 'Advanced filters are locked on free plans.')
       if (requirementQuota || productQuota) {
         setQuotaMessage(`Daily quota remaining — Requirements: ${requirementQuota?.remaining ?? '-'}, Products: ${productQuota?.remaining ?? '-'}`)
       }
     } catch (err) {
       if (err.code === 'upgrade_required') {
-        setError('This filter is available on premium plans only. Upgrade to unlock advanced search.')
+        const blocked = err?.requirements?.advanced_filters?.join(', ')
+        setError(`This filter is available on premium plans only.${blocked ? ` Blocked: ${blocked}.` : ''} Upgrade to unlock advanced search.`)
+        setUpgradePrompt('Upgrade to Premium to unlock advanced filters and larger daily quotas.')
       } else if (err.code === 'limit_reached') {
         const remaining = Number.isFinite(err.remainingQuota) ? err.remainingQuota : err?.quota?.remaining
         setError(`Daily limit reached for this action.${remaining !== undefined ? ` Remaining today: ${remaining}` : ''}`)
@@ -136,7 +147,7 @@ export default function SearchResults() {
     } finally {
       setLoading(false)
     }
-  }, [queryString])
+  }, [plan, queryString])
 
   useEffect(() => {
     api('/subscriptions/me')
@@ -193,7 +204,7 @@ export default function SearchResults() {
 
   function handlePremiumFilterChange(key, value) {
     if (premiumLocked) {
-      setAlertFeedback('Upgrade to premium to use advanced filters.')
+      setUpgradePrompt('Upgrade to premium to use advanced filters.')
       return
     }
     setFilters((current) => ({ ...current, [key]: value }))
@@ -224,8 +235,10 @@ export default function SearchResults() {
 
         <p className="mb-2 text-xs text-gray-600">Current plan: <strong className="uppercase">{plan}</strong></p>
         {premiumLocked && <p className="mb-4 rounded border border-amber-300 bg-amber-50 p-2 text-sm text-amber-800">Upgrade to Premium to unlock advanced filters and higher daily limits.</p>}
+        {upgradePrompt && <p className="mb-4 rounded border border-amber-300 bg-amber-50 p-2 text-sm text-amber-800">{upgradePrompt}</p>}
         {alertFeedback && <p className="mb-4 text-sm text-blue-700">{alertFeedback}</p>}
-        {quotaMessage && <p className="mb-4 text-xs text-gray-600">{quotaMessage}</p>}
+        {quotaMessage && <p className="mb-2 text-xs text-gray-600">{quotaMessage}</p>}
+        {capabilityMessage && <p className="mb-4 text-xs text-gray-600">{capabilityMessage}</p>}
 
         {showFilters && (
           <div className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-6 mb-6">

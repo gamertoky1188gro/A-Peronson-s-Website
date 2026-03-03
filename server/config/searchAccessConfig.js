@@ -24,3 +24,18 @@ export const PLAN_FILTER_ACCESS = {
     allowedTiers: ['basic', 'advanced'],
   },
 }
+
+export const SEARCH_CAPABILITIES = {
+  free: {
+    filters: {
+      advanced: false,
+    },
+    daily_limits: PLAN_DAILY_LIMITS.free,
+  },
+  premium: {
+    filters: {
+      advanced: true,
+    },
+    daily_limits: PLAN_DAILY_LIMITS.premium,
+  },
+}
