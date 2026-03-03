@@ -1,4 +1,12 @@
-import { deleteDocument, listDocuments, saveDocumentMetadata } from '../services/documentService.js'
+import {
+  createDraftContract,
+  deleteDocument,
+  listContracts,
+  listDocuments,
+  saveDocumentMetadata,
+  updateContractArtifact,
+  updateContractSignatures,
+} from '../services/documentService.js'
 
 export async function uploadDocument(req, res) {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
@@ -24,4 +32,32 @@ export async function removeDocument(req, res) {
   if (result === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
   if (!result) return res.status(404).json({ error: 'Document not found' })
   return res.json({ ok: true })
+}
+
+export async function createContractDraft(req, res) {
+  try {
+    const contract = await createDraftContract(req.user.id, req.body || {})
+    return res.status(201).json(contract)
+  } catch (error) {
+    return res.status(400).json({ error: error.message })
+  }
+}
+
+export async function getContracts(req, res) {
+  const contracts = await listContracts(req.user)
+  return res.json(contracts)
+}
+
+export async function patchContractSignatures(req, res) {
+  const result = await updateContractSignatures(req.params.contractId, req.body || {}, req.user)
+  if (result === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+  if (!result) return res.status(404).json({ error: 'Contract not found' })
+  return res.json(result)
+}
+
+export async function patchContractArtifact(req, res) {
+  const result = await updateContractArtifact(req.params.contractId, req.body || {}, req.user)
+  if (result === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+  if (!result) return res.status(404).json({ error: 'Contract not found' })
+  return res.json(result)
 }
