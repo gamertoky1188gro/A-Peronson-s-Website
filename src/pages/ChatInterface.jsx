@@ -68,9 +68,13 @@ export default function ChatInterface() {
 
       setPriorityInbox(priority)
       setMessageRequests(requests)
-      if (!activeThreadId && priority.length > 0) {
-        setActiveThreadId(priority[0].id)
-      }
+      setActiveThreadId((currentThreadId) => {
+        const threadStillVisible = [...priority, ...requests].some((thread) => thread.id === currentThreadId)
+        if (threadStillVisible) return currentThreadId
+        if (priority.length > 0) return priority[0].id
+        if (requests.length > 0) return requests[0].id
+        return null
+      })
 
       if (allMatchIds.length > 0) {
         const callHistoryResponse = await apiRequest(`/calls/history?match_ids=${allMatchIds.join(',')}`, { token })
@@ -92,7 +96,7 @@ export default function ChatInterface() {
     } finally {
       setLoading(false)
     }
-  }, [activeThreadId])
+  }, [])
 
   useEffect(() => {
     loadInbox()
@@ -130,9 +134,6 @@ export default function ChatInterface() {
         token,
       })
       await loadInbox()
-      if (decision === 'reject' && activeThreadId === threadId) {
-        setActiveThreadId(null)
-      }
     } catch (err) {
       setError(err.message || `Failed to ${decision} request`)
     }
