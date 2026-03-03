@@ -1,5 +1,5 @@
 
-const ROLES = ['buyer', 'factory', 'buying_house', 'admin']
+const ROLES = ['buyer', 'factory', 'buying_house', 'admin', 'agent', 'owner']
 
 export function validateEmail(email) {
   return typeof email === 'string' && /.+@.+\..+/.test(email)

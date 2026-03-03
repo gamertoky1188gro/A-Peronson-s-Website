@@ -64,7 +64,7 @@ function AppRoutes() {
       <Route path="/buyer/:id" element={<ProtectedRoute><BuyerProfile /></ProtectedRoute>} />
       <Route path="/factory/:id" element={<ProtectedRoute><FactoryProfile /></ProtectedRoute>} />
       <Route path="/buying-house/:id" element={<ProtectedRoute><BuyingHouseProfile /></ProtectedRoute>} />
-      <Route path="/partner-network" element={<ProtectedRoute roles={['buying_house', 'admin', 'factory']}><PartnerNetwork /></ProtectedRoute>} />
+      <Route path="/partner-network" element={<ProtectedRoute roles={['buying_house', 'admin', 'factory', 'agent', 'owner']}><PartnerNetwork /></ProtectedRoute>} />
       <Route path="/product-management" element={<ProtectedRoute roles={['factory', 'buying_house', 'admin']}><ProductManagement /></ProtectedRoute>} />
       <Route path="/buyer-requests" element={<ProtectedRoute roles={['buyer', 'buying_house', 'admin']}><BuyerRequestManagement /></ProtectedRoute>} />
       <Route path="/contracts" element={<ProtectedRoute><ContractVault /></ProtectedRoute>} />

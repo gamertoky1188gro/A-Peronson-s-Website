@@ -19,6 +19,7 @@ import assistantRoutes from './routes/assistantRoutes.js'
 import conversationRoutes from './routes/conversationRoutes.js'
 import analyticsRoutes from './routes/analyticsRoutes.js'
 import messageRoutes from './routes/messageRoutes.js'
+import partnerNetworkRoutes from './routes/partnerNetworkRoutes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { logInfo } from './utils/logger.js'
 
@@ -51,6 +52,7 @@ app.use('/api/system', systemRoutes)
 app.use('/api/notifications', notificationRoutes)
 app.use('/api/social', socialRoutes)
 app.use('/api/search', searchRoutes)
+app.use('/api/partners', partnerNetworkRoutes)
 app.use(errorHandler)
 
 app.listen(PORT, () => {
