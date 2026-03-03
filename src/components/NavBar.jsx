@@ -14,20 +14,20 @@ const roleLinks = {
     { to: '/search', label: 'Search' },
     { to: '/buyer-requests', label: 'Requests' },
     { to: '/chat', label: 'Chat' },
-    { to: '/verification-center', label: 'Verification' },
+    { to: '/verification', label: 'Verification' },
   ],
   factory: [
     { to: '/feed', label: 'Feed' },
     { to: '/product-management', label: 'Products' },
     { to: '/partner-network', label: 'Partner Network' },
     { to: '/member-management', label: 'Members' },
-    { to: '/verification-center', label: 'Verification' },
+    { to: '/verification', label: 'Verification' },
   ],
   buying_house: [
     { to: '/owner', label: 'Owner Dashboard' },
     { to: '/agent', label: 'Agent' },
     { to: '/member-management', label: 'Members' },
-    { to: '/verification-center', label: 'Verification' },
+    { to: '/verification', label: 'Verification' },
     { to: '/partner-network', label: 'Partner Network' },
     { to: '/insights', label: 'Insights' },
   ],
@@ -35,7 +35,7 @@ const roleLinks = {
     { to: '/owner', label: 'Owner Dashboard' },
     { to: '/insights', label: 'Insights' },
     { to: '/mvp', label: 'MVP' },
-    { to: '/verification-center', label: 'Verification' },
+    { to: '/verification', label: 'Verification' },
   ],
 }
 
