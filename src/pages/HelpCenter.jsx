@@ -1,8 +1,121 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState, useEffect } from 'react'
 import AccessDeniedState from '../components/AccessDeniedState'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 
-export default function HelpCenter(){
+const HELP_SECTIONS = [
+  {
+    id: 'quick-start',
+    title: '1. Quick Start Guide',
+    content: [
+      'Step 1: Create an Account (Buyer, Factory, or Buying House).',
+      'Step 2: Complete your basic profile setup (Organization Name, Category, Profile Image).',
+      'Step 3: Explore the Main Feed or Search for relevant posts.',
+      'Step 4: Start conversations or post Buyer Requests / Products.',
+      'Step 5: Upgrade to Premium if advanced visibility and analytics are required.'
+    ]
+  },
+  {
+    id: 'account-types',
+    title: '2. Account Types',
+    subsections: [
+      {
+        name: 'Buyer Account',
+        points: ['Post detailed Buyer Requests.', 'Search and filter factories.', 'Send direct messages.', 'Schedule calls.']
+      },
+      {
+        name: 'Factory Account',
+        points: ['Upload product posts and videos.', 'Respond to Buyer Requests.', 'Accept connection requests from Buying Houses.', 'Manage sub-accounts (Agents).']
+      },
+      {
+        name: 'Buying House Account',
+        points: ['Manage multiple agents.', 'Connect with multiple factories.', 'Assign Buyer Requests to specific agents.', 'Monitor deals and analytics (Premium).']
+      }
+    ]
+  },
+  {
+    id: 'verification',
+    title: '3. Verification Process',
+    description: 'Verification is document-based and requires backend approval.',
+    roles: [
+      {
+        role: 'Factories must submit',
+        docs: ['Company Registration', 'Trade License', 'TIN', 'Authorized Person NID', 'Company Bank Proof', 'ERC (Export Registration Certificate)']
+      },
+      {
+        role: 'Buying Houses must submit',
+        docs: ['Company Registration', 'Trade License', 'TIN', 'Authorized Person NID', 'Company Bank Proof']
+      },
+      {
+        role: 'International Buyers (EU / USA) must submit',
+        docs: ['Business Registration', 'VAT (EU) or EIN (USA)', 'EORI (EU) or IOR (USA)', 'Bank Proof']
+      }
+    ],
+    footer: 'Verification status is subscription-based and must be renewed monthly. The more verified documentation a company provides, the stronger its credibility.'
+  },
+  {
+    id: 'messaging',
+    title: '4. Messaging & Conversation Rules',
+    sections: [
+      { title: 'Verified Users', text: 'Messages go directly to inbox.' },
+      { title: 'Unverified Users', text: 'Messages appear in "Message Requests."' },
+      { title: 'Buying House Conversation Lock', points: [
+        'When an Agent starts a conversation, it is assigned to that Agent.',
+        'Other Agents cannot message unless permission is granted.',
+        'This prevents internal conflict.'
+      ]}
+    ]
+  },
+  {
+    id: 'subscriptions',
+    title: '5. Subscription Plans',
+    description: 'Two Plans Available: Free and Premium.',
+    points: [
+      'Increased profile visibility',
+      'Advanced analytics (for eligible accounts)',
+      'Extended management capabilities'
+    ],
+    footer: 'Feature visibility varies depending on account type.'
+  },
+  {
+    id: 'calls',
+    title: '6. Video & Audio Calls',
+    points: [
+      'Calls can be initiated directly from chat.',
+      'Optional scheduling feature available.',
+      'All calls may be recorded for security and compliance.',
+      'Users are notified before recording begins.'
+    ]
+  },
+  {
+    id: 'contracts',
+    title: '7. Contracts & Legal Vault',
+    points: [
+      'Digital contracts can be signed through the platform.',
+      'PDF copies are stored securely in the Legal Vault.',
+      'Both parties can access their contract history.'
+    ],
+    footer: 'GarTexHub does not process direct financial transactions.'
+  },
+  {
+    id: 'security',
+    title: '8. Security & Data Protection',
+    points: [
+      'Uploaded documents are securely stored.',
+      'Verification requires backend approval.',
+      'Expired licenses may remove verified status.',
+      'Financial details are protected through encrypted systems.'
+    ]
+  },
+  {
+    id: 'assistant',
+    title: '9. Floating AI Assistant',
+    description: 'The Floating Assistant helps users with:',
+    points: ['Understand settings', 'Navigate dashboards', 'Access help articles', 'Connect to support'],
+    footer: 'It does not handle negotiations.'
+  }
+]
+
+export default function HelpCenter() {
   const [q, setQ] = useState('')
   const [entries, setEntries] = useState([])
   const [feedback, setFeedback] = useState('')
@@ -12,11 +125,10 @@ export default function HelpCenter(){
   const isOwnerAdmin = currentUser?.role === 'owner' || currentUser?.role === 'admin'
 
   const staticFaqs = [
-    { q: 'How to create Buyer Request?', a: 'Use Buyer Request Management. Buyers can include normal fields plus custom requirement description.' },
-    { q: 'How does smart notification work?', a: 'When you search products/requests, your query is saved as a search alert. New matching posts appear in Notifications.' },
-    { q: 'How are verified and unverified messages handled?', a: 'Verified users are prioritized for direct inbox routing. Others can still send but remain in request flow.' },
-    { q: 'How to manage contracts?', a: 'Use Contract Vault to store digitally signed contract files and track deal artifacts.' },
-    { q: 'What verification documents are required?', a: 'Open Verification Center for your live checklist. Requirements are role and region-specific: factories submit business + compliance docs (e.g., trade license/TIN/ERC), buying houses submit agency docs, and buyers submit bank proof plus EU (VAT/EORI) or US (EIN/IOR) documents based on selected buyer country.' },
+    { q: 'Can I buy verification without documents?', a: 'No. Verification requires mandatory document submission and approval.' },
+    { q: 'Can I create multiple sub-accounts?', a: 'Yes. Buying Houses and Factories can create limited sub-accounts under Free plans.' },
+    { q: 'Does GarTexHub handle payments?', a: 'No. The platform facilitates communication and contracts only.' },
+    { q: 'Can I increase my visibility?', a: 'Premium plans may provide improved reach.' },
   ]
 
   const loadFaqs = useCallback(async () => {
@@ -25,12 +137,14 @@ export default function HelpCenter(){
       if (!token) return
       const data = await apiRequest('/assistant/knowledge', { token })
       setEntries((data.entries || []).filter((entry) => (entry.type || 'faq') === 'faq'))
-      setFeedback('')
     } catch (err) {
       setFeedback(err.status === 403 ? 'Access denied' : err.message)
     }
   }, [])
 
+  useEffect(() => {
+    if (isOwnerAdmin) loadFaqs()
+  }, [isOwnerAdmin, loadFaqs])
 
   function selectForEdit(entry) {
     setEditingId(entry.id)
@@ -49,30 +163,24 @@ export default function HelpCenter(){
   async function saveFaq(e) {
     e.preventDefault()
     const token = getToken()
-    if (!token) {
-      setFeedback('Please login again to edit FAQ data')
-      return
-    }
-
+    if (!token) return
     const payload = {
       type: 'faq',
       question: form.question,
       answer: form.answer,
       keywords: form.keywords.split(',').map((k) => k.trim()).filter(Boolean),
     }
-
     try {
       if (editingId) {
         await apiRequest(`/assistant/knowledge/${editingId}`, { method: 'PUT', token, body: payload })
-        setFeedback('FAQ entry updated')
       } else {
         await apiRequest('/assistant/knowledge', { method: 'POST', token, body: payload })
-        setFeedback('FAQ entry added')
       }
       resetForm()
-      await loadFaqs()
+      loadFaqs()
+      setFeedback('FAQ updated')
     } catch (err) {
-      setFeedback(err.status === 403 ? 'Access denied' : err.message)
+      setFeedback(err.message)
     }
   }
 
@@ -81,102 +189,201 @@ export default function HelpCenter(){
     if (!token) return
     try {
       await apiRequest(`/assistant/knowledge/${entryId}`, { method: 'DELETE', token })
-      if (editingId === entryId) resetForm()
-      setFeedback('FAQ entry removed')
-      await loadFaqs()
+      loadFaqs()
     } catch (err) {
-      setFeedback(err.status === 403 ? 'Access denied' : err.message)
+      setFeedback(err.message)
     }
   }
 
-  const access = [
-    ['Public', '/, /pricing, /about, /terms, /privacy, /help, /login, /signup'],
-    ['Any logged-in user', '/feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts, /notifications, /chat, /call'],
-    ['Buyer + Buying House + Admin', '/buyer-requests'],
-    ['Factory + Buying House + Admin', '/product-management, /partner-network'],
-    ['Buying House + Factory + Admin', '/member-management, /org-settings'],
-    ['Buying House + Admin', '/owner, /agent, /insights'],
-  ]
-
-  const faqs = [...entries.map((entry) => ({ q: entry.question, a: entry.answer, managed: true, id: entry.id })), ...staticFaqs]
+  const allFaqs = [...entries.map(e => ({ q: e.question, a: e.answer, id: e.id, managed: true })), ...staticFaqs]
+  const filteredFaqs = allFaqs.filter(f => f.q.toLowerCase().includes(q.toLowerCase()) || f.a.toLowerCase().includes(q.toLowerCase()))
 
   return (
-    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card">
-      <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <main className="lg:col-span-2">
-          <h1 className="text-2xl font-bold mb-2">Help Center</h1>
-          <input placeholder="Search help topics..." value={q} onChange={(e)=>setQ(e.target.value)} className="w-full border px-3 py-2 rounded mb-4" />
+    <div className="min-h-screen neo-page cyberpunk-page bg-[#F4F7F9] p-4 lg:p-8">
+      <div className="max-w-6xl mx-auto">
+        <header className="mb-8 text-center">
+          <h1 className="text-3xl font-bold text-[#0A192F]">HELP CENTER – GarTexHub</h1>
+          <p className="text-[#5A5A5A] mt-2">Professional operational manual and platform guidance.</p>
+        </header>
 
-          <div className="space-y-3 mb-6">
-            {faqs.filter(f=>f.q.toLowerCase().includes(q.toLowerCase())).map((f,i)=> (
-              <details key={f.id || i} className="bg-white neo-panel cyberpunk-card border rounded p-3">
-                <summary className="font-semibold">{f.q}</summary>
-                <p className="text-sm text-[#5A5A5A] mt-2">{f.a}</p>
-              </details>
-            ))}
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-3 space-y-8">
+            {HELP_SECTIONS.map(section => (
+              <section 
+                key={section.id} 
+                id={section.id} 
+                className="bg-white neo-panel cyberpunk-card p-6 border rounded-lg shadow-sm scroll-mt-6"
+              >
+                <h2 className="text-xl font-bold text-[#0A192F] mb-4 pb-2 border-b">{section.title}</h2>
+                
+                {section.description && <p className="mb-4 text-[#333]">{section.description}</p>}
+                
+                {section.content && (
+                  <ul className="space-y-2">
+                    {section.content.map((item, i) => <li key={i} className="text-[#5A5A5A] flex gap-2"><span>•</span> {item}</li>)}
+                  </ul>
+                )}
 
-          {isOwnerAdmin ? (
-            <section className="bg-white neo-panel cyberpunk-card border rounded p-4 mb-6">
-              <div className="mb-3 flex items-center justify-between gap-2"><h2 className="text-lg font-semibold">Manage Help Center FAQ</h2><button type="button" onClick={loadFaqs} className="px-3 py-2 border rounded text-sm">Refresh FAQs</button></div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <form onSubmit={saveFaq} className="border rounded p-3">
-                  <label className="block text-sm">Question</label>
-                  <input value={form.question} onChange={(e) => setForm({ ...form, question: e.target.value })} className="w-full border px-3 py-2 rounded mb-3" required />
-                  <label className="block text-sm">Answer</label>
-                  <textarea value={form.answer} onChange={(e) => setForm({ ...form, answer: e.target.value })} className="w-full border px-3 py-2 rounded mb-3 min-h-28" required />
-                  <label className="block text-sm">Keywords (comma separated)</label>
-                  <input value={form.keywords} onChange={(e) => setForm({ ...form, keywords: e.target.value })} className="w-full border px-3 py-2 rounded mb-3" />
-                  <div className="flex items-center gap-2">
-                    <button type="submit" className="px-3 py-2 bg-[#0A66C2] text-white rounded">{editingId ? 'Update' : 'Save'} FAQ</button>
-                    {editingId && <button type="button" onClick={resetForm} className="px-3 py-2 border rounded">Cancel</button>}
+                {section.subsections && (
+                  <div className="space-y-4">
+                    {section.subsections.map((sub, i) => (
+                      <div key={i}>
+                        <h3 className="font-bold text-[#0A192F] mb-1">{sub.name}:</h3>
+                        <ul className="list-disc ml-5 text-[#5A5A5A]">
+                          {sub.points.map((p, j) => <li key={j}>{p}</li>)}
+                        </ul>
+                      </div>
+                    ))}
                   </div>
-                </form>
+                )}
 
-                <div className="border rounded p-3 max-h-80 overflow-auto">
-                  <h3 className="font-semibold mb-2">Managed FAQs ({entries.length})</h3>
-                  <div className="space-y-2">
-                    {entries.map((entry) => (
-                      <div key={entry.id} className="border rounded p-2">
-                        <p className="font-semibold">{entry.question}</p>
-                        <p className="text-sm text-[#5A5A5A]">{entry.answer}</p>
-                        <div className="mt-2 flex gap-2">
-                          <button onClick={() => selectForEdit(entry)} className="px-2 py-1 text-xs border rounded">Edit</button>
-                          <button onClick={() => removeFaq(entry.id)} className="px-2 py-1 text-xs border rounded text-red-600">Delete</button>
+                {section.roles && (
+                  <div className="space-y-4">
+                    {section.roles.map((r, i) => (
+                      <div key={i}>
+                        <h3 className="font-bold text-[#0A192F] mb-1">{r.role}:</h3>
+                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 ml-5 list-disc text-[#5A5A5A]">
+                          {r.docs.map((d, j) => <li key={j}>{d}</li>)}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {section.sections && (
+                  <div className="space-y-4">
+                    {section.sections.map((s, i) => (
+                      <div key={i}>
+                        <h3 className="font-bold text-[#0A192F] mb-1">{s.title}:</h3>
+                        {s.text && <p className="text-[#5A5A5A] ml-2">{s.text}</p>}
+                        {s.points && (
+                          <ul className="list-disc ml-5 text-[#5A5A5A]">
+                            {s.points.map((p, j) => <li key={j}>{p}</li>)}
+                          </ul>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {section.points && !section.subsections && !section.sections && (
+                  <ul className="list-disc ml-5 text-[#5A5A5A] space-y-1">
+                    {section.points.map((p, i) => <li key={i}>{p}</li>)}
+                  </ul>
+                )}
+
+                {section.footer && <p className="mt-4 text-sm italic text-[#5A5A5A] border-t pt-2">{section.footer}</p>}
+              </section>
+            ))}
+
+            {/* FAQ Section */}
+            <section id="faq" className="bg-white neo-panel cyberpunk-card p-6 border rounded-lg shadow-sm">
+              <h2 className="text-xl font-bold text-[#0A192F] mb-4 pb-2 border-b">10. Frequently Asked Questions (FAQ)</h2>
+              <div className="mb-4">
+                <input 
+                  placeholder="Search FAQs..." 
+                  value={q} 
+                  onChange={(e) => setQ(e.target.value)} 
+                  className="w-full border px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0A66C2]" 
+                />
+              </div>
+              <div className="space-y-4">
+                {filteredFaqs.map((f, i) => (
+                  <details key={i} className="group border rounded-md p-3 bg-[#F8F9FA]">
+                    <summary className="font-bold cursor-pointer list-none flex justify-between items-center text-[#0A192F]">
+                      Q: {f.q}
+                      <span className="group-open:rotate-180 transition-transform">▼</span>
+                    </summary>
+                    <p className="mt-3 text-[#5A5A5A] pl-4 border-l-2 border-[#0A66C2]">A: {f.a}</p>
+                  </details>
+                ))}
+              </div>
+            </section>
+
+            {/* Admin FAQ Management */}
+            {isOwnerAdmin && (
+              <section className="bg-[#E9F0F7] p-6 border-2 border-[#0A66C2] rounded-lg">
+                <h2 className="text-lg font-bold mb-4">Admin: Manage Knowledge Base FAQ</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <form onSubmit={saveFaq} className="space-y-3">
+                    <input 
+                      placeholder="Question" 
+                      value={form.question} 
+                      onChange={(e) => setForm({...form, question: e.target.value})} 
+                      className="w-full border p-2 rounded" 
+                      required 
+                    />
+                    <textarea 
+                      placeholder="Answer" 
+                      value={form.answer} 
+                      onChange={(e) => setForm({...form, answer: e.target.value})} 
+                      className="w-full border p-2 rounded min-h-24" 
+                      required 
+                    />
+                    <input 
+                      placeholder="Keywords (comma separated)" 
+                      value={form.keywords} 
+                      onChange={(e) => setForm({...form, keywords: e.target.value})} 
+                      className="w-full border p-2 rounded" 
+                    />
+                    <div className="flex gap-2">
+                      <button type="submit" className="bg-[#0A66C2] text-white px-4 py-2 rounded">{editingId ? 'Update' : 'Add'} FAQ</button>
+                      {editingId && <button type="button" onClick={resetForm} className="border px-4 py-2 rounded">Cancel</button>}
+                    </div>
+                  </form>
+                  <div className="max-h-64 overflow-y-auto space-y-2 pr-2">
+                    {entries.map(e => (
+                      <div key={e.id} className="text-xs border p-2 bg-white rounded flex justify-between items-start">
+                        <div className="flex-1">
+                          <p className="font-bold">{e.question}</p>
+                          <p className="text-[#5A5A5A] truncate">{e.answer}</p>
+                        </div>
+                        <div className="flex gap-1 ml-2">
+                          <button onClick={() => selectForEdit(e)} className="text-blue-600">Edit</button>
+                          <button onClick={() => removeFaq(e.id)} className="text-red-600">Del</button>
                         </div>
                       </div>
                     ))}
-                    {!entries.length && <p className="text-sm text-[#5A5A5A]">No managed FAQs yet.</p>}
                   </div>
                 </div>
+                {feedback && <p className="mt-2 text-xs text-blue-800">{feedback}</p>}
+              </section>
+            )}
+
+            {/* Contact Section */}
+            <section className="bg-[#0A192F] text-white p-8 rounded-lg text-center">
+              <h2 className="text-2xl font-bold mb-4">11. Contact Support</h2>
+              <p className="mb-6 opacity-90">If your issue is not resolved, you may use the Floating Assistant, submit a support ticket, or contact the GarTexHub Support Team.</p>
+              <div className="flex flex-wrap justify-center gap-4">
+                <button className="bg-[#0A66C2] hover:bg-[#004182] px-6 py-2 rounded-full font-bold transition-colors">Open Support Ticket</button>
+                <button className="border border-white hover:bg-white hover:text-[#0A192F] px-6 py-2 rounded-full font-bold transition-colors">Live Chat</button>
               </div>
-              {feedback && <p className="mt-3 text-sm text-[#5A5A5A]">{feedback}</p>}
+              <p className="mt-4 text-xs opacity-70">Response time may vary depending on subscription level.</p>
             </section>
-          ) : (
-            <AccessDeniedState message="Only owners and admins can edit Help Center FAQ data." />
-          )}
-
-          <section className="bg-white neo-panel cyberpunk-card border rounded p-4">
-            <h2 className="text-lg font-semibold mb-3">Page access matrix</h2>
-            <div className="space-y-2 text-sm">
-              {access.map(([role, pages]) => (
-                <div key={role} className="grid grid-cols-12 gap-2 border-b border-white/10 pb-2">
-                  <div className="col-span-4 font-semibold">{role}</div>
-                  <div className="col-span-8">{pages}</div>
-                </div>
-              ))}
-            </div>
-          </section>
-        </main>
-
-        <aside>
-          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow p-4">
-            <h4 className="font-semibold">Floating Assistant</h4>
-            <p className="text-sm text-[#5A5A5A]">Available on all pages to help with setup, settings and quick workflow guidance.</p>
           </div>
-        </aside>
-      </div>
 
+          {/* Sidebar */}
+          <div className="space-y-6">
+            <div className="sticky top-8 space-y-6">
+              <div className="bg-white p-5 border rounded-lg shadow-sm">
+                <h3 className="font-bold text-[#0A192F] mb-3">Quick Navigation</h3>
+                <nav className="space-y-2 text-sm text-[#0A66C2]">
+                  {HELP_SECTIONS.map(s => (
+                    <a key={s.id} href={`#${s.id}`} className="block hover:underline">{s.title}</a>
+                  ))}
+                  <a href="#faq" className="block hover:underline">10. FAQ</a>
+                </nav>
+              </div>
+
+              <div className="bg-[#F0F7FF] p-5 border border-[#BEE3F8] rounded-lg">
+                <h3 className="font-bold text-[#0A192F] mb-2 text-sm">Floating Assistant</h3>
+                <p className="text-xs text-[#5A5A5A] leading-relaxed">Available on all pages to help with setup, navigation, and support. It does not handle negotiations.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

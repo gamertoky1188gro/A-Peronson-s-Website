@@ -126,10 +126,20 @@ export default function NavBar() {
                     <span>🔔</span>
                     <span className="absolute -right-0.5 -top-0.5 rounded-full bg-rose-600 px-1 text-[10px] text-white">3</span>
                   </Link>
-                  <button onClick={handleLogout} className="px-3 py-2 text-xs rounded-full border">Logout</button>
+                  <button
+                    onClick={handleLogout}
+                    className="rounded-full border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  >
+                    Logout
+                  </button>
                 </>
               ) : (
-                <Link to="/login" className="px-3 py-2 text-xs rounded-full border">Login</Link>
+                <Link
+                  to="/login"
+                  className="rounded-full border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                >
+                  Login
+                </Link>
               )}
 
               <button onClick={() => setMobileOpen(!mobileOpen)} className="rounded-md p-2 md:hidden" aria-label="Open menu">
