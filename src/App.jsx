@@ -29,6 +29,7 @@ import AgentDashboard from './pages/AgentDashboard'
 import MvpDashboard from './pages/MvpDashboard'
 import FloatingAssistant from './components/FloatingAssistant'
 import AccessDenied from './pages/AccessDenied'
+import VerificationCenter from './pages/VerificationCenter'
 import { getCurrentUser } from './lib/auth'
 
 function ProtectedRoute({ children, roles }) {
@@ -71,6 +72,7 @@ function AppRoutes() {
       <Route path="/notifications" element={<ProtectedRoute><NotificationsCenter /></ProtectedRoute>} />
       <Route path="/chat" element={<ProtectedRoute><ChatInterface /></ProtectedRoute>} />
       <Route path="/call" element={<ProtectedRoute><CallInterface /></ProtectedRoute>} />
+      <Route path="/verification-center" element={<ProtectedRoute><VerificationCenter /></ProtectedRoute>} />
 
       <Route path="/member-management" element={<ProtectedRoute roles={['buying_house', 'factory', 'owner', 'admin']}><MemberManagement /></ProtectedRoute>} />
       <Route path="/org-settings" element={<ProtectedRoute roles={['buying_house', 'factory', 'owner', 'admin']}><OrgSettings /></ProtectedRoute>} />
