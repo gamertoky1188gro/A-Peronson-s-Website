@@ -1,5 +1,11 @@
 import { listMatchesForFactory, listMatchesForRequirement } from '../services/matchingService.js'
-import { listMessagesByMatch, postMessage, tieredInbox } from '../services/messageService.js'
+import {
+  acceptMessageRequest,
+  listMessagesByMatch,
+  postMessage,
+  rejectMessageRequest,
+  tieredInbox,
+} from '../services/messageService.js'
 import { readJson } from '../utils/jsonStore.js'
 
 export async function sendMessage(req, res) {
@@ -27,4 +33,14 @@ export async function inbox(req, res) {
     matchIds = all
   }
   return res.json(await tieredInbox(matchIds))
+}
+
+export async function acceptRequest(req, res) {
+  const request = await acceptMessageRequest(req.params.threadId, req.user.id)
+  return res.json({ ok: true, request })
+}
+
+export async function rejectRequest(req, res) {
+  const request = await rejectMessageRequest(req.params.threadId, req.user.id)
+  return res.json({ ok: true, request })
 }

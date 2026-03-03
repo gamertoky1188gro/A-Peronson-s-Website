@@ -117,21 +117,33 @@ export default function ChatInterface() {
     return callHistoryByThread[activeThread.matchId] || []
   }, [activeThread, callHistoryByThread])
 
-  function acceptRequest(threadId) {
-    setMessageRequests((current) => {
-      const accepted = current.find((thread) => thread.id === threadId)
-      if (!accepted) return current
-      setPriorityInbox((existing) => [accepted, ...existing].sort(sortByNewest))
-      if (!activeThreadId) setActiveThreadId(threadId)
-      return current.filter((thread) => thread.id !== threadId)
-    })
+  async function updateRequestState(threadId, decision) {
+    const token = getToken()
+    if (!token || !threadId) {
+      setError('Please sign in to update message requests.')
+      return
+    }
+
+    try {
+      await apiRequest(`/messages/requests/${threadId}/${decision}`, {
+        method: 'POST',
+        token,
+      })
+      await loadInbox()
+      if (decision === 'reject' && activeThreadId === threadId) {
+        setActiveThreadId(null)
+      }
+    } catch (err) {
+      setError(err.message || `Failed to ${decision} request`)
+    }
   }
 
-  function rejectRequest(threadId) {
-    setMessageRequests((current) => current.filter((thread) => thread.id !== threadId))
-    if (activeThreadId === threadId) {
-      setActiveThreadId(filteredPriorityInbox[0]?.id || null)
-    }
+  async function acceptRequest(threadId) {
+    await updateRequestState(threadId, 'accept')
+  }
+
+  async function rejectRequest(threadId) {
+    await updateRequestState(threadId, 'reject')
   }
 
   async function scheduleCall(thread) {
