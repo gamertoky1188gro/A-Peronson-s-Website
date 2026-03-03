@@ -65,10 +65,21 @@ export async function tieredInbox(matchIds) {
   const messageRequests = await readJson(MESSAGE_REQUESTS_FILE)
   const filtered = messages.filter((m) => matchIds.includes(m.match_id))
   const requestMap = new Map(messageRequests.map((request) => [request.thread_id, request]))
+  const latestByThread = new Map()
+
+  for (const message of filtered) {
+    const existing = latestByThread.get(message.match_id)
+    if (!existing || new Date(message.timestamp || 0).getTime() > new Date(existing.timestamp || 0).getTime()) {
+      latestByThread.set(message.match_id, message)
+    }
+  }
 
   const priority = []
   const requestPool = []
-  for (const m of filtered) {
+  for (const matchId of matchIds) {
+    const m = latestByThread.get(matchId)
+    if (!m) continue
+
     const request = requestMap.get(m.match_id)
     if (request?.status === 'rejected') continue
 
