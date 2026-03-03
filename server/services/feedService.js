@@ -11,7 +11,15 @@ const FEED_BOOST_CONFIG = {
   maxMultiplier: Number(process.env.FEED_BOOST_MAX_MULTIPLIER || 1.35),
   minProfileCompleteness: Number(process.env.FEED_BOOST_MIN_PROFILE_COMPLETENESS || 0.5),
   minActivityQuality: Number(process.env.FEED_BOOST_MIN_ACTIVITY_QUALITY || 0.4),
+  minimumAccountAgeHours: Number(process.env.FEED_BOOST_MIN_ACCOUNT_AGE_HOURS || 1),
+  abuseRapidWindowMinutes: Number(process.env.FEED_ABUSE_RAPID_WINDOW_MINUTES || 120),
+  abuseRapidMaxPosts: Number(process.env.FEED_ABUSE_RAPID_MAX_POSTS || 3),
+  spamKeywordLimit: Number(process.env.FEED_SPAM_KEYWORD_LIMIT || 3),
+  spamDuplicateRatioLimit: Number(process.env.FEED_SPAM_DUPLICATE_RATIO_LIMIT || 0.5),
+  spamMinWordVarietyRatio: Number(process.env.FEED_SPAM_MIN_WORD_VARIETY || 0.35),
 }
+
+const SPAM_KEYWORDS = ['whatsapp', 'telegram', 'dm', 'discount', 'cheap', 'guarantee', 'click', 'urgent', '100%']
 
 function clamp01(value) {
   return Math.min(1, Math.max(0, value))
@@ -73,6 +81,85 @@ function getAgeBoostMultiplier(accountAgeDays) {
   return 1
 }
 
+function normalizeContent(item = {}) {
+  return `${item.title || ''} ${item.description || ''}`
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function evaluateSpamPattern(item = {}, authorItems = []) {
+  const text = normalizeContent(item)
+  if (!text) {
+    return {
+      keywordHits: 0,
+      duplicateRatio: 0,
+      wordVarietyRatio: 0,
+      lowQualitySpam: false,
+    }
+  }
+
+  const words = text.split(/\W+/).filter(Boolean)
+  const uniqueWords = new Set(words)
+  const wordVarietyRatio = words.length ? uniqueWords.size / words.length : 0
+
+  const keywordHits = SPAM_KEYWORDS.reduce((count, keyword) => {
+    return count + (text.includes(keyword) ? 1 : 0)
+  }, 0)
+
+  const normalizedItems = authorItems
+    .map((authorItem) => normalizeContent(authorItem))
+    .filter(Boolean)
+
+  const duplicateCount = normalizedItems.filter((entry) => entry === text).length
+  const duplicateRatio = normalizedItems.length ? duplicateCount / normalizedItems.length : 0
+
+  const lowQualitySpam = keywordHits >= FEED_BOOST_CONFIG.spamKeywordLimit
+    || duplicateRatio >= FEED_BOOST_CONFIG.spamDuplicateRatioLimit
+    || wordVarietyRatio < FEED_BOOST_CONFIG.spamMinWordVarietyRatio
+
+  return {
+    keywordHits,
+    duplicateRatio,
+    wordVarietyRatio,
+    lowQualitySpam,
+  }
+}
+
+function evaluateRepeatedPosting(item = {}, authorItems = []) {
+  const createdAt = new Date(item.created_at).getTime()
+  if (!Number.isFinite(createdAt)) {
+    return {
+      postsInRapidWindow: 0,
+      suspiciousRepeatedPosting: false,
+    }
+  }
+
+  const rapidWindowMs = FEED_BOOST_CONFIG.abuseRapidWindowMinutes * 60 * 1000
+  const windowStart = createdAt - rapidWindowMs
+
+  const postsInRapidWindow = authorItems.filter((authorItem) => {
+    const authorCreatedAt = new Date(authorItem.created_at).getTime()
+    return Number.isFinite(authorCreatedAt) && authorCreatedAt >= windowStart && authorCreatedAt <= createdAt
+  }).length
+
+  return {
+    postsInRapidWindow,
+    suspiciousRepeatedPosting: postsInRapidWindow > FEED_BOOST_CONFIG.abuseRapidMaxPosts,
+  }
+}
+
+function evaluateAntiAbuseSignals(item = {}, authorItems = []) {
+  const repeatedPosting = evaluateRepeatedPosting(item, authorItems)
+  const spamPattern = evaluateSpamPattern(item, authorItems)
+
+  return {
+    ...repeatedPosting,
+    ...spamPattern,
+    antiAbusePassed: !repeatedPosting.suspiciousRepeatedPosting && !spamPattern.lowQualitySpam,
+  }
+}
+
 function calculateRecencyScore(itemCreatedAt) {
   const hoursOld = Math.max(0, (Date.now() - new Date(itemCreatedAt).getTime()) / (1000 * 60 * 60))
   return 1 / (1 + hoursOld / 24)
@@ -97,7 +184,7 @@ export async function getCombinedFeed({ unique = false, type = 'all', category =
     const authorId = getAuthorId(item)
     if (!authorId) return acc
     if (!acc[authorId]) acc[authorId] = []
-    acc[authorId].push(item.id)
+    acc[authorId].push(item)
     return acc
   }, {})
 
@@ -105,13 +192,20 @@ export async function getCombinedFeed({ unique = false, type = 'all', category =
     const authorId = getAuthorId(item)
     const author = users.find((u) => u.id === authorId) || null
     const profileCompleteness = computeProfileCompleteness(author)
-    const activityQuality = computeActivityQuality(itemsByAuthor[authorId] || [], socialInteractions)
+    const authorItems = itemsByAuthor[authorId] || []
+    const activityQuality = computeActivityQuality(authorItems.map((authorItem) => authorItem.id), socialInteractions)
+    const antiAbuseSignals = evaluateAntiAbuseSignals(item, authorItems)
     const verifiedContact = Boolean(author?.verified)
+    const accountAgeDays = getAccountAgeDays(author)
+    const minAccountAgeDays = FEED_BOOST_CONFIG.minimumAccountAgeHours / 24
+    const accountAgeEligible = accountAgeDays >= minAccountAgeDays
+
     const antiAbuseEligible = profileCompleteness >= FEED_BOOST_CONFIG.minProfileCompleteness
       && verifiedContact
       && activityQuality >= FEED_BOOST_CONFIG.minActivityQuality
+      && accountAgeEligible
+      && antiAbuseSignals.antiAbusePassed
 
-    const accountAgeDays = getAccountAgeDays(author)
     const boostMultiplier = antiAbuseEligible ? getAgeBoostMultiplier(accountAgeDays) : 1
     const boostActive = boostMultiplier > 1
     const recencyScore = calculateRecencyScore(item.created_at)
@@ -131,7 +225,14 @@ export async function getCombinedFeed({ unique = false, type = 'all', category =
           profile_completeness: roundNumber(clamp01(profileCompleteness)),
           verified_contact: verifiedContact,
           activity_quality_score: roundNumber(clamp01(activityQuality)),
+          account_age_eligible: accountAgeEligible,
           anti_abuse_eligible: antiAbuseEligible,
+          suspicious_repeated_posting: antiAbuseSignals.suspiciousRepeatedPosting,
+          posts_in_rapid_window: antiAbuseSignals.postsInRapidWindow,
+          low_quality_spam: antiAbuseSignals.lowQualitySpam,
+          spam_keyword_hits: antiAbuseSignals.keywordHits,
+          duplicate_content_ratio: roundNumber(clamp01(antiAbuseSignals.duplicateRatio)),
+          word_variety_ratio: roundNumber(clamp01(antiAbuseSignals.wordVarietyRatio)),
         },
       },
     }
@@ -157,6 +258,8 @@ export async function getCombinedFeed({ unique = false, type = 'all', category =
     ranking_snapshot: sortedItems.slice(0, 20).map((item) => ({
       item_id: item.id,
       feed_type: item.feed_type,
+      author_id: getAuthorId(item),
+      created_at: item.created_at,
       boost_active: item.feed_metadata?.boost_active,
       ...item.feed_metadata?.ranking_components,
     })),
