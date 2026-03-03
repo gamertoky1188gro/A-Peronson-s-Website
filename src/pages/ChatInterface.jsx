@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import FloatingAssistant from '../components/FloatingAssistant'
 import { apiRequest, getToken } from '../lib/auth'
 
 function sortByNewest(a, b) {
@@ -306,7 +305,6 @@ export default function ChatInterface() {
         </main>
       </div>
 
-      <FloatingAssistant />
     </div>
   )
 }

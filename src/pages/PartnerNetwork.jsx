@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import FloatingAssistant from '../components/FloatingAssistant'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 
 const STATUS_TABS = [
@@ -182,7 +181,6 @@ export default function PartnerNetwork() {
         {!loading && filteredRows.length === 0 && <div className="text-sm text-[#5A5A5A] mt-4">No requests found for this filter.</div>}
       </div>
 
-      <FloatingAssistant />
     </div>
   )
 }

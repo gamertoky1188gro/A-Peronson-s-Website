@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import FloatingAssistant from '../components/FloatingAssistant'
 
 export default function ProductManagement(){
   const [products] = useState([
@@ -47,7 +46,6 @@ export default function ProductManagement(){
 
       </div>
 
-      <FloatingAssistant />
     </div>
   )
 }

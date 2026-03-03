@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import AccessDeniedState from '../components/AccessDeniedState'
-import FloatingAssistant from '../components/FloatingAssistant'
 import { apiRequest, getToken } from '../lib/auth'
 
 const MEMBER_API_BASE = '/org/members'
@@ -261,7 +260,6 @@ export default function MemberManagement() {
         </Modal>
       )}
 
-      <FloatingAssistant />
     </div>
   )
 }

@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import FloatingAssistant from '../components/FloatingAssistant'
 
 function SubscriptionArea(){
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -381,7 +380,6 @@ export default function Pricing(){
         </div>
       </footer>
 
-      <FloatingAssistant />
     </div>
   )
 }

@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useState } from 'react'
-import FloatingAssistant from '../components/FloatingAssistant'
 import AccessDeniedState from '../components/AccessDeniedState'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 
@@ -178,7 +177,6 @@ export default function HelpCenter(){
         </aside>
       </div>
 
-      <FloatingAssistant />
     </div>
   )
 }

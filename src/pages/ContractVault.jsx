@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AccessDeniedState from '../components/AccessDeniedState'
-import FloatingAssistant from '../components/FloatingAssistant'
 import { API_BASE, apiRequest, getCurrentUser, getToken } from '../lib/auth'
 
 const FLOW_STEPS = ['draft_creation', 'buyer_signature', 'factory_signature', 'artifact_finalize', 'archive']
@@ -427,7 +426,6 @@ export default function ContractVault(){
         </div>
       )}
 
-      <FloatingAssistant />
     </div>
   )
 }

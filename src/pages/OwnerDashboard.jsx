@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import FloatingAssistant from '../components/FloatingAssistant'
 import useAnalyticsDashboard from '../hooks/useAnalyticsDashboard'
 
 function SeriesList({ title, items }) {
@@ -86,7 +85,6 @@ export default function OwnerDashboard() {
         </main>
       </div>
 
-      <FloatingAssistant />
     </div>
   )
 }

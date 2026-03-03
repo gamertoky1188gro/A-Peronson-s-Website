@@ -1,6 +1,5 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import FloatingAssistant from '../components/FloatingAssistant'
 
 export default function Privacy(){
   return (
@@ -24,7 +23,6 @@ export default function Privacy(){
         </section>
       </div>
 
-      <FloatingAssistant />
     </div>
   )
 }

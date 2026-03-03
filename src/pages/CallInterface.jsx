@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import FloatingAssistant from '../components/FloatingAssistant'
 import { apiRequest, getToken } from '../lib/auth'
 
 const POLL_INTERVAL_MS = 4000
@@ -174,7 +173,6 @@ export default function CallInterface() {
         </div>
       </div>
 
-      <FloatingAssistant />
     </div>
   )
 }

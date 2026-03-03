@@ -1,6 +1,5 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import FloatingAssistant from '../components/FloatingAssistant'
 import { apiRequest, getToken } from '../lib/auth'
 
 export default function NotificationsCenter(){
@@ -66,7 +65,6 @@ export default function NotificationsCenter(){
         </aside>
       </div>
 
-      <FloatingAssistant />
     </div>
   )
 }
