@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import FloatingAssistant from '../components/FloatingAssistant'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
-
 function getAuthToken() {
   return localStorage.getItem('jwt') || ''
 }
@@ -20,7 +19,11 @@ async function api(path, options = {}) {
 
   const data = await res.json().catch(() => null)
   if (!res.ok) {
-    throw new Error(data?.error || data?.message || `Request failed (${res.status})`)
+    const error = new Error(data?.error || data?.message || `Request failed (${res.status})`)
+    error.code = data?.code
+    error.quota = data?.quota
+    error.remainingQuota = data?.remaining_quota
+    throw error
   }
 
   return data
@@ -61,6 +64,7 @@ export default function SearchResults() {
   const [activeQuery, setActiveQuery] = useState('cotton shirts MOQ 100+')
   const [showFilters, setShowFilters] = useState(false)
   const [activeTab, setActiveTab] = useState('all')
+  const [plan, setPlan] = useState('free')
   const [filters, setFilters] = useState({
     primary: '',
     category: '',
@@ -74,42 +78,64 @@ export default function SearchResults() {
   const [companies, setCompanies] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [quotaMessage, setQuotaMessage] = useState('')
   const [alertFeedback, setAlertFeedback] = useState('')
 
+  const premiumLocked = plan !== 'premium'
   const totalResults = buyerRequests.length + companies.length
 
   const queryString = useMemo(() => {
     const params = new URLSearchParams()
     if (activeQuery.trim()) params.set('q', activeQuery.trim())
-    if (filters.primary) params.set('primary', filters.primary)
+    if (!premiumLocked && filters.primary) params.set('primary', filters.primary)
     if (filters.category) params.set('category', filters.category)
-    if (filters.moqRange) params.set('moqRange', filters.moqRange)
-    if (filters.country) params.set('country', filters.country)
-    if (filters.verifiedOnly) params.set('verifiedOnly', 'true')
-    if (filters.orgType) params.set('orgType', filters.orgType)
+    if (!premiumLocked && filters.moqRange) params.set('moqRange', filters.moqRange)
+    if (!premiumLocked && filters.country) params.set('country', filters.country)
+    if (!premiumLocked && filters.verifiedOnly) params.set('verifiedOnly', 'true')
+    if (!premiumLocked && filters.orgType) params.set('orgType', filters.orgType)
     return params.toString()
-  }, [activeQuery, filters])
+  }, [activeQuery, filters, premiumLocked])
 
   const runSearch = useCallback(async () => {
     setLoading(true)
     setError('')
+    setQuotaMessage('')
 
     try {
       const [requestRes, companyRes] = await Promise.all([
-        api(`/requirements/search?${queryString}`).catch(() => []),
-        api(`/products/search?${queryString}`).catch(() => []),
+        api(`/requirements/search?${queryString}`),
+        api(`/products/search?${queryString}`),
       ])
 
       setBuyerRequests(toArray(requestRes).map(normalizeRequest))
       setCompanies(toArray(companyRes).map(normalizeCompany))
+
+      const requirementQuota = requestRes?.quota
+      const productQuota = companyRes?.quota
+      if (requirementQuota || productQuota) {
+        setQuotaMessage(`Daily quota remaining — Requirements: ${requirementQuota?.remaining ?? '-'}, Products: ${productQuota?.remaining ?? '-'}`)
+      }
     } catch (err) {
-      setError(err.message || 'Failed to load search results')
+      if (err.code === 'upgrade_required') {
+        setError('This filter is available on premium plans only. Upgrade to unlock advanced search.')
+      } else if (err.code === 'limit_reached') {
+        const remaining = Number.isFinite(err.remainingQuota) ? err.remainingQuota : err?.quota?.remaining
+        setError(`Daily limit reached for this action.${remaining !== undefined ? ` Remaining today: ${remaining}` : ''}`)
+      } else {
+        setError(err.message || 'Failed to load search results')
+      }
       setBuyerRequests([])
       setCompanies([])
     } finally {
       setLoading(false)
     }
   }, [queryString])
+
+  useEffect(() => {
+    api('/subscriptions/me')
+      .then((sub) => setPlan(sub?.plan === 'premium' ? 'premium' : 'free'))
+      .catch(() => setPlan('free'))
+  }, [])
 
   useEffect(() => {
     runSearch()
@@ -124,15 +150,19 @@ export default function SearchResults() {
     }
 
     try {
-      await api('/search/alerts', {
+      const result = await api('/search/alerts', {
         method: 'POST',
         body: JSON.stringify({
           query,
           filters,
         }),
       })
-      setAlertFeedback(`Alert saved for "${query}"`)
+      setAlertFeedback(`Alert saved for "${query}". Remaining alert quota: ${result?.quota?.remaining ?? '-'}`)
     } catch (err) {
+      if (err.code === 'limit_reached') {
+        setAlertFeedback(`You have reached your daily alert limit. Remaining today: ${err?.quota?.remaining ?? 0}`)
+        return
+      }
       setAlertFeedback(err.message || 'Failed to save alert')
     }
   }
@@ -140,6 +170,14 @@ export default function SearchResults() {
   function submitSearch(e) {
     e.preventDefault()
     setActiveQuery(searchQueryInput)
+  }
+
+  function handlePremiumFilterChange(key, value) {
+    if (premiumLocked) {
+      setAlertFeedback('Upgrade to premium to use advanced filters.')
+      return
+    }
+    setFilters((current) => ({ ...current, [key]: value }))
   }
 
   return (
@@ -165,7 +203,10 @@ export default function SearchResults() {
           </button>
         </form>
 
+        <p className="mb-2 text-xs text-gray-600">Current plan: <strong className="uppercase">{plan}</strong></p>
+        {premiumLocked && <p className="mb-4 rounded border border-amber-300 bg-amber-50 p-2 text-sm text-amber-800">Upgrade to Premium to unlock advanced filters and higher daily limits.</p>}
         {alertFeedback && <p className="mb-4 text-sm text-blue-700">{alertFeedback}</p>}
+        {quotaMessage && <p className="mb-4 text-xs text-gray-600">{quotaMessage}</p>}
 
         {showFilters && (
           <div className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-6 mb-6">
@@ -173,11 +214,12 @@ export default function SearchResults() {
 
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Primary Filter</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Primary Filter {premiumLocked && <span className="text-xs text-amber-700">(Premium)</span>}</label>
                 <select
                   value={filters.primary}
-                  onChange={(e) => setFilters({ ...filters, primary: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  onChange={(e) => handlePremiumFilterChange('primary', e.target.value)}
+                  disabled={premiumLocked}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-gray-100 disabled:text-gray-400"
                 >
                   <option value="">All</option>
                   <option value="garments">Garments</option>
@@ -200,11 +242,12 @@ export default function SearchResults() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">MOQ Range</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">MOQ Range {premiumLocked && <span className="text-xs text-amber-700">(Premium)</span>}</label>
                 <select
                   value={filters.moqRange}
-                  onChange={(e) => setFilters({ ...filters, moqRange: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  onChange={(e) => handlePremiumFilterChange('moqRange', e.target.value)}
+                  disabled={premiumLocked}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-gray-100 disabled:text-gray-400"
                 >
                   <option value="">Any</option>
                   <option value="0-500">0-500</option>
@@ -214,11 +257,12 @@ export default function SearchResults() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Country {premiumLocked && <span className="text-xs text-amber-700">(Premium)</span>}</label>
                 <input
                   value={filters.country}
-                  onChange={(e) => setFilters({ ...filters, country: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  onChange={(e) => handlePremiumFilterChange('country', e.target.value)}
+                  disabled={premiumLocked}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-gray-100 disabled:text-gray-400"
                 />
               </div>
 
@@ -227,20 +271,22 @@ export default function SearchResults() {
                   type="checkbox"
                   id="verifiedOnly"
                   checked={filters.verifiedOnly}
-                  onChange={(e) => setFilters({ ...filters, verifiedOnly: e.target.checked })}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  onChange={(e) => handlePremiumFilterChange('verifiedOnly', e.target.checked)}
+                  disabled={premiumLocked}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 disabled:opacity-50"
                 />
                 <label htmlFor="verifiedOnly" className="ml-2 text-sm text-gray-700">
-                  Verified Only
+                  Verified Only {premiumLocked && <span className="text-xs text-amber-700">(Premium)</span>}
                 </label>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Organization Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Organization Type {premiumLocked && <span className="text-xs text-amber-700">(Premium)</span>}</label>
                 <select
                   value={filters.orgType}
-                  onChange={(e) => setFilters({ ...filters, orgType: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  onChange={(e) => handlePremiumFilterChange('orgType', e.target.value)}
+                  disabled={premiumLocked}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-gray-100 disabled:text-gray-400"
                 >
                   <option value="">All</option>
                   <option value="buyer">Buyer</option>
@@ -249,6 +295,7 @@ export default function SearchResults() {
                 </select>
               </div>
             </div>
+            {premiumLocked && <p className="text-xs text-amber-700">Premium filters are visible for discovery and disabled on free plans.</p>}
           </div>
         )}
 
