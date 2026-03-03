@@ -1,4 +1,12 @@
 import { createRequirement, listRequirements, removeRequirement, getRequirementById, updateRequirement } from '../services/requirementService.js'
+import {
+  buildLimitError,
+  canUseAdvancedFilters,
+  consumeQuota,
+  extractUsedAdvancedFilters,
+  getQuotaSnapshot,
+  getUserPlan,
+} from '../services/searchAccessService.js'
 
 export async function createBuyerRequirement(req, res) {
   const requirement = await createRequirement(req.user.id, req.body)
@@ -33,6 +41,28 @@ export async function deleteRequirement(req, res) {
 
 
 export async function searchRequirements(req, res) {
+  const plan = await getUserPlan(req.user.id)
+  const advancedFilters = extractUsedAdvancedFilters(req.query)
+  const quotaPreview = await getQuotaSnapshot(req.user.id, 'requirements_search', plan)
+
+  if (advancedFilters.length > 0 && !canUseAdvancedFilters(plan)) {
+    return res.status(403).json(buildLimitError({
+      code: 'upgrade_required',
+      message: 'Advanced filters require a premium plan',
+      quota: quotaPreview,
+      missingFilters: advancedFilters,
+    }))
+  }
+
+  const quotaUse = await consumeQuota(req.user.id, 'requirements_search', plan)
+  if (!quotaUse.allowed) {
+    return res.status(429).json(buildLimitError({
+      code: 'limit_reached',
+      message: 'Daily requirement search limit reached',
+      quota: quotaUse.quota,
+    }))
+  }
+
   const all = await listRequirements({})
   const q = String(req.query.q || '').toLowerCase().trim()
   const results = all.filter((r) => {
@@ -41,5 +71,9 @@ export async function searchRequirements(req, res) {
     if (req.query.verifiedOnly === 'true' && !r.verified) return false
     return true
   })
-  return res.json(results)
+  return res.json({
+    items: results,
+    quota: quotaUse.quota,
+    plan,
+  })
 }
