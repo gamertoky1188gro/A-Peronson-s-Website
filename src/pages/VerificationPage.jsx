@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { API_BASE, apiRequest, getCurrentUser, getToken } from '../lib/auth'
-import { EU_COUNTRIES, isEuCountry } from '../../shared/config/geo.js'
+import { BUYER_COUNTRY_OPTIONS, isEuCountry, verificationRegionFromCountry } from '../../shared/config/geo.js'
 
 const DOCUMENT_MATRIX = {
   common: {
@@ -118,14 +118,40 @@ export default function VerificationPage() {
   const [error, setError] = useState('')
   const [busyDoc, setBusyDoc] = useState('')
   const [feedback, setFeedback] = useState('')
+  const [buyerCountrySaving, setBuyerCountrySaving] = useState(false)
   const fileInputRef = useRef(null)
   const pendingDocRef = useRef('')
   const user = getCurrentUser()
 
   const role = user?.role || 'buyer'
   const isBuyerEu = role === 'buyer' && isEuCountry(buyerCountry)
-  const effectiveRegion = isBuyerEu ? 'eu' : region
+  const buyerCountryRegion = role === 'buyer' ? verificationRegionFromCountry(buyerCountry) : 'global'
+  const effectiveRegion = role === 'buyer' ? buyerCountryRegion : region
   const token = getToken()
+  const hasBuyerCountry = role !== 'buyer' || Boolean(String(buyerCountry || '').trim())
+
+  const regionGuidance = useMemo(() => {
+    if (role !== 'buyer') return null
+    if (buyerCountryRegion === 'eu') {
+      return {
+        tone: 'text-emerald-700 border-emerald-200 bg-emerald-50',
+        heading: 'EU buyer requirements detected',
+        message: 'For EU buyers, submit VAT Registration, EORI Registration, and Company Bank Proof. These are checked for cross-border customs and tax compliance.',
+      }
+    }
+    if (buyerCountryRegion === 'us') {
+      return {
+        tone: 'text-sky-700 border-sky-200 bg-sky-50',
+        heading: 'USA buyer requirements detected',
+        message: 'For USA buyers, submit EIN Confirmation, Importer of Record (IOR), and Company Bank Proof. EU-only documents (VAT/EORI) are not required.',
+      }
+    }
+    return {
+      tone: 'text-amber-700 border-amber-200 bg-amber-50',
+      heading: 'Select buyer country to lock requirements',
+      message: 'Choose an EU country for VAT + EORI requirements or select United States for EIN + IOR requirements.',
+    }
+  }, [role, buyerCountryRegion])
 
   const documentConfig = useMemo(() => {
     const common = DOCUMENT_MATRIX.common
@@ -176,6 +202,47 @@ export default function VerificationPage() {
     loadStatus()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    if (role !== 'buyer') return
+    setRegion(buyerCountryRegion)
+  }, [role, buyerCountryRegion])
+
+  useEffect(() => {
+    if (!token || role !== 'buyer' || !verification) return
+
+    const persistedCountry = String(verification?.documents?.buyer_country || '')
+    const persistedRegion = String(verification?.documents?.buyer_region || '')
+    const nextRegion = buyerCountryRegion === 'eu' ? 'EU' : (buyerCountryRegion === 'us' ? 'USA' : 'OTHER')
+
+    if (persistedCountry === buyerCountry && persistedRegion === nextRegion) return
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        setBuyerCountrySaving(true)
+        const currentDocs = verification?.documents || {}
+        const updatedDocuments = {
+          ...currentDocs,
+          buyer_country: buyerCountry,
+          buyer_region: nextRegion,
+        }
+
+        await apiRequest('/verification/me', {
+          method: 'POST',
+          token,
+          body: { documents: updatedDocuments },
+        })
+
+        setVerification((prev) => ({ ...(prev || {}), documents: updatedDocuments }))
+      } catch {
+        setError('Could not save buyer country. Please try refreshing and selecting again.')
+      } finally {
+        setBuyerCountrySaving(false)
+      }
+    }, 350)
+
+    return () => clearTimeout(timeoutId)
+  }, [buyerCountry, buyerCountryRegion, role, token, verification])
 
   async function requestUpload(documentKey, file) {
     if (!file || !token) return
@@ -264,22 +331,30 @@ export default function VerificationPage() {
           <h2 className="text-lg font-semibold">Document Requirements</h2>
           <div className="flex items-center gap-2">
             <label className="text-sm text-slate-600" htmlFor="region">Region</label>
-            <select id="region" value={region} onChange={(e) => setRegion(e.target.value)} className="text-sm border rounded-md px-2 py-1">
+            <select id="region" value={role === 'buyer' ? buyerCountryRegion : region} onChange={(e) => setRegion(e.target.value)} disabled={role === 'buyer'} className="text-sm border rounded-md px-2 py-1 disabled:bg-slate-100 disabled:text-slate-500">
               <option value="global">Global</option>
               <option value="eu">EU</option>
               <option value="us">US</option>
               <option value="apac">APAC</option>
             </select>
           </div>
+          {role === 'buyer' ? <p className="text-xs text-slate-500">Region is auto-mapped from buyer country for compliance.</p> : null}
         </div>
 
         {role === 'buyer' ? (
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 flex-wrap">
             <label className="text-sm text-slate-600" htmlFor="buyer-country">Buyer Country</label>
             <select id="buyer-country" value={buyerCountry} onChange={(e) => setBuyerCountry(e.target.value)} className="text-sm border rounded-md px-2 py-1">
               <option value="">Select country</option>
-              {EU_COUNTRIES.map((country) => <option key={country} value={country}>{country}</option>)}
+              {BUYER_COUNTRY_OPTIONS.map((country) => <option key={country} value={country}>{country}</option>)}
             </select>
+            {buyerCountrySaving ? <span className="text-xs text-slate-500">Saving country...</span> : null}
+            </div>
+            <p className={`text-xs border rounded-md px-2 py-1 ${regionGuidance.tone}`}>
+              <span className="font-semibold">{regionGuidance.heading}:</span> {regionGuidance.message}
+            </p>
+            {!hasBuyerCountry ? <p className="text-xs text-red-600">Buyer country is required before uploading verification documents.</p> : null}
           </div>
         ) : null}
 
