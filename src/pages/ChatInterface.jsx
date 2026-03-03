@@ -45,6 +45,8 @@ export default function ChatInterface() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [query, setQuery] = useState('')
+  const [scheduleStatus, setScheduleStatus] = useState('')
+  const [callHistoryByThread, setCallHistoryByThread] = useState({})
 
   const loadInbox = useCallback(async () => {
     setLoading(true)
@@ -62,11 +64,26 @@ export default function ChatInterface() {
       const data = await apiRequest('/messages/inbox', { token })
       const priority = normalizeThreads(data?.priority || [])
       const requests = normalizeThreads(data?.request_pool || [])
+      const allMatchIds = [...new Set([...priority, ...requests].map((thread) => thread.matchId).filter(Boolean))]
 
       setPriorityInbox(priority)
       setMessageRequests(requests)
       if (!activeThreadId && priority.length > 0) {
         setActiveThreadId(priority[0].id)
+      }
+
+      if (allMatchIds.length > 0) {
+        const callHistoryResponse = await apiRequest(`/calls/history?match_ids=${allMatchIds.join(',')}`, { token })
+        const grouped = (callHistoryResponse?.items || []).reduce((acc, item) => {
+          const key = item.match_id || item.context?.chat_thread_id
+          if (!key) return acc
+          if (!acc[key]) acc[key] = []
+          acc[key].push(item)
+          return acc
+        }, {})
+        setCallHistoryByThread(grouped)
+      } else {
+        setCallHistoryByThread({})
       }
     } catch (err) {
       setPriorityInbox([])
@@ -95,6 +112,10 @@ export default function ChatInterface() {
 
   const allVisibleThreads = useMemo(() => [...filteredPriorityInbox, ...filteredRequests], [filteredPriorityInbox, filteredRequests])
   const activeThread = allVisibleThreads.find((thread) => thread.id === activeThreadId)
+  const activeCallHistory = useMemo(() => {
+    if (!activeThread?.matchId) return []
+    return callHistoryByThread[activeThread.matchId] || []
+  }, [activeThread, callHistoryByThread])
 
   function acceptRequest(threadId) {
     setMessageRequests((current) => {
@@ -110,6 +131,42 @@ export default function ChatInterface() {
     setMessageRequests((current) => current.filter((thread) => thread.id !== threadId))
     if (activeThreadId === threadId) {
       setActiveThreadId(filteredPriorityInbox[0]?.id || null)
+    }
+  }
+
+  async function scheduleCall(thread) {
+    const token = getToken()
+    if (!token || !thread?.matchId) {
+      setScheduleStatus('Please sign in and select a valid thread before scheduling.')
+      return
+    }
+
+    const scheduledForInput = window.prompt('Schedule date/time (ISO or YYYY-MM-DD HH:mm)', new Date().toISOString())
+    if (!scheduledForInput) return
+
+    const contractId = window.prompt('Contract ID to link (optional)', '') || ''
+    const securityAuditId = window.prompt('Security audit ID to link (optional)', '') || ''
+    const parsedScheduledFor = new Date(scheduledForInput)
+    const scheduledFor = Number.isNaN(parsedScheduledFor.getTime()) ? new Date().toISOString() : parsedScheduledFor.toISOString()
+
+    setScheduleStatus('Scheduling call...')
+    try {
+      const created = await apiRequest('/calls/scheduled', {
+        method: 'POST',
+        token,
+        body: {
+          match_id: thread.matchId,
+          title: `Call with ${thread.name}`,
+          chat_thread_id: thread.id,
+          scheduled_for: scheduledFor,
+          contract_id: contractId,
+          security_audit_id: securityAuditId,
+        },
+      })
+      setScheduleStatus(`Scheduled call for ${new Date(created.scheduled_for).toLocaleString()}.`)
+      await loadInbox()
+    } catch (err) {
+      setScheduleStatus(err.message || 'Failed to schedule call')
     }
   }
 
@@ -204,14 +261,23 @@ export default function ChatInterface() {
                   <div className="flex gap-2">
                     <button className="px-3 py-1 border rounded">📹 Video Call</button>
                     <button className="px-3 py-1 border rounded">📞 Audio Call</button>
-                    <button className="px-3 py-1 border rounded">📅 Schedule</button>
+                    <button className="px-3 py-1 border rounded" onClick={() => scheduleCall(activeThread)}>📅 Schedule</button>
                   </div>
                 </div>
+                {scheduleStatus && <div className="mb-2 text-sm text-[#0A66C2]">{scheduleStatus}</div>}
                 <div className="flex-1 overflow-auto mb-3">
                   <div className="space-y-3">
                     <div className="self-start bg-white neo-panel cyberpunk-card p-2 rounded shadow">{activeThread.last}</div>
                     <div className="text-center text-sm text-[#5A5A5A]">
                       Match Thread: {activeThread.matchId}
+                    </div>
+                    <div className="text-sm border rounded p-2 bg-[#F8FBFF]">
+                      <div className="font-semibold mb-1">Call History</div>
+                      {activeCallHistory.length > 0 ? activeCallHistory.slice(0, 3).map((call) => (
+                        <div key={call.id} className="mb-1">
+                          {call.title} • {call.status} • {new Date(call.scheduled_for).toLocaleString()}
+                        </div>
+                      )) : <div className="text-[#5A5A5A]">No calls scheduled yet.</div>}
                     </div>
                   </div>
                 </div>
