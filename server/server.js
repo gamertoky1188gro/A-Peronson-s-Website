@@ -22,6 +22,7 @@ import messageRoutes from './routes/messageRoutes.js'
 import partnerNetworkRoutes from './routes/partnerNetworkRoutes.js'
 import callSessionRoutes from './routes/callSessionRoutes.js'
 import memberRoutes from './routes/memberRoutes.js'
+import orgRoutes from './routes/orgRoutes.js'
 import ratingsRoutes from './routes/ratingsRoutes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { logInfo } from './utils/logger.js'
@@ -57,6 +58,7 @@ app.use('/api/social', socialRoutes)
 app.use('/api/search', searchRoutes)
 app.use('/api/partners', partnerNetworkRoutes)
 app.use('/api/calls', callSessionRoutes)
+app.use('/api/org', orgRoutes)
 app.use('/api/members', memberRoutes)
 app.use('/api/ratings', ratingsRoutes)
 app.use(errorHandler)
