@@ -1,5 +1,23 @@
 const OWNER_ADMIN_ROLES = new Set(['owner', 'admin'])
 
+export function forbiddenError(message = 'Access denied') {
+  const error = new Error(message)
+  error.status = 403
+  error.code = 'FORBIDDEN'
+  return error
+}
+
+export function deny(res, message = 'Access denied') {
+  return res.status(403).json({ error: message, code: 'FORBIDDEN' })
+}
+
+export function handleControllerError(res, error) {
+  const status = Number(error?.status) || 500
+  if (status === 403) return deny(res, error?.message || 'Access denied')
+  if (status === 500) return res.status(500).json({ error: 'Internal server error' })
+  return res.status(status).json({ error: error?.message || 'Request failed' })
+}
+
 export function hasRole(user, ...roles) {
   return Boolean(user?.role) && roles.includes(user.role)
 }
@@ -26,6 +44,10 @@ export function canManageMembers(user) {
 
 export function canViewAnalytics(user) {
   return isOwnerOrAdmin(user) || hasRole(user, 'buying_house', 'factory', 'buyer', 'agent')
+}
+
+export function canViewAnalyticsAdmin(user) {
+  return isOwnerOrAdmin(user)
 }
 
 function includesUserId(record, userId, idFields = []) {

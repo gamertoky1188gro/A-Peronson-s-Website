@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import { readJson, writeJson } from '../utils/jsonStore.js'
-import { canViewAnalytics, scopeRecordsForUser } from '../utils/permissions.js'
+import { canViewAnalytics, canViewAnalyticsAdmin, forbiddenError, scopeRecordsForUser } from '../utils/permissions.js'
 
 const FILE = 'analytics.json'
 
@@ -19,9 +19,12 @@ export async function trackEvent({ type, actor_id, entity_id, metadata = {} }) {
 
 function ensureAnalyticsAccess(user) {
   if (canViewAnalytics(user)) return
-  const err = new Error('Forbidden')
-  err.status = 403
-  throw err
+  throw forbiddenError()
+}
+
+function ensureAnalyticsAdminAccess(user) {
+  if (canViewAnalyticsAdmin(user)) return
+  throw forbiddenError()
 }
 
 function scopeAnalyticsRecords(user, records, idFields) {
@@ -62,7 +65,7 @@ function toMonthlySeries(items, dateKey) {
 }
 
 export async function getDashboardAnalytics(user) {
-  ensureAnalyticsAccess(user)
+  ensureAnalyticsAdminAccess(user)
 
   const [events, requirements, messages, matches, documents, users] = await Promise.all([
     readJson(FILE),

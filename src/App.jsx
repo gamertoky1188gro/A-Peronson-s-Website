@@ -32,6 +32,9 @@ import AccessDenied from './pages/AccessDenied'
 import VerificationCenter from './pages/VerificationCenter'
 import { getCurrentUser } from './lib/auth'
 
+const AUTH_ROLES = ['buyer', 'buying_house', 'factory', 'owner', 'admin', 'agent']
+const OWNER_ONLY_ROLES = ['owner', 'admin']
+
 function ProtectedRoute({ children, roles }) {
   const location = useLocation()
   const user = getCurrentUser()
@@ -60,24 +63,24 @@ function AppRoutes() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/access-denied" element={<AccessDenied />} />
 
-      <Route path="/feed" element={<ProtectedRoute><MainFeed /></ProtectedRoute>} />
-      <Route path="/search" element={<ProtectedRoute><SearchResults /></ProtectedRoute>} />
-      <Route path="/buyer/:id" element={<ProtectedRoute><BuyerProfile /></ProtectedRoute>} />
-      <Route path="/factory/:id" element={<ProtectedRoute><FactoryProfile /></ProtectedRoute>} />
-      <Route path="/buying-house/:id" element={<ProtectedRoute><BuyingHouseProfile /></ProtectedRoute>} />
+      <Route path="/feed" element={<ProtectedRoute roles={AUTH_ROLES}><MainFeed /></ProtectedRoute>} />
+      <Route path="/search" element={<ProtectedRoute roles={AUTH_ROLES}><SearchResults /></ProtectedRoute>} />
+      <Route path="/buyer/:id" element={<ProtectedRoute roles={AUTH_ROLES}><BuyerProfile /></ProtectedRoute>} />
+      <Route path="/factory/:id" element={<ProtectedRoute roles={AUTH_ROLES}><FactoryProfile /></ProtectedRoute>} />
+      <Route path="/buying-house/:id" element={<ProtectedRoute roles={AUTH_ROLES}><BuyingHouseProfile /></ProtectedRoute>} />
       <Route path="/partner-network" element={<ProtectedRoute roles={['buying_house', 'admin', 'factory', 'agent', 'owner']}><PartnerNetwork /></ProtectedRoute>} />
       <Route path="/product-management" element={<ProtectedRoute roles={['factory', 'buying_house', 'admin']}><ProductManagement /></ProtectedRoute>} />
       <Route path="/buyer-requests" element={<ProtectedRoute roles={['buyer', 'buying_house', 'admin']}><BuyerRequestManagement /></ProtectedRoute>} />
-      <Route path="/contracts" element={<ProtectedRoute><ContractVault /></ProtectedRoute>} />
-      <Route path="/notifications" element={<ProtectedRoute><NotificationsCenter /></ProtectedRoute>} />
-      <Route path="/chat" element={<ProtectedRoute><ChatInterface /></ProtectedRoute>} />
-      <Route path="/call" element={<ProtectedRoute><CallInterface /></ProtectedRoute>} />
-      <Route path="/verification-center" element={<ProtectedRoute><VerificationCenter /></ProtectedRoute>} />
+      <Route path="/contracts" element={<ProtectedRoute roles={AUTH_ROLES}><ContractVault /></ProtectedRoute>} />
+      <Route path="/notifications" element={<ProtectedRoute roles={AUTH_ROLES}><NotificationsCenter /></ProtectedRoute>} />
+      <Route path="/chat" element={<ProtectedRoute roles={AUTH_ROLES}><ChatInterface /></ProtectedRoute>} />
+      <Route path="/call" element={<ProtectedRoute roles={AUTH_ROLES}><CallInterface /></ProtectedRoute>} />
+      <Route path="/verification-center" element={<ProtectedRoute roles={AUTH_ROLES}><VerificationCenter /></ProtectedRoute>} />
 
-      <Route path="/member-management" element={<ProtectedRoute roles={['buying_house', 'factory', 'owner', 'admin']}><MemberManagement /></ProtectedRoute>} />
-      <Route path="/org-settings" element={<ProtectedRoute roles={['buying_house', 'factory', 'owner', 'admin']}><OrgSettings /></ProtectedRoute>} />
-      <Route path="/insights" element={<ProtectedRoute roles={['buying_house', 'owner', 'admin']}><Insights /></ProtectedRoute>} />
-      <Route path="/owner" element={<ProtectedRoute roles={['buying_house', 'owner', 'admin']}><OwnerDashboard /></ProtectedRoute>} />
+      <Route path="/member-management" element={<ProtectedRoute roles={OWNER_ONLY_ROLES}><MemberManagement /></ProtectedRoute>} />
+      <Route path="/org-settings" element={<ProtectedRoute roles={OWNER_ONLY_ROLES}><OrgSettings /></ProtectedRoute>} />
+      <Route path="/insights" element={<ProtectedRoute roles={OWNER_ONLY_ROLES}><Insights /></ProtectedRoute>} />
+      <Route path="/owner" element={<ProtectedRoute roles={OWNER_ONLY_ROLES}><OwnerDashboard /></ProtectedRoute>} />
       <Route path="/agent" element={<ProtectedRoute roles={['buying_house', 'owner', 'admin', 'agent']}><AgentDashboard /></ProtectedRoute>} />
 
       <Route path="/mvp" element={<MvpDashboard />} />

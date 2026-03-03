@@ -7,6 +7,7 @@ import {
   updateContractArtifact,
   updateContractSignatures,
 } from '../services/documentService.js'
+import { deny, handleControllerError } from '../utils/permissions.js'
 
 export async function uploadDocument(req, res) {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
@@ -16,8 +17,7 @@ export async function uploadDocument(req, res) {
     const doc = await saveDocumentMetadata(req.user.id, entityType, entityId, req.body?.type || 'other', req.file)
     return res.status(201).json(doc)
   } catch (error) {
-    const status = Number(error?.status) || 400
-    return res.status(status).json({ error: error.message || 'Request failed' })
+    return handleControllerError(res, error)
   }
 }
 
@@ -30,7 +30,7 @@ export async function getDocuments(req, res) {
 
 export async function removeDocument(req, res) {
   const result = await deleteDocument(req.params.documentId, req.user)
-  if (result === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+  if (result === 'forbidden') return deny(res)
   if (!result) return res.status(404).json({ error: 'Document not found' })
   return res.json({ ok: true })
 }
@@ -40,8 +40,7 @@ export async function createContractDraft(req, res) {
     const contract = await createDraftContract(req.user, req.body || {})
     return res.status(201).json(contract)
   } catch (error) {
-    const status = Number(error?.status) || 400
-    return res.status(status).json({ error: error.message || 'Request failed' })
+    return handleControllerError(res, error)
   }
 }
 
@@ -52,14 +51,14 @@ export async function getContracts(req, res) {
 
 export async function patchContractSignatures(req, res) {
   const result = await updateContractSignatures(req.params.contractId, req.body || {}, req.user)
-  if (result === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+  if (result === 'forbidden') return deny(res)
   if (!result) return res.status(404).json({ error: 'Contract not found' })
   return res.json(result)
 }
 
 export async function patchContractArtifact(req, res) {
   const result = await updateContractArtifact(req.params.contractId, req.body || {}, req.user)
-  if (result === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+  if (result === 'forbidden') return deny(res)
   if (!result) return res.status(404).json({ error: 'Contract not found' })
   return res.json(result)
 }

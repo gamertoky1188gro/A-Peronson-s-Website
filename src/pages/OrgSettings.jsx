@@ -1,13 +1,15 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import AccessDeniedState from '../components/AccessDeniedState'
 import FloatingAssistant from '../components/FloatingAssistant'
-import { apiRequest, getToken } from '../lib/auth'
+import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 
 const emptyFaq = { question: '', answer: '', keywords: '' }
 
 export default function OrgSettings(){
   const [tab, setTab] = useState('general')
-  const [isOwnerAdmin] = useState(true)
+  const currentUser = useMemo(() => getCurrentUser(), [])
+  const isOwnerAdmin = currentUser?.role === 'owner' || currentUser?.role === 'admin'
   const [remainingDays, setRemainingDays] = useState(4)
   const [entries, setEntries] = useState([])
   const [faqForm, setFaqForm] = useState(emptyFaq)
@@ -28,7 +30,7 @@ export default function OrgSettings(){
       setEntries(data.entries || [])
       setFaqFeedback('')
     } catch (err) {
-      setFaqFeedback(err.message)
+      setFaqFeedback(err.status === 403 ? 'Access denied' : err.message)
     }
   }, [])
 
@@ -71,7 +73,7 @@ export default function OrgSettings(){
       resetForm()
       await loadFaqs()
     } catch (err) {
-      setFaqFeedback(err.message)
+      setFaqFeedback(err.status === 403 ? 'Access denied' : err.message)
     }
   }
 
@@ -84,8 +86,8 @@ export default function OrgSettings(){
       setFaqFeedback('FAQ entry removed')
       await loadFaqs()
     } catch (err) {
-      setFaqFeedback(err.message)
-    }
+      setFaqFeedback(err.status === 403 ? 'Access denied' : err.message)
+  }
   }
 
   const statusChipClasses = {
@@ -109,6 +111,10 @@ export default function OrgSettings(){
             <p className="text-sm text-[#5A5A5A]">Manage organization profile, verification, branding, security and subscription</p>
           </div>
         </div>
+
+        {!isOwnerAdmin ? <AccessDeniedState message="Only owners and admins can manage organization settings." /> : null}
+
+        {isOwnerAdmin ? (
 
         <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow p-4">
           <div className="flex gap-4 border-b mb-4 flex-wrap">
@@ -230,6 +236,7 @@ export default function OrgSettings(){
             )}
           </div>
         </div>
+        ) : null}
       </div>
 
       <FloatingAssistant />

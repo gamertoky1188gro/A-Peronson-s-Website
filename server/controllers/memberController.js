@@ -6,12 +6,14 @@ import {
   resetMemberPassword,
   updateMemberPermissions,
 } from '../services/memberService.js'
+import { canManageMembers, deny, handleControllerError } from '../utils/permissions.js'
 
 function handleError(res, error) {
-  return res.status(error.status || 500).json({ error: error.message || 'Request failed' })
+  return handleControllerError(res, error)
 }
 
 export async function createOrgMember(req, res) {
+  if (!canManageMembers(req.user)) return deny(res)
   try {
     const member = await createMember(req.user.id, req.body || {})
     return res.status(201).json({ member })
@@ -21,6 +23,7 @@ export async function createOrgMember(req, res) {
 }
 
 export async function listOrgMembers(req, res) {
+  if (!canManageMembers(req.user)) return deny(res)
   try {
     const members = await listMembers(req.user.id)
     return res.json({ members, constraints: getMemberConstraints() })
@@ -30,6 +33,7 @@ export async function listOrgMembers(req, res) {
 }
 
 export async function patchMemberPermissions(req, res) {
+  if (!canManageMembers(req.user)) return deny(res)
   try {
     const member = await updateMemberPermissions(req.user.id, req.params.memberId, req.body?.permissions)
     if (!member) return res.status(404).json({ error: 'Member not found' })
@@ -40,6 +44,7 @@ export async function patchMemberPermissions(req, res) {
 }
 
 export async function postMemberPasswordReset(req, res) {
+  if (!canManageMembers(req.user)) return deny(res)
   try {
     const result = await resetMemberPassword(req.user.id, req.params.memberId)
     if (!result) return res.status(404).json({ error: 'Member not found' })
@@ -50,6 +55,7 @@ export async function postMemberPasswordReset(req, res) {
 }
 
 export async function deactivateOrRemoveOrgMember(req, res) {
+  if (!canManageMembers(req.user)) return deny(res)
   try {
     const mode = req.query.remove === 'true' ? 'remove' : 'deactivate'
     const result = await deactivateOrRemoveMember(req.user.id, req.params.memberId, mode)
