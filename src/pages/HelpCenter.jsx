@@ -17,6 +17,7 @@ export default function HelpCenter(){
     { q: 'How does smart notification work?', a: 'When you search products/requests, your query is saved as a search alert. New matching posts appear in Notifications.' },
     { q: 'How are verified and unverified messages handled?', a: 'Verified users are prioritized for direct inbox routing. Others can still send but remain in request flow.' },
     { q: 'How to manage contracts?', a: 'Use Contract Vault to store digitally signed contract files and track deal artifacts.' },
+    { q: 'What verification documents are required?', a: 'Open Verification Center for your live checklist. Requirements are role and region-specific: factories submit business + compliance docs (e.g., trade license/TIN/ERC), buying houses submit agency docs, and buyers submit bank proof plus EU (VAT/EORI) or US (EIN/IOR) documents based on selected buyer country.' },
   ]
 
   const loadFaqs = useCallback(async () => {

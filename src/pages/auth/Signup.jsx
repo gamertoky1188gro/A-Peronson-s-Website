@@ -1,12 +1,6 @@
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiRequest, getRoleHome, saveSession } from '../../lib/auth'
-
-const EU_COUNTRIES = [
-  'Austria', 'Belgium', 'Bulgaria', 'Croatia', 'Cyprus', 'Czech Republic', 'Denmark', 'Estonia', 'Finland',
-  'France', 'Germany', 'Greece', 'Hungary', 'Ireland', 'Italy', 'Latvia', 'Lithuania', 'Luxembourg',
-  'Malta', 'Netherlands', 'Poland', 'Portugal', 'Romania', 'Slovakia', 'Slovenia', 'Spain', 'Sweden',
-]
 
 export default function Signup() {
   const navigate = useNavigate()
@@ -20,13 +14,6 @@ export default function Signup() {
     country: '',
     organization: '',
   })
-
-  const verificationNotes = useMemo(() => {
-    if (form.role === 'factory') return 'Factory verification requires: company registration, trade license, TIN, authorized person NID, company bank proof, ERC.'
-    if (form.role === 'buying_house') return 'Buying House verification requires: company registration, trade license, TIN, authorized person NID, company bank proof.'
-    if (form.role === 'buyer') return 'Buyer verification: EU buyers should submit Business Registration + VAT + EORI + Bank Proof. USA buyers should submit Business Registration + EIN + IOR + Bank Proof.'
-    return 'Admin accounts are provisioned by platform owner.'
-  }, [form.role])
 
   const onChange = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
 
@@ -91,8 +78,16 @@ export default function Signup() {
           </div>
 
           <div className="md:col-span-2 bg-gray-50 neo-panel cyberpunk-card border rounded-lg p-3 text-sm text-gray-700">
-            <p><strong>Verification policy:</strong> {verificationNotes}</p>
-            <p className="mt-2">More licensing proof increases international credibility and improves buyer trust/visibility. EU list supported: {EU_COUNTRIES.join(', ')}.</p>
+            <p><strong>Verification happens after signup.</strong> Create your account first, then upload role and region-specific documents in Verification Center.</p>
+            <p className="mt-2">
+              Need the full checklist?
+              {' '}
+              <Link to="/verification" className="text-indigo-700 underline">Go to Verification Center</Link>
+              {' '}
+              or
+              {' '}
+              <Link to="/help" className="text-indigo-700 underline">read Help Center guidance</Link>.
+            </p>
           </div>
 
           {error ? <p className="md:col-span-2 text-sm text-red-500">{error}</p> : null}
