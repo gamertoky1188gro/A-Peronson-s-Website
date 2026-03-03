@@ -81,13 +81,42 @@ function canFactorySign(user, contract) {
 function canFinalizeArtifact(user, contract) {
   if (!user || !contract) return false
   if (isOwnerLevel(user)) return true
-  if (String(user.id) === String(contract.uploaded_by)) return true
-  return user.role === 'buying_house' || user.role === 'factory'
+  return String(user.id) === String(contract.uploaded_by)
 }
 
 function canArchive(user, contract) {
   if (!user || !contract) return false
   return isOwnerLevel(user) || String(user.id) === String(contract.uploaded_by)
+}
+
+function actionBlockers(user, contract) {
+  const buyerSigned = contract?.buyer_signature_state === 'signed'
+  const factorySigned = contract?.factory_signature_state === 'signed'
+  const artifactLocked = contract?.artifact?.status === 'locked'
+  const artifactArchived = contract?.artifact?.status === 'archived'
+
+  const blockers = {
+    buyerSign: '',
+    factorySign: '',
+    finalize: '',
+    archive: '',
+  }
+
+  if (!canBuyerSign(user, contract)) blockers.buyerSign = 'Only owner/admin or assigned buyer can sign this step.'
+  else if (buyerSigned) blockers.buyerSign = 'Buyer signature already completed.'
+
+  if (!canFactorySign(user, contract)) blockers.factorySign = 'Only owner/admin or assigned factory can sign this step.'
+  else if (factorySigned) blockers.factorySign = 'Factory signature already completed.'
+
+  if (!canFinalizeArtifact(user, contract)) blockers.finalize = 'Only owner/admin or the draft uploader can finalize artifact.'
+  else if (!buyerSigned || !factorySigned) blockers.finalize = 'Both buyer and factory signatures are required first.'
+  else if (artifactLocked) blockers.finalize = 'Artifact is already finalized.'
+
+  if (!canArchive(user, contract)) blockers.archive = 'Only owner/admin or the draft uploader can archive.'
+  else if (!artifactLocked) blockers.archive = 'Finalize artifact before archiving.'
+  else if (artifactArchived) blockers.archive = 'Artifact is already archived.'
+
+  return blockers
 }
 
 export default function ContractVault(){
@@ -177,6 +206,7 @@ export default function ContractVault(){
   }
 
   const selectedFlow = computeFlow(selected)
+  const selectedActionBlockers = actionBlockers(currentUser, selected)
   const selectedDownloadUrl = resolveDownloadUrl(selected?.artifact?.pdf_path)
   const canDownloadSelected = selectedFlow.finalized && Boolean(selectedDownloadUrl)
 
@@ -242,6 +272,7 @@ export default function ContractVault(){
             {visibleContracts.map(c => {
               const status = c.lifecycle_status || 'pending_signature'
               const flow = computeFlow(c)
+              const blockersByAction = actionBlockers(currentUser, c)
               const pdfUrl = resolveDownloadUrl(c.artifact?.pdf_path)
               const canDownload = flow.finalized && Boolean(pdfUrl)
               return (
@@ -252,7 +283,9 @@ export default function ContractVault(){
                       <div className={`text-sm px-2 py-1 rounded ${statusStyle(status)}`}>{toLabel(status)}</div>
                     </div>
                     <div className="text-sm text-[#5A5A5A]">Buyer: {c.buyer_name || '—'} • Factory: {c.factory_name || '—'}</div>
+                    <div className="text-sm text-[#5A5A5A]">Signer status: Buyer {c.buyer_signature_state || 'pending'} • Factory {c.factory_signature_state || 'pending'}</div>
                     <div className="text-sm text-[#5A5A5A]">Blockers: {flow.blockers.length ? flow.blockers.join(' · ') : 'None'}</div>
+                    <div className="text-xs text-amber-700">Action blockers: {[blockersByAction.buyerSign, blockersByAction.factorySign, blockersByAction.finalize, blockersByAction.archive].filter(Boolean).join(' · ') || 'None'}</div>
                     <div className="text-sm text-[#5A5A5A]">Updated: {(c.updated_at || c.created_at || '').slice(0, 10)}</div>
                   </div>
                   <div className="flex gap-2">
@@ -307,7 +340,7 @@ export default function ContractVault(){
               <h4 className="font-semibold">Step actions (role-sensitive)</h4>
               <div className="space-y-2 mt-2 text-sm">
                 <button
-                  disabled={!canBuyerSign(currentUser, selected) || saving || selected.buyer_signature_state === 'signed'}
+                  disabled={Boolean(selectedActionBlockers.buyerSign) || saving}
                   onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/signatures`, {
                     method: 'PATCH',
                     token,
@@ -317,9 +350,10 @@ export default function ContractVault(){
                 >
                   Step 2 · Buyer signature (PATCH /signatures)
                 </button>
+                {selectedActionBlockers.buyerSign ? <p className="text-xs text-amber-700">{selectedActionBlockers.buyerSign}</p> : null}
 
                 <button
-                  disabled={!canFactorySign(currentUser, selected) || saving || selected.factory_signature_state === 'signed'}
+                  disabled={Boolean(selectedActionBlockers.factorySign) || saving}
                   onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/signatures`, {
                     method: 'PATCH',
                     token,
@@ -329,13 +363,14 @@ export default function ContractVault(){
                 >
                   Step 3 · Factory signature (PATCH /signatures)
                 </button>
+                {selectedActionBlockers.factorySign ? <p className="text-xs text-amber-700">{selectedActionBlockers.factorySign}</p> : null}
 
                 <div className="border rounded p-2">
                   <div className="font-medium mb-2">Step 4 · Artifact finalize</div>
                   <input placeholder="PDF path" value={artifactForm.pdf_path} onChange={(e) => setArtifactForm((prev) => ({ ...prev, pdf_path: e.target.value }))} className="w-full px-3 py-2 border rounded mb-2" />
                   <input placeholder="PDF hash" value={artifactForm.pdf_hash} onChange={(e) => setArtifactForm((prev) => ({ ...prev, pdf_hash: e.target.value }))} className="w-full px-3 py-2 border rounded mb-2" />
                   <button
-                    disabled={!canFinalizeArtifact(currentUser, selected) || saving || selected.buyer_signature_state !== 'signed' || selected.factory_signature_state !== 'signed'}
+                    disabled={Boolean(selectedActionBlockers.finalize) || saving}
                     onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/artifact`, {
                       method: 'PATCH',
                       token,
@@ -345,10 +380,11 @@ export default function ContractVault(){
                   >
                     Finalize artifact (PATCH /artifact)
                   </button>
+                  {selectedActionBlockers.finalize ? <p className="text-xs text-amber-700 mt-2">{selectedActionBlockers.finalize}</p> : null}
                 </div>
 
                 <button
-                  disabled={!canArchive(currentUser, selected) || saving || selected.artifact?.status !== 'locked'}
+                  disabled={Boolean(selectedActionBlockers.archive) || saving}
                   onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/artifact`, {
                     method: 'PATCH',
                     token,
@@ -358,6 +394,7 @@ export default function ContractVault(){
                 >
                   Step 5 · Archive (PATCH /artifact)
                 </button>
+                {selectedActionBlockers.archive ? <p className="text-xs text-amber-700">{selectedActionBlockers.archive}</p> : null}
               </div>
             </section>
 
