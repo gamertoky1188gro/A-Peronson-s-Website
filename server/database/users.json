@@ -1,1 +1,21 @@
-[]
+[
+  {
+    "id": "0b4383a2-cce7-4020-832b-180d67a4b147",
+    "name": "toky intelligent gamer",
+    "email": "tokyintelligentgamer@gmail.com",
+    "password_hash": "$2b$10$pLZ6apIUd4JcE4GuhJAS3.Jsd7szLIQStHSM1.ABqdUwMbwrs.U3y",
+    "role": "buyer",
+    "verified": false,
+    "subscription_status": "free",
+    "created_at": "2026-03-02T05:09:02.176Z",
+    "profile": {
+      "country": "Bangladesh",
+      "certifications": [],
+      "bank_proof": "",
+      "export_license": "",
+      "monthly_capacity": "",
+      "moq": "",
+      "lead_time_days": ""
+    }
+  }
+]
