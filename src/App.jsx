@@ -29,7 +29,7 @@ import AgentDashboard from './pages/AgentDashboard'
 import MvpDashboard from './pages/MvpDashboard'
 import FloatingAssistant from './components/FloatingAssistant'
 import AccessDenied from './pages/AccessDenied'
-import VerificationCenter from './pages/VerificationCenter'
+import VerificationPage from './pages/VerificationPage'
 import { getCurrentUser } from './lib/auth'
 
 const AUTH_ROLES = ['buyer', 'buying_house', 'factory', 'owner', 'admin', 'agent']
@@ -75,7 +75,8 @@ function AppRoutes() {
       <Route path="/notifications" element={<ProtectedRoute roles={AUTH_ROLES}><NotificationsCenter /></ProtectedRoute>} />
       <Route path="/chat" element={<ProtectedRoute roles={AUTH_ROLES}><ChatInterface /></ProtectedRoute>} />
       <Route path="/call" element={<ProtectedRoute roles={AUTH_ROLES}><CallInterface /></ProtectedRoute>} />
-      <Route path="/verification-center" element={<ProtectedRoute roles={AUTH_ROLES}><VerificationCenter /></ProtectedRoute>} />
+      <Route path="/verification" element={<ProtectedRoute roles={AUTH_ROLES}><VerificationPage /></ProtectedRoute>} />
+      <Route path="/verification-center" element={<ProtectedRoute roles={AUTH_ROLES}><VerificationPage /></ProtectedRoute>} />
 
       <Route path="/member-management" element={<ProtectedRoute roles={OWNER_ONLY_ROLES}><MemberManagement /></ProtectedRoute>} />
       <Route path="/org-settings" element={<ProtectedRoute roles={OWNER_ONLY_ROLES}><OrgSettings /></ProtectedRoute>} />
