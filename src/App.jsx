@@ -34,6 +34,7 @@ import { getCurrentUser } from './lib/auth'
 
 const AUTH_ROLES = ['buyer', 'buying_house', 'factory', 'owner', 'admin', 'agent']
 const OWNER_ONLY_ROLES = ['owner', 'admin']
+const MEMBER_MANAGEMENT_ROLES = ['owner', 'admin', 'buying_house', 'factory']
 
 function ProtectedRoute({ children, roles }) {
   const location = useLocation()
@@ -78,7 +79,7 @@ function AppRoutes() {
       <Route path="/verification" element={<ProtectedRoute roles={AUTH_ROLES}><VerificationPage /></ProtectedRoute>} />
       <Route path="/verification-center" element={<ProtectedRoute roles={AUTH_ROLES}><VerificationPage /></ProtectedRoute>} />
 
-      <Route path="/member-management" element={<ProtectedRoute roles={OWNER_ONLY_ROLES}><MemberManagement /></ProtectedRoute>} />
+      <Route path="/member-management" element={<ProtectedRoute roles={MEMBER_MANAGEMENT_ROLES}><MemberManagement /></ProtectedRoute>} />
       <Route path="/org-settings" element={<ProtectedRoute roles={OWNER_ONLY_ROLES}><OrgSettings /></ProtectedRoute>} />
       <Route path="/insights" element={<ProtectedRoute roles={OWNER_ONLY_ROLES}><Insights /></ProtectedRoute>} />
       <Route path="/owner" element={<ProtectedRoute roles={OWNER_ONLY_ROLES}><OwnerDashboard /></ProtectedRoute>} />

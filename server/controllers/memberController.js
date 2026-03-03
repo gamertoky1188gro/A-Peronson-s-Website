@@ -9,6 +9,10 @@ import {
 } from '../services/memberService.js'
 import { canManageMembers, deny, handleControllerError } from '../utils/permissions.js'
 
+function orgOwnerIdFromUser(user) {
+  return user?.org_owner_id || user?.org_id || user?.organization_id || user?.id
+}
+
 function handleError(res, error) {
   return handleControllerError(res, error)
 }
@@ -16,7 +20,7 @@ function handleError(res, error) {
 export async function createOrgMember(req, res) {
   if (!canManageMembers(req.user)) return deny(res)
   try {
-    const member = await createMember(req.user.id, req.body || {})
+    const member = await createMember(orgOwnerIdFromUser(req.user), req.body || {})
     return res.status(201).json({ member })
   } catch (error) {
     return handleError(res, error)
@@ -26,7 +30,7 @@ export async function createOrgMember(req, res) {
 export async function listOrgMembers(req, res) {
   if (!canManageMembers(req.user)) return deny(res)
   try {
-    const members = await listMembers(req.user.id)
+    const members = await listMembers(orgOwnerIdFromUser(req.user))
     return res.json({ members, constraints: getMemberConstraints() })
   } catch (error) {
     return handleError(res, error)
@@ -36,7 +40,7 @@ export async function listOrgMembers(req, res) {
 export async function putOrgMember(req, res) {
   if (!canManageMembers(req.user)) return deny(res)
   try {
-    const member = await updateMember(req.user.id, req.params.memberId, req.body || {})
+    const member = await updateMember(orgOwnerIdFromUser(req.user), req.params.memberId, req.body || {})
     if (!member) return res.status(404).json({ error: 'Member not found' })
     return res.json({ member })
   } catch (error) {
@@ -48,7 +52,7 @@ export async function patchMemberPermissions(req, res) {
   if (!canManageMembers(req.user)) return deny(res)
   try {
     const member = await updateMemberPermissions(
-      req.user.id,
+      orgOwnerIdFromUser(req.user),
       req.params.memberId,
       req.body?.permissions,
       req.body?.permission_matrix,
@@ -63,7 +67,7 @@ export async function patchMemberPermissions(req, res) {
 export async function postMemberPasswordReset(req, res) {
   if (!canManageMembers(req.user)) return deny(res)
   try {
-    const result = await resetMemberPassword(req.user.id, req.params.memberId)
+    const result = await resetMemberPassword(orgOwnerIdFromUser(req.user), req.params.memberId)
     if (!result) return res.status(404).json({ error: 'Member not found' })
     return res.json(result)
   } catch (error) {
@@ -75,7 +79,7 @@ export async function deactivateOrRemoveOrgMember(req, res) {
   if (!canManageMembers(req.user)) return deny(res)
   try {
     const mode = req.query.remove === 'true' ? 'remove' : 'deactivate'
-    const result = await deactivateOrRemoveMember(req.user.id, req.params.memberId, mode)
+    const result = await deactivateOrRemoveMember(orgOwnerIdFromUser(req.user), req.params.memberId, mode)
     if (!result) return res.status(404).json({ error: 'Member not found' })
     return res.json(result)
   } catch (error) {

@@ -11,11 +11,11 @@ import {
 
 const router = Router()
 
-router.get('/', requireAuth, allowRoles('owner', 'admin'), listOrgMembers)
-router.post('/', requireAuth, allowRoles('owner', 'admin'), createOrgMember)
-router.put('/:memberId', requireAuth, allowRoles('owner', 'admin'), putOrgMember)
-router.patch('/:memberId/permissions', requireAuth, allowRoles('owner', 'admin'), patchMemberPermissions)
-router.post('/:memberId/reset-password', requireAuth, allowRoles('owner', 'admin'), postMemberPasswordReset)
-router.delete('/:memberId', requireAuth, allowRoles('owner', 'admin'), deactivateOrRemoveOrgMember)
+router.get('/', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory'), listOrgMembers)
+router.post('/', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory'), createOrgMember)
+router.put('/:memberId', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory'), putOrgMember)
+router.patch('/:memberId/permissions', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory'), patchMemberPermissions)
+router.post('/:memberId/reset-password', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory'), postMemberPasswordReset)
+router.delete('/:memberId', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory'), deactivateOrRemoveOrgMember)
 
 export default router
