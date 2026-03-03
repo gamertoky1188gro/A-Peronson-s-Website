@@ -1,4 +1,11 @@
-import { createRating, getProfileRatingsSummary, getRatingsForProfiles, recordMilestone } from '../services/ratingsService.js'
+import {
+  createRating,
+  getAggregateForProfile,
+  getProfileRatingsSummary,
+  getRatingsForProfiles,
+  getSearchRatingCards,
+  recordMilestone,
+} from '../services/ratingsService.js'
 
 export async function getProfileRatings(req, res) {
   const summary = await getProfileRatingsSummary(req.params.profileKey)
@@ -11,6 +18,18 @@ export async function getProfileRatingsBatch(req, res) {
     .map((entry) => entry.trim())
     .filter(Boolean)
   return res.json(await getRatingsForProfiles(keys))
+}
+
+export async function getProfileRatingsAggregate(req, res) {
+  return res.json(await getAggregateForProfile(req.params.profileKey))
+}
+
+export async function getSearchRatings(req, res) {
+  const keys = String(req.query.profile_keys || '')
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+  return res.json(await getSearchRatingCards(keys))
 }
 
 export async function submitRating(req, res) {

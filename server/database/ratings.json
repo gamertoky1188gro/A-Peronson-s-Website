@@ -7,7 +7,10 @@
       "interaction_type": "contract",
       "score": 5,
       "comment": "Excellent finishing and compliance checks.",
-      "reliability_flags": { "verified_counterparty": true, "qualified_milestone_pair": true },
+      "reliability_flags": {
+        "verified_counterparty": true,
+        "qualified_milestone_pair": true
+      },
       "created_at": "2026-01-12T10:00:00.000Z"
     },
     {
@@ -17,7 +20,10 @@
       "interaction_type": "call",
       "score": 4,
       "comment": "Flexible with samples and responsive.",
-      "reliability_flags": { "verified_counterparty": true, "qualified_milestone_pair": true },
+      "reliability_flags": {
+        "verified_counterparty": true,
+        "qualified_milestone_pair": true
+      },
       "created_at": "2026-01-20T10:00:00.000Z"
     },
     {
@@ -27,7 +33,10 @@
       "interaction_type": "deal",
       "score": 5,
       "comment": "Great communication and on-time delivery.",
-      "reliability_flags": { "verified_counterparty": true, "qualified_milestone_pair": true },
+      "reliability_flags": {
+        "verified_counterparty": true,
+        "qualified_milestone_pair": true
+      },
       "created_at": "2026-01-17T10:00:00.000Z"
     },
     {
@@ -37,7 +46,10 @@
       "interaction_type": "deal",
       "score": 5,
       "comment": "High-quality finishing and consistent sizing.",
-      "reliability_flags": { "verified_counterparty": true, "qualified_milestone_pair": true },
+      "reliability_flags": {
+        "verified_counterparty": true,
+        "qualified_milestone_pair": true
+      },
       "created_at": "2026-01-25T10:00:00.000Z"
     },
     {
@@ -47,10 +59,14 @@
       "interaction_type": "contract",
       "score": 4,
       "comment": "Good handling and transparent updates.",
-      "reliability_flags": { "verified_counterparty": true, "qualified_milestone_pair": false },
+      "reliability_flags": {
+        "verified_counterparty": true,
+        "qualified_milestone_pair": false
+      },
       "created_at": "2026-01-15T10:00:00.000Z"
     }
   ],
   "milestones": [],
-  "feedback_requests": []
+  "feedback_requests": [],
+  "feedback_events": []
 }

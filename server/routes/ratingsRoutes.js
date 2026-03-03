@@ -1,11 +1,20 @@
 import { Router } from 'express'
 import { requireAuth } from '../middleware/auth.js'
-import { completeMilestone, getProfileRatings, getProfileRatingsBatch, submitRating } from '../controllers/ratingsController.js'
+import {
+  completeMilestone,
+  getProfileRatings,
+  getProfileRatingsAggregate,
+  getProfileRatingsBatch,
+  getSearchRatings,
+  submitRating,
+} from '../controllers/ratingsController.js'
 
 const router = Router()
 
 router.get('/profiles/:profileKey', getProfileRatings)
+router.get('/profiles/:profileKey/aggregate', getProfileRatingsAggregate)
 router.get('/profiles', getProfileRatingsBatch)
+router.get('/search', getSearchRatings)
 router.post('/profiles/:profileKey', requireAuth, submitRating)
 router.post('/milestones', requireAuth, completeMilestone)
 

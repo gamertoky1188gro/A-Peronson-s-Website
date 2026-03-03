@@ -56,10 +56,6 @@ export default function BuyerProfile() {
   const pastDeals = {
     completed: 24,
     successRate: '92%',
-    reviews: [
-      { id: 1, text: 'Great communication and on-time delivery.' },
-      { id: 2, text: 'High-quality finishing and consistent sizing.' },
-    ],
   }
 
   return (
@@ -172,7 +168,7 @@ export default function BuyerProfile() {
                 </div>
                 <div className="p-4 bg-[#F4F9FF] rounded-lg">
                   <div className="text-xs text-[#5A5A5A]">Top Reviews</div>
-                  <div className="text-sm text-[#1A1A1A] mt-2">{pastDeals.reviews.map(r => r.text).join(' • ')}</div>
+                  <div className="text-sm text-[#1A1A1A] mt-2">{(ratingSummary?.recent_reviews || []).slice(0, 2).map((r) => r.comment).filter(Boolean).join(' • ') || 'No reviews yet'}</div>
                 </div>
               </div>
             </section>
@@ -197,17 +193,20 @@ export default function BuyerProfile() {
 
               <div className="text-xs text-[#5A5A5A] mb-3">Breakdown: 5★ {ratingSummary?.breakdown?.[5] || 0} • 4★ {ratingSummary?.breakdown?.[4] || 0} • 3★ {ratingSummary?.breakdown?.[3] || 0} • 2★ {ratingSummary?.breakdown?.[2] || 0} • 1★ {ratingSummary?.breakdown?.[1] || 0}</div>
               <div className="space-y-3">
-                {(ratingSummary?.recent_reviews?.length ? ratingSummary.recent_reviews : pastDeals.reviews).map(r => (
+                {(ratingSummary?.recent_reviews || []).map((r) => (
                   <div key={r.id} className="border border-gray-100 rounded-lg p-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <div className="font-medium text-[#1A1A1A]">{r.text}</div>
+                        <div className="font-medium text-[#1A1A1A]">{r.comment || 'No comment provided.'}</div>
                         <div className="text-xs text-[#5A5A5A] mt-1">— Factory Reviewer • 3 weeks ago</div>
                       </div>
-                      <div className="text-sm font-semibold text-[#0A66C2]">{r.score || 5}★</div>
+                      <div className="text-sm font-semibold text-[#0A66C2]">{r.score || 0}★</div>
                     </div>
                   </div>
                 ))}
+                {!ratingSummary?.recent_reviews?.length && (
+                  <div className="rounded-lg border border-dashed border-gray-200 p-3 text-sm text-[#5A5A5A]">No reviews available yet.</div>
+                )}
               </div>
             </section>
           </main>
