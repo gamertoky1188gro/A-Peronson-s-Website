@@ -199,3 +199,22 @@ export async function revokeExpiredVerifications() {
   if (changed) await writeJson(FILE, all)
   return all
 }
+
+export async function markVerificationExpiringSoon(userId, remainingDays, thresholdDays = 7) {
+  const all = await readJson(FILE)
+  const idx = all.findIndex((v) => v.user_id === userId)
+  if (idx < 0) return null
+
+  const nextRemainingDays = Math.max(0, Number(remainingDays) || 0)
+  const isExpiringSoon = all[idx].verified && nextRemainingDays > 0 && nextRemainingDays <= thresholdDays
+
+  all[idx].subscription_remaining_days = nextRemainingDays
+  all[idx].expiring_soon = isExpiringSoon
+  all[idx].verification_status = all[idx].verified
+    ? (isExpiringSoon ? 'expiring_soon' : 'verified_active')
+    : 'expired'
+  all[idx].updated_at = new Date().toISOString()
+
+  await writeJson(FILE, all)
+  return all[idx]
+}

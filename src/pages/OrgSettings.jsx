@@ -1,10 +1,29 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import FloatingAssistant from '../components/FloatingAssistant'
 
 export default function OrgSettings(){
   const [tab, setTab] = useState('general')
   const [isOwnerAdmin] = useState(true)
+  const [remainingDays, setRemainingDays] = useState(4)
+
+  const verificationStatus = useMemo(() => {
+    if (remainingDays <= 0) return 'expired'
+    if (remainingDays <= 7) return 'expiring_soon'
+    return 'verified_active'
+  }, [remainingDays])
+
+  const statusChipClasses = {
+    verified_active: 'bg-green-100 text-green-700',
+    expiring_soon: 'bg-amber-100 text-amber-700',
+    expired: 'bg-red-100 text-red-700',
+  }
+
+  const statusLabel = {
+    verified_active: 'Verified active',
+    expiring_soon: 'Expiring soon',
+    expired: 'Expired (renew to restore badge)',
+  }
 
   return (
     <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
@@ -45,6 +64,13 @@ export default function OrgSettings(){
             {tab === 'verification' && (
               <div>
                 <p className="text-sm text-[#5A5A5A]">Upload trade license and certifications</p>
+                <div className="mt-3 flex items-center gap-2">
+                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusChipClasses[verificationStatus]}`}>
+                    {statusLabel[verificationStatus]}
+                  </span>
+                  <span className="text-xs text-[#5A5A5A]">{Math.max(0, remainingDays)} day(s) remaining</span>
+                </div>
+                <p className="mt-2 text-xs text-[#5A5A5A]">Verification is subscription-based, not permanent. Keep premium active to keep the badge visible.</p>
                 <div className="mt-3">
                   <button className="px-3 py-2 border rounded">Upload Trade License</button>
                   <button className="px-3 py-2 border rounded ml-2">Upload ISO / WRAP</button>
@@ -80,8 +106,17 @@ export default function OrgSettings(){
 
             {tab === 'subscription' && (
               <div>
-                <div className="text-sm">Current Plan: Free</div>
-                <button className="mt-3 px-3 py-2 bg-[#0A66C2] text-white rounded">Upgrade</button>
+                <div className="text-sm">Current Plan: Premium Monthly</div>
+                <div className="mt-2 flex items-center gap-2">
+                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusChipClasses[verificationStatus]}`}>
+                    {statusLabel[verificationStatus]}
+                  </span>
+                  <span className="text-xs text-[#5A5A5A]">Verification is subscription-based, not permanent.</span>
+                </div>
+                <div className="mt-3 flex items-center gap-2">
+                  <button onClick={() => setRemainingDays((d) => d + 30)} className="px-3 py-2 bg-[#0A66C2] text-white rounded">Renew premium monthly</button>
+                  <span className="text-xs text-[#5A5A5A]">Remaining: {Math.max(0, remainingDays)} day(s)</span>
+                </div>
               </div>
             )}
           </div>

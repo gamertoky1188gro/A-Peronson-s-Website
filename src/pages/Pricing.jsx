@@ -5,6 +5,7 @@ import FloatingAssistant from '../components/FloatingAssistant'
 function SubscriptionArea(){
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [accountType, setAccountType] = useState('General')
+  const [remainingDays, setRemainingDays] = useState(12)
 
   const accountTypes = isLoggedIn ? ['General', 'Factory'] : []
 
@@ -82,6 +83,20 @@ function SubscriptionArea(){
     return features.loggedIn[accountType].Premium
   }
 
+  const verificationStatus = remainingDays <= 0 ? 'expired' : remainingDays <= 7 ? 'expiring_soon' : 'verified_active'
+
+  const statusChipClasses = {
+    verified_active: 'bg-green-100 text-green-700',
+    expiring_soon: 'bg-amber-100 text-amber-700',
+    expired: 'bg-red-100 text-red-700',
+  }
+
+  const statusLabel = {
+    verified_active: 'Verified active',
+    expiring_soon: 'Expiring soon',
+    expired: 'Expired (renew to restore badge)',
+  }
+
   return (
     <div className="bg-white neo-panel cyberpunk-card border rounded-lg p-6">
       <div className="flex items-center justify-between">
@@ -114,6 +129,18 @@ function SubscriptionArea(){
           </div>
         </div>
       )}
+
+      <div className="mt-4 rounded-lg border bg-blue-50 p-3 text-sm text-blue-800">
+        Verification is subscription-based, not permanent. Renew your premium monthly plan to keep the verification badge active.
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusChipClasses[verificationStatus]}`}>
+          {statusLabel[verificationStatus]}
+        </span>
+        <span className="text-xs text-gray-600">Remaining: {Math.max(0, remainingDays)} day(s)</span>
+        <button onClick={() => setRemainingDays((d) => d + 30)} className="rounded bg-indigo-600 px-3 py-1 text-xs text-white">Renew premium monthly</button>
+      </div>
 
       <div className="mt-6 grid md:grid-cols-2 gap-6">
         {/* Free Card */}
