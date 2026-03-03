@@ -1,6 +1,7 @@
 import { createProduct, listProducts } from '../services/productService.js'
 import {
   buildLimitError,
+  buildSearchAccessPayload,
   canUseAdvancedFilters,
   consumeQuota,
   extractUsedAdvancedFilters,
@@ -17,7 +18,6 @@ export async function getProducts(req, res) {
   return res.json(await listProducts({ category: req.query.category }))
 }
 
-
 export async function searchProducts(req, res) {
   const plan = await getUserPlan(req.user.id)
   const advancedFilters = extractUsedAdvancedFilters(req.query)
@@ -29,6 +29,7 @@ export async function searchProducts(req, res) {
       message: 'Advanced filters require a premium plan',
       quota: quotaPreview,
       missingFilters: advancedFilters,
+      upgradeRequired: true,
     }))
   }
 
@@ -48,9 +49,13 @@ export async function searchProducts(req, res) {
     if (req.query.category && String(p.category).toLowerCase() !== String(req.query.category).toLowerCase()) return false
     return true
   })
+
   return res.json({
     items: results,
-    quota: quotaUse.quota,
-    plan,
+    ...buildSearchAccessPayload({
+      action: 'products_search',
+      plan,
+      quota: quotaUse.quota,
+    }),
   })
 }

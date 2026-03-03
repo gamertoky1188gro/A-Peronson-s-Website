@@ -1,6 +1,7 @@
 import { createRequirement, listRequirements, removeRequirement, getRequirementById, updateRequirement } from '../services/requirementService.js'
 import {
   buildLimitError,
+  buildSearchAccessPayload,
   canUseAdvancedFilters,
   consumeQuota,
   extractUsedAdvancedFilters,
@@ -39,7 +40,6 @@ export async function deleteRequirement(req, res) {
   return res.json({ ok: true })
 }
 
-
 export async function searchRequirements(req, res) {
   const plan = await getUserPlan(req.user.id)
   const advancedFilters = extractUsedAdvancedFilters(req.query)
@@ -51,6 +51,7 @@ export async function searchRequirements(req, res) {
       message: 'Advanced filters require a premium plan',
       quota: quotaPreview,
       missingFilters: advancedFilters,
+      upgradeRequired: true,
     }))
   }
 
@@ -71,9 +72,13 @@ export async function searchRequirements(req, res) {
     if (req.query.verifiedOnly === 'true' && !r.verified) return false
     return true
   })
+
   return res.json({
     items: results,
-    quota: quotaUse.quota,
-    plan,
+    ...buildSearchAccessPayload({
+      action: 'requirements_search',
+      plan,
+      quota: quotaUse.quota,
+    }),
   })
 }

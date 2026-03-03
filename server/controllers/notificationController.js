@@ -1,5 +1,5 @@
 import { listMySearchAlerts, listNotifications, markNotificationRead, saveSearchAlert } from '../services/notificationService.js'
-import { buildLimitError, consumeQuota, getUserPlan } from '../services/searchAccessService.js'
+import { buildLimitError, buildSearchAccessPayload, consumeQuota, getUserPlan } from '../services/searchAccessService.js'
 
 export async function createSearchAlert(req, res) {
   const plan = await getUserPlan(req.user.id)
@@ -15,7 +15,14 @@ export async function createSearchAlert(req, res) {
 
   const row = await saveSearchAlert(req.user.id, req.body?.query, req.body?.filters || {})
   if (!row) return res.status(400).json({ error: 'Query is required' })
-  return res.status(201).json({ ...row, quota: quotaUse.quota, plan })
+  return res.status(201).json({
+    ...row,
+    ...buildSearchAccessPayload({
+      action: 'search_alerts_create',
+      plan,
+      quota: quotaUse.quota,
+    }),
+  })
 }
 
 export async function getSearchAlerts(req, res) {
