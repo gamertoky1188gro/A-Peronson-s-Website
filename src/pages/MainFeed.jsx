@@ -51,7 +51,8 @@ function normalizeFeedItem(raw) {
     content: raw.content || raw.requirement || raw.custom_description || raw.description || raw.title || '',
     deadline: raw.deadline || raw.timeline_days || null,
     tags: Array.isArray(raw.tags) ? raw.tags : [raw.category, raw.material].filter(Boolean),
-    hasVideo: Boolean(raw.hasVideo || raw.video_url),
+    mediaReviewStatus: raw.video_review_status || 'approved',
+    hasVideo: Boolean(raw.hasVideo || (raw.video_review_status === 'approved' && raw.video_url)),
   }
 }
 

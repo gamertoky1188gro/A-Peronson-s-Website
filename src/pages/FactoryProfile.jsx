@@ -30,6 +30,32 @@ export default function FactoryProfile() {
     { id: 2, buyer: 'StreetStyle', text: 'Flexible with samples and responsive.', rating: 4 },
   ]
 
+  const videoGallery = [
+    {
+      id: 1,
+      title: 'Knitting floor walkthrough',
+      duration: '2:18',
+      reviewStatus: 'approved',
+      summary: 'Shows daily output checks and in-line quality control stations.',
+    },
+    {
+      id: 2,
+      title: 'Packaging and dispatch line',
+      duration: '1:47',
+      reviewStatus: 'pending_review',
+      summary: 'Awaiting compliance review before becoming publicly visible.',
+    },
+    {
+      id: 3,
+      title: 'Internal training clip',
+      duration: '1:12',
+      reviewStatus: 'restricted',
+      summary: 'Hidden due to media policy checks. Only visible to the factory admin.',
+    },
+  ]
+
+  const visibleVideos = videoGallery.filter((video) => video.reviewStatus === 'approved')
+
   return (
     <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
       {/* TOP NAVIGATION */}
@@ -128,9 +154,33 @@ export default function FactoryProfile() {
               )}
 
               {activeTab === 'videos' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-3">
-                  <div className="bg-gray-100 h-40 rounded-lg"></div>
-                  <div className="bg-gray-100 h-40 rounded-lg"></div>
+                <div className="space-y-4 p-3">
+                  <div>
+                    <h4 className="font-semibold">Video Gallery</h4>
+                    <p className="text-sm text-[#5A5A5A] mt-1">Only approved media is public. Pending or restricted items remain hidden until moderation is completed.</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {visibleVideos.map((video) => (
+                      <article key={video.id} className="bg-white neo-panel cyberpunk-card border border-gray-100 rounded-lg p-3">
+                        <div className="bg-gray-100 h-40 rounded-lg flex items-center justify-center text-[#5A5A5A]">Video Preview</div>
+                        <div className="mt-3 flex items-start justify-between gap-2">
+                          <div>
+                            <h5 className="font-semibold text-sm">{video.title}</h5>
+                            <p className="text-xs text-[#5A5A5A] mt-1">{video.summary}</p>
+                          </div>
+                          <span className="text-xs px-2 py-1 rounded-full bg-[#E8F3FF] text-[#0A66C2] font-semibold uppercase">{video.reviewStatus.replace('_', ' ')}</span>
+                        </div>
+                        <div className="text-xs text-[#5A5A5A] mt-2">Duration: {video.duration}</div>
+                      </article>
+                    ))}
+                  </div>
+
+                  {videoGallery.some((video) => video.reviewStatus !== 'approved') && (
+                    <div className="border border-amber-200 bg-amber-50 rounded-lg px-4 py-3 text-sm text-amber-900">
+                      {videoGallery.filter((video) => video.reviewStatus !== 'approved').length} video(s) are currently hidden due to moderation status.
+                    </div>
+                  )}
                 </div>
               )}
 

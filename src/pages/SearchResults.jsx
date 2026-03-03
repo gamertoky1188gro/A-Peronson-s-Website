@@ -51,7 +51,8 @@ function normalizeCompany(raw) {
     id: raw.id ?? raw._id,
     name: raw.name || raw.organization_name || raw.org || raw.author?.name || 'Unknown company',
     category: raw.category || raw.primary_category || raw.material || 'General',
-    hasVideo: Boolean(raw.hasVideo || raw.video_url),
+    mediaReviewStatus: raw.video_review_status || 'approved',
+    hasVideo: Boolean(raw.hasVideo || (raw.video_review_status === 'approved' && raw.video_url)),
   }
 }
 
