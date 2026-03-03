@@ -166,7 +166,7 @@ export default function SearchResults() {
       return
     }
 
-    api(`/ratings/profiles?profile_keys=${encodeURIComponent(keys.join(','))}`)
+    api(`/ratings/search?profile_keys=${encodeURIComponent(keys.join(','))}`)
       .then((data) => setRatingsByProfile(data || {}))
       .catch(() => setRatingsByProfile({}))
   }, [companies])
@@ -418,8 +418,9 @@ export default function SearchResults() {
                             <p className="text-sm text-gray-600">{company.category}</p>
                           </div>
                         </div>
-                        <div className="mt-2 text-sm text-gray-600">⭐ {ratingsByProfile?.[company.profileKey]?.aggregate?.average_score || '0.0'} ({ratingsByProfile?.[company.profileKey]?.aggregate?.total_count || 0} reviews)</div>
+                        <div className="mt-2 text-sm text-gray-600">⭐ {ratingsByProfile?.[company.profileKey]?.average_score || '0.0'} ({ratingsByProfile?.[company.profileKey]?.total_count || 0} reviews)</div>
                         <div className="mt-1 text-xs text-gray-500">Breakdown: 5★ {ratingsByProfile?.[company.profileKey]?.breakdown?.[5] || 0} • 4★ {ratingsByProfile?.[company.profileKey]?.breakdown?.[4] || 0} • 3★ {ratingsByProfile?.[company.profileKey]?.breakdown?.[3] || 0}</div>
+                        <div className="mt-1 text-xs text-gray-500">Confidence: {ratingsByProfile?.[company.profileKey]?.confidence || 'low'} • Score confidence {Math.round((ratingsByProfile?.[company.profileKey]?.score_confidence || 0) * 100)}%</div>
                         {company.hasVideo && (
                           <div className="mt-3 flex items-center gap-2 text-sm text-gray-600">
                             <span>🎬</span>

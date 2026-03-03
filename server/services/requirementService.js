@@ -3,6 +3,7 @@ import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { logInfo } from '../utils/logger.js'
 import { emitNotificationsForEntity } from './notificationService.js'
+import { recordMilestone } from './ratingsService.js'
 
 const FILE = 'requirements.json'
 
@@ -53,8 +54,9 @@ export async function updateRequirement(requirementId, patch, actor) {
   if (idx < 0) return null
   if (actor.role === 'buyer' && requirements[idx].buyer_id !== actor.id) return 'forbidden'
 
+  const previous = requirements[idx]
   const next = {
-    ...requirements[idx],
+    ...previous,
     category: patch.category !== undefined ? sanitizeString(patch.category, 120) : requirements[idx].category,
     quantity: patch.quantity !== undefined ? sanitizeString(patch.quantity, 40) : requirements[idx].quantity,
     price_range: patch.price_range !== undefined ? sanitizeString(patch.price_range, 80) : requirements[idx].price_range,
@@ -70,6 +72,19 @@ export async function updateRequirement(requirementId, patch, actor) {
 
   requirements[idx] = next
   await writeJson(FILE, requirements)
+
+  const normalizedStatus = String(next.status || '').toLowerCase()
+  const statusTransitioned = normalizedStatus !== String(previous.status || '').toLowerCase()
+  if (statusTransitioned && ['deal_completed', 'closed', 'fulfilled', 'completed'].includes(normalizedStatus) && patch?.counterparty_id) {
+    await recordMilestone({
+      profileKey: `user:${actor.id}`,
+      counterpartyId: sanitizeString(patch.counterparty_id, 120),
+      interactionType: 'deal',
+      milestone: 'deal_completed',
+      actorId: actor.id,
+    })
+  }
+
   return next
 }
 

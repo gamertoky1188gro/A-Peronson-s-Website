@@ -4,7 +4,10 @@ import { sanitizeString } from '../utils/validators.js'
 
 const FILE = 'ratings.json'
 const NOTIFICATIONS_FILE = 'notifications.json'
-const QUALIFYING_MILESTONES = ['contract_signed', 'communication_completed']
+const QUALIFICATION_RULES = [
+  ['contract_signed', 'communication_completed'],
+  ['deal_completed'],
+]
 const RECENT_LIMIT = 10
 
 function normalizeProfileKey(profileKey) {
@@ -18,7 +21,7 @@ function safeNumber(value, fallback = 0) {
 }
 
 function emptyStore() {
-  return { ratings: [], milestones: [], feedback_requests: [] }
+  return { ratings: [], milestones: [], feedback_requests: [], feedback_events: [] }
 }
 
 async function readStore() {
@@ -28,6 +31,7 @@ async function readStore() {
     ratings: Array.isArray(store.ratings) ? store.ratings : [],
     milestones: Array.isArray(store.milestones) ? store.milestones : [],
     feedback_requests: Array.isArray(store.feedback_requests) ? store.feedback_requests : [],
+    feedback_events: Array.isArray(store.feedback_events) ? store.feedback_events : [],
   }
 }
 
@@ -90,6 +94,42 @@ function computeReliability(ratings) {
   }
 }
 
+function computeConfidenceMetadata(ratings, averageScore) {
+  const sampleSize = ratings.length
+  if (!sampleSize) {
+    return {
+      sample_size: 0,
+      score_confidence: 0,
+      standard_deviation: 0,
+      margin_of_error_95: 0,
+      ci95_lower: 0,
+      ci95_upper: 0,
+    }
+  }
+
+  const variance = ratings.reduce((acc, row) => {
+    const delta = safeNumber(row.score, 0) - averageScore
+    return acc + (delta * delta)
+  }, 0) / sampleSize
+
+  const stdDev = Math.sqrt(variance)
+  const marginError = 1.96 * (stdDev / Math.sqrt(sampleSize))
+  const normalizedConfidence = Math.max(0, Math.min(1, (sampleSize / (sampleSize + 6)) * (1 - (stdDev / 2.5))))
+
+  return {
+    sample_size: sampleSize,
+    score_confidence: Number(normalizedConfidence.toFixed(2)),
+    standard_deviation: Number(stdDev.toFixed(2)),
+    margin_of_error_95: Number(marginError.toFixed(2)),
+    ci95_lower: Number(Math.max(0, averageScore - marginError).toFixed(2)),
+    ci95_upper: Number(Math.min(5, averageScore + marginError).toFixed(2)),
+  }
+}
+
+function profileQualifiesForFeedback(completedMilestones = []) {
+  return QUALIFICATION_RULES.some((rule) => rule.every((milestone) => completedMilestones.includes(milestone)))
+}
+
 export async function recordMilestone({ profileKey, counterpartyId, interactionType, milestone, actorId }) {
   const normalizedProfile = normalizeProfileKey(profileKey)
   const normalizedCounterparty = sanitizeString(counterpartyId, 120)
@@ -132,7 +172,7 @@ export async function recordMilestone({ profileKey, counterpartyId, interactionT
   const completed = store.milestones
     .filter((row) => row.profile_key === normalizedProfile && row.counterparty_id === normalizedCounterparty && row.status === 'completed')
     .map((row) => row.milestone)
-  const qualifies = QUALIFYING_MILESTONES.every((name) => completed.includes(name))
+  const qualifies = profileQualifiesForFeedback(completed)
 
   let feedbackRequest = null
   if (qualifies) {
@@ -147,12 +187,21 @@ export async function recordMilestone({ profileKey, counterpartyId, interactionT
         profile_key: normalizedProfile,
         counterparty_id: normalizedCounterparty,
         interaction_type: normalizedInteractionType,
-        milestones: QUALIFYING_MILESTONES,
+        qualification_rules: QUALIFICATION_RULES,
         status: 'pending',
         triggered_by: actorId,
         created_at: now,
       }
       store.feedback_requests.push(feedbackRequest)
+      store.feedback_events.push({
+        id: crypto.randomUUID(),
+        profile_key: normalizedProfile,
+        counterparty_id: normalizedCounterparty,
+        interaction_type: normalizedInteractionType,
+        event: 'feedback_requested',
+        milestone: normalizedMilestone,
+        created_at: now,
+      })
       await createFeedbackRequestNotification(normalizedCounterparty, normalizedProfile)
     }
   }
@@ -216,6 +265,7 @@ export async function getProfileRatingsSummary(profileKey) {
       recent_average_score: Number(recentAverage.toFixed(2)),
       total_count: totalCount,
       reliability: computeReliability(ratings),
+      confidence_metadata: computeConfidenceMetadata(ratings, average),
     },
     breakdown: computeBreakdown(ratings),
     recent_reviews: recent.slice(0, 5).map((row) => ({
@@ -236,4 +286,24 @@ export async function getRatingsForProfiles(profileKeys = []) {
     result[key] = await getProfileRatingsSummary(key)
   }
   return result
+}
+
+export async function getAggregateForProfile(profileKey) {
+  const summary = await getProfileRatingsSummary(profileKey)
+  return {
+    profile_key: summary.profile_key,
+    aggregate: summary.aggregate,
+    feedback_requests: summary.feedback_requests,
+  }
+}
+
+export async function getSearchRatingCards(profileKeys = []) {
+  const summaries = await getRatingsForProfiles(profileKeys)
+  return Object.fromEntries(Object.entries(summaries).map(([profileKey, summary]) => [profileKey, {
+    average_score: summary.aggregate.average_score,
+    total_count: summary.aggregate.total_count,
+    confidence: summary.aggregate.reliability.confidence,
+    score_confidence: summary.aggregate.confidence_metadata.score_confidence,
+    breakdown: summary.breakdown,
+  }]))
 }
