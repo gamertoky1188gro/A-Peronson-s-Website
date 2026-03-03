@@ -11,16 +11,20 @@ function normalizeThreads(messages = []) {
   messages.forEach((message) => {
     if (!message?.match_id) return
     const existing = byMatchId.get(message.match_id)
+    const lock = message.conversation_lock || existing?.lock || null
+
     if (!existing) {
       byMatchId.set(message.match_id, {
         id: message.match_id,
         matchId: message.match_id,
+        requestId: message.request_id || String(message.match_id).split(':')[0],
         name: message.sender_name || message.sender_id || 'Unknown sender',
         senderId: message.sender_id,
         verified: Boolean(message.sender_verified),
         last: message.message || 'No message content',
         unread: 0,
         timestamp: message.timestamp,
+        lock,
       })
       return
     }
@@ -30,11 +34,19 @@ function normalizeThreads(messages = []) {
         ...existing,
         last: message.message || existing.last,
         timestamp: message.timestamp,
+        lock,
       })
     }
   })
 
   return [...byMatchId.values()].sort(sortByNewest)
+}
+
+function lockStatusLabel(lock) {
+  if (!lock || lock.status === 'unclaimed') return 'Unclaimed'
+  if (lock.status === 'claimed') return `Claimed by ${lock.claimed_by_name || 'you'}`
+  if (lock.status === 'granted') return 'Access granted'
+  return `Claimed by ${lock.claimed_by_name || 'another agent'}`
 }
 
 export default function ChatInterface() {
@@ -46,6 +58,9 @@ export default function ChatInterface() {
   const [query, setQuery] = useState('')
   const [scheduleStatus, setScheduleStatus] = useState('')
   const [callHistoryByThread, setCallHistoryByThread] = useState({})
+  const [members, setMembers] = useState([])
+  const [targetAgentId, setTargetAgentId] = useState('')
+  const [lockActionStatus, setLockActionStatus] = useState('')
 
   const loadInbox = useCallback(async () => {
     setLoading(true)
@@ -97,9 +112,21 @@ export default function ChatInterface() {
     }
   }, [])
 
+  const loadMembers = useCallback(async () => {
+    const token = getToken()
+    if (!token) return
+    try {
+      const data = await apiRequest('/members', { token })
+      setMembers(Array.isArray(data?.members) ? data.members : [])
+    } catch {
+      setMembers([])
+    }
+  }, [])
+
   useEffect(() => {
     loadInbox()
-  }, [loadInbox])
+    loadMembers()
+  }, [loadInbox, loadMembers])
 
   const filteredPriorityInbox = useMemo(() => {
     if (!query.trim()) return priorityInbox
@@ -138,12 +165,39 @@ export default function ChatInterface() {
     }
   }
 
-  async function acceptRequest(threadId) {
-    await updateRequestState(threadId, 'accept')
+  async function requestConversationAccess(thread) {
+    const token = getToken()
+    if (!token || !thread?.requestId) return
+    setLockActionStatus('Requesting access...')
+    try {
+      await apiRequest(`/conversations/${thread.requestId}/claim`, { method: 'POST', token })
+      setLockActionStatus('Access is now granted for this conversation.')
+      await loadInbox()
+    } catch (err) {
+      setLockActionStatus(err.message || 'Unable to request access.')
+    }
   }
 
-  async function rejectRequest(threadId) {
-    await updateRequestState(threadId, 'reject')
+  async function grantConversationAccess(thread) {
+    const token = getToken()
+    if (!token || !thread?.requestId || !targetAgentId) {
+      setLockActionStatus('Select a member to grant access.')
+      return
+    }
+
+    setLockActionStatus('Granting access...')
+    try {
+      await apiRequest(`/conversations/${thread.requestId}/grant`, {
+        method: 'POST',
+        token,
+        body: { target_agent_id: targetAgentId },
+      })
+      setLockActionStatus('Secondary agent access granted and notification sent.')
+      setTargetAgentId('')
+      await loadInbox()
+    } catch (err) {
+      setLockActionStatus(err.message || 'Unable to grant access.')
+    }
   }
 
   async function scheduleCall(thread) {
@@ -187,12 +241,7 @@ export default function ChatInterface() {
       <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <aside className="lg:col-span-1">
           <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow p-4 space-y-4">
-            <input
-              className="w-full border px-3 py-2 rounded"
-              placeholder="Search chats"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-            />
+            <input className="w-full border px-3 py-2 rounded" placeholder="Search chats" value={query} onChange={(event) => setQuery(event.target.value)} />
 
             {loading && <div className="text-sm text-[#5A5A5A]">Loading inbox...</div>}
             {!loading && error && <div className="text-sm text-red-600">{error}</div>}
@@ -203,20 +252,10 @@ export default function ChatInterface() {
                   <h2 className="text-sm font-semibold mb-2">Priority Inbox</h2>
                   <div className="space-y-2">
                     {filteredPriorityInbox.map((thread) => (
-                      <div
-                        key={`priority-${thread.id}`}
-                        className={`p-2 rounded cursor-pointer ${activeThreadId === thread.id ? 'bg-[#F4F9FF]' : ''}`}
-                        onClick={() => setActiveThreadId(thread.id)}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <div>
-                            <div className="font-semibold">
-                              {thread.name} <span className="text-[#0A66C2]">✓</span>
-                            </div>
-                            <div className="text-sm text-[#5A5A5A] truncate">{thread.last}</div>
-                          </div>
-                          {thread.unread > 0 && <div className="text-xs bg-[#0A66C2] text-white px-2 py-1 rounded">{thread.unread}</div>}
-                        </div>
+                      <div key={`priority-${thread.id}`} className={`p-2 rounded cursor-pointer ${activeThreadId === thread.id ? 'bg-[#F4F9FF]' : ''}`} onClick={() => setActiveThreadId(thread.id)}>
+                        <div className="font-semibold">{thread.name} <span className="text-[#0A66C2]">✓</span></div>
+                        <div className="text-xs text-[#5A5A5A]">{lockStatusLabel(thread.lock)}</div>
+                        <div className="text-sm text-[#5A5A5A] truncate">{thread.last}</div>
                       </div>
                     ))}
                     {filteredPriorityInbox.length === 0 && <p className="text-sm text-[#5A5A5A]">No priority messages yet.</p>}
@@ -228,26 +267,14 @@ export default function ChatInterface() {
                   <div className="space-y-2">
                     {filteredRequests.map((thread) => (
                       <div key={`request-${thread.id}`} className="p-2 rounded border border-[#E7E7E7]">
-                        <button
-                          className={`w-full text-left rounded ${activeThreadId === thread.id ? 'bg-[#F4F9FF]' : ''}`}
-                          onClick={() => setActiveThreadId(thread.id)}
-                        >
+                        <button className={`w-full text-left rounded ${activeThreadId === thread.id ? 'bg-[#F4F9FF]' : ''}`} onClick={() => setActiveThreadId(thread.id)}>
                           <div className="font-semibold">{thread.name}</div>
+                          <div className="text-xs text-[#5A5A5A]">{lockStatusLabel(thread.lock)}</div>
                           <div className="text-sm text-[#5A5A5A] truncate">{thread.last}</div>
                         </button>
                         <div className="mt-2 flex gap-2">
-                          <button
-                            className="px-3 py-1 text-sm rounded bg-[#0A66C2] text-white"
-                            onClick={() => acceptRequest(thread.id)}
-                          >
-                            Accept
-                          </button>
-                          <button
-                            className="px-3 py-1 text-sm rounded border"
-                            onClick={() => rejectRequest(thread.id)}
-                          >
-                            Reject
-                          </button>
+                          <button className="px-3 py-1 text-sm rounded bg-[#0A66C2] text-white" onClick={() => updateRequestState(thread.id, 'accept')}>Accept</button>
+                          <button className="px-3 py-1 text-sm rounded border" onClick={() => updateRequestState(thread.id, 'reject')}>Reject</button>
                         </div>
                       </div>
                     ))}
@@ -266,9 +293,8 @@ export default function ChatInterface() {
                 <div className="flex items-center justify-between border-b pb-3 mb-3">
                   <div>
                     <div className="font-semibold">{activeThread.name}</div>
-                    <div className="text-sm text-[#5A5A5A]">
-                      {priorityInbox.some((thread) => thread.id === activeThread.id) ? 'Priority Inbox' : 'Message Request'}
-                    </div>
+                    <div className="text-sm text-[#5A5A5A]">{priorityInbox.some((thread) => thread.id === activeThread.id) ? 'Priority Inbox' : 'Message Request'}</div>
+                    <div className="text-xs text-[#5A5A5A]">{lockStatusLabel(activeThread.lock)}</div>
                   </div>
                   <div className="flex gap-2">
                     <button className="px-3 py-1 border rounded">📹 Video Call</button>
@@ -276,20 +302,31 @@ export default function ChatInterface() {
                     <button className="px-3 py-1 border rounded" onClick={() => scheduleCall(activeThread)}>📅 Schedule</button>
                   </div>
                 </div>
+
+                {activeThread.lock?.status === 'request_access' && (
+                  <button className="mb-2 w-fit px-3 py-1 rounded border text-sm" onClick={() => requestConversationAccess(activeThread)}>Request Access</button>
+                )}
+
+                {activeThread.lock?.status === 'claimed' && (
+                  <div className="mb-2 flex items-center gap-2">
+                    <select className="border px-2 py-1 rounded text-sm" value={targetAgentId} onChange={(event) => setTargetAgentId(event.target.value)}>
+                      <option value="">Select agent to grant access</option>
+                      {members.map((member) => <option key={member.id} value={member.id}>{member.name || member.email || member.id}</option>)}
+                    </select>
+                    <button className="px-3 py-1 rounded bg-[#0A66C2] text-white text-sm" onClick={() => grantConversationAccess(activeThread)}>Grant Access</button>
+                  </div>
+                )}
+
+                {lockActionStatus && <div className="mb-2 text-sm text-[#0A66C2]">{lockActionStatus}</div>}
                 {scheduleStatus && <div className="mb-2 text-sm text-[#0A66C2]">{scheduleStatus}</div>}
+
                 <div className="flex-1 overflow-auto mb-3">
                   <div className="space-y-3">
                     <div className="self-start bg-white neo-panel cyberpunk-card p-2 rounded shadow">{activeThread.last}</div>
-                    <div className="text-center text-sm text-[#5A5A5A]">
-                      Match Thread: {activeThread.matchId}
-                    </div>
+                    <div className="text-center text-sm text-[#5A5A5A]">Match Thread: {activeThread.matchId}</div>
                     <div className="text-sm border rounded p-2 bg-[#F8FBFF]">
                       <div className="font-semibold mb-1">Call History</div>
-                      {activeCallHistory.length > 0 ? activeCallHistory.slice(0, 3).map((call) => (
-                        <div key={call.id} className="mb-1">
-                          {call.title} • {call.status} • {new Date(call.scheduled_for).toLocaleString()}
-                        </div>
-                      )) : <div className="text-[#5A5A5A]">No calls scheduled yet.</div>}
+                      {activeCallHistory.length > 0 ? activeCallHistory.slice(0, 3).map((call) => <div key={call.id} className="mb-1">{call.title} • {call.status} • {new Date(call.scheduled_for).toLocaleString()}</div>) : <div className="text-[#5A5A5A]">No calls scheduled yet.</div>}
                     </div>
                   </div>
                 </div>

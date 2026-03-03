@@ -32,7 +32,7 @@ export async function inbox(req, res) {
     }
     matchIds = all
   }
-  return res.json(await tieredInbox(matchIds))
+  return res.json(await tieredInbox(matchIds, req.user.id))
 }
 
 export async function acceptRequest(req, res) {
