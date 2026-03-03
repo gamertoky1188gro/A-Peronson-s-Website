@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AccessDeniedState from '../components/AccessDeniedState'
-import FloatingAssistant from '../components/FloatingAssistant'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 
 const emptyKnowledge = { type: 'faq', question: '', answer: '', keywords: '' }
@@ -247,7 +246,6 @@ export default function OrgSettings(){
         ) : null}
       </div>
 
-      <FloatingAssistant />
     </div>
   )
 }

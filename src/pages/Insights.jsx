@@ -1,5 +1,4 @@
 import React from 'react'
-import FloatingAssistant from '../components/FloatingAssistant'
 import AccessDeniedState from '../components/AccessDeniedState'
 import useAnalyticsDashboard from '../hooks/useAnalyticsDashboard'
 
@@ -63,7 +62,6 @@ export default function Insights() {
         )}
       </div>
 
-      <FloatingAssistant />
     </div>
   )
 }

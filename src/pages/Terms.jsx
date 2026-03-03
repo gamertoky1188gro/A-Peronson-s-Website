@@ -1,6 +1,5 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import FloatingAssistant from '../components/FloatingAssistant'
 
 export default function Terms(){
   return (
@@ -29,7 +28,6 @@ export default function Terms(){
         </section>
       </div>
 
-      <FloatingAssistant />
     </div>
   )
 }

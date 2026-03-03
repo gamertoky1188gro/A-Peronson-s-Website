@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import FloatingAssistant from '../components/FloatingAssistant'
 import useAnalyticsDashboard from '../hooks/useAnalyticsDashboard'
 
 export default function AgentDashboard() {
@@ -66,7 +65,6 @@ export default function AgentDashboard() {
         </main>
       </div>
 
-      <FloatingAssistant />
     </div>
   )
 }

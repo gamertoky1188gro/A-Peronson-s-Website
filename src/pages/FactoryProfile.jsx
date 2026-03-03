@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import FloatingAssistant from '../components/FloatingAssistant'
 
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
@@ -229,7 +228,6 @@ export default function FactoryProfile() {
         </div>
       </div>
 
-      <FloatingAssistant />
     </div>
   )
 }

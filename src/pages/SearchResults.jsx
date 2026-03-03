@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import FloatingAssistant from '../components/FloatingAssistant'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
 function getAuthToken() {
@@ -440,7 +439,6 @@ export default function SearchResults() {
         )}
       </div>
 
-      <FloatingAssistant />
     </div>
   )
 }

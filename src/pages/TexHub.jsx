@@ -1,6 +1,5 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import FloatingAssistant from '../components/FloatingAssistant'
 
 export default function TexHub() {
   return (
@@ -227,7 +226,6 @@ export default function TexHub() {
         </div>
       </footer>
 
-      <FloatingAssistant />
     </div>
   )
 }

@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import FloatingAssistant from '../components/FloatingAssistant'
 import { apiRequest, getToken } from '../lib/auth'
 
 const EMPTY_FORM = {
@@ -289,7 +288,6 @@ export default function BuyerRequestManagement(){
         </div>
       </div>
 
-      <FloatingAssistant />
     </div>
   )
 }
