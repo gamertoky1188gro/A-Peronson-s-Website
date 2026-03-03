@@ -42,9 +42,12 @@ function cleanMember(member) {
 function normalizeMember(member) {
   const username = sanitizeString(member.username || member.account_id, 64)
   const memberId = sanitizeString(member.member_id || member.account_id, 64)
+  const orgOwnerId = sanitizeString(member.org_owner_id || member.organization_id, 120)
 
   return {
     ...member,
+    org_owner_id: orgOwnerId,
+    organization_id: orgOwnerId,
     username,
     member_id: memberId,
     account_id: member.account_id || memberId,
@@ -54,7 +57,7 @@ function normalizeMember(member) {
 
 async function getOrgMembers(orgOwnerId) {
   const members = await readJson(FILE)
-  return members.filter((m) => m.org_owner_id === orgOwnerId).map(normalizeMember)
+  return members.filter((m) => String(m.org_owner_id) === String(orgOwnerId)).map(normalizeMember)
 }
 
 async function readAllMembers() {
@@ -72,8 +75,8 @@ async function assertFreePlanMemberLimit(orgOwnerId, allMembers, currentMember =
   const plan = subscription?.plan === 'premium' ? 'premium' : 'free'
   if (plan !== 'free') return
 
-  const orgMembers = allMembers.filter((m) => m.org_owner_id === orgOwnerId)
-  const activeCount = orgMembers.filter((m) => m.status === 'active' && m.id !== currentMember?.id).length
+  const orgMembers = allMembers.filter((m) => String(m.org_owner_id) === String(orgOwnerId))
+  const activeCount = orgMembers.filter((m) => m.status === 'active' && String(m.id) !== String(currentMember?.id)).length
   if (nextStatus === 'active' && activeCount >= FREE_MEMBER_LIMIT) {
     const error = new Error('Free plan allows up to 10 active sub-accounts')
     error.status = 403
@@ -83,7 +86,10 @@ async function assertFreePlanMemberLimit(orgOwnerId, allMembers, currentMember =
 
 function ensureUniqueIdentity({ members, orgOwnerId, username, memberId, currentMemberId = null }) {
   const duplicateUsername = members.find(
-    (m) => m.org_owner_id === orgOwnerId && m.id !== currentMemberId && m.username.toLowerCase() === username.toLowerCase(),
+    (m) =>
+      String(m.org_owner_id) === String(orgOwnerId) &&
+      String(m.id) !== String(currentMemberId) &&
+      m.username.toLowerCase() === username.toLowerCase(),
   )
   if (duplicateUsername) {
     const error = new Error('Duplicate username in this organization')
@@ -91,7 +97,12 @@ function ensureUniqueIdentity({ members, orgOwnerId, username, memberId, current
     throw error
   }
 
-  const duplicateMemberId = members.find((m) => m.id !== currentMemberId && m.member_id.toLowerCase() === memberId.toLowerCase())
+  const duplicateMemberId = members.find(
+    (m) =>
+      String(m.org_owner_id) === String(orgOwnerId) &&
+      String(m.id) !== String(currentMemberId) &&
+      String(m.member_id || '').toLowerCase() === memberId.toLowerCase(),
+  )
   if (duplicateMemberId) {
     const error = new Error('Member ID already exists')
     error.status = 409
@@ -153,7 +164,7 @@ export async function createMember(orgOwnerId, payload) {
 
 export async function updateMember(orgOwnerId, memberId, payload) {
   const members = await readAllMembers()
-  const idx = members.findIndex((m) => m.id === memberId && m.org_owner_id === orgOwnerId)
+  const idx = members.findIndex((m) => String(m.id) === String(memberId) && String(m.org_owner_id) === String(orgOwnerId))
   if (idx < 0) return null
 
   const current = members[idx]
@@ -219,7 +230,7 @@ export async function updateMember(orgOwnerId, memberId, payload) {
 
 export async function updateMemberPermissions(orgOwnerId, memberId, permissionsPayload, permissionMatrixPayload) {
   const members = await readAllMembers()
-  const idx = members.findIndex((m) => m.id === memberId && m.org_owner_id === orgOwnerId)
+  const idx = members.findIndex((m) => String(m.id) === String(memberId) && String(m.org_owner_id) === String(orgOwnerId))
   if (idx < 0) return null
 
   const permissions = sanitizePermissions(permissionsPayload)
@@ -242,7 +253,7 @@ export async function updateMemberPermissions(orgOwnerId, memberId, permissionsP
 
 export async function resetMemberPassword(orgOwnerId, memberId) {
   const members = await readAllMembers()
-  const idx = members.findIndex((m) => m.id === memberId && m.org_owner_id === orgOwnerId)
+  const idx = members.findIndex((m) => String(m.id) === String(memberId) && String(m.org_owner_id) === String(orgOwnerId))
   if (idx < 0) return null
 
   const tempPassword = crypto.randomBytes(6).toString('base64url')
@@ -259,7 +270,7 @@ export async function resetMemberPassword(orgOwnerId, memberId) {
 
 export async function deactivateOrRemoveMember(orgOwnerId, memberId, mode = 'deactivate') {
   const members = await readAllMembers()
-  const idx = members.findIndex((m) => m.id === memberId && m.org_owner_id === orgOwnerId)
+  const idx = members.findIndex((m) => String(m.id) === String(memberId) && String(m.org_owner_id) === String(orgOwnerId))
   if (idx < 0) return null
 
   if (mode === 'remove') {

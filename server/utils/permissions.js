@@ -1,4 +1,5 @@
 const OWNER_ADMIN_ROLES = new Set(['owner', 'admin'])
+const MEMBER_MANAGER_ROLES = new Set(['owner', 'admin', 'buying_house', 'factory'])
 
 export function forbiddenError(message = 'Access denied') {
   const error = new Error(message)
@@ -39,7 +40,7 @@ export function canViewPartnerNetwork(user) {
 }
 
 export function canManageMembers(user) {
-  return isOwnerOrAdmin(user)
+  return MEMBER_MANAGER_ROLES.has(user?.role)
 }
 
 export function canViewAnalytics(user) {
