@@ -18,6 +18,7 @@ import onboardingRoutes from './routes/onboardingRoutes.js'
 import assistantRoutes from './routes/assistantRoutes.js'
 import conversationRoutes from './routes/conversationRoutes.js'
 import analyticsRoutes from './routes/analyticsRoutes.js'
+import messageRoutes from './routes/messageRoutes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { logInfo } from './utils/logger.js'
 
@@ -44,6 +45,7 @@ app.use('/api/products', productRoutes)
 app.use('/api/onboarding', onboardingRoutes)
 app.use('/api/assistant', assistantRoutes)
 app.use('/api/conversations', conversationRoutes)
+app.use('/api/messages', messageRoutes)
 app.use('/api/analytics', analyticsRoutes)
 app.use('/api/system', systemRoutes)
 app.use('/api/notifications', notificationRoutes)
