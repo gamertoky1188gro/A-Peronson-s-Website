@@ -21,6 +21,7 @@ import analyticsRoutes from './routes/analyticsRoutes.js'
 import messageRoutes from './routes/messageRoutes.js'
 import partnerNetworkRoutes from './routes/partnerNetworkRoutes.js'
 import callSessionRoutes from './routes/callSessionRoutes.js'
+import memberRoutes from './routes/memberRoutes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { logInfo } from './utils/logger.js'
 
@@ -55,6 +56,7 @@ app.use('/api/social', socialRoutes)
 app.use('/api/search', searchRoutes)
 app.use('/api/partners', partnerNetworkRoutes)
 app.use('/api/calls', callSessionRoutes)
+app.use('/api/members', memberRoutes)
 app.use(errorHandler)
 
 app.listen(PORT, () => {
