@@ -47,6 +47,7 @@ function canCreateDraft(user) {
 function computeFlow(contract) {
   const buyerSigned = contract?.buyer_signature_state === 'signed'
   const factorySigned = contract?.factory_signature_state === 'signed'
+  const generated = Boolean(contract?.artifact?.generated_at && contract?.artifact?.pdf_path)
   const finalized = contract?.artifact?.status === 'locked'
   const archived = contract?.artifact?.status === 'archived' || Boolean(contract?.archived_at)
   const draftComplete = !contract?.is_draft
@@ -54,7 +55,8 @@ function computeFlow(contract) {
   const blockers = []
   if (!buyerSigned) blockers.push('Buyer signature pending')
   if (!factorySigned) blockers.push('Factory signature pending')
-  if (!finalized && buyerSigned && factorySigned) blockers.push('Final artifact not finalized (PDF/hash required)')
+  if (!generated && buyerSigned && factorySigned) blockers.push('Generated artifact pending')
+  if (!finalized && generated) blockers.push('Generated artifact not locked')
   if (!archived && finalized) blockers.push('Archive not completed')
 
   const stepState = {
@@ -65,7 +67,7 @@ function computeFlow(contract) {
     archive: archived,
   }
 
-  return { stepState, blockers, finalized }
+  return { stepState, blockers, finalized, generated }
 }
 
 function canBuyerSign(user, contract) {
@@ -92,6 +94,7 @@ function canArchive(user, contract) {
 function actionBlockers(user, contract) {
   const buyerSigned = contract?.buyer_signature_state === 'signed'
   const factorySigned = contract?.factory_signature_state === 'signed'
+  const artifactGenerated = Boolean(contract?.artifact?.generated_at && contract?.artifact?.pdf_path && contract?.artifact?.pdf_hash)
   const artifactLocked = contract?.artifact?.status === 'locked'
   const artifactArchived = contract?.artifact?.status === 'archived'
 
@@ -110,10 +113,12 @@ function actionBlockers(user, contract) {
 
   if (!canFinalizeArtifact(user, contract)) blockers.finalize = 'Only owner/admin or the draft uploader can finalize artifact.'
   else if (!buyerSigned || !factorySigned) blockers.finalize = 'Both buyer and factory signatures are required first.'
+  else if (!artifactGenerated) blockers.finalize = 'Generated artifact is required before lock.'
   else if (artifactLocked) blockers.finalize = 'Artifact is already finalized.'
 
   if (!canArchive(user, contract)) blockers.archive = 'Only owner/admin or the draft uploader can archive.'
-  else if (!artifactLocked) blockers.archive = 'Finalize artifact before archiving.'
+  else if (!artifactGenerated) blockers.archive = 'Only generated artifacts can be archived.'
+  else if (!artifactLocked) blockers.archive = 'Lock artifact before archiving.'
   else if (artifactArchived) blockers.archive = 'Artifact is already archived.'
 
   return blockers
@@ -131,7 +136,6 @@ export default function ContractVault(){
   const [actionError, setActionError] = useState('')
   const [saving, setSaving] = useState(false)
   const [draftForm, setDraftForm] = useState({ title: '', buyer_name: '', factory_name: '', buyer_id: '', factory_id: '' })
-  const [artifactForm, setArtifactForm] = useState({ pdf_path: '', pdf_hash: '' })
   const currentUser = useMemo(() => getCurrentUser(), [])
 
   const loadContracts = async () => {
@@ -208,7 +212,7 @@ export default function ContractVault(){
   const selectedFlow = computeFlow(selected)
   const selectedActionBlockers = actionBlockers(currentUser, selected)
   const selectedDownloadUrl = resolveDownloadUrl(selected?.artifact?.pdf_path)
-  const canDownloadSelected = selectedFlow.finalized && Boolean(selectedDownloadUrl)
+  const canDownloadSelected = selectedFlow.generated && Boolean(selectedDownloadUrl)
 
   return (
     <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
@@ -235,7 +239,7 @@ export default function ContractVault(){
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <h1 className="text-2xl font-bold">🔒 Contract Vault <span className="ml-2 text-sm text-gray-500">Encrypted & Timestamped</span></h1>
-              <p className="text-sm text-[#5A5A5A]">Step-driven execution from draft through signatures, artifact finalization, and archive.</p>
+              <p className="text-sm text-[#5A5A5A]">Step-driven execution from draft through signatures, server-generated artifacts, lock, and archive.</p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <input type="date" value={fromDate} onChange={(e)=>setFromDate(e.target.value)} className="px-3 py-2 border rounded" />
@@ -274,10 +278,10 @@ export default function ContractVault(){
               const flow = computeFlow(c)
               const blockersByAction = actionBlockers(currentUser, c)
               const pdfUrl = resolveDownloadUrl(c.artifact?.pdf_path)
-              const canDownload = flow.finalized && Boolean(pdfUrl)
+              const canDownload = flow.generated && Boolean(pdfUrl)
               return (
                 <div key={c.id} className="bg-white neo-panel cyberpunk-card rounded-lg shadow-sm p-4 flex items-center justify-between gap-4">
-                  <div onClick={() => { setSelected(c); setDrawerOpen(true); setArtifactForm({ pdf_path: c.artifact?.pdf_path || '', pdf_hash: c.artifact?.pdf_hash || '' }) }} className="cursor-pointer">
+                  <div onClick={() => { setSelected(c); setDrawerOpen(true) }} className="cursor-pointer">
                     <div className="flex items-center gap-3">
                       <div className="font-semibold">{c.contract_number || c.id}</div>
                       <div className={`text-sm px-2 py-1 rounded ${statusStyle(status)}`}>{toLabel(status)}</div>
@@ -289,8 +293,8 @@ export default function ContractVault(){
                     <div className="text-sm text-[#5A5A5A]">Updated: {(c.updated_at || c.created_at || '').slice(0, 10)}</div>
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => { setSelected(c); setDrawerOpen(true); setArtifactForm({ pdf_path: c.artifact?.pdf_path || '', pdf_hash: c.artifact?.pdf_hash || '' }) }} className="px-3 py-1 border rounded">Details</button>
-                    {canDownload ? <a href={pdfUrl} target="_blank" rel="noreferrer" className="px-3 py-1 border rounded">Download PDF</a> : <span className="px-3 py-1 border rounded text-gray-400">Finalize artifact to download</span>}
+                    <button onClick={() => { setSelected(c); setDrawerOpen(true) }} className="px-3 py-1 border rounded">Details</button>
+                    {canDownload ? <a href={pdfUrl} target="_blank" rel="noreferrer" className="px-3 py-1 border rounded">Download Generated PDF</a> : <span className="px-3 py-1 border rounded text-gray-400">Generated PDF pending</span>}
                   </div>
                 </div>
               )
@@ -322,7 +326,7 @@ export default function ContractVault(){
                     draft_creation: 'Draft created and shared',
                     buyer_signature: 'Buyer signature',
                     factory_signature: 'Factory signature',
-                    artifact_finalize: 'Artifact finalized (PDF/hash locked)',
+                    artifact_finalize: 'Generated artifact locked',
                     archive: 'Archived',
                   }
                   return (
@@ -366,19 +370,18 @@ export default function ContractVault(){
                 {selectedActionBlockers.factorySign ? <p className="text-xs text-amber-700">{selectedActionBlockers.factorySign}</p> : null}
 
                 <div className="border rounded p-2">
-                  <div className="font-medium mb-2">Step 4 · Artifact finalize</div>
-                  <input placeholder="PDF path" value={artifactForm.pdf_path} onChange={(e) => setArtifactForm((prev) => ({ ...prev, pdf_path: e.target.value }))} className="w-full px-3 py-2 border rounded mb-2" />
-                  <input placeholder="PDF hash" value={artifactForm.pdf_hash} onChange={(e) => setArtifactForm((prev) => ({ ...prev, pdf_hash: e.target.value }))} className="w-full px-3 py-2 border rounded mb-2" />
+                  <div className="font-medium mb-2">Step 4 · Lock generated artifact</div>
+                  <div className="text-xs text-[#5A5A5A] mb-2">Artifact references are server-generated from signed draft fields.</div>
                   <button
                     disabled={Boolean(selectedActionBlockers.finalize) || saving}
                     onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/artifact`, {
                       method: 'PATCH',
                       token,
-                      body: { status: 'locked', pdf_path: artifactForm.pdf_path, pdf_hash: artifactForm.pdf_hash },
+                      body: { status: 'locked' },
                     }))}
                     className="w-full px-3 py-2 border rounded disabled:text-gray-400"
                   >
-                    Finalize artifact (PATCH /artifact)
+                    Lock generated artifact (PATCH /artifact)
                   </button>
                   {selectedActionBlockers.finalize ? <p className="text-xs text-amber-700 mt-2">{selectedActionBlockers.finalize}</p> : null}
                 </div>
@@ -400,20 +403,25 @@ export default function ContractVault(){
 
             <section className="mb-4 text-sm text-[#5A5A5A]">
               <h4 className="font-semibold text-black">Digital signatures</h4>
-              <div>Buyer: {selected.buyer_signature_state || 'pending'}</div>
-              <div>Factory: {selected.factory_signature_state || 'pending'}</div>
+              <div>Buyer: {selected.buyer_signature_state || 'pending'} {selected.buyer_signed_at ? `(${selected.buyer_signed_at})` : ''}</div>
+              <div>Factory: {selected.factory_signature_state || 'pending'} {selected.factory_signed_at ? `(${selected.factory_signed_at})` : ''}</div>
             </section>
 
             <section className="mb-4 text-sm text-[#5A5A5A]">
-              <h4 className="font-semibold text-black">Final artifact</h4>
+              <h4 className="font-semibold text-black">Generated artifact audit</h4>
               <div>Status: {selected.artifact?.status || 'draft'}</div>
+              <div>Generated at: {selected.artifact?.generated_at || 'N/A'}</div>
+              <div>Version: {selected.artifact?.version || 0}</div>
               <div className="text-xs break-all">Hash: {selected.artifact?.pdf_hash || 'N/A'}</div>
+              <div>Signer IDs: Buyer {selected.artifact?.signer_ids?.buyer_id || 'N/A'} • Factory {selected.artifact?.signer_ids?.factory_id || 'N/A'}</div>
+              <div>Signature timestamps: Buyer {selected.artifact?.signature_timestamps?.buyer_signed_at || 'N/A'} • Factory {selected.artifact?.signature_timestamps?.factory_signed_at || 'N/A'}</div>
+              <div className="text-xs break-all">Reference: {selected.artifact?.pdf_path || 'N/A'}</div>
             </section>
 
             <div className="flex gap-2 mt-6">
               {canDownloadSelected
                 ? <a href={selectedDownloadUrl} target="_blank" rel="noreferrer" className="px-4 py-2 bg-[#0A66C2] text-white rounded">Download PDF</a>
-                : <button disabled className="px-4 py-2 bg-gray-300 text-white rounded">Download after finalization</button>}
+                : <button disabled className="px-4 py-2 bg-gray-300 text-white rounded">Download after generation</button>}
             </div>
           </aside>
         </div>

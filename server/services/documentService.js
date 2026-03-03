@@ -8,7 +8,7 @@ import { canManagePartnerNetwork, canModifyContract, isAgent, isOwnerOrAdmin, sc
 const FILE = 'documents.json'
 
 const SIGNATURE_STATES = new Set(['pending', 'signed'])
-const ARTIFACT_STATES = new Set(['draft', 'locked', 'archived'])
+const ARTIFACT_STATES = new Set(['draft', 'generated', 'locked', 'archived'])
 
 function toIsoNow() {
   return new Date().toISOString()
@@ -20,7 +20,7 @@ function normalizeContractLifecycle(contract) {
   if (
     contract.buyer_signature_state === 'signed' &&
     contract.factory_signature_state === 'signed' &&
-    contract.artifact?.status === 'locked'
+    ['generated', 'locked'].includes(contract.artifact?.status)
   ) {
     return 'signed'
   }
@@ -41,6 +41,85 @@ function ensureAllowed(file) {
   const ext = path.extname(file.originalname || '').toLowerCase()
   const allowed = ['.pdf', '.png', '.jpg', '.jpeg']
   if (!allowed.includes(ext)) throw new Error('Invalid file type')
+}
+
+function escapePdfText(value = '') {
+  return String(value).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)')
+}
+
+function buildSimpleContractPdf(contract) {
+  const lines = [
+    'A-Personson Contract Artifact',
+    `Contract Number: ${contract.contract_number || contract.id}`,
+    `Title: ${contract.title || 'Contract'}`,
+    `Buyer: ${contract.buyer_name || 'N/A'} (${contract.buyer_id || 'N/A'})`,
+    `Factory: ${contract.factory_name || 'N/A'} (${contract.factory_id || 'N/A'})`,
+    `Buyer Signature Timestamp: ${contract.buyer_signed_at || 'N/A'}`,
+    `Factory Signature Timestamp: ${contract.factory_signed_at || 'N/A'}`,
+    `Generated At: ${toIsoNow()}`,
+  ]
+
+  const contentLines = lines.map((line, idx) => `BT /F1 12 Tf 50 ${760 - (idx * 22)} Td (${escapePdfText(line)}) Tj ET`).join('\n')
+  const contentStream = `${contentLines}\n`
+
+  const objects = []
+  objects.push('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n')
+  objects.push('2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n')
+  objects.push('3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n')
+  objects.push('4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n')
+  objects.push(`5 0 obj\n<< /Length ${Buffer.byteLength(contentStream, 'utf8')} >>\nstream\n${contentStream}endstream\nendobj\n`)
+
+  let offset = 0
+  let pdf = '%PDF-1.4\n'
+  offset = Buffer.byteLength(pdf, 'utf8')
+  const xrefOffsets = [0]
+
+  for (const object of objects) {
+    xrefOffsets.push(offset)
+    pdf += object
+    offset = Buffer.byteLength(pdf, 'utf8')
+  }
+
+  const xrefStart = offset
+  pdf += `xref\n0 ${objects.length + 1}\n`
+  pdf += '0000000000 65535 f \n'
+  for (const objOffset of xrefOffsets.slice(1)) {
+    pdf += `${String(objOffset).padStart(10, '0')} 00000 n \n`
+  }
+
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefStart}\n%%EOF\n`
+  return Buffer.from(pdf, 'utf8')
+}
+
+async function generateContractArtifact(contract) {
+  const generatedAt = toIsoNow()
+  const generationVersion = Number(contract.artifact?.version || 0) + 1
+  const pdfBuffer = buildSimpleContractPdf(contract)
+  const pdfHash = crypto.createHash('sha256').update(pdfBuffer).digest('hex')
+
+  const uploadsDir = path.join(process.cwd(), 'server', 'uploads', 'contracts')
+  await fs.mkdir(uploadsDir, { recursive: true })
+
+  const safeContractNumber = sanitizeString(contract.contract_number || contract.id, 80).replace(/[^a-zA-Z0-9_-]/g, '_')
+  const fileName = `${safeContractNumber || contract.id}-v${generationVersion}.pdf`
+  const filePath = path.join(uploadsDir, fileName)
+  await fs.writeFile(filePath, pdfBuffer)
+
+  return {
+    pdf_path: path.relative(process.cwd(), filePath),
+    pdf_hash: pdfHash,
+    status: 'generated',
+    generated_at: generatedAt,
+    version: generationVersion,
+    signer_ids: {
+      buyer_id: sanitizeString(contract.buyer_id || '', 120),
+      factory_id: sanitizeString(contract.factory_id || '', 120),
+    },
+    signature_timestamps: {
+      buyer_signed_at: contract.buyer_signed_at || '',
+      factory_signed_at: contract.factory_signed_at || '',
+    },
+  }
 }
 
 export async function saveDocumentMetadata(ownerId, entityType, entityId, type, file) {
@@ -102,10 +181,22 @@ export async function createDraftContract(actor, payload = {}) {
     is_draft: true,
     buyer_signature_state: 'pending',
     factory_signature_state: 'pending',
+    buyer_signed_at: '',
+    factory_signed_at: '',
     artifact: {
       pdf_path: '',
       pdf_hash: '',
       status: 'draft',
+      generated_at: '',
+      version: 0,
+      signer_ids: {
+        buyer_id: '',
+        factory_id: '',
+      },
+      signature_timestamps: {
+        buyer_signed_at: '',
+        factory_signed_at: '',
+      },
     },
     uploaded_by: ownerId,
     created_at: toIsoNow(),
@@ -136,16 +227,31 @@ export async function updateContractSignatures(contractId, patch = {}, actor) {
   const existing = docs[idx]
   if (!canModifyContract(actor, existing)) return 'forbidden'
 
+  const nextBuyerState = patch.buyer_signature_state !== undefined
+    ? sanitizeSignatureState(patch.buyer_signature_state, existing.buyer_signature_state)
+    : existing.buyer_signature_state
+  const nextFactoryState = patch.factory_signature_state !== undefined
+    ? sanitizeSignatureState(patch.factory_signature_state, existing.factory_signature_state)
+    : existing.factory_signature_state
+
   const next = {
     ...existing,
     is_draft: patch.is_draft !== undefined ? Boolean(patch.is_draft) : existing.is_draft,
-    buyer_signature_state: patch.buyer_signature_state !== undefined
-      ? sanitizeSignatureState(patch.buyer_signature_state, existing.buyer_signature_state)
-      : existing.buyer_signature_state,
-    factory_signature_state: patch.factory_signature_state !== undefined
-      ? sanitizeSignatureState(patch.factory_signature_state, existing.factory_signature_state)
-      : existing.factory_signature_state,
+    buyer_signature_state: nextBuyerState,
+    factory_signature_state: nextFactoryState,
+    buyer_signed_at: nextBuyerState === 'signed'
+      ? (existing.buyer_signed_at || toIsoNow())
+      : '',
+    factory_signed_at: nextFactoryState === 'signed'
+      ? (existing.factory_signed_at || toIsoNow())
+      : '',
     updated_at: toIsoNow(),
+  }
+
+  const bothSigned = next.buyer_signature_state === 'signed' && next.factory_signature_state === 'signed'
+  const hasGeneratedArtifact = Boolean(next.artifact?.generated_at && next.artifact?.pdf_hash && next.artifact?.pdf_path)
+  if (bothSigned && !hasGeneratedArtifact) {
+    next.artifact = await generateContractArtifact(next)
   }
 
   next.lifecycle_status = normalizeContractLifecycle(next)
@@ -165,13 +271,31 @@ export async function updateContractArtifact(contractId, patch = {}, actor) {
     ? sanitizeArtifactState(patch.status, existing.artifact?.status || 'draft')
     : (existing.artifact?.status || 'draft')
 
+  const hasGeneratedArtifact = Boolean(existing.artifact?.generated_at && existing.artifact?.pdf_hash && existing.artifact?.pdf_path)
+  if (['locked', 'archived'].includes(artifactStatus) && !hasGeneratedArtifact) {
+    const err = new Error('Only generated artifacts can be locked or archived.')
+    err.status = 400
+    throw err
+  }
+
   const next = {
     ...existing,
     is_draft: artifactStatus === 'draft' ? existing.is_draft : false,
     artifact: {
-      pdf_path: patch.pdf_path !== undefined ? sanitizeString(patch.pdf_path, 400) : (existing.artifact?.pdf_path || ''),
-      pdf_hash: patch.pdf_hash !== undefined ? sanitizeString(patch.pdf_hash, 256) : (existing.artifact?.pdf_hash || ''),
+      ...(existing.artifact || {}),
       status: artifactStatus,
+      pdf_path: existing.artifact?.pdf_path || '',
+      pdf_hash: existing.artifact?.pdf_hash || '',
+      generated_at: existing.artifact?.generated_at || '',
+      version: Number(existing.artifact?.version || 0),
+      signer_ids: {
+        buyer_id: existing.artifact?.signer_ids?.buyer_id || '',
+        factory_id: existing.artifact?.signer_ids?.factory_id || '',
+      },
+      signature_timestamps: {
+        buyer_signed_at: existing.artifact?.signature_timestamps?.buyer_signed_at || '',
+        factory_signed_at: existing.artifact?.signature_timestamps?.factory_signed_at || '',
+      },
     },
     archived_at: artifactStatus === 'archived' ? toIsoNow() : existing.archived_at,
     updated_at: toIsoNow(),
