@@ -7,8 +7,8 @@ const router = Router()
 router.get('/me', requireAuth, me)
 router.patch('/me/profile', requireAuth, updateMyProfile)
 
-router.get('/', requireAuth, allowRoles('admin'), adminListUsers)
-router.patch('/:userId/verify', requireAuth, allowRoles('admin'), adminVerifyUser)
-router.delete('/:userId', requireAuth, allowRoles('admin'), adminDeleteUser)
+router.get('/', requireAuth, allowRoles('owner', 'admin'), adminListUsers)
+router.patch('/:userId/verify', requireAuth, allowRoles('owner', 'admin'), adminVerifyUser)
+router.delete('/:userId', requireAuth, allowRoles('owner', 'admin'), adminDeleteUser)
 
 export default router

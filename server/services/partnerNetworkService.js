@@ -1,19 +1,15 @@
 import crypto from 'crypto'
 import { readJson, updateJson } from '../utils/jsonStore.js'
 import { findUserById, listUsers } from './userService.js'
+import {
+  canManagePartnerNetwork,
+  canViewPartnerNetwork,
+  isAgent,
+  isOwnerOrAdmin,
+  scopeRecordsForUser,
+} from '../utils/permissions.js'
 
 const FILE = 'partner_requests.json'
-
-const MANAGE_ROLES = new Set(['buying_house', 'factory', 'admin', 'owner'])
-const VIEW_ROLES = new Set(['buying_house', 'factory', 'admin', 'owner', 'agent'])
-
-function canManage(user) {
-  return MANAGE_ROLES.has(user?.role)
-}
-
-function canView(user) {
-  return VIEW_ROLES.has(user?.role)
-}
 
 function isAllowedPair(fromRole, toRole) {
   return (fromRole === 'factory' && toRole === 'buying_house') || (fromRole === 'buying_house' && toRole === 'factory')
@@ -32,7 +28,7 @@ function mapWithCounterparty(request, me, usersById) {
 }
 
 export async function getPartnerNetwork(user, { status } = {}) {
-  if (!canView(user)) {
+  if (!canViewPartnerNetwork(user)) {
     const err = new Error('Forbidden')
     err.status = 403
     throw err
@@ -41,9 +37,10 @@ export async function getPartnerNetwork(user, { status } = {}) {
   const [requests, users] = await Promise.all([readJson(FILE), listUsers()])
   const usersById = new Map(users.map((u) => [u.id, u]))
 
-  const scoped = user.role === 'agent'
-    ? requests
-    : requests.filter((r) => r.requester_id === user.id || r.target_id === user.id)
+  const scoped = scopeRecordsForUser(user, requests, {
+    idFields: ['requester_id', 'target_id'],
+    assignmentFields: ['assigned_agent_id', 'agent_id'],
+  })
 
   const filtered = status ? scoped.filter((r) => r.status === status) : scoped
   const rows = filtered.map((r) => mapWithCounterparty(r, user, usersById)).sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)))
@@ -55,14 +52,14 @@ export async function getPartnerNetwork(user, { status } = {}) {
     requests: rows,
     connected_factories: connectedFactories,
     permissions: {
-      view_only: user.role === 'agent',
-      can_manage: canManage(user),
+      view_only: isAgent(user),
+      can_manage: canManagePartnerNetwork(user),
     },
   }
 }
 
 export async function sendPartnerRequest(user, targetAccountId) {
-  if (!canManage(user)) {
+  if (!canManagePartnerNetwork(user)) {
     const err = new Error('Forbidden')
     err.status = 403
     throw err
@@ -118,7 +115,7 @@ export async function sendPartnerRequest(user, targetAccountId) {
 }
 
 export async function updatePartnerRequestStatus(user, requestId, action) {
-  if (!canManage(user)) {
+  if (!canManagePartnerNetwork(user)) {
     const err = new Error('Forbidden')
     err.status = 403
     throw err
@@ -148,7 +145,7 @@ export async function updatePartnerRequestStatus(user, requestId, action) {
       throw err
     }
 
-    const isAdmin = user.role === 'admin' || user.role === 'owner'
+    const isAdmin = isOwnerOrAdmin(user)
     if (!isAdmin) {
       if (action === 'cancel' && current.requester_id !== user.id) {
         const err = new Error('Only requester can cancel this request')

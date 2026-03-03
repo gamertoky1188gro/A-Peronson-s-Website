@@ -16,7 +16,8 @@ export async function uploadDocument(req, res) {
     const doc = await saveDocumentMetadata(req.user.id, entityType, entityId, req.body?.type || 'other', req.file)
     return res.status(201).json(doc)
   } catch (error) {
-    return res.status(400).json({ error: error.message })
+    const status = Number(error?.status) || 400
+    return res.status(status).json({ error: error.message || 'Request failed' })
   }
 }
 
@@ -36,10 +37,11 @@ export async function removeDocument(req, res) {
 
 export async function createContractDraft(req, res) {
   try {
-    const contract = await createDraftContract(req.user.id, req.body || {})
+    const contract = await createDraftContract(req.user, req.body || {})
     return res.status(201).json(contract)
   } catch (error) {
-    return res.status(400).json({ error: error.message })
+    const status = Number(error?.status) || 400
+    return res.status(status).json({ error: error.message || 'Request failed' })
   }
 }
 

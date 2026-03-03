@@ -3,6 +3,7 @@ import path from 'path'
 import fs from 'fs/promises'
 import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
+import { canManagePartnerNetwork, canModifyContract, isAgent, isOwnerOrAdmin, scopeRecordsForUser } from '../utils/permissions.js'
 
 const FILE = 'documents.json'
 
@@ -73,14 +74,21 @@ export async function deleteDocument(docId, actor) {
   const docs = await readJson(FILE)
   const target = docs.find((d) => d.id === docId)
   if (!target) return false
-  if (actor.role !== 'admin' && target.uploaded_by !== actor.id) return 'forbidden'
+  if (!isOwnerOrAdmin(actor) && target.uploaded_by !== actor.id) return 'forbidden'
 
   const next = docs.filter((d) => d.id !== docId)
   await writeJson(FILE, next)
   return true
 }
 
-export async function createDraftContract(ownerId, payload = {}) {
+export async function createDraftContract(actor, payload = {}) {
+  if (isAgent(actor) || !canManagePartnerNetwork(actor)) {
+    const err = new Error('Forbidden')
+    err.status = 403
+    throw err
+  }
+
+  const ownerId = actor.id
   const docs = await readJson(FILE)
   const contract = {
     id: crypto.randomUUID(),
@@ -112,11 +120,12 @@ export async function createDraftContract(ownerId, payload = {}) {
 export async function listContracts(actor) {
   const docs = await readJson(FILE)
   const contracts = docs.filter((d) => d.entity_type === 'contract')
-  if (actor.role === 'admin') {
-    return contracts.map((c) => ({ ...c, lifecycle_status: normalizeContractLifecycle(c) }))
-  }
-  return contracts
-    .filter((c) => c.uploaded_by === actor.id || c.buyer_id === actor.id || c.factory_id === actor.id)
+  const scoped = scopeRecordsForUser(actor, contracts, {
+    idFields: ['uploaded_by', 'buyer_id', 'factory_id'],
+    assignmentFields: ['assigned_agent_id', 'agent_id'],
+  })
+
+  return scoped
     .map((c) => ({ ...c, lifecycle_status: normalizeContractLifecycle(c) }))
 }
 
@@ -125,9 +134,7 @@ export async function updateContractSignatures(contractId, patch = {}, actor) {
   const idx = docs.findIndex((d) => d.id === contractId && d.entity_type === 'contract')
   if (idx < 0) return null
   const existing = docs[idx]
-  if (actor.role !== 'admin' && ![existing.uploaded_by, existing.buyer_id, existing.factory_id].includes(actor.id)) {
-    return 'forbidden'
-  }
+  if (!canModifyContract(actor, existing)) return 'forbidden'
 
   const next = {
     ...existing,
@@ -152,9 +159,7 @@ export async function updateContractArtifact(contractId, patch = {}, actor) {
   const idx = docs.findIndex((d) => d.id === contractId && d.entity_type === 'contract')
   if (idx < 0) return null
   const existing = docs[idx]
-  if (actor.role !== 'admin' && ![existing.uploaded_by, existing.buyer_id, existing.factory_id].includes(actor.id)) {
-    return 'forbidden'
-  }
+  if (!canModifyContract(actor, existing)) return 'forbidden'
 
   const artifactStatus = patch.status !== undefined
     ? sanitizeArtifactState(patch.status, existing.artifact?.status || 'draft')
