@@ -16,6 +16,7 @@ export async function startCall(req, res) {
   const result = await startCallSession(req.params.callId, req.user.id)
   if (!result) return res.status(404).json({ error: 'Call session not found' })
   if (result === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+  if (result === 'invalid_transition') return res.status(409).json({ error: 'Call cannot be started from current state' })
   return res.json(result)
 }
 
@@ -23,13 +24,50 @@ export async function endCall(req, res) {
   const result = await endCallSession(req.params.callId, req.user.id, req.body?.reason)
   if (!result) return res.status(404).json({ error: 'Call session not found' })
   if (result === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+  if (result === 'invalid_transition') return res.status(409).json({ error: 'Call cannot be ended from current state' })
   return res.json(result)
 }
 
 export async function updateRecording(req, res) {
+  const requestedStatus = String(req.body?.recording_status || '').trim()
+  const validStatuses = new Set(['processing', 'available', 'failed'])
+
+  if (!requestedStatus || !validStatuses.has(requestedStatus)) {
+    return res.status(400).json({ error: 'Invalid recording_status. Use processing, available, or failed.' })
+  }
+
+  if (requestedStatus === 'available' && !String(req.body?.recording_url || '').trim()) {
+    return res.status(400).json({ error: 'recording_url is required when recording_status is available' })
+  }
+
+  if (requestedStatus === 'failed' && !String(req.body?.failure_reason || '').trim()) {
+    return res.status(400).json({ error: 'failure_reason is required when recording_status is failed' })
+  }
+
+  const call = await getCallSession(req.params.callId, req.user.id)
+  if (!call) return res.status(404).json({ error: 'Call session not found' })
+  if (call === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+
+  const currentRecordingStatus = String(call.recording_status || 'pending').trim()
+  const allowedTransitions = {
+    pending: new Set(['processing']),
+    processing: new Set(['available', 'failed']),
+    available: new Set(),
+    failed: new Set(),
+  }
+
+  if (!allowedTransitions[currentRecordingStatus]?.has(requestedStatus)) {
+    return res.status(409).json({
+      error: `Invalid recording status transition from ${currentRecordingStatus} to ${requestedStatus}`,
+    })
+  }
+
   const result = await markRecording(req.params.callId, req.user.id, req.body)
   if (!result) return res.status(404).json({ error: 'Call session not found' })
   if (result === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+  if (result === 'invalid_transition') return res.status(409).json({ error: 'Invalid recording status transition for this call' })
+  if (result === 'missing_metadata') return res.status(400).json({ error: 'recording_url is required when recording_status is available' })
+  if (result === 'missing_failure_reason') return res.status(400).json({ error: 'failure_reason is required when recording_status is failed' })
   return res.json(result)
 }
 

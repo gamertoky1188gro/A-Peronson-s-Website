@@ -4,6 +4,18 @@ import { sanitizeString } from '../utils/validators.js'
 import { recordMilestone } from './ratingsService.js'
 
 const FILE = 'call_sessions.json'
+const CALL_STATUS = {
+  SCHEDULED: 'scheduled',
+  IN_PROGRESS: 'in_progress',
+  ENDED: 'ended',
+  COMPLETED: 'completed',
+}
+const RECORDING_STATUS = {
+  PENDING: 'pending',
+  PROCESSING: 'processing',
+  AVAILABLE: 'available',
+  FAILED: 'failed',
+}
 
 function normalizeParticipantIds(participantIds = [], ownerId) {
   const all = [ownerId, ...(Array.isArray(participantIds) ? participantIds : [])]
@@ -36,9 +48,9 @@ export async function createScheduledCallSession(userId, payload = {}) {
     scheduled_for: scheduledFor,
     duration_minutes: Number(payload?.duration_minutes) > 0 ? Number(payload.duration_minutes) : 30,
     participant_ids: normalizeParticipantIds(payload?.participant_ids, userId),
-    status: 'scheduled',
+    status: CALL_STATUS.SCHEDULED,
     recording_url: '',
-    recording_status: 'pending',
+    recording_status: RECORDING_STATUS.PENDING,
     contract_id: sanitizeString(payload?.contract_id, 120),
     security_audit_id: sanitizeString(payload?.security_audit_id, 120),
     context: {
@@ -63,9 +75,11 @@ export async function startCallSession(callId, userId) {
   const call = calls[idx]
   if (!ensureParticipant(call, userId)) return 'forbidden'
 
+  if (![CALL_STATUS.SCHEDULED, CALL_STATUS.IN_PROGRESS].includes(call.status)) return 'invalid_transition'
+
   const next = {
     ...call,
-    status: 'in_progress',
+    status: CALL_STATUS.IN_PROGRESS,
     started_at: call.started_at || new Date().toISOString(),
     audit_trail: [...(call.audit_trail || []), buildAuditEntry('started', userId)],
   }
@@ -82,24 +96,22 @@ export async function endCallSession(callId, userId, endReason = '') {
   const call = calls[idx]
   if (!ensureParticipant(call, userId)) return 'forbidden'
 
+  if (![CALL_STATUS.SCHEDULED, CALL_STATUS.IN_PROGRESS].includes(call.status)) return 'invalid_transition'
+
   const reason = sanitizeString(endReason || 'completed', 120)
   const next = {
     ...call,
-    status: 'completed',
-    ended_at: new Date().toISOString(),
-    audit_trail: [...(call.audit_trail || []), buildAuditEntry('ended', userId, { reason })],
+    status: CALL_STATUS.ENDED,
+    ended_at: call.ended_at || new Date().toISOString(),
+    recording_status: RECORDING_STATUS.PROCESSING,
+    audit_trail: [
+      ...(call.audit_trail || []),
+      buildAuditEntry('ended', userId, { reason }),
+      buildAuditEntry('recording_processing', userId, { reason: 'call_ended' }),
+    ],
   }
   calls[idx] = next
   await writeJson(FILE, calls)
-
-  const participants = normalizeParticipantIds(call.participant_ids, call.created_by).filter((id) => id !== userId)
-  await Promise.all(participants.map((counterpartyId) => recordMilestone({
-    profileKey: `user:${userId}`,
-    counterpartyId,
-    interactionType: 'call',
-    milestone: 'communication_completed',
-    actorId: userId,
-  })))
 
   return next
 }
@@ -111,19 +123,65 @@ export async function markRecording(callId, userId, payload = {}) {
   const call = calls[idx]
   if (!ensureParticipant(call, userId)) return 'forbidden'
 
-  const recordingStatus = sanitizeString(payload?.recording_status || 'available', 30)
+  const recordingStatus = sanitizeString(payload?.recording_status || RECORDING_STATUS.AVAILABLE, 30)
   const recordingUrl = sanitizeString(payload?.recording_url, 400)
+  const failureReason = sanitizeString(payload?.failure_reason, 240)
+  const currentStatus = sanitizeString(call?.recording_status || RECORDING_STATUS.PENDING, 30)
+
+  const transitionKey = `${currentStatus}->${recordingStatus}`
+  const validTransitions = new Set([
+    `${RECORDING_STATUS.PENDING}->${RECORDING_STATUS.PROCESSING}`,
+    `${RECORDING_STATUS.PROCESSING}->${RECORDING_STATUS.AVAILABLE}`,
+    `${RECORDING_STATUS.PROCESSING}->${RECORDING_STATUS.FAILED}`,
+  ])
+  if (!validTransitions.has(transitionKey)) return 'invalid_transition'
+
+  if (recordingStatus === RECORDING_STATUS.AVAILABLE && !recordingUrl) return 'missing_metadata'
+  if (recordingStatus === RECORDING_STATUS.FAILED && !failureReason) return 'missing_failure_reason'
+
+  const shouldComplete = [RECORDING_STATUS.AVAILABLE, RECORDING_STATUS.FAILED].includes(recordingStatus)
+  const auditTrail = [
+    ...(call.audit_trail || []),
+    buildAuditEntry('recording_updated', userId, {
+      from: currentStatus,
+      to: recordingStatus,
+      recording_url: recordingUrl,
+      failure_reason: failureReason,
+    }),
+  ]
+
+  if (recordingStatus === RECORDING_STATUS.AVAILABLE) {
+    auditTrail.push(buildAuditEntry('recording_available', userId, { recording_url: recordingUrl }))
+  }
+
+  if (recordingStatus === RECORDING_STATUS.FAILED) {
+    auditTrail.push(buildAuditEntry('recording_failed', userId, { failure_reason: failureReason }))
+  }
+
+  if (shouldComplete) {
+    auditTrail.push(buildAuditEntry('completed', userId, { recording_status: recordingStatus }))
+  }
+
   const next = {
     ...call,
     recording_status: recordingStatus,
     recording_url: recordingUrl,
-    audit_trail: [
-      ...(call.audit_trail || []),
-      buildAuditEntry('recording_updated', userId, { recording_status: recordingStatus, recording_url: recordingUrl }),
-    ],
+    status: shouldComplete ? CALL_STATUS.COMPLETED : call.status,
+    audit_trail: auditTrail,
   }
   calls[idx] = next
   await writeJson(FILE, calls)
+
+  if (shouldComplete) {
+    const participants = normalizeParticipantIds(call.participant_ids, call.created_by).filter((id) => id !== userId)
+    await Promise.all(participants.map((counterpartyId) => recordMilestone({
+      profileKey: `user:${userId}`,
+      counterpartyId,
+      interactionType: 'call',
+      milestone: 'communication_completed',
+      actorId: userId,
+    })))
+  }
 
   return next
 }

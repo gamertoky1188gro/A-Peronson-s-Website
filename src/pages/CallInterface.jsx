@@ -1,30 +1,67 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import FloatingAssistant from '../components/FloatingAssistant'
 import { apiRequest, getToken } from '../lib/auth'
+
+const POLL_INTERVAL_MS = 4000
+const TERMINAL_RECORDING_STATUSES = new Set(['available', 'failed'])
 
 export default function CallInterface() {
   const [searchParams] = useSearchParams()
   const [callId] = useState(searchParams.get('callId') || '')
   const [statusMessage, setStatusMessage] = useState('')
   const [callDetails, setCallDetails] = useState(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const matchId = useMemo(() => searchParams.get('matchId') || '', [searchParams])
 
-  useEffect(() => {
-    async function loadCall() {
-      const token = getToken()
-      if (!token || !callId) return
-      try {
-        const call = await apiRequest(`/calls/${callId}`, { token })
-        setCallDetails(call)
-      } catch {
-        setStatusMessage('Unable to load call details.')
-      }
+  const refreshCallDetails = useCallback(async ({ silent = false } = {}) => {
+    const token = getToken()
+    if (!token || !callId) return null
+
+    if (!silent) {
+      setIsRefreshing(true)
     }
 
-    loadCall()
+    try {
+      const call = await apiRequest(`/calls/${callId}`, { token })
+      setCallDetails(call)
+      return call
+    } catch {
+      if (!silent) {
+        setStatusMessage('Unable to load call details.')
+      }
+      return null
+    } finally {
+      if (!silent) {
+        setIsRefreshing(false)
+      }
+    }
   }, [callId])
+
+  useEffect(() => {
+    refreshCallDetails()
+  }, [refreshCallDetails])
+
+  useEffect(() => {
+    if (!callDetails || callDetails.status !== 'ended') return undefined
+    if (TERMINAL_RECORDING_STATUSES.has(callDetails.recording_status)) return undefined
+
+    const timer = window.setInterval(async () => {
+      const latest = await refreshCallDetails({ silent: true })
+      if (!latest || latest.status !== 'ended') return
+      if (TERMINAL_RECORDING_STATUSES.has(latest.recording_status)) {
+        window.clearInterval(timer)
+        setStatusMessage(
+          latest.recording_status === 'available'
+            ? 'Recording is now available and call is completed.'
+            : 'Recording processing failed and the call has been finalized with a failure reason.',
+        )
+      }
+    }, POLL_INTERVAL_MS)
+
+    return () => window.clearInterval(timer)
+  }, [callDetails, refreshCallDetails])
 
   async function scheduleFollowUp() {
     const token = getToken()
@@ -73,21 +110,32 @@ export default function CallInterface() {
   async function endCall() {
     const token = getToken()
     if (!token || !callId) return
+
     try {
       const ended = await apiRequest(`/calls/${callId}/end`, { method: 'POST', token, body: { reason: 'manual_end' } })
       setCallDetails(ended)
-      await apiRequest(`/calls/${callId}/recording`, {
-        method: 'PATCH',
-        token,
-        body: {
-          recording_status: 'processing',
-          recording_url: '',
-        },
-      })
-      setStatusMessage('Call ended and recording status updated.')
+      setStatusMessage('Call ended. Recording is processing and status will refresh automatically.')
+      await refreshCallDetails({ silent: true })
     } catch (err) {
       setStatusMessage(err.message || 'Unable to end call.')
     }
+  }
+
+  async function refreshRecordingStatus() {
+    const latest = await refreshCallDetails()
+    if (!latest) return
+
+    if (latest.recording_status === 'available') {
+      setStatusMessage('Recording is available.')
+      return
+    }
+
+    if (latest.recording_status === 'failed') {
+      setStatusMessage('Recording failed to process. Check audit details for failure reason.')
+      return
+    }
+
+    setStatusMessage('Recording is still processing.')
   }
 
   return (
@@ -106,6 +154,9 @@ export default function CallInterface() {
             <button className="px-3 py-1 border rounded">Share</button>
             <button className="px-3 py-1 border rounded" onClick={startCall}>Start Call</button>
             <button className="px-3 py-1 bg-red-600 text-white rounded" onClick={endCall}>End Call</button>
+            <button className="px-3 py-1 border rounded" onClick={refreshRecordingStatus} disabled={isRefreshing}>
+              {isRefreshing ? 'Refreshing…' : 'Refresh Recording'}
+            </button>
             <button className="px-3 py-1 border rounded" onClick={scheduleFollowUp}>Schedule Follow-up</button>
           </div>
         </div>
