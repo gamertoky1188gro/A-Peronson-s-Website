@@ -7,13 +7,27 @@ import { getSubscription } from './subscriptionService.js'
 const FILE = 'members.json'
 const FREE_MEMBER_LIMIT = 10
 const VALID_PERMISSIONS = new Set(['view_requests', 'assign_requests', 'manage_members', 'reports_only'])
-const PERMISSION_CONFLICTS = [
-  ['manage_members', 'reports_only'],
-]
+const PERMISSION_CONFLICTS = [['manage_members', 'reports_only']]
+const MATRIX_SECTIONS = ['requests', 'products', 'analytics', 'members', 'documents']
 
 function sanitizePermissions(permissions) {
   if (!Array.isArray(permissions)) return []
   return [...new Set(permissions.map((p) => sanitizeString(String(p), 64)).filter((p) => VALID_PERMISSIONS.has(p)))]
+}
+
+function sanitizePermissionMatrix(rawMatrix) {
+  const input = rawMatrix && typeof rawMatrix === 'object' ? rawMatrix : {}
+  const matrix = {}
+
+  for (const section of MATRIX_SECTIONS) {
+    const sectionValue = input?.[section] && typeof input[section] === 'object' ? input[section] : {}
+    matrix[section] = {
+      view: Boolean(sectionValue.view),
+      edit: Boolean(sectionValue.edit),
+    }
+  }
+
+  return matrix
 }
 
 function hasPermissionConflict(permissions) {
@@ -25,9 +39,27 @@ function cleanMember(member) {
   return safe
 }
 
+function normalizeMember(member) {
+  const username = sanitizeString(member.username || member.account_id, 64)
+  const memberId = sanitizeString(member.member_id || member.account_id, 64)
+
+  return {
+    ...member,
+    username,
+    member_id: memberId,
+    account_id: member.account_id || memberId,
+    permission_matrix: sanitizePermissionMatrix(member.permission_matrix),
+  }
+}
+
 async function getOrgMembers(orgOwnerId) {
   const members = await readJson(FILE)
-  return members.filter((m) => m.org_owner_id === orgOwnerId)
+  return members.filter((m) => m.org_owner_id === orgOwnerId).map(normalizeMember)
+}
+
+async function readAllMembers() {
+  const members = await readJson(FILE)
+  return members.map(normalizeMember)
 }
 
 export async function listMembers(orgOwnerId) {
@@ -35,42 +67,55 @@ export async function listMembers(orgOwnerId) {
   return members.map(cleanMember)
 }
 
-export async function createMember(orgOwnerId, payload) {
-  const members = await readJson(FILE)
-  const orgMembers = members.filter((m) => m.org_owner_id === orgOwnerId)
-
+async function assertFreePlanMemberLimit(orgOwnerId, allMembers, currentMember = null, nextStatus = 'active') {
   const subscription = await getSubscription(orgOwnerId)
   const plan = subscription?.plan === 'premium' ? 'premium' : 'free'
-  if (plan === 'free' && orgMembers.filter((m) => m.status === 'active').length >= FREE_MEMBER_LIMIT) {
+  if (plan !== 'free') return
+
+  const orgMembers = allMembers.filter((m) => m.org_owner_id === orgOwnerId)
+  const activeCount = orgMembers.filter((m) => m.status === 'active' && m.id !== currentMember?.id).length
+  if (nextStatus === 'active' && activeCount >= FREE_MEMBER_LIMIT) {
     const error = new Error('Free plan allows up to 10 active sub-accounts')
     error.status = 403
     throw error
   }
+}
+
+function ensureUniqueIdentity({ members, orgOwnerId, username, memberId, currentMemberId = null }) {
+  const duplicateUsername = members.find(
+    (m) => m.org_owner_id === orgOwnerId && m.id !== currentMemberId && m.username.toLowerCase() === username.toLowerCase(),
+  )
+  if (duplicateUsername) {
+    const error = new Error('Duplicate username in this organization')
+    error.status = 409
+    throw error
+  }
+
+  const duplicateMemberId = members.find((m) => m.id !== currentMemberId && m.member_id.toLowerCase() === memberId.toLowerCase())
+  if (duplicateMemberId) {
+    const error = new Error('Member ID already exists')
+    error.status = 409
+    throw error
+  }
+}
+
+export async function createMember(orgOwnerId, payload) {
+  const members = await readAllMembers()
 
   const name = sanitizeString(payload.name, 120)
-  const accountId = sanitizeString(payload.account_id, 64)
+  const username = sanitizeString(payload.username, 64)
+  const memberId = sanitizeString(payload.member_id || payload.account_id, 64)
   const role = sanitizeString(payload.role, 64)
   const permissions = sanitizePermissions(payload.permissions)
+  const permissionMatrix = sanitizePermissionMatrix(payload.permission_matrix)
 
-  if (!name || !accountId || !role || !payload.password) {
-    const error = new Error('name, account_id, role and password are required')
+  if (!name || !username || !memberId || !role || !payload.password) {
+    const error = new Error('name, username, member_id, role and password are required')
     error.status = 400
     throw error
   }
 
-  const duplicateName = orgMembers.find((m) => m.name.toLowerCase() === name.toLowerCase())
-  if (duplicateName) {
-    const error = new Error('Duplicate member name in this organization')
-    error.status = 409
-    throw error
-  }
-
-  const duplicateAccount = members.find((m) => m.account_id.toLowerCase() === accountId.toLowerCase())
-  if (duplicateAccount) {
-    const error = new Error('Account ID already exists')
-    error.status = 409
-    throw error
-  }
+  ensureUniqueIdentity({ members, orgOwnerId, username, memberId })
 
   const conflict = hasPermissionConflict(permissions)
   if (conflict) {
@@ -79,15 +124,20 @@ export async function createMember(orgOwnerId, payload) {
     throw error
   }
 
+  await assertFreePlanMemberLimit(orgOwnerId, members)
+
   const hash = await bcrypt.hash(String(payload.password), 10)
   const member = {
     id: crypto.randomUUID(),
     org_owner_id: orgOwnerId,
     organization_id: orgOwnerId,
     name,
-    account_id: accountId,
+    username,
+    member_id: memberId,
+    account_id: memberId,
     role,
     permissions,
+    permission_matrix: permissionMatrix,
     password_hash: hash,
     status: 'active',
     assigned_requests: Number(payload.assigned_requests || 0),
@@ -101,8 +151,74 @@ export async function createMember(orgOwnerId, payload) {
   return cleanMember(member)
 }
 
-export async function updateMemberPermissions(orgOwnerId, memberId, permissionsPayload) {
-  const members = await readJson(FILE)
+export async function updateMember(orgOwnerId, memberId, payload) {
+  const members = await readAllMembers()
+  const idx = members.findIndex((m) => m.id === memberId && m.org_owner_id === orgOwnerId)
+  if (idx < 0) return null
+
+  const current = members[idx]
+  const name = payload.name === undefined ? current.name : sanitizeString(payload.name, 120)
+  const username = payload.username === undefined ? current.username : sanitizeString(payload.username, 64)
+  const normalizedMemberId =
+    payload.member_id === undefined && payload.account_id === undefined
+      ? current.member_id
+      : sanitizeString(payload.member_id || payload.account_id, 64)
+  const role = payload.role === undefined ? current.role : sanitizeString(payload.role, 64)
+  const status = payload.status === undefined ? current.status : sanitizeString(payload.status, 32)
+  const permissions = payload.permissions === undefined ? current.permissions : sanitizePermissions(payload.permissions)
+  const permissionMatrix =
+    payload.permission_matrix === undefined
+      ? sanitizePermissionMatrix(current.permission_matrix)
+      : sanitizePermissionMatrix(payload.permission_matrix)
+
+  if (!name || !username || !normalizedMemberId || !role) {
+    const error = new Error('name, username, member_id and role are required')
+    error.status = 400
+    throw error
+  }
+
+  if (!['active', 'inactive'].includes(status)) {
+    const error = new Error('status must be active or inactive')
+    error.status = 400
+    throw error
+  }
+
+  ensureUniqueIdentity({
+    members,
+    orgOwnerId,
+    username,
+    memberId: normalizedMemberId,
+    currentMemberId: current.id,
+  })
+
+  const conflict = hasPermissionConflict(permissions)
+  if (conflict) {
+    const error = new Error(`Permission conflict: ${conflict[0]} cannot be combined with ${conflict[1]}`)
+    error.status = 400
+    throw error
+  }
+
+  await assertFreePlanMemberLimit(orgOwnerId, members, current, status)
+
+  members[idx] = {
+    ...current,
+    name,
+    username,
+    member_id: normalizedMemberId,
+    account_id: normalizedMemberId,
+    role,
+    status,
+    permissions,
+    permission_matrix: permissionMatrix,
+    updated_at: new Date().toISOString(),
+  }
+
+  await writeJson(FILE, members)
+  return cleanMember(members[idx])
+}
+
+export async function updateMemberPermissions(orgOwnerId, memberId, permissionsPayload, permissionMatrixPayload) {
+  const members = await readAllMembers()
   const idx = members.findIndex((m) => m.id === memberId && m.org_owner_id === orgOwnerId)
   if (idx < 0) return null
 
@@ -117,6 +233,7 @@ export async function updateMemberPermissions(orgOwnerId, memberId, permissionsP
   members[idx] = {
     ...members[idx],
     permissions,
+    permission_matrix: sanitizePermissionMatrix(permissionMatrixPayload),
     updated_at: new Date().toISOString(),
   }
   await writeJson(FILE, members)
@@ -124,7 +241,7 @@ export async function updateMemberPermissions(orgOwnerId, memberId, permissionsP
 }
 
 export async function resetMemberPassword(orgOwnerId, memberId) {
-  const members = await readJson(FILE)
+  const members = await readAllMembers()
   const idx = members.findIndex((m) => m.id === memberId && m.org_owner_id === orgOwnerId)
   if (idx < 0) return null
 
@@ -141,7 +258,7 @@ export async function resetMemberPassword(orgOwnerId, memberId) {
 }
 
 export async function deactivateOrRemoveMember(orgOwnerId, memberId, mode = 'deactivate') {
-  const members = await readJson(FILE)
+  const members = await readAllMembers()
   const idx = members.findIndex((m) => m.id === memberId && m.org_owner_id === orgOwnerId)
   if (idx < 0) return null
 
@@ -165,5 +282,6 @@ export function getMemberConstraints() {
     free_member_limit: FREE_MEMBER_LIMIT,
     valid_permissions: [...VALID_PERMISSIONS],
     permission_conflicts: PERMISSION_CONFLICTS,
+    permission_matrix_sections: MATRIX_SECTIONS,
   }
 }

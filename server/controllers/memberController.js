@@ -4,6 +4,7 @@ import {
   getMemberConstraints,
   listMembers,
   resetMemberPassword,
+  updateMember,
   updateMemberPermissions,
 } from '../services/memberService.js'
 import { canManageMembers, deny, handleControllerError } from '../utils/permissions.js'
@@ -32,10 +33,26 @@ export async function listOrgMembers(req, res) {
   }
 }
 
+export async function putOrgMember(req, res) {
+  if (!canManageMembers(req.user)) return deny(res)
+  try {
+    const member = await updateMember(req.user.id, req.params.memberId, req.body || {})
+    if (!member) return res.status(404).json({ error: 'Member not found' })
+    return res.json({ member })
+  } catch (error) {
+    return handleError(res, error)
+  }
+}
+
 export async function patchMemberPermissions(req, res) {
   if (!canManageMembers(req.user)) return deny(res)
   try {
-    const member = await updateMemberPermissions(req.user.id, req.params.memberId, req.body?.permissions)
+    const member = await updateMemberPermissions(
+      req.user.id,
+      req.params.memberId,
+      req.body?.permissions,
+      req.body?.permission_matrix,
+    )
     if (!member) return res.status(404).json({ error: 'Member not found' })
     return res.json({ member })
   } catch (error) {
