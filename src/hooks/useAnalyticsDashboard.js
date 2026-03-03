@@ -8,6 +8,7 @@ export default function useAnalyticsDashboard() {
   const [subscription, setSubscription] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [forbidden, setForbidden] = useState(false)
 
   useEffect(() => {
     let alive = true
@@ -16,6 +17,7 @@ export default function useAnalyticsDashboard() {
       try {
         setLoading(true)
         setError('')
+        setForbidden(false)
         const token = getToken()
         const [dashboardData, subscriptionData] = await Promise.all([
           apiRequest('/analytics/dashboard', { token }),
@@ -27,6 +29,7 @@ export default function useAnalyticsDashboard() {
         setSubscription(subscriptionData)
       } catch (err) {
         if (!alive) return
+        setForbidden(err.status === 403)
         setError(err.status === 403 ? 'You do not have permission to view analytics for this organization.' : (err.message || 'Failed to load analytics data'))
       } finally {
         if (alive) setLoading(false)
@@ -42,5 +45,5 @@ export default function useAnalyticsDashboard() {
 
   const isEnterprise = useMemo(() => ENTERPRISE_PLANS.has(subscription?.plan), [subscription?.plan])
 
-  return { dashboard, subscription, isEnterprise, loading, error }
+  return { dashboard, subscription, isEnterprise, loading, error, forbidden }
 }

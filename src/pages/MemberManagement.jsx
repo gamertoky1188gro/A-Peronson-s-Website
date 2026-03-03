@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import AccessDeniedState from '../components/AccessDeniedState'
 import FloatingAssistant from '../components/FloatingAssistant'
 import { apiRequest, getToken } from '../lib/auth'
 
@@ -30,6 +31,7 @@ export default function MemberManagement() {
   const [constraints, setConstraints] = useState({ free_member_limit: 10, valid_permissions: [], permission_conflicts: [] })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [forbidden, setForbidden] = useState(false)
   const [success, setSuccess] = useState('')
   const [showCreate, setShowCreate] = useState(false)
   const [createForm, setCreateForm] = useState(DEFAULT_CREATE_FORM)
@@ -40,11 +42,13 @@ export default function MemberManagement() {
   async function loadMembers() {
     setLoading(true)
     setError('')
+    setForbidden(false)
     try {
       const data = await apiRequest('/members', { token })
       setMembers(data.members || [])
       setConstraints(data.constraints || constraints)
     } catch (err) {
+      setForbidden(err.status === 403)
       setError(err.message)
     } finally {
       setLoading(false)
@@ -158,6 +162,10 @@ export default function MemberManagement() {
         {!!error && <div className="mb-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded p-2">{error}</div>}
         {!!success && <div className="mb-3 text-sm text-green-700 bg-green-50 border border-green-200 rounded p-2">{success}</div>}
 
+        {forbidden ? <AccessDeniedState message="You do not have permission to manage members for this organization." /> : null}
+
+        {forbidden ? null : (
+
         <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-sm border p-4">
           <div className="mb-4 flex items-center gap-3">
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search members" className="px-3 py-2 border rounded w-64" />
@@ -204,6 +212,7 @@ export default function MemberManagement() {
             </table>
           </div>
         </div>
+        )}
       </div>
 
       {showCreate && (

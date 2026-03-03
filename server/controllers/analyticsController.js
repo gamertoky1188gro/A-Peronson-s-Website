@@ -1,9 +1,8 @@
 import { getAnalyticsSummary, getDashboardAnalytics } from '../services/analyticsService.js'
+import { handleControllerError } from '../utils/permissions.js'
 
 function handleError(res, error) {
-  const status = Number(error?.status) || 500
-  if (status === 500) return res.status(500).json({ error: 'Internal server error' })
-  return res.status(status).json({ error: error.message || 'Request failed' })
+  return handleControllerError(res, error)
 }
 
 export async function analyticsSummary(req, res) {

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import AccessDeniedState from '../components/AccessDeniedState'
 import FloatingAssistant from '../components/FloatingAssistant'
 import { API_BASE, apiRequest, getCurrentUser, getToken } from '../lib/auth'
 
@@ -97,6 +98,7 @@ export default function ContractVault(){
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [contracts, setContracts] = useState([])
   const [error, setError] = useState('')
+  const [forbidden, setForbidden] = useState(false)
   const [actionError, setActionError] = useState('')
   const [saving, setSaving] = useState(false)
   const [draftForm, setDraftForm] = useState({ title: '', buyer_name: '', factory_name: '', buyer_id: '', factory_id: '' })
@@ -113,8 +115,11 @@ export default function ContractVault(){
       const data = await apiRequest('/documents/contracts', { token })
       setContracts(Array.isArray(data) ? data : [])
       setError('')
+      setForbidden(false)
     } catch (err) {
-      setError(err.status === 403 ? 'You do not have permission to view these contracts.' : (err.message || 'Failed to load contracts'))
+      const isForbidden = err.status === 403
+      setForbidden(isForbidden)
+      setError(isForbidden ? 'You do not have permission to view these contracts.' : (err.message || 'Failed to load contracts'))
       setContracts([])
     }
   }
@@ -194,6 +199,9 @@ export default function ContractVault(){
         </aside>
 
         <main className="lg:col-span-3 space-y-6">
+          {forbidden ? <AccessDeniedState message={error} /> : null}
+          {!forbidden ? (
+            <>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <h1 className="text-2xl font-bold">🔒 Contract Vault <span className="ml-2 text-sm text-gray-500">Encrypted & Timestamped</span></h1>
@@ -255,6 +263,8 @@ export default function ContractVault(){
               )
             })}
           </div>
+            </>
+          ) : null}
         </main>
       </div>
 

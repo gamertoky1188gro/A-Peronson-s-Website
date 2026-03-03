@@ -5,15 +5,14 @@ import {
   listKnowledge,
   updateKnowledgeEntry,
 } from '../services/assistantService.js'
+import { canManageMembers, deny, handleControllerError } from '../utils/permissions.js'
 
 function orgIdFromUser(user) {
   return user?.org_id || user?.organization_id || user?.id
 }
 
 function handleError(res, error) {
-  const status = Number(error?.status) || 500
-  if (status === 500) return res.status(500).json({ error: 'Internal server error' })
-  return res.status(status).json({ error: error.message || 'Request failed' })
+  return handleControllerError(res, error)
 }
 
 export async function askAssistant(req, res) {
@@ -29,6 +28,7 @@ export async function getAssistantKnowledge(req, res) {
 }
 
 export async function createAssistantKnowledge(req, res) {
+  if (!canManageMembers(req.user)) return deny(res)
   try {
     const orgId = orgIdFromUser(req.user)
     const entry = await createKnowledgeEntry(orgId, req.body || {})
@@ -39,6 +39,7 @@ export async function createAssistantKnowledge(req, res) {
 }
 
 export async function updateAssistantKnowledge(req, res) {
+  if (!canManageMembers(req.user)) return deny(res)
   try {
     const orgId = orgIdFromUser(req.user)
     const entry = await updateKnowledgeEntry(orgId, req.params.entryId, req.body || {})
@@ -49,6 +50,7 @@ export async function updateAssistantKnowledge(req, res) {
 }
 
 export async function removeAssistantKnowledge(req, res) {
+  if (!canManageMembers(req.user)) return deny(res)
   const orgId = orgIdFromUser(req.user)
   const ok = await deleteKnowledgeEntry(orgId, req.params.entryId)
   if (!ok) return res.status(404).json({ error: 'Knowledge entry not found' })
