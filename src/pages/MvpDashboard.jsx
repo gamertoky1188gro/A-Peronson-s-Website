@@ -148,7 +148,11 @@ export default function MvpDashboard() {
     e.preventDefault()
     try {
       const res = await api('/assistant/ask', 'POST', token, { question: assistantQuestion })
-      setAssistantResponse(`${res.mode}: ${res.message}`)
+      if (res.forward_to_agent) {
+        setAssistantResponse('forward_to_agent')
+      } else {
+        setAssistantResponse(`${res.source} (${res.confidence}): ${res.matched_answer}`)
+      }
     } catch (err) { setFeedback(err.message) }
   }
 
