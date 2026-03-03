@@ -72,11 +72,11 @@ function AppRoutes() {
       <Route path="/chat" element={<ProtectedRoute><ChatInterface /></ProtectedRoute>} />
       <Route path="/call" element={<ProtectedRoute><CallInterface /></ProtectedRoute>} />
 
-      <Route path="/member-management" element={<ProtectedRoute roles={['buying_house', 'factory', 'admin']}><MemberManagement /></ProtectedRoute>} />
-      <Route path="/org-settings" element={<ProtectedRoute roles={['buying_house', 'factory', 'admin']}><OrgSettings /></ProtectedRoute>} />
-      <Route path="/insights" element={<ProtectedRoute roles={['buying_house', 'admin']}><Insights /></ProtectedRoute>} />
-      <Route path="/owner" element={<ProtectedRoute roles={['buying_house', 'admin']}><OwnerDashboard /></ProtectedRoute>} />
-      <Route path="/agent" element={<ProtectedRoute roles={['buying_house', 'admin']}><AgentDashboard /></ProtectedRoute>} />
+      <Route path="/member-management" element={<ProtectedRoute roles={['buying_house', 'factory', 'owner', 'admin']}><MemberManagement /></ProtectedRoute>} />
+      <Route path="/org-settings" element={<ProtectedRoute roles={['buying_house', 'factory', 'owner', 'admin']}><OrgSettings /></ProtectedRoute>} />
+      <Route path="/insights" element={<ProtectedRoute roles={['buying_house', 'owner', 'admin']}><Insights /></ProtectedRoute>} />
+      <Route path="/owner" element={<ProtectedRoute roles={['buying_house', 'owner', 'admin']}><OwnerDashboard /></ProtectedRoute>} />
+      <Route path="/agent" element={<ProtectedRoute roles={['buying_house', 'owner', 'admin', 'agent']}><AgentDashboard /></ProtectedRoute>} />
 
       <Route path="/mvp" element={<MvpDashboard />} />
       <Route path="*" element={<Navigate to="/" replace />} />

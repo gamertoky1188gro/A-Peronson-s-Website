@@ -1,5 +1,6 @@
 import crypto from 'crypto'
 import { readJson, writeJson } from '../utils/jsonStore.js'
+import { canViewAnalytics, scopeRecordsForUser } from '../utils/permissions.js'
 
 const FILE = 'analytics.json'
 
@@ -16,13 +17,29 @@ export async function trackEvent({ type, actor_id, entity_id, metadata = {} }) {
   await writeJson(FILE, all)
 }
 
-export async function getAnalyticsSummary() {
+function ensureAnalyticsAccess(user) {
+  if (canViewAnalytics(user)) return
+  const err = new Error('Forbidden')
+  err.status = 403
+  throw err
+}
+
+function scopeAnalyticsRecords(user, records, idFields) {
+  return scopeRecordsForUser(user, records, {
+    idFields,
+    assignmentFields: ['assigned_agent_id', 'agent_id'],
+  })
+}
+
+export async function getAnalyticsSummary(user) {
+  ensureAnalyticsAccess(user)
   const all = await readJson(FILE)
-  const byType = all.reduce((acc, e) => {
+  const scoped = scopeAnalyticsRecords(user, all, ['actor_id', 'entity_id'])
+  const byType = scoped.reduce((acc, e) => {
     acc[e.type] = (acc[e.type] || 0) + 1
     return acc
   }, {})
-  return { total_events: all.length, by_type: byType }
+  return { total_events: scoped.length, by_type: byType }
 }
 
 function monthKey(value) {
@@ -44,7 +61,9 @@ function toMonthlySeries(items, dateKey) {
     .map(([month, count]) => ({ month, count }))
 }
 
-export async function getDashboardAnalytics() {
+export async function getDashboardAnalytics(user) {
+  ensureAnalyticsAccess(user)
+
   const [events, requirements, messages, matches, documents, users] = await Promise.all([
     readJson(FILE),
     readJson('requirements.json'),
@@ -54,33 +73,39 @@ export async function getDashboardAnalytics() {
     readJson('users.json'),
   ])
 
-  const uniqueActiveChats = new Set(messages.map((m) => m.match_id).filter(Boolean)).size
-  const connectedPartners = new Set(matches.map((m) => m.factory_id).filter(Boolean)).size
-  const contractDocs = documents.filter((d) => d.entity_type === 'contract' || String(d.type || '').toLowerCase().includes('contract'))
-  const byType = events.reduce((acc, e) => {
+  const scopedEvents = scopeAnalyticsRecords(user, events, ['actor_id', 'entity_id'])
+  const scopedRequirements = scopeAnalyticsRecords(user, requirements, ['buyer_id', 'requester_id'])
+  const scopedMessages = scopeAnalyticsRecords(user, messages, ['sender_id', 'receiver_id'])
+  const scopedMatches = scopeAnalyticsRecords(user, matches, ['buyer_id', 'factory_id'])
+  const scopedDocuments = scopeAnalyticsRecords(user, documents, ['uploaded_by', 'buyer_id', 'factory_id', 'entity_id'])
+
+  const uniqueActiveChats = new Set(scopedMessages.map((m) => m.match_id).filter(Boolean)).size
+  const connectedPartners = new Set(scopedMatches.map((m) => m.factory_id).filter(Boolean)).size
+  const contractDocs = scopedDocuments.filter((d) => d.entity_type === 'contract' || String(d.type || '').toLowerCase().includes('contract'))
+  const byType = scopedEvents.reduce((acc, e) => {
     acc[e.type] = (acc[e.type] || 0) + 1
     return acc
   }, {})
 
   return {
     totals: {
-      buyer_requests: requirements.length,
-      open_buyer_requests: requirements.filter((r) => r.status === 'open').length,
+      buyer_requests: scopedRequirements.length,
+      open_buyer_requests: scopedRequirements.filter((r) => r.status === 'open').length,
       chats: uniqueActiveChats,
-      messages: messages.length,
+      messages: scopedMessages.length,
       partner_network: connectedPartners,
       contracts: contractDocs.length,
-      documents: documents.length,
+      documents: scopedDocuments.length,
       factories: users.filter((u) => u.role === 'factory').length,
     },
     analytics_events: {
-      total: events.length,
+      total: scopedEvents.length,
       by_type: byType,
     },
     series: {
-      buyer_requests: toMonthlySeries(requirements, 'created_at'),
-      chats: toMonthlySeries(messages, 'timestamp'),
-      documents: toMonthlySeries(documents, 'created_at'),
+      buyer_requests: toMonthlySeries(scopedRequirements, 'created_at'),
+      chats: toMonthlySeries(scopedMessages, 'timestamp'),
+      documents: toMonthlySeries(scopedDocuments, 'created_at'),
     },
   }
 }

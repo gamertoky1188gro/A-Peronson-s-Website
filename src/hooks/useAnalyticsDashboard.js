@@ -27,7 +27,7 @@ export default function useAnalyticsDashboard() {
         setSubscription(subscriptionData)
       } catch (err) {
         if (!alive) return
-        setError(err.message || 'Failed to load analytics data')
+        setError(err.status === 403 ? 'You do not have permission to view analytics for this organization.' : (err.message || 'Failed to load analytics data'))
       } finally {
         if (alive) setLoading(false)
       }

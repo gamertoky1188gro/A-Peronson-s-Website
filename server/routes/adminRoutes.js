@@ -4,8 +4,8 @@ import { subscriptionsAudit, usersAudit, verificationAudit } from '../controller
 
 const router = Router()
 
-router.get('/users', requireAuth, allowRoles('admin'), usersAudit)
-router.get('/verification', requireAuth, allowRoles('admin'), verificationAudit)
-router.get('/subscriptions', requireAuth, allowRoles('admin'), subscriptionsAudit)
+router.get('/users', requireAuth, allowRoles('owner', 'admin'), usersAudit)
+router.get('/verification', requireAuth, allowRoles('owner', 'admin'), verificationAudit)
+router.get('/subscriptions', requireAuth, allowRoles('owner', 'admin'), subscriptionsAudit)
 
 export default router

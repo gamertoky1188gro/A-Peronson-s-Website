@@ -57,7 +57,7 @@ export default function ContractVault(){
         }
       } catch (err) {
         if (mounted) {
-          setError(err.message || 'Failed to load contracts')
+          setError(err.status === 403 ? 'You do not have permission to view these contracts.' : (err.message || 'Failed to load contracts'))
           setContracts([])
         }
       }

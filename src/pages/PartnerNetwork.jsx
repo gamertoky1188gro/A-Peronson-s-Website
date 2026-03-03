@@ -28,7 +28,7 @@ export default function PartnerNetwork() {
       setRows(data.requests || [])
       setPermissions(data.permissions || { can_manage: false, view_only: false })
     } catch (err) {
-      setError(err.message)
+      setError(err.status === 403 ? 'You do not have permission to perform this action.' : err.message)
     } finally {
       setLoading(false)
     }
@@ -64,7 +64,7 @@ export default function PartnerNetwork() {
       setTab('pending')
       await loadNetwork('pending')
     } catch (err) {
-      setError(err.message)
+      setError(err.status === 403 ? 'You do not have permission to perform this action.' : err.message)
     } finally {
       setLoading(false)
     }
@@ -77,7 +77,7 @@ export default function PartnerNetwork() {
       await apiRequest(`/partners/requests/${requestId}/${action}`, { method: 'POST', token })
       await loadNetwork(tab)
     } catch (err) {
-      setError(err.message)
+      setError(err.status === 403 ? 'You do not have permission to perform this action.' : err.message)
     } finally {
       setLoading(false)
     }

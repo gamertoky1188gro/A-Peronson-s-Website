@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken'
+import { hasRole } from '../utils/permissions.js'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'mvp-dev-secret'
 const JWT_ISSUER = process.env.JWT_ISSUER || 'gartexhub-api'
@@ -31,7 +32,7 @@ export function requireAuth(req, res, next) {
 
 export function allowRoles(...roles) {
   return (req, res, next) => {
-    if (!req.user || !roles.includes(req.user.role)) {
+    if (!req.user || !hasRole(req.user, ...roles)) {
       return res.status(403).json({ error: 'Forbidden' })
     }
     return next()
