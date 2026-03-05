@@ -28,6 +28,7 @@ import OwnerDashboard from './pages/OwnerDashboard'
 import AgentDashboard from './pages/AgentDashboard'
 import MvpDashboard from './pages/MvpDashboard'
 import FloatingAssistant from './components/FloatingAssistant'
+import Footer from './components/Footer'
 import AccessDenied from './pages/AccessDenied'
 import VerificationPage from './pages/VerificationPage'
 import { getCurrentUser } from './lib/auth'
@@ -99,6 +100,7 @@ function App() {
         <main className="pb-10">
           <AppRoutes />
         </main>
+        <Footer />
         <FloatingAssistant />
       </div>
     </BrowserRouter>

@@ -9,6 +9,14 @@ lerna-debug.log*
 
 node_modules
 *.local
+dist
+dist-ssr
+*.local
+
+# Llama.cpp and AI Models
+llama/
+models/
+server/uploads/
 
 # Editor directories and files
 .vscode/*
