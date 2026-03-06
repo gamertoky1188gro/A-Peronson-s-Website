@@ -9,7 +9,7 @@ import { canManageMembers, deny, handleControllerError } from '../utils/permissi
 import { logInfo } from '../utils/logger.js'
 
 function orgIdFromUser(user) {
-  return user?.org_id || user?.organization_id || user?.id || 'public_guest'
+  return user?.org_id || user?.organization_id || user?.id
 }
 
 function handleError(res, error) {
@@ -24,6 +24,15 @@ export async function askAssistant(req, res) {
     question_chars: String(question).length,
   })
   const result = await assistantReply(orgId, question)
+  return res.json(result)
+}
+
+export async function askAssistantPublic(req, res) {
+  const question = req.body?.question || ''
+  logInfo('Assistant /ask-public request received', {
+    question_chars: String(question).length,
+  })
+  const result = await assistantReply('public_ws', question)
   return res.json(result)
 }
 

@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { allowRoles, requireAuth } from '../middleware/auth.js'
 import {
   askAssistant,
+  askAssistantPublic,
   createAssistantKnowledge,
   getAssistantKnowledge,
   removeAssistantKnowledge,
@@ -10,7 +11,8 @@ import {
 
 const router = Router()
 
-router.post('/ask', askAssistant)
+router.post('/ask', requireAuth, askAssistant)
+router.post('/ask-public', askAssistantPublic)
 router.get('/knowledge', requireAuth, getAssistantKnowledge)
 router.post('/knowledge', requireAuth, allowRoles('owner', 'admin'), createAssistantKnowledge)
 router.put('/knowledge/:entryId', requireAuth, allowRoles('owner', 'admin'), updateAssistantKnowledge)

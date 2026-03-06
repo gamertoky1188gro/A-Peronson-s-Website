@@ -3,6 +3,7 @@ import fs from 'fs/promises'
 import path from 'path'
 import { readJson, updateJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
+import { logError, logInfo } from '../utils/logger.js'
 
 const FILE = 'assistant_knowledge.json'
 const KNOWLEDGE_TYPES = {
@@ -33,6 +34,19 @@ const globalRules = [
   },
 ]
 
+const smallTalkRules = [
+  {
+    source: 'smalltalk:greeting',
+    keywords: ['hi', 'hello', 'hey', 'goodmorning', 'goodafternoon', 'goodevening'],
+    response: 'Greet the user briefly and offer textile business help.',
+  },
+  {
+    source: 'smalltalk:identity',
+    keywords: ['name', 'whoareyou', 'whatsyourname', 'whatisyourname'],
+    response: 'Introduce yourself as GarTex Assistant in one short sentence.',
+  },
+]
+
 const CODE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx', '.json', '.md', '.css', '.html'])
 const SKIP_DIRECTORIES = new Set(['.git', 'node_modules', 'dist', 'build', 'coverage', '.vite'])
 const MAX_FILES_TO_SCAN = 400
@@ -40,6 +54,12 @@ const MAX_FILE_BYTES = 80_000
 const MAX_MATCHED_SNIPPETS = 4
 const MAX_SNIPPET_LENGTH = 320
 const MAX_CONTEXT_CHARS = 1_600
+const MAX_KNOWLEDGE_CONTEXT_CHARS = 1_200
+const LOCAL_LLM_ENDPOINT = process.env.LOCAL_LLM_ENDPOINT || 'http://127.0.0.1:8080/v1/chat/completions'
+const LOCAL_LLM_FALLBACK_ENDPOINT = process.env.LOCAL_LLM_FALLBACK_ENDPOINT || 'http://127.0.0.1:8080/completion'
+const LOCAL_LLM_MODEL = process.env.LOCAL_LLM_MODEL || 'Qwen2.5-0.5B-Instruct-Q4_K_M.gguf'
+const LOCAL_LLM_TIMEOUT_MS = Number(process.env.LOCAL_LLM_TIMEOUT_MS || 12000)
+const MAX_AI_ANSWER_CHARS = 700
 
 let codeFileCache = {
   expiresAt: 0,
@@ -52,6 +72,10 @@ function normalize(text = '') {
 
 function tokenize(text = '') {
   return normalize(text).split(/[^a-z0-9]+/).filter((word) => word.length > 2)
+}
+
+function compactTokenKey(token = '') {
+  return String(token || '').toLowerCase().replace(/[^a-z0-9]+/g, '')
 }
 
 function scoreMatch(questionText, candidateQuestion, candidateKeywords = []) {
@@ -226,6 +250,163 @@ async function searchCodeContext(questionText) {
   }
 }
 
+function findBestKeywordRule(questionText, rules = []) {
+  const normalizedQuestion = normalize(questionText)
+  const compactQuestion = compactTokenKey(normalizedQuestion)
+  const rawQuestionTokens = normalizedQuestion.split(/[^a-z0-9]+/).filter(Boolean)
+  const compactQuestionTokens = new Set(rawQuestionTokens.map((token) => compactTokenKey(token)).filter(Boolean))
+
+  let bestRule = null
+  let bestRuleScore = 0
+
+  for (const rule of rules) {
+    const normalizedKeywords = rule.keywords.map((keyword) => compactTokenKey(keyword)).filter(Boolean)
+    let score = 0
+    for (const keyword of normalizedKeywords) {
+      if (!keyword) continue
+      if (compactQuestionTokens.has(keyword)) {
+        score += 1
+        continue
+      }
+      if (keyword.length > 3 && compactQuestion.includes(keyword)) score += 1
+    }
+
+    if (score > bestRuleScore) {
+      bestRule = rule
+      bestRuleScore = score
+    }
+  }
+
+  return { bestRule, bestRuleScore }
+}
+
+function buildKnowledgeContext(questionText, entries) {
+  const rankedEntries = entries
+    .map((entry) => ({
+      entry,
+      score: scoreMatch(questionText, entry.question, entry.keywords),
+    }))
+    .filter((item) => item.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+
+  const lines = rankedEntries.map((item, index) => {
+    const entry = item.entry
+    const keywords = Array.isArray(entry.keywords) ? entry.keywords.join(', ') : ''
+    return `${index + 1}. (${entry.type}) Q: ${entry.question}\nA: ${entry.answer}${keywords ? `\nK: ${keywords}` : ''}`
+  })
+
+  const { bestRule: bestGlobalRule, bestRuleScore: bestGlobalRuleScore } = findBestKeywordRule(questionText, globalRules)
+  if (bestGlobalRule && bestGlobalRuleScore > 0) {
+    lines.push(`Global guidance: ${bestGlobalRule.response}`)
+  }
+
+  const { bestRule: bestSmallTalkRule, bestRuleScore: bestSmallTalkScore } = findBestKeywordRule(questionText, smallTalkRules)
+  if (bestSmallTalkRule && bestSmallTalkScore > 0) {
+    lines.push(`Tone guidance: ${bestSmallTalkRule.response}`)
+  }
+
+  return sanitizeString(lines.join('\n\n'), MAX_KNOWLEDGE_CONTEXT_CHARS)
+}
+
+function buildAgentPrompt(questionText, codeContext, knowledgeContext) {
+  const sections = [
+    'You are GarTex Assistant for textile business workflows.',
+    'Always answer the user directly. Keep responses practical and concise.',
+    'If code context is present, use it as supporting evidence. If absent, still answer based on general textile/business knowledge.',
+  ]
+
+  if (knowledgeContext) {
+    sections.push(`Knowledge context:\n${knowledgeContext}`)
+  }
+
+  if (codeContext?.summary || codeContext?.prompt_context) {
+    const codeBlock = [
+      codeContext.summary ? `Relevant files: ${codeContext.summary}` : '',
+      codeContext.prompt_context ? `Code snippets:\n${codeContext.prompt_context}` : '',
+    ].filter(Boolean).join('\n\n')
+    sections.push(codeBlock)
+  }
+
+  sections.push(`User question: ${questionText}`)
+  return sections.join('\n\n')
+}
+
+async function callChatCompletions(prompt, signal) {
+  const response = await fetch(LOCAL_LLM_ENDPOINT, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      model: LOCAL_LLM_MODEL,
+      messages: [
+        { role: 'system', content: 'You are a helpful GarTex assistant.' },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.2,
+      max_tokens: 220,
+    }),
+    signal,
+  })
+
+  if (!response.ok) return null
+  const payload = await response.json()
+  return sanitizeString(payload?.choices?.[0]?.message?.content || '', MAX_AI_ANSWER_CHARS) || null
+}
+
+async function callLegacyCompletion(prompt, signal) {
+  const response = await fetch(LOCAL_LLM_FALLBACK_ENDPOINT, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      model: LOCAL_LLM_MODEL,
+      prompt,
+      temperature: 0.2,
+      n_predict: 220,
+    }),
+    signal,
+  })
+
+  if (!response.ok) return null
+  const payload = await response.json()
+  return sanitizeString(payload?.content || payload?.response || '', MAX_AI_ANSWER_CHARS) || null
+}
+
+async function generateDynamicAnswer(questionText, codeContext, knowledgeContext) {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), LOCAL_LLM_TIMEOUT_MS)
+
+  try {
+    const prompt = buildAgentPrompt(questionText, codeContext, knowledgeContext)
+    logInfo('Assistant sending request to local LLM', {
+      endpoint: LOCAL_LLM_ENDPOINT,
+      model: LOCAL_LLM_MODEL,
+      prompt_chars: prompt.length,
+    })
+
+    const chatResult = await callChatCompletions(prompt, controller.signal)
+    if (chatResult) {
+      logInfo('Assistant received response from local LLM chat endpoint')
+      return chatResult
+    }
+
+    logInfo('Assistant chat endpoint returned no response, trying completion endpoint', {
+      endpoint: LOCAL_LLM_FALLBACK_ENDPOINT,
+    })
+    const completionResult = await callLegacyCompletion(prompt, controller.signal)
+    if (completionResult) {
+      logInfo('Assistant received response from local LLM completion endpoint')
+      return completionResult
+    }
+
+    return null
+  } catch (error) {
+    logError('Assistant local LLM request failed', error)
+    return null
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
 export async function listKnowledge(orgId) {
   const rows = await readJson(FILE)
   return rows
@@ -316,7 +497,7 @@ export async function deleteKnowledgeEntry(orgId, entryId) {
   return deleted
 }
 
-function buildMatchedResponse({ matchedAnswer, source, score, fallbackReason = null, matchedType = null, codeContext = null }) {
+function buildMatchedResponse({ matchedAnswer, source, score, fallbackReason = null, matchedType = null, codeContext = null, knowledgeContext = '' }) {
   return {
     matched_answer: matchedAnswer,
     source,
@@ -327,64 +508,27 @@ function buildMatchedResponse({ matchedAnswer, source, score, fallbackReason = n
       confidence: Number(Math.min(0.95, 0.45 + score * 0.1).toFixed(2)),
       fallback_reason: fallbackReason,
       code_context: codeContext,
+      knowledge_context: knowledgeContext,
     },
   }
-}
-
-function findBestMatch(questionText, entries) {
-  let bestEntry = null
-  let bestEntryScore = 0
-  for (const entry of entries) {
-    const score = scoreMatch(questionText, entry.question, entry.keywords)
-    if (score > bestEntryScore) {
-      bestEntry = entry
-      bestEntryScore = score
-    }
-  }
-  return { bestEntry, bestEntryScore }
 }
 
 export async function assistantReply(orgId, question = '') {
   const questionText = sanitizeString(question, 800)
   const codeContext = await searchCodeContext(questionText)
   const entries = await listKnowledge(orgId)
-  const faqEntries = entries.filter((entry) => normalizeType(entry.type) === KNOWLEDGE_TYPES.FAQ)
-  const factEntries = entries.filter((entry) => normalizeType(entry.type) === KNOWLEDGE_TYPES.FACT)
+  const knowledgeContext = buildKnowledgeContext(questionText, entries)
 
-  const { bestEntry: bestFaqEntry, bestEntryScore: bestFaqScore } = findBestMatch(questionText, faqEntries)
-  const { bestEntry: bestFactEntry, bestEntryScore: bestFactScore } = findBestMatch(questionText, factEntries)
-
-  const companyBestEntry = bestFaqScore >= bestFactScore ? bestFaqEntry : bestFactEntry
-  const companyBestScore = Math.max(bestFaqScore, bestFactScore)
-
-  if (companyBestEntry && companyBestScore > 0) {
+  const dynamicAnswer = await generateDynamicAnswer(questionText, codeContext, knowledgeContext)
+  if (dynamicAnswer) {
     return buildMatchedResponse({
-      matchedAnswer: companyBestEntry.answer,
-      source: `company_data:${companyBestEntry.type}`,
-      score: companyBestScore,
-      matchedType: companyBestEntry.type,
+      matchedAnswer: dynamicAnswer,
+      source: 'dynamic_ai:local_llm',
+      score: 2,
+      fallbackReason: 'ai_generated_response',
+      matchedType: 'dynamic_ai',
       codeContext,
-    })
-  }
-
-  let bestRule = null
-  let bestRuleScore = 0
-  for (const rule of globalRules) {
-    const score = scoreMatch(questionText, '', rule.keywords)
-    if (score > bestRuleScore) {
-      bestRule = rule
-      bestRuleScore = score
-    }
-  }
-
-  if (bestRule && bestRuleScore > 0) {
-    return buildMatchedResponse({
-      matchedAnswer: bestRule.response,
-      source: bestRule.source,
-      score: bestRuleScore,
-      fallbackReason: 'no_company_data_match',
-      matchedType: 'global_rule',
-      codeContext,
+      knowledgeContext,
     })
   }
 
@@ -394,14 +538,16 @@ export async function assistantReply(orgId, question = '') {
       question: questionText,
       code_summary: codeContext.summary,
       compact_code_context: codeContext.prompt_context,
+      compact_knowledge_context: knowledgeContext,
       max_context_chars: MAX_CONTEXT_CHARS,
     },
     metadata: {
       matched_source: null,
       matched_type: null,
       confidence: 0,
-      fallback_reason: 'no_keyword_match',
+      fallback_reason: 'local_llm_unavailable',
       code_context: codeContext,
+      knowledge_context: knowledgeContext,
     },
   }
 }
