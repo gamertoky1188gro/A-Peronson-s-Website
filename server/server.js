@@ -71,8 +71,20 @@ const wsServer = new WebSocketServer({ server })
 
 wsServer.on('connection', (socket) => {
   logInfo('Assistant WebSocket connected')
+  let lastQuestion = ''
+  let lastQuestionAt = 0
 
-  socket.send(JSON.stringify({
+  function sendReply(payload) {
+    const answer = payload?.matched_answer || payload?.answer || payload?.message || ''
+    socket.send(JSON.stringify({
+      ...payload,
+      matched_answer: answer,
+      answer,
+      message: answer,
+    }))
+  }
+
+  sendReply({
     type: 'reply',
     question: null,
     matched_answer: 'Hello! I am your GarTex Assistant (WS). How can I help you with your textile business today?',
@@ -83,14 +95,14 @@ wsServer.on('connection', (socket) => {
       confidence: 1,
       fallback_reason: null,
     },
-  }))
+  })
 
   socket.on('message', async (rawMessage) => {
     let payload
     try {
       payload = JSON.parse(String(rawMessage || ''))
     } catch {
-      socket.send(JSON.stringify({
+      sendReply({
         type: 'reply',
         question: null,
         matched_answer: 'Invalid message format. Please send JSON like {"type":"ask","question":"..."}.',
@@ -101,20 +113,25 @@ wsServer.on('connection', (socket) => {
           confidence: 0,
           fallback_reason: 'invalid_json',
         },
-      }))
+      })
       return
     }
 
     if (payload?.type !== 'ask') return
 
     const question = String(payload?.question || '')
+    const now = Date.now()
+    if (question && question === lastQuestion && now - lastQuestionAt < 1500) return
+    lastQuestion = question
+    lastQuestionAt = now
     logInfo('Assistant WebSocket ask received', { question_chars: question.length })
 
     try {
       const result = await assistantReply('public_ws', question)
       const answer = result?.matched_answer || 'I could not find a response right now. Please try again.'
-      socket.send(JSON.stringify({
+      sendReply({
         type: 'reply',
+        request_id: payload?.request_id || null,
         question,
         matched_answer: answer,
         source: result?.source || 'ws:fallback',
@@ -124,11 +141,12 @@ wsServer.on('connection', (socket) => {
           confidence: 0,
           fallback_reason: 'empty_result',
         },
-      }))
+      })
     } catch (error) {
       logError('Assistant WebSocket ask failed', error)
-      socket.send(JSON.stringify({
+      sendReply({
         type: 'reply',
+        request_id: payload?.request_id || null,
         question,
         matched_answer: 'I could not reach the AI model right now. Please try again.',
         source: 'ws:error',
@@ -138,7 +156,7 @@ wsServer.on('connection', (socket) => {
           confidence: 0,
           fallback_reason: 'assistant_exception',
         },
-      }))
+      })
     }
   })
 })

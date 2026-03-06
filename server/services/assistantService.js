@@ -60,6 +60,7 @@ const LOCAL_LLM_FALLBACK_ENDPOINT = process.env.LOCAL_LLM_FALLBACK_ENDPOINT || '
 const LOCAL_LLM_MODEL = process.env.LOCAL_LLM_MODEL || 'Qwen2.5-0.5B-Instruct-Q4_K_M.gguf'
 const LOCAL_LLM_TIMEOUT_MS = Number(process.env.LOCAL_LLM_TIMEOUT_MS || 12000)
 const MAX_AI_ANSWER_CHARS = 700
+const CODE_CONTEXT_HINTS = new Set(['api', 'route', 'server', 'controller', 'service', 'code', 'bug', 'error', 'endpoint', 'json', 'database', 'model', 'function'])
 
 let codeFileCache = {
   expiresAt: 0,
@@ -280,6 +281,12 @@ function findBestKeywordRule(questionText, rules = []) {
   return { bestRule, bestRuleScore }
 }
 
+function shouldSearchCodeContext(questionText) {
+  const tokens = tokenize(questionText)
+  if (tokens.length < 3) return false
+  return tokens.some((token) => CODE_CONTEXT_HINTS.has(token))
+}
+
 function buildKnowledgeContext(questionText, entries) {
   const rankedEntries = entries
     .map((entry) => ({
@@ -313,6 +320,8 @@ function buildAgentPrompt(questionText, codeContext, knowledgeContext) {
   const sections = [
     'You are GarTex Assistant for textile business workflows.',
     'Always answer the user directly. Keep responses practical and concise.',
+    'Do not use generic fallback text like "I am sorry, I could not find an answer".',
+    'Do not introduce yourself unless user asks who you are.',
     'If code context is present, use it as supporting evidence. If absent, still answer based on general textile/business knowledge.',
   ]
 
@@ -515,7 +524,9 @@ function buildMatchedResponse({ matchedAnswer, source, score, fallbackReason = n
 
 export async function assistantReply(orgId, question = '') {
   const questionText = sanitizeString(question, 800)
-  const codeContext = await searchCodeContext(questionText)
+  const codeContext = shouldSearchCodeContext(questionText)
+    ? await searchCodeContext(questionText)
+    : { summary: '', snippets: [], prompt_context: '' }
   const entries = await listKnowledge(orgId)
   const knowledgeContext = buildKnowledgeContext(questionText, entries)
 
