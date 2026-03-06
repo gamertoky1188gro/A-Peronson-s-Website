@@ -1,6 +1,8 @@
 import express from 'express'
 import cors from 'cors'
 import path from 'path'
+import http from 'http'
+import { WebSocketServer } from 'ws'
 import authRoutes from './routes/authRoutes.js'
 import userRoutes from './routes/userRoutes.js'
 import requirementRoutes from './routes/requirementRoutes.js'
@@ -25,7 +27,8 @@ import memberRoutes from './routes/memberRoutes.js'
 import orgRoutes from './routes/orgRoutes.js'
 import ratingsRoutes from './routes/ratingsRoutes.js'
 import { errorHandler } from './middleware/errorHandler.js'
-import { logInfo } from './utils/logger.js'
+import { logInfo, logError } from './utils/logger.js'
+import { assistantReply } from './services/assistantService.js'
 
 const app = express()
 const PORT = process.env.PORT || 4000
@@ -63,6 +66,83 @@ app.use('/api/members', memberRoutes)
 app.use('/api/ratings', ratingsRoutes)
 app.use(errorHandler)
 
-app.listen(PORT, () => {
+const server = http.createServer(app)
+const wsServer = new WebSocketServer({ server })
+
+wsServer.on('connection', (socket) => {
+  logInfo('Assistant WebSocket connected')
+
+  socket.send(JSON.stringify({
+    type: 'reply',
+    question: null,
+    matched_answer: 'Hello! I am your GarTex Assistant (WS). How can I help you with your textile business today?',
+    source: 'system:greeting',
+    metadata: {
+      matched_source: 'system:greeting',
+      matched_type: 'system',
+      confidence: 1,
+      fallback_reason: null,
+    },
+  }))
+
+  socket.on('message', async (rawMessage) => {
+    let payload
+    try {
+      payload = JSON.parse(String(rawMessage || ''))
+    } catch {
+      socket.send(JSON.stringify({
+        type: 'reply',
+        question: null,
+        matched_answer: 'Invalid message format. Please send JSON like {"type":"ask","question":"..."}.',
+        source: 'ws:error',
+        metadata: {
+          matched_source: 'ws:error',
+          matched_type: 'error',
+          confidence: 0,
+          fallback_reason: 'invalid_json',
+        },
+      }))
+      return
+    }
+
+    if (payload?.type !== 'ask') return
+
+    const question = String(payload?.question || '')
+    logInfo('Assistant WebSocket ask received', { question_chars: question.length })
+
+    try {
+      const result = await assistantReply('public_ws', question)
+      const answer = result?.matched_answer || 'I could not find a response right now. Please try again.'
+      socket.send(JSON.stringify({
+        type: 'reply',
+        question,
+        matched_answer: answer,
+        source: result?.source || 'ws:fallback',
+        metadata: result?.metadata || {
+          matched_source: null,
+          matched_type: null,
+          confidence: 0,
+          fallback_reason: 'empty_result',
+        },
+      }))
+    } catch (error) {
+      logError('Assistant WebSocket ask failed', error)
+      socket.send(JSON.stringify({
+        type: 'reply',
+        question,
+        matched_answer: 'I could not reach the AI model right now. Please try again.',
+        source: 'ws:error',
+        metadata: {
+          matched_source: 'ws:error',
+          matched_type: 'error',
+          confidence: 0,
+          fallback_reason: 'assistant_exception',
+        },
+      }))
+    }
+  })
+})
+
+server.listen(PORT, () => {
   logInfo(`Verification MVP API running on http://localhost:${PORT}`)
 })
