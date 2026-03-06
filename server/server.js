@@ -29,6 +29,8 @@ import ratingsRoutes from './routes/ratingsRoutes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { logInfo, logError } from './utils/logger.js'
 import { assistantReply } from './services/assistantService.js'
+import jwt from 'jsonwebtoken'
+import { listMessagesByMatch, postMessage } from './services/messageService.js'
 
 const app = express()
 const PORT = process.env.PORT || 4000
@@ -68,34 +70,238 @@ app.use(errorHandler)
 
 const server = http.createServer(app)
 const wsServer = new WebSocketServer({ server })
+const recentGreetingByIp = new Map()
+const callRooms = new Map()
+const chatRooms = new Map()
+const JWT_SECRET = process.env.JWT_SECRET || 'mvp-dev-secret'
+const JWT_ISSUER = process.env.JWT_ISSUER || 'gartexhub-api'
+const JWT_AUDIENCE = process.env.JWT_AUDIENCE || 'gartexhub-client'
 
-wsServer.on('connection', (socket) => {
+function sendWs(socket, payload) {
+  if (socket.readyState !== 1) return
+  socket.send(JSON.stringify(payload))
+}
+
+function leaveCallRoom(socket) {
+  const callId = socket.callRoomId
+  if (!callId) return
+
+  const room = callRooms.get(callId)
+  if (!room) {
+    socket.callRoomId = null
+    return
+  }
+
+  room.delete(socket)
+  for (const peer of room) {
+    sendWs(peer, {
+      type: 'participant_left',
+      call_id: callId,
+      participant_id: socket.participantId || null,
+    })
+  }
+
+  if (room.size === 0) callRooms.delete(callId)
+  socket.callRoomId = null
+}
+
+function leaveChatRoom(socket) {
+  const matchId = socket.chatRoomId
+  if (!matchId) return
+
+  const room = chatRooms.get(matchId)
+  if (!room) {
+    socket.chatRoomId = null
+    return
+  }
+
+  room.delete(socket)
+
+  for (const peer of room) {
+    sendWs(peer, {
+      type: 'chat_participant_left',
+      match_id: matchId,
+      participant_id: socket.userId || null,
+    })
+  }
+
+  if (room.size === 0) chatRooms.delete(matchId)
+  socket.chatRoomId = null
+}
+
+function parseSocketUser(token) {
+  if (!token) return null
+  try {
+    return jwt.verify(String(token), JWT_SECRET, {
+      issuer: JWT_ISSUER,
+      audience: JWT_AUDIENCE,
+    })
+  } catch {
+    return null
+  }
+}
+
+async function joinChatRoom(socket, payload) {
+  const matchId = String(payload?.match_id || '').trim()
+  const user = parseSocketUser(payload?.token)
+
+  if (!matchId) {
+    sendWs(socket, { type: 'chat_error', error: 'match_id is required to join chat room' })
+    return
+  }
+
+  if (!user?.id) {
+    sendWs(socket, { type: 'chat_error', error: 'Valid token is required to join chat room' })
+    return
+  }
+
+  leaveChatRoom(socket)
+
+  if (!chatRooms.has(matchId)) {
+    chatRooms.set(matchId, new Set())
+  }
+
+  socket.userId = user.id
+  const room = chatRooms.get(matchId)
+  const participants = [...room].map((participantSocket) => participantSocket.userId).filter(Boolean)
+  room.add(socket)
+  socket.chatRoomId = matchId
+
+  const history = await listMessagesByMatch(matchId)
+  sendWs(socket, {
+    type: 'joined_chat_room',
+    match_id: matchId,
+    participant_id: user.id,
+    participants,
+    messages: history,
+  })
+
+  for (const peer of room) {
+    if (peer === socket) continue
+    sendWs(peer, {
+      type: 'chat_participant_joined',
+      match_id: matchId,
+      participant_id: user.id,
+    })
+  }
+}
+
+async function relayChatMessage(socket, payload) {
+  const matchId = socket.chatRoomId
+  if (!matchId || !socket.userId) {
+    sendWs(socket, { type: 'chat_error', error: 'Join a chat room before sending messages' })
+    return
+  }
+
+  const room = chatRooms.get(matchId)
+  if (!room) return
+
+  const messageText = String(payload?.message || '').trim()
+  if (!messageText) return
+
+  try {
+    const created = await postMessage(matchId, socket.userId, messageText, payload?.message_type || 'text')
+    for (const peer of room) {
+      sendWs(peer, {
+        type: 'chat_message',
+        match_id: matchId,
+        message: created,
+      })
+    }
+  } catch (error) {
+    logError('chat_message_failed', error)
+    sendWs(socket, { type: 'chat_error', error: 'Unable to send message' })
+  }
+}
+
+function joinCallRoom(socket, payload) {
+  const callId = String(payload?.call_id || '').trim()
+  const participantId = String(payload?.participant_id || '').trim() || `anon-${Date.now()}`
+  if (!callId) {
+    sendWs(socket, { type: 'call_error', error: 'call_id is required to join room' })
+    return
+  }
+
+  leaveCallRoom(socket)
+
+  if (!callRooms.has(callId)) {
+    callRooms.set(callId, new Set())
+  }
+
+  const room = callRooms.get(callId)
+  const existingParticipants = [...room].map((s) => s.participantId).filter(Boolean)
+  room.add(socket)
+  socket.callRoomId = callId
+  socket.participantId = participantId
+
+  sendWs(socket, {
+    type: 'joined_call_room',
+    call_id: callId,
+    participant_id: participantId,
+    participants: existingParticipants,
+    should_offer: existingParticipants.length > 0,
+  })
+
+  for (const peer of room) {
+    if (peer === socket) continue
+    sendWs(peer, {
+      type: 'participant_joined',
+      call_id: callId,
+      participant_id: participantId,
+    })
+  }
+}
+
+function relaySignal(socket, payload) {
+  const callId = socket.callRoomId
+  if (!callId) return
+  const room = callRooms.get(callId)
+  if (!room) return
+
+  for (const peer of room) {
+    if (peer === socket) continue
+    sendWs(peer, {
+      type: 'webrtc_signal',
+      call_id: callId,
+      from: socket.participantId || null,
+      signal: payload?.signal || null,
+    })
+  }
+}
+
+wsServer.on('connection', (socket, req) => {
   logInfo('Assistant WebSocket connected')
   let lastQuestion = ''
   let lastQuestionAt = 0
 
   function sendReply(payload) {
     const answer = payload?.matched_answer || payload?.answer || payload?.message || ''
-    socket.send(JSON.stringify({
+    sendWs(socket, {
       ...payload,
       matched_answer: answer,
       answer,
       message: answer,
-    }))
+    })
   }
 
-  sendReply({
-    type: 'reply',
-    question: null,
-    matched_answer: 'Hello! I am your GarTex Assistant (WS). How can I help you with your textile business today?',
-    source: 'system:greeting',
-    metadata: {
-      matched_source: 'system:greeting',
-      matched_type: 'system',
-      confidence: 1,
-      fallback_reason: null,
-    },
-  })
+  const clientIp = req?.socket?.remoteAddress || 'unknown'
+  const now = Date.now()
+  const lastGreetingAt = Number(recentGreetingByIp.get(clientIp) || 0)
+  if (now - lastGreetingAt > 5_000) {
+    recentGreetingByIp.set(clientIp, now)
+    sendReply({
+      type: 'reply',
+      question: null,
+      matched_answer: 'Hello! I am your GarTex Assistant (WS). How can I help you with your textile business today?',
+      source: 'system:greeting',
+      metadata: {
+        matched_source: 'system:greeting',
+        matched_type: 'system',
+        confidence: 1,
+        fallback_reason: null,
+      },
+    })
+  }
 
   socket.on('message', async (rawMessage) => {
     let payload
@@ -117,13 +323,33 @@ wsServer.on('connection', (socket) => {
       return
     }
 
+    if (payload?.type === 'join_call_room') {
+      joinCallRoom(socket, payload)
+      return
+    }
+
+    if (payload?.type === 'webrtc_signal') {
+      relaySignal(socket, payload)
+      return
+    }
+
+    if (payload?.type === 'join_chat_room') {
+      await joinChatRoom(socket, payload)
+      return
+    }
+
+    if (payload?.type === 'chat_message') {
+      await relayChatMessage(socket, payload)
+      return
+    }
+
     if (payload?.type !== 'ask') return
 
     const question = String(payload?.question || '')
-    const now = Date.now()
-    if (question && question === lastQuestion && now - lastQuestionAt < 1500) return
+    const messageNow = Date.now()
+    if (question && question === lastQuestion && messageNow - lastQuestionAt < 1500) return
     lastQuestion = question
-    lastQuestionAt = now
+    lastQuestionAt = messageNow
     logInfo('Assistant WebSocket ask received', { question_chars: question.length })
 
     try {
@@ -158,6 +384,11 @@ wsServer.on('connection', (socket) => {
         },
       })
     }
+  })
+
+  socket.on('close', () => {
+    leaveCallRoom(socket)
+    leaveChatRoom(socket)
   })
 })
 

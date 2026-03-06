@@ -58,7 +58,7 @@ const MAX_KNOWLEDGE_CONTEXT_CHARS = 1_200
 const LOCAL_LLM_ENDPOINT = process.env.LOCAL_LLM_ENDPOINT || 'http://127.0.0.1:8080/v1/chat/completions'
 const LOCAL_LLM_FALLBACK_ENDPOINT = process.env.LOCAL_LLM_FALLBACK_ENDPOINT || 'http://127.0.0.1:8080/completion'
 const LOCAL_LLM_MODEL = process.env.LOCAL_LLM_MODEL || 'Qwen2.5-0.5B-Instruct-Q4_K_M.gguf'
-const LOCAL_LLM_TIMEOUT_MS = Number(process.env.LOCAL_LLM_TIMEOUT_MS || 12000)
+const LOCAL_LLM_TIMEOUT_MS = Number(process.env.LOCAL_LLM_TIMEOUT_MS || 25000)
 const MAX_AI_ANSWER_CHARS = 700
 const CODE_CONTEXT_HINTS = new Set(['api', 'route', 'server', 'controller', 'service', 'code', 'bug', 'error', 'endpoint', 'json', 'database', 'model', 'function'])
 
@@ -380,19 +380,27 @@ async function callLegacyCompletion(prompt, signal) {
   return sanitizeString(payload?.content || payload?.response || '', MAX_AI_ANSWER_CHARS) || null
 }
 
-async function generateDynamicAnswer(questionText, codeContext, knowledgeContext) {
+async function runWithTimeout(callback) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), LOCAL_LLM_TIMEOUT_MS)
+  try {
+    return await callback(controller.signal)
+  } finally {
+    clearTimeout(timeout)
+  }
+}
 
+async function generateDynamicAnswer(questionText, codeContext, knowledgeContext) {
   try {
     const prompt = buildAgentPrompt(questionText, codeContext, knowledgeContext)
     logInfo('Assistant sending request to local LLM', {
       endpoint: LOCAL_LLM_ENDPOINT,
       model: LOCAL_LLM_MODEL,
       prompt_chars: prompt.length,
+      timeout_ms: LOCAL_LLM_TIMEOUT_MS,
     })
 
-    const chatResult = await callChatCompletions(prompt, controller.signal)
+    const chatResult = await runWithTimeout((signal) => callChatCompletions(prompt, signal))
     if (chatResult) {
       logInfo('Assistant received response from local LLM chat endpoint')
       return chatResult
@@ -401,7 +409,8 @@ async function generateDynamicAnswer(questionText, codeContext, knowledgeContext
     logInfo('Assistant chat endpoint returned no response, trying completion endpoint', {
       endpoint: LOCAL_LLM_FALLBACK_ENDPOINT,
     })
-    const completionResult = await callLegacyCompletion(prompt, controller.signal)
+
+    const completionResult = await runWithTimeout((signal) => callLegacyCompletion(prompt, signal))
     if (completionResult) {
       logInfo('Assistant received response from local LLM completion endpoint')
       return completionResult
@@ -411,8 +420,6 @@ async function generateDynamicAnswer(questionText, codeContext, knowledgeContext
   } catch (error) {
     logError('Assistant local LLM request failed', error)
     return null
-  } finally {
-    clearTimeout(timeout)
   }
 }
 
