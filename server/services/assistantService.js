@@ -53,6 +53,10 @@ const MAX_FILE_BYTES = 80_000
 const MAX_MATCHED_SNIPPETS = 4
 const MAX_SNIPPET_LENGTH = 320
 const MAX_CONTEXT_CHARS = 1_600
+const LOCAL_LLM_ENDPOINT = process.env.LOCAL_LLM_ENDPOINT || 'http://127.0.0.1:8080/v1/chat/completions'
+const LOCAL_LLM_MODEL = process.env.LOCAL_LLM_MODEL || 'local-llm'
+const LOCAL_LLM_TIMEOUT_MS = Number(process.env.LOCAL_LLM_TIMEOUT_MS || 12000)
+const MAX_AI_ANSWER_CHARS = 700
 
 const CODE_CONTEXT_HINTS = new Set([
   'api',
@@ -277,7 +281,7 @@ function findBestKeywordRule(questionText, rules = []) {
         score += 1
         continue
       }
-      if (compactQuestion.includes(keyword)) score += 1
+      if (keyword.length > 3 && compactQuestion.includes(keyword)) score += 1
     }
 
     if (score > bestRuleScore) {
@@ -293,6 +297,54 @@ function shouldSearchCodeContext(questionText) {
   const tokens = tokenize(questionText)
   if (tokens.length === 0 || tokens.length <= 2) return false
   return tokens.some((token) => CODE_CONTEXT_HINTS.has(token))
+}
+
+function buildAgentPrompt(questionText, codeContext) {
+  const contextLines = []
+  if (codeContext?.summary) contextLines.push(`Relevant files: ${codeContext.summary}`)
+  if (codeContext?.prompt_context) contextLines.push(`Code snippets:
+${codeContext.prompt_context}`)
+
+  return [
+    'You are GarTex Assistant for textile business workflows.',
+    'Give concise, practical answers. If unsure, state assumptions briefly.',
+    'Prefer actionable steps over long explanations.',
+    contextLines.length ? contextLines.join('\n\n') : 'No relevant code context found.',
+    `User question: ${questionText}`,
+  ].join('\n\n')
+}
+
+async function generateDynamicAnswer(questionText, codeContext) {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), LOCAL_LLM_TIMEOUT_MS)
+
+  try {
+    const prompt = buildAgentPrompt(questionText, codeContext)
+    const response = await fetch(LOCAL_LLM_ENDPOINT, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: LOCAL_LLM_MODEL,
+        messages: [
+          { role: 'system', content: 'You are a helpful GarTex assistant.' },
+          { role: 'user', content: prompt },
+        ],
+        temperature: 0.2,
+        max_tokens: 220,
+      }),
+      signal: controller.signal,
+    })
+
+    if (!response.ok) return null
+    const payload = await response.json()
+    const messageText = payload?.choices?.[0]?.message?.content || ''
+    const cleaned = sanitizeString(messageText, MAX_AI_ANSWER_CHARS)
+    return cleaned || null
+  } catch {
+    return null
+  } finally {
+    clearTimeout(timeout)
+  }
 }
 
 export async function listKnowledge(orgId) {
@@ -465,6 +517,18 @@ export async function assistantReply(orgId, question = '') {
     })
   }
 
+  const dynamicAnswer = await generateDynamicAnswer(questionText, codeContext)
+  if (dynamicAnswer) {
+    return buildMatchedResponse({
+      matchedAnswer: dynamicAnswer,
+      source: 'dynamic_ai:local_llm',
+      score: 2,
+      fallbackReason: 'ai_generated_response',
+      matchedType: 'dynamic_ai',
+      codeContext,
+    })
+  }
+
   return {
     forward_to_agent: true,
     agent_prompt_context: {
@@ -473,6 +537,9 @@ export async function assistantReply(orgId, question = '') {
       compact_code_context: codeContext.prompt_context,
       max_context_chars: MAX_CONTEXT_CHARS,
     },
+    matched_answer: 'I could not reach the AI model right now. Please try again in a moment.',
+    source: 'fallback:agent_handoff',
+    confidence: 0,
     metadata: {
       matched_source: null,
       matched_type: null,
