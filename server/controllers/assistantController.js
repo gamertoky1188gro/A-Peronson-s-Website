@@ -6,6 +6,7 @@ import {
   updateKnowledgeEntry,
 } from '../services/assistantService.js'
 import { canManageMembers, deny, handleControllerError } from '../utils/permissions.js'
+import { logInfo } from '../utils/logger.js'
 
 function orgIdFromUser(user) {
   return user?.org_id || user?.organization_id || user?.id
@@ -17,7 +18,12 @@ function handleError(res, error) {
 
 export async function askAssistant(req, res) {
   const orgId = orgIdFromUser(req.user)
-  const result = await assistantReply(orgId, req.body?.question || '')
+  const question = req.body?.question || ''
+  logInfo('Assistant /ask request received', {
+    org_id: orgId,
+    question_chars: String(question).length,
+  })
+  const result = await assistantReply(orgId, question)
   return res.json(result)
 }
 
