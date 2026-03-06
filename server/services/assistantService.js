@@ -1,4 +1,6 @@
 import crypto from 'crypto'
+import fs from 'fs/promises'
+import path from 'path'
 import { readJson, updateJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 
@@ -30,6 +32,48 @@ const globalRules = [
     response: 'I can route you to Help Center and suggest next dashboard actions.',
   },
 ]
+
+const smallTalkRules = [
+  {
+    source: 'smalltalk:greeting',
+    keywords: ['hi', 'hello', 'hey', 'goodmorning', 'goodafternoon', 'goodevening'],
+    response: 'Hello! I am your GarTex Assistant. I can help with onboarding, verification, subscriptions, and product operations.',
+  },
+  {
+    source: 'smalltalk:identity',
+    keywords: ['name', 'whoareyou', 'whatsyourname', 'whatisyourname'],
+    response: 'I am GarTex Assistant, your textile business support agent.',
+  },
+]
+
+const CODE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx', '.json', '.md', '.css', '.html'])
+const SKIP_DIRECTORIES = new Set(['.git', 'node_modules', 'dist', 'build', 'coverage', '.vite'])
+const MAX_FILES_TO_SCAN = 400
+const MAX_FILE_BYTES = 80_000
+const MAX_MATCHED_SNIPPETS = 4
+const MAX_SNIPPET_LENGTH = 320
+const MAX_CONTEXT_CHARS = 1_600
+
+const CODE_CONTEXT_HINTS = new Set([
+  'api',
+  'bug',
+  'code',
+  'config',
+  'controller',
+  'error',
+  'file',
+  'fix',
+  'function',
+  'model',
+  'route',
+  'server',
+  'service',
+])
+
+let codeFileCache = {
+  expiresAt: 0,
+  files: [],
+}
 
 function normalize(text = '') {
   return sanitizeString(String(text || '').toLowerCase(), 500)
@@ -72,6 +116,183 @@ function mapKnowledgeRow(row) {
     updated_at: row.updated_at,
     created_at: row.created_at,
   }
+}
+
+async function collectCodeFiles(dirPath, collector, limit = MAX_FILES_TO_SCAN) {
+  if (collector.length >= limit) return
+
+  const entries = await fs.readdir(dirPath, { withFileTypes: true })
+  for (const entry of entries) {
+    if (collector.length >= limit) return
+
+    const resolvedPath = path.join(dirPath, entry.name)
+    if (entry.isDirectory()) {
+      if (SKIP_DIRECTORIES.has(entry.name)) continue
+      await collectCodeFiles(resolvedPath, collector, limit)
+      continue
+    }
+
+    if (!entry.isFile()) continue
+    const extension = path.extname(entry.name).toLowerCase()
+    if (!CODE_EXTENSIONS.has(extension)) continue
+    collector.push(resolvedPath)
+  }
+}
+
+async function getCodeFiles() {
+  const now = Date.now()
+  if (codeFileCache.expiresAt > now && codeFileCache.files.length > 0) {
+    return codeFileCache.files
+  }
+
+  const files = []
+  await collectCodeFiles(process.cwd(), files)
+  codeFileCache = {
+    files,
+    expiresAt: now + 60_000,
+  }
+  return files
+}
+
+function findBestSnippet(content, tokens) {
+  const lines = content.split('\n')
+  let best = { score: 0, line: '', lineNumber: 1 }
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const rawLine = lines[index]
+    const normalizedLine = normalize(rawLine)
+    if (!normalizedLine) continue
+
+    let score = 0
+    for (const token of tokens) {
+      if (normalizedLine.includes(token)) score += 1
+    }
+
+    if (score > best.score) {
+      best = {
+        score,
+        line: sanitizeString(rawLine.trim(), MAX_SNIPPET_LENGTH),
+        lineNumber: index + 1,
+      }
+    }
+  }
+
+  return best.score > 0 ? best : null
+}
+
+async function searchCodeContext(questionText) {
+  const tokens = tokenize(questionText)
+  if (tokens.length === 0) {
+    return {
+      summary: '',
+      snippets: [],
+      prompt_context: '',
+    }
+  }
+
+  const files = await getCodeFiles()
+  const matches = []
+
+  for (const filePath of files) {
+    let stat
+    try {
+      stat = await fs.stat(filePath)
+    } catch {
+      continue
+    }
+    if (!stat.isFile() || stat.size > MAX_FILE_BYTES) continue
+
+    let content = ''
+    try {
+      content = await fs.readFile(filePath, 'utf8')
+    } catch {
+      continue
+    }
+
+    const relativePath = path.relative(process.cwd(), filePath)
+    const fileTokens = tokenize(relativePath)
+
+    let score = 0
+    for (const token of tokens) {
+      if (fileTokens.includes(token)) score += 2
+      if (normalize(content).includes(token)) score += 1
+    }
+
+    if (score === 0) continue
+
+    const bestSnippet = findBestSnippet(content, tokens)
+    matches.push({
+      path: relativePath,
+      score: score + (bestSnippet?.score || 0),
+      snippet: bestSnippet,
+    })
+  }
+
+  const topMatches = matches
+    .sort((a, b) => b.score - a.score)
+    .slice(0, MAX_MATCHED_SNIPPETS)
+
+  const snippets = topMatches.map((match) => ({
+    file: match.path,
+    score: match.score,
+    line: match.snippet?.lineNumber || null,
+    snippet: match.snippet?.line || '',
+  }))
+
+  const summary = snippets
+    .map((item) => `${item.file}${item.line ? `:${item.line}` : ''}`)
+    .join(', ')
+
+  let promptContext = snippets
+    .map((item) => `[${item.file}${item.line ? `:${item.line}` : ''}] ${item.snippet}`)
+    .join('\n')
+  promptContext = sanitizeString(promptContext, MAX_CONTEXT_CHARS)
+
+  return {
+    summary,
+    snippets,
+    prompt_context: promptContext,
+  }
+}
+
+function compactTokenKey(token = '') {
+  return String(token || '').toLowerCase().replace(/[^a-z0-9]+/g, '')
+}
+
+function findBestKeywordRule(questionText, rules = []) {
+  const normalizedQuestion = normalize(questionText)
+  const compactQuestion = compactTokenKey(normalizedQuestion)
+  const rawQuestionTokens = normalizedQuestion.split(/[^a-z0-9]+/).filter(Boolean)
+  const compactQuestionTokens = new Set(rawQuestionTokens.map((token) => compactTokenKey(token)).filter(Boolean))
+
+  let bestRule = null
+  let bestRuleScore = 0
+
+  for (const rule of rules) {
+    const normalizedKeywords = rule.keywords.map((keyword) => compactTokenKey(keyword)).filter(Boolean)
+    let score = 0
+    for (const keyword of normalizedKeywords) {
+      if (!keyword) continue
+      if (compactQuestionTokens.has(keyword)) {
+        score += 1
+        continue
+      }
+      if (compactQuestion.includes(keyword)) score += 1
+    }
+
+    if (score > bestRuleScore) {
+      bestRule = rule
+      bestRuleScore = score
+    }
+  }
+
+  return { bestRule, bestRuleScore }
+}
+
+function shouldSearchCodeContext(questionText) {
+  const tokens = tokenize(questionText)
+  if (tokens.length === 0 || tokens.length <= 2) return false
+  return tokens.some((token) => CODE_CONTEXT_HINTS.has(token))
 }
 
 export async function listKnowledge(orgId) {
@@ -164,7 +385,7 @@ export async function deleteKnowledgeEntry(orgId, entryId) {
   return deleted
 }
 
-function buildMatchedResponse({ matchedAnswer, source, score, fallbackReason = null, matchedType = null }) {
+function buildMatchedResponse({ matchedAnswer, source, score, fallbackReason = null, matchedType = null, codeContext = null }) {
   return {
     matched_answer: matchedAnswer,
     source,
@@ -174,6 +395,7 @@ function buildMatchedResponse({ matchedAnswer, source, score, fallbackReason = n
       matched_type: matchedType,
       confidence: Number(Math.min(0.95, 0.45 + score * 0.1).toFixed(2)),
       fallback_reason: fallbackReason,
+      code_context: codeContext,
     },
   }
 }
@@ -193,6 +415,23 @@ function findBestMatch(questionText, entries) {
 
 export async function assistantReply(orgId, question = '') {
   const questionText = sanitizeString(question, 800)
+  const shouldRetrieveCodeContext = shouldSearchCodeContext(questionText)
+  const codeContext = shouldRetrieveCodeContext
+    ? await searchCodeContext(questionText)
+    : { summary: '', snippets: [], prompt_context: '' }
+
+  const { bestRule: bestSmallTalkRule, bestRuleScore: bestSmallTalkScore } = findBestKeywordRule(questionText, smallTalkRules)
+  if (bestSmallTalkRule && bestSmallTalkScore > 0) {
+    return buildMatchedResponse({
+      matchedAnswer: bestSmallTalkRule.response,
+      source: bestSmallTalkRule.source,
+      score: bestSmallTalkScore,
+      matchedType: 'smalltalk',
+      fallbackReason: 'smalltalk_match',
+      codeContext,
+    })
+  }
+
   const entries = await listKnowledge(orgId)
   const faqEntries = entries.filter((entry) => normalizeType(entry.type) === KNOWLEDGE_TYPES.FAQ)
   const factEntries = entries.filter((entry) => normalizeType(entry.type) === KNOWLEDGE_TYPES.FACT)
@@ -209,18 +448,11 @@ export async function assistantReply(orgId, question = '') {
       source: `company_data:${companyBestEntry.type}`,
       score: companyBestScore,
       matchedType: companyBestEntry.type,
+      codeContext,
     })
   }
 
-  let bestRule = null
-  let bestRuleScore = 0
-  for (const rule of globalRules) {
-    const score = scoreMatch(questionText, '', rule.keywords)
-    if (score > bestRuleScore) {
-      bestRule = rule
-      bestRuleScore = score
-    }
-  }
+  const { bestRule, bestRuleScore } = findBestKeywordRule(questionText, globalRules)
 
   if (bestRule && bestRuleScore > 0) {
     return buildMatchedResponse({
@@ -229,16 +461,24 @@ export async function assistantReply(orgId, question = '') {
       score: bestRuleScore,
       fallbackReason: 'no_company_data_match',
       matchedType: 'global_rule',
+      codeContext,
     })
   }
 
   return {
     forward_to_agent: true,
+    agent_prompt_context: {
+      question: questionText,
+      code_summary: codeContext.summary,
+      compact_code_context: codeContext.prompt_context,
+      max_context_chars: MAX_CONTEXT_CHARS,
+    },
     metadata: {
       matched_source: null,
       matched_type: null,
       confidence: 0,
       fallback_reason: 'no_keyword_match',
+      code_context: codeContext,
     },
   }
 }
