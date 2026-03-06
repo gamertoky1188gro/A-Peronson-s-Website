@@ -1,8 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { apiRequest, getToken } from '../lib/auth'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
+
+const WS_BASE = import.meta.env.VITE_WS_URL || 'ws://localhost:4000'
 
 function sortByNewest(a, b) {
   return new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime()
+}
+
+function sortByOldest(a, b) {
+  return new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime()
 }
 
 function normalizeThreads(messages = []) {
@@ -61,6 +67,14 @@ export default function ChatInterface() {
   const [members, setMembers] = useState([])
   const [targetAgentId, setTargetAgentId] = useState('')
   const [lockActionStatus, setLockActionStatus] = useState('')
+  const [messagesByThread, setMessagesByThread] = useState({})
+  const [draftMessage, setDraftMessage] = useState('')
+  const [isLiveMessagingEnabled, setIsLiveMessagingEnabled] = useState(true)
+  const [chatConnectionStatus, setChatConnectionStatus] = useState('offline')
+
+  const wsRef = useRef(null)
+  const reconnectTimerRef = useRef(null)
+  const currentUser = useMemo(() => getCurrentUser(), [])
 
   const loadInbox = useCallback(async () => {
     setLoading(true)
@@ -123,6 +137,24 @@ export default function ChatInterface() {
     }
   }, [])
 
+  const loadThreadMessages = useCallback(async (matchId) => {
+    const token = getToken()
+    if (!token || !matchId) return
+
+    try {
+      const data = await apiRequest(`/messages/${matchId}`, { token })
+      setMessagesByThread((previous) => ({
+        ...previous,
+        [matchId]: Array.isArray(data) ? data.sort(sortByOldest) : [],
+      }))
+    } catch {
+      setMessagesByThread((previous) => ({
+        ...previous,
+        [matchId]: [],
+      }))
+    }
+  }, [])
+
   useEffect(() => {
     loadInbox()
     loadMembers()
@@ -146,6 +178,113 @@ export default function ChatInterface() {
     if (!activeThread?.matchId) return []
     return callHistoryByThread[activeThread.matchId] || []
   }, [activeThread, callHistoryByThread])
+  const activeMessages = useMemo(() => {
+    if (!activeThread?.matchId) return []
+    return messagesByThread[activeThread.matchId] || []
+  }, [activeThread, messagesByThread])
+
+  useEffect(() => {
+    if (!activeThread?.matchId) return
+    loadThreadMessages(activeThread.matchId)
+  }, [activeThread, loadThreadMessages])
+
+  useEffect(() => {
+    if (!isLiveMessagingEnabled) {
+      setChatConnectionStatus('offline')
+      if (wsRef.current) {
+        wsRef.current.close()
+        wsRef.current = null
+      }
+      if (reconnectTimerRef.current) {
+        window.clearTimeout(reconnectTimerRef.current)
+        reconnectTimerRef.current = null
+      }
+      return undefined
+    }
+
+    let isActive = true
+
+    const connect = () => {
+      const token = getToken()
+      if (!token) {
+        setChatConnectionStatus('offline')
+        return
+      }
+
+      setChatConnectionStatus('connecting')
+      const ws = new WebSocket(WS_BASE)
+      wsRef.current = ws
+
+      ws.onopen = () => {
+        if (!isActive) return
+        setChatConnectionStatus('online')
+        if (activeThread?.matchId) {
+          ws.send(JSON.stringify({
+            type: 'join_chat_room',
+            match_id: activeThread.matchId,
+            token,
+          }))
+        }
+      }
+
+      ws.onmessage = (event) => {
+        if (!isActive) return
+        const payload = JSON.parse(String(event.data || '{}'))
+
+        if (payload.type === 'joined_chat_room') {
+          const roomMatchId = payload.match_id
+          const history = Array.isArray(payload.messages) ? payload.messages.sort(sortByOldest) : []
+          setMessagesByThread((previous) => ({ ...previous, [roomMatchId]: history }))
+          return
+        }
+
+        if (payload.type === 'chat_message') {
+          const roomMatchId = payload.match_id
+          const incomingMessage = payload.message
+          if (!roomMatchId || !incomingMessage?.id) return
+          setMessagesByThread((previous) => {
+            const existing = previous[roomMatchId] || []
+            if (existing.some((message) => message.id === incomingMessage.id)) return previous
+            return {
+              ...previous,
+              [roomMatchId]: [...existing, incomingMessage].sort(sortByOldest),
+            }
+          })
+          return
+        }
+
+        if (payload.type === 'chat_error') {
+          setChatConnectionStatus('error')
+          setError(payload.error || 'Live messaging error')
+        }
+      }
+
+      ws.onerror = () => {
+        if (isActive) setChatConnectionStatus('error')
+      }
+
+      ws.onclose = () => {
+        if (!isActive) return
+        setChatConnectionStatus('offline')
+        if (reconnectTimerRef.current) window.clearTimeout(reconnectTimerRef.current)
+        reconnectTimerRef.current = window.setTimeout(connect, 1500)
+      }
+    }
+
+    connect()
+
+    return () => {
+      isActive = false
+      if (reconnectTimerRef.current) {
+        window.clearTimeout(reconnectTimerRef.current)
+        reconnectTimerRef.current = null
+      }
+      if (wsRef.current) {
+        wsRef.current.close()
+        wsRef.current = null
+      }
+    }
+  }, [isLiveMessagingEnabled, activeThread?.matchId])
 
   async function updateRequestState(threadId, decision) {
     const token = getToken()
@@ -236,6 +375,44 @@ export default function ChatInterface() {
     }
   }
 
+  async function sendMessage() {
+    const token = getToken()
+    if (!token || !activeThread?.matchId) return
+
+    const content = draftMessage.trim()
+    if (!content) return
+
+    try {
+      if (isLiveMessagingEnabled && wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({
+          type: 'chat_message',
+          match_id: activeThread.matchId,
+          token,
+          message: content,
+          message_type: 'text',
+        }))
+      } else {
+        const created = await apiRequest(`/messages/${activeThread.matchId}`, {
+          method: 'POST',
+          token,
+          body: {
+            message: content,
+            type: 'text',
+          },
+        })
+        setMessagesByThread((previous) => ({
+          ...previous,
+          [activeThread.matchId]: [...(previous[activeThread.matchId] || []), created].sort(sortByOldest),
+        }))
+      }
+
+      setDraftMessage('')
+      await loadInbox()
+    } catch (err) {
+      setError(err.message || 'Unable to send message')
+    }
+  }
+
   return (
     <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
       <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -303,6 +480,15 @@ export default function ChatInterface() {
                   </div>
                 </div>
 
+                <div className="mb-2 flex items-center justify-between rounded border border-[#E7E7E7] bg-[#F8FBFF] p-2 text-xs">
+                  <div>
+                    <span className="font-semibold">Live messaging:</span> {isLiveMessagingEnabled ? 'Enabled' : 'Disabled'} • {chatConnectionStatus}
+                  </div>
+                  <button className="rounded border px-2 py-1" onClick={() => setIsLiveMessagingEnabled((v) => !v)}>
+                    {isLiveMessagingEnabled ? 'Disable WS' : 'Enable WS'}
+                  </button>
+                </div>
+
                 {activeThread.lock?.status === 'request_access' && (
                   <button className="mb-2 w-fit px-3 py-1 rounded border text-sm" onClick={() => requestConversationAccess(activeThread)}>Request Access</button>
                 )}
@@ -322,7 +508,15 @@ export default function ChatInterface() {
 
                 <div className="flex-1 overflow-auto mb-3">
                   <div className="space-y-3">
-                    <div className="self-start bg-white neo-panel cyberpunk-card p-2 rounded shadow">{activeThread.last}</div>
+                    {activeMessages.length > 0 ? activeMessages.map((message) => {
+                      const isOwn = message.sender_id === currentUser?.id
+                      return (
+                        <div key={message.id} className={`rounded p-2 shadow max-w-[80%] ${isOwn ? 'ml-auto bg-[#0A66C2] text-white' : 'bg-white neo-panel cyberpunk-card'}`}>
+                          <div className="text-xs opacity-80 mb-1">{isOwn ? 'You' : (message.sender_id || 'Participant')} • {new Date(message.timestamp).toLocaleTimeString()}</div>
+                          <div>{message.message}</div>
+                        </div>
+                      )
+                    }) : <div className="self-start bg-white neo-panel cyberpunk-card p-2 rounded shadow">No messages yet.</div>}
                     <div className="text-center text-sm text-[#5A5A5A]">Match Thread: {activeThread.matchId}</div>
                     <div className="text-sm border rounded p-2 bg-[#F8FBFF]">
                       <div className="font-semibold mb-1">Call History</div>
@@ -331,8 +525,8 @@ export default function ChatInterface() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <input className="flex-1 border px-3 py-2 rounded" placeholder="Write a message..." />
-                  <button className="px-4 py-2 bg-[#0A66C2] text-white rounded">Send</button>
+                  <input className="flex-1 border px-3 py-2 rounded" placeholder="Write a message..." value={draftMessage} onChange={(event) => setDraftMessage(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') sendMessage() }} />
+                  <button className="px-4 py-2 bg-[#0A66C2] text-white rounded" onClick={sendMessage}>Send</button>
                 </div>
               </>
             ) : (

@@ -206,3 +206,24 @@ export async function listCallHistory(matchIds = [], userId) {
     .filter((call) => ids.has(call.match_id) || ids.has(call.context?.chat_thread_id))
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 }
+
+
+export async function findOrCreateCallSession(userId, payload = {}) {
+  const matchId = sanitizeString(payload?.match_id, 120)
+  if (!matchId) {
+    const error = new Error('match_id is required')
+    error.status = 400
+    throw error
+  }
+
+  const calls = await readJson(FILE)
+  const candidates = calls
+    .filter((call) => ensureParticipant(call, userId) && call.match_id === matchId)
+    .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
+
+  const active = candidates.find((call) => [CALL_STATUS.SCHEDULED, CALL_STATUS.IN_PROGRESS, CALL_STATUS.ENDED].includes(call.status))
+  if (active) return { call: active, created: false }
+
+  const createdCall = await createScheduledCallSession(userId, payload)
+  return { call: createdCall, created: true }
+}

@@ -9,11 +9,11 @@
 }
 
 :root.dark {
-  --bg: #070b1f;
-  --surface: rgba(14, 18, 48, 0.82);
-  --text: #f0eeff;
-  --muted: #b5b8e8;
-  --border: rgba(167, 139, 250, 0.42);
+  --bg: #0b1220;
+  --surface: #111827;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --border: #374151;
 }
 
 body {
@@ -169,72 +169,21 @@ button { cursor: pointer; }
 ul { padding-left: 1rem; }
 li { margin: 0.35rem 0; }
 
-/* Shared 3D dark neon styling across every page */
+/* Shared modern dark styling across every page */
 :root.dark body {
-  background:
-    radial-gradient(circle at 15% 12%, rgba(139, 92, 246, 0.34) 0%, transparent 34%),
-    radial-gradient(circle at 86% 14%, rgba(34, 211, 238, 0.24) 0%, transparent 36%),
-    radial-gradient(circle at 48% 84%, rgba(236, 72, 153, 0.2) 0%, transparent 34%),
-    linear-gradient(145deg, #050611 0%, #130a2b 50%, #0a1334 100%);
+  background: #0b1220;
 }
 
-:root.dark .neo-page::before {
-  opacity: 0.8;
-}
-
-:root.dark .cyberpunk-page::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  pointer-events: none;
-  background:
-    repeating-linear-gradient(
-      110deg,
-      rgba(139, 92, 246, 0.05) 0 2px,
-      rgba(3, 8, 26, 0) 2px 22px
-    ),
-    radial-gradient(circle at 14% 82%, rgba(168, 85, 247, 0.2), transparent 38%),
-    radial-gradient(circle at 84% 20%, rgba(6, 182, 212, 0.18), transparent 34%);
-  mix-blend-mode: screen;
-}
-
-:root.dark .neo-panel {
-  background-image:
-    linear-gradient(145deg, rgba(129, 70, 245, 0.16), rgba(18, 40, 81, 0.4) 48%, rgba(236, 72, 153, 0.14));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 16px 34px rgba(0, 0, 0, 0.44),
-    0 0 22px rgba(139, 92, 246, 0.34),
-    0 0 36px rgba(34, 211, 238, 0.24);
-}
-
-:root.dark .cyberpunk-card {
-  border: 1px solid rgba(192, 132, 252, 0.38);
-  background:
-    linear-gradient(160deg, rgba(53, 25, 96, 0.48), rgba(17, 27, 64, 0.54) 52%, rgba(22, 63, 84, 0.35));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.09),
-    inset 0 -1px 0 rgba(34, 211, 238, 0.14),
-    0 18px 34px rgba(3, 7, 18, 0.62),
-    0 0 26px rgba(168, 85, 247, 0.34),
-    0 0 40px rgba(6, 182, 212, 0.2);
-}
-
+:root.dark .neo-page::before,
+:root.dark .cyberpunk-page::before,
 :root.dark .cyberpunk-card::after {
-  opacity: 0.95;
+  opacity: 0;
+  background: none;
+  filter: none;
 }
 
-:root.dark .cyberpunk-card:hover {
-  transform: translateY(-2px) scale(1.005);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 20px 34px rgba(4, 6, 15, 0.68),
-    0 0 30px rgba(168, 85, 247, 0.5),
-    0 0 46px rgba(34, 211, 238, 0.28),
-    0 0 54px rgba(236, 72, 153, 0.25);
-}
-
+:root.dark .neo-panel,
+:root.dark .cyberpunk-card,
 :root.dark .card,
 :root.dark .bg-white,
 :root.dark .bg-gray-50,
@@ -247,17 +196,9 @@ li { margin: 0.35rem 0; }
 :root.dark article,
 :root.dark aside,
 :root.dark [class*='rounded'] {
-  background:
-    linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(14, 165, 233, 0.1) 35%, rgba(236, 72, 153, 0.12) 100%),
-    color-mix(in srgb, var(--surface) 94%, transparent);
-  border-color: rgba(167, 139, 250, 0.34);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    0 16px 30px rgba(0, 0, 0, 0.42),
-    0 0 24px rgba(139, 92, 246, 0.28),
-    0 0 38px rgba(34, 211, 238, 0.2),
-    0 0 46px rgba(236, 72, 153, 0.18);
-  transform: translateZ(0);
+  background: var(--surface);
+  border-color: var(--border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
 }
 
 :root.dark button,
@@ -265,49 +206,34 @@ li { margin: 0.35rem 0; }
 :root.dark [role='button'],
 :root.dark a[class*='px-'],
 :root.dark a[class*='py-'] {
-  background-image: linear-gradient(120deg, rgba(124, 58, 237, 0.82) 0%, rgba(6, 182, 212, 0.7) 50%, rgba(236, 72, 153, 0.74) 100%);
-  color: #f8f5ff;
-  border-color: rgba(196, 181, 253, 0.45);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 10px 22px rgba(0, 0, 0, 0.38),
-    0 0 16px rgba(139, 92, 246, 0.42),
-    0 0 24px rgba(34, 211, 238, 0.3);
+  background: #1f2937;
+  color: #e5e7eb;
+  border-color: #4b5563;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.24);
 }
 
 :root.dark button:hover,
 :root.dark .btn:hover,
 :root.dark a:hover {
-  transform: translateY(-2px) scale(1.01);
-  filter: saturate(1.2) brightness(1.08);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.15),
-    0 14px 24px rgba(0, 0, 0, 0.44),
-    0 0 22px rgba(139, 92, 246, 0.55),
-    0 0 30px rgba(236, 72, 153, 0.36),
-    0 0 34px rgba(34, 211, 238, 0.38);
+  transform: translateY(-1px);
+  filter: none;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
 }
 
 :root.dark input,
 :root.dark select,
 :root.dark textarea {
-  background:
-    linear-gradient(145deg, rgba(41, 22, 85, 0.55), rgba(7, 31, 62, 0.66));
-  color: #f0eeff;
-  border-color: rgba(167, 139, 250, 0.46);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 12px 22px rgba(0, 0, 0, 0.35),
-    0 0 18px rgba(139, 92, 246, 0.26);
+  background: #0f172a;
+  color: #e5e7eb;
+  border-color: #374151;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 :root.dark input:focus,
 :root.dark select:focus,
 :root.dark textarea:focus {
-  box-shadow:
-    0 0 0 3px rgba(167, 139, 250, 0.24),
-    0 0 18px rgba(139, 92, 246, 0.46),
-    0 0 28px rgba(34, 211, 238, 0.35);
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
 }
 
 :root.dark h1,
@@ -316,8 +242,8 @@ li { margin: 0.35rem 0; }
 :root.dark h4,
 :root.dark h5,
 :root.dark h6 {
-  color: #efe9ff;
-  text-shadow: 0 0 10px rgba(139, 92, 246, 0.35), 0 0 16px rgba(34, 211, 238, 0.18);
+  color: #f3f4f6;
+  text-shadow: none;
 }
 
 :root.dark .text-purple-600,
@@ -325,7 +251,7 @@ li { margin: 0.35rem 0; }
 :root.dark .text-violet-600,
 :root.dark .text-fuchsia-600 {
   color: #c4b5fd !important;
-  text-shadow: 0 0 12px rgba(167, 139, 250, 0.4);
+  text-shadow: none;
 }
 
 @media (max-width: 900px) {

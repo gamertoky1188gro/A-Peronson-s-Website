@@ -1,6 +1,7 @@
 import {
   createScheduledCallSession,
   endCallSession,
+  findOrCreateCallSession,
   getCallSession,
   listCallHistory,
   markRecording,
@@ -88,4 +89,9 @@ export async function getCallHistory(req, res) {
 
   const history = await listCallHistory(matchIds, req.user.id)
   return res.json({ items: history })
+}
+
+export async function joinOrCreateCall(req, res) {
+  const result = await findOrCreateCallSession(req.user.id, req.body || {})
+  return res.status(result.created ? 201 : 200).json(result)
 }

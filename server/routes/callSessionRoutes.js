@@ -5,6 +5,7 @@ import {
   endCall,
   getCall,
   getCallHistory,
+  joinOrCreateCall,
   startCall,
   updateRecording,
 } from '../controllers/callSessionController.js'
@@ -12,6 +13,7 @@ import {
 const router = Router()
 
 router.post('/scheduled', requireAuth, createScheduledCall)
+router.post('/join', requireAuth, joinOrCreateCall)
 router.get('/history', requireAuth, getCallHistory)
 router.get('/:callId', requireAuth, getCall)
 router.post('/:callId/start', requireAuth, startCall)
