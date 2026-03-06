@@ -5,6 +5,7 @@ import TexHub from './pages/TexHub'
 import Pricing from './pages/Pricing'
 import Login from './pages/auth/Login'
 import Signup from './pages/auth/Signup'
+import SignupUltra from './pages/auth/SignupUltra'
 import MainFeed from './pages/MainFeed'
 import SearchResults from './pages/SearchResults'
 import BuyerProfile from './pages/BuyerProfile'
@@ -63,6 +64,7 @@ function AppRoutes() {
       <Route path="/help" element={<HelpCenter />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/:time/meow/:date/SignupUltra" element={<SignupUltra />} />
       <Route path="/access-denied" element={<AccessDenied />} />
 
       <Route path="/feed" element={<ProtectedRoute roles={AUTH_ROLES}><MainFeed /></ProtectedRoute>} />

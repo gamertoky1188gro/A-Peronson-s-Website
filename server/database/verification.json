@@ -1,1 +1,40 @@
-[]
+[
+  {
+    "user_id": "6a258ab9-9b56-4192-aa90-6e1ebb81afa8",
+    "role": "buyer",
+    "buyer_region": "OTHER",
+    "documents": {
+      "company_registration": "",
+      "trade_license": "",
+      "tin": "",
+      "ein": "",
+      "vat": "",
+      "eori": "",
+      "ior": "",
+      "authorized_person_nid": "",
+      "bank_proof": "",
+      "erc": "",
+      "tin_or_ein": "",
+      "erc_or_eori": "",
+      "buyer_country": "",
+      "optional_licenses": [],
+      "buyer_region": "OTHER"
+    },
+    "verified": false,
+    "verified_at": "",
+    "subscription_valid_until": "",
+    "missing_required": [
+      "company_registration",
+      "bank_proof"
+    ],
+    "credibility": {
+      "score": 0,
+      "badge": "Basic credibility",
+      "completeness": "0/2 required documents submitted",
+      "required_completed": 0,
+      "required_total": 2,
+      "optional_licenses_count": 0
+    },
+    "updated_at": "2026-03-05T18:31:39.318Z"
+  }
+]

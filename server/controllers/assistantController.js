@@ -8,7 +8,7 @@ import {
 import { canManageMembers, deny, handleControllerError } from '../utils/permissions.js'
 
 function orgIdFromUser(user) {
-  return user?.org_id || user?.organization_id || user?.id
+  return user?.org_id || user?.organization_id || user?.id || 'public_guest'
 }
 
 function handleError(res, error) {

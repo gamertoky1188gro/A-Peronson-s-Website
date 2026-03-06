@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "user_id": "6a258ab9-9b56-4192-aa90-6e1ebb81afa8",
+    "plan": "free",
+    "start_date": "2026-03-05T18:31:24.816Z",
+    "end_date": "2036-03-02T18:31:24.816Z",
+    "auto_renew": true
+  }
+]

@@ -191,45 +191,105 @@ function findBestMatch(questionText, entries) {
   return { bestEntry, bestEntryScore }
 }
 
-export async function assistantReply(orgId, question = '') {
-  const questionText = sanitizeString(question, 800)
-  const entries = await listKnowledge(orgId)
-  const faqEntries = entries.filter((entry) => normalizeType(entry.type) === KNOWLEDGE_TYPES.FAQ)
-  const factEntries = entries.filter((entry) => normalizeType(entry.type) === KNOWLEDGE_TYPES.FACT)
+import axios from 'axios'
 
-  const { bestEntry: bestFaqEntry, bestEntryScore: bestFaqScore } = findBestMatch(questionText, faqEntries)
-  const { bestEntry: bestFactEntry, bestEntryScore: bestFactScore } = findBestMatch(questionText, factEntries)
+const LLAMA_SERVER_URL = process.env.LLAMA_SERVER_URL || 'http://127.0.0.1:8080'
 
-  const companyBestEntry = bestFaqScore >= bestFactScore ? bestFaqEntry : bestFactEntry
-  const companyBestScore = Math.max(bestFaqScore, bestFactScore)
-
-  if (companyBestEntry && companyBestScore > 0) {
-    return buildMatchedResponse({
-      matchedAnswer: companyBestEntry.answer,
-      source: `company_data:${companyBestEntry.type}`,
-      score: companyBestScore,
-      matchedType: companyBestEntry.type,
-    })
+async function callLocalLLM(systemPrompt, userQuestion) {
+  try {
+    const response = await axios.post(`${LLAMA_SERVER_URL}/completion`, {
+      prompt: `<|im_start|>system\n${systemPrompt}<|im_end|>\n<|im_start|>user\n${userQuestion}<|im_end|>\n<|im_start|>assistant\n`,
+      n_predict: 512,
+      stop: ['<|im_end|>', '<|im_start|>'],
+      temperature: 0.7,
+    }, { timeout: 30000 })
+    
+    return response.data.content.trim()
+  } catch (err) {
+    console.error('LLM Server Error:', err.message)
+    return null
   }
+}
 
-  let bestRule = null
-  let bestRuleScore = 0
-  for (const rule of globalRules) {
-    const score = scoreMatch(questionText, '', rule.keywords)
-    if (score > bestRuleScore) {
-      bestRule = rule
-      bestRuleScore = score
+import fs from 'fs'
+import path from 'path'
+
+const TECH_FILES = [
+  'src/App.jsx',
+  'server/server.js',
+  'server/utils/permissions.js',
+  'README.md'
+]
+
+/**
+ * Scans key codebase files for relevant technical context
+ */
+function discoverCodeContext(query) {
+  const keywords = tokenize(query).filter(k => k.length > 3)
+  if (keywords.length === 0) return ''
+
+  let context = ""
+  for (const relPath of TECH_FILES) {
+    try {
+      const fullPath = path.join(process.cwd(), relPath)
+      if (!fs.existsSync(fullPath)) continue
+      
+      const content = fs.readFileSync(fullPath, 'utf8')
+      const lines = content.split('\n')
+      
+      // Find lines that match keywords
+      const matches = lines.filter(line => 
+        keywords.some(k => line.toLowerCase().includes(k))
+      ).slice(0, 5) // Limit to 5 lines per file to save model memory
+
+      if (matches.length > 0) {
+        context += `\nFrom ${relPath}:\n` + matches.join('\n')
+      }
+    } catch (err) {
+      // Skip files that fail
     }
   }
+  return context.slice(0, 800) // Hard cap on context size
+}
 
-  if (bestRule && bestRuleScore > 0) {
+export async function assistantReply(orgId, question = '') {
+  const questionText = sanitizeString(question, 800)
+  
+  // 1. Try Knowledge Base Match (Fastest)
+  const entries = await listKnowledge(orgId)
+  const { bestEntry, bestEntryScore } = findBestMatch(questionText, entries)
+  if (bestEntry && bestEntryScore > 1) {
     return buildMatchedResponse({
-      matchedAnswer: bestRule.response,
-      source: bestRule.source,
-      score: bestRuleScore,
-      fallbackReason: 'no_company_data_match',
-      matchedType: 'global_rule',
+      matchedAnswer: bestEntry.answer,
+      source: `company_data:${bestEntry.type}`,
+      score: bestEntryScore,
+      matchedType: bestEntry.type,
     })
+  }
+
+  // 2. Discover Technical Context from Code (Dynamic)
+  const codeContext = discoverCodeContext(questionText)
+  
+  // 3. AI Fallback with Code Insights
+  const systemPrompt = `You are the GarTex Assistant. 
+Use the Technical Context below to answer the user accurately. 
+Do NOT show raw code or paths unless asked. 
+Be conversational.
+
+TECHNICAL CONTEXT FOUND IN CODEBASE:
+${codeContext || "No specific code matches found."}
+
+USER QUESTION: ${questionText}`
+
+  const aiResponse = await callLocalLLM(systemPrompt, questionText)
+
+  if (aiResponse) {
+    return {
+      matched_answer: aiResponse,
+      source: 'local_ai_plus_code_scan',
+      confidence: 0.85,
+      metadata: { matched_source: 'llama_cpp', matched_type: 'rag_completion', context_found: !!codeContext }
+    }
   }
 
   return {
@@ -238,7 +298,7 @@ export async function assistantReply(orgId, question = '') {
       matched_source: null,
       matched_type: null,
       confidence: 0,
-      fallback_reason: 'no_keyword_match',
+      fallback_reason: 'no_keyword_match_and_llm_failed',
     },
   }
 }

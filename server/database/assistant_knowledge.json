@@ -1,1 +1,72 @@
-[]
+[
+  {
+    "id": "k1",
+    "org_id": "public_guest",
+    "type": "fact",
+    "question": "Quick Start Guide",
+    "answer": "Step 1: Create an Account (Buyer, Factory, or Buying House). Step 2: Complete your basic profile setup (Organization Name, Category, Profile Image). Step 3: Explore the Main Feed or Search for relevant posts. Step 4: Start conversations or post Buyer Requests / Products. Step 5: Upgrade to Premium if advanced visibility and analytics are required.",
+    "keywords": ["start", "setup", "begin", "how to use", "guide", "steps", "quick"],
+    "created_at": "2026-03-05T14:00:00.000Z",
+    "updated_at": "2026-03-05T14:00:00.000Z"
+  },
+  {
+    "id": "k2",
+    "org_id": "public_guest",
+    "type": "fact",
+    "question": "What are the different Account Types?",
+    "answer": "GarTexHub has three main account types: 1. Buyer Account (Post requests, search factories, send messages). 2. Factory Account (Upload products, respond to requests, manage agents). 3. Buying House Account (Manage multiple agents and factories, assign requests, monitor analytics).",
+    "keywords": ["accounts", "account", "roles", "role", "buyer", "factory", "buying house", "differences", "types", "type", "description"],
+    "created_at": "2026-03-05T14:00:00.000Z",
+    "updated_at": "2026-03-05T14:00:00.000Z"
+  },
+  {
+    "id": "k3",
+    "org_id": "public_guest",
+    "type": "fact",
+    "question": "How does the Verification Process work?",
+    "answer": "Verification is document-based and requires backend approval. Factories need Company Registration, Trade License, TIN, NID, Bank Proof, and ERC. Buying Houses need similar docs except ERC. International Buyers need Business Registration, VAT/EIN, EORI/IOR, and Bank Proof. Status is subscription-based and renewed monthly.",
+    "keywords": ["verify", "verification", "documents", "document", "badge", "license", "approval", "how to verify"],
+    "created_at": "2026-03-05T14:00:00.000Z",
+    "updated_at": "2026-03-05T14:00:00.000Z"
+  },
+  {
+    "id": "k4",
+    "org_id": "public_guest",
+    "type": "fact",
+    "question": "Messaging and Conversation Rules",
+    "answer": "Verified users' messages go directly to the inbox. Unverified users' messages appear in 'Message Requests.' For Buying Houses, once an Agent starts a conversation, it is 'locked' to them to prevent internal conflict unless they grant access to others.",
+    "keywords": ["chat", "message", "messaging", "lock", "inbox", "unverified", "request"],
+    "created_at": "2026-03-05T14:00:00.000Z",
+    "updated_at": "2026-03-05T14:00:00.000Z"
+  },
+  {
+    "id": "k5",
+    "org_id": "public_guest",
+    "type": "fact",
+    "question": "Subscription Plans",
+    "answer": "There are two plans: Free and Premium. Premium provides increased profile visibility, advanced analytics for eligible accounts, and extended management capabilities. Features vary by account type.",
+    "keywords": ["price", "pricing", "premium", "free", "cost", "benefits", "upgrade", "plan", "plans"],
+    "created_at": "2026-03-05T14:00:00.000Z",
+    "updated_at": "2026-03-05T14:00:00.000Z"
+  },
+  {
+    "id": "k6",
+    "org_id": "public_guest",
+    "type": "fact",
+    "question": "Video and Audio Calls Policy",
+    "answer": "Calls can be initiated from chat or scheduled. All calls may be recorded for security and compliance purposes. Users are always notified before a recording begins.",
+    "keywords": ["call", "video", "audio", "record", "meeting", "recording", "calls"],
+    "created_at": "2026-03-05T14:00:00.000Z",
+    "updated_at": "2026-03-05T14:00:00.000Z"
+  },
+  {
+    "id": "k7",
+    "org_id": "public_guest",
+    "type": "fact",
+    "question": "Contracts and Legal Vault",
+    "answer": "Digital contracts can be signed directly on the platform and are stored as PDFs in the Legal Vault. Both parties have full access to their contract history. Note: GarTexHub does not process financial transactions directly.",
+    "keywords": ["contract", "legal", "sign", "pdf", "vault", "payment", "contracts"],
+    "created_at": "2026-03-05T14:00:00.000Z",
+    "updated_at": "2026-03-05T14:00:00.000Z"
+  }
+]

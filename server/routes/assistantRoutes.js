@@ -10,7 +10,7 @@ import {
 
 const router = Router()
 
-router.post('/ask', requireAuth, askAssistant)
+router.post('/ask', askAssistant)
 router.get('/knowledge', requireAuth, getAssistantKnowledge)
 router.post('/knowledge', requireAuth, allowRoles('owner', 'admin'), createAssistantKnowledge)
 router.put('/knowledge/:entryId', requireAuth, allowRoles('owner', 'admin'), updateAssistantKnowledge)

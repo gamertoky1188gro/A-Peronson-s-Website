@@ -25,7 +25,10 @@ import memberRoutes from './routes/memberRoutes.js'
 import orgRoutes from './routes/orgRoutes.js'
 import ratingsRoutes from './routes/ratingsRoutes.js'
 import { errorHandler } from './middleware/errorHandler.js'
-import { logInfo } from './utils/logger.js'
+import { logInfo, logError } from './utils/logger.js'
+
+import { WebSocketServer } from 'ws'
+import { assistantReply } from './services/assistantService.js'
 
 const app = express()
 const PORT = process.env.PORT || 4000
@@ -63,6 +66,35 @@ app.use('/api/members', memberRoutes)
 app.use('/api/ratings', ratingsRoutes)
 app.use(errorHandler)
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   logInfo(`Verification MVP API running on http://localhost:${PORT}`)
+})
+
+// --- WebSocket for AI Assistant ---
+const wss = new WebSocketServer({ server })
+
+wss.on('connection', (ws) => {
+  logInfo('Assistant WebSocket connected')
+
+  ws.on('message', async (data) => {
+    try {
+      const payload = JSON.parse(data)
+      if (payload.type === 'ask') {
+        // Simple guest mode for WS assistant
+        const reply = await assistantReply('public_guest', payload.question || '')
+        ws.send(JSON.stringify({
+          type: 'reply',
+          question: payload.question,
+          answer: reply.matched_answer,
+          source: reply.source,
+          metadata: reply.metadata
+        }))
+      }
+    } catch (err) {
+      logError('WS Error', err)
+      ws.send(JSON.stringify({ type: 'error', message: 'Failed to process message' }))
+    }
+  })
+
+  ws.on('close', () => logInfo('Assistant WebSocket disconnected'))
 })
