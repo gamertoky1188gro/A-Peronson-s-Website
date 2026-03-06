@@ -1,4 +1,6 @@
 import crypto from 'crypto'
+import fs from 'fs/promises'
+import path from 'path'
 import { readJson, updateJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 
@@ -30,6 +32,19 @@ const globalRules = [
     response: 'I can route you to Help Center and suggest next dashboard actions.',
   },
 ]
+
+const CODE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx', '.json', '.md', '.css', '.html'])
+const SKIP_DIRECTORIES = new Set(['.git', 'node_modules', 'dist', 'build', 'coverage', '.vite'])
+const MAX_FILES_TO_SCAN = 400
+const MAX_FILE_BYTES = 80_000
+const MAX_MATCHED_SNIPPETS = 4
+const MAX_SNIPPET_LENGTH = 320
+const MAX_CONTEXT_CHARS = 1_600
+
+let codeFileCache = {
+  expiresAt: 0,
+  files: [],
+}
 
 function normalize(text = '') {
   return sanitizeString(String(text || '').toLowerCase(), 500)
@@ -71,6 +86,143 @@ function mapKnowledgeRow(row) {
     keywords: Array.isArray(row.keywords) ? row.keywords : [],
     updated_at: row.updated_at,
     created_at: row.created_at,
+  }
+}
+
+async function collectCodeFiles(dirPath, collector, limit = MAX_FILES_TO_SCAN) {
+  if (collector.length >= limit) return
+
+  const entries = await fs.readdir(dirPath, { withFileTypes: true })
+  for (const entry of entries) {
+    if (collector.length >= limit) return
+
+    const resolvedPath = path.join(dirPath, entry.name)
+    if (entry.isDirectory()) {
+      if (SKIP_DIRECTORIES.has(entry.name)) continue
+      await collectCodeFiles(resolvedPath, collector, limit)
+      continue
+    }
+
+    if (!entry.isFile()) continue
+    const extension = path.extname(entry.name).toLowerCase()
+    if (!CODE_EXTENSIONS.has(extension)) continue
+    collector.push(resolvedPath)
+  }
+}
+
+async function getCodeFiles() {
+  const now = Date.now()
+  if (codeFileCache.expiresAt > now && codeFileCache.files.length > 0) {
+    return codeFileCache.files
+  }
+
+  const files = []
+  await collectCodeFiles(process.cwd(), files)
+  codeFileCache = {
+    files,
+    expiresAt: now + 60_000,
+  }
+  return files
+}
+
+function findBestSnippet(content, tokens) {
+  const lines = content.split('\n')
+  let best = { score: 0, line: '', lineNumber: 1 }
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const rawLine = lines[index]
+    const normalizedLine = normalize(rawLine)
+    if (!normalizedLine) continue
+
+    let score = 0
+    for (const token of tokens) {
+      if (normalizedLine.includes(token)) score += 1
+    }
+
+    if (score > best.score) {
+      best = {
+        score,
+        line: sanitizeString(rawLine.trim(), MAX_SNIPPET_LENGTH),
+        lineNumber: index + 1,
+      }
+    }
+  }
+
+  return best.score > 0 ? best : null
+}
+
+async function searchCodeContext(questionText) {
+  const tokens = tokenize(questionText)
+  if (tokens.length === 0) {
+    return {
+      summary: '',
+      snippets: [],
+      prompt_context: '',
+    }
+  }
+
+  const files = await getCodeFiles()
+  const matches = []
+
+  for (const filePath of files) {
+    let stat
+    try {
+      stat = await fs.stat(filePath)
+    } catch {
+      continue
+    }
+    if (!stat.isFile() || stat.size > MAX_FILE_BYTES) continue
+
+    let content = ''
+    try {
+      content = await fs.readFile(filePath, 'utf8')
+    } catch {
+      continue
+    }
+
+    const relativePath = path.relative(process.cwd(), filePath)
+    const fileTokens = tokenize(relativePath)
+
+    let score = 0
+    for (const token of tokens) {
+      if (fileTokens.includes(token)) score += 2
+      if (normalize(content).includes(token)) score += 1
+    }
+
+    if (score === 0) continue
+
+    const bestSnippet = findBestSnippet(content, tokens)
+    matches.push({
+      path: relativePath,
+      score: score + (bestSnippet?.score || 0),
+      snippet: bestSnippet,
+    })
+  }
+
+  const topMatches = matches
+    .sort((a, b) => b.score - a.score)
+    .slice(0, MAX_MATCHED_SNIPPETS)
+
+  const snippets = topMatches.map((match) => ({
+    file: match.path,
+    score: match.score,
+    line: match.snippet?.lineNumber || null,
+    snippet: match.snippet?.line || '',
+  }))
+
+  const summary = snippets
+    .map((item) => `${item.file}${item.line ? `:${item.line}` : ''}`)
+    .join(', ')
+
+  let promptContext = snippets
+    .map((item) => `[${item.file}${item.line ? `:${item.line}` : ''}] ${item.snippet}`)
+    .join('\n')
+  promptContext = sanitizeString(promptContext, MAX_CONTEXT_CHARS)
+
+  return {
+    summary,
+    snippets,
+    prompt_context: promptContext,
   }
 }
 
@@ -164,7 +316,7 @@ export async function deleteKnowledgeEntry(orgId, entryId) {
   return deleted
 }
 
-function buildMatchedResponse({ matchedAnswer, source, score, fallbackReason = null, matchedType = null }) {
+function buildMatchedResponse({ matchedAnswer, source, score, fallbackReason = null, matchedType = null, codeContext = null }) {
   return {
     matched_answer: matchedAnswer,
     source,
@@ -174,6 +326,7 @@ function buildMatchedResponse({ matchedAnswer, source, score, fallbackReason = n
       matched_type: matchedType,
       confidence: Number(Math.min(0.95, 0.45 + score * 0.1).toFixed(2)),
       fallback_reason: fallbackReason,
+      code_context: codeContext,
     },
   }
 }
@@ -191,114 +344,64 @@ function findBestMatch(questionText, entries) {
   return { bestEntry, bestEntryScore }
 }
 
-import axios from 'axios'
-
-const LLAMA_SERVER_URL = process.env.LLAMA_SERVER_URL || 'http://127.0.0.1:8080'
-
-async function callLocalLLM(systemPrompt, userQuestion) {
-  try {
-    const response = await axios.post(`${LLAMA_SERVER_URL}/completion`, {
-      prompt: `<|im_start|>system\n${systemPrompt}<|im_end|>\n<|im_start|>user\n${userQuestion}<|im_end|>\n<|im_start|>assistant\n`,
-      n_predict: 512,
-      stop: ['<|im_end|>', '<|im_start|>'],
-      temperature: 0.7,
-    }, { timeout: 30000 })
-    
-    return response.data.content.trim()
-  } catch (err) {
-    console.error('LLM Server Error:', err.message)
-    return null
-  }
-}
-
-import fs from 'fs'
-import path from 'path'
-
-const TECH_FILES = [
-  'src/App.jsx',
-  'server/server.js',
-  'server/utils/permissions.js',
-  'README.md'
-]
-
-/**
- * Scans key codebase files for relevant technical context
- */
-function discoverCodeContext(query) {
-  const keywords = tokenize(query).filter(k => k.length > 3)
-  if (keywords.length === 0) return ''
-
-  let context = ""
-  for (const relPath of TECH_FILES) {
-    try {
-      const fullPath = path.join(process.cwd(), relPath)
-      if (!fs.existsSync(fullPath)) continue
-      
-      const content = fs.readFileSync(fullPath, 'utf8')
-      const lines = content.split('\n')
-      
-      // Find lines that match keywords
-      const matches = lines.filter(line => 
-        keywords.some(k => line.toLowerCase().includes(k))
-      ).slice(0, 5) // Limit to 5 lines per file to save model memory
-
-      if (matches.length > 0) {
-        context += `\nFrom ${relPath}:\n` + matches.join('\n')
-      }
-    } catch (err) {
-      // Skip files that fail
-    }
-  }
-  return context.slice(0, 800) // Hard cap on context size
-}
-
 export async function assistantReply(orgId, question = '') {
   const questionText = sanitizeString(question, 800)
-  
-  // 1. Try Knowledge Base Match (Fastest)
+  const codeContext = await searchCodeContext(questionText)
   const entries = await listKnowledge(orgId)
-  const { bestEntry, bestEntryScore } = findBestMatch(questionText, entries)
-  if (bestEntry && bestEntryScore > 1) {
+  const faqEntries = entries.filter((entry) => normalizeType(entry.type) === KNOWLEDGE_TYPES.FAQ)
+  const factEntries = entries.filter((entry) => normalizeType(entry.type) === KNOWLEDGE_TYPES.FACT)
+
+  const { bestEntry: bestFaqEntry, bestEntryScore: bestFaqScore } = findBestMatch(questionText, faqEntries)
+  const { bestEntry: bestFactEntry, bestEntryScore: bestFactScore } = findBestMatch(questionText, factEntries)
+
+  const companyBestEntry = bestFaqScore >= bestFactScore ? bestFaqEntry : bestFactEntry
+  const companyBestScore = Math.max(bestFaqScore, bestFactScore)
+
+  if (companyBestEntry && companyBestScore > 0) {
     return buildMatchedResponse({
-      matchedAnswer: bestEntry.answer,
-      source: `company_data:${bestEntry.type}`,
-      score: bestEntryScore,
-      matchedType: bestEntry.type,
+      matchedAnswer: companyBestEntry.answer,
+      source: `company_data:${companyBestEntry.type}`,
+      score: companyBestScore,
+      matchedType: companyBestEntry.type,
+      codeContext,
     })
   }
 
-  // 2. Discover Technical Context from Code (Dynamic)
-  const codeContext = discoverCodeContext(questionText)
-  
-  // 3. AI Fallback with Code Insights
-  const systemPrompt = `You are the GarTex Assistant. 
-Use the Technical Context below to answer the user accurately. 
-Do NOT show raw code or paths unless asked. 
-Be conversational.
-
-TECHNICAL CONTEXT FOUND IN CODEBASE:
-${codeContext || "No specific code matches found."}
-
-USER QUESTION: ${questionText}`
-
-  const aiResponse = await callLocalLLM(systemPrompt, questionText)
-
-  if (aiResponse) {
-    return {
-      matched_answer: aiResponse,
-      source: 'local_ai_plus_code_scan',
-      confidence: 0.85,
-      metadata: { matched_source: 'llama_cpp', matched_type: 'rag_completion', context_found: !!codeContext }
+  let bestRule = null
+  let bestRuleScore = 0
+  for (const rule of globalRules) {
+    const score = scoreMatch(questionText, '', rule.keywords)
+    if (score > bestRuleScore) {
+      bestRule = rule
+      bestRuleScore = score
     }
+  }
+
+  if (bestRule && bestRuleScore > 0) {
+    return buildMatchedResponse({
+      matchedAnswer: bestRule.response,
+      source: bestRule.source,
+      score: bestRuleScore,
+      fallbackReason: 'no_company_data_match',
+      matchedType: 'global_rule',
+      codeContext,
+    })
   }
 
   return {
     forward_to_agent: true,
+    agent_prompt_context: {
+      question: questionText,
+      code_summary: codeContext.summary,
+      compact_code_context: codeContext.prompt_context,
+      max_context_chars: MAX_CONTEXT_CHARS,
+    },
     metadata: {
       matched_source: null,
       matched_type: null,
       confidence: 0,
-      fallback_reason: 'no_keyword_match_and_llm_failed',
+      fallback_reason: 'no_keyword_match',
+      code_context: codeContext,
     },
   }
 }
