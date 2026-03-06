@@ -5,15 +5,138 @@ import { sanitizeString } from '../utils/validators.js'
 import { upsertSubscription } from './subscriptionService.js'
 
 const FILE = 'users.json'
+const CONNECTION_FILE = 'user_connections.json'
 
 function cleanUser(user) {
   const { password_hash: _passwordHash, ...safe } = user
   return safe
 }
 
+function connectionSnapshot(connections, viewerId, targetId) {
+  const following = connections.some((row) => row.type === 'follow' && row.requester_id === viewerId && row.receiver_id === targetId && row.status === 'active')
+
+  const friends = connections.some(
+    (row) => row.type === 'friend' && row.status === 'active'
+      && ((row.requester_id === viewerId && row.receiver_id === targetId) || (row.requester_id === targetId && row.receiver_id === viewerId)),
+  )
+
+  if (friends) {
+    return { following, friend_status: 'friends' }
+  }
+
+  const outgoingPending = connections.some((row) => row.type === 'friend_request' && row.requester_id === viewerId && row.receiver_id === targetId && row.status === 'pending')
+  if (outgoingPending) {
+    return { following, friend_status: 'requested' }
+  }
+
+  const incomingPending = connections.some((row) => row.type === 'friend_request' && row.requester_id === targetId && row.receiver_id === viewerId && row.status === 'pending')
+  if (incomingPending) {
+    return { following, friend_status: 'incoming' }
+  }
+
+  return { following, friend_status: 'none' }
+}
+
 export async function listUsers() {
   const users = await readJson(FILE)
   return users.map(cleanUser)
+}
+
+export async function searchUsers(viewerId, query) {
+  const users = await readJson(FILE)
+  const connections = await readJson(CONNECTION_FILE)
+  const search = sanitizeString(query || '', 120).trim().toLowerCase()
+
+  const matches = users
+    .filter((user) => user.id !== viewerId)
+    .filter((user) => {
+      if (!search) return true
+      return user.name.toLowerCase().includes(search) || user.email.toLowerCase().includes(search) || String(user.role || '').toLowerCase().includes(search)
+    })
+    .slice(0, 12)
+    .map((user) => {
+      const safe = cleanUser(user)
+      const relation = connectionSnapshot(connections, viewerId, user.id)
+      return {
+        id: safe.id,
+        name: safe.name,
+        email: safe.email,
+        role: safe.role,
+        verified: Boolean(safe.verified),
+        ...relation,
+      }
+    })
+
+  return matches
+}
+
+export async function followUser(viewerId, targetId) {
+  const rows = await readJson(CONNECTION_FILE)
+  const now = new Date().toISOString()
+
+  const existingIndex = rows.findIndex((row) => row.type === 'follow' && row.requester_id === viewerId && row.receiver_id === targetId)
+  if (existingIndex >= 0) {
+    rows[existingIndex] = {
+      ...rows[existingIndex],
+      status: 'active',
+      updated_at: now,
+    }
+  } else {
+    rows.push({
+      id: crypto.randomUUID(),
+      type: 'follow',
+      requester_id: viewerId,
+      receiver_id: targetId,
+      status: 'active',
+      created_at: now,
+      updated_at: now,
+    })
+  }
+
+  await writeJson(CONNECTION_FILE, rows)
+  return connectionSnapshot(rows, viewerId, targetId)
+}
+
+export async function sendFriendRequest(viewerId, targetId) {
+  const rows = await readJson(CONNECTION_FILE)
+  const now = new Date().toISOString()
+
+  const existingFriendIndex = rows.findIndex(
+    (row) => row.type === 'friend' && row.status === 'active'
+      && ((row.requester_id === viewerId && row.receiver_id === targetId) || (row.requester_id === targetId && row.receiver_id === viewerId)),
+  )
+
+  if (existingFriendIndex >= 0) {
+    return connectionSnapshot(rows, viewerId, targetId)
+  }
+
+  const incomingIndex = rows.findIndex((row) => row.type === 'friend_request' && row.requester_id === targetId && row.receiver_id === viewerId && row.status === 'pending')
+  if (incomingIndex >= 0) {
+    rows[incomingIndex] = {
+      ...rows[incomingIndex],
+      type: 'friend',
+      status: 'active',
+      updated_at: now,
+    }
+    await writeJson(CONNECTION_FILE, rows)
+    return connectionSnapshot(rows, viewerId, targetId)
+  }
+
+  const outgoingIndex = rows.findIndex((row) => row.type === 'friend_request' && row.requester_id === viewerId && row.receiver_id === targetId && row.status === 'pending')
+  if (outgoingIndex < 0) {
+    rows.push({
+      id: crypto.randomUUID(),
+      type: 'friend_request',
+      requester_id: viewerId,
+      receiver_id: targetId,
+      status: 'pending',
+      created_at: now,
+      updated_at: now,
+    })
+    await writeJson(CONNECTION_FILE, rows)
+  }
+
+  return connectionSnapshot(rows, viewerId, targetId)
 }
 
 export async function findUserByEmail(email) {
