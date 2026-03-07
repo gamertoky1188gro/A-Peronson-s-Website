@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 
 const WS_BASE = import.meta.env.VITE_WS_URL || 'ws://localhost:4000'
@@ -55,6 +56,23 @@ function lockStatusLabel(lock) {
   return `Claimed by ${lock.claimed_by_name || 'another agent'}`
 }
 
+
+function isImageMessage(message) {
+  return message?.type === 'image' || String(message?.attachment?.mime_type || '').startsWith('image/')
+}
+
+function isVideoMessage(message) {
+  return message?.type === 'video' || String(message?.attachment?.mime_type || '').startsWith('video/')
+}
+
+function toAbsoluteAssetUrl(url = '') {
+  if (!url) return ''
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+  const base = apiUrl.replace(/\/api\/?$/, '')
+  return `${base}${url.startsWith('/') ? '' : '/'}${url}`
+}
+
 export default function ChatInterface() {
   const [priorityInbox, setPriorityInbox] = useState([])
   const [messageRequests, setMessageRequests] = useState([])
@@ -71,10 +89,14 @@ export default function ChatInterface() {
   const [draftMessage, setDraftMessage] = useState('')
   const [isLiveMessagingEnabled, setIsLiveMessagingEnabled] = useState(true)
   const [chatConnectionStatus, setChatConnectionStatus] = useState('offline')
+  const [uploading, setUploading] = useState(false)
+  const [uploadStatus, setUploadStatus] = useState('')
 
   const wsRef = useRef(null)
+  const fileInputRef = useRef(null)
   const reconnectTimerRef = useRef(null)
   const currentUser = useMemo(() => getCurrentUser(), [])
+  const navigate = useNavigate()
 
   const loadInbox = useCallback(async () => {
     setLoading(true)
@@ -375,6 +397,109 @@ export default function ChatInterface() {
     }
   }
 
+
+  async function startInstantCall(thread) {
+    const token = getToken()
+    if (!token || !thread?.matchId) {
+      setScheduleStatus('Please sign in and select a valid thread before starting a call.')
+      return
+    }
+
+    setScheduleStatus('Starting call room...')
+    try {
+      const result = await apiRequest('/calls/join', {
+        method: 'POST',
+        token,
+        body: {
+          match_id: thread.matchId,
+          chat_thread_id: thread.matchId,
+          title: `Call with ${thread.name}`,
+        },
+      })
+      const callId = result?.call?.id
+      if (!callId) throw new Error('Unable to open call room')
+      setScheduleStatus('Call room ready. Redirecting...')
+      navigate(`/call?callId=${encodeURIComponent(callId)}&matchId=${encodeURIComponent(thread.matchId)}`)
+    } catch (err) {
+      setScheduleStatus(err.message || 'Failed to start call')
+    }
+  }
+
+  async function sendAttachment(file) {
+    const token = getToken()
+    if (!token || !activeThread?.matchId || !file) return
+
+    setUploading(true)
+    setUploadStatus('Uploading file...')
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('message', draftMessage.trim())
+
+      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+      const response = await fetch(`${apiBase}/messages/${encodeURIComponent(activeThread.matchId)}/upload`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      })
+
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(payload.error || 'Upload failed')
+
+      setMessagesByThread((previous) => ({
+        ...previous,
+        [activeThread.matchId]: [...(previous[activeThread.matchId] || []), payload].sort(sortByOldest),
+      }))
+      setDraftMessage('')
+      setUploadStatus('File sent.')
+      await loadInbox()
+    } catch (err) {
+      setUploadStatus(err.message || 'Unable to upload file')
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  function renderMessageBody(message) {
+    const attachmentUrl = toAbsoluteAssetUrl(message?.attachment?.url || '')
+
+    if (isImageMessage(message) && attachmentUrl) {
+      return (
+        <div className="space-y-1">
+          {message.message ? <div>{message.message}</div> : null}
+          <a href={attachmentUrl} target="_blank" rel="noreferrer">
+            <img src={attachmentUrl} alt={message?.attachment?.name || 'Shared image'} className="max-h-56 rounded border" />
+          </a>
+        </div>
+      )
+    }
+
+    if (isVideoMessage(message) && attachmentUrl) {
+      return (
+        <div className="space-y-1">
+          {message.message ? <div>{message.message}</div> : null}
+          <video src={attachmentUrl} controls className="max-h-56 rounded border w-full" />
+        </div>
+      )
+    }
+
+    if (message?.attachment?.url) {
+      return (
+        <div className="space-y-1">
+          {message.message ? <div>{message.message}</div> : null}
+          <a href={attachmentUrl} target="_blank" rel="noreferrer" className="underline">
+            {message?.attachment?.name || 'Open file'}
+          </a>
+        </div>
+      )
+    }
+
+    return <div>{message.message}</div>
+  }
+
   async function sendMessage() {
     const token = getToken()
     if (!token || !activeThread?.matchId) return
@@ -474,8 +599,8 @@ export default function ChatInterface() {
                     <div className="text-xs text-[#5A5A5A]">{lockStatusLabel(activeThread.lock)}</div>
                   </div>
                   <div className="flex gap-2">
-                    <button className="px-3 py-1 border rounded">📹 Video Call</button>
-                    <button className="px-3 py-1 border rounded">📞 Audio Call</button>
+                    <button className="px-3 py-1 border rounded" onClick={() => startInstantCall(activeThread)}>📹 Video Call (WS)</button>
+                    <button className="px-3 py-1 border rounded" onClick={() => startInstantCall(activeThread)}>📞 Audio Call (WS)</button>
                     <button className="px-3 py-1 border rounded" onClick={() => scheduleCall(activeThread)}>📅 Schedule</button>
                   </div>
                 </div>
@@ -513,7 +638,7 @@ export default function ChatInterface() {
                       return (
                         <div key={message.id} className={`rounded p-2 shadow max-w-[80%] ${isOwn ? 'ml-auto bg-[#0A66C2] text-white' : 'bg-white neo-panel cyberpunk-card'}`}>
                           <div className="text-xs opacity-80 mb-1">{isOwn ? 'You' : (message.sender_id || 'Participant')} • {new Date(message.timestamp).toLocaleTimeString()}</div>
-                          <div>{message.message}</div>
+                          {renderMessageBody(message)}
                         </div>
                       )
                     }) : <div className="self-start bg-white neo-panel cyberpunk-card p-2 rounded shadow">No messages yet.</div>}
@@ -524,9 +649,23 @@ export default function ChatInterface() {
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <input className="flex-1 border px-3 py-2 rounded" placeholder="Write a message..." value={draftMessage} onChange={(event) => setDraftMessage(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') sendMessage() }} />
-                  <button className="px-4 py-2 bg-[#0A66C2] text-white rounded" onClick={sendMessage}>Send</button>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input className="flex-1 border px-3 py-2 rounded" placeholder="Write a message..." value={draftMessage} onChange={(event) => setDraftMessage(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') sendMessage() }} />
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      className="hidden"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0]
+                        if (file) sendAttachment(file)
+                      }}
+                    />
+                    <button className="px-3 py-2 border rounded" onClick={() => fileInputRef.current?.click()} disabled={uploading}>📎</button>
+                    <button className="px-4 py-2 bg-[#0A66C2] text-white rounded" onClick={sendMessage}>Send</button>
+                  </div>
+                  <p className="text-xs text-[#5A5A5A]">WS is used for live messaging and call signaling. Upload supports images, videos, and documents with preview.</p>
+                  {uploadStatus ? <p className="text-xs text-[#0A66C2]">{uploadStatus}</p> : null}
                 </div>
               </>
             ) : (
