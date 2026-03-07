@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { clearSession, getCurrentUser, getRoleHome } from '../lib/auth'
+import { apiRequest, clearSession, getCurrentUser, getRoleHome, getToken } from '../lib/auth'
 
 const publicLinks = [
   { to: '/about', label: 'About' },
@@ -43,6 +43,13 @@ export default function NavBar() {
   const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark')
   const [unique, setUnique] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchError, setSearchError] = useState('')
+  const [actionBusyKey, setActionBusyKey] = useState('')
+
   const location = useLocation()
   const navigate = useNavigate()
   const user = getCurrentUser()
@@ -58,6 +65,34 @@ export default function NavBar() {
     }
   }, [dark])
 
+  useEffect(() => {
+    if (!user) return undefined
+
+    const query = searchQuery.trim()
+    if (query.length < 1) {
+      setSearchResults([])
+      setSearchError('')
+      return undefined
+    }
+
+    setSearchLoading(true)
+    setSearchError('')
+
+    const timer = window.setTimeout(async () => {
+      try {
+        const data = await apiRequest(`/users/search?q=${encodeURIComponent(query)}`, { token: getToken() })
+        setSearchResults(Array.isArray(data?.users) ? data.users : [])
+      } catch (err) {
+        setSearchResults([])
+        setSearchError(err.message || 'Search failed')
+      } finally {
+        setSearchLoading(false)
+      }
+    }, 250)
+
+    return () => window.clearTimeout(timer)
+  }, [searchQuery, user])
+
   const links = useMemo(() => {
     if (!user) return publicLinks
     return [...publicLinks, ...(roleLinks[user.role] || [])]
@@ -66,6 +101,37 @@ export default function NavBar() {
   const handleLogout = () => {
     clearSession()
     navigate('/login')
+  }
+
+  const updateRelationState = (targetId, relation) => {
+    if (!targetId || !relation) return
+    setSearchResults((previous) => previous.map((item) => (item.id === targetId ? { ...item, ...relation } : item)))
+  }
+
+  const followUser = async (targetId) => {
+    const key = `follow:${targetId}`
+    setActionBusyKey(key)
+    try {
+      const response = await apiRequest(`/users/${targetId}/follow`, { method: 'POST', token: getToken() })
+      updateRelationState(targetId, response?.relation)
+    } catch (err) {
+      setSearchError(err.message || 'Unable to follow user')
+    } finally {
+      setActionBusyKey('')
+    }
+  }
+
+  const addFriend = async (targetId) => {
+    const key = `friend:${targetId}`
+    setActionBusyKey(key)
+    try {
+      const response = await apiRequest(`/users/${targetId}/friend-request`, { method: 'POST', token: getToken() })
+      updateRelationState(targetId, response?.relation)
+    } catch (err) {
+      setSearchError(err.message || 'Unable to add friend')
+    } finally {
+      setActionBusyKey('')
+    }
   }
 
   return (
@@ -96,11 +162,55 @@ export default function NavBar() {
           </div>
 
           <div className="flex w-full items-center gap-3 md:w-auto">
-            <div className="hidden flex-1 items-center md:flex md:flex-none">
+            <div className="relative hidden flex-1 items-center md:flex md:flex-none">
               <input
-                placeholder="Search buyers, factories, products..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value)
+                  setSearchOpen(true)
+                }}
+                onFocus={() => setSearchOpen(true)}
+                placeholder="Search users..."
                 className="w-full rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-sm text-slate-700 shadow-sm outline-none ring-sky-200 transition focus:ring-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
               />
+
+              {user && searchOpen && searchQuery.trim().length >= 1 ? (
+                <div className="absolute right-0 top-11 z-50 w-[360px] rounded-xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+                  {searchLoading ? <p className="px-2 py-3 text-xs text-slate-500">Searching...</p> : null}
+                  {!searchLoading && searchError ? <p className="px-2 py-3 text-xs text-rose-500">{searchError}</p> : null}
+                  {!searchLoading && !searchError && searchResults.length === 0 ? <p className="px-2 py-3 text-xs text-slate-500">No users found.</p> : null}
+                  {!searchLoading && !searchError && searchResults.length > 0 ? <p className="px-2 pb-2 text-[11px] text-slate-500">Suggestions</p> : null}
+
+                  {!searchLoading && !searchError && searchResults.map((result) => (
+                    <div key={result.id} className="mb-1 rounded-lg border border-slate-100 px-2 py-2 last:mb-0 dark:border-slate-800">
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{result.name}{result.is_self ? ' (You)' : ''}</p>
+                          <p className="text-xs text-slate-500">{result.role} · {result.email}</p>
+                        </div>
+                        {result.verified ? <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">Verified</span> : null}
+                      </div>
+
+                      <div className="mt-2 flex gap-2">
+                        <button
+                          disabled={result.is_self || result.following || actionBusyKey === `follow:${result.id}`}
+                          onClick={() => followUser(result.id)}
+                          className="rounded-md border border-sky-300 px-2 py-1 text-xs font-semibold text-sky-700 disabled:cursor-not-allowed disabled:opacity-60 dark:border-sky-700 dark:text-sky-300"
+                        >
+                          {result.is_self ? 'Follow' : (result.following ? 'Following' : 'Follow (optional)')}
+                        </button>
+                        <button
+                          disabled={result.is_self || ['friends', 'requested', 'self'].includes(result.friend_status) || actionBusyKey === `friend:${result.id}`}
+                          onClick={() => addFriend(result.id)}
+                          className="rounded-md border border-indigo-300 px-2 py-1 text-xs font-semibold text-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 dark:border-indigo-700 dark:text-indigo-300"
+                        >
+                          {result.is_self ? 'Add Friend' : (result.friend_status === 'incoming' ? 'Accept Friend' : 'Add Friend')}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
             </div>
 
             <div className="ml-auto flex items-center gap-2 sm:gap-3">
