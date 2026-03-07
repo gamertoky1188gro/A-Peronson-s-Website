@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import path from 'path'
+import fs from 'fs'
 import http from 'http'
 import { WebSocketServer } from 'ws'
 import authRoutes from './routes/authRoutes.js'
@@ -30,14 +31,21 @@ import { errorHandler } from './middleware/errorHandler.js'
 import { logInfo, logError } from './utils/logger.js'
 import { assistantReply } from './services/assistantService.js'
 import jwt from 'jsonwebtoken'
-import { listMessagesByMatch, postMessage } from './services/messageService.js'
+import { canAccessMatch, listMessagesByMatch, postMessage } from './services/messageService.js'
+import { getCallSession } from './services/callSessionService.js'
 
 const app = express()
 const PORT = process.env.PORT || 4000
 
 app.use(cors())
 app.use(express.json({ limit: '5mb' }))
-app.use('/uploads', express.static(path.join(process.cwd(), 'server', 'uploads')))
+
+const uploadsRoot = path.join(process.cwd(), 'server', 'uploads')
+const chatUploadsRoot = path.join(uploadsRoot, 'chat')
+if (!fs.existsSync(uploadsRoot)) fs.mkdirSync(uploadsRoot, { recursive: true })
+if (!fs.existsSync(chatUploadsRoot)) fs.mkdirSync(chatUploadsRoot, { recursive: true })
+
+app.use('/uploads', express.static(uploadsRoot))
 
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, service: 'textile-trust-verification-mvp' })
@@ -129,6 +137,7 @@ function leaveChatRoom(socket) {
   socket.chatRoomId = null
 }
 
+
 function parseSocketUser(token) {
   if (!token) return null
   try {
@@ -155,6 +164,12 @@ async function joinChatRoom(socket, payload) {
     return
   }
 
+  const canJoin = await canAccessMatch(matchId, user.id)
+  if (!canJoin) {
+    sendWs(socket, { type: 'chat_error', error: 'Forbidden: thread access denied' })
+    return
+  }
+
   leaveChatRoom(socket)
 
   if (!chatRooms.has(matchId)) {
@@ -162,6 +177,12 @@ async function joinChatRoom(socket, payload) {
   }
 
   socket.userId = user.id
+  const canSend = await canAccessMatch(matchId, socket.userId)
+  if (!canSend) {
+    sendWs(socket, { type: 'chat_error', error: 'Forbidden: thread access denied' })
+    return
+  }
+
   const room = chatRooms.get(matchId)
   const participants = [...room].map((participantSocket) => participantSocket.userId).filter(Boolean)
   room.add(socket)
@@ -193,6 +214,12 @@ async function relayChatMessage(socket, payload) {
     return
   }
 
+  const canSend = await canAccessMatch(matchId, socket.userId)
+  if (!canSend) {
+    sendWs(socket, { type: 'chat_error', error: 'Forbidden: thread access denied' })
+    return
+  }
+
   const room = chatRooms.get(matchId)
   if (!room) return
 
@@ -214,11 +241,23 @@ async function relayChatMessage(socket, payload) {
   }
 }
 
-function joinCallRoom(socket, payload) {
+async function joinCallRoom(socket, payload) {
   const callId = String(payload?.call_id || '').trim()
-  const participantId = String(payload?.participant_id || '').trim() || `anon-${Date.now()}`
+  const tokenUser = parseSocketUser(payload?.token)
+  const participantId = String(payload?.participant_id || '').trim() || tokenUser?.id || `anon-${Date.now()}`
   if (!callId) {
     sendWs(socket, { type: 'call_error', error: 'call_id is required to join room' })
+    return
+  }
+
+  if (!tokenUser?.id) {
+    sendWs(socket, { type: 'call_error', error: 'Valid token is required to join call room' })
+    return
+  }
+
+  const call = await getCallSession(callId, tokenUser.id)
+  if (!call || call === 'forbidden') {
+    sendWs(socket, { type: 'call_error', error: 'Forbidden: call access denied' })
     return
   }
 
@@ -324,7 +363,7 @@ wsServer.on('connection', (socket, req) => {
     }
 
     if (payload?.type === 'join_call_room') {
-      joinCallRoom(socket, payload)
+      await joinCallRoom(socket, payload)
       return
     }
 
