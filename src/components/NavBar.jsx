@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { apiRequest, clearSession, getCurrentUser, getRoleHome, getToken } from '../lib/auth'
 
@@ -67,19 +67,6 @@ export default function NavBar() {
     }
   }, [dark])
 
-  const fetchUserSuggestions = useCallback(async (query) => {
-    if (!userId) return
-    try {
-      const data = await apiRequest(`/users/search?q=${encodeURIComponent(query)}`, { token: getToken() })
-      setSearchResults(Array.isArray(data?.users) ? data.users : [])
-    } catch (err) {
-      setSearchResults([])
-      setSearchError(err.message || 'Search failed')
-    } finally {
-      setSearchLoading(false)
-    }
-  }, [userId])
-
   useEffect(() => {
     if (!userId) return undefined
 
@@ -93,12 +80,20 @@ export default function NavBar() {
     setSearchLoading(true)
     setSearchError('')
 
-    const timer = window.setTimeout(() => {
-      fetchUserSuggestions(query)
+    const timer = window.setTimeout(async () => {
+      try {
+        const data = await apiRequest(`/users/search?q=${encodeURIComponent(query)}`, { token: getToken() })
+        setSearchResults(Array.isArray(data?.users) ? data.users : [])
+      } catch (err) {
+        setSearchResults([])
+        setSearchError(err.message || 'Search failed')
+      } finally {
+        setSearchLoading(false)
+      }
     }, 250)
 
     return () => window.clearTimeout(timer)
-  }, [fetchUserSuggestions, searchQuery, userId])
+  }, [searchQuery, userId])
 
   const links = useMemo(() => {
     if (!userId) return publicLinks
@@ -116,17 +111,10 @@ export default function NavBar() {
   }
 
   const followUser = async (targetId) => {
-    const token = getToken()
-    if (!token) {
-      setSearchError('Please login to follow users.')
-      return
-    }
-
     const key = `follow:${targetId}`
     setActionBusyKey(key)
-    setSearchError('')
     try {
-      const response = await apiRequest(`/users/${targetId}/follow`, { method: 'POST', token })
+      const response = await apiRequest(`/users/${targetId}/follow`, { method: 'POST', token: getToken() })
       updateRelationState(targetId, response?.relation)
     } catch (err) {
       setSearchError(err.message || 'Unable to follow user')
@@ -136,73 +124,13 @@ export default function NavBar() {
   }
 
   const addFriend = async (targetId) => {
-    const token = getToken()
-    if (!token) {
-      setSearchError('Please login to add friends.')
-      return
-    }
-
     const key = `friend:${targetId}`
     setActionBusyKey(key)
-    setSearchError('')
     try {
-      const response = await apiRequest(`/users/${targetId}/friend-request`, { method: 'POST', token })
+      const response = await apiRequest(`/users/${targetId}/friend-request`, { method: 'POST', token: getToken() })
       updateRelationState(targetId, response?.relation)
     } catch (err) {
       setSearchError(err.message || 'Unable to add friend')
-    } finally {
-      setActionBusyKey('')
-    }
-  }
-
-
-  const messageFriend = async (targetId) => {
-    const token = getToken()
-    if (!token) {
-      setSearchError('Please login to message friends.')
-      return
-    }
-
-    const key = `message:${targetId}`
-    setActionBusyKey(key)
-    setSearchError('')
-    try {
-      await apiRequest(`/messages/friend/${targetId}`, {
-        method: 'POST',
-        token,
-        body: { message: 'Hi! Great to connect with you.' },
-      })
-      setSearchOpen(false)
-      navigate('/chat')
-    } catch (err) {
-      setSearchError(err.message || 'Unable to start direct message')
-    } finally {
-      setActionBusyKey('')
-    }
-  }
-
-  const callFriend = async (targetId) => {
-    const token = getToken()
-    if (!token) {
-      setSearchError('Please login to call friends.')
-      return
-    }
-
-    const key = `call:${targetId}`
-    setActionBusyKey(key)
-    setSearchError('')
-    try {
-      const result = await apiRequest(`/calls/friend/${targetId}/join`, {
-        method: 'POST',
-        token,
-      })
-      const callId = result?.call?.id
-      const matchId = result?.call?.match_id
-      if (!callId) throw new Error('Unable to create call session')
-      setSearchOpen(false)
-      navigate(`/call?callId=${encodeURIComponent(callId)}${matchId ? `&matchId=${encodeURIComponent(matchId)}` : ''}`)
-    } catch (err) {
-      setSearchError(err.message || 'Unable to start friend call')
     } finally {
       setActionBusyKey('')
     }
@@ -265,7 +193,7 @@ export default function NavBar() {
                         {result.verified ? <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">Verified</span> : null}
                       </div>
 
-                      <div className="mt-2 flex flex-wrap gap-2">
+                      <div className="mt-2 flex gap-2">
                         <button
                           disabled={result.is_self || result.following || actionBusyKey === `follow:${result.id}`}
                           onClick={() => followUser(result.id)}
@@ -280,24 +208,6 @@ export default function NavBar() {
                         >
                           {result.is_self ? 'Add Friend' : (result.friend_status === 'incoming' ? 'Accept Friend' : 'Add Friend')}
                         </button>
-                        {result.friend_status === 'friends' ? (
-                          <>
-                            <button
-                              disabled={actionBusyKey === `message:${result.id}`}
-                              onClick={() => messageFriend(result.id)}
-                              className="rounded-md border border-emerald-300 px-2 py-1 text-xs font-semibold text-emerald-700 disabled:cursor-not-allowed disabled:opacity-60 dark:border-emerald-700 dark:text-emerald-300"
-                            >
-                              Message
-                            </button>
-                            <button
-                              disabled={actionBusyKey === `call:${result.id}`}
-                              onClick={() => callFriend(result.id)}
-                              className="rounded-md border border-violet-300 px-2 py-1 text-xs font-semibold text-violet-700 disabled:cursor-not-allowed disabled:opacity-60 dark:border-violet-700 dark:text-violet-300"
-                            >
-                              Call
-                            </button>
-                          </>
-                        ) : null}
                       </div>
                     </div>
                   ))}
