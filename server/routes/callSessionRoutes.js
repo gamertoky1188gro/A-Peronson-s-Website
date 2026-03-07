@@ -5,6 +5,7 @@ import {
   endCall,
   getCall,
   getCallHistory,
+  joinFriendCall,
   joinOrCreateCall,
   startCall,
   updateRecording,
@@ -14,6 +15,7 @@ const router = Router()
 
 router.post('/scheduled', requireAuth, createScheduledCall)
 router.post('/join', requireAuth, joinOrCreateCall)
+router.post('/friend/:userId/join', requireAuth, joinFriendCall)
 router.get('/history', requireAuth, getCallHistory)
 router.get('/:callId', requireAuth, getCall)
 router.post('/:callId/start', requireAuth, startCall)
