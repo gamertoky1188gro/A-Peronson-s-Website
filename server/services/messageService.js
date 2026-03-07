@@ -2,11 +2,62 @@ import crypto from 'crypto'
 import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { trackTransition } from '../utils/metrics.js'
+import { buildFriendMatchId, isFriendConnected } from './userService.js'
 
 const FILE = 'messages.json'
 const USERS_FILE = 'users.json'
 const MESSAGE_REQUESTS_FILE = 'message_requests.json'
 const CONVERSATION_LOCKS_FILE = 'conversation_locks.json'
+
+
+function parseFriendMatchId(matchId = '') {
+  const parts = String(matchId).split(':')
+  if (parts.length !== 3 || parts[0] !== 'friend') return null
+  const first = sanitizeString(parts[1], 120)
+  const second = sanitizeString(parts[2], 120)
+  if (!first || !second) return null
+  return [first, second]
+}
+
+export async function canAccessMatch(matchId, userId) {
+  const pair = parseFriendMatchId(matchId)
+  if (!pair) return true
+  if (!pair.includes(userId)) return false
+  return isFriendConnected(pair[0], pair[1])
+}
+
+export async function postFriendMessage(senderId, targetUserId, message, type = 'text') {
+  const targetId = sanitizeString(String(targetUserId || ''), 120)
+  if (!targetId || senderId === targetId) {
+    const err = new Error('Invalid friend target')
+    err.status = 400
+    throw err
+  }
+
+  const connected = await isFriendConnected(senderId, targetId)
+  if (!connected) {
+    const err = new Error('Only friends can send direct messages')
+    err.status = 403
+    throw err
+  }
+
+  const matchId = buildFriendMatchId(senderId, targetId)
+  const entry = await postMessage(matchId, senderId, message, type)
+  return { match_id: matchId, message: entry }
+}
+
+export async function listFriendMatchIdsForUser(userId) {
+  const messages = await readJson(FILE)
+  const ids = new Set(
+    messages
+      .map((row) => row.match_id)
+      .filter((matchId) => {
+        const pair = parseFriendMatchId(matchId)
+        return Array.isArray(pair) && pair.includes(userId)
+      }),
+  )
+  return [...ids]
+}
 
 function upsertRequestState(requests, threadId, updates = {}) {
   const existingIndex = requests.findIndex((request) => request.thread_id === threadId)
@@ -82,10 +133,17 @@ function withConversationMeta(message, usersById, lock, currentUserId) {
   }
 }
 
-export async function postMessage(matchId, senderId, message, type = 'text') {
+export async function postMessage(matchId, senderId, message, type = 'text', attachment = null) {
   const messages = await readJson(FILE)
   const users = await readJson(USERS_FILE)
   const messageRequests = await readJson(MESSAGE_REQUESTS_FILE)
+  const safeAttachment = attachment ? {
+    name: sanitizeString(attachment?.name, 220),
+    url: sanitizeString(attachment?.url, 600),
+    mime_type: sanitizeString(attachment?.mime_type, 120),
+    size: Number(attachment?.size || 0),
+  } : null
+
   const entry = {
     id: crypto.randomUUID(),
     match_id: matchId,
@@ -93,6 +151,7 @@ export async function postMessage(matchId, senderId, message, type = 'text') {
     message: sanitizeString(message, 2000),
     timestamp: new Date().toISOString(),
     type,
+    attachment: safeAttachment && safeAttachment.url ? safeAttachment : null,
   }
   messages.push(entry)
 

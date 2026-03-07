@@ -7,6 +7,7 @@ import {
   markRecording,
   startCallSession,
 } from '../services/callSessionService.js'
+import { buildFriendMatchId, isFriendConnected } from '../services/userService.js'
 
 export async function createScheduledCall(req, res) {
   const call = await createScheduledCallSession(req.user.id, req.body)
@@ -93,5 +94,28 @@ export async function getCallHistory(req, res) {
 
 export async function joinOrCreateCall(req, res) {
   const result = await findOrCreateCallSession(req.user.id, req.body || {})
+  return res.status(result.created ? 201 : 200).json(result)
+}
+
+
+export async function joinFriendCall(req, res) {
+  const targetId = String(req.params.userId || '').trim()
+  if (!targetId || targetId === req.user.id) {
+    return res.status(400).json({ error: 'Invalid friend target' })
+  }
+
+  const connected = await isFriendConnected(req.user.id, targetId)
+  if (!connected) {
+    return res.status(403).json({ error: 'Only friends can start direct calls' })
+  }
+
+  const matchId = buildFriendMatchId(req.user.id, targetId)
+  const result = await findOrCreateCallSession(req.user.id, {
+    match_id: matchId,
+    chat_thread_id: matchId,
+    participant_ids: [targetId],
+    title: 'Friend call',
+  })
+
   return res.status(result.created ? 201 : 200).json(result)
 }

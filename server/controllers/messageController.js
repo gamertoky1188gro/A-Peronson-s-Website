@@ -1,7 +1,12 @@
+import { promises as fs } from 'fs'
+import path from 'path'
 import { listMatchesForFactory, listMatchesForRequirement } from '../services/matchingService.js'
 import {
   acceptMessageRequest,
+  canAccessMatch,
+  listFriendMatchIdsForUser,
   listMessagesByMatch,
+  postFriendMessage,
   postMessage,
   rejectMessageRequest,
   tieredInbox,
@@ -9,12 +14,68 @@ import {
 import { readJson } from '../utils/jsonStore.js'
 
 export async function sendMessage(req, res) {
+  const allowed = await canAccessMatch(req.params.matchId, req.user.id)
+  if (!allowed) return res.status(403).json({ error: 'Only connected friends can message in this thread' })
+
   const msg = await postMessage(req.params.matchId, req.user.id, req.body?.message || '', req.body?.type || 'text')
   return res.status(201).json(msg)
 }
 
 export async function getMessages(req, res) {
+  const allowed = await canAccessMatch(req.params.matchId, req.user.id)
+  if (!allowed) return res.status(403).json({ error: 'Forbidden' })
   return res.json(await listMessagesByMatch(req.params.matchId))
+}
+
+export async function sendFriendDirectMessage(req, res) {
+  const payloadMessage = String(req.body?.message || '').trim()
+  const text = payloadMessage || 'Hi! We are connected now.'
+
+  try {
+    const result = await postFriendMessage(req.user.id, req.params.userId, text, req.body?.type || 'text')
+    return res.status(201).json(result)
+  } catch (error) {
+    return res.status(error.status || 400).json({ error: error.message || 'Unable to send friend message' })
+  }
+}
+
+
+export async function uploadMessageAttachment(req, res) {
+  const file = req.file
+  const matchId = String(req.params.matchId || '').trim()
+
+  if (!file) return res.status(400).json({ error: 'File is required' })
+  if (!matchId) return res.status(400).json({ error: 'matchId is required' })
+
+  const allowed = await canAccessMatch(matchId, req.user.id)
+  if (!allowed) {
+    try {
+      await fs.unlink(file.path)
+    } catch {
+      // ignore cleanup failure
+    }
+    return res.status(403).json({ error: 'Only connected friends can upload in this thread' })
+  }
+
+  const uploadBase = path.join(process.cwd(), 'server', 'uploads')
+  const normalized = String(file.path || '').replace(/\\/g, '/')
+  const relative = normalized.startsWith(uploadBase.replace(/\\/g, '/'))
+    ? normalized.replace(uploadBase.replace(/\\/g, '/'), '')
+    : normalized.replace(String(process.cwd()).replace(/\\/g, '/'), '')
+  const publicUrl = `/uploads${relative.startsWith('/') ? relative : `/${relative}`}`
+
+  const mime = String(file.mimetype || '')
+  const messageType = mime.startsWith('image/') ? 'image' : (mime.startsWith('video/') ? 'video' : 'file')
+  const fallbackText = messageType === 'image' ? 'Shared an image' : (messageType === 'video' ? 'Shared a video' : 'Shared a file')
+
+  const created = await postMessage(matchId, req.user.id, req.body?.message || fallbackText, messageType, {
+    name: file.originalname,
+    url: publicUrl,
+    mime_type: mime,
+    size: file.size,
+  })
+
+  return res.status(201).json(created)
 }
 
 export async function inbox(req, res) {
@@ -32,7 +93,8 @@ export async function inbox(req, res) {
     }
     matchIds = all
   }
-  return res.json(await tieredInbox(matchIds, req.user.id))
+  const friendMatchIds = await listFriendMatchIdsForUser(req.user.id)
+  return res.json(await tieredInbox([...new Set([...matchIds, ...friendMatchIds])], req.user.id))
 }
 
 export async function acceptRequest(req, res) {
