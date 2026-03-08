@@ -160,7 +160,7 @@ async function tryDownloadCandidates() {
       console.log("Success with:", filename);
       return;
     } catch (err) {
-      console.log("Failed:", filename);
+      console.log("Failed:", filename, err.message);
       if (fs.existsSync(downloadPath)) fs.unlinkSync(downloadPath);
     }
   }

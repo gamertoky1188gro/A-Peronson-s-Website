@@ -143,7 +143,15 @@ export default function HelpCenter() {
   }, [])
 
   useEffect(() => {
-    if (isOwnerAdmin) loadFaqs()
+    if (!isOwnerAdmin) return
+
+    const timeoutId = setTimeout(() => {
+      loadFaqs()
+    }, 0)
+
+    return () => {
+      clearTimeout(timeoutId)
+    }
   }, [isOwnerAdmin, loadFaqs])
 
   function selectForEdit(entry) {

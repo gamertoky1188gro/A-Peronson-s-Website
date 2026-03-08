@@ -1,13 +1,13 @@
-# BuyingHouseProfile — Complete Page Specification
+# AccessDenied — Complete Page Specification
 
 ## Page Title & Description
-- **Page title:** `BuyingHouseProfile`
-- **Primary route(s):** `(route not directly registered in App.jsx)`
-- **Purpose:** This page is implemented by `src/pages/BuyingHouseProfile.jsx` and supports a specific GarTexHub user workflow.
+- **Page title:** `AccessDenied`
+- **Primary route(s):** `/access-denied`
+- **Purpose:** This page is implemented by `src/pages/AccessDenied.jsx` and supports a specific GarTexHub user workflow.
 
 ## Layout & Structure
 - **Top-level layout:** Built as a React functional page component with utility-class-driven responsive structure.
-- **Major structural elements present:** `<aside>`, `<button>`, `<main>`, `<section>`.
+- **Major structural elements present:** `div-based layout only`.
 - **Approximate placement model (desktop):**
   - Header / top controls: `x: 0-100%`, `y: 0-15%` (if present).
   - Primary content zone: `x: 5-95%`, `y: 12-88%`.
@@ -16,53 +16,23 @@
 
 ## Theme & Styling
 - **Theme system:** Tailwind utility classes and app-level dark/light behavior.
-- **Explicit color tokens found in implementation:** `#083B75`, `#0A66C2`, `#1A1A1A`, `#5A5A5A`, `#E8F3FF`, `#F4F9FF`.
+- **Explicit color tokens found in implementation:** `No explicit hex values; inherited palette/classes`.
 - **Typography:** Sans-serif utility-based text sizing/weight hierarchy (`text-*`, `font-*`).
 - **Spacing/rhythm:** Padding/gap/margin utilities (`p-*`, `m-*`, `gap-*`, `space-y-*`) define vertical and horizontal density.
 
 ## Content Details
 The following user-facing strings/placeholders/buttons are present in source and should appear exactly as implemented:
-- `Verified`
-- `Years in operation:`
-- `Partner Factories:`
-- `Contact Organization`
-- `About`
-- `Markets Served`
-- `Service Type`
-- `Partner Factories`
-- `Partner Network Preview`
-- `View Full Network`
-- `Active Buyer Requests Handling`
-- `View`
-- `Performance Metrics`
-- `Completion Rate`
-- `Average Deal Time`
-- `Rating Score`
+- `Access denied`
+- `You do not have permission to access`
+- `Login with another account`
+- `Go to Feed`
 - `react`
 - `react-router-dom`
-- `,
-    markets: [`
-- `,`
-- `],
-    services: [`
-- `, status:`
-- `},
-    { id: 2, title:`
-- `94%`
-- `22 days`
-- `0.0`
-- `text-sm text-[#5A5A5A]`
-- `mt-4 text-sm text-[#5A5A5A] space-y-2`
-- `text-[#1A1A1A]`
-- `mt-4`
-- `text-xs text-[#5A5A5A] mt-3`
-- `grid grid-cols-3 gap-3 mt-4`
-- `space-y-3 mt-3`
-- `grid grid-cols-1 md:grid-cols-3 gap-4 mt-4`
-- `text-xs text-[#5A5A5A] mt-2`
-- `low`
-- **Button labels detected:** `Contact Organization`, `View`
-- **Static Link destinations:** `/buying-house/network`
+- `mt-3 text-gray-600`
+- `this page`
+- `mt-6 flex flex-wrap gap-3`
+- `/feed`
+- **Static Link destinations:** `/feed`, `/login`
 
 ## Interactions & Functionality
 - **Forms/inputs/buttons:** wired with React state and event handlers.

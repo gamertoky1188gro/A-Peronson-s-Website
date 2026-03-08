@@ -1,49 +1,107 @@
-# Terms Page Spec
+# Terms — Complete Page Specification
 
-- **Component:** `src/pages/Terms.jsx`
-- **Route:** `/terms`
-- **Theme Support:** Inherits global light/dark mode from `NavBar` + root `dark` class.
-- **Responsive Behavior:** Tailwind utility breakpoints and shared mobile typography/layout safeguards.
+## Page Title & Description
+- **Page title:** `Terms`
+- **Primary route(s):** `/terms`
+- **Purpose:** This page is implemented by `src/pages/Terms.jsx` and supports a specific GarTexHub user workflow.
 
-## Structure
-1. **Global Top Navigation (shared):** Sticky glass navigation with theme switch and quick links.
-2. **Primary Content Region:** Page-specific sections/cards/tables/forms.
-3. **Action Elements:** Buttons, links, filters, or messaging controls.
-4. **Support Regions:** Side panels, metadata badges, summary blocks, or legal notes.
+## Layout & Structure
+- **Top-level layout:** Built as a React functional page component with utility-class-driven responsive structure.
+- **Major structural elements present:** `<footer>`, `<header>`, `<section>`.
+- **Approximate placement model (desktop):**
+  - Header / top controls: `x: 0-100%`, `y: 0-15%` (if present).
+  - Primary content zone: `x: 5-95%`, `y: 12-88%`.
+  - Sidebars/panels: left and/or right columns where `aside` blocks are present.
+  - Footer/trailing actions: lower area of the page card/container.
 
-## Approximate Element Coordinates (Responsive Grid)
-> Coordinates are described using relative viewport positions to remain useful across devices.
+## Theme & Styling
+- **Theme system:** Tailwind utility classes and app-level dark/light behavior.
+- **Explicit color tokens found in implementation:** `No explicit hex values; inherited palette/classes`.
+- **Typography:** Sans-serif utility-based text sizing/weight hierarchy (`text-*`, `font-*`).
+- **Spacing/rhythm:** Padding/gap/margin utilities (`p-*`, `m-*`, `gap-*`, `space-y-*`) define vertical and horizontal density.
 
-- **Top navigation:** `x: 0-100%`, `y: 0-10%`, fixed/sticky.
-- **Primary heading block:** `x: 6-94%`, `y: 12-24%` (stacked tighter on mobile).
-- **Main content container:** `x: 4-96%`, `y: 18-90%`.
-- **Primary CTA zone:** typically `x: 60-94%`, `y: 18-34%` desktop, full-width row on mobile.
-- **Footer/legal or trailing info:** `x: 0-100%`, `y: 90-100%` when present.
+## Content Details
+The following user-facing strings/placeholders/buttons are present in source and should appear exactly as implemented:
+- `Legal Agreement`
+- `Terms & Conditions`
+- `Last Updated:`
+- `This platform is an international B2B Garments and Textiles Marketplace, where Buyer, Factory and Buying House connect for professional business purposes. By creating or using an account on the platform, you agree to the following terms and conditions.`
+- `Purpose of the Platform`
+- `Account Policy`
+- `User Conduct`
+- `The following activities are strictly prohibited and will be subject to action:`
+- `All media content must be published in a professional and business-like manner.`
+- `9. Liability`
+- `The platform provides connectivity between Buyers and Sellers. Strong and effective security measures have been implemented to prevent fraud.`
+- `If the user violates policies, verification processes or security instructions and suffers losses, the user will bear the responsibility himself.`
+- `10`
+- `Account Suspension or Cancellation`
+- `Accounts will be suspended or canceled in cases of:`
+- `Violation of terms, Fraudulent activity, Providing false information,`
+- `or`
+- `Behavior that damages reputation`
+- `The user will be notified before closing the account.`
+- `A warning will be given if necessary.`
+- `In case of repeated or serious violations, the account will be permanently closed.`
+- `11. Change Policy`
+- `These Terms will be updated as needed. Users will be notified of any significant changes via notification.`
+- `12. Consent`
+- `By creating an account or using the Platform, you agree to be bound by all provisions of these Terms and Conditions.`
+- `© 2026 GarTexHub Professional Network. All Rights Reserved.`
+- `react`
+- `, {
+    day:`
+- `,
+    year:`
+- `text-slate-900 dark:text-slate-200`
+- `text-lg`
+- `,`
+- `flex items-start gap-3`
+- `grid md:grid-cols-2 gap-x-8 gap-y-3 text-rose-50 text-sm`
+- `fill=`
+- `stroke=`
+- `viewBox=`
+- `strokeWidth=`
+- `d=`
+- `mt-6 text-sm italic opacity-80`
+- `]
+                },
+                { 
+                  id: 5, 
+                  title:`
+- `]
+                },
+                { 
+                  id: 6, 
+                  title:`
+- `]
+                },
+                { 
+                  id: 7, 
+                  title:`
+- `]
+                },
+                { 
+                  id: 8, 
+                  title:`
+- `text-amber-500`
+- `space-y-3 text-sm`
+- `pl-11 space-y-4`
+- `list-disc ml-5 space-y-1 text-sm`
+- `grid md:grid-cols-2 gap-8`
+- `text-sm`
 
-## Where It Is Used
-- Rendered through route configuration in `src/App.jsx`.
-- Accessed from global navigation, internal links, profile actions, dashboards, and utility flows.
+## Interactions & Functionality
+- **Forms/inputs/buttons:** wired with React state and event handlers.
+- **Behavior model:** user actions trigger local state updates and/or API requests through shared auth/request helpers where used.
 
-## What It Contains
-- Domain-specific UI for the garments/textiles B2B workflow (discovery, communication, management, compliance, account handling).
-- Supports cards, forms, lists, stats, and content sections depending on page role.
+## Images & Media
+- **Image elements:** none explicitly declared in this page source (icons may come from component libraries).
+- **Video elements:** not explicitly declared.
+- **Iconography:** uses shared icon sets/components (e.g., Lucide or emoji/text icons where coded).
 
-## Why It Exists
-- Provides a specialized workflow step in the GarTexHub lifecycle:
-  - onboarding,
-  - discovery,
-  - relationship management,
-  - collaboration,
-  - governance/legal compliance.
-
-## Behavior & Workflows
-- Honors global theme state (`light`/`dark`) instantly.
-- Adapts across breakpoints via responsive utility classes and shared CSS fallbacks.
-- Keeps visual consistency with global palette, spacing, and card/surface system.
-
-## Implementation Notes
-- If new major blocks are added, update this spec with:
-  - layout zone,
-  - interaction purpose,
-  - data displayed,
-  - dependency on other pages/components.
+## Extra Notes / Metadata
+- **SEO metadata:** no page-specific `<head>` metadata is set in this component; defaults are inherited from app shell/index.
+- **Accessibility notes:** semantic improvements should ensure button labels, alt text, focus states, and color contrast remain compliant.
+- **Responsive behavior:** controlled by utility breakpoints (`sm:`, `md:`, `lg:` etc.) and flexible grid/flex containers.
+- **Implementation source of truth:** this markdown reflects the current component and should be updated whenever UI text/layout/classes change.

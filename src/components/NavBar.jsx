@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { clearSession, getCurrentUser, getRoleHome } from '../lib/auth'
+import { apiRequest, clearSession, getCurrentUser, getRoleHome, getToken } from '../lib/auth'
 
 const publicLinks = [
   { to: '/about', label: 'About' },
@@ -43,9 +43,19 @@ export default function NavBar() {
   const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark')
   const [unique, setUnique] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchError, setSearchError] = useState('')
+  const [actionStatus, setActionStatus] = useState('')
+  const [actionBusyKey, setActionBusyKey] = useState('')
+
   const location = useLocation()
   const navigate = useNavigate()
   const user = getCurrentUser()
+  const userId = user?.id || ''
+  const userRole = user?.role || ''
 
   useEffect(() => {
     const root = document.documentElement
@@ -58,14 +68,158 @@ export default function NavBar() {
     }
   }, [dark])
 
+  const fetchUserSuggestions = useCallback(async (query) => {
+    if (!userId) return
+    try {
+      const data = await apiRequest(`/users/search?q=${encodeURIComponent(query)}`, { token: getToken() })
+      setSearchResults(Array.isArray(data?.users) ? data.users : [])
+    } catch (err) {
+      setSearchResults([])
+      setSearchError(err.message || 'Search failed')
+    } finally {
+      setSearchLoading(false)
+    }
+  }, [userId])
+
+  useEffect(() => {
+    if (!userId) return undefined
+
+    const query = searchQuery.trim()
+    if (query.length < 1) {
+      setSearchResults([])
+      setSearchError('')
+      return undefined
+    }
+
+    setSearchLoading(true)
+    setSearchError('')
+    setActionStatus('')
+
+    const timer = window.setTimeout(() => {
+      fetchUserSuggestions(query)
+    }, 250)
+
+    return () => window.clearTimeout(timer)
+  }, [fetchUserSuggestions, searchQuery, userId])
+
   const links = useMemo(() => {
-    if (!user) return publicLinks
-    return [...publicLinks, ...(roleLinks[user.role] || [])]
-  }, [user])
+    if (!userId) return publicLinks
+    return [...publicLinks, ...(roleLinks[userRole] || [])]
+  }, [userId, userRole])
 
   const handleLogout = () => {
     clearSession()
     navigate('/login')
+  }
+
+  const updateRelationState = (targetId, relation) => {
+    if (!targetId) return
+    setSearchResults((previous) => previous.map((item) => (item.id === targetId ? { ...item, ...(relation || {}) } : item)))
+  }
+
+  const followUser = async (targetId) => {
+    const token = getToken()
+    if (!targetId) return
+    if (!token) {
+      setSearchError('Please login to follow users.')
+      return
+    }
+
+    const key = `follow:${targetId}`
+    setActionBusyKey(key)
+    setSearchError('')
+    setActionStatus('')
+    try {
+      const response = await apiRequest(`/users/${targetId}/follow`, { method: 'POST', token })
+      updateRelationState(targetId, response?.relation || { following: true })
+      setActionStatus('Followed successfully.')
+      const query = searchQuery.trim()
+      if (query) fetchUserSuggestions(query)
+    } catch (err) {
+      setSearchError(err.message || 'Unable to follow user')
+      setActionStatus('Follow failed.')
+    } finally {
+      setActionBusyKey('')
+    }
+  }
+
+  const addFriend = async (targetId) => {
+    const token = getToken()
+    if (!targetId) return
+    if (!token) {
+      setSearchError('Please login to add friends.')
+      return
+    }
+
+    const key = `friend:${targetId}`
+    setActionBusyKey(key)
+    setSearchError('')
+    setActionStatus('')
+    try {
+      const response = await apiRequest(`/users/${targetId}/friend-request`, { method: 'POST', token })
+      updateRelationState(targetId, response?.relation || { friend_status: 'requested' })
+      setActionStatus('Friend request sent.')
+      const query = searchQuery.trim()
+      if (query) fetchUserSuggestions(query)
+    } catch (err) {
+      setSearchError(err.message || 'Unable to add friend')
+      setActionStatus('Friend request failed.')
+    } finally {
+      setActionBusyKey('')
+    }
+  }
+
+
+  const messageFriend = async (targetId) => {
+    const token = getToken()
+    if (!token) {
+      setSearchError('Please login to message friends.')
+      return
+    }
+
+    const key = `message:${targetId}`
+    setActionBusyKey(key)
+    setSearchError('')
+    try {
+      await apiRequest(`/messages/friend/${targetId}`, {
+        method: 'POST',
+        token,
+        body: { message: 'Hi! Great to connect with you.' },
+      })
+      setSearchOpen(false)
+      navigate('/chat')
+    } catch (err) {
+      setSearchError(err.message || 'Unable to start direct message')
+    } finally {
+      setActionBusyKey('')
+    }
+  }
+
+  const callFriend = async (targetId) => {
+    const token = getToken()
+    if (!token) {
+      setSearchError('Please login to call friends.')
+      return
+    }
+
+    const key = `call:${targetId}`
+    setActionBusyKey(key)
+    setSearchError('')
+    try {
+      const result = await apiRequest(`/calls/friend/${targetId}/join`, {
+        method: 'POST',
+        token,
+      })
+      const callId = result?.call?.id
+      const matchId = result?.call?.match_id
+      if (!callId) throw new Error('Unable to create call session')
+      setSearchOpen(false)
+      navigate(`/call?callId=${encodeURIComponent(callId)}${matchId ? `&matchId=${encodeURIComponent(matchId)}` : ''}`)
+    } catch (err) {
+      setSearchError(err.message || 'Unable to start friend call')
+    } finally {
+      setActionBusyKey('')
+    }
   }
 
   return (
@@ -96,11 +250,74 @@ export default function NavBar() {
           </div>
 
           <div className="flex w-full items-center gap-3 md:w-auto">
-            <div className="hidden flex-1 items-center md:flex md:flex-none">
+            <div className="relative hidden flex-1 items-center md:flex md:flex-none">
               <input
-                placeholder="Search buyers, factories, products..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value)
+                  setSearchOpen(true)
+                }}
+                onFocus={() => setSearchOpen(true)}
+                placeholder="Search users..."
                 className="w-full rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-sm text-slate-700 shadow-sm outline-none ring-sky-200 transition focus:ring-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
               />
+
+              {user && searchOpen && searchQuery.trim().length >= 1 ? (
+                <div className="absolute right-0 top-11 z-50 w-[360px] rounded-xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+                  {searchLoading ? <p className="px-2 py-3 text-xs text-slate-500">Searching...</p> : null}
+                  {!searchLoading && searchError ? <p className="px-2 py-3 text-xs text-rose-500">{searchError}</p> : null}
+                  {!searchLoading && !searchError && searchResults.length === 0 ? <p className="px-2 py-3 text-xs text-slate-500">No users found.</p> : null}
+                  {!searchLoading && !searchError && searchResults.length > 0 ? <p className="px-2 pb-2 text-[11px] text-slate-500">Suggestions</p> : null}
+                  {actionStatus ? <p className="px-2 pb-2 text-[11px] text-emerald-600">{actionStatus}</p> : null}
+
+                  {!searchLoading && !searchError && searchResults.map((result) => (
+                    <div key={result.id} className="mb-1 rounded-lg border border-slate-100 px-2 py-2 last:mb-0 dark:border-slate-800">
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{result.name}{result.is_self ? ' (You)' : ''}</p>
+                          <p className="text-xs text-slate-500">{result.role} · {result.email}</p>
+                        </div>
+                        {result.verified ? <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">Verified</span> : null}
+                      </div>
+
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <button
+                          disabled={result.is_self || result.following || actionBusyKey === `follow:${result.id}`}
+                          onClick={() => followUser(result.id)}
+                          className="rounded-md border border-sky-300 px-2 py-1 text-xs font-semibold text-sky-700 disabled:cursor-not-allowed disabled:opacity-60 dark:border-sky-700 dark:text-sky-300"
+                        >
+                          {actionBusyKey === `follow:${result.id}` ? 'Following...' : (result.is_self ? 'Follow' : (result.following ? 'Following' : 'Follow (optional)'))}
+                        </button>
+                        <button
+                          disabled={result.is_self || ['friends', 'requested', 'self'].includes(result.friend_status) || actionBusyKey === `friend:${result.id}`}
+                          onClick={() => addFriend(result.id)}
+                          className="rounded-md border border-indigo-300 px-2 py-1 text-xs font-semibold text-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 dark:border-indigo-700 dark:text-indigo-300"
+                        >
+                          {actionBusyKey === `friend:${result.id}` ? 'Sending...' : (result.is_self ? 'Add Friend' : (result.friend_status === 'incoming' ? 'Accept Friend' : 'Add Friend'))}
+                        </button>
+                        {result.friend_status === 'friends' ? (
+                          <>
+                            <button
+                              disabled={actionBusyKey === `message:${result.id}`}
+                              onClick={() => messageFriend(result.id)}
+                              className="rounded-md border border-emerald-300 px-2 py-1 text-xs font-semibold text-emerald-700 disabled:cursor-not-allowed disabled:opacity-60 dark:border-emerald-700 dark:text-emerald-300"
+                            >
+                              Message
+                            </button>
+                            <button
+                              disabled={actionBusyKey === `call:${result.id}`}
+                              onClick={() => callFriend(result.id)}
+                              className="rounded-md border border-violet-300 px-2 py-1 text-xs font-semibold text-violet-700 disabled:cursor-not-allowed disabled:opacity-60 dark:border-violet-700 dark:text-violet-300"
+                            >
+                              Call
+                            </button>
+                          </>
+                        ) : null}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
             </div>
 
             <div className="ml-auto flex items-center gap-2 sm:gap-3">
