@@ -1,7 +1,44 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import {
+  Bell,
+  CircleHelp,
+  FileText,
+  FolderOpen,
+  Home,
+  Info,
+  Image,
+  Link2,
+  MessageCircle,
+  Mic,
+  Phone,
+  Plus,
+  Search,
+  Settings,
+  Video,
+  ChevronDown,
+  ChevronUp,
+  SendHorizontal,
+  Linkedin,
+  MessageSquareMore,
+} from 'lucide-react'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 
 const WS_BASE = import.meta.env.VITE_WS_URL || 'ws://localhost:4000'
+
+const CHAT_NAV_ITEMS = [
+  { to: '/feed', label: 'Feed', icon: Home },
+  { to: '/search', label: 'Search', icon: Search },
+  { to: '/notifications', label: 'Alerts', icon: Bell },
+  { to: '/chat', label: 'Chat', icon: MessageCircle },
+  { to: '/contracts', label: 'Vault', icon: FolderOpen },
+  { to: '/help', label: 'Help', icon: CircleHelp },
+]
+
+const PLATFORM_BADGES = [
+  { label: 'WhatsApp', className: 'bg-emerald-500/20 text-emerald-300', icon: MessageSquareMore },
+  { label: 'LinkedIn', className: 'bg-sky-500/20 text-sky-300', icon: Linkedin },
+]
 
 function sortByNewest(a, b) {
   return new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime()
@@ -24,13 +61,16 @@ function normalizeThreads(messages = []) {
         id: message.match_id,
         matchId: message.match_id,
         requestId: message.request_id || String(message.match_id).split(':')[0],
-        name: message.sender_name || message.sender_id || 'Unknown sender',
+        name: formatDisplayName(message.sender_name || message.company_name || message.sender_company_name, message.sender_id),
         senderId: message.sender_id,
         verified: Boolean(message.sender_verified),
         last: message.message || 'No message content',
         unread: 0,
         timestamp: message.timestamp,
         lock,
+        isFriendThread: String(message.match_id || '').startsWith('friend:'),
+        friendRequestStatus: message.friend_request_status || null,
+        friendRequestDirection: message.friend_request_direction || null,
       })
       return
     }
@@ -41,6 +81,9 @@ function normalizeThreads(messages = []) {
         last: message.message || existing.last,
         timestamp: message.timestamp,
         lock,
+        isFriendThread: existing.isFriendThread || String(message.match_id || '').startsWith('friend:'),
+        friendRequestStatus: message.friend_request_status || existing.friendRequestStatus || null,
+        friendRequestDirection: message.friend_request_direction || existing.friendRequestDirection || null,
       })
     }
   })
@@ -48,11 +91,52 @@ function normalizeThreads(messages = []) {
   return [...byMatchId.values()].sort(sortByNewest)
 }
 
-function lockStatusLabel(lock) {
+function lockStatusLabel(lock, thread = null) {
+  if (thread?.isFriendThread) {
+    if (thread.friendRequestStatus === 'pending' && thread.friendRequestDirection === 'incoming') return 'Incoming friend request'
+    if (thread.friendRequestStatus === 'pending' && thread.friendRequestDirection === 'outgoing') return 'Friend request pending'
+    return 'Direct friend chat'
+  }
+
   if (!lock || lock.status === 'unclaimed') return 'Unclaimed'
   if (lock.status === 'claimed') return `Claimed by ${lock.claimed_by_name || 'you'}`
   if (lock.status === 'granted') return 'Access granted'
   return `Claimed by ${lock.claimed_by_name || 'another agent'}`
+}
+
+function isImageMessage(message) {
+  return message?.type === 'image' || String(message?.attachment?.mime_type || '').startsWith('image/')
+}
+
+function isVideoMessage(message) {
+  return message?.type === 'video' || String(message?.attachment?.mime_type || '').startsWith('video/')
+}
+
+function toAbsoluteAssetUrl(url = '') {
+  if (!url) return ''
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+  const base = apiUrl.replace(/\/api\/?$/, '')
+  return `${base}${url.startsWith('/') ? '' : '/'}${url}`
+}
+
+function truncateId(value = '', size = 8) {
+  const normalized = String(value || '')
+  if (normalized.length <= size) return normalized
+  return `${normalized.slice(0, size)}...`
+}
+
+function formatDisplayName(name, fallbackId) {
+  if (name && String(name).trim()) return String(name).trim()
+  const token = String(fallbackId || '').replace(/[^a-zA-Z0-9]/g, '').slice(0, 7) || 'unknown'
+  return `User-${token}`
+}
+
+function getInitials(label = '') {
+  const words = String(label).trim().split(/\s+/).filter(Boolean)
+  if (words.length === 0) return 'U'
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase()
+  return `${words[0][0] || ''}${words[1][0] || ''}`.toUpperCase()
 }
 
 export default function ChatInterface() {
@@ -64,17 +148,21 @@ export default function ChatInterface() {
   const [query, setQuery] = useState('')
   const [scheduleStatus, setScheduleStatus] = useState('')
   const [callHistoryByThread, setCallHistoryByThread] = useState({})
-  const [members, setMembers] = useState([])
-  const [targetAgentId, setTargetAgentId] = useState('')
-  const [lockActionStatus, setLockActionStatus] = useState('')
   const [messagesByThread, setMessagesByThread] = useState({})
   const [draftMessage, setDraftMessage] = useState('')
   const [isLiveMessagingEnabled, setIsLiveMessagingEnabled] = useState(true)
   const [chatConnectionStatus, setChatConnectionStatus] = useState('offline')
+  const [uploading, setUploading] = useState(false)
+  const [uploadStatus, setUploadStatus] = useState('')
+  const [showThreadInfo, setShowThreadInfo] = useState(false)
+  const [openAccordions, setOpenAccordions] = useState({ documents: true, media: true, links: false })
 
   const wsRef = useRef(null)
+  const fileInputRef = useRef(null)
   const reconnectTimerRef = useRef(null)
   const currentUser = useMemo(() => getCurrentUser(), [])
+  const navigate = useNavigate()
+  const location = useLocation()
 
   const loadInbox = useCallback(async () => {
     setLoading(true)
@@ -126,17 +214,6 @@ export default function ChatInterface() {
     }
   }, [])
 
-  const loadMembers = useCallback(async () => {
-    const token = getToken()
-    if (!token) return
-    try {
-      const data = await apiRequest('/members', { token })
-      setMembers(Array.isArray(data?.members) ? data.members : [])
-    } catch {
-      setMembers([])
-    }
-  }, [])
-
   const loadThreadMessages = useCallback(async (matchId) => {
     const token = getToken()
     if (!token || !matchId) return
@@ -157,8 +234,7 @@ export default function ChatInterface() {
 
   useEffect(() => {
     loadInbox()
-    loadMembers()
-  }, [loadInbox, loadMembers])
+  }, [loadInbox])
 
   const filteredPriorityInbox = useMemo(() => {
     if (!query.trim()) return priorityInbox
@@ -182,6 +258,14 @@ export default function ChatInterface() {
     if (!activeThread?.matchId) return []
     return messagesByThread[activeThread.matchId] || []
   }, [activeThread, messagesByThread])
+
+  const sharedMedia = useMemo(() => {
+    return activeMessages.filter((message) => isImageMessage(message) && message?.attachment?.url).slice(-9).reverse()
+  }, [activeMessages])
+
+  const sharedLinks = useMemo(() => {
+    return activeMessages.filter((message) => message?.attachment?.url && !isImageMessage(message)).slice(-6).reverse()
+  }, [activeMessages])
 
   useEffect(() => {
     if (!activeThread?.matchId) return
@@ -286,56 +370,32 @@ export default function ChatInterface() {
     }
   }, [isLiveMessagingEnabled, activeThread?.matchId])
 
-  async function updateRequestState(threadId, decision) {
+  async function updateRequestState(thread, decision) {
     const token = getToken()
-    if (!token || !threadId) {
+    if (!token || !thread?.id) {
       setError('Please sign in to update message requests.')
       return
     }
 
     try {
-      await apiRequest(`/messages/requests/${threadId}/${decision}`, {
-        method: 'POST',
-        token,
-      })
+      if (thread.isFriendThread) {
+        if (decision === 'accept') {
+          await apiRequest(`/users/${thread.senderId}/friend-request`, {
+            method: 'POST',
+            token,
+          })
+          setError('')
+        }
+      } else {
+        await apiRequest(`/messages/requests/${thread.id}/${decision}`, {
+          method: 'POST',
+          token,
+        })
+      }
+
       await loadInbox()
     } catch (err) {
       setError(err.message || `Failed to ${decision} request`)
-    }
-  }
-
-  async function requestConversationAccess(thread) {
-    const token = getToken()
-    if (!token || !thread?.requestId) return
-    setLockActionStatus('Requesting access...')
-    try {
-      await apiRequest(`/conversations/${thread.requestId}/claim`, { method: 'POST', token })
-      setLockActionStatus('Access is now granted for this conversation.')
-      await loadInbox()
-    } catch (err) {
-      setLockActionStatus(err.message || 'Unable to request access.')
-    }
-  }
-
-  async function grantConversationAccess(thread) {
-    const token = getToken()
-    if (!token || !thread?.requestId || !targetAgentId) {
-      setLockActionStatus('Select a member to grant access.')
-      return
-    }
-
-    setLockActionStatus('Granting access...')
-    try {
-      await apiRequest(`/conversations/${thread.requestId}/grant`, {
-        method: 'POST',
-        token,
-        body: { target_agent_id: targetAgentId },
-      })
-      setLockActionStatus('Secondary agent access granted and notification sent.')
-      setTargetAgentId('')
-      await loadInbox()
-    } catch (err) {
-      setLockActionStatus(err.message || 'Unable to grant access.')
     }
   }
 
@@ -373,6 +433,108 @@ export default function ChatInterface() {
     } catch (err) {
       setScheduleStatus(err.message || 'Failed to schedule call')
     }
+  }
+
+  async function startInstantCall(thread) {
+    const token = getToken()
+    if (!token || !thread?.matchId) {
+      setScheduleStatus('Please sign in and select a valid thread before starting a call.')
+      return
+    }
+
+    setScheduleStatus('Starting call room...')
+    try {
+      const result = await apiRequest('/calls/join', {
+        method: 'POST',
+        token,
+        body: {
+          match_id: thread.matchId,
+          chat_thread_id: thread.matchId,
+          title: `Call with ${thread.name}`,
+        },
+      })
+      const callId = result?.call?.id
+      if (!callId) throw new Error('Unable to open call room')
+      setScheduleStatus('Call room ready. Redirecting...')
+      navigate(`/call?callId=${encodeURIComponent(callId)}&matchId=${encodeURIComponent(thread.matchId)}`)
+    } catch (err) {
+      setScheduleStatus(err.message || 'Failed to start call')
+    }
+  }
+
+  async function sendAttachment(file) {
+    const token = getToken()
+    if (!token || !activeThread?.matchId || !file) return
+
+    setUploading(true)
+    setUploadStatus('Uploading file...')
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('message', draftMessage.trim())
+
+      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+      const response = await fetch(`${apiBase}/messages/${encodeURIComponent(activeThread.matchId)}/upload`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      })
+
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(payload.error || 'Upload failed')
+
+      setMessagesByThread((previous) => ({
+        ...previous,
+        [activeThread.matchId]: [...(previous[activeThread.matchId] || []), payload].sort(sortByOldest),
+      }))
+      setDraftMessage('')
+      setUploadStatus('File sent.')
+      await loadInbox()
+    } catch (err) {
+      setUploadStatus(err.message || 'Unable to upload file')
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  function renderMessageBody(message) {
+    const attachmentUrl = toAbsoluteAssetUrl(message?.attachment?.url || '')
+
+    if (isImageMessage(message) && attachmentUrl) {
+      return (
+        <div className="space-y-1">
+          {message.message ? <div>{message.message}</div> : null}
+          <a href={attachmentUrl} target="_blank" rel="noreferrer">
+            <img src={attachmentUrl} alt={message?.attachment?.name || 'Shared image'} className="max-h-56 rounded-xl border border-white/10" />
+          </a>
+        </div>
+      )
+    }
+
+    if (isVideoMessage(message) && attachmentUrl) {
+      return (
+        <div className="space-y-1">
+          {message.message ? <div>{message.message}</div> : null}
+          <video src={attachmentUrl} controls className="max-h-56 w-full rounded-xl border border-white/10" />
+        </div>
+      )
+    }
+
+    if (message?.attachment?.url) {
+      return (
+        <div className="space-y-1">
+          {message.message ? <div>{message.message}</div> : null}
+          <a href={attachmentUrl} target="_blank" rel="noreferrer" className="underline">
+            {message?.attachment?.name || 'Open file'}
+          </a>
+        </div>
+      )
+    }
+
+    return <div>{message.message}</div>
   }
 
   async function sendMessage() {
@@ -413,49 +575,101 @@ export default function ChatInterface() {
     }
   }
 
-  return (
-    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
-      <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <aside className="lg:col-span-1">
-          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow p-4 space-y-4">
-            <input className="w-full border px-3 py-2 rounded" placeholder="Search chats" value={query} onChange={(event) => setQuery(event.target.value)} />
+  const activeThreadDisplayName = formatDisplayName(activeThread?.name, activeThread?.senderId || activeThread?.matchId)
+  const activeThreadInitials = getInitials(activeThreadDisplayName)
+  const compactThreadId = truncateId(activeThread?.matchId, 18)
 
-            {loading && <div className="text-sm text-[#5A5A5A]">Loading inbox...</div>}
-            {!loading && error && <div className="text-sm text-red-600">{error}</div>}
+  const toggleAccordion = (key) => {
+    setOpenAccordions((previous) => ({ ...previous, [key]: !previous[key] }))
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0c] px-3 py-4 font-sans text-white">
+      <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-4 lg:grid-cols-[70px_350px_1fr_320px]">
+        <aside className="rounded-2xl border border-white/5 bg-[#16161e] p-2">
+          <div className="flex h-full flex-col items-center justify-between py-1">
+            <div className="space-y-2">
+              {CHAT_NAV_ITEMS.map((item) => {
+                const Icon = item.icon
+                const isActive = location.pathname === item.to
+                return (
+                  <Link key={item.to} to={item.to} className={`group relative flex h-11 w-11 items-center justify-center rounded-xl border ${isActive ? 'border-[#8b5cf6]/70 bg-[#8b5cf6]/20 text-[#d4ff59]' : 'border-transparent bg-[#111119] text-[#a4a4bc] hover:border-white/10 hover:text-white'}`} title={item.label}>
+                    {isActive ? <span className="absolute -left-2 h-6 w-1 rounded-full bg-[#d4ff59]" /> : null}
+                    <Icon size={18} strokeWidth={1.8} />
+                  </Link>
+                )
+              })}
+            </div>
+            <button className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-[#111119] text-[#a4a4bc] hover:text-white" onClick={() => navigate('/org-settings')}>
+              <Settings size={18} strokeWidth={1.8} />
+            </button>
+          </div>
+        </aside>
+
+        <aside className="rounded-2xl border border-white/5 bg-[#16161e] p-4">
+          <h2 className="text-lg font-semibold">Message category</h2>
+          <p className="mb-3 text-sm text-[#8e8eaa]">{currentUser?.email || 'inbox@gartexhub.com'}</p>
+          <div className="relative mb-4">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8e8eaa]" />
+            <input className="h-10 w-full rounded-xl border border-white/5 bg-[#101018] pl-9 pr-3 text-sm placeholder:text-[#6f6f8d]" placeholder="Search Message..." value={query} onChange={(event) => setQuery(event.target.value)} />
+          </div>
+
+          <div className="h-[calc(100vh-190px)] space-y-5 overflow-auto pr-1">
+            {loading ? <div className="text-sm text-[#8e8eaa]">Loading inbox...</div> : null}
+            {!loading && error ? <div className="text-sm text-red-300">{error}</div> : null}
 
             {!loading && !error && (
               <>
                 <section>
-                  <h2 className="text-sm font-semibold mb-2">Priority Inbox</h2>
-                  <div className="space-y-2">
-                    {filteredPriorityInbox.map((thread) => (
-                      <div key={`priority-${thread.id}`} className={`p-2 rounded cursor-pointer ${activeThreadId === thread.id ? 'bg-[#F4F9FF]' : ''}`} onClick={() => setActiveThreadId(thread.id)}>
-                        <div className="font-semibold">{thread.name} <span className="text-[#0A66C2]">✓</span></div>
-                        <div className="text-xs text-[#5A5A5A]">{lockStatusLabel(thread.lock)}</div>
-                        <div className="text-sm text-[#5A5A5A] truncate">{thread.last}</div>
-                      </div>
-                    ))}
-                    {filteredPriorityInbox.length === 0 && <p className="text-sm text-[#5A5A5A]">No priority messages yet.</p>}
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#8e8eaa]">Message category</h3>
+                  <div className="space-y-3">
+                    {filteredPriorityInbox.map((thread, index) => {
+                      const threadName = formatDisplayName(thread.name, thread.senderId || thread.id)
+                      const platform = PLATFORM_BADGES[index % PLATFORM_BADGES.length]
+                      const PlatformIcon = platform.icon
+                      return (
+                        <button key={`priority-${thread.id}`} className={`w-full rounded-2xl border p-3 text-left ${activeThreadId === thread.id ? 'border-[#8b5cf6]/60 bg-[#24203a]' : 'border-white/5 bg-[#111119]'}`} onClick={() => setActiveThreadId(thread.id)}>
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <div className="text-sm font-semibold">{threadName}</div>
+                              <div className="mt-0.5 flex items-center gap-1 text-xs text-[#8e8eaa]">
+                                <PlatformIcon size={12} strokeWidth={2} /> {platform.label}
+                              </div>
+                            </div>
+                            <span className="rounded-full bg-[#d4ff59] px-2 py-0.5 text-[11px] font-semibold text-[#141414]">{Math.max(1, (thread.last || '').length % 12)}</span>
+                          </div>
+                          <div className="mt-1 truncate text-xs text-[#7f7f98]">{thread.last}</div>
+                        </button>
+                      )
+                    })}
                   </div>
                 </section>
 
                 <section>
-                  <h2 className="text-sm font-semibold mb-2">Message Requests</h2>
-                  <div className="space-y-2">
-                    {filteredRequests.map((thread) => (
-                      <div key={`request-${thread.id}`} className="p-2 rounded border border-[#E7E7E7]">
-                        <button className={`w-full text-left rounded ${activeThreadId === thread.id ? 'bg-[#F4F9FF]' : ''}`} onClick={() => setActiveThreadId(thread.id)}>
-                          <div className="font-semibold">{thread.name}</div>
-                          <div className="text-xs text-[#5A5A5A]">{lockStatusLabel(thread.lock)}</div>
-                          <div className="text-sm text-[#5A5A5A] truncate">{thread.last}</div>
-                        </button>
-                        <div className="mt-2 flex gap-2">
-                          <button className="px-3 py-1 text-sm rounded bg-[#0A66C2] text-white" onClick={() => updateRequestState(thread.id, 'accept')}>Accept</button>
-                          <button className="px-3 py-1 text-sm rounded border" onClick={() => updateRequestState(thread.id, 'reject')}>Reject</button>
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#8e8eaa]">Direct Message</h3>
+                  <div className="space-y-3">
+                    {filteredRequests.map((thread) => {
+                      const threadName = formatDisplayName(thread.name, thread.senderId || thread.id)
+                      return (
+                        <div key={`request-${thread.id}`} className="rounded-2xl border border-white/5 bg-[#111119] p-3">
+                          <button className="w-full text-left" onClick={() => setActiveThreadId(thread.id)}>
+                            <div className="text-sm font-semibold">{threadName}</div>
+                            <div className="text-xs text-[#8e8eaa]">{lockStatusLabel(thread.lock, thread)}</div>
+                          </button>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {thread.isFriendThread && thread.friendRequestDirection === 'outgoing' ? <span className="text-xs text-[#8e8eaa]">Pending approval.</span> : null}
+                            {thread.isFriendThread && thread.friendRequestDirection === 'incoming' ? <button className="rounded-lg bg-[#8b5cf6] px-3 py-1.5 text-xs font-semibold" onClick={() => updateRequestState(thread, 'accept')}>Accept Friend</button> : null}
+                            {!thread.isFriendThread ? (
+                              <>
+                                <button className="rounded-lg bg-[#8b5cf6] px-3 py-1.5 text-xs font-semibold" onClick={() => updateRequestState(thread, 'accept')}>Accept</button>
+                                <button className="rounded-lg border border-white/10 px-3 py-1.5 text-xs font-semibold" onClick={() => updateRequestState(thread, 'reject')}>Reject</button>
+                              </>
+                            ) : null}
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                    {filteredRequests.length === 0 && <p className="text-sm text-[#5A5A5A]">No pending message requests.</p>}
+                      )
+                    })}
+                    {filteredRequests.length === 0 ? <div className="text-sm text-[#8e8eaa]">No pending requests.</div> : null}
                   </div>
                 </section>
               </>
@@ -463,79 +677,114 @@ export default function ChatInterface() {
           </div>
         </aside>
 
-        <main className="lg:col-span-2">
-          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow p-4 h-[60vh] flex flex-col">
-            {activeThread ? (
-              <>
-                <div className="flex items-center justify-between border-b pb-3 mb-3">
+        <main className="rounded-2xl border border-white/5 bg-[#16161e] p-4">
+          {activeThread ? (
+            <>
+              <div className="mb-3 flex items-center justify-between rounded-2xl border border-white/5 bg-[#111119] px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#8b5cf6]/25 text-sm font-semibold">{activeThreadInitials}</div>
                   <div>
-                    <div className="font-semibold">{activeThread.name}</div>
-                    <div className="text-sm text-[#5A5A5A]">{priorityInbox.some((thread) => thread.id === activeThread.id) ? 'Priority Inbox' : 'Message Request'}</div>
-                    <div className="text-xs text-[#5A5A5A]">{lockStatusLabel(activeThread.lock)}</div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button className="px-3 py-1 border rounded">📹 Video Call</button>
-                    <button className="px-3 py-1 border rounded">📞 Audio Call</button>
-                    <button className="px-3 py-1 border rounded" onClick={() => scheduleCall(activeThread)}>📅 Schedule</button>
-                  </div>
-                </div>
-
-                <div className="mb-2 flex items-center justify-between rounded border border-[#E7E7E7] bg-[#F8FBFF] p-2 text-xs">
-                  <div>
-                    <span className="font-semibold">Live messaging:</span> {isLiveMessagingEnabled ? 'Enabled' : 'Disabled'} • {chatConnectionStatus}
-                  </div>
-                  <button className="rounded border px-2 py-1" onClick={() => setIsLiveMessagingEnabled((v) => !v)}>
-                    {isLiveMessagingEnabled ? 'Disable WS' : 'Enable WS'}
-                  </button>
-                </div>
-
-                {activeThread.lock?.status === 'request_access' && (
-                  <button className="mb-2 w-fit px-3 py-1 rounded border text-sm" onClick={() => requestConversationAccess(activeThread)}>Request Access</button>
-                )}
-
-                {activeThread.lock?.status === 'claimed' && (
-                  <div className="mb-2 flex items-center gap-2">
-                    <select className="border px-2 py-1 rounded text-sm" value={targetAgentId} onChange={(event) => setTargetAgentId(event.target.value)}>
-                      <option value="">Select agent to grant access</option>
-                      {members.map((member) => <option key={member.id} value={member.id}>{member.name || member.email || member.id}</option>)}
-                    </select>
-                    <button className="px-3 py-1 rounded bg-[#0A66C2] text-white text-sm" onClick={() => grantConversationAccess(activeThread)}>Grant Access</button>
-                  </div>
-                )}
-
-                {lockActionStatus && <div className="mb-2 text-sm text-[#0A66C2]">{lockActionStatus}</div>}
-                {scheduleStatus && <div className="mb-2 text-sm text-[#0A66C2]">{scheduleStatus}</div>}
-
-                <div className="flex-1 overflow-auto mb-3">
-                  <div className="space-y-3">
-                    {activeMessages.length > 0 ? activeMessages.map((message) => {
-                      const isOwn = message.sender_id === currentUser?.id
-                      return (
-                        <div key={message.id} className={`rounded p-2 shadow max-w-[80%] ${isOwn ? 'ml-auto bg-[#0A66C2] text-white' : 'bg-white neo-panel cyberpunk-card'}`}>
-                          <div className="text-xs opacity-80 mb-1">{isOwn ? 'You' : (message.sender_id || 'Participant')} • {new Date(message.timestamp).toLocaleTimeString()}</div>
-                          <div>{message.message}</div>
-                        </div>
-                      )
-                    }) : <div className="self-start bg-white neo-panel cyberpunk-card p-2 rounded shadow">No messages yet.</div>}
-                    <div className="text-center text-sm text-[#5A5A5A]">Match Thread: {activeThread.matchId}</div>
-                    <div className="text-sm border rounded p-2 bg-[#F8FBFF]">
-                      <div className="font-semibold mb-1">Call History</div>
-                      {activeCallHistory.length > 0 ? activeCallHistory.slice(0, 3).map((call) => <div key={call.id} className="mb-1">{call.title} • {call.status} • {new Date(call.scheduled_for).toLocaleString()}</div>) : <div className="text-[#5A5A5A]">No calls scheduled yet.</div>}
-                    </div>
+                    <div className="text-base font-semibold">{activeThreadDisplayName}</div>
+                    <div className="text-xs text-[#8e8eaa]">{lockStatusLabel(activeThread.lock, activeThread)}</div>
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <input className="flex-1 border px-3 py-2 rounded" placeholder="Write a message..." value={draftMessage} onChange={(event) => setDraftMessage(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') sendMessage() }} />
-                  <button className="px-4 py-2 bg-[#0A66C2] text-white rounded" onClick={sendMessage}>Send</button>
+                  <button className="inline-flex h-10 items-center gap-1 rounded-xl border border-white/10 bg-[#1f1f2a] px-3 text-sm font-medium" onClick={() => startInstantCall(activeThread)}><Video size={14} /> Video</button>
+                  <button className="inline-flex h-10 items-center gap-1 rounded-xl border border-white/10 bg-[#1f1f2a] px-3 text-sm font-medium" onClick={() => startInstantCall(activeThread)}><Mic size={14} /> Audio</button>
+                  <button className="inline-flex h-10 items-center gap-1 rounded-xl border border-white/10 bg-[#1f1f2a] px-3 text-sm font-medium" onClick={() => scheduleCall(activeThread)}><Phone size={14} /> Schedule</button>
                 </div>
-              </>
-            ) : (
-              <div className="text-center text-sm text-[#5A5A5A]">Select a chat to begin</div>
-            )}
-          </div>
-        </main>
-      </div>
+              </div>
 
+              <div className="mb-2 flex items-center justify-between rounded-lg border border-white/5 bg-[#101018] p-2 text-xs text-[#8e8eaa]">
+                <div>Live: {isLiveMessagingEnabled ? 'Enabled' : 'Disabled'} • {chatConnectionStatus}</div>
+                <button className="rounded-md border border-white/10 px-2 py-1" onClick={() => setIsLiveMessagingEnabled((value) => !value)}>{isLiveMessagingEnabled ? 'Disable WS' : 'Enable WS'}</button>
+              </div>
+
+              <div className="h-[calc(100vh-320px)] space-y-3 overflow-auto rounded-2xl border border-white/5 bg-[#0f0f16] p-3">
+                {activeMessages.length > 0 ? activeMessages.map((message) => {
+                  const isOwn = message.sender_id === currentUser?.id
+                  const messageName = isOwn ? 'You' : formatDisplayName(message.sender_name || message.sender_company_name, message.sender_id)
+                  const avatarLabel = isOwn ? getInitials(currentUser?.name || 'You') : getInitials(messageName)
+                  return (
+                    <div key={message.id} className={`flex items-end gap-2 ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                      {!isOwn ? <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2a2a3a] text-[11px] font-semibold">{avatarLabel}</div> : null}
+                      <div className={`max-w-[70%] rounded-2xl px-3 py-2 text-sm ${isOwn ? 'bg-[#8b5cf6] text-white' : 'bg-[#242430] text-white'}`}>
+                        <div className="mb-1 text-[11px] text-[#b7b7cc]">{messageName} • {new Date(message.timestamp).toLocaleTimeString()}</div>
+                        {renderMessageBody(message)}
+                      </div>
+                      {isOwn ? <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2a2a3a] text-[11px] font-semibold">{avatarLabel}</div> : null}
+                    </div>
+                  )
+                }) : <div className="text-sm text-[#8e8eaa]">No messages yet.</div>}
+              </div>
+
+              <div className="mt-2 flex items-center justify-between text-[0.75rem] text-[#94a3b8]">
+                <span>Match Thread: {showThreadInfo ? activeThread.matchId : compactThreadId}</span>
+                <button className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2" onClick={() => setShowThreadInfo((value) => !value)}><Info size={12} /> {showThreadInfo ? 'Hide' : 'Info'}</button>
+              </div>
+
+              <div className="relative mt-3">
+                <input className="h-12 w-full rounded-2xl border border-white/5 bg-[#101018] pl-12 pr-28 text-sm placeholder:text-[#6f6f8d]" placeholder="Type a message..." value={draftMessage} onChange={(event) => setDraftMessage(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') sendMessage() }} />
+                <input ref={fileInputRef} type="file" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) sendAttachment(file) }} />
+                <button className="absolute left-3 top-1/2 -translate-y-1/2 rounded-lg border border-white/10 bg-[#1f1f2a] p-2" onClick={() => fileInputRef.current?.click()} disabled={uploading}><Plus size={14} /></button>
+                <button className="absolute right-2 top-1/2 inline-flex -translate-y-1/2 items-center gap-1 rounded-xl bg-[#d4ff59] px-4 py-2 text-sm font-semibold text-[#101018]" onClick={sendMessage}><SendHorizontal size={14} /> Send</button>
+              </div>
+              {uploadStatus ? <p className="mt-2 text-xs text-[#9db2ff]">{uploadStatus}</p> : null}
+              {scheduleStatus ? <p className="mt-1 text-xs text-[#9db2ff]">{scheduleStatus}</p> : null}
+            </>
+          ) : <div className="flex h-full items-center justify-center text-sm text-[#8e8eaa]">Select a chat to begin</div>}
+        </main>
+
+        <aside className="rounded-2xl border border-white/5 bg-[#16161e] p-4">
+          {activeThread ? (
+            <>
+              <div className="mb-4 rounded-2xl border border-white/5 bg-[#111119] p-4 text-center">
+                <div className="mx-auto mb-3 flex h-24 w-24 items-center justify-center rounded-full bg-[#8b5cf6]/25 text-2xl font-semibold">{activeThreadInitials}</div>
+                <div className="text-lg font-semibold">{activeThreadDisplayName}</div>
+                <div className="text-sm text-[#8e8eaa]">@{truncateId(activeThread.senderId || activeThread.matchId, 12)}</div>
+              </div>
+
+              <div className="space-y-2 text-sm">
+                <button className="flex w-full items-center justify-between rounded-xl border border-white/5 bg-[#111119] p-3" onClick={() => toggleAccordion('documents')}>
+                  <span className="inline-flex items-center gap-2 font-medium"><FileText size={14} /> Shared Document</span>
+                  {openAccordions.documents ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {openAccordions.documents ? (
+                  <div className="rounded-xl border border-white/5 bg-[#0f0f16] p-3 text-xs text-[#9a9ab5]">
+                    {activeCallHistory.length > 0 ? activeCallHistory.slice(0, 3).map((call) => <div key={call.id} className="mb-1">{call.title} • {call.status}</div>) : <div>No call-linked documents yet.</div>}
+                  </div>
+                ) : null}
+
+                <button className="flex w-full items-center justify-between rounded-xl border border-white/5 bg-[#111119] p-3" onClick={() => toggleAccordion('media')}>
+                  <span className="inline-flex items-center gap-2 font-medium"><Image size={14} /> Shared Media</span>
+                  {openAccordions.media ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {openAccordions.media ? (
+                  <div className="grid grid-cols-3 gap-2 rounded-xl border border-white/5 bg-[#0f0f16] p-3">
+                    {sharedMedia.length > 0 ? sharedMedia.map((message) => {
+                      const mediaUrl = toAbsoluteAssetUrl(message?.attachment?.url || '')
+                      return <img key={message.id} src={mediaUrl} alt={message?.attachment?.name || 'Shared media'} className="h-16 w-full rounded-lg object-cover" />
+                    }) : <div className="col-span-3 text-xs text-[#9a9ab5]">No shared media yet.</div>}
+                  </div>
+                ) : null}
+
+                <button className="flex w-full items-center justify-between rounded-xl border border-white/5 bg-[#111119] p-3" onClick={() => toggleAccordion('links')}>
+                  <span className="inline-flex items-center gap-2 font-medium"><Link2 size={14} /> Shared Post / Links</span>
+                  {openAccordions.links ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {openAccordions.links ? (
+                  <div className="space-y-2 rounded-xl border border-white/5 bg-[#0f0f16] p-3 text-xs text-[#9a9ab5]">
+                    {sharedLinks.length > 0 ? sharedLinks.map((message) => (
+                      <a key={message.id} href={toAbsoluteAssetUrl(message.attachment.url)} target="_blank" rel="noreferrer" className="block truncate underline">{message.attachment.name || message.attachment.url}</a>
+                    )) : <div>No shared links yet.</div>}
+                  </div>
+                ) : null}
+              </div>
+            </>
+          ) : <div className="text-sm text-[#8e8eaa]">Thread details appear here.</div>}
+        </aside>
+      </div>
     </div>
   )
 }
+

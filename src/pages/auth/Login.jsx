@@ -24,8 +24,7 @@ export default function Login() {
         body: { email, password },
       })
 
-      saveSession(data.user, data.token)
-      if (!rememberMe) sessionStorage.setItem('jwt', data.token)
+      saveSession(data.user, data.token, { remember: rememberMe })
       navigate(redirectTo || getRoleHome(data.user.role), { replace: true })
     } catch (err) {
       setError(err.message)
