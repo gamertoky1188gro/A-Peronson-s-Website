@@ -5,5 +5,12 @@
     "start_date": "2026-03-05T18:31:24.816Z",
     "end_date": "2036-03-02T18:31:24.816Z",
     "auto_renew": true
+  },
+  {
+    "user_id": "51d4afc9-e770-4b95-988b-3acc9308f141",
+    "plan": "free",
+    "start_date": "2026-03-08T08:10:15.409Z",
+    "end_date": "2036-03-05T08:10:15.409Z",
+    "auto_renew": true
   }
 ]
