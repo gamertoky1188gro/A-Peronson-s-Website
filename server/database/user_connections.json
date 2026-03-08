@@ -1,15 +1,1 @@
-<<<<<<< HEAD
-[
-  {
-    "id": "c9b970e3-81af-4da5-aa1c-3861404fcde6",
-    "type": "friend",
-    "requester_id": "6a258ab9-9b56-4192-aa90-6e1ebb81afa8",
-    "receiver_id": "51d4afc9-e770-4b95-988b-3acc9308f141",
-    "status": "active",
-    "created_at": "2026-03-08T08:10:38.724Z",
-    "updated_at": "2026-03-08T08:10:54.684Z"
-  }
-]
-=======
 []
->>>>>>> codex/investigate-invalid-token-issue-after-login-axgm4w

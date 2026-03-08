@@ -27,19 +27,27 @@ export function isUserPairInFriendMatch(matchId, userA, userB) {
 export async function isFriendConnected(userA, userB) {
   if (!userA || !userB || userA === userB) return false
   const rows = await readJson(CONNECTION_FILE)
-  return rows.some(
-    (row) => row.type === 'friend' && row.status === 'active'
-      && ((row.requester_id === userA && row.receiver_id === userB) || (row.requester_id === userB && row.receiver_id === userA)),
-  )
+  return rows.some((row) => {
+    const samePair = (row.requester_id === userA && row.receiver_id === userB) || (row.requester_id === userB && row.receiver_id === userA)
+    if (!samePair) return false
+    const status = String(row.status || '').toLowerCase()
+    if (row.type === 'friend' && ['active', 'accepted'].includes(status)) return true
+    if (row.type === 'friend_request' && ['active', 'accepted'].includes(status)) return true
+    return false
+  })
 }
 
 function connectionSnapshot(connections, viewerId, targetId) {
   const following = connections.some((row) => row.type === 'follow' && row.requester_id === viewerId && row.receiver_id === targetId && row.status === 'active')
 
-  const friends = connections.some(
-    (row) => row.type === 'friend' && row.status === 'active'
-      && ((row.requester_id === viewerId && row.receiver_id === targetId) || (row.requester_id === targetId && row.receiver_id === viewerId)),
-  )
+  const friends = connections.some((row) => {
+    const samePair = (row.requester_id === viewerId && row.receiver_id === targetId) || (row.requester_id === targetId && row.receiver_id === viewerId)
+    if (!samePair) return false
+    const status = String(row.status || '').toLowerCase()
+    if (row.type === 'friend' && ['active', 'accepted'].includes(status)) return true
+    if (row.type === 'friend_request' && ['active', 'accepted'].includes(status)) return true
+    return false
+  })
 
   if (friends) {
     return { following, friend_status: 'friends' }
@@ -124,7 +132,7 @@ export async function sendFriendRequest(viewerId, targetId) {
   const now = new Date().toISOString()
 
   const existingFriendIndex = rows.findIndex(
-    (row) => row.type === 'friend' && row.status === 'active'
+    (row) => row.type === 'friend' && ['active', 'accepted'].includes(String(row.status || '').toLowerCase())
       && ((row.requester_id === viewerId && row.receiver_id === targetId) || (row.requester_id === targetId && row.receiver_id === viewerId)),
   )
 

@@ -28,6 +28,10 @@ export async function listFriendConnectionsForUser(userId) {
     .filter((row) => row.match_id)
 }
 
+function isLegacyFriendActive(row) {
+  return row.type === 'friend_request' && ['accepted', 'active'].includes(String(row.status || '').toLowerCase())
+}
+
 export async function hasFriendRelationship(userA, userB, { includePending = false } = {}) {
   if (!userA || !userB || userA === userB) return false
   const rows = await readJson(CONNECTION_FILE)
@@ -38,8 +42,11 @@ export async function hasFriendRelationship(userA, userB, { includePending = fal
       || (row.requester_id === userB && row.receiver_id === userA)
 
     if (!samePair) return false
-    if (row.type === 'friend' && row.status === 'active') return true
-    if (includePending && row.type === 'friend_request' && row.status === 'pending') return true
+
+    const status = String(row.status || '').toLowerCase()
+    if (row.type === 'friend' && ['active', 'accepted'].includes(status)) return true
+    if (isLegacyFriendActive(row)) return true
+    if (includePending && row.type === 'friend_request' && status === 'pending') return true
     return false
   })
 }
