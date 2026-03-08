@@ -1,95 +1,75 @@
-# Privacy — Complete Page Specification
+# Privacy - Complete Page Specification (Manual)
 
 ## Page Title & Description
-- **Page title:** `Privacy`
-- **Primary route(s):** `/privacy`
-- **Purpose:** This page is implemented by `src/pages/Privacy.jsx` and supports a specific GarTexHub user workflow.
+- Title: `Privacy Policy`
+- Route: `/privacy`
+- Purpose: Legal/privacy disclosure for data handling, fraud prevention, security, user rights, and contact policy.
 
 ## Layout & Structure
-- **Top-level layout:** Built as a React functional page component with utility-class-driven responsive structure.
-- **Major structural elements present:** `<footer>`, `<header>`, `<section>`.
-- **Approximate placement model (desktop):**
-  - Header / top controls: `x: 0-100%`, `y: 0-15%` (if present).
-  - Primary content zone: `x: 5-95%`, `y: 12-88%`.
-  - Sidebars/panels: left and/or right columns where `aside` blocks are present.
-  - Footer/trailing actions: lower area of the page card/container.
+- Full-page centered legal document container (`max-w-4xl`) within padded background.
+- Main card with rounded border and long-form content stack.
+- Header area:
+  - legal badge `Legal Documentation`
+  - page title
+  - dynamic last-updated date string.
+- Body:
+  - introductory policy paragraph.
+  - section divider.
+  - numbered sections (1,2,3,4,5,6,7,8,13 in source).
+  - highlighted fraud prevention gradient card.
+  - final contact block.
+  - footer copyright line.
 
 ## Theme & Styling
-- **Theme system:** Tailwind utility classes and app-level dark/light behavior.
-- **Explicit color tokens found in implementation:** `No explicit hex values; inherited palette/classes`.
-- **Typography:** Sans-serif utility-based text sizing/weight hierarchy (`text-*`, `font-*`).
-- **Spacing/rhythm:** Padding/gap/margin utilities (`p-*`, `m-*`, `gap-*`, `space-y-*`) define vertical and horizontal density.
+- Supports light/dark visual variants.
+- Legal-doc aesthetic:
+  - neutral slate palette.
+  - section blocks and soft borders.
+  - highlighted fraud section with sky/indigo gradient.
+- Emphasis:
+  - numbered badges and heading typography.
 
 ## Content Details
-The following user-facing strings/placeholders/buttons are present in source and should appear exactly as implemented:
-- `Legal Documentation`
-- `Privacy Policy`
-- `Last Updated:`
-- `This Privacy Policy explains how our B2B Garments and Textile Marketplace platform collects, uses, protects, and manages your information. Our platform connects international Buyers, Factories, and Buying Houses in a secure and professional environment. By creating an account or using our services, you agree to the practices described in this policy.`
-- `Information We Collect`
-- `Account Data`
-- `Business Data`
-- `Communications`
-- `Technical Information`
-- `How We Use Your Information`
-- `3. Fraud Prevention Measures`
-- `13. Contact Information`
-- `Direct Support`
-- `support@gartexhub.com`
-- `LinkedIn`
-- `Facebook`
-- `© 2026 GarTexHub Professional Network. All Rights Reserved.`
-- `react`
-- `, {
-    day:`
-- `,
-    year:`
-- `text-slate-900 dark:text-slate-200`
-- `text-lg`
-- `grid md:grid-cols-2 gap-8`
-- `Full Name`
-- `,`
-- `mt-8 grid md:grid-cols-2 gap-8`
-- `Chat messages`
-- `Video/Audio logs`
-- `IP address`
-- `Device/Browser type`
-- `Usage activity`
-- `Search history`
-- `text-sky-500`
-- `grid md:grid-cols-2 gap-x-8 gap-y-4 text-sky-50`
-- `flex items-start gap-3`
-- `fill=`
-- `stroke=`
-- `viewBox=`
-- `strokeWidth=`
-- `d=`
-- `, text:`
-- `},
-                { id: 5, title:`
-- `},
-                { id: 6, title:`
-- `},
-                { id: 7, title:`
-- `},
-                { id: 8, title:`
-- `grid md:grid-cols-2 gap-6`
-- `space-y-1`
-- `text-slate-400 dark:text-slate-500 text-sm`
-- `>
-                    <a href=`
+Exact key text:
+- Badge: `Legal Documentation`
+- Title: `Privacy Policy`
+- `Last Updated: <dynamic date>`
+- Core section titles:
+  - `1 Information We Collect`
+  - `2 How We Use Your Information`
+  - `3. Fraud Prevention Measures`
+  - `4. Data Sharing Policy`
+  - `5. Call Recording & Chat Storage`
+  - `6. Digital Contracts & Signatures`
+  - `7. Data Security`
+  - `8. User Rights`
+  - `13. Contact Information`
+- Category subheadings in section 1:
+  - `Account Data`
+  - `Business Data`
+  - `Communications`
+  - `Technical Information`
+- Contact line:
+  - `support@gartexhub.com`
+- Footer line:
+  - `© 2026 GarTexHub Professional Network. All Rights Reserved.`
 
 ## Interactions & Functionality
-- **Forms/inputs/buttons:** wired with React state and event handlers.
-- **Behavior model:** user actions trigger local state updates and/or API requests through shared auth/request helpers where used.
+- Static legal content page.
+- Dynamic behavior:
+  - computes `lastUpdated` using `new Date().toLocaleDateString('en-GB', ...)`.
+- Contains plain anchor elements for social labels (`LinkedIn`, `Facebook`) with placeholder `href="#"`.
+- No backend/API interaction in this component.
 
 ## Images & Media
-- **Image elements:** none explicitly declared in this page source (icons may come from component libraries).
-- **Video elements:** not explicitly declared.
-- **Iconography:** uses shared icon sets/components (e.g., Lucide or emoji/text icons where coded).
+- No external images or video.
+- Visual effects created via gradients/shapes and SVG check icon in fraud section list.
 
 ## Extra Notes / Metadata
-- **SEO metadata:** no page-specific `<head>` metadata is set in this component; defaults are inherited from app shell/index.
-- **Accessibility notes:** semantic improvements should ensure button labels, alt text, focus states, and color contrast remain compliant.
-- **Responsive behavior:** controlled by utility breakpoints (`sm:`, `md:`, `lg:` etc.) and flexible grid/flex containers.
-- **Implementation source of truth:** this markdown reflects the current component and should be updated whenever UI text/layout/classes change.
+- SEO:
+  - no explicit `<title>`/meta management in this component.
+- Accessibility:
+  - clear heading hierarchy and list usage.
+  - ensure placeholder social links are replaced with valid URLs before production.
+- Compliance note:
+  - section numbering jumps to `13` in source; if legal numbering standards require continuity, update copy accordingly.

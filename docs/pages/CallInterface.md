@@ -1,107 +1,85 @@
-# CallInterface — Complete Page Specification
+# CallInterface - Complete Page Specification (Manual)
 
 ## Page Title & Description
-- **Page title:** `CallInterface`
-- **Primary route(s):** `(route not directly registered in App.jsx)`
-- **Purpose:** This page is implemented by `src/pages/CallInterface.jsx` and supports a specific GarTexHub user workflow.
+- Title: `Supplier Intro Meeting` (dynamic from call details)
+- Route: `/call?callId=<id>&matchId=<id>`
+- Purpose: WebRTC call room UI for video/audio session, call lifecycle controls, and recording status tracking.
 
 ## Layout & Structure
-- **Top-level layout:** Built as a React functional page component with utility-class-driven responsive structure.
-- **Major structural elements present:** `<aside>`, `<button>`, `<footer>`, `<header>`, `<section>`, `<video>`.
-- **Approximate placement model (desktop):**
-  - Header / top controls: `x: 0-100%`, `y: 0-15%` (if present).
-  - Primary content zone: `x: 5-95%`, `y: 12-88%`.
-  - Sidebars/panels: left and/or right columns where `aside` blocks are present.
-  - Footer/trailing actions: lower area of the page card/container.
+- Two-column layout:
+1. Main call canvas (left, large):
+  - call header/status
+  - local + remote video panes
+  - lifecycle action buttons
+  - status message banner
+2. Meeting details panel (right):
+  - badges for meeting metadata
+  - participant chips
+  - notes card
+
+Main pane sections:
+- Header with quick toggles (mute/camera/share).
+- Video grid (2 panels).
+- Status notifications.
+- Footer action row (`Start`, `End`, `Refresh Recording`, `Schedule Follow-up`, `Leave`).
 
 ## Theme & Styling
-- **Theme system:** Tailwind utility classes and app-level dark/light behavior.
-- **Explicit color tokens found in implementation:** `No explicit hex values; inherited palette/classes`.
-- **Typography:** Sans-serif utility-based text sizing/weight hierarchy (`text-*`, `font-*`).
-- **Spacing/rhythm:** Padding/gap/margin utilities (`p-*`, `m-*`, `gap-*`, `space-y-*`) define vertical and horizontal density.
+- Neutral dark/light hybrid depending on app theme classes.
+- Video area uses black backgrounds for stream surfaces.
+- Status banners:
+  - blue informational style.
+- Buttons:
+  - bordered utility controls with red accent for `End Call`.
 
 ## Content Details
-The following user-facing strings/placeholders/buttons are present in source and should appear exactly as implemented:
-- `🖥️ Share`
-- `You`
-- `Participant`
-- `Start Call`
-- `End Call`
-- `Schedule Follow-up`
-- `Leave`
-- `Meeting Details`
-- `Participants`
-- `))) :`
-- `No participant data yet.`
-- `Notes`
-- `Share key decisions, pricing updates, and next actions here during the call.`
-- `react`
-- `react-router-dom`
-- `../lib/auth`
-- `available`
-- `failed`
-- `ws://localhost:4000`
-- `callId`
-- `matchId`
-- `, {
-        method:`
-- `:`
-- `)
-      }
-    } catch (err) {
-      setStatusMessage(err.message ||`
-- `ice`
-- `offer`
-- `{}`
-- `) {
-          setPeerState(payload.should_offer ?`
-- `) {
-          setPeerState(`
-- `WebSocket error`
-- `Follow-up date/time`
-- `/calls/scheduled`
-- `POST`
-- `,
-          security_audit_id: callDetails?.security_audit_id ||`
-- `Failed to schedule follow-up.`
-- `)
-    } catch (err) {
-      setStatusMessage(err.message ||`
-- `scheduled`
-- `text-sm text-gray-600 dark:text-gray-300`
-- `grid grid-cols-1 gap-3 md:grid-cols-2`
-- `h-full w-full object-cover`
-- `grid gap-2`
-- `Started`
-- `Not started`
-- `mt-2 flex flex-wrap gap-2`
-- **Button labels detected:** `{isRefreshing ? 'Refreshing…' : 'Refresh Recording'}`, `End Call`, `Schedule Follow-up`, `Start Call`, `🖥️ Share`
-- **Static Link destinations:** `/`
+Key visible text:
+- Dynamic status line:
+  - `<call.status> • <recording_status> • <peerState>`
+- Toggle labels:
+  - `🔇 Unmute` / `🎙️ Mute`
+  - `📷 Camera On` / `📷 Camera Off`
+  - `🖥️ Share`
+- Footer actions:
+  - `Start Call`
+  - `End Call`
+  - `Refresh Recording`
+  - `Schedule Follow-up`
+  - `Leave`
+- Meeting details section:
+  - `Meeting Details`
+  - `Meeting ID`, `Match ID`, `Started`, `Ended`
+  - `Participants`
+  - `Notes`
+  - note copy: `Share key decisions, pricing updates, and next actions here during the call.`
 
 ## Interactions & Functionality
-- **Forms/inputs/buttons:** wired with React state and event handlers.
-- **Event handler expressions found:**
-  - `() => {
-                  setIsCameraOn((v) => !v)
-                  const stream = localStreamRef.current
-                  if (stream) stream.getVideoTracks().forEach((t) => { t.enabled = !isCameraOn`
-  - `() => {
-                  setIsMuted((v) => !v)
-                  const stream = localStreamRef.current
-                  if (stream) stream.getAudioTracks().forEach((t) => { t.enabled = isMuted`
-  - `endCall`
-  - `refreshRecordingStatus`
-  - `scheduleFollowUp`
-  - `startCall`
-- **Behavior model:** user actions trigger local state updates and/or API requests through shared auth/request helpers where used.
+- Session bootstrap:
+  - if no `callId` but `matchId` exists -> `POST /calls/join`.
+- Call details fetch:
+  - `GET /calls/:callId`.
+- Recording polling:
+  - polls call details every 4s when call ended and recording status not terminal.
+- WebRTC flow:
+  - captures local media (`getUserMedia`).
+  - creates RTCPeerConnection.
+  - exchanges offer/answer/ice over WebSocket (`join_call_room`, `webrtc_signal`).
+  - binds tracks to local/remote `<video>` elements.
+- Lifecycle API actions:
+  - start: `POST /calls/:callId/start`
+  - end: `POST /calls/:callId/end`
+  - schedule follow-up: `POST /calls/scheduled`
+- Local device controls:
+  - mute toggles audio tracks enabled.
+  - camera toggles video tracks enabled.
 
 ## Images & Media
-- **Image elements:** none explicitly declared in this page source (icons may come from component libraries).
-- **Video elements:** present (`<video>` tag detected).
-- **Iconography:** uses shared icon sets/components (e.g., Lucide or emoji/text icons where coded).
+- Primary media is live WebRTC video streams.
+- No static image assets required.
 
 ## Extra Notes / Metadata
-- **SEO metadata:** no page-specific `<head>` metadata is set in this component; defaults are inherited from app shell/index.
-- **Accessibility notes:** semantic improvements should ensure button labels, alt text, focus states, and color contrast remain compliant.
-- **Responsive behavior:** controlled by utility breakpoints (`sm:`, `md:`, `lg:` etc.) and flexible grid/flex containers.
-- **Implementation source of truth:** this markdown reflects the current component and should be updated whenever UI text/layout/classes change.
+- SEO:
+  - no page-level metadata.
+- Accessibility:
+  - some control labels rely on emoji text; can be improved with explicit screen-reader labels.
+- Reliability:
+  - WS errors and media permission errors are surfaced through status message.

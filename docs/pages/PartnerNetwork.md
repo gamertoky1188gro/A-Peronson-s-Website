@@ -1,96 +1,105 @@
-# PartnerNetwork — Complete Page Specification
+# PartnerNetwork - Complete Page Specification (Manual)
 
 ## Page Title & Description
-- **Page title:** `PartnerNetwork`
-- **Primary route(s):** `(route not directly registered in App.jsx)`
-- **Purpose:** This page is implemented by `src/pages/PartnerNetwork.jsx` and supports a specific GarTexHub user workflow.
+- Page title: `PartnerNetwork`
+- Route: `/partner-network` (protected, role-restricted in app routing).
+- Purpose: Manage partner requests and connected relationships by status, including send/accept/reject/cancel actions.
 
 ## Layout & Structure
-- **Top-level layout:** Built as a React functional page component with utility-class-driven responsive structure.
-- **Major structural elements present:** `<button>`, `<input>`.
-- **Approximate placement model (desktop):**
-  - Header / top controls: `x: 0-100%`, `y: 0-15%` (if present).
-  - Primary content zone: `x: 5-95%`, `y: 12-88%`.
-  - Sidebars/panels: left and/or right columns where `aside` blocks are present.
-  - Footer/trailing actions: lower area of the page card/container.
+- Top header row:
+  - title and subtitle
+  - optional view-only indicator for agent mode
+  - target account ID input + `Send Request` button
+- Secondary utility row:
+  - search input
+  - signed-in role display
+- Status tab row:
+  - `Connected`
+  - `Pending Requests`
+  - `Rejected`
+- Feedback rows:
+  - error message
+  - loading indicator
+- Card grid:
+  - partner/request cards in responsive 1/2/3-column layout.
+- Empty state message when no rows.
+
+Approximate placement:
+- Controls in top ~25% of page.
+- Cards occupy remaining page height.
 
 ## Theme & Styling
-- **Theme system:** Tailwind utility classes and app-level dark/light behavior.
-- **Explicit color tokens found in implementation:** `#0A66C2`, `#1A1A1A`, `#5A5A5A`.
-- **Typography:** Sans-serif utility-based text sizing/weight hierarchy (`text-*`, `font-*`).
-- **Spacing/rhythm:** Padding/gap/margin utilities (`p-*`, `m-*`, `gap-*`, `space-y-*`) define vertical and horizontal density.
+- White panel style with blue brand action.
+- Primary color: `#0A66C2`.
+- Text palette: dark neutral with muted secondary gray.
+- Cards:
+  - bordered, rounded, soft shadow.
+- Active tab:
+  - blue background + white text.
 
 ## Content Details
-The following user-facing strings/placeholders/buttons are present in source and should appear exactly as implemented:
-- `Partner Network`
-- `Manage connected factories and request workflow by account ID`
-- `Agent mode: view-only access enabled.`
-- `Send Request`
-- `Loading...`
-- `✓ Verified`
-- `Status:`
-- `Direction:`
-- `View Profile`
-- `Accept`
-- `Reject`
-- `Cancel`
-- `No requests found for this filter.`
-- `react`
-- `react-router-dom`
-- `../lib/auth`
-- `, label:`
-- `},
-  { key:`
-- `)
-    try {
-      await apiRequest(`
-- `, {
-        method:`
-- `)
-      setTab(`
-- `)
-      await loadNetwork(`
-- `)
-    } catch (err) {
-      setError(err.status === 403 ?`
-- `POST`
-- `text-sm text-[#5A5A5A]`
-- `text-xs text-amber-700 mt-1`
-- `mb-4`
-- `flex gap-2`
-- `bg-[#0A66C2] text-white`
-- `border`
-- `mb-3 text-sm text-red-600`
-- `mb-3 text-sm text-[#5A5A5A]`
-- `grid sm:grid-cols-2 lg:grid-cols-3 gap-4`
-- `text-xs text-[#5A5A5A] capitalize`
-- `capitalize`
-- `factory`
-- `accept`
-- `reject`
-- `text-sm text-[#5A5A5A] mt-4`
-- **Button labels detected:** `Send Request`
-- **Input placeholders detected:** `Search partners`, `Target account ID`
+Exact key text:
+- Heading: `Partner Network`
+- Subtitle: `Manage connected factories and request workflow by account ID`
+- Agent notice: `Agent mode: view-only access enabled.`
+- Input placeholder:
+  - `Target account ID`
+  - `Search partners`
+- Button labels:
+  - `Send Request`
+  - `Accept`
+  - `Reject`
+  - `Cancel`
+  - `View Profile`
+- Tab labels:
+  - `Connected`
+  - `Pending Requests`
+  - `Rejected`
+- Status block labels:
+  - `Status:`
+  - `Direction:`
+  - `Role:`
+  - `Account ID:`
+- Fallback text:
+  - `Unknown account`
+  - `No requests found for this filter.`
+  - `Loading...`
 
 ## Interactions & Functionality
-- **Forms/inputs/buttons:** wired with React state and event handlers.
-- **Event handler expressions found:**
-  - `() => applyAction(row.id, 'accept')`
-  - `() => applyAction(row.id, 'cancel')`
-  - `() => applyAction(row.id, 'reject')`
-  - `() => setTab(item.key)`
-  - `(e) => setQuery(e.target.value)`
-  - `(e) => setTargetAccountId(e.target.value)`
-  - `sendRequest`
-- **Behavior model:** user actions trigger local state updates and/or API requests through shared auth/request helpers where used.
+- Data load:
+  - `GET /partners?status=<tab>` on mount and tab changes.
+- Search:
+  - client-side filters loaded rows by counterparty `name`/`id`.
+- Send request:
+  - `POST /partners/requests` with `{ targetAccountId }`.
+  - after success:
+    - clears target input.
+    - switches tab to `pending`.
+    - reloads pending data.
+- Row actions:
+  - Accept: `POST /partners/requests/:requestId/accept`
+  - Reject: `POST /partners/requests/:requestId/reject`
+  - Cancel: `POST /partners/requests/:requestId/cancel`
+- Permissions behavior:
+  - `canManage = permissions.can_manage && !permissions.view_only`.
+  - disables write controls when user is view-only or loading.
+- View profile link:
+  - factory -> `/factory/:id`
+  - otherwise -> `/buying-house/:id`
+- Error behavior:
+  - 403 mapped to `You do not have permission to perform this action.`
+  - otherwise shows API error text.
 
 ## Images & Media
-- **Image elements:** none explicitly declared in this page source (icons may come from component libraries).
-- **Video elements:** not explicitly declared.
-- **Iconography:** uses shared icon sets/components (e.g., Lucide or emoji/text icons where coded).
+- No image/media assets.
+- Uses text-only verified badge marker: `✓ Verified`.
 
 ## Extra Notes / Metadata
-- **SEO metadata:** no page-specific `<head>` metadata is set in this component; defaults are inherited from app shell/index.
-- **Accessibility notes:** semantic improvements should ensure button labels, alt text, focus states, and color contrast remain compliant.
-- **Responsive behavior:** controlled by utility breakpoints (`sm:`, `md:`, `lg:` etc.) and flexible grid/flex containers.
-- **Implementation source of truth:** this markdown reflects the current component and should be updated whenever UI text/layout/classes change.
+- SEO:
+  - no explicit page metadata tags.
+- Accessibility:
+  - control disabling reflects permission state.
+  - consider adding `aria-live` for load/error status text for assistive feedback.
+- Responsive:
+  - header control rows wrap on smaller screens.
+  - cards shift to single-column in narrow viewport.

@@ -1,27 +1,37 @@
-# NotificationsCenter — Complete Page Specification
+# NotificationsCenter - Complete Page Specification (Manual)
 
 ## Page Title & Description
-- **Page title:** `NotificationsCenter`
-- **Primary route(s):** `(route not directly registered in App.jsx)`
-- **Purpose:** This page is implemented by `src/pages/NotificationsCenter.jsx` and supports a specific GarTexHub user workflow.
+- Page title: `NotificationsCenter`
+- Source file: `src/pages/NotificationsCenter.jsx`
+- Route: `/notifications` (all authenticated roles)
+- Purpose: Displays user notifications with type tabs, unread filtering, and mark-as-read action.
 
 ## Layout & Structure
-- **Top-level layout:** Built as a React functional page component with utility-class-driven responsive structure.
-- **Major structural elements present:** `<aside>`, `<button>`, `<input>`, `<main>`.
-- **Approximate placement model (desktop):**
-  - Header / top controls: `x: 0-100%`, `y: 0-15%` (if present).
-  - Primary content zone: `x: 5-95%`, `y: 12-88%`.
-  - Sidebars/panels: left and/or right columns where `aside` blocks are present.
-  - Footer/trailing actions: lower area of the page card/container.
+- Outer page: full-height white themed container.
+- Main centered grid (`max-w-7xl`):
+  - Desktop 4 columns.
+  - Main notification list: 3 columns width.
+  - Filter sidebar: 1 column width.
+- Main column structure:
+  1. Header row with title.
+  2. Tab button row (`All`, `Search Matches`, `System`).
+  3. Notification list cards.
+- Sidebar:
+  - `Filters` card containing `Unread` checkbox.
+
+Approximate placement:
+- Notification list occupies left 75% desktop.
+- Filters card occupies right 25% desktop.
+- Mobile stacks vertically.
 
 ## Theme & Styling
-- **Theme system:** Tailwind utility classes and app-level dark/light behavior.
-- **Explicit color tokens found in implementation:** `#0A66C2`, `#5A5A5A`, `#F4F9FF`.
-- **Typography:** Sans-serif utility-based text sizing/weight hierarchy (`text-*`, `font-*`).
-- **Spacing/rhythm:** Padding/gap/margin utilities (`p-*`, `m-*`, `gap-*`, `space-y-*`) define vertical and horizontal density.
+- Accent blue `#0A66C2` for active tab and primary action link.
+- Hover card highlight: `#F4F9FF`.
+- Secondary metadata text: `#5A5A5A`.
+- Card appearance: white, border, rounded corners.
 
 ## Content Details
-The following user-facing strings/placeholders/buttons are present in source and should appear exactly as implemented:
+Exact text:
 - `Notifications`
 - `All`
 - `Search Matches`
@@ -30,39 +40,42 @@ The following user-facing strings/placeholders/buttons are present in source and
 - `Mark read`
 - `Filters`
 - `Unread`
-- `react`
-- `react-router-dom`
-- `../lib/auth`
-- `all`
-- `PATCH`
-- `mb-4`
-- `flex gap-2`
-- `bg-[#0A66C2] text-white`
-- `smart_search_match`
-- `system`
-- `space-y-3`
-- `buyer_request`
-- `/buyer-requests`
-- `/feed`
-- `checkbox`
+
+Dynamic text:
+- Each notification shows:
+  - `i.message || i.title`
+  - `new Date(i.created_at).toLocaleString()`
+- `View` link destination:
+  - `/buyer-requests` when `entity_type === 'buyer_request'`
+  - otherwise `/feed`.
 
 ## Interactions & Functionality
-- **Forms/inputs/buttons:** wired with React state and event handlers.
-- **Event handler expressions found:**
-  - `() => markRead(i.id)`
-  - `()=>setTab('all')`
-  - `()=>setTab('smart_search_match')`
-  - `()=>setTab('system')`
-  - `(e)=>setUnreadOnly(e.target.checked)`
-- **Behavior model:** user actions trigger local state updates and/or API requests through shared auth/request helpers where used.
+- State:
+  - `tab` default `all`.
+  - `unreadOnly` default `false`.
+  - `items` loaded from API.
+- Loading behavior:
+  - On mount, `load()` fetches notifications with token.
+- API calls:
+  - GET `/notifications`
+  - PATCH `/notifications/{id}/read`
+- Tab interactions:
+  - `All` -> shows all types.
+  - `Search Matches` -> `smart_search_match`.
+  - `System` -> `system`.
+- Filter interaction:
+  - `Unread` checkbox restricts to unread only.
+- Row action:
+  - `Mark read` updates backend then reloads list.
 
 ## Images & Media
-- **Image elements:** none explicitly declared in this page source (icons may come from component libraries).
-- **Video elements:** not explicitly declared.
-- **Iconography:** uses shared icon sets/components (e.g., Lucide or emoji/text icons where coded).
+- No media assets used.
+- Purely text cards with buttons and links.
 
 ## Extra Notes / Metadata
-- **SEO metadata:** no page-specific `<head>` metadata is set in this component; defaults are inherited from app shell/index.
-- **Accessibility notes:** semantic improvements should ensure button labels, alt text, focus states, and color contrast remain compliant.
-- **Responsive behavior:** controlled by utility breakpoints (`sm:`, `md:`, `lg:` etc.) and flexible grid/flex containers.
-- **Implementation source of truth:** this markdown reflects the current component and should be updated whenever UI text/layout/classes change.
+- Route access requires authenticated user.
+- Error handling is silent during initial load (`load().catch(() => {})`).
+- Accessibility:
+  - Buttons and checkbox have explicit visible labels.
+- SEO:
+  - No page-specific metadata in component.

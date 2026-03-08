@@ -1,33 +1,55 @@
-# BuyerProfile — Complete Page Specification
+# BuyerProfile - Complete Page Specification (Manual)
 
 ## Page Title & Description
-- **Page title:** `BuyerProfile`
-- **Primary route(s):** `(route not directly registered in App.jsx)`
-- **Purpose:** This page is implemented by `src/pages/BuyerProfile.jsx` and supports a specific GarTexHub user workflow.
+- Page title: `BuyerProfile`
+- Source file: `src/pages/BuyerProfile.jsx`
+- Route: `/buyer/:id` (protected roles: all authenticated roles)
+- Purpose: Public-style buyer profile page showing buyer identity, active requests, past deal stats, and ratings/reviews summary.
 
 ## Layout & Structure
-- **Top-level layout:** Built as a React functional page component with utility-class-driven responsive structure.
-- **Major structural elements present:** `<aside>`, `<button>`, `<main>`, `<section>`.
-- **Approximate placement model (desktop):**
-  - Header / top controls: `x: 0-100%`, `y: 0-15%` (if present).
-  - Primary content zone: `x: 5-95%`, `y: 12-88%`.
-  - Sidebars/panels: left and/or right columns where `aside` blocks are present.
-  - Footer/trailing actions: lower area of the page card/container.
+- Global shell:
+  - `NavBar` top, `Footer` bottom, floating assistant overlay.
+- Main container:
+  - `max-w-7xl` centered, padding `p-6`.
+- Core grid:
+  - Desktop: 3 columns (`lg:grid-cols-3`).
+  - Left sidebar (`aside`): 1 column, sticky.
+  - Main content (`main`): 2 columns area, stacked sections.
+- Sidebar (left block):
+  - Buyer card with avatar placeholder square, name, verified badge, location.
+  - Quick facts: industry, organization type, rating.
+  - Action buttons: `Contact`, `Follow`.
+- Main content sections in order:
+  1. About section with tags and three info cards.
+  2. Active Buyer Requests list (card-per-request).
+  3. Past Deals KPI cards.
+  4. Reviews section with score, stars, reliability cards, review list.
+
+Approximate placement:
+- Sidebar: left 0-33% desktop width, full width mobile.
+- Main: right 33-100% desktop width, full width mobile.
 
 ## Theme & Styling
-- **Theme system:** Tailwind utility classes and app-level dark/light behavior.
-- **Explicit color tokens found in implementation:** `#083B75`, `#0A66C2`, `#1A1A1A`, `#5A5A5A`, `#E8F3FF`, `#F4F9FF`.
-- **Typography:** Sans-serif utility-based text sizing/weight hierarchy (`text-*`, `font-*`).
-- **Spacing/rhythm:** Padding/gap/margin utilities (`p-*`, `m-*`, `gap-*`, `space-y-*`) define vertical and horizontal density.
+- Base background: white.
+- Accent blue: `#0A66C2`.
+- Secondary light blue card background: `#F4F9FF`.
+- Secondary text color: `#5A5A5A`.
+- Verified pill uses pale blue background with blue check circle.
+- Status chips:
+  - `Open`: green pill.
+  - `In Progress`: blue pill.
+- Cards:
+  - Rounded corners, white surfaces, drop shadows, bordered rows.
 
 ## Content Details
-The following user-facing strings/placeholders/buttons are present in source and should appear exactly as implemented:
+Exact fixed text:
 - `Verified`
 - `Industry:`
 - `Organization:`
 - `Rating:`
 - `Contact`
 - `Follow`
+- `About`
 - `Typical Order Volume`
 - `Preferred Fabrics`
 - `Certifications Required`
@@ -43,72 +65,53 @@ The following user-facing strings/placeholders/buttons are present in source and
 - `Recent Avg:`
 - `Reliability:`
 - `Qualified Ratings:`
+- `Breakdown: 5★ ... 1★`
 - `— Factory Reviewer • 3 weeks ago`
 - `No reviews available yet.`
-- `react`
-- `react-router-dom`
-- `★★★★★`
-- `Global Apparel Co`
-- `,
-    orgType:`
-- `,
-    about:`
-- `,
-    tags: [`
-- `,`
-- `],
-    orderVolume:`
-- `,
-    fabrics: [`
-- `BSCI`
-- `OEKO-TEX`
-- `,
-      summary:`
-- `,
-      budget:`
-- `2026-03-30`
-- `,
-    },
-    {
-      id: 2,
-      title:`
-- `2026-04-15`
-- `92%`
-- `text-sm text-[#5A5A5A]`
-- `mt-4 space-y-2 text-sm text-[#5A5A5A]`
-- `text-[#1A1A1A]`
-- `0.0`
-- `mt-4 flex gap-2`
-- `text-[#5A5A5A] mb-3`
-- `flex flex-wrap gap-2 mb-3`
-- `grid md:grid-cols-3 gap-4 text-sm text-[#5A5A5A]`
-- `text-xs text-[#5A5A5A]`
-- `?`
-- `:`
-- `text-sm text-[#5A5A5A] mt-1`
-- `text-sm text-[#5A5A5A] mt-2`
-- `•`
-- `No reviews yet`
-- `text-lg`
-- `grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 text-xs text-[#5A5A5A]`
-- `uppercase`
-- `low`
-- `text-xs text-[#5A5A5A] mb-3`
-- `space-y-3`
-- `text-xs text-[#5A5A5A] mt-1`
-- **Button labels detected:** `Contact`, `Follow`
+
+Hardcoded profile content:
+- Buyer name: `Global Apparel Co`
+- Location: `Dhaka, Bangladesh`
+- Industry: `Garments`
+- Organization type: `Direct Buyer`
+- About paragraph about seasonal sourcing and QA.
+- Tags: `Knits`, `Woven`, `Embroidery`
+- Order volume: `500-5000 units per order`
+- Fabrics: `Cotton`, `Poly-cotton`, `Denim`
+- Certifications: `BSCI`, `OEKO-TEX`
+
+Hardcoded request content:
+- `White cotton tees with custom print`
+- `Denim jeans - slim fit`
+
+Dynamic content:
+- Rating data is fetched from `/ratings/profiles/buyer:global-apparel-co`.
+- Aggregate score, count, reliability, breakdown, and recent reviews populate UI.
 
 ## Interactions & Functionality
-- **Forms/inputs/buttons:** wired with React state and event handlers.
-- **Behavior model:** user actions trigger local state updates and/or API requests through shared auth/request helpers where used.
+- Data fetch:
+  - `useEffect` fetches rating summary once on mount.
+  - API base from `VITE_API_URL` fallback `http://localhost:4000/api`.
+- Utility function:
+  - `starsFromAverage(avg)` returns star string based on rounded average.
+- Interactive controls:
+  - `View Details` links route to `/buyer/requests/{id}`.
+  - `Contact` and `Follow` are UI buttons (no click handler defined in this component).
+- Conditional rendering:
+  - Review list renders fetched recent reviews.
+  - Empty state shown when no recent reviews.
 
 ## Images & Media
-- **Image elements:** none explicitly declared in this page source (icons may come from component libraries).
-- **Video elements:** not explicitly declared.
-- **Iconography:** uses shared icon sets/components (e.g., Lucide or emoji/text icons where coded).
+- No real image URLs in this page component.
+- Avatar is a placeholder block (`w-20 h-20 bg-gray-100`).
+- No video/audio media.
 
 ## Extra Notes / Metadata
-- **SEO metadata:** no page-specific `<head>` metadata is set in this component; defaults are inherited from app shell/index.
-- **Accessibility notes:** semantic improvements should ensure button labels, alt text, focus states, and color contrast remain compliant.
-- **Responsive behavior:** controlled by utility breakpoints (`sm:`, `md:`, `lg:` etc.) and flexible grid/flex containers.
-- **Implementation source of truth:** this markdown reflects the current component and should be updated whenever UI text/layout/classes change.
+- Responsive behavior:
+  - Converts 3-column desktop layout into 1-column mobile flow.
+  - Internal cards use responsive grids for detail blocks.
+- Accessibility:
+  - Semantic `aside`, `main`, `section`, heading hierarchy.
+  - Links/buttons have visible text labels.
+- SEO:
+  - No page-level meta/title management present.

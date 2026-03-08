@@ -1,28 +1,54 @@
-# OwnerDashboard — Complete Page Specification
+# OwnerDashboard - Complete Page Specification (Manual)
 
 ## Page Title & Description
-- **Page title:** `OwnerDashboard`
-- **Primary route(s):** `(route not directly registered in App.jsx)`
-- **Purpose:** This page is implemented by `src/pages/OwnerDashboard.jsx` and supports a specific GarTexHub user workflow.
+- Page title: `OwnerDashboard`
+- Source file: `src/pages/OwnerDashboard.jsx`
+- Route: `/owner` (owner/admin only)
+- Purpose: Owner/admin control dashboard with sidebar navigation and section-specific summary/analytics views.
 
 ## Layout & Structure
-- **Top-level layout:** Built as a React functional page component with utility-class-driven responsive structure.
-- **Major structural elements present:** `<aside>`, `<main>`.
-- **Approximate placement model (desktop):**
-  - Header / top controls: `x: 0-100%`, `y: 0-15%` (if present).
-  - Primary content zone: `x: 5-95%`, `y: 12-88%`.
-  - Sidebars/panels: left and/or right columns where `aside` blocks are present.
-  - Footer/trailing actions: lower area of the page card/container.
+- Root: full-height dashboard with `max-w-full` and 6-column desktop grid.
+- Sidebar (`aside`, 1 column on desktop):
+  - Sticky vertical nav cards:
+    - Dashboard Home
+    - Buyer Requests
+    - Chats
+    - Partner Network
+    - Member Management
+    - Contracts Vault
+    - Insights & Analytics
+    - Subscription
+    - Logout
+- Main area (`main`, 5 columns):
+  - Loading/error banners at top.
+  - Content depends on `active` state.
+- `home` section:
+  - KPI card row (4 cards).
+  - Subscription & Access card.
+- Other sections:
+  - Requests, Chats, Network, Contracts: each a single summary card.
+  - Insights: optional upgrade warning + three monthly series panels.
+
+Approximate placement:
+- Sidebar x=0-16% desktop.
+- Main content x=16-100%.
+- Mobile stacks one-column.
 
 ## Theme & Styling
-- **Theme system:** Tailwind utility classes and app-level dark/light behavior.
-- **Explicit color tokens found in implementation:** `#0A66C2`, `#1A1A1A`, `#5A5A5A`, `#F4F9FF`, `#F9FBFD`.
-- **Typography:** Sans-serif utility-based text sizing/weight hierarchy (`text-*`, `font-*`).
-- **Spacing/rhythm:** Padding/gap/margin utilities (`p-*`, `m-*`, `gap-*`, `space-y-*`) define vertical and horizontal density.
+- Accent: `#0A66C2`.
+- Page background tone includes `#F9FBFD` in `SeriesList` cards.
+- Text:
+  - Primary dark headings.
+  - Secondary `#5A5A5A`.
+- Active sidebar item:
+  - Light-blue background + blue text.
+- Warnings:
+  - Yellow alert panel for enterprise upsell in insights.
+- Error:
+  - Red tinted banner.
 
 ## Content Details
-The following user-facing strings/placeholders/buttons are present in source and should appear exactly as implemented:
-- `No data yet.`
+Exact text labels:
 - `📊 Dashboard Home`
 - `📋 Buyer Requests`
 - `💬 Chats`
@@ -39,58 +65,45 @@ The following user-facing strings/placeholders/buttons are present in source and
 - `Contracts / Docs`
 - `Subscription & Access`
 - `Current plan:`
-- `Chats`
-- `Contracts Vault`
-- `Insights & Analytics`
+- `Enterprise analytics enabled.`
+- `Free plan: advanced analytics are limited.`
+- `Total:`
+- `Open:`
+- `Active chat threads:`
+- `Messages sent:`
+- `Connected factory partners:`
+- `Total factory profiles:`
+- `Contracts uploaded:`
+- `Total documents:`
 - `Upgrade to Enterprise to unlock advanced monthly trends and analytics event breakdown.`
-- `react`
-- `react-router-dom`
-- `text-[#5A5A5A]`
-- `home`
-- `bg-[#F4F9FF] text-[#0A66C2]`
-- `requests`
-- `chats`
-- `?`
-- `:`
-- `members`
-- `grid grid-cols-1 md:grid-cols-4 gap-4 mb-6`
-- `text-sm text-[#5A5A5A]`
-- `free`
-- `text-sm text-[#5A5A5A] mt-1`
-- `}</div>
-              </div>
-            </div>
-          )}
-
-          {active ===`
-- `space-y-4`
-- `grid grid-cols-1 md:grid-cols-3 gap-3`
-- `items={dashboard?.series?.buyer_requests || []} />
-                <SeriesList title=`
-- `items={dashboard?.series?.chats || []} />
-                <SeriesList title=`
-- **Static Link destinations:** `/login`, `/owner`, `/owner?tab=chats`, `/owner?tab=contracts`, `/owner?tab=insights`, `/owner?tab=members`, `/owner?tab=network`, `/owner?tab=requests`, `/owner?tab=subscription`
+- `Buyer Requests / Month`
+- `Chats / Month`
+- `Documents / Month`
+- `No data yet.`
 
 ## Interactions & Functionality
-- **Forms/inputs/buttons:** wired with React state and event handlers.
-- **Event handler expressions found:**
-  - `() => setActive('chats')`
-  - `() => setActive('contracts')`
-  - `() => setActive('home')`
-  - `() => setActive('insights')`
-  - `() => setActive('members')`
-  - `() => setActive('network')`
-  - `() => setActive('requests')`
-  - `() => setActive('subscription')`
-- **Behavior model:** user actions trigger local state updates and/or API requests through shared auth/request helpers where used.
+- State:
+  - `active` section default `home`.
+- Data:
+  - From `useAnalyticsDashboard()`.
+- Sidebar interactions:
+  - Clicking each link sets `active` and navigates with `to` path/query.
+- Conditional rendering:
+  - Panels shown according to selected `active`.
+  - Insights section shows series charts; enterprise warning shown when not enterprise.
+- Series chart behavior (`SeriesList`):
+  - Bar width = `Math.min(100, count * 10)%`.
+  - Displays month and count.
 
 ## Images & Media
-- **Image elements:** none explicitly declared in this page source (icons may come from component libraries).
-- **Video elements:** not explicitly declared.
-- **Iconography:** uses shared icon sets/components (e.g., Lucide or emoji/text icons where coded).
+- No media files.
+- Charts are CSS bars, not image/chart libraries.
 
 ## Extra Notes / Metadata
-- **SEO metadata:** no page-specific `<head>` metadata is set in this component; defaults are inherited from app shell/index.
-- **Accessibility notes:** semantic improvements should ensure button labels, alt text, focus states, and color contrast remain compliant.
-- **Responsive behavior:** controlled by utility breakpoints (`sm:`, `md:`, `lg:` etc.) and flexible grid/flex containers.
-- **Implementation source of truth:** this markdown reflects the current component and should be updated whenever UI text/layout/classes change.
+- Responsive:
+  - Sidebar and main area stack on small screens.
+- Accessibility:
+  - Sidebar controls are links with text+emoji labels.
+  - Main panels have heading text for context.
+- SEO:
+  - No explicit per-page metadata management.

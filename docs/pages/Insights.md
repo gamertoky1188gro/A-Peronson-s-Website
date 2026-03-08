@@ -1,63 +1,90 @@
-# Insights — Complete Page Specification
+# Insights - Complete Page Specification (Manual)
 
 ## Page Title & Description
-- **Page title:** `Insights`
-- **Primary route(s):** `(route not directly registered in App.jsx)`
-- **Purpose:** This page is implemented by `src/pages/Insights.jsx` and supports a specific GarTexHub user workflow.
+- Page title: `Insights`
+- Source file: `src/pages/Insights.jsx`
+- Route: `/insights` (owner/admin only)
+- Purpose: Analytics dashboard with summary KPIs; enterprise users get event-level analytics and export controls, non-enterprise users see upgrade prompt.
 
 ## Layout & Structure
-- **Top-level layout:** Built as a React functional page component with utility-class-driven responsive structure.
-- **Major structural elements present:** `<button>`.
-- **Approximate placement model (desktop):**
-  - Header / top controls: `x: 0-100%`, `y: 0-15%` (if present).
-  - Primary content zone: `x: 5-95%`, `y: 12-88%`.
-  - Sidebars/panels: left and/or right columns where `aside` blocks are present.
-  - Footer/trailing actions: lower area of the page card/container.
+- Global shell: nav + footer + floating assistant from app layout.
+- Page container: centered `max-w-7xl`, padded.
+- Header row:
+  - Left title `Insights & Analytics` with plan badge text `(Enterprise Plan)` or `(Free Plan)`.
+- Status blocks under header:
+  - Loading banner.
+  - Access denied component when forbidden.
+  - Error banner when not forbidden but fetch failed.
+- Main content (hidden if forbidden):
+  1. KPI grid of four stat cards (`md:grid-cols-4`).
+  2. Analytics panel card:
+    - Free plan view: plan notice + upgrade button.
+    - Enterprise view: `Analytics Events by Type`, event list, export buttons.
 
 ## Theme & Styling
-- **Theme system:** Tailwind utility classes and app-level dark/light behavior.
-- **Explicit color tokens found in implementation:** `#0A66C2`, `#1A1A1A`, `#5A5A5A`.
-- **Typography:** Sans-serif utility-based text sizing/weight hierarchy (`text-*`, `font-*`).
-- **Spacing/rhythm:** Padding/gap/margin utilities (`p-*`, `m-*`, `gap-*`, `space-y-*`) define vertical and horizontal density.
+- Base: white page surface.
+- Text:
+  - Primary dark text.
+  - Secondary gray `#5A5A5A`.
+- Error state:
+  - Red background and text.
+- Buttons:
+  - Upgrade button: blue background with white text.
+  - Export buttons: bordered neutral style.
+- Card design:
+  - Rounded, shadowed, white cards (`neo-panel cyberpunk-card` classes).
 
 ## Content Details
-The following user-facing strings/placeholders/buttons are present in source and should appear exactly as implemented:
+Exact text strings:
 - `Insights & Analytics`
+- `(Enterprise Plan)` / `(Free Plan)`
 - `Loading analytics…`
+- `Total Buyer Requests`
+- `Active Chats`
+- `Connected Partners`
+- `Contracts / Documents`
 - `You are currently on`
-- `. Upgrade to Enterprise to unlock event-level analytics and export controls.`
+- `Upgrade to Enterprise to unlock event-level analytics and export controls.`
 - `Upgrade to Enterprise`
-- `) : (`
 - `Analytics Events by Type`
 - `No analytics events recorded yet.`
 - `Export CSV`
 - `Download PDF Report`
-- `react`
-- `text-2xl`
-- `text-sm text-[#5A5A5A]`
-- `:`
-- `mb-4`
-- `grid grid-cols-1 md:grid-cols-4 gap-4 mb-6`
-- `Total Buyer Requests`
-- `Active Chats`
-- `free`
-- `mt-4`
-- `space-y-2 text-sm`
-- `text-[#5A5A5A]`
-- `mt-4 flex gap-2`
-- **Button labels detected:** `Download PDF Report`, `Export CSV`, `Upgrade to Enterprise`
+
+Dynamic text:
+- Summary values from `dashboard.totals`:
+  - buyer requests, chats, partner network, contracts/documents.
+- Event list from `dashboard.analytics_events.by_type`.
+- Subscription text from `subscription.plan`.
 
 ## Interactions & Functionality
-- **Forms/inputs/buttons:** wired with React state and event handlers.
-- **Behavior model:** user actions trigger local state updates and/or API requests through shared auth/request helpers where used.
+- Data source:
+  - `useAnalyticsDashboard()` returns:
+    - `dashboard`
+    - `subscription`
+    - `isEnterprise`
+    - `loading`
+    - `error`
+    - `forbidden`
+- Conditional logic:
+  - `forbidden` -> `AccessDeniedState`.
+  - Not forbidden + free plan -> upgrade message.
+  - Not forbidden + enterprise -> show event table + export controls.
+- Interactive controls:
+  - Upgrade button (UI-only in this component; no click handler).
+  - `Export CSV` button (UI-only).
+  - `Download PDF Report` button (UI-only).
 
 ## Images & Media
-- **Image elements:** none explicitly declared in this page source (icons may come from component libraries).
-- **Video elements:** not explicitly declared.
-- **Iconography:** uses shared icon sets/components (e.g., Lucide or emoji/text icons where coded).
+- No images/videos/icons from media files.
+- Purely text + card based interface.
 
 ## Extra Notes / Metadata
-- **SEO metadata:** no page-specific `<head>` metadata is set in this component; defaults are inherited from app shell/index.
-- **Accessibility notes:** semantic improvements should ensure button labels, alt text, focus states, and color contrast remain compliant.
-- **Responsive behavior:** controlled by utility breakpoints (`sm:`, `md:`, `lg:` etc.) and flexible grid/flex containers.
-- **Implementation source of truth:** this markdown reflects the current component and should be updated whenever UI text/layout/classes change.
+- Responsive behavior:
+  - KPI cards stack on small screens.
+  - Event list uses vertical rows with label/count.
+- Accessibility:
+  - Semantic heading hierarchy.
+  - Status messages are visually distinct.
+- SEO:
+  - No direct meta tag handling in component.

@@ -1,116 +1,81 @@
-# Pricing — Complete Page Specification
+# Pricing - Complete Page Specification (Manual)
 
 ## Page Title & Description
-- **Page title:** `Pricing`
-- **Primary route(s):** `/pricing`
-- **Purpose:** This page is implemented by `src/pages/Pricing.jsx` and supports a specific GarTexHub user workflow.
+- Title: Pricing/Plans page for GarTexHub.
+- Route: `/pricing`
+- Purpose: Show free vs premium capabilities, subscription status simulation, comparison table, FAQs, and conversion CTA.
 
 ## Layout & Structure
-- **Top-level layout:** Built as a React functional page component with utility-class-driven responsive structure.
-- **Major structural elements present:** `<button>`, `<footer>`, `<header>`, `<input>`, `<section>`, `<table>`.
-- **Approximate placement model (desktop):**
-  - Header / top controls: `x: 0-100%`, `y: 0-15%` (if present).
-  - Primary content zone: `x: 5-95%`, `y: 12-88%`.
-  - Sidebars/panels: left and/or right columns where `aside` blocks are present.
-  - Footer/trailing actions: lower area of the page card/container.
+- Hero section:
+  - left: headline, supporting text, monthly/annual toggle UI.
+  - right: decorative dashboard placeholder card.
+- Plans section:
+  - title + embedded `SubscriptionArea` interactive card.
+- Feature comparison section:
+  - responsive table with free vs enterprise columns.
+- Why upgrade section:
+  - 3 benefit cards.
+- FAQ section:
+  - Q/A list.
+- Final CTA section.
+- Footer with brand, links, contact.
+
+`SubscriptionArea` internal layout:
+- top row with mock login toggle.
+- account type selector when logged in.
+- verification/subscription notice and status chip row.
+- two pricing cards: `Free` and `Premium`.
 
 ## Theme & Styling
-- **Theme system:** Tailwind utility classes and app-level dark/light behavior.
-- **Explicit color tokens found in implementation:** `No explicit hex values; inherited palette/classes`.
-- **Typography:** Sans-serif utility-based text sizing/weight hierarchy (`text-*`, `font-*`).
-- **Spacing/rhythm:** Padding/gap/margin utilities (`p-*`, `m-*`, `gap-*`, `space-y-*`) define vertical and horizontal density.
+- Light marketing page style.
+- Accent colors:
+  - blue (`#0A66C2`) and indigo for action/labels.
+- Backgrounds:
+  - gray and white alternating sections.
+- Typography:
+  - strong hero headings + small explanatory body text.
 
 ## Content Details
-The following user-facing strings/placeholders/buttons are present in source and should appear exactly as implemented:
-- `Subscription Packages`
-- `Choose between Free and Premium to match your needs.`
-- `Logged in`
-- `Not logged in`
-- `0 && (`
-- `Select Account Type:`
-- `Verification is subscription-based, not permanent. Renew your premium monthly plan to keep the verification badge active.`
-- `Renew premium monthly`
-- `Free`
-- `Start with essential features.`
-- `Get Started`
-- `Premium`
-- `Unlock full power and reach.`
-- `Choose Premium`
-- `Power Your Buying House with Structured Growth`
-- `Choose the plan that matches your organization size. Upgrade anytime as your team expands.`
-- `Monthly`
-- `Annual`
-- `(Save 20%)`
-- `Simple, Transparent Pricing`
-- `Feature Comparison`
-- `Feature`
-- `Free BH`
-- `Enterprise BH`
-- `Sub Accounts Limit`
-- `10`
-- `Unlimited`
-- `Dedicated Analytics Page`
-- `No`
-- `Yes`
-- `Report Export`
-- `Advanced Insights`
-- `Buying Pattern Analysis`
-- `Contract Vault Storage`
-- `Basic`
-- `Extended`
-- `Order Completion Certification`
-- `Search Filtering Priority`
-- `Standard`
-- `Advanced`
-- `Support Level`
-- `Dedicated`
-- `Why Enterprise Matters?`
-- `Team Scale`
-- `Manage large agent teams without restrictions.`
-- `Data Visibility`
-- `Understand which agents close more deals.`
-- `Competitive Advantage`
-- `Use advanced analytics to identify demand trends.`
-- `FAQ`
-- `Q: Can I upgrade anytime?`
-- `A: Yes, your data remains intact.`
-- `Q: Can I downgrade?`
-- `A: Yes, but sub-account limits will apply.`
-- `Q: Does GarTexHub handle payments?`
-- `A: No. The platform facilitates coordination and contract management only.`
-- `Q: Are calls recorded?`
-- `A: Yes, for documentation and compliance.`
-- `Build a Structured Textile Network Today`
-- `Create Your Organization`
-- `GarTexHub`
-- `Professional B2B sourcing for garments & textiles.`
-- `About`
-- `Privacy`
-- `Terms`
-- `Contact`
-- `Help Center`
-- `Contact: support@gartexhub.example`
-- `© GarTexHub`
-- `react`
-- **Button labels detected:** `Choose Premium`, `Create Your Organization`, `Get Started`
+Key exact text:
+- Hero headline: `Power Your Buying House with Structured Growth`
+- Hero subtext: `Choose the plan that matches your organization size. Upgrade anytime as your team expands.`
+- Toggle labels: `Monthly`, `Annual (Save 20%)`
+- Section titles:
+  - `Simple, Transparent Pricing`
+  - `Feature Comparison`
+  - `Why Enterprise Matters?`
+  - `FAQ`
+  - `Build a Structured Textile Network Today`
+- Subscription area:
+  - `Subscription Packages`
+  - `Choose between Free and Premium to match your needs.`
+  - `Verification is subscription-based, not permanent. Renew your premium monthly plan to keep the verification badge active.`
+  - status labels: `Verified active`, `Expiring soon`, `Expired (renew to restore badge)`
+  - action: `Renew premium monthly`
+  - plan buttons: `Get Started`, `Choose Premium`
+- FAQ entries exactly include:
+  - `Q: Can I upgrade anytime?`
+  - `Q: Can I downgrade?`
+  - `Q: Does GarTexHub handle payments?`
+  - `Q: Are calls recorded?`
 
 ## Interactions & Functionality
-- **Forms/inputs/buttons:** wired with React state and event handlers.
-- **Event handler expressions found:**
-  - `() => setAccountType(t)`
-  - `() => setRemainingDays((d) => d + 30)`
-  - `() => {
-            setIsLoggedIn(!isLoggedIn)
-            setAccountType('General')`
-- **Behavior model:** user actions trigger local state updates and/or API requests through shared auth/request helpers where used.
+- No backend API calls in this component.
+- Local interactive behaviors:
+  - mock sign in/out toggle (`isLoggedIn`).
+  - account type switch (`General`/`Factory`) when mock logged in.
+  - remaining days simulation and verification state chip update.
+  - annual toggle in hero is visual-only (no bound logic).
+- Buttons mostly presentational CTAs in current implementation.
 
 ## Images & Media
-- **Image elements:** none explicitly declared in this page source (icons may come from component libraries).
-- **Video elements:** not explicitly declared.
-- **Iconography:** uses shared icon sets/components (e.g., Lucide or emoji/text icons where coded).
+- No external media.
+- Uses decorative placeholder boxes for hero visual.
 
 ## Extra Notes / Metadata
-- **SEO metadata:** no page-specific `<head>` metadata is set in this component; defaults are inherited from app shell/index.
-- **Accessibility notes:** semantic improvements should ensure button labels, alt text, focus states, and color contrast remain compliant.
-- **Responsive behavior:** controlled by utility breakpoints (`sm:`, `md:`, `lg:` etc.) and flexible grid/flex containers.
-- **Implementation source of truth:** this markdown reflects the current component and should be updated whenever UI text/layout/classes change.
+- SEO:
+  - no explicit metadata tags in component.
+- Accessibility:
+  - some CTA buttons are non-functional placeholders; consider adding real navigation targets.
+- Responsive:
+  - two-column hero and plan cards collapse for small screens.

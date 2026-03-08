@@ -1,40 +1,41 @@
-# VerificationCenter — Complete Page Specification
+# VerificationCenter - Complete Page Specification (Manual)
 
 ## Page Title & Description
-- **Page title:** `VerificationCenter`
-- **Primary route(s):** `(route not directly registered in App.jsx)`
-- **Purpose:** This page is implemented by `src/pages/VerificationCenter.jsx` and supports a specific GarTexHub user workflow.
+- Page title: `VerificationCenter`
+- Source file: `src/pages/VerificationCenter.jsx`
+- Route behavior:
+  - `src/App.jsx` maps `/verification-center` to `VerificationPage`, not this wrapper directly.
+  - `VerificationCenter.jsx` re-exports `VerificationPage`.
+- Purpose: Compatibility alias module so both naming conventions point to same verification UI implementation.
 
 ## Layout & Structure
-- **Top-level layout:** Built as a React functional page component with utility-class-driven responsive structure.
-- **Major structural elements present:** `div-based layout only`.
-- **Approximate placement model (desktop):**
-  - Header / top controls: `x: 0-100%`, `y: 0-15%` (if present).
-  - Primary content zone: `x: 5-95%`, `y: 12-88%`.
-  - Sidebars/panels: left and/or right columns where `aside` blocks are present.
-  - Footer/trailing actions: lower area of the page card/container.
+- This file has no direct JSX layout.
+- Component content is entirely inherited from `VerificationPage`.
+- Effective rendered structure, placement, sections, interactions, and media are identical to `docs/pages/VerificationPage.md`.
 
 ## Theme & Styling
-- **Theme system:** Tailwind utility classes and app-level dark/light behavior.
-- **Explicit color tokens found in implementation:** `No explicit hex values; inherited palette/classes`.
-- **Typography:** Sans-serif utility-based text sizing/weight hierarchy (`text-*`, `font-*`).
-- **Spacing/rhythm:** Padding/gap/margin utilities (`p-*`, `m-*`, `gap-*`, `space-y-*`) define vertical and horizontal density.
+- No local styling.
+- Uses exactly the same styling/theme tokens as `VerificationPage`.
 
 ## Content Details
-The following user-facing strings/placeholders/buttons are present in source and should appear exactly as implemented:
-- `(No static user-facing text literals detected; content may be fully data-driven.)`
+- No local text literals in `VerificationCenter.jsx`.
+- All user-visible strings come from `VerificationPage`.
 
 ## Interactions & Functionality
-- **Forms/inputs/buttons:** wired with React state and event handlers.
-- **Behavior model:** user actions trigger local state updates and/or API requests through shared auth/request helpers where used.
+- Export behavior:
+  - `import VerificationPage from './VerificationPage'`
+  - `export default VerificationPage`
+- No local state, hooks, handlers, API calls, or business logic in this file.
+- Functional impact:
+  - Acts as a single-line alias so other modules can import/use `VerificationCenter` name without duplicating verification logic.
 
 ## Images & Media
-- **Image elements:** none explicitly declared in this page source (icons may come from component libraries).
-- **Video elements:** not explicitly declared.
-- **Iconography:** uses shared icon sets/components (e.g., Lucide or emoji/text icons where coded).
+- No local images/media declarations.
+- Uses whichever media assets are declared in `VerificationPage`.
 
 ## Extra Notes / Metadata
-- **SEO metadata:** no page-specific `<head>` metadata is set in this component; defaults are inherited from app shell/index.
-- **Accessibility notes:** semantic improvements should ensure button labels, alt text, focus states, and color contrast remain compliant.
-- **Responsive behavior:** controlled by utility breakpoints (`sm:`, `md:`, `lg:` etc.) and flexible grid/flex containers.
-- **Implementation source of truth:** this markdown reflects the current component and should be updated whenever UI text/layout/classes change.
+- Maintenance rule:
+  - Any verification UI/content changes should be made in `src/pages/VerificationPage.jsx`.
+  - This wrapper should remain minimal and unchanged unless alias behavior changes.
+- SEO/Accessibility:
+  - Determined by `VerificationPage` since this file renders nothing itself.

@@ -1,31 +1,68 @@
-# AgentDashboard — Complete Page Specification
+# AgentDashboard - Complete Page Specification (Manual)
 
 ## Page Title & Description
-- **Page title:** `AgentDashboard`
-- **Primary route(s):** `(route not directly registered in App.jsx)`
-- **Purpose:** This page is implemented by `src/pages/AgentDashboard.jsx` and supports a specific GarTexHub user workflow.
+- Page title: `AgentDashboard`
+- Source file: `src/pages/AgentDashboard.jsx`
+- Route: `/agent` (protected roles: `buying_house`, `owner`, `admin`, `agent`)
+- Purpose: Gives agent users a compact operational dashboard for assigned requests, chat activity, connected factories, plan status, and summary metrics.
 
 ## Layout & Structure
-- **Top-level layout:** Built as a React functional page component with utility-class-driven responsive structure.
-- **Major structural elements present:** `<aside>`, `<button>`, `<main>`.
-- **Approximate placement model (desktop):**
-  - Header / top controls: `x: 0-100%`, `y: 0-15%` (if present).
-  - Primary content zone: `x: 5-95%`, `y: 12-88%`.
-  - Sidebars/panels: left and/or right columns where `aside` blocks are present.
-  - Footer/trailing actions: lower area of the page card/container.
+- Global shell:
+  - `NavBar` at top (from app layout).
+  - `Footer` at bottom.
+  - `FloatingAssistant` overlay.
+- Page root:
+  - Full-height container with white background and neo/cyberpunk classes.
+- Main grid (desktop):
+  - 4-column layout in a centered container (`max-w-6xl`).
+  - Left sidebar: column 1.
+  - Main content: columns 2-4.
+- Sidebar approximate placement:
+  - X: 0-25% width (desktop), full width on mobile.
+  - Y: stacked cards with sticky behavior (`top-20`/`top-56` for first two cards).
+  - Sections in order:
+    1. My Requests card.
+    2. My Chats card.
+    3. Connected Factories card.
+    4. Plan card.
+    5. Logout link button.
+- Main content approximate placement:
+  - X: 25-100% width (desktop), full width on mobile.
+  - Contains:
+    - Loading/error banners.
+    - Agent Activity card with tab toggle and conditional content.
 
 ## Theme & Styling
-- **Theme system:** Tailwind utility classes and app-level dark/light behavior.
-- **Explicit color tokens found in implementation:** `#0A66C2`, `#1A1A1A`, `#5A5A5A`, `#F4F9FF`.
-- **Typography:** Sans-serif utility-based text sizing/weight hierarchy (`text-*`, `font-*`).
-- **Spacing/rhythm:** Padding/gap/margin utilities (`p-*`, `m-*`, `gap-*`, `space-y-*`) define vertical and horizontal density.
+- Primary background: white.
+- Accent color: `#0A66C2` (links, active tabs, highlighted states).
+- Text colors:
+  - Primary: `#1A1A1A`.
+  - Secondary: `#5A5A5A`.
+- Error colors:
+  - Container `bg-red-50`.
+  - Text `text-red-600`.
+- Cards:
+  - Rounded (`rounded-xl`), shadowed (`shadow-md`), white panel style.
+- Spacing:
+  - Outer padding `p-6`.
+  - Internal card paddings `p-4`.
+  - Section gaps `gap-6`, `space-y-*`.
+- Typography:
+  - Section titles are semibold.
+  - KPI values use larger size (`text-xl`).
 
 ## Content Details
-The following user-facing strings/placeholders/buttons are present in source and should appear exactly as implemented:
+Exact visible text:
 - `📋 My Requests`
+- `Assigned:`
 - `💬 My Chats`
+- `Active conversations:`
 - `🏭 Connected Factories`
+- `connected`
 - `Plan`
+- `plan`
+- `Enterprise analytics on`
+- `Free analytics view`
 - `Logout`
 - `Loading agent metrics…`
 - `Agent Activity`
@@ -34,36 +71,49 @@ The following user-facing strings/placeholders/buttons are present in source and
 - `Buyer Requests`
 - `Open Requests`
 - `Contracts / Docs`
-- `) : (`
-- `react`
-- `react-router-dom`
-- `requests`
-- `text-sm text-[#5A5A5A]`
-- `text-sm text-[#5A5A5A] mt-2`
-- `free`
-- `:`
-- `flex gap-2`
-- `bg-[#0A66C2] text-white`
-- `border`
-- `chats`
-- `grid grid-cols-1 md:grid-cols-3 gap-3`
-- `space-y-2`
-- **Static Link destinations:** `/agent?tab=chats`, `/agent?tab=factories`, `/agent?tab=requests`, `/login`
+- `Active chat threads:`
+- `Messages exchanged:`
+- `Partner factories connected:`
+
+Dynamic text regions:
+- `Assigned: {totals.open_buyer_requests ?? 0}`
+- `Active conversations: {totals.chats ?? 0}`
+- `{totals.partner_network ?? 0} connected`
+- `{subscription?.plan || 'free'} plan`
+- Request tab KPI values: buyer requests, open requests, contracts/documents.
+- Chat tab KPI values: chats, messages, partner network count.
 
 ## Interactions & Functionality
-- **Forms/inputs/buttons:** wired with React state and event handlers.
-- **Event handler expressions found:**
-  - `() => setActiveTab('chats')`
-  - `() => setActiveTab('requests')`
-- **Behavior model:** user actions trigger local state updates and/or API requests through shared auth/request helpers where used.
+- State:
+  - `activeTab` with default `requests`.
+- Data source:
+  - `useAnalyticsDashboard()` provides `dashboard`, `subscription`, `isEnterprise`, `loading`, `error`.
+- Interactive elements:
+  - Sidebar links:
+    - `/agent?tab=requests`
+    - `/agent?tab=chats`
+    - `/agent?tab=factories`
+    - `/login` (logout navigation only).
+  - Tab buttons:
+    - `Requests` sets `activeTab='requests'`.
+    - `Chats` sets `activeTab='chats'`.
+- Conditional rendering:
+  - Loading banner shown while `loading=true`.
+  - Error banner shown when `error` exists.
+  - Request KPI grid shown in Requests tab.
+  - Chat metric list shown in Chats tab.
 
 ## Images & Media
-- **Image elements:** none explicitly declared in this page source (icons may come from component libraries).
-- **Video elements:** not explicitly declared.
-- **Iconography:** uses shared icon sets/components (e.g., Lucide or emoji/text icons where coded).
+- No `<img>`, `<video>`, or external media files are used.
+- Visual cues are text/emoji/icon characters inside links and labels.
 
 ## Extra Notes / Metadata
-- **SEO metadata:** no page-specific `<head>` metadata is set in this component; defaults are inherited from app shell/index.
-- **Accessibility notes:** semantic improvements should ensure button labels, alt text, focus states, and color contrast remain compliant.
-- **Responsive behavior:** controlled by utility breakpoints (`sm:`, `md:`, `lg:` etc.) and flexible grid/flex containers.
-- **Implementation source of truth:** this markdown reflects the current component and should be updated whenever UI text/layout/classes change.
+- Responsive behavior:
+  - Sidebar and main content stack on small screens (`grid-cols-1`).
+  - Desktop uses 4-column split (`lg:grid-cols-4`).
+- Accessibility notes:
+  - Uses semantic `aside` and `main`.
+  - Button labels are explicit and readable.
+  - Color-only state differentiation should be paired with text (already present for tab labels).
+- SEO:
+  - No per-page `<title>` or meta tags set in component.

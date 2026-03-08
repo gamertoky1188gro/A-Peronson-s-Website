@@ -1,27 +1,48 @@
-# BuyingHouseProfile — Complete Page Specification
+# BuyingHouseProfile - Complete Page Specification (Manual)
 
 ## Page Title & Description
-- **Page title:** `BuyingHouseProfile`
-- **Primary route(s):** `(route not directly registered in App.jsx)`
-- **Purpose:** This page is implemented by `src/pages/BuyingHouseProfile.jsx` and supports a specific GarTexHub user workflow.
+- Page title: `BuyingHouseProfile`
+- Source file: `src/pages/BuyingHouseProfile.jsx`
+- Route: `/buying-house/:id`
+- Purpose: Displays buying house identity, service capabilities, partner preview, active handled requests, and rating-backed performance metrics.
 
 ## Layout & Structure
-- **Top-level layout:** Built as a React functional page component with utility-class-driven responsive structure.
-- **Major structural elements present:** `<aside>`, `<button>`, `<main>`, `<section>`.
-- **Approximate placement model (desktop):**
-  - Header / top controls: `x: 0-100%`, `y: 0-15%` (if present).
-  - Primary content zone: `x: 5-95%`, `y: 12-88%`.
-  - Sidebars/panels: left and/or right columns where `aside` blocks are present.
-  - Footer/trailing actions: lower area of the page card/container.
+- Root wrapper: full-height white themed page.
+- Centered content: `max-w-7xl`, padded container.
+- Main responsive grid:
+  - Desktop 3 columns.
+  - Sidebar (`aside`) left 1 column.
+  - Main content (`main`) right 2 columns.
+- Sidebar card:
+  - Avatar placeholder square.
+  - Organization name, verified badge, location.
+  - Operational facts (years, partner factories).
+  - CTA button `Contact Organization`.
+- Main section order:
+  1. `About` section with about text and three metric tiles.
+  2. `Partner Network Preview` with a 3-column mini-grid of partner cards and `View Full Network` link.
+  3. `Active Buyer Requests Handling` with status rows and `View` buttons.
+  4. `Performance Metrics` with completion rate, average deal time, rating score.
+
+Approximate placement:
+- Left panel: x=0-33% desktop width.
+- Right content: x=33-100%.
+- Mobile: all sections stack vertically.
 
 ## Theme & Styling
-- **Theme system:** Tailwind utility classes and app-level dark/light behavior.
-- **Explicit color tokens found in implementation:** `#083B75`, `#0A66C2`, `#1A1A1A`, `#5A5A5A`, `#E8F3FF`, `#F4F9FF`.
-- **Typography:** Sans-serif utility-based text sizing/weight hierarchy (`text-*`, `font-*`).
-- **Spacing/rhythm:** Padding/gap/margin utilities (`p-*`, `m-*`, `gap-*`, `space-y-*`) define vertical and horizontal density.
+- Primary palette:
+  - White background cards.
+  - Blue accent `#0A66C2`.
+  - Secondary text `#5A5A5A`.
+  - Light info surfaces `#F4F9FF`.
+- Verified badge:
+  - Outer light-blue pill.
+  - Inner circular check icon.
+- Buttons:
+  - Primary blue fill with darker hover (`#083B75`).
 
 ## Content Details
-The following user-facing strings/placeholders/buttons are present in source and should appear exactly as implemented:
+Static user-facing text:
 - `Verified`
 - `Years in operation:`
 - `Partner Factories:`
@@ -30,51 +51,55 @@ The following user-facing strings/placeholders/buttons are present in source and
 - `Markets Served`
 - `Service Type`
 - `Partner Factories`
+- `Breakdown: 5★ ... 1★`
 - `Partner Network Preview`
 - `View Full Network`
 - `Active Buyer Requests Handling`
+- `Status:`
 - `View`
 - `Performance Metrics`
 - `Completion Rate`
 - `Average Deal Time`
 - `Rating Score`
-- `react`
-- `react-router-dom`
-- `,
-    markets: [`
-- `,`
-- `],
-    services: [`
-- `, status:`
-- `},
-    { id: 2, title:`
-- `94%`
-- `22 days`
-- `0.0`
-- `text-sm text-[#5A5A5A]`
-- `mt-4 text-sm text-[#5A5A5A] space-y-2`
-- `text-[#1A1A1A]`
-- `mt-4`
-- `text-xs text-[#5A5A5A] mt-3`
-- `grid grid-cols-3 gap-3 mt-4`
-- `space-y-3 mt-3`
-- `grid grid-cols-1 md:grid-cols-3 gap-4 mt-4`
-- `text-xs text-[#5A5A5A] mt-2`
-- `low`
-- **Button labels detected:** `Contact Organization`, `View`
-- **Static Link destinations:** `/buying-house/network`
+- `reviews •`
+- `confidence`
+
+Hardcoded profile content:
+- Name: `Atlas Buying House`
+- Location: `Ho Chi Minh City, Vietnam`
+- Years: `12`
+- Partners: `18`
+- About: sourcing/QC/shipment description.
+- Markets: `EU`, `North America`, `AU`
+- Services: `Sourcing`, `Quality Control`, `Full Management`
+
+Request handling rows:
+- `Sportswear order - 2000 units` (`In Progress`)
+- `Knit polo - 1200 units` (`Sampling`)
+
+Dynamic text:
+- Rating summary fetched from `/ratings/profiles/buying_house:atlas-buying-house`.
+- Breakdown counts and aggregate review stats displayed from API response.
 
 ## Interactions & Functionality
-- **Forms/inputs/buttons:** wired with React state and event handlers.
-- **Behavior model:** user actions trigger local state updates and/or API requests through shared auth/request helpers where used.
+- Initial data load:
+  - `useEffect` performs ratings profile fetch and stores `ratingSummary`.
+- Link interactions:
+  - `View Full Network` -> `/buying-house/network`.
+- Button interactions:
+  - `Contact Organization` and row `View` buttons are visual controls without local handler in this component.
+- Conditional UI:
+  - Rating values fallback to `0.0` and `0` when API data missing.
 
 ## Images & Media
-- **Image elements:** none explicitly declared in this page source (icons may come from component libraries).
-- **Video elements:** not explicitly declared.
-- **Iconography:** uses shared icon sets/components (e.g., Lucide or emoji/text icons where coded).
+- No actual image/video files referenced.
+- Placeholder avatar and partner tiles are styled blocks.
 
 ## Extra Notes / Metadata
-- **SEO metadata:** no page-specific `<head>` metadata is set in this component; defaults are inherited from app shell/index.
-- **Accessibility notes:** semantic improvements should ensure button labels, alt text, focus states, and color contrast remain compliant.
-- **Responsive behavior:** controlled by utility breakpoints (`sm:`, `md:`, `lg:` etc.) and flexible grid/flex containers.
-- **Implementation source of truth:** this markdown reflects the current component and should be updated whenever UI text/layout/classes change.
+- Responsive:
+  - Grid and card layout collapses to single-column on small screens.
+- Accessibility:
+  - Semantic main/aside/section usage.
+  - Text labels for all controls.
+- SEO:
+  - No component-level meta tags.

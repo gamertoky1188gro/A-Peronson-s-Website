@@ -1,145 +1,108 @@
-# VerificationPage — Complete Page Specification
+# VerificationPage - Complete Page Specification (Manual)
 
 ## Page Title & Description
-- **Page title:** `VerificationPage`
-- **Primary route(s):** `(route not directly registered in App.jsx)`
-- **Purpose:** This page is implemented by `src/pages/VerificationPage.jsx` and supports a specific GarTexHub user workflow.
+- Title: `Verification Center`
+- Routes: `/verification`, `/verification-center` (shared component)
+- Purpose: Role/region-aware document upload and verification readiness dashboard with credibility score and subscription renewal state.
 
 ## Layout & Structure
-- **Top-level layout:** Built as a React functional page component with utility-class-driven responsive structure.
-- **Major structural elements present:** `<button>`, `<header>`, `<input>`, `<section>`.
-- **Approximate placement model (desktop):**
-  - Header / top controls: `x: 0-100%`, `y: 0-15%` (if present).
-  - Primary content zone: `x: 5-95%`, `y: 12-88%`.
-  - Sidebars/panels: left and/or right columns where `aside` blocks are present.
-  - Footer/trailing actions: lower area of the page card/container.
+- Section 1: header card
+  - title + description + help center link.
+- Section 2: subscription renewal state card
+  - state label + badge.
+- Section 3: document requirements card
+  - top controls: region selector (disabled for buyers), buyer country selector for buyers, guidance banner
+  - two-column lists:
+    - mandatory documents
+    - optional documents
+  - each row: label + status chip + upload button.
+- Section 4: credibility score card.
+- Footer action row:
+  - `Refresh status` button
+  - inline feedback/error text.
+- Hidden file input for upload picker.
+
+Approximate placement:
+- Top summary cards occupy upper third.
+- Document matrix occupies central majority.
+- Score + controls near bottom.
 
 ## Theme & Styling
-- **Theme system:** Tailwind utility classes and app-level dark/light behavior.
-- **Explicit color tokens found in implementation:** `#0A66C2`.
-- **Typography:** Sans-serif utility-based text sizing/weight hierarchy (`text-*`, `font-*`).
-- **Spacing/rhythm:** Padding/gap/margin utilities (`p-*`, `m-*`, `gap-*`, `space-y-*`) define vertical and horizontal density.
+- White cards with slate borders and subtle status colors.
+- Status chip colors:
+  - approved: green
+  - uploaded/pending: amber
+  - missing: red
+- Guidance banners:
+  - EU: emerald tone
+  - US: sky tone
+  - generic prompt: amber tone
+- Typography:
+  - title-heavy with clear metadata tiers.
 
 ## Content Details
-The following user-facing strings/placeholders/buttons are present in source and should appear exactly as implemented:
-- `Verification Center`
-- `Role and region-specific verification requirements for trusted international sourcing.`
-- `Need setup help? Visit the`
-- `Help Center verification guide`
-- `Subscription renewal state`
-- `Document Requirements`
-- `Region`
-- `Global`
-- `EU`
-- `US`
-- `APAC`
-- `Region is auto-mapped from buyer country for compliance.`
-- `Buyer Country`
-- `Select country`
-- `Saving country...`
-- `Buyer country is required before uploading verification documents.`
-- `Mandatory documents`
-- `Optional documents`
-- `Credibility score panel`
-- `More licensing proof increases international credibility.`
-- `Refresh status`
-- `react`
-- `../lib/auth`
-- `,`
-- `],
-  },
-  role: {
-    factory: {
-      required: [`
-- `],
-    },
-    buyer: {
-      required: [`
-- `purchase_policy`
-- `vat`
-- `eori`
-- `],
-    },
-    us: {
-      required: [`
-- `],
-    },
-    apac: {
-      required: [`
-- `],
-    },
-    global: {
-      required: [`
-- `,
-  purchase_policy:`
-- `,
-  vat:`
-- `,
-  eori:`
-- `,
-  ior:`
-- `TIN Certificate`
-- `ERC Certificate`
-- `).toLowerCase()
-  if ([`
-- `approved`
-- `uploaded`
-- `submitted`
-- `if (status ===`
-- `bg-amber-100 text-amber-700 border-amber-200`
-- `bg-red-100 text-red-700 border-red-200`
-- `expired`
-- `active`
-- `eu`
-- `USA`
-- `us`
-- `global`
-- `buyer`
-- `text-emerald-700 border-emerald-200 bg-emerald-50`
-- `,
-        message:`
-- `text-sky-700 border-sky-200 bg-sky-50`
-- `text-amber-700 border-amber-200 bg-amber-50`
-- `,
-      message:`
-- `))
-      setError(`
-- `)
-    } catch (err) {
-      setError(err.message ||`
-- `OTHER`
-- `, {
-          method:`
-- `)
-    setError(`
-- `file`
-- `type`
-- `POST`
-- `, {
-        method:`
-- `Upload failed`
-- `mx-auto max-w-6xl px-4 py-6 space-y-6`
-- `text-sm text-slate-600 mt-1`
-- `text-xs text-slate-500 mt-2`
-- **Button labels detected:** `Refresh status`
+Exact key text:
+- Header:
+  - `Verification Center`
+  - `Role and region-specific verification requirements for trusted international sourcing.`
+  - `Need setup help? Visit the Help Center verification guide.`
+- Subscription:
+  - `Subscription renewal state`
+  - state labels: `Active`, `Expiring`, `Expired`
+- Document section:
+  - `Document Requirements`
+  - `Region`
+  - buyer hint: `Region is auto-mapped from buyer country for compliance.`
+  - buyer country prompt:
+    - `Buyer Country`
+    - `Select country`
+    - `Saving country...` (when persisting)
+    - `Buyer country is required before uploading verification documents.`
+  - column titles:
+    - `Mandatory documents`
+    - `Optional documents`
+  - upload button labels: `Upload`, `Uploading...`
+- Credibility panel:
+  - `Credibility score panel`
+  - `<score>/100`
+  - `More licensing proof increases international credibility.`
+- Bottom:
+  - `Refresh status`
+- Dynamic success format:
+  - `<Document Label> uploaded and verification state updated.`
 
 ## Interactions & Functionality
-- **Forms/inputs/buttons:** wired with React state and event handlers.
-- **Event handler expressions found:**
-  - `() => openPicker(documentKey)`
-  - `(e) => setBuyerCountry(e.target.value)`
-  - `(e) => setRegion(e.target.value)`
-  - `loadStatus`
-  - `onFileSelected`
-- **Behavior model:** user actions trigger local state updates and/or API requests through shared auth/request helpers where used.
+- Initial load:
+  - parallel fetch:
+    - `GET /verification/me`
+    - `GET /subscriptions/me`
+- Region logic:
+  - Buyer region auto-derived from selected buyer country.
+  - Non-buyer users can manually choose region select.
+- Buyer country persistence:
+  - debounced (`350ms`) auto-save via `POST /verification/me` with updated `buyer_country` and `buyer_region`.
+- File upload flow:
+1. User clicks upload for a document key.
+2. Hidden file picker opens.
+3. File posted via `fetch` multipart to `POST /documents`.
+4. On upload success, verification document status patched with `POST /verification/me`.
+5. UI updates status and feedback message.
+- Status chips:
+  - status normalization maps API values to `approved/uploaded/missing`.
+- Credibility score:
+  - local UI score calculated from required + optional statuses.
+- Refresh:
+  - re-fetches verification/subscription states.
 
 ## Images & Media
-- **Image elements:** none explicitly declared in this page source (icons may come from component libraries).
-- **Video elements:** not explicitly declared.
-- **Iconography:** uses shared icon sets/components (e.g., Lucide or emoji/text icons where coded).
+- No fixed media assets.
+- Uses file input to upload document files.
 
 ## Extra Notes / Metadata
-- **SEO metadata:** no page-specific `<head>` metadata is set in this component; defaults are inherited from app shell/index.
-- **Accessibility notes:** semantic improvements should ensure button labels, alt text, focus states, and color contrast remain compliant.
-- **Responsive behavior:** controlled by utility breakpoints (`sm:`, `md:`, `lg:` etc.) and flexible grid/flex containers.
-- **Implementation source of truth:** this markdown reflects the current component and should be updated whenever UI text/layout/classes change.
+- SEO:
+  - no explicit metadata tags in component.
+- Accessibility:
+  - hidden file input is triggered programmatically; ensure keyboard focus guidance is tested.
+  - status-only color indicators are accompanied by status text labels.
+- Responsive:
+  - document lists render in single-column on smaller screens and two-column on medium+.

@@ -1,67 +1,74 @@
-# Login — Complete Page Specification
+# Login - Complete Page Specification (Manual)
 
 ## Page Title & Description
-- **Page title:** `Login`
-- **Primary route(s):** `/login`
-- **Purpose:** This page is implemented by `src/pages/auth/Login.jsx` and supports a specific GarTexHub user workflow.
+- Page title: `Login`
+- Route: `/login`
+- Purpose: Authenticate existing users and redirect them to role-specific dashboards or requested protected route.
 
 ## Layout & Structure
-- **Top-level layout:** Built as a React functional page component with utility-class-driven responsive structure.
-- **Major structural elements present:** `<button>`, `<form>`, `<input>`.
-- **Approximate placement model (desktop):**
-  - Header / top controls: `x: 0-100%`, `y: 0-15%` (if present).
-  - Primary content zone: `x: 5-95%`, `y: 12-88%`.
-  - Sidebars/panels: left and/or right columns where `aside` blocks are present.
-  - Footer/trailing actions: lower area of the page card/container.
+- Full-screen centered auth layout:
+  - Root: full viewport height (`min-h-screen`) with centered card.
+  - Card width: `max-w-md`.
+- Card structure (top to bottom):
+1. Heading and description.
+2. Login form.
+3. New account link.
+
+Approximate placement:
+- Auth card centered around viewport midpoint (x=50%, y=50%).
+- Form controls stacked vertically with consistent spacing.
 
 ## Theme & Styling
-- **Theme system:** Tailwind utility classes and app-level dark/light behavior.
-- **Explicit color tokens found in implementation:** `No explicit hex values; inherited palette/classes`.
-- **Typography:** Sans-serif utility-based text sizing/weight hierarchy (`text-*`, `font-*`).
-- **Spacing/rhythm:** Padding/gap/margin utilities (`p-*`, `m-*`, `gap-*`, `space-y-*`) define vertical and horizontal density.
+- Light auth theme using white card surfaces and soft borders.
+- Primary action color: indigo (`bg-indigo-600`, `text-indigo-500` for link accents).
+- Typography:
+  - Title: `text-3xl font-bold`
+  - Supporting text: `text-sm text-gray-600`
+- Inputs:
+  - Full-width bordered rounded inputs (`px-4 py-3 border rounded-lg`).
 
 ## Content Details
-The following user-facing strings/placeholders/buttons are present in source and should appear exactly as implemented:
-- `Login`
-- `Access pages based on your role (Buyer, Factory, Buying House, Admin).`
-- `Email`
-- `Password`
-- `Remember me`
-- `New here?`
-- `Create account`
-- `react`
-- `react-router-dom`
-- `../../lib/auth`
-- `, {
-        method:`
-- `mt-2 text-sm text-gray-600`
-- `mt-6 space-y-4`
-- `email`
-- `password`
-- `checkbox`
-- `text-sm text-red-500`
-- `:`
-- `mt-6 text-sm text-gray-600`
-- `to=`
-- **Button labels detected:** `{loading ? 'Signing in...' : 'Sign in'}`
-- **Static Link destinations:** `/signup`
+Exact text:
+- Heading: `Login`
+- Description: `Access pages based on your role (Buyer, Factory, Buying House, Admin).`
+- Field labels: `Email`, `Password`
+- Checkbox label: `Remember me`
+- Error area: displays runtime API error string.
+- Button states:
+  - idle: `Sign in`
+  - loading: `Signing in...`
+- Footer line: `New here? Create account`
 
 ## Interactions & Functionality
-- **Forms/inputs/buttons:** wired with React state and event handlers.
-- **Event handler expressions found:**
-  - `(e) => setEmail(e.target.value)`
-  - `(e) => setPassword(e.target.value)`
-  - `(e) => setRememberMe(e.target.checked)`
-  - `handleLogin`
-- **Behavior model:** user actions trigger local state updates and/or API requests through shared auth/request helpers where used.
+- Form submit:
+  - Handler: `handleLogin`.
+  - Prevents default submit behavior.
+  - Sends `POST /auth/login` through `apiRequest`.
+  - Payload:
+```json
+{ "email": "<input>", "password": "<input>" }
+```
+- On success:
+  - Calls `saveSession(data.user, data.token, { remember: rememberMe })`.
+  - Redirect:
+    - first preference: `location.state.from`
+    - fallback: `getRoleHome(data.user.role)`.
+- On failure:
+  - Displays `err.message` inline in red text.
+- Controlled inputs:
+  - Email and password use React state.
+  - Remember-me checkbox toggles persistent session storage behavior.
+- Link:
+  - `Create account` navigates to `/signup`.
 
 ## Images & Media
-- **Image elements:** none explicitly declared in this page source (icons may come from component libraries).
-- **Video elements:** not explicitly declared.
-- **Iconography:** uses shared icon sets/components (e.g., Lucide or emoji/text icons where coded).
+- No media assets used.
 
 ## Extra Notes / Metadata
-- **SEO metadata:** no page-specific `<head>` metadata is set in this component; defaults are inherited from app shell/index.
-- **Accessibility notes:** semantic improvements should ensure button labels, alt text, focus states, and color contrast remain compliant.
-- **Responsive behavior:** controlled by utility breakpoints (`sm:`, `md:`, `lg:` etc.) and flexible grid/flex containers.
-- **Implementation source of truth:** this markdown reflects the current component and should be updated whenever UI text/layout/classes change.
+- SEO:
+  - No page-specific metadata in component.
+- Accessibility:
+  - Inputs are paired with visible labels.
+  - Submit button uses disabled state while loading.
+- Responsive:
+  - Card remains full-width with max width constraint and edge padding on small screens.

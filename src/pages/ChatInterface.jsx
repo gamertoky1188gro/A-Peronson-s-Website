@@ -1,21 +1,23 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   Bell,
+  ChevronDown,
+  ChevronUp,
   CircleHelp,
+  EllipsisVertical,
+  Filter,
+  Flag,
   FolderOpen,
   Home,
   Info,
+  Lock,
+  LogOut,
   MessageCircle,
-  Mic,
-  Phone,
   Plus,
   Search,
-  Settings,
-  Video,
   SendHorizontal,
-  Linkedin,
-  MessageSquareMore,
+  VolumeX,
 } from 'lucide-react'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 
@@ -29,6 +31,20 @@ const CHAT_NAV_ITEMS = [
   { to: '/contracts', label: 'Vault', icon: FolderOpen },
   { to: '/help', label: 'Help', icon: CircleHelp },
 ]
+
+const SOCIAL_CATEGORIES = [
+  { id: 'x', name: 'X', label: 'X', badge: 12, bg: '#111111' },
+  { id: 'instagram', name: 'Instagram', label: 'IG', badge: 24, bg: 'linear-gradient(135deg,#f58529,#dd2a7b,#8134af)' },
+  { id: 'whatsapp', name: 'WhatsApp', label: 'WA', badge: 132, bg: '#25D366' },
+  { id: 'linkedin', name: 'LinkedIn', label: 'in', badge: 2, bg: '#0A66C2' },
+  { id: 'tiktok', name: 'TikTok', label: 'TT', badge: 16, bg: '#0f0f10' },
+]
+
+const PANEL_STYLE = {
+  background: 'linear-gradient(160deg, rgba(20,22,45,0.95), rgba(15,18,36,0.88))',
+  border: '1px solid rgba(212,255,89,0.08)',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.03)',
+}
 
 
 
@@ -131,6 +147,20 @@ function getInitials(label = '') {
   return `${words[0][0] || ''}${words[1][0] || ''}`.toUpperCase()
 }
 
+function formatTime(iso) {
+  if (!iso) return '--:--'
+  return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }).toLowerCase()
+}
+
+function extractFirstUrl(text = '') {
+  const match = String(text).match(/https?:\/\/[^\s]+/i)
+  return match ? match[0] : ''
+}
+
+function avatarUrl(seed = 'user') {
+  return `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(seed)}`
+}
+
 export default function ChatInterface() {
   const [priorityInbox, setPriorityInbox] = useState([])
   const [messageRequests, setMessageRequests] = useState([])
@@ -146,7 +176,11 @@ export default function ChatInterface() {
   const [, setChatConnectionStatus] = useState('offline')
   const [uploading, setUploading] = useState(false)
   const [uploadStatus, setUploadStatus] = useState('')
-  const [showThreadInfo, setShowThreadInfo] = useState(false)
+  const [accordionState, setAccordionState] = useState({
+    sharedDocument: true,
+    sharedMedia: true,
+    sharedPost: true,
+  })
 
   const wsRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -256,6 +290,10 @@ export default function ChatInterface() {
 
   const sharedLinks = useMemo(() => {
     return activeMessages.filter((message) => message?.attachment?.url && !isImageMessage(message)).slice(-6).reverse()
+  }, [activeMessages])
+
+  const sharedPosts = useMemo(() => {
+    return activeMessages.filter((message) => String(message?.message || '').trim().length > 0).slice(-6).reverse()
   }, [activeMessages])
 
   useEffect(() => {
@@ -527,6 +565,22 @@ export default function ChatInterface() {
       )
     }
 
+    const firstUrl = extractFirstUrl(message?.message || '')
+    if (firstUrl) {
+      return (
+        <div className="space-y-2">
+          <p>{message.message.replace(firstUrl, '').trim() || 'Link shared'}</p>
+          <a href={firstUrl} target="_blank" rel="noreferrer" className="block rounded-xl border border-white/10 bg-black/20 p-2">
+            <div className="mb-2 h-24 overflow-hidden rounded-lg bg-[#1f2448]">
+              <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80" alt="Raven.cafe preview" className="h-full w-full object-cover" />
+            </div>
+            <div className="text-sm font-semibold">Raven.cafe</div>
+            <div className="text-xs text-[#d2d4eb]">Casual hangout in the centre of kotagede.</div>
+          </a>
+        </div>
+      )
+    }
+
     return <div>{message.message}</div>
   }
 
@@ -570,175 +624,263 @@ export default function ChatInterface() {
 
   const activeThreadDisplayName = formatDisplayName(activeThread?.name, activeThread?.senderId || activeThread?.matchId)
   const activeThreadInitials = getInitials(activeThreadDisplayName)
-  const compactThreadId = truncateId(activeThread?.matchId, 18)
+  const activeAvatar = avatarUrl(activeThreadDisplayName)
   const visibleError = String(error || '').toLowerCase().includes('forbidden') ? '' : error
-  const liveOnline = isLiveMessagingEnabled
 
   return (
-    <div className="min-h-screen bg-[#0f0f1b] bg-gradient-to-br from-[#0f0f1b] via-[#13132a] to-[#12162f] px-4 py-5 font-['Inter',sans-serif] text-white">
-      <div className="mx-auto grid max-w-[1650px] grid-cols-1 gap-5 lg:grid-cols-[70px_350px_1fr_320px]">
-        <aside className="rounded-[20px] border border-white/5 bg-[#16161e] p-2">
+    <div
+      className="min-h-screen px-4 py-5 font-['Poppins',sans-serif] text-white"
+      style={{
+        background:
+          'radial-gradient(circle at 10% 10%, rgba(124,58,237,0.25), transparent 35%), radial-gradient(circle at 90% 15%, rgba(59,130,246,0.2), transparent 35%), #0B0E14',
+      }}
+    >
+      <div className="mx-auto grid max-w-[1700px] grid-cols-1 gap-4 lg:grid-cols-[62px_286px_minmax(560px,1fr)_356px]">
+        <aside className="rounded-[22px] p-2" style={PANEL_STYLE}>
           <div className="flex h-full flex-col items-center justify-between py-1">
             <div className="space-y-2">
               {CHAT_NAV_ITEMS.map((item) => {
                 const Icon = item.icon
                 const isActive = location.pathname === item.to
                 return (
-                  <Link key={item.to} to={item.to} className={`group relative flex h-11 w-11 items-center justify-center rounded-xl border ${isActive ? 'border-[#8b5cf6]/70 bg-[#8b5cf6]/20 text-[#d4ff59]' : 'border-transparent bg-[#111119] text-[#a4a4bc] hover:border-white/10 hover:text-white'}`} title={item.label}>
-                    {isActive ? <span className="absolute -left-2 h-6 w-1 rounded-full bg-[#d4ff70]" /> : null}
-                    <Icon size={18} strokeWidth={1.8} />
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className={`relative flex h-10 w-10 items-center justify-center rounded-[12px] border ${
+                      isActive
+                        ? 'border-[#9e7bff] bg-[#6e4ff6]/20 text-[#D4FF59]'
+                        : 'border-white/5 bg-[#0f1126] text-[#8f95bb] hover:border-white/10 hover:text-white'
+                    }`}
+                    title={item.label}
+                  >
+                    <Icon size={16} strokeWidth={1.5} />
                   </Link>
                 )
               })}
             </div>
-            <button className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-[#111119] text-[#a4a4bc] hover:text-white" onClick={() => navigate('/org-settings')}>
-              <Settings size={18} strokeWidth={1.8} />
+            <button
+              className="flex h-10 w-10 items-center justify-center rounded-[12px] border border-white/10 bg-[#0f1126] text-[#8f95bb] hover:text-[#D4FF59]"
+              onClick={() => navigate('/login')}
+              title="Logout"
+            >
+              <LogOut size={16} strokeWidth={1.5} />
             </button>
           </div>
         </aside>
 
-        <aside className="rounded-[20px] border border-white/5 bg-[#16161e] p-5">
-          <h2 className="text-xl font-semibold">Messages</h2>
-          <p className="mb-3 text-sm text-[#8e8eaa]">{currentUser?.email || 'inbox@gartexhub.com'}</p>
-          <div className="relative mb-4">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8e8eaa]" />
-            <input className="h-11 w-full rounded-[20px] border border-white/20 bg-white pl-9 pr-3 text-sm text-[#19192b] placeholder:text-[#6f6f8d]" placeholder="Search Message..." value={query} onChange={(event) => setQuery(event.target.value)} />
+        <aside className="rounded-[24px] p-4" style={PANEL_STYLE}>
+          <div className="mb-3">
+            <h2 className="text-lg font-semibold">Message category</h2>
+            <p className="text-xs text-[#8e93b4]">{currentUser?.email || 'hussein.saddam@gmail.com'}</p>
           </div>
 
-          <div className="h-[calc(100vh-190px)] space-y-5 overflow-auto pr-1">
-            {loading ? <div className="text-sm text-[#8e8eaa]">Loading inbox...</div> : null}
+          <div className="relative mb-4">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9ca3c6]" />
+            <input
+              className="h-10 w-full rounded-[12px] border border-white/15 bg-white/10 pl-9 pr-11 text-[13px] text-white placeholder:text-[#a0a5c6] backdrop-blur"
+              placeholder="Search Message..."
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+            <Filter size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#b8bddf]" />
+          </div>
+
+          <div className="mb-4 space-y-2">
+            {SOCIAL_CATEGORIES.map((item) => (
+              <div key={item.id} className="flex items-center justify-between rounded-[12px] border border-white/5 bg-[#0f1126] px-3 py-2">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full text-xs text-white" style={{ background: item.bg }}>
+                    <span className="text-sm font-semibold">{item.label}</span>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium">{item.name}</div>
+                    <div className="text-[11px] text-[#8e93b4]">{item.name.toLowerCase()}</div>
+                  </div>
+                </div>
+                <span className="rounded-full bg-[#2a2d4f] px-2 py-0.5 text-[11px] font-semibold text-[#d7dcff]">{item.badge}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-sm font-semibold">Direct Message</h3>
+            <span className="rounded-md bg-[#22264a] px-2 py-1 text-[11px] text-[#cad0f3]">Newest</span>
+          </div>
+
+          <div className="h-[calc(100vh-562px)] min-h-[220px] space-y-2 overflow-auto pr-1">
+            {loading ? <div className="text-sm text-[#9ca3c6]">Loading inbox...</div> : null}
             {!loading && visibleError ? <div className="text-sm text-red-300">{visibleError}</div> : null}
-
-            {!loading && !visibleError && (
-              <>
-                <section>
-                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#8e8eaa]">PRIORITY INBOX</h3>
-                  <div className="space-y-3">
-                    {filteredPriorityInbox.map((thread) => {
-                      const threadName = formatDisplayName(thread.name, thread.senderId || thread.id)
-                      return (
-                        <button key={`priority-${thread.id}`} className={`w-full rounded-2xl border p-3 text-left ${activeThreadId === thread.id ? 'border-[#7b61ff]/60 bg-[#362f78]' : 'border-white/5 bg-[#111119]'}`} onClick={() => setActiveThreadId(thread.id)}>
-                          <div className="flex items-start justify-between gap-2">
-                            <div>
-                              <div className="text-sm font-semibold">{threadName}</div>
-                              <div className="mt-0.5 text-xs text-[#8e8eaa]">{lockStatusLabel(thread.lock, thread)}</div>
-                            </div>
-                            <span className="rounded-full bg-[#d4ff70] px-2 py-0.5 text-[11px] font-semibold text-[#141414]">{Math.max(1, (thread.last || '').length % 12)}</span>
-                          </div>
-                          <div className="mt-1 truncate text-xs text-[#7f7f98]">{thread.last}</div>
-                        </button>
-                      )
-                    })}
-                  </div>
-                </section>
-
-                <section>
-                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#8e8eaa]">REQUESTS</h3>
-                  <div className="space-y-3">
-                    {filteredRequests.map((thread) => {
-                      const threadName = formatDisplayName(thread.name, thread.senderId || thread.id)
-                      return (
-                        <div key={`request-${thread.id}`} className="rounded-2xl border border-white/5 bg-[#111119] p-3">
-                          <button className="w-full text-left" onClick={() => setActiveThreadId(thread.id)}>
-                            <div className="text-sm font-semibold">{threadName}</div>
-                            <div className="text-xs text-[#8e8eaa]">{lockStatusLabel(thread.lock, thread)}</div>
-                          </button>
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {thread.isFriendThread && thread.friendRequestDirection === 'outgoing' ? <span className="text-xs text-[#8e8eaa]">Pending approval.</span> : null}
-                            {thread.isFriendThread && thread.friendRequestDirection === 'incoming' ? <button className="rounded-lg bg-[#8b5cf6] px-3 py-1.5 text-xs font-semibold" onClick={() => updateRequestState(thread, 'accept')}>Accept Friend</button> : null}
-                            {!thread.isFriendThread ? (
-                              <>
-                                <button className="rounded-lg bg-[#8b5cf6] px-3 py-1.5 text-xs font-semibold" onClick={() => updateRequestState(thread, 'accept')}>Accept</button>
-                                <button className="rounded-lg border border-white/10 px-3 py-1.5 text-xs font-semibold" onClick={() => updateRequestState(thread, 'reject')}>Reject</button>
-                              </>
-                            ) : null}
-                          </div>
+            {!loading &&
+              !visibleError &&
+              [...filteredPriorityInbox, ...filteredRequests].map((thread) => {
+                const threadName = formatDisplayName(thread.name, thread.senderId || thread.id)
+                return (
+                  <button
+                    key={thread.id}
+                    className={`w-full rounded-[14px] border px-3 py-2 text-left ${
+                      activeThreadId === thread.id ? 'border-[#8c6bff]/70 bg-[#2f295c]' : 'border-white/5 bg-[#101328]'
+                    }`}
+                    onClick={() => setActiveThreadId(thread.id)}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="relative">
+                        <img src={avatarUrl(threadName)} alt={`${threadName} avatar`} className="h-8 w-8 rounded-full" />
+                        <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border border-[#0f1126] bg-[#28d368]" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="truncate text-[13px] font-semibold">{threadName}</p>
+                          <span className="text-[11px] text-[#97a0c6]">{formatTime(thread.timestamp)}</span>
                         </div>
-                      )
-                    })}
-                    {filteredRequests.length === 0 ? <div className="text-sm text-[#8e8eaa]">No pending requests.</div> : null}
-                  </div>
-                </section>
-              </>
-            )}
+                        <p className="truncate text-xs text-[#8e93b4]">{thread.last}</p>
+                      </div>
+                    </div>
+                  </button>
+                )
+              })}
           </div>
         </aside>
 
-        <main className="rounded-[20px] border border-white/5 bg-[#16161e] p-5">
+        <main className="rounded-[24px] p-4" style={PANEL_STYLE}>
           {activeThread ? (
             <>
-              <div className="mb-3 flex items-center justify-between rounded-2xl border border-white/5 bg-[#111119] px-4 py-3">
+              <div className="mb-4 flex items-center justify-between rounded-[16px] border border-white/10 bg-[#131739] px-4 py-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#7b61ff]/25 text-sm font-semibold">{activeThreadInitials}</div>
+                  <div className="relative">
+                    <img src={activeAvatar} alt={`${activeThreadDisplayName} profile`} className="h-10 w-10 rounded-full" />
+                    <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border border-[#131739] bg-[#28d368]" />
+                  </div>
                   <div>
-                    <div className="text-base font-semibold">{activeThreadDisplayName}</div>
-                    <div className="text-xs text-[#8e8eaa]">{lockStatusLabel(activeThread.lock, activeThread)}</div>
+                    <p className="font-semibold">{activeThreadDisplayName}</p>
+                    <p className="text-xs text-[#a1a8cf]">Online • {lockStatusLabel(activeThread.lock, activeThread)}</p>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <button className="inline-flex h-10 items-center gap-1 rounded-xl border border-white/40 bg-transparent px-3 text-sm font-medium text-white" onClick={() => startInstantCall(activeThread)}><Video size={14} /> Video</button>
-                  <button className="inline-flex h-10 items-center gap-1 rounded-xl border border-white/40 bg-transparent px-3 text-sm font-medium text-white" onClick={() => startInstantCall(activeThread)}><Mic size={14} /> Audio</button>
-                  <button className="inline-flex h-10 items-center gap-1 rounded-xl border border-white/40 bg-transparent px-3 text-sm font-medium text-white" onClick={() => scheduleCall(activeThread)}><Phone size={14} /> Schedule</button>
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#28d368]" />
+                  <button className="rounded-[12px] border border-white/10 bg-white/5 p-2 hover:bg-white/10">
+                    <EllipsisVertical size={15} strokeWidth={1.5} />
+                  </button>
                 </div>
               </div>
 
-              <div className="mb-3 flex items-center justify-between rounded-xl border border-white/5 bg-[#121225] p-3 text-xs text-[#c2c4dc]">
-                <div className="inline-flex items-center gap-2">
-                  <span className={`h-2.5 w-2.5 rounded-full ${liveOnline ? 'bg-[#d4ff70]' : 'bg-slate-500'}`} />
-                  <span>Live: Enabled • {liveOnline ? 'online' : 'offline'}</span>
-                </div>
-                <button className="rounded-md border border-white/20 px-2 py-1" onClick={() => setIsLiveMessagingEnabled((value) => !value)}>{isLiveMessagingEnabled ? 'Disable WS' : 'Enable WS'}</button>
+              <div className="mb-3 flex items-center justify-between text-xs text-[#8e93b4]">
+                <span>{isLiveMessagingEnabled ? 'Realtime connected' : 'Realtime paused'}</span>
+                <button className="rounded-md border border-white/15 px-2 py-1" onClick={() => setIsLiveMessagingEnabled((value) => !value)}>
+                  {isLiveMessagingEnabled ? 'Disable WS' : 'Enable WS'}
+                </button>
               </div>
 
-              <div className="h-[calc(100vh-330px)] space-y-3 overflow-auto rounded-2xl border border-white/10 bg-[#0d0f2a] p-3">
-                {activeMessages.length > 0 ? activeMessages.map((message) => {
-                  const isOwn = message.sender_id === currentUser?.id
-                  const messageName = isOwn ? 'You' : formatDisplayName(message.sender_name || message.sender_company_name, message.sender_id)
-                  const avatarLabel = isOwn ? getInitials(currentUser?.name || 'You') : getInitials(messageName)
-                  return (
-                    <div key={message.id} className={`flex items-end gap-2 ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                      {!isOwn ? <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2a2a3a] text-[11px] font-semibold">{avatarLabel}</div> : null}
-                      <div className={`max-w-[70%] rounded-2xl px-3 py-2 text-sm ${isOwn ? 'bg-[#6c5ce7] text-white' : 'bg-[#1e1e2f] text-white'}`}>
-                        <div className="mb-1 text-[11px] text-[#b7b7cc]">{messageName} • {new Date(message.timestamp).toLocaleTimeString()}</div>
-                        {renderMessageBody(message)}
+              <div className="h-[calc(100vh-322px)] space-y-3 overflow-auto rounded-[18px] border border-white/10 bg-[#0d1030] p-4">
+                <div className="text-center text-xs text-[#787ea6]">Today</div>
+                {activeMessages.length > 0 ? (
+                  activeMessages.map((message) => {
+                    const isOwn = message.sender_id === currentUser?.id
+                    return (
+                      <div key={message.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[68%] rounded-[16px] px-3 py-2.5 text-[13px] leading-5 ${isOwn ? 'bg-gradient-to-r from-[#7f4dff] to-[#b86cff] text-white' : 'bg-[#2a2744] text-white'}`}>
+                          {renderMessageBody(message)}
+                          <div className="mt-1.5 text-right text-[10px] text-white/65">{formatTime(message.timestamp)}</div>
+                        </div>
                       </div>
-                      {isOwn ? <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2a2a3a] text-[11px] font-semibold">{avatarLabel}</div> : null}
-                    </div>
-                  )
-                }) : <div className="text-sm text-[#8e8eaa]">No messages yet.</div>}
+                    )
+                  })
+                ) : (
+                  <div className="text-sm text-[#9ca3c6]">No messages yet.</div>
+                )}
               </div>
 
-              <div className="mt-2 flex items-center justify-between text-[0.75rem] text-[#94a3b8]">
-                <span>Match Thread: {showThreadInfo ? activeThread.matchId : compactThreadId}</span>
-                <button className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2" onClick={() => setShowThreadInfo((value) => !value)}><Info size={12} /> {showThreadInfo ? 'Hide' : 'Info'}</button>
-              </div>
-
-              <div className="relative mt-3 rounded-2xl border border-white/10 bg-[#0f1335] p-2">
-                <input className="h-12 w-full rounded-2xl bg-white pl-12 pr-28 text-sm text-[#19192b] placeholder:text-[#707090]" placeholder="Type a message..." value={draftMessage} onChange={(event) => setDraftMessage(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') sendMessage() }} />
+              <div className="relative mt-4 rounded-[16px] border border-white/15 bg-[#12163a] p-2">
+                <input
+                  className="h-11 w-full rounded-[12px] border border-white/10 bg-[#0b0f2d] pl-11 pr-28 text-[13px] text-white placeholder:text-[#7f86ae]"
+                  placeholder="Type a message..."
+                  value={draftMessage}
+                  onChange={(event) => setDraftMessage(event.target.value)}
+                  onKeyDown={(event) => { if (event.key === 'Enter') sendMessage() }}
+                />
                 <input ref={fileInputRef} type="file" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) sendAttachment(file) }} />
-                <button className="absolute left-4 top-1/2 -translate-y-1/2 rounded-lg border border-[#d6d6ea] bg-white p-2 text-[#2c2f45]" onClick={() => fileInputRef.current?.click()} disabled={uploading}><Plus size={14} /></button>
-                <button className="absolute right-3 top-1/2 inline-flex -translate-y-1/2 items-center gap-1 rounded-xl bg-[#d4ff70] px-4 py-2 text-sm font-semibold text-[#101018]" onClick={sendMessage}><SendHorizontal size={14} /> Send</button>
+                <button className="absolute left-4 top-1/2 -translate-y-1/2 rounded-[10px] border border-white/15 bg-[#1e2146] p-2 text-[#d4d8ff]" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                  <Plus size={13} strokeWidth={1.6} />
+                </button>
+                <button className="absolute right-4 top-1/2 inline-flex -translate-y-1/2 items-center gap-1 rounded-[10px] bg-[#D4FF59] px-3.5 py-2 text-[13px] font-semibold text-[#111723]" onClick={sendMessage}>
+                  Send <SendHorizontal size={12} strokeWidth={1.9} />
+                </button>
               </div>
-              {uploadStatus ? <p className="mt-2 text-xs text-[#9db2ff]">{uploadStatus}</p> : null}
-              {scheduleStatus ? <p className="mt-1 text-xs text-[#9db2ff]">{scheduleStatus}</p> : null}
+              {uploadStatus ? <p className="mt-2 text-xs text-[#a8b3e7]">{uploadStatus}</p> : null}
+              {scheduleStatus ? <p className="mt-1 text-xs text-[#a8b3e7]">{scheduleStatus}</p> : null}
             </>
           ) : <div className="flex h-full items-center justify-center text-sm text-[#8e8eaa]">Select a chat to begin</div>}
         </main>
 
-        <aside className="rounded-[20px] border border-white/5 bg-[#16161e] p-5">
+        <aside className="rounded-[24px] p-4" style={PANEL_STYLE}>
           {activeThread ? (
             <>
-              <div className="mb-4 rounded-2xl border border-white/5 bg-[#131327] p-6 text-center">
-                <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[#7b61ff]/25 text-xl font-semibold">{activeThreadInitials}</div>
-                <div className="text-xl font-semibold">{activeThreadDisplayName}</div>
-                <div className="mt-1 text-sm text-[#b3b5cc]">@{truncateId(activeThread.senderId || activeThread.matchId, 12)}</div>
+              <div className="mb-4 rounded-[16px] border border-white/10 bg-[#11152f] p-5 text-center">
+                <img src={activeAvatar} alt={`${activeThreadDisplayName} avatar`} className="mx-auto mb-3 h-[78px] w-[78px] rounded-full" />
+                <p className="text-xl font-semibold">{activeThreadDisplayName}</p>
+                <p className="text-sm text-[#97a0c8]">@{truncateId(activeThread.senderId || activeThread.matchId, 14)}</p>
               </div>
 
-              <div className="rounded-2xl border border-white/5 bg-[#111120] p-4 text-sm">
-                <div className="mb-2 font-semibold text-white">Call History</div>
-                {activeCallHistory.length > 0 ? activeCallHistory.slice(0, 5).map((call) => (
-                  <div key={call.id} className="mb-2 rounded-lg bg-[#1a1a2a] p-2 text-xs text-[#bec3de]">{call.title} - {call.status} - {new Date(call.scheduled_for).toLocaleDateString()}</div>
-                )) : <div className="text-xs text-[#b3b5cc]">No calls scheduled yet.</div>}
+              <div className="mb-4 grid grid-cols-4 gap-2">
+                <button className="rounded-[10px] border border-white/10 bg-[#11152f] p-2 text-[#c9cef4]"><Flag size={14} strokeWidth={1.6} className="mx-auto" /></button>
+                <button className="rounded-[10px] border border-white/10 bg-[#11152f] p-2 text-[#c9cef4]"><Lock size={14} strokeWidth={1.6} className="mx-auto" /></button>
+                <button className="rounded-[10px] border border-white/10 bg-[#11152f] p-2 text-[#c9cef4]"><Info size={14} strokeWidth={1.6} className="mx-auto" /></button>
+                <button className="rounded-[10px] border border-white/10 bg-[#11152f] p-2 text-[#c9cef4]"><VolumeX size={14} strokeWidth={1.6} className="mx-auto" /></button>
+              </div>
+
+              <div className="space-y-3">
+                <section className="rounded-[14px] border border-white/10 bg-[#11152f]">
+                  <button className="flex w-full items-center justify-between px-3 py-2 text-sm font-semibold" onClick={() => setAccordionState((value) => ({ ...value, sharedDocument: !value.sharedDocument }))}>
+                    Shared Document
+                    <span>{accordionState.sharedDocument ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
+                  </button>
+                  {accordionState.sharedDocument ? (
+                    <div className="border-t border-white/10 px-3 py-2 text-xs text-[#a9b1d7]">
+                      {sharedLinks.length > 0 ? sharedLinks.map((item) => (
+                        <a key={item.id} href={toAbsoluteAssetUrl(item.attachment?.url || '')} target="_blank" rel="noreferrer" className="mb-2 block rounded-lg bg-[#1a1f43] px-2 py-2">
+                          {item.attachment?.name || 'Attachment'}
+                        </a>
+                      )) : <span>No shared files yet.</span>}
+                    </div>
+                  ) : null}
+                </section>
+
+                <section className="rounded-[14px] border border-white/10 bg-[#11152f]">
+                  <button className="flex w-full items-center justify-between px-3 py-2 text-sm font-semibold" onClick={() => setAccordionState((value) => ({ ...value, sharedMedia: !value.sharedMedia }))}>
+                    Shared Media
+                    <span>{accordionState.sharedMedia ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
+                  </button>
+                  {accordionState.sharedMedia ? (
+                    <div className="border-t border-white/10 px-3 py-3">
+                      <div className="mb-3 grid grid-cols-3 gap-2">
+                        {sharedMedia.length > 0 ? sharedMedia.slice(0, 6).map((item) => (
+                          <a key={item.id} href={toAbsoluteAssetUrl(item.attachment?.url || '')} target="_blank" rel="noreferrer">
+                            <img src={toAbsoluteAssetUrl(item.attachment?.url || '')} alt="shared media" className="h-[62px] w-full rounded-[9px] object-cover" />
+                          </a>
+                        )) : Array.from({ length: 6 }).map((_, index) => (
+                          <img key={`media-ph-${index}`} src={`https://picsum.photos/seed/chat-media-${index}/180/120`} alt="media placeholder" className="h-[62px] w-full rounded-[9px] object-cover" />
+                        ))}
+                      </div>
+                      <button className="w-full rounded-full bg-[#D4FF59] px-4 py-2 text-[12px] font-semibold text-[#111723]">View All (1647)</button>
+                    </div>
+                  ) : null}
+                </section>
+
+                <section className="rounded-[14px] border border-white/10 bg-[#11152f]">
+                  <button className="flex w-full items-center justify-between px-3 py-2 text-sm font-semibold" onClick={() => setAccordionState((value) => ({ ...value, sharedPost: !value.sharedPost }))}>
+                    Shared Post
+                    <span>{accordionState.sharedPost ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
+                  </button>
+                  {accordionState.sharedPost ? (
+                    <div className="border-t border-white/10 px-3 py-3">
+                      <div className="grid grid-cols-3 gap-2">
+                        {(sharedMedia.length > 0 ? sharedMedia.slice(0, 6) : Array.from({ length: 6 }).map((_, index) => ({ id: `post-${index}`, attachment: { url: `https://picsum.photos/seed/chat-post-${index}/180/120` } }))).map((item) => (
+                          <img key={item.id} src={toAbsoluteAssetUrl(item.attachment?.url || '')} alt="shared post" className="h-[62px] w-full rounded-[9px] object-cover" />
+                        ))}
+                      </div>
+                      {sharedPosts.length > 0 ? <p className="mt-2 text-[11px] text-[#a9b1d7]">{sharedPosts[0].message.slice(0, 52)}</p> : null}
+                    </div>
+                  ) : null}
+                </section>
               </div>
             </>
           ) : <div className="text-sm text-[#b3b5cc]">Thread details appear here.</div>}
