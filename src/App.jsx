@@ -94,17 +94,26 @@ function AppRoutes() {
   )
 }
 
+function AppLayout() {
+  const location = useLocation()
+  const isChatRoute = location.pathname === '/chat'
+
+  return (
+    <div className="app-shell min-h-screen">
+      {!isChatRoute ? <NavBar /> : null}
+      <main className={isChatRoute ? '' : 'pb-10'}>
+        <AppRoutes />
+      </main>
+      {!isChatRoute ? <Footer /> : null}
+      <FloatingAssistant />
+    </div>
+  )
+}
+
 function App() {
   return (
     <BrowserRouter>
-      <div className="app-shell min-h-screen">
-        <NavBar />
-        <main className="pb-10">
-          <AppRoutes />
-        </main>
-        <Footer />
-        <FloatingAssistant />
-      </div>
+      <AppLayout />
     </BrowserRouter>
   )
 }
