@@ -141,6 +141,17 @@ function withConversationMeta(message, usersById, lock, currentUserId) {
   }
 }
 
+function applyFriendThreadMeta(message, fallbackFriend, currentUserId) {
+  if (!fallbackFriend) return message
+
+  const direction = fallbackFriend.requester_id === currentUserId ? 'outgoing' : 'incoming'
+  return {
+    ...message,
+    friend_request_status: fallbackFriend.type === 'friend_request' ? String(fallbackFriend.status || 'pending') : 'accepted',
+    friend_request_direction: fallbackFriend.type === 'friend_request' ? direction : 'accepted',
+  }
+}
+
 export async function postMessage(matchId, senderId, message, type = 'text', attachment = null) {
   const messages = await readJson(FILE)
   const users = await readJson(USERS_FILE)
@@ -223,7 +234,7 @@ export async function tieredInbox(matchIds, currentUserId) {
     const sender = usersById.get(m.sender_id)
     const requestId = requestIdFromMatchId(m.match_id)
     const lock = lockByRequestId.get(requestId)
-    const withMeta = withConversationMeta(m, usersById, lock, currentUserId)
+    const withMeta = applyFriendThreadMeta(withConversationMeta(m, usersById, lock, currentUserId), fallbackFriend, currentUserId)
 
     const isPendingFriend = fallbackFriend?.type === 'friend_request' && fallbackFriend?.status === 'pending'
 
