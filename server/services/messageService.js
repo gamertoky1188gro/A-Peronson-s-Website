@@ -2,7 +2,12 @@ import crypto from 'crypto'
 import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { trackTransition } from '../utils/metrics.js'
-import { buildFriendMatchId, isFriendConnected } from './friendService.js'
+import {
+  buildFriendMatchId,
+  hasFriendRelationship,
+  isFriendConnected,
+  listFriendConnectionsForUser,
+} from './friendService.js'
 
 const FILE = 'messages.json'
 const USERS_FILE = 'users.json'
@@ -23,7 +28,7 @@ export async function canAccessMatch(matchId, userId) {
   const pair = parseFriendMatchId(matchId)
   if (!pair) return true
   if (!pair.includes(userId)) return false
-  return isFriendConnected(pair[0], pair[1])
+  return hasFriendRelationship(pair[0], pair[1], { includePending: true })
 }
 
 export async function postFriendMessage(senderId, targetUserId, message, type = 'text') {
@@ -47,15 +52,18 @@ export async function postFriendMessage(senderId, targetUserId, message, type = 
 }
 
 export async function listFriendMatchIdsForUser(userId) {
+  const connections = await listFriendConnectionsForUser(userId)
+  const ids = new Set(connections.map((row) => row.match_id).filter(Boolean))
+
   const messages = await readJson(FILE)
-  const ids = new Set(
-    messages
-      .map((row) => row.match_id)
-      .filter((matchId) => {
-        const pair = parseFriendMatchId(matchId)
-        return Array.isArray(pair) && pair.includes(userId)
-      }),
-  )
+  messages
+    .map((row) => row.match_id)
+    .filter((matchId) => {
+      const pair = parseFriendMatchId(matchId)
+      return Array.isArray(pair) && pair.includes(userId)
+    })
+    .forEach((matchId) => ids.add(matchId))
+
   return [...ids]
 }
 
@@ -182,6 +190,8 @@ export async function tieredInbox(matchIds, currentUserId) {
   const filtered = messages.filter((m) => matchIds.includes(m.match_id))
   const requestMap = new Map(messageRequests.map((request) => [request.thread_id, request]))
   const latestByThread = new Map()
+  const friendConnections = await listFriendConnectionsForUser(currentUserId)
+  const friendConnectionByMatchId = new Map(friendConnections.map((row) => [row.match_id, row]))
 
   for (const message of filtered) {
     const existing = latestByThread.get(message.match_id)
@@ -193,7 +203,18 @@ export async function tieredInbox(matchIds, currentUserId) {
   const priority = []
   const requestPool = []
   for (const matchId of matchIds) {
-    const m = latestByThread.get(matchId)
+    const fallbackFriend = friendConnectionByMatchId.get(matchId)
+    const m = latestByThread.get(matchId) || (fallbackFriend ? {
+      id: `friend-thread-${matchId}` ,
+      match_id: matchId,
+      sender_id: fallbackFriend.other_user_id,
+      message: fallbackFriend.type === 'friend_request'
+        ? (fallbackFriend.requester_id === currentUserId ? 'Friend request sent. Start chatting after acceptance.' : 'Incoming friend request. Accept to start chatting.')
+        : 'You are now friends. Say hello!',
+      timestamp: fallbackFriend.updated_at || fallbackFriend.created_at || new Date().toISOString(),
+      type: 'system',
+      attachment: null,
+    } : null)
     if (!m) continue
 
     const request = requestMap.get(m.match_id)
@@ -204,7 +225,14 @@ export async function tieredInbox(matchIds, currentUserId) {
     const lock = lockByRequestId.get(requestId)
     const withMeta = withConversationMeta(m, usersById, lock, currentUserId)
 
-    if (request?.status === 'accepted' || sender?.verified) priority.push(withMeta)
+    const isPendingFriend = fallbackFriend?.type === 'friend_request' && fallbackFriend?.status === 'pending'
+
+    if (isPendingFriend) {
+      requestPool.push(withMeta)
+      continue
+    }
+
+    if (request?.status === 'accepted' || sender?.verified || fallbackFriend?.type === 'friend') priority.push(withMeta)
     else requestPool.push(withMeta)
   }
   return { priority, request_pool: requestPool }
