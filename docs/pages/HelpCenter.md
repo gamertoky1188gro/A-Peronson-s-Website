@@ -1,49 +1,148 @@
-# HelpCenter Page Spec
+# HelpCenter — Complete Page Specification
 
-- **Component:** `src/pages/HelpCenter.jsx`
-- **Route:** `/help`
-- **Theme Support:** Inherits global light/dark mode from `NavBar` + root `dark` class.
-- **Responsive Behavior:** Tailwind utility breakpoints and shared mobile typography/layout safeguards.
+## Page Title & Description
+- **Page title:** `HelpCenter`
+- **Primary route(s):** `/help`
+- **Purpose:** This page is implemented by `src/pages/HelpCenter.jsx` and supports a specific GarTexHub user workflow.
 
-## Structure
-1. **Global Top Navigation (shared):** Sticky glass navigation with theme switch and quick links.
-2. **Primary Content Region:** Page-specific sections/cards/tables/forms.
-3. **Action Elements:** Buttons, links, filters, or messaging controls.
-4. **Support Regions:** Side panels, metadata badges, summary blocks, or legal notes.
+## Layout & Structure
+- **Top-level layout:** Built as a React functional page component with utility-class-driven responsive structure.
+- **Major structural elements present:** `<button>`, `<form>`, `<header>`, `<input>`, `<nav>`, `<section>`.
+- **Approximate placement model (desktop):**
+  - Header / top controls: `x: 0-100%`, `y: 0-15%` (if present).
+  - Primary content zone: `x: 5-95%`, `y: 12-88%`.
+  - Sidebars/panels: left and/or right columns where `aside` blocks are present.
+  - Footer/trailing actions: lower area of the page card/container.
 
-## Approximate Element Coordinates (Responsive Grid)
-> Coordinates are described using relative viewport positions to remain useful across devices.
+## Theme & Styling
+- **Theme system:** Tailwind utility classes and app-level dark/light behavior.
+- **Explicit color tokens found in implementation:** `#004182`, `#0A192F`, `#0A66C2`, `#333`, `#5A5A5A`, `#BEE3F8`, `#E9F0F7`, `#F0F7FF`, `#F4F7F9`, `#F8F9FA`.
+- **Typography:** Sans-serif utility-based text sizing/weight hierarchy (`text-*`, `font-*`).
+- **Spacing/rhythm:** Padding/gap/margin utilities (`p-*`, `m-*`, `gap-*`, `space-y-*`) define vertical and horizontal density.
 
-- **Top navigation:** `x: 0-100%`, `y: 0-10%`, fixed/sticky.
-- **Primary heading block:** `x: 6-94%`, `y: 12-24%` (stacked tighter on mobile).
-- **Main content container:** `x: 4-96%`, `y: 18-90%`.
-- **Primary CTA zone:** typically `x: 60-94%`, `y: 18-34%` desktop, full-width row on mobile.
-- **Footer/legal or trailing info:** `x: 0-100%`, `y: 90-100%` when present.
+## Content Details
+The following user-facing strings/placeholders/buttons are present in source and should appear exactly as implemented:
+- `f.q.toLowerCase().includes(q.toLowerCase()) || f.a.toLowerCase().includes(q.toLowerCase())) return (`
+- `HELP CENTER – GarTexHub`
+- `Professional operational manual and platform guidance.`
+- `10. Frequently Asked Questions (FAQ)`
+- `Admin: Manage Knowledge Base FAQ`
+- `Cancel`
+- `Edit`
+- `Del`
+- `11. Contact Support`
+- `If your issue is not resolved, you may use the Floating Assistant, submit a support ticket, or contact the GarTexHub Support Team.`
+- `Open Support Ticket`
+- `Live Chat`
+- `Response time may vary depending on subscription level.`
+- `Quick Navigation`
+- `10. FAQ`
+- `Floating Assistant`
+- `Available on all pages to help with setup, navigation, and support. It does not handle negotiations.`
+- `react`
+- `../lib/auth`
+- `quick-start`
+- `1. Quick Start Guide`
+- `,`
+- `]
+  },
+  {
+    id:`
+- `,
+    title:`
+- `Post detailed Buyer Requests.`
+- `]
+      }
+    ]
+  },
+  {
+    id:`
+- `,
+    roles: [
+      {
+        role:`
+- `,
+        docs: [`
+- `]
+      },
+      {
+        role:`
+- `]
+      }
+    ],
+    footer:`
+- `},
+  {
+    id:`
+- `Verified Users`
+- `},
+      { title:`
+- `, text:`
+- `Message Requests.`
+- `]}
+    ]
+  },
+  {
+    id:`
+- `],
+    footer:`
+- `, keywords:`
+- `, a:`
+- `},
+    { q:`
+- `faq`
+- `PUT`
+- `, { method:`
+- `FAQ updated`
+- `DELETE`
+- `grid grid-cols-1 lg:grid-cols-4 gap-8`
+- `mb-4 text-[#333]`
+- `space-y-2`
+- `text-[#5A5A5A] flex gap-2`
+- `space-y-4`
+- `list-disc ml-5 text-[#5A5A5A]`
+- `list-disc ml-5 text-[#5A5A5A] space-y-1`
+- `mt-4 text-sm italic text-[#5A5A5A] border-t pt-2`
+- `mb-4`
+- `Search FAQs...`
+- `mt-3 text-[#5A5A5A] pl-4 border-l-2 border-[#0A66C2]`
+- `grid grid-cols-1 md:grid-cols-2 gap-6`
+- `space-y-3`
+- `Keywords (comma separated)`
+- `submit`
+- `Update`
+- `Add`
+- `max-h-64 overflow-y-auto space-y-2 pr-2`
+- `flex gap-1 ml-2`
+- `text-blue-600`
+- `text-red-600`
+- `mt-2 text-xs text-blue-800`
+- `mb-6 opacity-90`
+- `mt-4 text-xs opacity-70`
+- `space-y-6`
+- **Button labels detected:** `Cancel`, `Live Chat`, `Open Support Ticket`, `removeFaq(e.id)} className="text-red-600">Del`, `selectForEdit(e)} className="text-blue-600">Edit`
+- **Input placeholders detected:** `Answer`, `Keywords (comma separated)`, `Question`, `Search FAQs...`
 
-## Where It Is Used
-- Rendered through route configuration in `src/App.jsx`.
-- Accessed from global navigation, internal links, profile actions, dashboards, and utility flows.
+## Interactions & Functionality
+- **Forms/inputs/buttons:** wired with React state and event handlers.
+- **Event handler expressions found:**
+  - `() => removeFaq(e.id)`
+  - `() => selectForEdit(e)`
+  - `(e) => setForm({...form, answer: e.target.value`
+  - `(e) => setForm({...form, keywords: e.target.value`
+  - `(e) => setForm({...form, question: e.target.value`
+  - `(e) => setQ(e.target.value)`
+  - `resetForm`
+  - `saveFaq`
+- **Behavior model:** user actions trigger local state updates and/or API requests through shared auth/request helpers where used.
 
-## What It Contains
-- Domain-specific UI for the garments/textiles B2B workflow (discovery, communication, management, compliance, account handling).
-- Supports cards, forms, lists, stats, and content sections depending on page role.
+## Images & Media
+- **Image elements:** none explicitly declared in this page source (icons may come from component libraries).
+- **Video elements:** not explicitly declared.
+- **Iconography:** uses shared icon sets/components (e.g., Lucide or emoji/text icons where coded).
 
-## Why It Exists
-- Provides a specialized workflow step in the GarTexHub lifecycle:
-  - onboarding,
-  - discovery,
-  - relationship management,
-  - collaboration,
-  - governance/legal compliance.
-
-## Behavior & Workflows
-- Honors global theme state (`light`/`dark`) instantly.
-- Adapts across breakpoints via responsive utility classes and shared CSS fallbacks.
-- Keeps visual consistency with global palette, spacing, and card/surface system.
-
-## Implementation Notes
-- If new major blocks are added, update this spec with:
-  - layout zone,
-  - interaction purpose,
-  - data displayed,
-  - dependency on other pages/components.
+## Extra Notes / Metadata
+- **SEO metadata:** no page-specific `<head>` metadata is set in this component; defaults are inherited from app shell/index.
+- **Accessibility notes:** semantic improvements should ensure button labels, alt text, focus states, and color contrast remain compliant.
+- **Responsive behavior:** controlled by utility breakpoints (`sm:`, `md:`, `lg:` etc.) and flexible grid/flex containers.
+- **Implementation source of truth:** this markdown reflects the current component and should be updated whenever UI text/layout/classes change.

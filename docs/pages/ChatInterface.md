@@ -1,49 +1,132 @@
-# ChatInterface Page Spec
+# ChatInterface — Complete Page Specification
 
-- **Component:** `src/pages/ChatInterface.jsx`
-- **Route:** `/chat`
-- **Theme Support:** Inherits global light/dark mode from `NavBar` + root `dark` class.
-- **Responsive Behavior:** Tailwind utility breakpoints and shared mobile typography/layout safeguards.
+## Page Title & Description
+- **Page title:** `ChatInterface`
+- **Primary route(s):** `(route not directly registered in App.jsx)`
+- **Purpose:** This page is implemented by `src/pages/ChatInterface.jsx` and supports a specific GarTexHub user workflow.
 
-## Structure
-1. **Global Top Navigation (shared):** Sticky glass navigation with theme switch and quick links.
-2. **Primary Content Region:** Page-specific sections/cards/tables/forms.
-3. **Action Elements:** Buttons, links, filters, or messaging controls.
-4. **Support Regions:** Side panels, metadata badges, summary blocks, or legal notes.
+## Layout & Structure
+- **Top-level layout:** Built as a React functional page component with utility-class-driven responsive structure.
+- **Major structural elements present:** `<aside>`, `<button>`, `<img>`, `<input>`, `<main>`, `<section>`, `<video>`.
+- **Approximate placement model (desktop):**
+  - Header / top controls: `x: 0-100%`, `y: 0-15%` (if present).
+  - Primary content zone: `x: 5-95%`, `y: 12-88%`.
+  - Sidebars/panels: left and/or right columns where `aside` blocks are present.
+  - Footer/trailing actions: lower area of the page card/container.
 
-## Approximate Element Coordinates (Responsive Grid)
-> Coordinates are described using relative viewport positions to remain useful across devices.
+## Theme & Styling
+- **Theme system:** Tailwind utility classes and app-level dark/light behavior.
+- **Explicit color tokens found in implementation:** `#0d0f2a`, `#0f0f1b`, `#0f1335`, `#101018`, `#111119`, `#111120`, `#121225`, `#12162f`, `#131327`, `#13132a`, `#141414`, `#16161e`, `#19192b`, `#1a1a2a`, `#1e1e2f`, `#2a2a3a`, `#2c2f45`, `#362f78`, `#6c5ce7`, `#6f6f8d`, `#707090`, `#7b61ff`, `#7f7f98`, `#8b5cf6`, `#8e8eaa`, `#94a3b8`, `#9db2ff`, `#a4a4bc`, `#b3b5cc`, `#b7b7cc`, `#bec3de`, `#c2c4dc`, `#d4ff59`, `#d4ff70`, `#d6d6ea`.
+- **Typography:** Sans-serif utility-based text sizing/weight hierarchy (`text-*`, `font-*`).
+- **Spacing/rhythm:** Padding/gap/margin utilities (`p-*`, `m-*`, `gap-*`, `space-y-*`) define vertical and horizontal density.
 
-- **Top navigation:** `x: 0-100%`, `y: 0-10%`, fixed/sticky.
-- **Primary heading block:** `x: 6-94%`, `y: 12-24%` (stacked tighter on mobile).
-- **Main content container:** `x: 4-96%`, `y: 18-90%`.
-- **Primary CTA zone:** typically `x: 60-94%`, `y: 18-34%` desktop, full-width row on mobile.
-- **Footer/legal or trailing info:** `x: 0-100%`, `y: 90-100%` when present.
+## Content Details
+The following user-facing strings/placeholders/buttons are present in source and should appear exactly as implemented:
+- `Messages`
+- `Loading inbox...`
+- `PRIORITY INBOX`
+- `REQUESTS`
+- `Pending approval.`
+- `Accept Friend`
+- `Accept`
+- `Reject`
+- `No pending requests.`
+- `Video`
+- `Audio`
+- `Schedule`
+- `No messages yet.`
+- `Send`
+- `) :`
+- `Select a chat to begin`
+- `Call History`
+- `)) :`
+- `No calls scheduled yet.`
+- `Thread details appear here.`
+- `react`
+- `react-router-dom`
+- `lucide-react`
+- `../lib/auth`
+- `ws://localhost:4000`
+- `/feed`
+- `Feed`
+- `/search`
+- `Search`
+- `, label:`
+- `/chat`
+- `Chat`
+- `/help`
+- `Help`
+- `).startsWith(`
+- `}
 
-## Where It Is Used
-- Rendered through route configuration in `src/App.jsx`.
-- Accessed from global navigation, internal links, profile actions, dashboards, and utility flows.
+  if (!lock || lock.status ===`
+- `if (lock.status ===`
+- `you`
+- `image`
+- `video`
+- `if (url.startsWith(`
+- `) || url.startsWith(`
+- `) ?`
+- `:`
+- `).replace(/[^a-zA-Z0-9]/g,`
+- `).slice(0, 7) ||`
+- `}${words[1][0] ||`
+- `{}`
+- `chat_message`
+- `chat_error`
+- `)) {
+            setError(payload.error ||`
+- `accept`
+- `POST`
+- `Schedule date/time (ISO or YYYY-MM-DD HH:mm)`
+- `,`
+- `) ||`
+- `/calls/scheduled`
+- `Failed to schedule call`
+- `, {
+        method:`
+- `)
+      setScheduleStatus(`
+- `Failed to start call`
+- `file`
+- `message`
+- `Upload failed`
+- `)
+      setUploadStatus(`
+- `space-y-1`
+- `rel=`
+- `Shared image`
+- `text`
+- `border-[#8b5cf6]/70 bg-[#8b5cf6]/20 text-[#d4ff59]`
+- **Button labels detected:** `updateRequestState(thread, 'accept')}>Accept`, `updateRequestState(thread, 'accept')}>Accept Friend`, `updateRequestState(thread, 'reject')}>Reject`
+- **Input placeholders detected:** `Search Message...`, `Type a message...`
 
-## What It Contains
-- Domain-specific UI for the garments/textiles B2B workflow (discovery, communication, management, compliance, account handling).
-- Supports cards, forms, lists, stats, and content sections depending on page role.
+## Interactions & Functionality
+- **Forms/inputs/buttons:** wired with React state and event handlers.
+- **Event handler expressions found:**
+  - `() => fileInputRef.current?.click()`
+  - `() => navigate('/org-settings')`
+  - `() => scheduleCall(activeThread)`
+  - `() => setActiveThreadId(thread.id)`
+  - `() => setIsLiveMessagingEnabled((value) => !value)`
+  - `() => setShowThreadInfo((value) => !value)`
+  - `() => startInstantCall(activeThread)`
+  - `() => updateRequestState(thread, 'accept')`
+  - `() => updateRequestState(thread, 'reject')`
+  - `(event) => setDraftMessage(event.target.value)`
+  - `(event) => setQuery(event.target.value)`
+  - `(event) => { const file = event.target.files?.[0]; if (file) sendAttachment(file)`
+  - `(event) => { if (event.key === 'Enter') sendMessage()`
+  - `sendMessage`
+- **Behavior model:** user actions trigger local state updates and/or API requests through shared auth/request helpers where used.
 
-## Why It Exists
-- Provides a specialized workflow step in the GarTexHub lifecycle:
-  - onboarding,
-  - discovery,
-  - relationship management,
-  - collaboration,
-  - governance/legal compliance.
+## Images & Media
+- **Image elements:** none explicitly declared in this page source (icons may come from component libraries).
+- **Video elements:** present (`<video>` tag detected).
+- **Iconography:** uses shared icon sets/components (e.g., Lucide or emoji/text icons where coded).
 
-## Behavior & Workflows
-- Honors global theme state (`light`/`dark`) instantly.
-- Adapts across breakpoints via responsive utility classes and shared CSS fallbacks.
-- Keeps visual consistency with global palette, spacing, and card/surface system.
-
-## Implementation Notes
-- If new major blocks are added, update this spec with:
-  - layout zone,
-  - interaction purpose,
-  - data displayed,
-  - dependency on other pages/components.
+## Extra Notes / Metadata
+- **SEO metadata:** no page-specific `<head>` metadata is set in this component; defaults are inherited from app shell/index.
+- **Accessibility notes:** semantic improvements should ensure button labels, alt text, focus states, and color contrast remain compliant.
+- **Responsive behavior:** controlled by utility breakpoints (`sm:`, `md:`, `lg:` etc.) and flexible grid/flex containers.
+- **Implementation source of truth:** this markdown reflects the current component and should be updated whenever UI text/layout/classes change.

@@ -30,10 +30,7 @@ const CHAT_NAV_ITEMS = [
   { to: '/help', label: 'Help', icon: CircleHelp },
 ]
 
-const PLATFORM_BADGES = [
-  { label: 'WhatsApp', className: 'bg-emerald-500/20 text-emerald-300', icon: MessageSquareMore },
-  { label: 'LinkedIn', className: 'bg-sky-500/20 text-sky-300', icon: Linkedin },
-]
+
 
 function sortByNewest(a, b) {
   return new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime()
@@ -146,7 +143,7 @@ export default function ChatInterface() {
   const [messagesByThread, setMessagesByThread] = useState({})
   const [draftMessage, setDraftMessage] = useState('')
   const [isLiveMessagingEnabled, setIsLiveMessagingEnabled] = useState(true)
-  const [chatConnectionStatus, setChatConnectionStatus] = useState('offline')
+  const [, setChatConnectionStatus] = useState('offline')
   const [uploading, setUploading] = useState(false)
   const [uploadStatus, setUploadStatus] = useState('')
   const [showThreadInfo, setShowThreadInfo] = useState(false)
@@ -575,7 +572,7 @@ export default function ChatInterface() {
   const activeThreadInitials = getInitials(activeThreadDisplayName)
   const compactThreadId = truncateId(activeThread?.matchId, 18)
   const visibleError = String(error || '').toLowerCase().includes('forbidden') ? '' : error
-  const liveOnline = isLiveMessagingEnabled && chatConnectionStatus !== 'offline'
+  const liveOnline = isLiveMessagingEnabled
 
   return (
     <div className="min-h-screen bg-[#0f0f1b] bg-gradient-to-br from-[#0f0f1b] via-[#13132a] to-[#12162f] px-4 py-5 font-['Inter',sans-serif] text-white">
@@ -601,7 +598,7 @@ export default function ChatInterface() {
         </aside>
 
         <aside className="rounded-[20px] border border-white/5 bg-[#16161e] p-5">
-          <h2 className="text-lg font-semibold">Message category</h2>
+          <h2 className="text-xl font-semibold">Messages</h2>
           <p className="mb-3 text-sm text-[#8e8eaa]">{currentUser?.email || 'inbox@gartexhub.com'}</p>
           <div className="relative mb-4">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8e8eaa]" />
@@ -615,20 +612,16 @@ export default function ChatInterface() {
             {!loading && !visibleError && (
               <>
                 <section>
-                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#8e8eaa]">Message category</h3>
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#8e8eaa]">PRIORITY INBOX</h3>
                   <div className="space-y-3">
-                    {filteredPriorityInbox.map((thread, index) => {
+                    {filteredPriorityInbox.map((thread) => {
                       const threadName = formatDisplayName(thread.name, thread.senderId || thread.id)
-                      const platform = PLATFORM_BADGES[index % PLATFORM_BADGES.length]
-                      const PlatformIcon = platform.icon
                       return (
                         <button key={`priority-${thread.id}`} className={`w-full rounded-2xl border p-3 text-left ${activeThreadId === thread.id ? 'border-[#7b61ff]/60 bg-[#362f78]' : 'border-white/5 bg-[#111119]'}`} onClick={() => setActiveThreadId(thread.id)}>
                           <div className="flex items-start justify-between gap-2">
                             <div>
                               <div className="text-sm font-semibold">{threadName}</div>
-                              <div className="mt-0.5 flex items-center gap-1 text-xs text-[#8e8eaa]">
-                                <PlatformIcon size={12} strokeWidth={2} /> {platform.label}
-                              </div>
+                              <div className="mt-0.5 text-xs text-[#8e8eaa]">{lockStatusLabel(thread.lock, thread)}</div>
                             </div>
                             <span className="rounded-full bg-[#d4ff70] px-2 py-0.5 text-[11px] font-semibold text-[#141414]">{Math.max(1, (thread.last || '').length % 12)}</span>
                           </div>
@@ -640,7 +633,7 @@ export default function ChatInterface() {
                 </section>
 
                 <section>
-                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#8e8eaa]">Direct Message</h3>
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#8e8eaa]">REQUESTS</h3>
                   <div className="space-y-3">
                     {filteredRequests.map((thread) => {
                       const threadName = formatDisplayName(thread.name, thread.senderId || thread.id)
@@ -683,9 +676,9 @@ export default function ChatInterface() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button className="inline-flex h-10 items-center gap-1 rounded-xl border border-white/10 bg-[#1f1f2a] px-3 text-sm font-medium" onClick={() => startInstantCall(activeThread)}><Video size={14} /> Video</button>
-                  <button className="inline-flex h-10 items-center gap-1 rounded-xl border border-white/10 bg-[#1f1f2a] px-3 text-sm font-medium" onClick={() => startInstantCall(activeThread)}><Mic size={14} /> Audio</button>
-                  <button className="inline-flex h-10 items-center gap-1 rounded-xl border border-white/10 bg-[#1f1f2a] px-3 text-sm font-medium" onClick={() => scheduleCall(activeThread)}><Phone size={14} /> Schedule</button>
+                  <button className="inline-flex h-10 items-center gap-1 rounded-xl border border-white/40 bg-transparent px-3 text-sm font-medium text-white" onClick={() => startInstantCall(activeThread)}><Video size={14} /> Video</button>
+                  <button className="inline-flex h-10 items-center gap-1 rounded-xl border border-white/40 bg-transparent px-3 text-sm font-medium text-white" onClick={() => startInstantCall(activeThread)}><Mic size={14} /> Audio</button>
+                  <button className="inline-flex h-10 items-center gap-1 rounded-xl border border-white/40 bg-transparent px-3 text-sm font-medium text-white" onClick={() => scheduleCall(activeThread)}><Phone size={14} /> Schedule</button>
                 </div>
               </div>
 
@@ -697,7 +690,7 @@ export default function ChatInterface() {
                 <button className="rounded-md border border-white/20 px-2 py-1" onClick={() => setIsLiveMessagingEnabled((value) => !value)}>{isLiveMessagingEnabled ? 'Disable WS' : 'Enable WS'}</button>
               </div>
 
-              <div className="h-[calc(100vh-320px)] space-y-3 overflow-auto rounded-2xl border border-white/5 bg-[#0f0f16] p-3">
+              <div className="h-[calc(100vh-330px)] space-y-3 overflow-auto rounded-2xl border border-white/10 bg-[#0d0f2a] p-3">
                 {activeMessages.length > 0 ? activeMessages.map((message) => {
                   const isOwn = message.sender_id === currentUser?.id
                   const messageName = isOwn ? 'You' : formatDisplayName(message.sender_name || message.sender_company_name, message.sender_id)
@@ -720,7 +713,7 @@ export default function ChatInterface() {
                 <button className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2" onClick={() => setShowThreadInfo((value) => !value)}><Info size={12} /> {showThreadInfo ? 'Hide' : 'Info'}</button>
               </div>
 
-              <div className="relative mt-3 rounded-2xl bg-white p-2">
+              <div className="relative mt-3 rounded-2xl border border-white/10 bg-[#0f1335] p-2">
                 <input className="h-12 w-full rounded-2xl bg-white pl-12 pr-28 text-sm text-[#19192b] placeholder:text-[#707090]" placeholder="Type a message..." value={draftMessage} onChange={(event) => setDraftMessage(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') sendMessage() }} />
                 <input ref={fileInputRef} type="file" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) sendAttachment(file) }} />
                 <button className="absolute left-4 top-1/2 -translate-y-1/2 rounded-lg border border-[#d6d6ea] bg-white p-2 text-[#2c2f45]" onClick={() => fileInputRef.current?.click()} disabled={uploading}><Plus size={14} /></button>
@@ -736,8 +729,8 @@ export default function ChatInterface() {
           {activeThread ? (
             <>
               <div className="mb-4 rounded-2xl border border-white/5 bg-[#131327] p-6 text-center">
-                <div className="mx-auto mb-4 flex h-28 w-28 items-center justify-center rounded-full bg-[#7b61ff]/25 text-3xl font-semibold">{activeThreadInitials}</div>
-                <div className="text-2xl font-semibold">{activeThreadDisplayName}</div>
+                <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[#7b61ff]/25 text-xl font-semibold">{activeThreadInitials}</div>
+                <div className="text-xl font-semibold">{activeThreadDisplayName}</div>
                 <div className="mt-1 text-sm text-[#b3b5cc]">@{truncateId(activeThread.senderId || activeThread.matchId, 12)}</div>
               </div>
 
