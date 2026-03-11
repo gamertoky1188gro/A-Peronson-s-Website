@@ -71,6 +71,12 @@ export async function listUsers() {
   return users.map(cleanUser)
 }
 
+export async function listUsersByIds(ids = []) {
+  const users = await readJson(FILE)
+  const set = new Set((Array.isArray(ids) ? ids : []).map((id) => String(id)))
+  return users.filter((u) => set.has(String(u.id))).map(cleanUser)
+}
+
 export async function searchUsers(viewerId, query) {
   const users = await readJson(FILE)
   const connections = await readJson(CONNECTION_FILE)

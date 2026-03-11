@@ -1,29 +1,34 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import {
+  ChevronLeft,
+  Mic,
+  MicOff,
+  Video,
+  VideoOff,
+  PhoneOff,
+  Volume2,
+  Maximize,
+  Send,
+  Smile,
+  MoreHorizontal,
+  Search
+} from 'lucide-react'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 
-const POLL_INTERVAL_MS = 4000
-const TERMINAL_RECORDING_STATUSES = new Set(['available', 'failed'])
 const WS_BASE = import.meta.env.VITE_WS_URL || 'ws://localhost:4000'
-
-function StatBadge({ label, value }) {
-  return (
-    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/70 px-3 py-2">
-      <p className="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">{label}</p>
-      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{value}</p>
-    </div>
-  )
-}
 
 export default function CallInterface() {
   const [searchParams] = useSearchParams()
-  const [callId, setCallId] = useState(searchParams.get('callId') || '')
+  const navigate = useNavigate()
   const [statusMessage, setStatusMessage] = useState('')
   const [callDetails, setCallDetails] = useState(null)
-  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [participants, setParticipants] = useState([])
   const [isMuted, setIsMuted] = useState(false)
   const [isCameraOn, setIsCameraOn] = useState(true)
-  const [peerState, setPeerState] = useState('Connecting')
+  const [timer, setTimer] = useState('00:00:00')
+  const [chatDraft, setChatDraft] = useState('')
+  const [chatMessages, setChatMessages] = useState([])
 
   const localVideoRef = useRef(null)
   const remoteVideoRef = useRef(null)
@@ -31,408 +36,502 @@ export default function CallInterface() {
   const peerConnectionRef = useRef(null)
   const localStreamRef = useRef(null)
   const remoteStreamRef = useRef(null)
+  const redirectedRef = useRef(false)
 
+  const callId = useMemo(() => searchParams.get('callId') || '', [searchParams])
   const matchId = useMemo(() => searchParams.get('matchId') || '', [searchParams])
   const user = useMemo(() => getCurrentUser(), [])
-  const participantId = user?.id || `guest-${Date.now()}`
+  const participantId = useMemo(() => (user?.id ? user.id : `guest-${Date.now()}`), [user?.id])
+  const effectiveMatchId = callDetails?.match_id || callDetails?.context?.chat_thread_id || matchId
 
-  const ensureCallSession = useCallback(async () => {
-    const token = getToken()
-    if (!token) {
-      setStatusMessage('Please sign in to access call sessions.')
-      return
-    }
+  const localName = user?.name || user?.email || 'You'
+  const remoteParticipant = participants.find((p) => p.id && p.id !== user?.id) || null
+  const remoteName = remoteParticipant?.name || remoteParticipant?.email || callDetails?.title || 'Participant'
 
-    if (callId) return
-    if (!matchId) {
-      setStatusMessage('Missing callId or matchId in the URL. Open from chat or provide a matchId.')
-      return
-    }
+  const userMap = useMemo(() => {
+    const map = new Map()
+    participants.forEach((p) => { if (p?.id) map.set(p.id, p) })
+    if (user?.id) map.set(user.id, user)
+    return map
+  }, [participants, user])
 
-    try {
-      const result = await apiRequest('/calls/join', {
-        method: 'POST',
-        token,
-        body: {
-          match_id: matchId,
-          title: 'Supplier Intro Meeting',
-          chat_thread_id: matchId,
-        },
-      })
-      if (result?.call?.id) {
-        setCallId(result.call.id)
-        setCallDetails(result.call)
-        setStatusMessage(result.created ? 'New call session created.' : 'Joined existing call session.')
-      }
-    } catch (err) {
-      setStatusMessage(err.message || 'Unable to open call session.')
-    }
-  }, [callId, matchId])
+  const sortedChatMessages = useMemo(() => {
+    return [...chatMessages].sort((a, b) => new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime())
+  }, [chatMessages])
 
-  const refreshCallDetails = useCallback(async ({ silent = false } = {}) => {
-    const token = getToken()
-    if (!token || !callId) return null
+  const formatMessageTime = (iso) => {
+    if (!iso) return ''
+    return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }
 
-    if (!silent) setIsRefreshing(true)
-
-    try {
-      const call = await apiRequest(`/calls/${callId}`, { token })
-      setCallDetails(call)
-      return call
-    } catch {
-      if (!silent) setStatusMessage('Unable to load call details.')
-      return null
-    } finally {
-      if (!silent) setIsRefreshing(false)
-    }
-  }, [callId])
-
-  const setupPeerConnection = useCallback(() => {
+  const createPeerConnection = useCallback((token) => {
     if (peerConnectionRef.current) return peerConnectionRef.current
-
     const pc = new RTCPeerConnection({
       iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
     })
 
     pc.onicecandidate = (event) => {
-      if (!event.candidate || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return
+      if (!event.candidate) return
+      if (wsRef.current?.readyState !== WebSocket.OPEN) return
       wsRef.current.send(JSON.stringify({
         type: 'webrtc_signal',
-        signal: { type: 'ice', candidate: event.candidate },
+        call_id: callId,
+        token,
+        signal: { type: 'candidate', candidate: event.candidate },
       }))
     }
 
     pc.ontrack = (event) => {
-      if (!remoteStreamRef.current) remoteStreamRef.current = new MediaStream()
-      event.streams[0].getTracks().forEach((track) => remoteStreamRef.current.addTrack(track))
-      if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStreamRef.current
-      setPeerState('Connected')
+      const [stream] = event.streams
+      if (stream) {
+        remoteStreamRef.current = stream
+        if (remoteVideoRef.current) {
+          remoteVideoRef.current.srcObject = stream
+        }
+      }
     }
 
-    const stream = localStreamRef.current
-    if (stream) {
-      stream.getTracks().forEach((track) => pc.addTrack(track, stream))
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((track) => {
+        pc.addTrack(track, localStreamRef.current)
+      })
     }
 
     peerConnectionRef.current = pc
     return pc
-  }, [])
-
-  const startLocalMedia = useCallback(async () => {
-    if (localStreamRef.current) return localStreamRef.current
-    const media = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-    localStreamRef.current = media
-    if (localVideoRef.current) localVideoRef.current.srcObject = media
-    return media
-  }, [])
-
-  const createOfferAndSend = useCallback(async () => {
-    const pc = setupPeerConnection()
-    const offer = await pc.createOffer()
-    await pc.setLocalDescription(offer)
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: 'webrtc_signal', signal: { type: 'offer', sdp: offer.sdp } }))
-    }
-  }, [setupPeerConnection])
+  }, [callId])
 
   useEffect(() => {
-    ensureCallSession()
-  }, [ensureCallSession])
-
-  useEffect(() => {
-    if (callId) refreshCallDetails()
-  }, [callId, refreshCallDetails])
-
-  useEffect(() => {
-    if (!callDetails || callDetails.status !== 'ended') return undefined
-    if (TERMINAL_RECORDING_STATUSES.has(callDetails.recording_status)) return undefined
-
-    const timer = window.setInterval(async () => {
-      const latest = await refreshCallDetails({ silent: true })
-      if (!latest || latest.status !== 'ended') return
-      if (TERMINAL_RECORDING_STATUSES.has(latest.recording_status)) {
-        window.clearInterval(timer)
-        setStatusMessage(
-          latest.recording_status === 'available'
-            ? 'Recording is now available and call is completed.'
-            : 'Recording processing failed and the call has been finalized with a failure reason.',
-        )
+    if (!callId) {
+      if (!redirectedRef.current) {
+        redirectedRef.current = true
+        navigate('/chat', {
+          state: {
+            notice: {
+              type: 'error',
+              title: 'Call link missing',
+              message: 'You were redirected because this page needs a valid call id. Please start a call from the chat page.',
+            },
+          },
+        })
       }
-    }, POLL_INTERVAL_MS)
+    }
+  }, [callId, navigate])
 
-    return () => window.clearInterval(timer)
-  }, [callDetails, refreshCallDetails])
+  const loadCallDetails = useCallback(async () => {
+    const token = getToken()
+    if (!token || !callId) return
+    try {
+      const details = await apiRequest(`/calls/${callId}`, { token })
+      setCallDetails(details)
+    } catch (err) {
+      if (!redirectedRef.current) {
+        redirectedRef.current = true
+        navigate('/chat', {
+          state: {
+            notice: {
+              type: 'error',
+              title: 'Call not available',
+              message: 'You were redirected because the call id is invalid or you no longer have access.',
+            },
+          },
+        })
+      }
+    }
+  }, [callId, navigate])
+
+  const startCallIfNeeded = useCallback(async () => {
+    const token = getToken()
+    if (!token || !callId) return
+    try {
+      await apiRequest(`/calls/${callId}/start`, { method: 'POST', token })
+    } catch {
+      // no-op
+    }
+  }, [callId])
+
+  const loadParticipants = useCallback(async () => {
+    const token = getToken()
+    if (!token || !callDetails?.participant_ids?.length) return
+    const data = await apiRequest('/users/lookup', {
+      method: 'POST',
+      token,
+      body: { ids: callDetails.participant_ids },
+    })
+    setParticipants(data?.users || [])
+  }, [callDetails])
+
+  const loadChatMessages = useCallback(async () => {
+    const token = getToken()
+    if (!token || !effectiveMatchId) return
+    const data = await apiRequest(`/messages/${effectiveMatchId}`, { token })
+    setChatMessages(Array.isArray(data) ? data : [])
+  }, [effectiveMatchId])
+
+  useEffect(() => { loadCallDetails() }, [loadCallDetails])
+  useEffect(() => { startCallIfNeeded() }, [startCallIfNeeded])
+  useEffect(() => { loadParticipants() }, [loadParticipants])
+  useEffect(() => { loadChatMessages() }, [loadChatMessages])
 
   useEffect(() => {
-    if (!callId) return undefined
-    let active = true
-
-    const initializeWs = async () => {
+    let canceled = false
+    async function initMedia() {
       try {
-        await startLocalMedia()
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        if (canceled) return
+        localStreamRef.current = stream
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream
+        }
+        if (peerConnectionRef.current) {
+          stream.getTracks().forEach((track) => {
+            peerConnectionRef.current.addTrack(track, stream)
+          })
+        }
+      } catch (err) {
+        setStatusMessage('Camera/microphone permission not granted.')
+      }
+    }
+    initMedia()
+    return () => {
+      canceled = true
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((track) => track.stop())
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    const token = getToken()
+    if (!token || !callId) return
+
+    const ws = new WebSocket(WS_BASE)
+    wsRef.current = ws
+
+    const sendSignal = (payload) => {
+      if (ws.readyState !== WebSocket.OPEN) return
+      ws.send(JSON.stringify(payload))
+    }
+
+    ws.onopen = () => {
+      sendSignal({
+        type: 'join_call_room',
+        call_id: callId,
+        token,
+        participant_id: participantId,
+      })
+    }
+
+    ws.onmessage = async (event) => {
+      let payload
+      try {
+        payload = JSON.parse(String(event.data || ''))
       } catch {
-        setStatusMessage('Unable to access camera/microphone.')
+        return
       }
 
-      const ws = new WebSocket(WS_BASE)
-      wsRef.current = ws
+      if (payload.type === 'joined_call_room') {
+        const pc = createPeerConnection(token)
+        if (payload.should_offer) {
+          const offer = await pc.createOffer()
+          await pc.setLocalDescription(offer)
+          sendSignal({
+            type: 'webrtc_signal',
+            call_id: callId,
+            token,
+            signal: { type: 'offer', sdp: pc.localDescription },
+          })
+        }
+        return
+      }
 
-      ws.onopen = () => {
-        if (!active) return
-        setPeerState('Joining room...')
-        ws.send(JSON.stringify({
-          type: 'join_call_room',
+      if (payload.type === 'participant_joined') {
+        const pc = createPeerConnection(token)
+        const offer = await pc.createOffer()
+        await pc.setLocalDescription(offer)
+        sendSignal({
+          type: 'webrtc_signal',
           call_id: callId,
-          participant_id: participantId,
-        }))
+          token,
+          signal: { type: 'offer', sdp: pc.localDescription },
+        })
+        return
       }
 
-      ws.onmessage = async (evt) => {
-        if (!active) return
-        const payload = JSON.parse(String(evt.data || '{}'))
-
-        if (payload.type === 'joined_call_room') {
-          setPeerState(payload.should_offer ? 'Connecting to participant...' : 'Waiting for participant...')
-          setupPeerConnection()
-          if (payload.should_offer) {
-            await createOfferAndSend()
-          }
-          return
-        }
-
-        if (payload.type === 'participant_joined') {
-          setPeerState('Participant joined')
-          return
-        }
-
-        if (payload.type === 'participant_left') {
-          setPeerState('Participant left')
-          return
-        }
-
-        if (payload.type === 'webrtc_signal') {
-          const pc = setupPeerConnection()
-          const signal = payload.signal || {}
-
-          if (signal.type === 'offer' && signal.sdp) {
-            await pc.setRemoteDescription({ type: 'offer', sdp: signal.sdp })
-            const answer = await pc.createAnswer()
-            await pc.setLocalDescription(answer)
-            ws.send(JSON.stringify({ type: 'webrtc_signal', signal: { type: 'answer', sdp: answer.sdp } }))
-            return
-          }
-
-          if (signal.type === 'answer' && signal.sdp) {
-            await pc.setRemoteDescription({ type: 'answer', sdp: signal.sdp })
-            return
-          }
-
-          if (signal.type === 'ice' && signal.candidate) {
-            await pc.addIceCandidate(signal.candidate)
+      if (payload.type === 'webrtc_signal' && payload.signal) {
+        const pc = createPeerConnection(token)
+        const signal = payload.signal
+        if (signal.type === 'offer') {
+          await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp))
+          const answer = await pc.createAnswer()
+          await pc.setLocalDescription(answer)
+          sendSignal({
+            type: 'webrtc_signal',
+            call_id: callId,
+            token,
+            signal: { type: 'answer', sdp: pc.localDescription },
+          })
+        } else if (signal.type === 'answer') {
+          await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp))
+        } else if (signal.type === 'candidate') {
+          try {
+            await pc.addIceCandidate(new RTCIceCandidate(signal.candidate))
+          } catch {
+            // ignore candidate errors
           }
         }
-      }
-
-      ws.onerror = () => {
-        if (active) setPeerState('WebSocket error')
-      }
-
-      ws.onclose = () => {
-        if (active) setPeerState('Disconnected')
       }
     }
 
-    initializeWs()
-
-    return () => {
-      active = false
-      if (wsRef.current) wsRef.current.close()
+    ws.onclose = () => {
       if (peerConnectionRef.current) {
         peerConnectionRef.current.close()
         peerConnectionRef.current = null
       }
+    }
+
+    return () => {
+      ws.close()
+    }
+  }, [callId, participantId, createPeerConnection])
+
+  useEffect(() => {
+    const startedAt = callDetails?.started_at || callDetails?.created_at
+    if (!startedAt) return
+    const startMs = new Date(startedAt).getTime()
+    const interval = setInterval(() => {
+      const elapsed = Math.max(0, Date.now() - startMs)
+      const totalSeconds = Math.floor(elapsed / 1000)
+      const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0')
+      const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0')
+      const seconds = String(totalSeconds % 60).padStart(2, '0')
+      setTimer(`${hours}:${minutes}:${seconds}`)
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [callDetails])
+
+  const toggleMute = () => {
+    setIsMuted((prev) => {
+      const next = !prev
       if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach((track) => track.stop())
-        localStreamRef.current = null
+        localStreamRef.current.getAudioTracks().forEach((track) => { track.enabled = !next })
       }
-      remoteStreamRef.current = null
-    }
-  }, [callId, participantId, setupPeerConnection, startLocalMedia, createOfferAndSend])
+      return next
+    })
+  }
 
-  async function scheduleFollowUp() {
+  const toggleCamera = () => {
+    setIsCameraOn((prev) => {
+      const next = !prev
+      if (localStreamRef.current) {
+        localStreamRef.current.getVideoTracks().forEach((track) => { track.enabled = !next })
+      }
+      return next
+    })
+  }
+
+  const endCall = async () => {
     const token = getToken()
-    if (!token) {
-      setStatusMessage('Please sign in to schedule a follow-up call.')
-      return
+    if (token && callId) {
+      try {
+        await apiRequest(`/calls/${callId}/end`, { method: 'POST', token })
+      } catch {
+        // ignore
+      }
     }
+    navigate('/chat')
+  }
 
-    const scheduledForInput = window.prompt('Follow-up date/time', new Date().toISOString())
-    if (!scheduledForInput) return
-
-    const parsedScheduledFor = new Date(scheduledForInput)
-    const scheduledFor = Number.isNaN(parsedScheduledFor.getTime()) ? new Date().toISOString() : parsedScheduledFor.toISOString()
-
+  const sendChatMessage = async () => {
+    const token = getToken()
+    const content = chatDraft.trim()
+    if (!token || !content || !effectiveMatchId) return
     try {
-      const created = await apiRequest('/calls/scheduled', {
+      const created = await apiRequest(`/messages/${effectiveMatchId}`, {
         method: 'POST',
         token,
-        body: {
-          match_id: callDetails?.match_id || matchId,
-          title: `Follow-up: ${callDetails?.title || 'Supplier Intro'}`,
-          chat_thread_id: callDetails?.context?.chat_thread_id || matchId,
-          scheduled_for: scheduledFor,
-          contract_id: callDetails?.contract_id || '',
-          security_audit_id: callDetails?.security_audit_id || '',
-        },
+        body: { message: content, type: 'text' },
       })
-      setStatusMessage(`Follow-up scheduled for ${new Date(created.scheduled_for).toLocaleString()}.`)
+      setChatMessages((prev) => [...prev, created])
+      setChatDraft('')
     } catch (err) {
-      setStatusMessage(err.message || 'Failed to schedule follow-up.')
+      setStatusMessage(err.message || 'Unable to send message')
     }
   }
-
-  async function startCall() {
-    const token = getToken()
-    if (!token || !callId) return
-    try {
-      const next = await apiRequest(`/calls/${callId}/start`, { method: 'POST', token })
-      setCallDetails(next)
-      setStatusMessage('Call session started.')
-    } catch (err) {
-      setStatusMessage(err.message || 'Unable to start call.')
-    }
-  }
-
-  async function endCall() {
-    const token = getToken()
-    if (!token || !callId) return
-
-    try {
-      const ended = await apiRequest(`/calls/${callId}/end`, { method: 'POST', token, body: { reason: 'manual_end' } })
-      setCallDetails(ended)
-      setStatusMessage('Call ended. Recording is processing and status will refresh automatically.')
-      await refreshCallDetails({ silent: true })
-    } catch (err) {
-      setStatusMessage(err.message || 'Unable to end call.')
-    }
-  }
-
-  async function refreshRecordingStatus() {
-    const latest = await refreshCallDetails()
-    if (!latest) return
-
-    if (latest.recording_status === 'available') {
-      setStatusMessage('Recording is available.')
-      return
-    }
-
-    if (latest.recording_status === 'failed') {
-      setStatusMessage('Recording failed to process. Check audit details for failure reason.')
-      return
-    }
-
-    setStatusMessage('Recording is still processing.')
-  }
-
-  const canStartCall = callDetails?.status === 'scheduled'
-  const canEndCall = ['scheduled', 'in_progress'].includes(callDetails?.status)
 
   return (
-    <div className="min-h-[calc(100vh-120px)] px-4 py-6 md:px-6 lg:px-8">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
-        <section className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 p-3 md:p-4">
-          <header className="mb-3 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h1 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100">
-                {callDetails?.title || 'Supplier Intro Meeting'}
-              </h1>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                {callDetails?.status || 'scheduled'} • {callDetails?.recording_status || 'pending recording'} • {peerState}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                className="rounded-xl border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm"
-                onClick={() => {
-                  setIsMuted((v) => !v)
-                  const stream = localStreamRef.current
-                  if (stream) stream.getAudioTracks().forEach((t) => { t.enabled = isMuted })
-                }}
-              >
-                {isMuted ? '🔇 Unmute' : '🎙️ Mute'}
-              </button>
-              <button
-                className="rounded-xl border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm"
-                onClick={() => {
-                  setIsCameraOn((v) => !v)
-                  const stream = localStreamRef.current
-                  if (stream) stream.getVideoTracks().forEach((t) => { t.enabled = !isCameraOn })
-                }}
-              >
-                {isCameraOn ? '📷 Camera On' : '📷 Camera Off'}
-              </button>
-              <button className="rounded-xl border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm">🖥️ Share</button>
-            </div>
-          </header>
+    <div className="flex h-screen w-screen flex-col bg-[#f8f9fa] font-sans text-slate-900 overflow-hidden">
+      {/* Top Header */}
+      <header className="flex h-16 items-center justify-between border-b bg-white px-6 shadow-sm">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => navigate(-1)}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border bg-white text-slate-500 hover:bg-slate-50"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <h1 className="text-base font-semibold">Call with "{remoteName}"</h1>
+        </div>
+        <div className="flex items-center gap-2 text-slate-600">
+          <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+          <span className="text-sm font-bold tabular-nums">{timer}</span>
+        </div>
+      </header>
 
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <div className="relative h-[300px] md:h-[420px] overflow-hidden rounded-2xl bg-black">
-              <div className="absolute left-3 top-3 z-10 rounded-lg bg-black/45 px-2 py-1 text-xs text-white">You</div>
-              <video ref={localVideoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
+      {/* Main Layout Content */}
+      <div className="flex flex-1 overflow-hidden p-4 gap-4">
+        
+        {/* Left Side: Video Feed Area */}
+        <div className="relative flex flex-1 flex-col overflow-hidden rounded-3xl bg-white shadow-lg border border-slate-100">
+          
+          <div className="relative flex-1 bg-[#2d2d2d] overflow-hidden">
+            {/* Remote Participant Label */}
+            <div className="absolute left-6 top-6 z-20 text-white font-medium drop-shadow-md">
+              {remoteName}
             </div>
-            <div className="relative h-[300px] md:h-[420px] overflow-hidden rounded-2xl bg-black">
-              <div className="absolute left-3 top-3 z-10 rounded-lg bg-black/45 px-2 py-1 text-xs text-white">Participant</div>
-              <video ref={remoteVideoRef} autoPlay playsInline className="h-full w-full object-cover" />
+
+            {/* Remote Video (Main) */}
+            <video
+              ref={remoteVideoRef}
+              autoPlay
+              playsInline
+              className="h-full w-full object-cover"
+            />
+            {!remoteStreamRef.current && (
+              <div className="absolute inset-0 flex items-center justify-center text-white/70 text-lg">
+                {remoteName}
+              </div>
+            )}
+
+            {/* Local Video (PiP) */}
+            <div className="absolute right-6 top-6 z-30 h-40 w-64 overflow-hidden rounded-2xl border-2 border-white shadow-2xl bg-black">
+              <video 
+                ref={localVideoRef} 
+                autoPlay 
+                playsInline 
+                muted 
+                className="h-full w-full object-cover"
+              />
+              <div className="absolute bottom-2 left-2 text-[10px] text-white bg-black/40 px-1.5 py-0.5 rounded">
+                {localName}
+              </div>
+            </div>
+
+            {/* Floating Call Controls */}
+            <div className="absolute bottom-8 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3 rounded-2xl bg-white/10 p-2 backdrop-blur-md">
+              <button className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 text-white hover:bg-white/30 transition-colors">
+                <Volume2 size={20} />
+              </button>
+              <button 
+                onClick={toggleMute}
+                className={`flex h-12 w-12 items-center justify-center rounded-xl transition-colors ${isMuted ? 'bg-red-500 text-white' : 'bg-white/20 text-white hover:bg-white/30'}`}
+              >
+                {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
+              </button>
+              <button 
+                onClick={endCall}
+                className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500 text-white hover:bg-red-600 transition-colors"
+              >
+                <PhoneOff size={20} />
+              </button>
+              <button 
+                onClick={toggleCamera}
+                className={`flex h-12 w-12 items-center justify-center rounded-xl transition-colors ${!isCameraOn ? 'bg-red-500 text-white' : 'bg-white/20 text-white hover:bg-white/30'}`}
+              >
+                {!isCameraOn ? <VideoOff size={20} /> : <Video size={20} />}
+              </button>
+              <button className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 text-white hover:bg-white/30 transition-colors">
+                <Maximize size={20} />
+              </button>
+            </div>
+
+            {/* Volume Slider Mock */}
+            <div className="absolute bottom-32 left-1/2 z-40 -translate-x-1/2 flex flex-col items-center gap-2 group">
+               <div className="h-24 w-1 bg-white/20 rounded-full relative overflow-hidden">
+                  <div className="absolute bottom-0 left-0 w-full h-1/2 bg-blue-500" />
+                  <div className="absolute bottom-1/2 left-1/2 -translate-x-1/2 h-3 w-3 bg-blue-500 border-2 border-white rounded-full" />
+               </div>
             </div>
           </div>
 
-          {statusMessage ? (
-            <div className="mt-3 rounded-xl border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40 px-3 py-2 text-sm text-blue-700 dark:text-blue-300">
-              {statusMessage}
+          {/* Transcription Bar */}
+          <div className="flex items-center gap-4 border-t bg-white px-6 py-4">
+            <div className="flex items-center gap-1.5 text-blue-500">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="10" width="2" height="4" rx="1" fill="currentColor" />
+                <rect x="7" y="7" width="2" height="10" rx="1" fill="currentColor" />
+                <rect x="11" y="4" width="2" height="16" rx="1" fill="currentColor" />
+                <rect x="15" y="7" width="2" height="10" rx="1" fill="currentColor" />
+                <rect x="19" y="10" width="2" height="4" rx="1" fill="currentColor" />
+              </svg>
             </div>
-          ) : null}
+            <p className="text-sm font-medium text-slate-700">
+              {statusMessage || callDetails?.context?.notes || 'Live call in progress.'}
+            </p>
+          </div>
+        </div>
 
-          <footer className="mt-4 flex flex-wrap items-center gap-2">
-            {canStartCall ? (
-              <button className="rounded-xl border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm" onClick={startCall}>Start Call</button>
-            ) : null}
-            {canEndCall ? (
-              <button className="rounded-xl border border-red-400 bg-red-600 px-3 py-2 text-sm text-white" onClick={endCall}>End Call</button>
-            ) : null}
-            <button className="rounded-xl border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm" onClick={refreshRecordingStatus} disabled={isRefreshing}>
-              {isRefreshing ? 'Refreshing…' : 'Refresh Recording'}
+        {/* Right Side: Chat Sidebar */}
+        <aside className="flex w-96 flex-col overflow-hidden rounded-3xl bg-white shadow-lg border border-slate-100">
+          <div className="flex h-14 items-center justify-between border-b px-5">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">Chat</h2>
+            <button className="text-slate-400 hover:text-slate-600">
+              <MoreHorizontal size={20} />
             </button>
-            <button className="rounded-xl border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm" onClick={scheduleFollowUp}>Schedule Follow-up</button>
-            <Link to="/" className="ml-auto rounded-xl border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm">Leave</Link>
-          </footer>
-        </section>
-
-        <aside className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
-          <h2 className="mb-3 text-base font-semibold text-gray-900 dark:text-gray-100">Meeting Details</h2>
-          <div className="grid gap-2">
-            <StatBadge label="Meeting ID" value={callDetails?.id || callId || 'Pending'} />
-            <StatBadge label="Match ID" value={callDetails?.match_id || matchId || 'N/A'} />
-            <StatBadge label="Started" value={callDetails?.started_at ? new Date(callDetails.started_at).toLocaleString() : 'Not started'} />
-            <StatBadge label="Ended" value={callDetails?.ended_at ? new Date(callDetails.ended_at).toLocaleString() : 'In progress'} />
           </div>
 
-          <div className="mt-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/70 p-3">
-            <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Participants</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {(callDetails?.participant_ids || []).length > 0 ? (callDetails.participant_ids.map((id) => (
-                <span key={id} className="rounded-full border border-gray-300 dark:border-gray-600 px-2 py-1 text-xs text-gray-700 dark:text-gray-300">
-                  {id}
-                </span>
-              ))) : <span className="text-sm text-gray-600 dark:text-gray-300">No participant data yet.</span>}
+          <div className="flex-1 overflow-y-auto p-5 space-y-6 scrollbar-hide">
+            {sortedChatMessages.length > 0 ? sortedChatMessages.map((msg) => {
+              const isOwn = msg.sender_id === user?.id
+              const sender = userMap.get(msg.sender_id)
+              const senderName = sender?.name || sender?.email || 'User'
+              return (
+                <div key={msg.id} className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
+                  <div className="flex items-center gap-2 mb-1">
+                    {!isOwn && (
+                      <div className="h-6 w-6 rounded-full bg-green-500 flex items-center justify-center text-[10px] text-white font-bold">
+                        {senderName[0] || 'U'}
+                      </div>
+                    )}
+                    <span className="text-xs font-bold text-slate-700">{senderName}</span>
+                    <span className="text-[10px] text-slate-400">{formatMessageTime(msg.timestamp)}</span>
+                  </div>
+                  <div className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm shadow-sm ${
+                    isOwn
+                      ? 'bg-blue-500 text-white rounded-tr-none'
+                      : 'bg-white border text-slate-700 rounded-tl-none'
+                  }`}>
+                    {msg.message || ''}
+                  </div>
+                </div>
+              )
+            }) : (
+              <div className="text-sm text-slate-400">No messages yet.</div>
+            )}
+          </div>
+
+          <div className="border-t p-4">
+            <div className="relative flex items-center gap-2 rounded-xl bg-slate-50 p-2 border border-slate-100">
+              <button className="text-slate-400 hover:text-slate-600 ml-1">
+                <Smile size={20} />
+              </button>
+              <input 
+                type="text" 
+                placeholder="Type here..."
+                className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400"
+                value={chatDraft}
+                onChange={(e) => setChatDraft(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') sendChatMessage() }}
+              />
+              <button onClick={sendChatMessage} className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500 text-white shadow-md hover:bg-blue-600 transition-colors">
+                <Send size={16} />
+              </button>
             </div>
-          </div>
-
-          <div className="mt-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/70 p-3">
-            <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Notes</p>
-            <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">Share key decisions, pricing updates, and next actions here during the call.</p>
           </div>
         </aside>
+
       </div>
     </div>
   )
 }
+

@@ -3,6 +3,7 @@ import {
   findUserById,
   followUser,
   listUsers,
+  listUsersByIds,
   searchUsers,
   sendFriendRequest,
   setUserVerification,
@@ -29,6 +30,11 @@ export async function searchUsersController(req, res) {
   res.set('Expires', '0')
   res.set('Surrogate-Control', 'no-store')
   return res.status(200).json({ users: await searchUsers(req.user.id, q) })
+}
+
+export async function lookupUsers(req, res) {
+  const ids = Array.isArray(req.body?.ids) ? req.body.ids : []
+  return res.status(200).json({ users: await listUsersByIds(ids) })
 }
 
 export async function followUserController(req, res) {

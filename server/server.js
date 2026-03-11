@@ -27,12 +27,14 @@ import callSessionRoutes from './routes/callSessionRoutes.js'
 import memberRoutes from './routes/memberRoutes.js'
 import orgRoutes from './routes/orgRoutes.js'
 import ratingsRoutes from './routes/ratingsRoutes.js'
+import presenceRoutes from './routes/presenceRoutes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { logInfo, logError } from './utils/logger.js'
 import { assistantReply } from './services/assistantService.js'
 import jwt from 'jsonwebtoken'
 import { canAccessMatch, listMessagesByMatch, postMessage } from './services/messageService.js'
 import { getCallSession } from './services/callSessionService.js'
+import { setUserOnline, setUserOffline, touchUser } from './services/presenceService.js'
 
 const app = express()
 const PORT = process.env.PORT || 4000
@@ -74,6 +76,7 @@ app.use('/api/calls', callSessionRoutes)
 app.use('/api/org', orgRoutes)
 app.use('/api/members', memberRoutes)
 app.use('/api/ratings', ratingsRoutes)
+app.use('/api/presence', presenceRoutes)
 app.use(errorHandler)
 
 const server = http.createServer(app)
@@ -135,6 +138,8 @@ function leaveChatRoom(socket) {
 
   if (room.size === 0) chatRooms.delete(matchId)
   socket.chatRoomId = null
+
+  if (socket.userId) setUserOffline(socket.userId)
 }
 
 
@@ -177,6 +182,7 @@ async function joinChatRoom(socket, payload) {
   }
 
   socket.userId = user.id
+  setUserOnline(user.id)
   const canSend = await canAccessMatch(matchId, socket.userId)
   if (!canSend) {
     sendWs(socket, { type: 'chat_error', error: 'Forbidden: thread access denied' })
@@ -187,6 +193,7 @@ async function joinChatRoom(socket, payload) {
   const participants = [...room].map((participantSocket) => participantSocket.userId).filter(Boolean)
   room.add(socket)
   socket.chatRoomId = matchId
+  touchUser(user.id)
 
   const history = await listMessagesByMatch(matchId)
   sendWs(socket, {
@@ -428,6 +435,7 @@ wsServer.on('connection', (socket, req) => {
   socket.on('close', () => {
     leaveCallRoom(socket)
     leaveChatRoom(socket)
+    if (socket.userId) setUserOffline(socket.userId)
   })
 })
 

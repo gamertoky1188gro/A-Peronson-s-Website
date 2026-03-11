@@ -14,6 +14,7 @@ import {
   Lock,
   LogOut,
   MessageCircle,
+  Phone,
   Plus,
   Search,
   SendHorizontal,
@@ -32,18 +33,18 @@ const CHAT_NAV_ITEMS = [
   { to: '/help', label: 'Help', icon: CircleHelp },
 ]
 
-const SOCIAL_CATEGORIES = [
-  { id: 'x', name: 'X', label: 'X', badge: 12, bg: '#111111' },
-  { id: 'instagram', name: 'Instagram', label: 'IG', badge: 24, bg: 'linear-gradient(135deg,#f58529,#dd2a7b,#8134af)' },
-  { id: 'whatsapp', name: 'WhatsApp', label: 'WA', badge: 132, bg: '#25D366' },
-  { id: 'linkedin', name: 'LinkedIn', label: 'in', badge: 2, bg: '#0A66C2' },
-  { id: 'tiktok', name: 'TikTok', label: 'TT', badge: 16, bg: '#0f0f10' },
-]
+
 
 const PANEL_STYLE = {
-  background: 'linear-gradient(160deg, rgba(20,22,45,0.95), rgba(15,18,36,0.88))',
-  border: '1px solid rgba(212,255,89,0.08)',
-  boxShadow: '0 10px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.03)',
+  background: 'rgb(16, 13, 34)',
+  border: 'none',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.45)',
+}
+
+const RIGHT_PANEL_STYLE = {
+  background: '#100D22',
+  border: 'none',
+  boxShadow: '0 10px 40px rgba(0,0,0,0.45)',
 }
 
 
@@ -70,9 +71,10 @@ function normalizeThreads(messages = []) {
         matchId: message.match_id,
         requestId: message.request_id || String(message.match_id).split(':')[0],
         name: formatDisplayName(message.sender_name || message.company_name || message.sender_company_name, message.sender_id),
+        avatar: message.sender_avatar_url || message.sender_avatar || '',
         senderId: message.sender_id,
         verified: Boolean(message.sender_verified),
-        last: message.message || 'No message content',
+        last: String(message.message || '').trim(),
         unread: 0,
         timestamp: message.timestamp,
         lock,
@@ -86,7 +88,7 @@ function normalizeThreads(messages = []) {
     if (new Date(message.timestamp || 0).getTime() > new Date(existing.timestamp || 0).getTime()) {
       byMatchId.set(message.match_id, {
         ...existing,
-        last: message.message || existing.last,
+        last: String(message.message || '').trim() || existing.last,
         timestamp: message.timestamp,
         lock,
         isFriendThread: existing.isFriendThread || String(message.match_id || '').startsWith('friend:'),
@@ -136,8 +138,12 @@ function truncateId(value = '', size = 8) {
 
 function formatDisplayName(name, fallbackId) {
   if (name && String(name).trim()) return String(name).trim()
-  const token = String(fallbackId || '').replace(/[^a-zA-Z0-9]/g, '').slice(0, 7) || 'unknown'
-  return `User-${token}`
+  const cleaned = String(fallbackId || '')
+    .replace(/^friend:/i, '')
+    .replace(/[_:.@-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  return cleaned || 'Unknown contact'
 }
 
 function getInitials(label = '') {
@@ -157,12 +163,56 @@ function extractFirstUrl(text = '') {
   return match ? match[0] : ''
 }
 
-function avatarUrl(seed = 'user') {
-  return `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(seed)}`
+function avatarUrl(avatar = '') {
+  return String(avatar || '').trim()
+}
+
+function dateDividerLabel(iso) {
+  if (!iso) return 'Recent'
+  const date = new Date(iso)
+  const now = new Date()
+  const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+  const startDate = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()
+  const dayDiff = Math.floor((startToday - startDate) / 86400000)
+  if (dayDiff <= 0) return 'Today'
+  if (dayDiff === 1) return 'Yesterday'
+  return date.toLocaleDateString()
+}
+
+function formatPresence(iso) {
+  if (!iso) return 'No recent activity'
+  const ms = Date.now() - new Date(iso).getTime()
+  const mins = Math.floor(ms / 60000)
+  if (mins < 2) return 'Online'
+  if (mins < 60) return `Last seen ${mins}m ago`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `Last seen ${hours}h ago`
+  return `Last seen ${new Date(iso).toLocaleDateString()}`
+}
+
+function linkPreviewMeta(url = '') {
+  try {
+    const parsed = new URL(url)
+    return {
+      host: parsed.hostname.replace(/^www\./i, ''),
+      title: parsed.hostname.replace(/^www\./i, ''),
+      description: parsed.pathname && parsed.pathname !== '/' ? parsed.pathname : 'Shared link',
+    }
+  } catch {
+    return { host: 'link', title: 'Shared link', description: url || 'Open link' }
+  }
 }
 
 export default function ChatInterface() {
+  const [themeMode, setThemeMode] = useState(() => {
+    try {
+      return localStorage.getItem('chat-theme-mode') || 'dark'
+    } catch {
+      return 'dark'
+    }
+  })
   const [priorityInbox, setPriorityInbox] = useState([])
+  // ... rest of state ...
   const [messageRequests, setMessageRequests] = useState([])
   const [activeThreadId, setActiveThreadId] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -181,6 +231,8 @@ export default function ChatInterface() {
     sharedMedia: true,
     sharedPost: true,
   })
+  const [presenceMap, setPresenceMap] = useState({})
+  const [notice, setNotice] = useState(null)
 
   const wsRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -188,8 +240,43 @@ export default function ChatInterface() {
   const currentUser = useMemo(() => getCurrentUser(), [])
   const navigate = useNavigate()
   const location = useLocation()
+  const isLight = themeMode === 'light'
+
+  const presenceStatus = useCallback((userId) => presenceMap?.[userId]?.status || 'offline', [presenceMap])
+  const presenceLastSeen = useCallback((userId) => presenceMap?.[userId]?.last_seen || null, [presenceMap])
+
+  const theme = useMemo(() => ({
+    pageBg: isLight ? '#f8fafc' : 'rgb(4, 0, 23)',
+    panelBg: isLight ? '#ffffff' : 'rgb(16, 13, 34)',
+    rightPanelBg: isLight ? '#ffffff' : '#100D22',
+    subPanelBg: isLight ? '#fcfdfe' : '#100D22',
+    tileBg: isLight ? '#f1f5f9' : '#171031',
+    threadIdleBg: isLight ? 'transparent' : '#101328',
+    threadActiveBg: isLight ? '#f0f7ff' : '#2f295c',
+    textPrimary: isLight ? '#1e293b' : '#ffffff',
+    textMuted: isLight ? '#64748b' : '#8e93b4',
+    inputBg: isLight ? '#f1f5f9' : '#171031',
+    shadow: isLight ? '0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02)' : '0 10px 40px rgba(0,0,0,0.45)',
+    accent: '#4f46e5',
+  }), [isLight])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('chat-theme-mode', themeMode)
+    } catch {
+      // no-op
+    }
+  }, [themeMode])
+
+  useEffect(() => {
+    if (location.state?.notice) {
+      setNotice(location.state.notice)
+      navigate(location.pathname, { replace: true, state: {} })
+    }
+  }, [location.state, location.pathname, navigate])
 
   const loadInbox = useCallback(async () => {
+
     setLoading(true)
     setError('')
 
@@ -293,13 +380,39 @@ export default function ChatInterface() {
   }, [activeMessages])
 
   const sharedPosts = useMemo(() => {
-    return activeMessages.filter((message) => String(message?.message || '').trim().length > 0).slice(-6).reverse()
+    return activeMessages.filter((message) => message?.type === 'post').slice(-6).reverse()
   }, [activeMessages])
+
+  const participantIds = useMemo(() => {
+    const ids = new Set()
+    activeMessages.forEach((m) => {
+      if (m.sender_id) ids.add(m.sender_id)
+    })
+    if (activeThread?.senderId) ids.add(activeThread.senderId)
+    if (currentUser?.id) ids.add(currentUser.id)
+    return Array.from(ids)
+  }, [activeMessages, activeThread, currentUser])
 
   useEffect(() => {
     if (!activeThread?.matchId) return
     loadThreadMessages(activeThread.matchId)
   }, [activeThread, loadThreadMessages])
+
+  const refreshPresence = useCallback(async (ids) => {
+    const token = getToken()
+    if (!token || !ids || ids.length === 0) return
+    try {
+      const data = await apiRequest('/presence', { method: 'POST', token, body: { user_ids: ids } })
+      if (data?.presence) setPresenceMap(data.presence)
+    } catch {
+      // silent
+    }
+  }, [])
+
+  useEffect(() => {
+    if (participantIds.length === 0) return
+    refreshPresence(participantIds)
+  }, [participantIds, refreshPresence])
 
   useEffect(() => {
     if (!isLiveMessagingEnabled) {
@@ -473,6 +586,13 @@ export default function ChatInterface() {
       return
     }
 
+    const participantIds = new Set()
+    activeMessages.forEach((message) => {
+      if (message?.sender_id) participantIds.add(message.sender_id)
+    })
+    if (thread.senderId) participantIds.add(thread.senderId)
+    if (currentUser?.id) participantIds.delete(currentUser.id)
+
     setScheduleStatus('Starting call room...')
     try {
       const result = await apiRequest('/calls/join', {
@@ -482,6 +602,7 @@ export default function ChatInterface() {
           match_id: thread.matchId,
           chat_thread_id: thread.matchId,
           title: `Call with ${thread.name}`,
+          participant_ids: [...participantIds],
         },
       })
       const callId = result?.call?.id
@@ -537,9 +658,9 @@ export default function ChatInterface() {
     if (isImageMessage(message) && attachmentUrl) {
       return (
         <div className="space-y-1">
-          {message.message ? <div>{message.message}</div> : null}
-          <a href={attachmentUrl} target="_blank" rel="noreferrer">
-            <img src={attachmentUrl} alt={message?.attachment?.name || 'Shared image'} className="max-h-56 rounded-xl border border-white/10" />
+          {message.message ? <div className="mb-1">{message.message}</div> : null}
+          <a href={attachmentUrl} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-xl border border-slate-100 dark:border-transparent">
+            <img src={attachmentUrl} alt={message?.attachment?.name || 'Shared image'} className="max-h-64 w-full object-cover" />
           </a>
         </div>
       )
@@ -548,8 +669,8 @@ export default function ChatInterface() {
     if (isVideoMessage(message) && attachmentUrl) {
       return (
         <div className="space-y-1">
-          {message.message ? <div>{message.message}</div> : null}
-          <video src={attachmentUrl} controls className="max-h-56 w-full rounded-xl border border-white/10" />
+          {message.message ? <div className="mb-1">{message.message}</div> : null}
+          <video src={attachmentUrl} controls className="max-h-64 w-full rounded-xl" />
         </div>
       )
     }
@@ -557,8 +678,9 @@ export default function ChatInterface() {
     if (message?.attachment?.url) {
       return (
         <div className="space-y-1">
-          {message.message ? <div>{message.message}</div> : null}
-          <a href={attachmentUrl} target="_blank" rel="noreferrer" className="underline">
+          {message.message ? <div className="mb-1">{message.message}</div> : null}
+          <a href={attachmentUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-lg bg-slate-50 p-2 text-blue-600 underline dark:bg-black/20">
+            <Plus size={14} />
             {message?.attachment?.name || 'Open file'}
           </a>
         </div>
@@ -567,15 +689,16 @@ export default function ChatInterface() {
 
     const firstUrl = extractFirstUrl(message?.message || '')
     if (firstUrl) {
+      const meta = linkPreviewMeta(firstUrl)
       return (
         <div className="space-y-2">
           <p>{message.message.replace(firstUrl, '').trim() || 'Link shared'}</p>
-          <a href={firstUrl} target="_blank" rel="noreferrer" className="block rounded-xl border border-white/10 bg-black/20 p-2">
-            <div className="mb-2 h-24 overflow-hidden rounded-lg bg-[#1f2448]">
-              <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80" alt="Raven.cafe preview" className="h-full w-full object-cover" />
+          <a href={firstUrl} target="_blank" rel="noreferrer" className="block rounded-xl border border-slate-100 bg-slate-50 p-2 dark:border-transparent dark:bg-black/20">
+            <div className="mb-2 h-24 overflow-hidden rounded-lg bg-slate-200 flex items-center justify-center text-xs text-slate-500 dark:bg-[#1f2448] dark:text-[#b8bfe8]">
+              {meta.host}
             </div>
-            <div className="text-sm font-semibold">Raven.cafe</div>
-            <div className="text-xs text-[#d2d4eb]">Casual hangout in the centre of kotagede.</div>
+            <div className="text-sm font-semibold">{meta.title}</div>
+            <div className="text-xs opacity-70">{meta.description}</div>
           </a>
         </div>
       )
@@ -624,115 +747,141 @@ export default function ChatInterface() {
 
   const activeThreadDisplayName = formatDisplayName(activeThread?.name, activeThread?.senderId || activeThread?.matchId)
   const activeThreadInitials = getInitials(activeThreadDisplayName)
-  const activeAvatar = avatarUrl(activeThreadDisplayName)
+  const activeAvatar = avatarUrl(activeThread?.avatar)
   const visibleError = String(error || '').toLowerCase().includes('forbidden') ? '' : error
+  const todayLabel = dateDividerLabel(activeMessages[activeMessages.length - 1]?.timestamp)
 
   return (
     <div
-      className="min-h-screen px-4 py-5 font-['Poppins',sans-serif] text-white"
+      className="h-screen w-screen font-['Poppins',sans-serif] text-white chat-interface-container overflow-hidden"
       style={{
-        background:
-          'radial-gradient(circle at 10% 10%, rgba(124,58,237,0.25), transparent 35%), radial-gradient(circle at 90% 15%, rgba(59,130,246,0.2), transparent 35%), #0B0E14',
+        background: theme.pageBg,
+        color: theme.textPrimary,
       }}
     >
-      <div className="mx-auto grid max-w-[1700px] grid-cols-1 gap-4 lg:grid-cols-[62px_286px_minmax(560px,1fr)_356px]">
-        <aside className="rounded-[22px] p-2" style={PANEL_STYLE}>
-          <div className="flex h-full flex-col items-center justify-between py-1">
-            <div className="space-y-2">
-              {CHAT_NAV_ITEMS.map((item) => {
-                const Icon = item.icon
-                const isActive = location.pathname === item.to
-                return (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    className={`relative flex h-10 w-10 items-center justify-center rounded-[12px] border ${
-                      isActive
-                        ? 'border-[#9e7bff] bg-[#6e4ff6]/20 text-[#D4FF59]'
-                        : 'border-white/5 bg-[#0f1126] text-[#8f95bb] hover:border-white/10 hover:text-white'
-                    }`}
-                    title={item.label}
-                  >
-                    <Icon size={16} strokeWidth={1.5} />
-                  </Link>
-                )
-              })}
+      <style>{`
+        .chat-interface-container *,
+        .chat-interface-container *:before,
+        .chat-interface-container *:after {
+          border-color: ${isLight ? '#e2e8f0' : 'transparent'} !important;
+          box-shadow: none !important;
+          outline: none !important;
+        }
+        .chat-interface-container img {
+          border: none !important;
+        }
+        .chat-interface-container input::placeholder {
+          color: ${isLight ? '#94a3b8' : '#7f86ae'} !important;
+        }
+      `}</style>
+      {notice ? (
+        <div className="mx-3 mt-2 rounded-xl px-4 py-3 text-sm font-medium shadow-sm"
+          style={{ background: notice.type === 'error' ? '#fee2e2' : '#e0f2fe', color: '#0f172a' }}>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="text-[13px] font-semibold">{notice.title || 'Notice'}</div>
+              <div className="text-[12px] opacity-80">{notice.message || ''}</div>
             </div>
-            <button
-              className="flex h-10 w-10 items-center justify-center rounded-[12px] border border-white/10 bg-[#0f1126] text-[#8f95bb] hover:text-[#D4FF59]"
-              onClick={() => navigate('/login')}
-              title="Logout"
-            >
-              <LogOut size={16} strokeWidth={1.5} />
-            </button>
+            <button onClick={() => setNotice(null)} className="text-xs font-semibold">Dismiss</button>
           </div>
+        </div>
+      ) : null}
+      <div className="grid h-full w-full grid-cols-1 gap-2 p-2 md:grid-cols-[62px_1fr] lg:grid-cols-[62px_minmax(260px,22vw)_1fr] xl:grid-cols-[62px_minmax(260px,20vw)_1fr_minmax(280px,22vw)]">
+        <aside className="hidden md:flex h-full rounded-[22px] p-2 flex-col items-center justify-between py-1" style={{ background: 'transparent', boxShadow: 'none', border: 'none' }}>
+          <div className="space-y-2">
+            <button
+              className={`mb-4 flex h-10 w-10 items-center justify-center rounded-[12px] border-none shadow-none text-lg transition-colors ${
+                isLight ? 'bg-white text-orange-400 shadow-sm' : 'bg-[#171031] text-[#D4FF59]'
+              }`}
+              onClick={() => setThemeMode((value) => (value === 'light' ? 'dark' : 'light'))}
+              title={isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+            >
+              {isLight ? '☀️' : '🌙'}
+            </button>
+            {CHAT_NAV_ITEMS.map((item) => {
+              const Icon = item.icon
+              const isActive = location.pathname === item.to
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={`relative flex h-10 w-10 items-center justify-center rounded-[12px] transition-all ${
+                    isActive
+                      ? (isLight ? 'bg-[#6366f1] text-white' : 'bg-[#6e4ff6]/20 text-[#D4FF59]')
+                      : (isLight ? 'text-slate-400 hover:bg-white hover:text-[#6366f1]' : 'bg-[#171031] text-[#8f95bb] hover:text-white')
+                  }`}
+                  title={item.label}
+                >
+                  <Icon size={18} strokeWidth={1.5} />
+                </Link>
+              )
+            })}
+          </div>
+          <button
+            className="flex h-10 w-10 items-center justify-center rounded-[12px] transition-colors"
+            style={{ background: isLight ? '#ffffff' : theme.tileBg, color: isLight ? '#ef4444' : '#8f95bb' }}
+            onClick={() => navigate('/login')}
+            title="Logout"
+          >
+            <LogOut size={18} strokeWidth={1.5} />
+          </button>
         </aside>
 
-        <aside className="rounded-[24px] p-4" style={PANEL_STYLE}>
-          <div className="mb-3">
-            <h2 className="text-lg font-semibold">Message category</h2>
-            <p className="text-xs text-[#8e93b4]">{currentUser?.email || 'hussein.saddam@gmail.com'}</p>
+        <aside className="hidden lg:block rounded-[24px] p-5 overflow-hidden border border-slate-200/50 dark:border-none" style={{ background: theme.panelBg, boxShadow: theme.shadow }}>
+          <div className="mb-6">
+            <h2 className="text-xl font-bold tracking-tight">Messages</h2>
+            <p className="text-xs font-medium" style={{ color: theme.textMuted }}>{currentUser?.email || 'No email available'}</p>
           </div>
 
-          <div className="relative mb-4">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9ca3c6]" />
+          <div className="relative mb-6">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
-              className="h-10 w-full rounded-[12px] border border-white/15 bg-white/10 pl-9 pr-11 text-[13px] text-white placeholder:text-[#a0a5c6] backdrop-blur"
-              placeholder="Search Message..."
+              className="h-11 w-full appearance-none rounded-[14px] border border-transparent pl-10 pr-11 text-[13px] outline-none transition-all focus:border-[#6366f1]/50"
+              style={{ background: theme.inputBg, color: theme.textPrimary }}
+              placeholder="Search conversations..."
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
-            <Filter size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#b8bddf]" />
           </div>
 
-          <div className="mb-4 space-y-2">
-            {SOCIAL_CATEGORIES.map((item) => (
-              <div key={item.id} className="flex items-center justify-between rounded-[12px] border border-white/5 bg-[#0f1126] px-3 py-2">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full text-xs text-white" style={{ background: item.bg }}>
-                    <span className="text-sm font-semibold">{item.label}</span>
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">{item.name}</div>
-                    <div className="text-[11px] text-[#8e93b4]">{item.name.toLowerCase()}</div>
-                  </div>
-                </div>
-                <span className="rounded-full bg-[#2a2d4f] px-2 py-0.5 text-[11px] font-semibold text-[#d7dcff]">{item.badge}</span>
-              </div>
-            ))}
+          <div className="mb-3 flex items-center justify-between px-1">
+            <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: theme.textMuted }}>Direct Messages</h3>
+            <span className="text-[10px] font-bold text-[#6366f1]">{allVisibleThreads.length}</span>
           </div>
 
-          <div className="mb-2 flex items-center justify-between">
-            <h3 className="text-sm font-semibold">Direct Message</h3>
-            <span className="rounded-md bg-[#22264a] px-2 py-1 text-[11px] text-[#cad0f3]">Newest</span>
-          </div>
-
-          <div className="h-[calc(100vh-562px)] min-h-[220px] space-y-2 overflow-auto pr-1">
-            {loading ? <div className="text-sm text-[#9ca3c6]">Loading inbox...</div> : null}
-            {!loading && visibleError ? <div className="text-sm text-red-300">{visibleError}</div> : null}
+          <div className="h-[calc(100vh-250px)] space-y-1 overflow-auto pr-1 custom-scrollbar">
+            {loading ? <div className="p-4 text-center text-sm text-slate-400">Loading inbox...</div> : null}
+            {!loading && visibleError ? <div className="p-4 text-center text-sm text-red-400">{visibleError}</div> : null}
             {!loading &&
               !visibleError &&
               [...filteredPriorityInbox, ...filteredRequests].map((thread) => {
                 const threadName = formatDisplayName(thread.name, thread.senderId || thread.id)
+                const isActive = activeThreadId === thread.id
                 return (
                   <button
                     key={thread.id}
-                    className={`w-full rounded-[14px] border px-3 py-2 text-left ${
-                      activeThreadId === thread.id ? 'border-[#8c6bff]/70 bg-[#2f295c]' : 'border-white/5 bg-[#101328]'
-                    }`}
+                    className="group w-full rounded-[16px] px-3 py-3 text-left transition-all"
+                    style={{ background: isActive ? theme.threadActiveBg : 'transparent' }}
                     onClick={() => setActiveThreadId(thread.id)}
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="relative">
-                        <img src={avatarUrl(threadName)} alt={`${threadName} avatar`} className="h-8 w-8 rounded-full" />
-                        <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border border-[#0f1126] bg-[#28d368]" />
+                    <div className="flex items-center gap-3">
+                      <div className="relative flex-shrink-0">
+                        {thread.avatar ? (
+                          <img src={avatarUrl(thread.avatar)} alt={threadName} className="h-11 w-11 rounded-full object-cover shadow-sm" />
+                        ) : (
+                          <div className={`flex h-11 w-11 items-center justify-center rounded-full text-xs font-bold shadow-sm ${isActive ? 'bg-[#6366f1] text-white' : 'bg-slate-100 text-slate-500'}`}>{getInitials(threadName)}</div>
+                        )}
+                        <span
+                          className="absolute bottom-0 right-0 h-3 w-3 rounded-full"
+                          style={{ background: presenceStatus(thread.senderId) === 'online' ? '#22c55e' : '#94a3b8', border: '2px solid transparent' }}
+                        />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="truncate text-[13px] font-semibold">{threadName}</p>
-                          <span className="text-[11px] text-[#97a0c6]">{formatTime(thread.timestamp)}</span>
+                        <div className="flex items-center justify-between gap-1">
+                          <p className={`truncate text-[14px] font-semibold ${isActive ? 'text-[#6366f1]' : ''}`}>{threadName}</p>
+                          <span className="flex-shrink-0 text-[10px] font-medium text-slate-400">{formatTime(thread.timestamp)}</span>
                         </div>
-                        <p className="truncate text-xs text-[#8e93b4]">{thread.last}</p>
+                        <p className={`truncate text-xs ${isActive ? 'text-slate-600' : 'text-slate-400'}`}>{thread.last || 'No messages'}</p>
                       </div>
                     </div>
                   </button>
@@ -741,149 +890,191 @@ export default function ChatInterface() {
           </div>
         </aside>
 
-        <main className="rounded-[24px] p-4" style={PANEL_STYLE}>
+        <main className="rounded-[24px] p-0 flex flex-col h-full overflow-hidden border border-slate-200/50 dark:border-none" style={{ background: theme.panelBg, boxShadow: theme.shadow }}>
           {activeThread ? (
             <>
-              <div className="mb-4 flex items-center justify-between rounded-[16px] border border-white/10 bg-[#131739] px-4 py-3">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800/50">
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <img src={activeAvatar} alt={`${activeThreadDisplayName} profile`} className="h-10 w-10 rounded-full" />
-                    <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border border-[#131739] bg-[#28d368]" />
+                    {activeAvatar ? (
+                      <img src={activeAvatar} alt={activeThreadDisplayName} className="h-10 w-10 rounded-full object-cover shadow-sm" />
+                    ) : (
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500">{activeThreadInitials}</div>
+                    )}
+                    <span
+                      className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full"
+                      style={{ background: presenceStatus(activeThread?.senderId) === 'online' ? '#22c55e' : '#94a3b8', border: '2px solid transparent' }}
+                    />
                   </div>
                   <div>
-                    <p className="font-semibold">{activeThreadDisplayName}</p>
-                    <p className="text-xs text-[#a1a8cf]">Online • {lockStatusLabel(activeThread.lock, activeThread)}</p>
+                    <p className="text-sm font-bold tracking-tight">{activeThreadDisplayName}</p>
+                    <p className="text-[11px] font-medium text-slate-400">
+                      {presenceStatus(activeThread?.senderId) === 'online'
+                        ? 'Online'
+                        : formatPresence(presenceLastSeen(activeThread?.senderId))}
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-[#28d368]" />
-                  <button className="rounded-[12px] border border-white/10 bg-white/5 p-2 hover:bg-white/10">
-                    <EllipsisVertical size={15} strokeWidth={1.5} />
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => startInstantCall(activeThread)}
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50"
+                    title="Start call"
+                  >
+                    <Phone size={16} />
+                  </button>
+                  <button className="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50">
+                    <Search size={16} />
+                  </button>
+                  <button className="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50">
+                    <EllipsisVertical size={16} />
                   </button>
                 </div>
               </div>
 
-              <div className="mb-3 flex items-center justify-between text-xs text-[#8e93b4]">
-                <span>{isLiveMessagingEnabled ? 'Realtime connected' : 'Realtime paused'}</span>
-                <button className="rounded-md border border-white/15 px-2 py-1" onClick={() => setIsLiveMessagingEnabled((value) => !value)}>
-                  {isLiveMessagingEnabled ? 'Disable WS' : 'Enable WS'}
-                </button>
-              </div>
-
-              <div className="h-[calc(100vh-322px)] space-y-3 overflow-auto rounded-[18px] border border-white/10 bg-[#0d1030] p-4">
-                <div className="text-center text-xs text-[#787ea6]">Today</div>
+              <div className="flex-1 space-y-4 overflow-auto p-6 custom-scrollbar" style={{ background: isLight ? '#f8fafc' : 'transparent' }}>
+                <div className="flex justify-center mb-6">
+                  <span className="rounded-full bg-transparent border border-slate-200/60 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:border-slate-800 dark:text-slate-600">{todayLabel}</span>
+                </div>
                 {activeMessages.length > 0 ? (
                   activeMessages.map((message) => {
                     const isOwn = message.sender_id === currentUser?.id
                     return (
                       <div key={message.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[68%] rounded-[16px] px-3 py-2.5 text-[13px] leading-5 ${isOwn ? 'bg-gradient-to-r from-[#7f4dff] to-[#b86cff] text-white' : 'bg-[#2a2744] text-white'}`}>
+                        <div className={`group relative max-w-[80%] sm:max-w-[70%] rounded-[20px] px-4 py-3 text-[13.5px] shadow-sm transition-all ${
+                          isOwn 
+                            ? 'bg-[#6366f1] text-white rounded-br-none' 
+                            : `${isLight ? 'bg-white border border-slate-100' : 'bg-[#2a2744]'} rounded-bl-none`
+                        }`} style={!isOwn ? { color: theme.textPrimary } : undefined}>
                           {renderMessageBody(message)}
-                          <div className="mt-1.5 text-right text-[10px] text-white/65">{formatTime(message.timestamp)}</div>
+                          <div className={`mt-1 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-60 ${isOwn ? 'text-white' : 'text-slate-400'}`}>
+                            {formatTime(message.timestamp)}
+                          </div>
                         </div>
                       </div>
                     )
                   })
                 ) : (
-                  <div className="text-sm text-[#9ca3c6]">No messages yet.</div>
+                  <div className="flex h-full items-center justify-center text-sm font-medium text-slate-400 italic">No messages yet. Start the conversation!</div>
                 )}
               </div>
 
-              <div className="relative mt-4 rounded-[16px] border border-white/15 bg-[#12163a] p-2">
-                <input
-                  className="h-11 w-full rounded-[12px] border border-white/10 bg-[#0b0f2d] pl-11 pr-28 text-[13px] text-white placeholder:text-[#7f86ae]"
-                  placeholder="Type a message..."
-                  value={draftMessage}
-                  onChange={(event) => setDraftMessage(event.target.value)}
-                  onKeyDown={(event) => { if (event.key === 'Enter') sendMessage() }}
-                />
-                <input ref={fileInputRef} type="file" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) sendAttachment(file) }} />
-                <button className="absolute left-4 top-1/2 -translate-y-1/2 rounded-[10px] border border-white/15 bg-[#1e2146] p-2 text-[#d4d8ff]" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
-                  <Plus size={13} strokeWidth={1.6} />
-                </button>
-                <button className="absolute right-4 top-1/2 inline-flex -translate-y-1/2 items-center gap-1 rounded-[10px] bg-[#D4FF59] px-3.5 py-2 text-[13px] font-semibold text-[#111723]" onClick={sendMessage}>
-                  Send <SendHorizontal size={12} strokeWidth={1.9} />
-                </button>
+              <div className="p-4 border-t border-slate-100 dark:border-slate-800/50">
+                <div className="relative flex items-center gap-2 rounded-[18px] p-1.5" style={{ background: theme.inputBg }}>
+                  <button className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-200/50 dark:hover:bg-slate-700/50" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                    <Plus size={20} />
+                  </button>
+                  <input
+                    className="flex-1 bg-transparent px-2 text-[14px] outline-none placeholder:text-slate-400"
+                    style={{ color: theme.textPrimary }}
+                    placeholder="Write a message..."
+                    value={draftMessage}
+                    onChange={(event) => setDraftMessage(event.target.value)}
+                    onKeyDown={(event) => { if (event.key === 'Enter') sendMessage() }}
+                  />
+                  <input ref={fileInputRef} type="file" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) sendAttachment(file) }} />
+                  <button className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#6366f1] text-white shadow-md transition-transform hover:scale-105 active:scale-95" onClick={sendMessage}>
+                    <SendHorizontal size={18} />
+                  </button>
+                </div>
+                {uploadStatus || scheduleStatus ? (
+                  <p className="mt-2 px-4 text-[11px] font-medium text-[#6366f1]">{uploadStatus || scheduleStatus}</p>
+                ) : null}
               </div>
-              {uploadStatus ? <p className="mt-2 text-xs text-[#a8b3e7]">{uploadStatus}</p> : null}
-              {scheduleStatus ? <p className="mt-1 text-xs text-[#a8b3e7]">{scheduleStatus}</p> : null}
             </>
-          ) : <div className="flex h-full items-center justify-center text-sm text-[#8e8eaa]">Select a chat to begin</div>}
+          ) : <div className="flex h-full flex-col items-center justify-center text-slate-400 gap-4">
+                <div className="h-20 w-20 rounded-full bg-slate-50 flex items-center justify-center dark:bg-slate-800/30">
+                  <MessageCircle size={32} className="opacity-20" />
+                </div>
+                <p className="text-sm font-medium">Select a conversation to start chatting</p>
+              </div>}
         </main>
 
-        <aside className="rounded-[24px] p-4" style={PANEL_STYLE}>
+        <aside className="hidden xl:block rounded-[24px] p-6 h-full overflow-auto border border-slate-200/50 dark:border-none" style={{ background: theme.panelBg, boxShadow: theme.shadow }}>
           {activeThread ? (
             <>
-              <div className="mb-4 rounded-[16px] border border-white/10 bg-[#11152f] p-5 text-center">
-                <img src={activeAvatar} alt={`${activeThreadDisplayName} avatar`} className="mx-auto mb-3 h-[78px] w-[78px] rounded-full" />
-                <p className="text-xl font-semibold">{activeThreadDisplayName}</p>
-                <p className="text-sm text-[#97a0c8]">@{truncateId(activeThread.senderId || activeThread.matchId, 14)}</p>
+              <div className="mb-8 text-center">
+                <div className="mx-auto mb-4 h-24 w-24 rounded-full border-4 border-white shadow-md dark:border-slate-800">
+                  {activeAvatar ? (
+                    <img src={activeAvatar} alt={activeThreadDisplayName} className="h-full w-full rounded-full object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center rounded-full bg-slate-100 text-2xl font-bold text-slate-400">{activeThreadInitials}</div>
+                  )}
+                </div>
+                <h3 className="text-lg font-bold tracking-tight">{activeThreadDisplayName}</h3>
+                <p className="text-xs font-medium text-slate-400 tracking-wide">@{truncateId(activeThread.senderId || activeThread.matchId, 16)}</p>
               </div>
 
-              <div className="mb-4 grid grid-cols-4 gap-2">
-                <button className="rounded-[10px] border border-white/10 bg-[#11152f] p-2 text-[#c9cef4]"><Flag size={14} strokeWidth={1.6} className="mx-auto" /></button>
-                <button className="rounded-[10px] border border-white/10 bg-[#11152f] p-2 text-[#c9cef4]"><Lock size={14} strokeWidth={1.6} className="mx-auto" /></button>
-                <button className="rounded-[10px] border border-white/10 bg-[#11152f] p-2 text-[#c9cef4]"><Info size={14} strokeWidth={1.6} className="mx-auto" /></button>
-                <button className="rounded-[10px] border border-white/10 bg-[#11152f] p-2 text-[#c9cef4]"><VolumeX size={14} strokeWidth={1.6} className="mx-auto" /></button>
+              <div className="mb-8 grid grid-cols-4 gap-3">
+                {[
+                  { icon: Flag, title: 'Report' },
+                  { icon: Lock, title: 'Block' },
+                  { icon: Info, title: 'Info' },
+                  { icon: VolumeX, title: 'Mute' }
+                ].map((action, i) => (
+                  <button key={i} className="flex flex-col items-center gap-1.5 transition-opacity hover:opacity-70" title={action.title}>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-transparent text-slate-400 dark:text-slate-500">
+                      <action.icon size={16} strokeWidth={2} />
+                    </div>
+                  </button>
+                ))}
               </div>
 
-              <div className="space-y-3">
-                <section className="rounded-[14px] border border-white/10 bg-[#11152f]">
-                  <button className="flex w-full items-center justify-between px-3 py-2 text-sm font-semibold" onClick={() => setAccordionState((value) => ({ ...value, sharedDocument: !value.sharedDocument }))}>
-                    Shared Document
-                    <span>{accordionState.sharedDocument ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
-                  </button>
-                  {accordionState.sharedDocument ? (
-                    <div className="border-t border-white/10 px-3 py-2 text-xs text-[#a9b1d7]">
-                      {sharedLinks.length > 0 ? sharedLinks.map((item) => (
-                        <a key={item.id} href={toAbsoluteAssetUrl(item.attachment?.url || '')} target="_blank" rel="noreferrer" className="mb-2 block rounded-lg bg-[#1a1f43] px-2 py-2">
-                          {item.attachment?.name || 'Attachment'}
-                        </a>
-                      )) : <span>No shared files yet.</span>}
-                    </div>
-                  ) : null}
-                </section>
-
-                <section className="rounded-[14px] border border-white/10 bg-[#11152f]">
-                  <button className="flex w-full items-center justify-between px-3 py-2 text-sm font-semibold" onClick={() => setAccordionState((value) => ({ ...value, sharedMedia: !value.sharedMedia }))}>
-                    Shared Media
-                    <span>{accordionState.sharedMedia ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
-                  </button>
-                  {accordionState.sharedMedia ? (
-                    <div className="border-t border-white/10 px-3 py-3">
-                      <div className="mb-3 grid grid-cols-3 gap-2">
-                        {sharedMedia.length > 0 ? sharedMedia.slice(0, 6).map((item) => (
-                          <a key={item.id} href={toAbsoluteAssetUrl(item.attachment?.url || '')} target="_blank" rel="noreferrer">
-                            <img src={toAbsoluteAssetUrl(item.attachment?.url || '')} alt="shared media" className="h-[62px] w-full rounded-[9px] object-cover" />
-                          </a>
-                        )) : Array.from({ length: 6 }).map((_, index) => (
-                          <img key={`media-ph-${index}`} src={`https://picsum.photos/seed/chat-media-${index}/180/120`} alt="media placeholder" className="h-[62px] w-full rounded-[9px] object-cover" />
-                        ))}
+              <div className="space-y-4">
+                {[
+                  { id: 'sharedDocument', label: 'Documents', count: sharedLinks.length, icon: FolderOpen },
+                  { id: 'sharedMedia', label: 'Media', count: sharedMedia.length, icon: Search },
+                  { id: 'sharedPost', label: 'Posts', count: sharedPosts.length, icon: Home }
+                ].map((section) => (
+                  <div key={section.id} className="overflow-hidden rounded-[18px] border border-slate-100/50 dark:border-slate-800/50">
+                    <button 
+                      className="flex w-full items-center justify-between p-4 text-xs font-bold uppercase tracking-wider transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50" 
+                      style={{ background: isLight ? '#f8fafc' : '#101328', color: theme.textMuted }}
+                      onClick={() => setAccordionState(prev => ({ ...prev, [section.id]: !prev[section.id] }))}
+                    >
+                      <div className="flex items-center gap-2">
+                        <section.icon size={14} className="opacity-50" />
+                        <span>{section.label} <span className="ml-1 opacity-50">({section.count})</span></span>
                       </div>
-                      <button className="w-full rounded-full bg-[#D4FF59] px-4 py-2 text-[12px] font-semibold text-[#111723]">View All (1647)</button>
-                    </div>
-                  ) : null}
-                </section>
-
-                <section className="rounded-[14px] border border-white/10 bg-[#11152f]">
-                  <button className="flex w-full items-center justify-between px-3 py-2 text-sm font-semibold" onClick={() => setAccordionState((value) => ({ ...value, sharedPost: !value.sharedPost }))}>
-                    Shared Post
-                    <span>{accordionState.sharedPost ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
-                  </button>
-                  {accordionState.sharedPost ? (
-                    <div className="border-t border-white/10 px-3 py-3">
-                      <div className="grid grid-cols-3 gap-2">
-                        {(sharedMedia.length > 0 ? sharedMedia.slice(0, 6) : Array.from({ length: 6 }).map((_, index) => ({ id: `post-${index}`, attachment: { url: `https://picsum.photos/seed/chat-post-${index}/180/120` } }))).map((item) => (
-                          <img key={item.id} src={toAbsoluteAssetUrl(item.attachment?.url || '')} alt="shared post" className="h-[62px] w-full rounded-[9px] object-cover" />
-                        ))}
+                      {accordionState[section.id] ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    </button>
+                    {accordionState[section.id] && (
+                      <div className="p-3 bg-white dark:bg-transparent">
+                        {section.id === 'sharedDocument' && (
+                          <div className="space-y-2">
+                            {sharedLinks.length > 0 ? sharedLinks.map(item => (
+                              <a key={item.id} href={toAbsoluteAssetUrl(item.attachment?.url)} target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-xl border border-slate-50 bg-slate-50/50 p-2.5 text-[11px] font-medium transition-colors hover:border-[#6366f1]/20 dark:border-slate-800 dark:bg-slate-800/30">
+                                <div className="h-6 w-6 rounded bg-white flex items-center justify-center shadow-xs dark:bg-slate-700"><Plus size={12} className="opacity-30" /></div>
+                                <span className="truncate flex-1">{item.attachment?.name || 'File'}</span>
+                              </a>
+                            )) : <p className="text-[10px] text-slate-400 italic text-center py-2">No documents shared</p>}
+                          </div>
+                        )}
+                        {section.id === 'sharedMedia' && (
+                          <div className="grid grid-cols-3 gap-1.5">
+                            {sharedMedia.length > 0 ? sharedMedia.slice(0, 6).map(item => (
+                              <a key={item.id} href={toAbsoluteAssetUrl(item.attachment?.url)} target="_blank" rel="noreferrer" className="aspect-square overflow-hidden rounded-lg">
+                                <img src={toAbsoluteAssetUrl(item.attachment?.url)} alt="" className="h-full w-full object-cover transition-transform hover:scale-110" />
+                              </a>
+                            )) : <p className="col-span-3 text-[10px] text-slate-400 italic text-center py-2">No media shared</p>}
+                          </div>
+                        )}
+                        {section.id === 'sharedPost' && (
+                          <div className="space-y-2">
+                            {sharedPosts.length > 0 ? sharedPosts.map(item => (
+                              <div key={item.id} style={{ background: isLight ? '#f1f5f9' : 'rgba(255,255,255,0.03)' }}>
+                                <p className="line-clamp-2 leading-relaxed opacity-80">{item.message}</p>
+                              </div>
+                            )) : <p className="text-[10px] text-slate-400 italic text-center py-2">No posts shared</p>}
+                          </div>
+                        )}
                       </div>
-                      {sharedPosts.length > 0 ? <p className="mt-2 text-[11px] text-[#a9b1d7]">{sharedPosts[0].message.slice(0, 52)}</p> : null}
-                    </div>
-                  ) : null}
-                </section>
+                    )}
+                  </div>
+                ))}
               </div>
             </>
-          ) : <div className="text-sm text-[#b3b5cc]">Thread details appear here.</div>}
+          ) : <div className="flex h-full flex-col items-center justify-center text-slate-400 text-xs italic">Details will appear here</div>}
         </aside>
       </div>
     </div>

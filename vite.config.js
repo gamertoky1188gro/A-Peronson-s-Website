@@ -15,5 +15,11 @@ export default defineConfig({
   ],
   server: {
     allowedHosts: ['liable-marketplace-looked-fda.trycloudflare.com'],
+    watch: {
+      ignored: [
+        '**/server/database/**',
+        '**/server/uploads/**',
+      ],
+    },
   },
 })

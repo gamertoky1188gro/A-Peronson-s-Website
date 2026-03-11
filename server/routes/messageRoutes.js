@@ -20,8 +20,9 @@ const upload = multer({
     destination: (_req, _file, cb) => cb(null, uploadDir),
     filename: (_req, file, cb) => {
       const ext = path.extname(file.originalname || '').slice(0, 12)
-      const safeBase = path.basename(file.originalname || 'file').replace(/[^a-zA-Z0-9_.-]/g, '_').slice(0, 80)
-      cb(null, `${Date.now()}-${safeBase || 'file'}${ext || ''}`)
+      const baseWithoutExt = path.basename(file.originalname || 'file', ext)
+      const safeBase = baseWithoutExt.replace(/[^a-zA-Z0-9_.-]/g, '_').slice(0, 80) || 'file'
+      cb(null, `${Date.now()}-${safeBase}${ext || ''}`)
     },
   }),
   limits: { fileSize: 25 * 1024 * 1024 },

@@ -4,6 +4,7 @@ import { sanitizeString } from '../utils/validators.js'
 import { recordMilestone } from './ratingsService.js'
 
 const FILE = 'call_sessions.json'
+const MESSAGE_FILE = 'messages.json'
 const CALL_STATUS = {
   SCHEDULED: 'scheduled',
   IN_PROGRESS: 'in_progress',
@@ -30,6 +31,33 @@ function buildAuditEntry(event, actorId, metadata = {}) {
     timestamp: new Date().toISOString(),
     metadata,
   }
+}
+
+function parseFriendMatchId(matchId = '') {
+  const parts = String(matchId).split(':')
+  if (parts.length !== 3 || parts[0] !== 'friend') return null
+  const first = sanitizeString(parts[1], 120)
+  const second = sanitizeString(parts[2], 120)
+  if (!first || !second) return null
+  return [first, second]
+}
+
+async function deriveParticipantIds(matchId) {
+  const ids = new Set()
+  const friendPair = parseFriendMatchId(matchId)
+  if (Array.isArray(friendPair)) {
+    friendPair.forEach((id) => { if (id) ids.add(id) })
+  }
+
+  const messages = await readJson(MESSAGE_FILE)
+  messages
+    .filter((message) => message?.match_id === matchId)
+    .forEach((message) => {
+      const senderId = sanitizeString(message?.sender_id, 120)
+      if (senderId) ids.add(senderId)
+    })
+
+  return [...ids]
 }
 
 function ensureParticipant(call, userId) {
@@ -224,6 +252,14 @@ export async function findOrCreateCallSession(userId, payload = {}) {
   const active = candidates.find((call) => [CALL_STATUS.SCHEDULED, CALL_STATUS.IN_PROGRESS, CALL_STATUS.ENDED].includes(call.status))
   if (active) return { call: active, created: false }
 
-  const createdCall = await createScheduledCallSession(userId, payload)
+  let participantIds = Array.isArray(payload?.participant_ids) ? payload.participant_ids : []
+  if (participantIds.length === 0) {
+    participantIds = await deriveParticipantIds(matchId)
+  }
+
+  const createdCall = await createScheduledCallSession(userId, {
+    ...payload,
+    participant_ids: participantIds,
+  })
   return { call: createdCall, created: true }
 }

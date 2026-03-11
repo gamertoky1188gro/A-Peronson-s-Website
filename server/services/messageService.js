@@ -14,6 +14,21 @@ const USERS_FILE = 'users.json'
 const MESSAGE_REQUESTS_FILE = 'message_requests.json'
 const CONVERSATION_LOCKS_FILE = 'conversation_locks.json'
 
+function buildUsersById(users = []) {
+  return new Map((Array.isArray(users) ? users : []).map((user) => [user.id, user]))
+}
+
+function enrichMessage(message = {}, usersById = new Map()) {
+  const sender = usersById.get(message.sender_id) || null
+  const senderName = sanitizeString(sender?.name || '', 120)
+  return {
+    ...message,
+    sender_name: senderName || message.sender_name || '',
+    sender_email: sender?.email || message.sender_email || '',
+    sender_verified: Boolean(sender?.verified),
+    sender_role: sender?.role || message.sender_role || '',
+  }
+}
 
 function parseFriendMatchId(matchId = '') {
   const parts = String(matchId).split(':')
@@ -155,6 +170,7 @@ function applyFriendThreadMeta(message, fallbackFriend, currentUserId) {
 export async function postMessage(matchId, senderId, message, type = 'text', attachment = null) {
   const messages = await readJson(FILE)
   const users = await readJson(USERS_FILE)
+  const usersById = buildUsersById(users)
   const messageRequests = await readJson(MESSAGE_REQUESTS_FILE)
   const safeAttachment = attachment ? {
     name: sanitizeString(attachment?.name, 220),
@@ -182,23 +198,29 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
   await writeJson(FILE, messages)
   await writeJson(MESSAGE_REQUESTS_FILE, messageRequests)
   await trackTransition(matchId, 'matched', 'first_message_sent', { sender_id: senderId })
-  return entry
+  return enrichMessage(entry, usersById)
 }
 
 export async function listMessagesByMatch(matchId) {
   const messages = await readJson(FILE)
-  return messages.filter((m) => m.match_id === matchId)
+  const users = await readJson(USERS_FILE)
+  const usersById = buildUsersById(users)
+  return messages
+    .filter((m) => m.match_id === matchId)
+    .map((message) => enrichMessage(message, usersById))
 }
 
 export async function tieredInbox(matchIds, currentUserId) {
   const users = await readJson(USERS_FILE)
-  const usersById = new Map(users.map((user) => [user.id, user]))
+  const usersById = buildUsersById(users)
   const messages = await readJson(FILE)
   const messageRequests = await readJson(MESSAGE_REQUESTS_FILE)
   const conversationLocks = await readJson(CONVERSATION_LOCKS_FILE)
   const lockByRequestId = new Map(conversationLocks.map((lock) => [lock.request_id, lock]))
 
-  const filtered = messages.filter((m) => matchIds.includes(m.match_id))
+  const filtered = messages
+    .filter((m) => matchIds.includes(m.match_id))
+    .map((message) => enrichMessage(message, usersById))
   const requestMap = new Map(messageRequests.map((request) => [request.thread_id, request]))
   const latestByThread = new Map()
   const friendConnections = await listFriendConnectionsForUser(currentUserId)
@@ -215,7 +237,7 @@ export async function tieredInbox(matchIds, currentUserId) {
   const requestPool = []
   for (const matchId of matchIds) {
     const fallbackFriend = friendConnectionByMatchId.get(matchId)
-    const m = latestByThread.get(matchId) || (fallbackFriend ? {
+    const m = latestByThread.get(matchId) || (fallbackFriend ? enrichMessage({
       id: `friend-thread-${matchId}` ,
       match_id: matchId,
       sender_id: fallbackFriend.other_user_id,
@@ -225,7 +247,7 @@ export async function tieredInbox(matchIds, currentUserId) {
       timestamp: fallbackFriend.updated_at || fallbackFriend.created_at || new Date().toISOString(),
       type: 'system',
       attachment: null,
-    } : null)
+    }, usersById) : null)
     if (!m) continue
 
     const request = requestMap.get(m.match_id)
