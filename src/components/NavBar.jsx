@@ -41,7 +41,6 @@ const roleLinks = {
 
 export default function NavBar() {
   const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark')
-  const [unique, setUnique] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState([])
@@ -321,13 +320,6 @@ export default function NavBar() {
             </div>
 
             <div className="ml-auto flex items-center gap-2 sm:gap-3">
-              {user ? (
-                <label className="hidden items-center gap-2 rounded-full border border-slate-200 px-2.5 py-1 text-xs text-slate-600 sm:flex dark:border-slate-700 dark:text-slate-300">
-                  <span>Unique</span>
-                  <input type="checkbox" checked={unique} onChange={(e) => setUnique(e.target.checked)} className="h-4 w-4" />
-                </label>
-              ) : null}
-
               <button
                 onClick={() => setDark(!dark)}
                 className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"

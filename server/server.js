@@ -28,6 +28,7 @@ import memberRoutes from './routes/memberRoutes.js'
 import orgRoutes from './routes/orgRoutes.js'
 import ratingsRoutes from './routes/ratingsRoutes.js'
 import presenceRoutes from './routes/presenceRoutes.js'
+import profileRoutes from './routes/profileRoutes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { logInfo, logError } from './utils/logger.js'
 import { assistantReply } from './services/assistantService.js'
@@ -79,6 +80,7 @@ app.use('/api/org', orgRoutes)
 app.use('/api/members', memberRoutes)
 app.use('/api/ratings', ratingsRoutes)
 app.use('/api/presence', presenceRoutes)
+app.use('/api/profiles', profileRoutes)
 app.use(errorHandler)
 
 const server = http.createServer(app)

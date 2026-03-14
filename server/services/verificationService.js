@@ -29,6 +29,19 @@ const fieldAliases = {
   eori: ['eori', 'erc_or_eori'],
 }
 
+export const VERIFICATION_FIELD_LABELS = {
+  company_registration: 'Company Registration',
+  trade_license: 'Trade License',
+  tin: 'TIN (Tax Identification Number)',
+  ein: 'EIN (Employer Identification Number)',
+  vat: 'VAT Number',
+  eori: 'EORI (Customs Registration)',
+  ior: 'IOR (Importer of Record)',
+  authorized_person_nid: 'Authorized Person NID',
+  bank_proof: 'Company Bank Proof',
+  erc: 'ERC (Export Registration)',
+}
+
 function emptyDocs() {
   return {
     company_registration: '',
@@ -133,6 +146,46 @@ function buildCredibility(required, docs) {
 export async function getVerification(userId) {
   const all = await readJson(FILE)
   return all.find((v) => v.user_id === userId) || null
+}
+
+function normalizeCountryCode(value) {
+  return sanitizeString(String(value || ''), 80).trim()
+}
+
+function inferBuyerRegion(user, record) {
+  if (record?.buyer_region) return record.buyer_region
+  const docsCountry = normalizeBuyerCountry(record?.documents?.buyer_country)
+  const profileCountry = normalizeCountryCode(user?.profile?.country)
+  const candidate = docsCountry || profileCountry
+  const upper = candidate.toUpperCase()
+
+  if (isEuCountry(candidate)) return BUYER_REGIONS.EU
+  if (upper === 'USA' || upper === 'US' || upper === 'UNITED STATES' || upper === 'UNITED STATES OF AMERICA') return BUYER_REGIONS.USA
+  return BUYER_REGIONS.OTHER
+}
+
+export function getVerificationPublicSummary(user, record) {
+  const role = user?.role || record?.role || ''
+  const buyerRegion = role === 'buyer' ? inferBuyerRegion(user, record) : ''
+  const required = getRequiredFields(role, buyerRegion)
+  const docs = record?.documents || emptyDocs()
+  const credibility = record?.credibility || buildCredibility(required, docs)
+
+  const required_checklist = required.map((key) => ({
+    key,
+    label: VERIFICATION_FIELD_LABELS[key] || key,
+    submitted: hasDocument(docs, key),
+  }))
+
+  const optionalLicenses = Array.isArray(docs?.optional_licenses) ? docs.optional_licenses.filter(Boolean) : []
+
+  return {
+    verified: Boolean(record?.verified),
+    buyer_region: buyerRegion,
+    credibility,
+    required_checklist,
+    optional_licenses_count: optionalLicenses.length,
+  }
 }
 
 export async function upsertVerification(user, documentsPatch) {

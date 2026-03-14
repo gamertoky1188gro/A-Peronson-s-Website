@@ -1,153 +1,322 @@
-import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
+import VerificationPanel from '../components/profile/VerificationPanel'
 
-
-const API = import.meta.env.VITE_API_URL || '/api'
+function roleToRoute(role, id) {
+  if (!id) return '/feed'
+  if (role === 'buyer') return `/buyer/${encodeURIComponent(id)}`
+  if (role === 'buying_house') return `/buying-house/${encodeURIComponent(id)}`
+  return `/factory/${encodeURIComponent(id)}`
+}
 
 export default function BuyingHouseProfile() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const token = useMemo(() => getToken(), [])
+  const viewer = getCurrentUser()
+
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [profile, setProfile] = useState(null)
   const [ratingSummary, setRatingSummary] = useState(null)
+  const [notice, setNotice] = useState('')
+
+  const [activeTab, setActiveTab] = useState('overview')
+  const [products, setProducts] = useState([])
+  const [productsCursor, setProductsCursor] = useState(0)
+  const [productsNext, setProductsNext] = useState(null)
+  const [loadingProducts, setLoadingProducts] = useState(false)
+
+  const [partnerNetwork, setPartnerNetwork] = useState(null)
+  const [loadingNetwork, setLoadingNetwork] = useState(false)
+
+  const user = profile?.user || null
+  const verification = profile?.verification_summary || null
+  const relationship = profile?.relationship || { following: false, friend_status: 'none' }
+  const viewerPerms = profile?.viewer_permissions || { is_self: false, is_admin: false }
+
+  const loadProfile = useCallback(async () => {
+    if (!id) return
+    setLoading(true)
+    setError('')
+    try {
+      const data = await apiRequest(`/profiles/${encodeURIComponent(id)}`, { token })
+      if (data?.user?.role && data.user.role !== 'buying_house') {
+        navigate(roleToRoute(data.user.role, id), { replace: true })
+        return
+      }
+      setProfile(data)
+    } catch (err) {
+      setError(err.message || 'Failed to load profile')
+      setProfile(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [id, navigate, token])
+
+  const loadRatings = useCallback(async () => {
+    if (!id) return
+    try {
+      const data = await apiRequest(`/ratings/profiles/user:${encodeURIComponent(id)}`, { token: '' })
+      setRatingSummary(data || null)
+    } catch {
+      setRatingSummary(null)
+    }
+  }, [id])
+
+  const loadProducts = useCallback(async ({ reset }) => {
+    if (!id) return
+    const cursor = reset ? 0 : productsCursor
+    setLoadingProducts(true)
+    try {
+      const data = await apiRequest(`/profiles/${encodeURIComponent(id)}/products?cursor=${cursor}&limit=10`, { token })
+      const rows = Array.isArray(data?.items) ? data.items : []
+      setProducts((prev) => (reset ? rows : [...prev, ...rows]))
+      setProductsCursor(reset ? 10 : cursor + 10)
+      setProductsNext(data?.next_cursor ?? null)
+    } catch {
+      // ignore
+    } finally {
+      setLoadingProducts(false)
+    }
+  }, [id, productsCursor, token])
+
+  const loadPartnerNetwork = useCallback(async () => {
+    if (!id) return
+    setLoadingNetwork(true)
+    try {
+      const data = await apiRequest(`/profiles/${encodeURIComponent(id)}/partner-network`, { token })
+      setPartnerNetwork(data || null)
+    } catch {
+      setPartnerNetwork(null)
+    } finally {
+      setLoadingNetwork(false)
+    }
+  }, [id, token])
 
   useEffect(() => {
-    fetch(`${API}/ratings/profiles/buying_house:atlas-buying-house`)
-      .then((res) => res.json())
-      .then((data) => setRatingSummary(data))
-      .catch(() => setRatingSummary(null))
-  }, [])
+    loadProfile()
+    loadRatings()
+  }, [loadProfile, loadRatings])
 
-  const org = {
-    name: 'Atlas Buying House',
-    verified: true,
-    location: 'Ho Chi Minh City, Vietnam',
-    years: 12,
-    partners: 18,
-    about: 'We manage end-to-end sourcing, QC, and shipment for western retailers across multiple categories.',
-    markets: ['EU', 'North America', 'AU'],
-    services: ['Sourcing', 'Quality Control', 'Full Management'],
+  useEffect(() => {
+    if (activeTab !== 'products') return
+    if (products.length) return
+    loadProducts({ reset: true })
+  }, [activeTab, loadProducts, products.length])
+
+  useEffect(() => {
+    if (activeTab !== 'partner') return
+    if (partnerNetwork) return
+    loadPartnerNetwork()
+  }, [activeTab, loadPartnerNetwork, partnerNetwork])
+
+  async function follow() {
+    if (!id) return
+    try {
+      const res = await apiRequest(`/users/${encodeURIComponent(id)}/follow`, { method: 'POST', token })
+      setProfile((prev) => (prev ? { ...prev, relationship: res?.relation || prev.relationship } : prev))
+    } catch {
+      // ignore
+    }
   }
 
-  const partners = new Array(6).fill(0).map((_, i) => ({ id: i, name: `Factory ${i + 1}` }))
-  const handling = [
-    { id: 1, title: 'Sportswear order - 2000 units', status: 'In Progress' },
-    { id: 2, title: 'Knit polo - 1200 units', status: 'Sampling' },
-  ]
-
-  const metrics = {
-    completionRate: '94%',
-    avgDealTime: '22 days',
-    rating: ratingSummary?.aggregate?.average_score || '0.0',
+  async function connect() {
+    if (!id) return
+    try {
+      const res = await apiRequest(`/users/${encodeURIComponent(id)}/friend-request`, { method: 'POST', token })
+      setProfile((prev) => (prev ? { ...prev, relationship: res?.relation || prev.relationship } : prev))
+    } catch {
+      // ignore
+    }
   }
+
+  function contact() {
+    navigate('/chat', { state: { notice: `Contacting ${user?.name || 'buying house'}. If you are unverified, your first message may appear as a request.` } })
+  }
+
+  async function requestPartner() {
+    if (!id) return
+    setNotice('')
+    try {
+      await apiRequest('/partners/requests', { method: 'POST', token, body: { targetAccountId: id } })
+      setNotice('Partner request sent.')
+    } catch (err) {
+      setNotice(err.message || 'Unable to send partner request.')
+    }
+  }
+
+  if (loading) return <div className="min-h-screen bg-slate-50 p-6 text-slate-600">Loading profile…</div>
+  if (error) return <div className="min-h-screen bg-slate-50 p-6 text-rose-700">{error}</div>
+  if (!user) return <div className="min-h-screen bg-slate-50 p-6 text-slate-600">Profile not found.</div>
+
+  const canRequestPartner = viewer && ['factory', 'buying_house', 'admin'].includes(viewer.role) && !viewerPerms.is_self
 
   return (
-    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
-      {/* TOP NAVIGATION */}
-      
-      {/* Shared global NavBar */}
-
-
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <aside className="lg:col-span-1 sticky top-6">
-            <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-20 h-20 bg-gray-100 rounded-lg"></div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="font-semibold text-lg">{org.name}</h2>
-                    {org.verified && (
-                      <div className="flex items-center gap-1 bg-[#E8F3FF] text-[#0A66C2] px-2 py-0.5 rounded-full text-sm font-semibold">
-                        <span className="w-5 h-5 bg-[#0A66C2] text-white rounded-full flex items-center justify-center">✓</span>
-                        Verified
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-sm text-[#5A5A5A]">{org.location}</p>
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-12 gap-4">
+        <aside className="col-span-12 lg:col-span-4 space-y-4">
+          <div className="bg-white rounded-2xl border border-slate-200 p-4">
+            <div className="flex items-center gap-3">
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
+              <div className="min-w-0">
+                <p className="text-lg font-bold text-slate-900 truncate">{user.name}</p>
+                <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
+                  <span className="uppercase">Buying House</span>
+                  {user.profile?.country ? <span>• {user.profile.country}</span> : null}
+                  {user.verified ? <span className="font-bold text-[#0A66C2]">Verified</span> : null}
                 </div>
-              </div>
-
-              <div className="mt-4 text-sm text-[#5A5A5A] space-y-2">
-                <div>Years in operation: <strong className="text-[#1A1A1A]">{org.years}</strong></div>
-                <div>Partner Factories: <strong className="text-[#1A1A1A]">{org.partners}</strong></div>
-              </div>
-
-              <div className="mt-4">
-                <button className="w-full bg-[#0A66C2] text-white py-2 rounded-xl hover:bg-[#083B75]">Contact Organization</button>
               </div>
             </div>
-          </aside>
 
-          <main className="lg:col-span-2 space-y-6">
-            <section className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
-              <h3 className="font-semibold text-lg">About</h3>
-              <p className="text-[#5A5A5A] mt-2">{org.about}</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button onClick={contact} className="flex-1 rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182]">Contact</button>
+              <button onClick={follow} className="flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                {relationship.following ? 'Following' : 'Follow'}
+              </button>
+              <button onClick={connect} className="flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                {relationship.friend_status === 'friends' ? 'Connected' : (relationship.friend_status === 'requested' ? 'Requested' : 'Connect')}
+              </button>
+            </div>
 
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-[#F4F9FF] rounded-lg">
-                  <div className="text-xs text-[#5A5A5A]">Markets Served</div>
-                  <div className="font-medium">{org.markets.join(', ')}</div>
-                </div>
-                <div className="p-4 bg-[#F4F9FF] rounded-lg">
-                  <div className="text-xs text-[#5A5A5A]">Service Type</div>
-                  <div className="font-medium">{org.services.join(', ')}</div>
-                </div>
-                <div className="p-4 bg-[#F4F9FF] rounded-lg">
-                  <div className="text-xs text-[#5A5A5A]">Partner Factories</div>
-                  <div className="font-medium">{partners.length}</div>
-                </div>
+            {canRequestPartner ? (
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={requestPartner}
+                  className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Request partner network connection
+                </button>
+                {notice ? <p className="mt-2 text-[11px] text-slate-600">{notice}</p> : null}
               </div>
-              <div className="text-xs text-[#5A5A5A] mt-3">Breakdown: 5★ {ratingSummary?.breakdown?.[5] || 0} • 4★ {ratingSummary?.breakdown?.[4] || 0} • 3★ {ratingSummary?.breakdown?.[3] || 0} • 2★ {ratingSummary?.breakdown?.[2] || 0} • 1★ {ratingSummary?.breakdown?.[1] || 0}</div>
-            </section>
+            ) : null}
 
-            <section className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
-              <h3 className="font-semibold text-lg">Partner Network Preview</h3>
-              <div className="grid grid-cols-3 gap-3 mt-4">
-                {partners.map(p => (
-                  <div key={p.id} className="flex items-center justify-center bg-gray-100 rounded-lg h-20">{p.name}</div>
-                ))}
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <p className="text-[11px] text-slate-500">Partner factories</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{profile?.counts?.connected_factories ?? '—'}</p>
               </div>
-              <div className="mt-4">
-                <Link to="/buying-house/network" className="px-4 py-2 bg-[#0A66C2] text-white rounded-lg hover:bg-[#083B75]">View Full Network</Link>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <p className="text-[11px] text-slate-500">Rating</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
+                <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
               </div>
-            </section>
+            </div>
+          </div>
 
-            <section className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
-              <h3 className="font-semibold text-lg">Active Buyer Requests Handling</h3>
-              <div className="space-y-3 mt-3">
-                {handling.map(h => (
-                  <div key={h.id} className="border border-gray-100 rounded-lg p-3 flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{h.title}</div>
-                      <div className="text-sm text-[#5A5A5A]">Status: {h.status}</div>
+          <VerificationPanel summary={verification} />
+        </aside>
+
+        <main className="col-span-12 lg:col-span-8 space-y-4">
+          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-200">
+              {['overview', 'partner', 'products', 'reviews'].map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setActiveTab(tab)}
+                  className={`rounded-full px-3 py-2 text-xs font-semibold border ${
+                    activeTab === tab ? 'border-[#0A66C2] bg-[#0A66C2]/5 text-[#0A66C2]' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  {tab === 'overview' ? 'Overview' : tab === 'partner' ? 'Partner Network' : tab === 'products' ? 'Products' : 'Reviews'}
+                </button>
+              ))}
+            </div>
+
+            <div className="p-4">
+              {activeTab === 'overview' ? (
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">About</p>
+                    <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">{user.profile?.about || 'No description added yet.'}</p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <p className="text-[11px] text-slate-500">Country</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.country || '—'}</p>
                     </div>
-                    <div>
-                      <button className="px-3 py-1 bg-[#0A66C2] text-white rounded-md">View</button>
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <p className="text-[11px] text-slate-500">Certifications (declared)</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900">{(user.profile?.certifications || []).join(', ') || '—'}</p>
                     </div>
                   </div>
-                ))}
-              </div>
-            </section>
+                </div>
+              ) : null}
 
-            <section className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
-              <h3 className="font-semibold text-lg">Performance Metrics</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                <div className="p-4 bg-[#F4F9FF] rounded-lg">
-                  <div className="text-xs text-[#5A5A5A]">Completion Rate</div>
-                  <div className="font-semibold">{metrics.completionRate}</div>
+              {activeTab === 'partner' ? (
+                <div className="space-y-3">
+                  {loadingNetwork ? <div className="text-sm text-slate-600">Loading partner network…</div> : null}
+                  {!loadingNetwork && partnerNetwork ? (
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                      <p className="text-sm font-bold text-slate-900">Connected factories</p>
+                      <p className="mt-1 text-sm text-slate-700">Total: {partnerNetwork.total_connected ?? 0}</p>
+                      {Array.isArray(partnerNetwork.factories) ? (
+                        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {partnerNetwork.factories.map((f) => (
+                            <div key={f.id} className="rounded-xl border border-slate-200 bg-white px-3 py-2 flex items-center justify-between">
+                              <span className="text-xs font-semibold text-slate-800">{f.name}</span>
+                              {f.verified ? <span className="text-xs font-bold text-[#0A66C2]">Verified</span> : <span className="text-xs text-slate-500">—</span>}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="mt-2 text-[11px] text-slate-600">Factory list is private; only the organization owner/admin can see it.</p>
+                      )}
+                    </div>
+                  ) : null}
                 </div>
-                <div className="p-4 bg-[#F4F9FF] rounded-lg">
-                  <div className="text-xs text-[#5A5A5A]">Average Deal Time</div>
-                  <div className="font-semibold">{metrics.avgDealTime}</div>
+              ) : null}
+
+              {activeTab === 'products' ? (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {products.map((p) => (
+                      <div key={p.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                        <p className="text-sm font-bold text-slate-900">{p.title || 'Product'}</p>
+                        <p className="mt-1 text-xs text-slate-600">{p.category || '—'} • MOQ {p.moq || '—'} • Lead time {p.lead_time_days || '—'}</p>
+                        <p className="mt-2 text-sm text-slate-700 line-clamp-3">{p.description || ''}</p>
+                      </div>
+                    ))}
+                  </div>
+                  {loadingProducts ? <div className="text-sm text-slate-600">Loading…</div> : null}
+                  {productsNext !== null && !loadingProducts ? (
+                    <button
+                      type="button"
+                      onClick={() => loadProducts({ reset: false })}
+                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                    >
+                      Load more
+                    </button>
+                  ) : null}
+                  {!products.length && !loadingProducts ? <div className="text-sm text-slate-600">No products found.</div> : null}
                 </div>
-                <div className="p-4 bg-[#F4F9FF] rounded-lg">
-                  <div className="text-xs text-[#5A5A5A]">Rating Score</div>
-                  <div className="font-semibold">{metrics.rating}</div>
-                  <div className="text-xs text-[#5A5A5A] mt-2">{ratingSummary?.aggregate?.total_count || 0} reviews • {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence</div>
+              ) : null}
+
+              {activeTab === 'reviews' ? (
+                <div className="space-y-3">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <p className="text-sm font-bold text-slate-900">Rating summary</p>
+                    <p className="mt-1 text-sm text-slate-700">
+                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 • {ratingSummary?.aggregate?.total_count ?? 0} reviews • {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
+                    </p>
+                  </div>
+                  {(ratingSummary?.recent_reviews || []).map((r) => (
+                    <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                      <p className="text-sm font-semibold text-slate-900">{r.score}★</p>
+                      <p className="mt-1 text-sm text-slate-700">{r.comment || 'No comment provided.'}</p>
+                    </div>
+                  ))}
+                  {!ratingSummary?.recent_reviews?.length ? <div className="text-sm text-slate-600">No reviews yet.</div> : null}
                 </div>
-              </div>
-            </section>
-          </main>
-        </div>
+              ) : null}
+            </div>
+          </div>
+        </main>
       </div>
-
     </div>
   )
 }
+

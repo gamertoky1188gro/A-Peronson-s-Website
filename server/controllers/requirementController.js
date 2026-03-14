@@ -8,6 +8,27 @@ import {
   getQuotaSnapshot,
   getUserPlan,
 } from '../services/searchAccessService.js'
+import { readJson } from '../utils/jsonStore.js'
+
+function parseNumber(value) {
+  const n = Number(String(value || '').replace(/[^\d.]/g, ''))
+  return Number.isFinite(n) ? n : null
+}
+
+function matchesMoqRange(rawRange, moqValue) {
+  if (!rawRange) return true
+  const moq = Number.isFinite(Number(moqValue)) ? Number(moqValue) : parseNumber(moqValue)
+  if (!Number.isFinite(moq)) return false
+
+  const range = String(rawRange || '').trim()
+  const parts = range.split('-').map((p) => parseNumber(p))
+  const min = Number.isFinite(parts[0]) ? parts[0] : null
+  const max = Number.isFinite(parts[1]) ? parts[1] : null
+
+  if (min !== null && moq < min) return false
+  if (max !== null && moq > max) return false
+  return true
+}
 
 export async function createBuyerRequirement(req, res) {
   const requirement = await createRequirement(req.user.id, req.body)
@@ -65,13 +86,40 @@ export async function searchRequirements(req, res) {
   }
 
   const all = await listRequirements({})
+  const users = await readJson('users.json')
+  const usersById = new Map(users.map((u) => [u.id, u]))
+
   const q = String(req.query.q || '').toLowerCase().trim()
-  const results = all.filter((r) => {
-    if (q && !`${r.category} ${r.material} ${r.custom_description}`.toLowerCase().includes(q)) return false
-    if (req.query.category && String(r.category).toLowerCase() !== String(req.query.category).toLowerCase()) return false
-    if (req.query.verifiedOnly === 'true' && !r.verified) return false
-    return true
-  })
+  const wantedCountry = String(req.query.country || '').trim().toLowerCase()
+  const wantedOrgType = String(req.query.orgType || '').trim().toLowerCase()
+  const verifiedOnly = req.query.verifiedOnly === 'true'
+  const moqRange = String(req.query.moqRange || '').trim()
+
+  const results = all
+    .map((r) => {
+      const buyer = usersById.get(r.buyer_id) || null
+      const authorCountry = String(buyer?.profile?.country || '').trim()
+      return {
+        ...r,
+        author: buyer ? {
+          id: buyer.id,
+          name: buyer.name,
+          role: buyer.role,
+          verified: Boolean(buyer.verified),
+          country: authorCountry,
+        } : { id: r.buyer_id, name: 'Unknown buyer', role: 'buyer', verified: false, country: '' },
+        profile_key: `user:${r.buyer_id}`,
+      }
+    })
+    .filter((r) => {
+      if (q && !`${r.category} ${r.material} ${r.custom_description}`.toLowerCase().includes(q)) return false
+      if (req.query.category && String(r.category).toLowerCase() !== String(req.query.category).toLowerCase()) return false
+      if (wantedOrgType && String(r.author?.role || '').toLowerCase() !== wantedOrgType) return false
+      if (wantedCountry && String(r.author?.country || '').toLowerCase() !== wantedCountry) return false
+      if (verifiedOnly && !r.author?.verified) return false
+      if (moqRange && !matchesMoqRange(moqRange, r.quantity)) return false
+      return true
+    })
 
   return res.json({
     items: results,

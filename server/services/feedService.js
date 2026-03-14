@@ -169,7 +169,105 @@ function roundNumber(value) {
   return Number(value.toFixed(4))
 }
 
-export async function getCombinedFeed({ unique = false, type = 'all', category = '' }) {
+function normalizeCategoryValue(item = {}) {
+  const value = String(item.category || '').toLowerCase().trim()
+  return value || 'unknown'
+}
+
+function diversifyFeedItems(items = [], { explorationRate = 0.2, maxSameAuthorRun = 1, maxSameCategoryRun = 2 } = {}) {
+  if (!Array.isArray(items) || items.length <= 2) return items
+
+  const topWindow = items.slice(0, 20)
+  const freq = new Map()
+  for (const item of topWindow) {
+    const key = normalizeCategoryValue(item)
+    freq.set(key, (freq.get(key) || 0) + 1)
+  }
+  const dominantCategory = [...freq.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || 'unknown'
+
+  const dominantPool = []
+  const explorePool = []
+  for (const item of items) {
+    const cat = normalizeCategoryValue(item)
+    if (cat === dominantCategory) dominantPool.push(item)
+    else explorePool.push(item)
+  }
+
+  const explorationEvery = Math.max(3, Math.round(1 / Math.max(0.05, explorationRate)))
+  const output = []
+  let lastAuthorId = ''
+  let lastCategory = ''
+  let authorRun = 0
+  let categoryRun = 0
+
+  function authorIdFor(item) {
+    if (item.feed_type === 'buyer_request') return item.buyer_id || ''
+    if (item.feed_type === 'company_product') return item.company_id || ''
+    return ''
+  }
+
+  function canPick(item) {
+    const authorId = authorIdFor(item)
+    const category = normalizeCategoryValue(item)
+
+    const nextAuthorRun = authorId && authorId === lastAuthorId ? authorRun + 1 : 1
+    const nextCategoryRun = category && category === lastCategory ? categoryRun + 1 : 1
+
+    if (authorId && nextAuthorRun > maxSameAuthorRun) return false
+    if (category && nextCategoryRun > maxSameCategoryRun) return false
+    return true
+  }
+
+  function pickFrom(poolPrimary, poolSecondary) {
+    const scanLimit = 30
+    const tryPools = [poolPrimary, poolSecondary]
+    for (const pool of tryPools) {
+      if (!pool.length) continue
+      const maxScan = Math.min(scanLimit, pool.length)
+      for (let i = 0; i < maxScan; i++) {
+        const candidate = pool[i]
+        if (!candidate) continue
+        if (!canPick(candidate)) continue
+        pool.splice(i, 1)
+        return candidate
+      }
+    }
+
+    const fallback = poolPrimary.shift() || poolSecondary.shift() || null
+    return fallback
+  }
+
+  while (dominantPool.length || explorePool.length) {
+    const step = output.length
+    const shouldExplore = explorePool.length > 0 && (step % explorationEvery === explorationEvery - 1)
+    const chosen = shouldExplore
+      ? pickFrom(explorePool, dominantPool)
+      : pickFrom(dominantPool, explorePool)
+
+    if (!chosen) break
+
+    const authorId = authorIdFor(chosen)
+    const category = normalizeCategoryValue(chosen)
+
+    if (authorId && authorId === lastAuthorId) authorRun += 1
+    else {
+      lastAuthorId = authorId
+      authorRun = 1
+    }
+
+    if (category && category === lastCategory) categoryRun += 1
+    else {
+      lastCategory = category
+      categoryRun = 1
+    }
+
+    output.push(chosen)
+  }
+
+  return output.length ? output : items
+}
+
+export async function getCombinedFeed({ unique = false, type = 'all', category = '', cursor = 0, limit = 12 }) {
   const requests = type === 'products' ? [] : await listRequirements({ status: 'open' })
   const products = type === 'requests' ? [] : await listProducts({ category })
   const users = await readJson('users.json')
@@ -247,12 +345,22 @@ export async function getCombinedFeed({ unique = false, type = 'all', category =
     })
 
   if (unique) {
-    sortedItems = sortedItems.filter((item, idx) => idx % 2 === 0 || CATEGORIES.some((c) => String(item.category || '').toLowerCase().includes(c.toLowerCase())))
+    sortedItems = diversifyFeedItems(sortedItems, {
+      explorationRate: 0.2,
+      maxSameAuthorRun: 1,
+      maxSameCategoryRun: 2,
+    })
   }
 
   const boostActiveCount = sortedItems.filter((item) => item.feed_metadata?.boost_active).length
+  const totalItemCount = sortedItems.length
+  const safeCursor = Math.max(0, Math.floor(Number(cursor || 0)))
+  const safeLimit = Math.min(50, Math.max(1, Math.floor(Number(limit || 12))))
+  const pageItems = sortedItems.slice(safeCursor, safeCursor + safeLimit)
+  const nextCursor = safeCursor + safeLimit < totalItemCount ? safeCursor + safeLimit : null
+
   logInfo('Feed ranking components', {
-    total_items: sortedItems.length,
+    total_items: totalItemCount,
     boosted_items: boostActiveCount,
     boost_config: FEED_BOOST_CONFIG,
     ranking_snapshot: sortedItems.slice(0, 20).map((item) => ({
@@ -268,13 +376,15 @@ export async function getCombinedFeed({ unique = false, type = 'all', category =
   return {
     tags: CATEGORIES,
     unique,
+    cursor: safeCursor,
+    next_cursor: nextCursor,
     metadata: {
       boost: {
         active_item_count: boostActiveCount,
-        total_item_count: sortedItems.length,
+        total_item_count: totalItemCount,
         config: FEED_BOOST_CONFIG,
       },
     },
-    items: sortedItems,
+    items: pageItems,
   }
 }

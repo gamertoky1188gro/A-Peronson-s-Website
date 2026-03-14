@@ -1,414 +1,450 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import FeedControlBar from '../components/feed/FeedControlBar'
+import FeedItemCard from '../components/feed/FeedItemCard'
+import CommentsDrawer from '../components/feed/CommentsDrawer'
+import ReportModal from '../components/feed/ReportModal'
+import useLocalStorageState from '../hooks/useLocalStorageState'
+import { apiRequest, fetchCurrentUser, getCurrentUser, getToken } from '../lib/auth'
 
-const API = import.meta.env.VITE_API_URL || '/api'
-
-function getAuthToken() {
-  return localStorage.getItem('jwt') || ''
-}
-
-
-async function api(path, options = {}) {
-  const token = getAuthToken()
-  const res = await fetch(`${API}${path}`, {
-    headers: {
-      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options.headers || {}),
-    },
-    ...options,
-  })
-
-  const data = await res.json().catch(() => null)
-  if (!res.ok) {
-    throw new Error(data?.error || data?.message || `Request failed (${res.status})`)
-  }
-  return data
-}
-
-function toArray(value) {
-  if (!value) return []
-  if (Array.isArray(value)) return value
-  if (Array.isArray(value.items)) return value.items
-  if (Array.isArray(value.feed)) return value.feed
-  if (Array.isArray(value.data)) return value.data
-  return []
+function formatRelativeTime(value) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  const diffMs = Date.now() - date.getTime()
+  const diffMinutes = Math.floor(diffMs / 60000)
+  if (diffMinutes < 1) return 'Just now'
+  if (diffMinutes < 60) return `${diffMinutes}m ago`
+  const diffHours = Math.floor(diffMinutes / 60)
+  if (diffHours < 24) return `${diffHours}h ago`
+  const diffDays = Math.floor(diffHours / 24)
+  return `${diffDays}d ago`
 }
 
 function normalizeFeedItem(raw) {
-  const entityType = raw.feed_type || raw.entityType || raw.type || (raw.requirement ? 'buyer_request' : 'company_product')
-  const isBuyerRequest = entityType === 'buyer_request' || entityType === 'buyer-request' || entityType === 'request'
+  const entityType = raw.feed_type === 'buyer_request' ? 'buyer_request' : 'company_product'
+  const isBuyerRequest = entityType === 'buyer_request'
+  const authorId = raw.buyer_id || raw.company_id || raw.author_id || ''
+  const accountType = raw.company_role || (isBuyerRequest ? 'buyer' : 'factory')
+  const rolePath = accountType === 'buying_house' ? 'buying-house' : (accountType === 'buyer' ? 'buyer' : 'factory')
+
   return {
-    id: raw.id ?? raw._id,
-    entityType: isBuyerRequest ? 'buyer_request' : 'company_product',
+    id: raw.id,
+    entityType,
     author: {
-      id: raw.author_id || raw.company_id || raw.buyer_id || null,
-      name: raw.author?.name || raw.organization_name || raw.company_name || raw.org || raw.buyerName || raw.name || 'Unknown organization',
-      accountType: raw.author?.accountType || raw.company_role || raw.orgType || (isBuyerRequest ? 'Buyer' : 'Factory'),
+      id: authorId,
+      name: raw.author?.name || raw.company_name || raw.organization_name || raw.org || raw.name || 'Unknown',
+      accountType: accountType ? String(accountType).replaceAll('_', ' ') : (isBuyerRequest ? 'Buyer' : 'Company'),
+      rolePath,
     },
-    verified: Boolean(raw.verified || raw.author?.verified),
-    createdAt: raw.createdAt || raw.created_at || null,
-    content: raw.content || raw.requirement || raw.custom_description || raw.description || raw.title || '',
-    deadline: raw.deadline || raw.timeline_days || null,
-    tags: Array.isArray(raw.tags) ? raw.tags : [raw.category, raw.material].filter(Boolean),
-    mediaReviewStatus: raw.video_review_status || 'approved',
-    hasVideo: Boolean(raw.hasVideo || (raw.video_review_status === 'approved' && raw.video_url)),
+    verified: Boolean(raw.author?.verified || raw.verified),
+    createdAt: formatRelativeTime(raw.created_at),
+    content: isBuyerRequest ? (raw.custom_description || '') : (raw.description || ''),
+    title: raw.title || '',
+    category: raw.category || '',
+    tags: [raw.category, raw.material].filter(Boolean),
+    material: raw.material || '',
+    quantity: raw.quantity || '',
+    timelineDays: raw.timeline_days || '',
+    shippingTerms: raw.shipping_terms || '',
+    certifications: Array.isArray(raw.certifications_required) ? raw.certifications_required : [],
+    moq: raw.moq || '',
+    leadTimeDays: raw.lead_time_days || '',
+    hasVideo: Boolean(raw.hasVideo || (!raw.video_restricted && raw.video_review_status === 'approved' && raw.video_url)),
   }
 }
 
-function formatRelativeTime(dateInput) {
-  if (!dateInput) return 'Unknown time'
-  const value = new Date(dateInput)
-  if (Number.isNaN(value.getTime())) return String(dateInput)
-  const diffMs = Date.now() - value.getTime()
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-  if (diffHours < 1) return 'Just now'
-  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`
-  const diffDays = Math.floor(diffHours / 24)
-  return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`
+async function copyToClipboard(text) {
+  if (!text) return false
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text)
+    return true
+  }
+
+  const el = document.createElement('textarea')
+  el.value = text
+  el.setAttribute('readonly', 'true')
+  el.style.position = 'fixed'
+  el.style.left = '-9999px'
+  document.body.appendChild(el)
+  el.select()
+  const ok = document.execCommand('copy')
+  document.body.removeChild(el)
+  return ok
 }
 
 export default function MainFeed() {
-  const [uniqueToggle, setUniqueToggle] = useState(false)
-  const [activeFilter, setActiveFilter] = useState('all')
-  const [posts, setPosts] = useState([])
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const token = useMemo(() => getToken(), [])
+  const sessionUser = getCurrentUser()
+  const userId = sessionUser?.id || 'user'
+  const uniqueKey = `gartexhub_unique:${userId}`
+
+  const [user, setUser] = useState(sessionUser)
+  const [activeType, setActiveType] = useState('all')
+  const [activeCategory, setActiveCategory] = useState('')
+  const [unique, setUnique] = useLocalStorageState(uniqueKey, false)
+
+  const [items, setItems] = useState([])
+  const [tags, setTags] = useState([])
+  const [nextCursor, setNextCursor] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState('')
-  const [actionFeedback, setActionFeedback] = useState('')
-  const [actionFeedbackType, setActionFeedbackType] = useState('info')
-  const [user, setUser] = useState(null)
-  const [submittingActions, setSubmittingActions] = useState(new Set())
+  const [notice, setNotice] = useState({ type: '', message: '' })
+
+  const [commentsItem, setCommentsItem] = useState(null)
+  const [reportItem, setReportItem] = useState(null)
   const [reportCooldowns, setReportCooldowns] = useState({})
-  const [now, setNow] = useState(Date.now())
+  const [reportBusy, setReportBusy] = useState(false)
+  const [expressBusyId, setExpressBusyId] = useState('')
+  const [claimedRequestId, setClaimedRequestId] = useState('')
 
-  const filteredPosts = useMemo(() => {
-    if (activeFilter === 'all') return posts
-    if (activeFilter === 'requests') return posts.filter((post) => post.entityType === 'buyer_request')
-    return posts.filter((post) => post.entityType === 'company_product')
-  }, [activeFilter, posts])
+  const highlightKey = searchParams.get('item') || ''
+  const sentinelRef = useRef(null)
 
-  const suggestedConnections = useMemo(() => {
-    const uniq = []
-    const seen = new Set([user?.name])
-    for (const post of posts) {
-      if (!seen.has(post.author.name)) {
-        seen.add(post.author.name)
-        uniq.push(post.author.name)
-      }
-      if (uniq.length === 5) break
-    }
-    return uniq
-  }, [posts, user?.name])
+  const canExpressInterest = useMemo(() => {
+    const role = user?.role || ''
+    return role === 'buying_house' || role === 'admin'
+  }, [user?.role])
 
-  const trendingTags = useMemo(() => {
-    const freq = new Map()
-    posts.forEach((post) => post.tags.forEach((tag) => freq.set(tag, (freq.get(tag) || 0) + 1)))
-    return [...freq.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5)
-  }, [posts])
-
-  const activeBuyers = useMemo(() => {
-    const buyers = posts.filter((p) => p.entityType === 'buyer_request').map((p) => p.author.name)
-    return [...new Set(buyers)].slice(0, 5)
-  }, [posts])
+  const headerLabel = useMemo(() => {
+    if (activeType === 'requests') return 'Buyer Requests'
+    if (activeType === 'products') return 'Company Products'
+    return ''
+  }, [activeType])
 
   const loadUser = useCallback(async () => {
     try {
-      const profile = await api('/auth/me')
-      setUser(profile?.user || null)
+      const fresh = await fetchCurrentUser(token)
+      if (fresh) setUser(fresh)
     } catch {
-      setUser(null)
+      // ignore
     }
-  }, [])
+  }, [token])
 
-  const loadFeed = useCallback(async () => {
-    setLoading(true)
-    setError('')
+  const loadFeedPage = useCallback(async ({ reset }) => {
+    const limit = 12
+    const cursor = reset ? 0 : Number(nextCursor || 0)
+
+    if (reset) {
+      setLoading(true)
+      setError('')
+      setNotice({ type: '', message: '' })
+    } else {
+      setLoadingMore(true)
+      setError('')
+    }
+
     try {
-      const typeParam = activeFilter === 'requests' ? 'requests' : activeFilter === 'products' ? 'products' : 'all'
-      const feedData = await api(`/feed?unique=${uniqueToggle}&type=${typeParam}`)
-      const feedItems = toArray(feedData).map(normalizeFeedItem)
-      setPosts(feedItems)
+      const data = await apiRequest(
+        `/feed?unique=${unique ? 'true' : 'false'}&type=${encodeURIComponent(activeType)}&category=${encodeURIComponent(activeCategory)}&cursor=${cursor}&limit=${limit}`,
+        { token },
+      )
+      const rows = Array.isArray(data?.items) ? data.items : []
+      const normalized = rows.map(normalizeFeedItem)
+
+      setTags(Array.isArray(data?.tags) ? data.tags : [])
+      setItems((previous) => (reset ? normalized : [...previous, ...normalized]))
+
+      const serverNext = data?.next_cursor
+      setNextCursor(serverNext === null || serverNext === undefined ? null : serverNext)
     } catch (err) {
       setError(err.message || 'Failed to load feed')
-      setPosts([])
+      if (reset) setItems([])
+      setNextCursor(null)
     } finally {
       setLoading(false)
+      setLoadingMore(false)
     }
-  }, [activeFilter, uniqueToggle])
+  }, [activeCategory, activeType, nextCursor, token, unique])
 
   useEffect(() => {
     loadUser()
   }, [loadUser])
 
   useEffect(() => {
-    loadFeed()
-  }, [loadFeed])
+    setItems([])
+    setNextCursor(0)
+    loadFeedPage({ reset: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeType, activeCategory, unique])
 
   useEffect(() => {
-    const interval = window.setInterval(() => setNow(Date.now()), 1000)
-    return () => window.clearInterval(interval)
-  }, [])
+    const node = sentinelRef.current
+    if (!node) return undefined
+    if (nextCursor === null || loadingMore || loading) return undefined
 
-  function buildActionKey(post, action) {
-    return `${post.entityType}-${post.id}-${action}`
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0]
+      if (entry?.isIntersecting && !loadingMore && !loading && nextCursor !== null) {
+        loadFeedPage({ reset: false })
+      }
+    }, { rootMargin: '220px' })
+
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [loadFeedPage, loading, loadingMore, nextCursor])
+
+  function isReportCoolingDown(item) {
+    const key = `${item.entityType}:${item.id}`
+    const ends = reportCooldowns[key] || 0
+    return ends > Date.now()
   }
 
-  function getReportKey(post) {
-    return `${post.entityType}-${post.id}`
-  }
-
-  function getReportCooldownLeftMs(post) {
-    const cooldownEndsAt = reportCooldowns[getReportKey(post)] || 0
-    return Math.max(0, cooldownEndsAt - now)
-  }
-
-  function isActionSubmitting(post, action) {
-    return submittingActions.has(buildActionKey(post, action))
-  }
-
-  function isReportDisabled(post) {
-    return isActionSubmitting(post, 'report') || getReportCooldownLeftMs(post) > 0
-  }
-
-  function getReportReason(post) {
-    const suggestion = post.entityType === 'buyer_request' ? 'Potentially fake or harmful buying request' : 'Product post appears misleading or inappropriate'
-    const reason = window.prompt('Please provide a reason for reporting this post (optional):', suggestion)
-    if (reason === null) {
-      return null
-    }
-
-    const cleanedReason = reason.trim()
-    if (cleanedReason.length >= 8) {
-      return cleanedReason
-    }
-
-    return suggestion
-  }
-
-  async function handleSocialAction(post, action, extraPayload = {}) {
-    const actionKey = buildActionKey(post, action)
-    if (submittingActions.has(actionKey)) {
-      return
-    }
-
-    setActionFeedback('')
-    setActionFeedbackType('info')
-    setSubmittingActions((current) => new Set(current).add(actionKey))
-
+  async function handleShare(item) {
+    setNotice({ type: '', message: '' })
     try {
-      await api('/social/actions', {
+      await apiRequest(`/social/${encodeURIComponent(item.entityType)}/${encodeURIComponent(item.id)}/share`, { method: 'POST', token })
+      const url = `${window.location.origin}/feed?item=${encodeURIComponent(`${item.entityType}:${item.id}`)}`
+      await copyToClipboard(url)
+      setNotice({ type: 'success', message: 'Share link copied to clipboard.' })
+    } catch (err) {
+      setNotice({ type: 'error', message: err.message || 'Share failed.' })
+    }
+  }
+
+  function handleMessage() {
+    navigate('/chat', {
+      state: {
+        notice: 'Open chat from inbox. If you are unverified, your first message may appear as a message request.',
+      },
+    })
+    setNotice({ type: 'info', message: 'Tip: unverified accounts start as message requests (anti-spam).' })
+  }
+
+  async function handleSubmitReport(reason) {
+    if (!reportItem?.id || reportBusy) return
+    if (isReportCoolingDown(reportItem)) return
+    setReportBusy(true)
+    setNotice({ type: '', message: '' })
+    try {
+      await apiRequest(`/social/${encodeURIComponent(reportItem.entityType)}/${encodeURIComponent(reportItem.id)}/report`, {
         method: 'POST',
-        body: JSON.stringify({ entityId: post.id, entityType: post.entityType, action, ...extraPayload }),
+        token,
+        body: { reason },
       })
-      setActionFeedbackType('success')
-      setActionFeedback(`${action.replace('_', ' ')} recorded`)
-
-      if (action === 'report') {
-        const reportKey = getReportKey(post)
-        setReportCooldowns((current) => ({ ...current, [reportKey]: Date.now() + 15000 }))
-      }
+      const key = `${reportItem.entityType}:${reportItem.id}`
+      setReportCooldowns((prev) => ({ ...prev, [key]: Date.now() + 15000 }))
+      setNotice({ type: 'success', message: 'Report submitted. Thank you.' })
+      setReportItem(null)
     } catch (err) {
-      setActionFeedbackType('error')
-      setActionFeedback(err.message || `Failed to ${action}`)
+      setNotice({ type: 'error', message: err.message || 'Failed to submit report.' })
     } finally {
-      setSubmittingActions((current) => {
-        const next = new Set(current)
-        next.delete(actionKey)
-        return next
-      })
+      setReportBusy(false)
     }
   }
 
-
-  async function handleExpressInterest(post) {
-    const action = 'express_interest'
-    const actionKey = buildActionKey(post, action)
-    if (submittingActions.has(actionKey)) return
-
-    setActionFeedback('')
-    setActionFeedbackType('info')
-    setSubmittingActions((current) => new Set(current).add(actionKey))
-
+  async function handleExpressInterest(item) {
+    if (!item?.id || expressBusyId) return
+    setExpressBusyId(item.id)
+    setNotice({ type: '', message: '' })
     try {
-      const response = await api(`/conversations/${post.id}/claim`, { method: 'POST' })
-      const status = response?.status || 'claimed'
-      if (status === 'granted') {
-        setActionFeedbackType('success')
-        setActionFeedback('Conversation access already granted for this buyer request.')
+      const response = await apiRequest(`/conversations/${encodeURIComponent(item.id)}/claim`, { method: 'POST', token })
+      if (response?.status === 'locked') {
+        setNotice({ type: 'error', message: 'Already claimed by another agent. Open chat to request access.' })
+      } else if (response?.status === 'granted') {
+        setNotice({ type: 'success', message: 'You already have access for this buyer request.' })
+        setClaimedRequestId(item.id)
       } else {
-        setActionFeedbackType('success')
-        setActionFeedback('Interest recorded. Conversation lock claimed successfully.')
+        setNotice({ type: 'success', message: 'Interest recorded and conversation lock claimed.' })
+        setClaimedRequestId(item.id)
       }
     } catch (err) {
-      if (err.message.includes('locked')) {
-        setActionFeedbackType('error')
-        setActionFeedback('Conversation already claimed by another agent. Open chat to request access.')
-      } else {
-        setActionFeedbackType('error')
-        setActionFeedback(err.message || 'Failed to express interest')
-      }
+      const message = err?.status === 409 ? 'Already claimed by another agent.' : (err.message || 'Failed to express interest.')
+      setNotice({ type: 'error', message })
     } finally {
-      setSubmittingActions((current) => {
-        const next = new Set(current)
-        next.delete(actionKey)
-        return next
-      })
+      setExpressBusyId('')
     }
   }
 
-  function handleReport(post) {
-    if (isReportDisabled(post)) {
-      return
+  const quickActions = useMemo(() => {
+    const role = user?.role || ''
+    if (role === 'buyer') {
+      return [{ to: '/buyer-requests', label: 'Post a Buyer Request' }]
     }
-
-    const reason = getReportReason(post)
-    if (reason === null) {
-      return
+    if (role === 'factory') {
+      return [{ to: '/product-management', label: 'Post a Product' }, { to: '/member-management', label: 'Members' }]
     }
-
-    handleSocialAction(post, 'report', { reason })
-  }
+    if (role === 'buying_house') {
+      return [{ to: '/product-management', label: 'Post a Product' }, { to: '/agent', label: 'Go to Agent Dashboard' }]
+    }
+    return [{ to: '/search', label: 'Search' }]
+  }, [user?.role])
 
   return (
-    <div className="min-h-screen neo-page cyberpunk-page bg-gray-50 neo-panel cyberpunk-card">
-      <div className="max-w-7xl mx-auto grid grid-cols-12 gap-4 p-4">
-        <div className="col-span-3 hidden lg:block space-y-4">
-          <div className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full"></div>
-              <div>
-                <p className="font-semibold text-gray-900">{user?.name || 'Logged-in user'}</p>
-                <p className="text-xs text-gray-600">{user?.role ? `${user.role.replaceAll('_', ' ')}` : 'Member'} Account</p>
+    <div className="min-h-screen bg-slate-50">
+      <FeedControlBar
+        activeType={activeType}
+        onTypeChange={(type) => {
+          setActiveType(type)
+          setNotice({ type: '', message: '' })
+          setClaimedRequestId('')
+        }}
+        unique={Boolean(unique)}
+        onUniqueChange={(value) => {
+          setUnique(value)
+          setNotice({ type: '', message: '' })
+          setClaimedRequestId('')
+        }}
+        categories={tags}
+        activeCategory={activeCategory}
+        onCategoryChange={(category) => {
+          setActiveCategory(category)
+          setNotice({ type: '', message: '' })
+          setClaimedRequestId('')
+        }}
+      />
+
+      <div className="max-w-7xl mx-auto grid grid-cols-12 gap-4 px-4 py-4">
+        <aside className="col-span-12 lg:col-span-3 space-y-4">
+          <div className="bg-white rounded-2xl border border-slate-200 p-4">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
+              <div className="min-w-0">
+                <p className="font-semibold text-slate-900 truncate">{user?.name || 'Member'}</p>
+                <p className="text-xs text-slate-500">{user?.role ? user.role.replaceAll('_', ' ') : 'Account'}</p>
               </div>
             </div>
-            <hr className="my-4" />
-            <div className="space-y-2 text-sm">
-              <p className="text-gray-700"><span className="font-semibold">{suggestedConnections.length}</span> Connections</p>
-              <p className="text-gray-700"><span className="font-semibold">{posts.length}</span> Feed Items</p>
-            </div>
-          </div>
 
-          <div className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-semibold text-gray-900 text-sm">Unique Algorithm</p>
-                <p className="text-xs text-gray-600">Diversify your feed</p>
-              </div>
-              <button onClick={() => setUniqueToggle((current) => !current)} className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${uniqueToggle ? 'bg-blue-600' : 'bg-gray-300'}`}>
-                <span className={`inline-block h-4 w-4 transform rounded-full bg-white neo-panel cyberpunk-card transition ${uniqueToggle ? 'translate-x-6' : 'translate-x-1'}`} />
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-4">
-            <p className="font-semibold text-gray-900 text-sm mb-3">Quick Filters</p>
-            <div className="space-y-2">
-              <button onClick={() => setActiveFilter('all')} className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${activeFilter === 'all' ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'}`}>All Posts</button>
-              <button onClick={() => setActiveFilter('requests')} className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${activeFilter === 'requests' ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'}`}>🔹 Buyer Requests</button>
-              <button onClick={() => setActiveFilter('products')} className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${activeFilter === 'products' ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'}`}>🏭 Company Products</button>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-span-12 lg:col-span-6 space-y-4">
-          {actionFeedback && (
-            <div
-              className={`rounded-lg p-3 text-sm ${actionFeedbackType === 'error' ? 'border border-red-200 bg-red-50 text-red-700' : 'border border-blue-200 bg-blue-50 text-blue-700'}`}
-            >
-              {actionFeedback}
-            </div>
-          )}
-          {loading && <div className="rounded-lg border border-gray-200 bg-white p-6 text-center text-gray-600">Loading feed...</div>}
-          {!loading && error && <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center text-red-700">{error}</div>}
-          {!loading && !error && filteredPosts.length === 0 && <div className="rounded-lg border border-gray-200 bg-white p-6 text-center text-gray-600">No feed items found for this filter.</div>}
-
-          {!loading && !error && filteredPosts.map((post) => (
-            <div key={`${post.entityType}-${post.id}`} className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition">
-              <div className="p-4 border-b border-gray-100">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-semibold text-gray-900">{post.author.name}</p>
-                        {post.verified && <span className="text-blue-600">✓</span>}
-                      </div>
-                      <p className="text-xs text-gray-600">{post.author.accountType}</p>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500">{formatRelativeTime(post.createdAt)}</p>
-                </div>
-              </div>
-
-              <div className="p-4">
-                <p className="text-gray-800 mb-3">{post.content}</p>
-                {post.hasVideo && <div className="bg-gray-100 rounded-lg p-8 text-center mb-3 border-2 border-dashed border-gray-300"><span className="text-3xl">🎬</span><p className="text-sm text-gray-600 mt-2">Video available</p></div>}
-                {post.tags.length > 0 && <div className="flex flex-wrap gap-2">{post.tags.map((tag, i) => <span key={`${post.id}-${tag}-${i}`} className="px-3 py-1 bg-blue-50 text-blue-600 text-xs rounded-full">{tag}</span>)}</div>}
-              </div>
-
-              <div className="px-4 py-3 bg-gray-50 neo-panel cyberpunk-card border-t border-gray-100 flex items-center justify-between text-sm text-gray-600">
-                <div className="flex gap-4">
-                  <button disabled={isActionSubmitting(post, 'comment')} onClick={() => handleSocialAction(post, 'comment')} className="hover:text-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed">💬 Comment</button>
-                  <button disabled={isActionSubmitting(post, 'share')} onClick={() => handleSocialAction(post, 'share')} className="hover:text-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed">↗️ Share</button>
-                  <button disabled={isActionSubmitting(post, 'save')} onClick={() => handleSocialAction(post, 'save')} className="hover:text-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed">⭐ Save</button>
-                  <button
-                    disabled={isReportDisabled(post)}
-                    onClick={() => handleReport(post)}
-                    className="hover:text-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            <div className="mt-4 border-t border-slate-100 pt-4">
+              <p className="text-xs font-semibold text-slate-700 mb-2">Quick actions</p>
+              <div className="flex flex-wrap gap-2">
+                {quickActions.map((a) => (
+                  <Link
+                    key={a.to}
+                    to={a.to}
+                    className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                   >
-                    🚩 {getReportCooldownLeftMs(post) > 0 ? `Report (${Math.ceil(getReportCooldownLeftMs(post) / 1000)}s)` : 'Report'}
-                  </button>
-                </div>
-                {post.entityType === 'buyer_request' ? (
-                  <button
-                    disabled={isActionSubmitting(post, 'express_interest')}
-                    onClick={() => handleExpressInterest(post)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isActionSubmitting(post, 'express_interest') ? 'Claiming...' : 'Express Interest'}
-                  </button>
-                ) : (
-                  <button disabled={isActionSubmitting(post, 'message')} onClick={() => handleSocialAction(post, 'message')} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition disabled:opacity-50 disabled:cursor-not-allowed">Message</button>
-                )}
+                    {a.label}
+                  </Link>
+                ))}
               </div>
-
-              {post.deadline && <div className="px-4 py-2 bg-yellow-50 border-t border-yellow-200 text-xs text-yellow-800">⏰ Deadline: {post.deadline}</div>}
-            </div>
-          ))}
-        </div>
-
-        <div className="col-span-3 hidden xl:block space-y-4">
-          <div className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-4">
-            <p className="font-semibold text-gray-900 mb-3">Suggested Connections</p>
-            <div className="space-y-3">
-              {suggestedConnections.length === 0 ? <p className="text-sm text-gray-500">No suggestions yet</p> : suggestedConnections.map((name) => (
-                <div key={name} className="flex items-center justify-between">
-                  <p className="text-sm text-gray-900">{name}</p>
-                  <button className="text-xs text-blue-600 hover:text-blue-700 font-semibold">Add</button>
-                </div>
-              ))}
             </div>
           </div>
 
-          <div className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-4">
-            <p className="font-semibold text-gray-900 mb-3">Trending Categories</p>
-            <div className="space-y-2 text-sm">
-              {trendingTags.length === 0 ? <p className="text-sm text-gray-500">No trend data yet</p> : trendingTags.map(([tag, count]) => (
-                <div key={tag} className="flex justify-between text-gray-600"><span>{tag}</span><span className="font-semibold">{count}</span></div>
-              ))}
+          {headerLabel ? (
+            <div className="bg-white rounded-2xl border border-slate-200 p-4 hidden lg:block">
+              <p className="text-xs font-semibold text-slate-500">Viewing</p>
+              <p className="mt-1 text-lg font-bold text-slate-900">{headerLabel}</p>
+              {activeCategory ? <p className="mt-1 text-xs text-slate-500">Category: {activeCategory}</p> : null}
             </div>
-          </div>
+          ) : null}
+        </aside>
 
-          <div className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-4">
-            <p className="font-semibold text-gray-900 mb-3">Recently Active Buyers</p>
-            <div className="space-y-2 text-sm">
-              {activeBuyers.length === 0 ? <p className="text-sm text-gray-500">No buyer activity yet</p> : activeBuyers.map((name) => (
-                <div key={name} className="flex items-center gap-2 text-gray-600"><span className="text-green-500">●</span><span>{name}</span></div>
-              ))}
+        <main className="col-span-12 lg:col-span-6 space-y-4">
+          {headerLabel ? (
+            <div className="bg-white rounded-2xl border border-slate-200 p-4">
+              <p className="text-xs font-semibold text-slate-500">Feed</p>
+              <p className="mt-1 text-xl font-bold text-slate-900">{headerLabel}</p>
+              {activeCategory ? <p className="mt-1 text-xs text-slate-500">Category: {activeCategory}</p> : null}
+            </div>
+          ) : null}
+
+          {notice?.message ? (
+            <div className={`rounded-2xl border p-4 text-sm ${
+              notice.type === 'error' ? 'border-rose-200 bg-rose-50 text-rose-800'
+                : notice.type === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                  : 'border-sky-200 bg-sky-50 text-sky-800'
+            }`}>
+              <div className="flex items-center justify-between gap-3">
+                <p className="font-medium">{notice.message}</p>
+                {claimedRequestId ? (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/chat', { state: { notice: `Buyer request ${claimedRequestId} claimed. Open inbox to continue.` } })}
+                    className="rounded-full bg-white border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  >
+                    Open Chat
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+
+          {loading ? (
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">Loading feed…</div>
+          ) : null}
+
+          {!loading && error ? (
+            <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-800">
+              {error}
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={() => loadFeedPage({ reset: true })}
+                  className="rounded-full bg-white border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          ) : null}
+
+          {!loading && !error && items.length === 0 ? (
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">No feed items found.</div>
+          ) : null}
+
+          {!loading && !error && items.map((item) => {
+            const highlight = highlightKey === `${item.entityType}:${item.id}`
+            const reportDisabled = isReportCoolingDown(item)
+
+            return (
+              <FeedItemCard
+                key={`${item.entityType}:${item.id}`}
+                item={item}
+                highlight={highlight}
+                canExpressInterest={canExpressInterest && item.entityType === 'buyer_request'}
+                expressInterestDisabled={expressBusyId === item.id}
+                onExpressInterest={() => handleExpressInterest(item)}
+                onOpenComments={() => setCommentsItem(item)}
+                onShare={() => handleShare(item)}
+                onReport={() => {
+                  if (reportDisabled) {
+                    setNotice({ type: 'info', message: 'Please wait a few seconds before reporting again.' })
+                    return
+                  }
+                  setReportItem(item)
+                }}
+                onMessage={() => handleMessage(item)}
+              />
+            )
+          })}
+
+          <div ref={sentinelRef} className="h-10" />
+
+          {loadingMore ? (
+            <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500 text-center">Loading more…</div>
+          ) : null}
+
+          {!loading && !error && nextCursor === null ? (
+            <div className="text-center text-xs text-slate-400 py-3">You’re all caught up.</div>
+          ) : null}
+        </main>
+
+        <aside className="col-span-3 hidden xl:block space-y-4">
+          <div className="bg-white rounded-2xl border border-slate-200 p-4">
+            <p className="text-sm font-semibold text-slate-900">Tips</p>
+            <p className="mt-2 text-xs text-slate-600 leading-relaxed">
+              Turn on <span className="font-semibold">Unique</span> to avoid seeing only one product type all day. Use the category chips for fast filtering.
+            </p>
+            <div className="mt-3 flex gap-2">
+              <Link to="/search" className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">Search</Link>
+              <Link to="/notifications" className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">Alerts</Link>
             </div>
           </div>
-        </div>
+        </aside>
       </div>
 
+      <CommentsDrawer open={Boolean(commentsItem)} onClose={() => setCommentsItem(null)} item={commentsItem} />
+
+      <ReportModal
+        open={Boolean(reportItem)}
+        item={reportItem}
+        onClose={() => setReportItem(null)}
+        onSubmit={(reason) => handleSubmitReport(reason)}
+      />
     </div>
   )
 }

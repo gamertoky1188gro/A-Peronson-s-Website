@@ -1,217 +1,266 @@
-import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { apiRequest, getToken } from '../lib/auth'
+import VerificationPanel from '../components/profile/VerificationPanel'
 
-
-const API = import.meta.env.VITE_API_URL || '/api'
-
-function starsFromAverage(avg) {
-  const rounded = Math.round(Number(avg || 0))
-  return '★★★★★'.slice(0, rounded).padEnd(5, '☆')
+function roleToRoute(role, id) {
+  if (!id) return '/feed'
+  if (role === 'buyer') return `/buyer/${encodeURIComponent(id)}`
+  if (role === 'buying_house') return `/buying-house/${encodeURIComponent(id)}`
+  return `/factory/${encodeURIComponent(id)}`
 }
 
 export default function BuyerProfile() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const token = useMemo(() => getToken(), [])
+
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [profile, setProfile] = useState(null)
   const [ratingSummary, setRatingSummary] = useState(null)
 
-  useEffect(() => {
-    fetch(`${API}/ratings/profiles/buyer:global-apparel-co`)
-      .then((res) => res.json())
-      .then((data) => setRatingSummary(data))
-      .catch(() => setRatingSummary(null))
-  }, [])
+  const [activeTab, setActiveTab] = useState('overview')
+  const [requests, setRequests] = useState([])
+  const [requestsCursor, setRequestsCursor] = useState(0)
+  const [requestsNext, setRequestsNext] = useState(null)
+  const [loadingRequests, setLoadingRequests] = useState(false)
 
-  const buyer = {
-    name: 'Global Apparel Co',
-    verified: true,
-    location: 'Dhaka, Bangladesh',
-    industry: 'Garments',
-    orgType: 'Direct Buyer',
-    about:
-      'Global Apparel Co sources seasonal collections for retail chains. We focus on dependable suppliers with strong QA and ethical practices.',
-    tags: ['Knits', 'Woven', 'Embroidery'],
-    orderVolume: '500-5000 units per order',
-    fabrics: ['Cotton', 'Poly-cotton', 'Denim'],
-    certifications: ['BSCI', 'OEKO-TEX'],
+  const user = profile?.user || null
+  const verification = profile?.verification_summary || null
+  const relationship = profile?.relationship || { following: false, friend_status: 'none' }
+
+  const loadProfile = useCallback(async () => {
+    if (!id) return
+    setLoading(true)
+    setError('')
+    try {
+      const data = await apiRequest(`/profiles/${encodeURIComponent(id)}`, { token })
+      if (data?.user?.role && data.user.role !== 'buyer') {
+        navigate(roleToRoute(data.user.role, id), { replace: true })
+        return
+      }
+      setProfile(data)
+    } catch (err) {
+      setError(err.message || 'Failed to load profile')
+      setProfile(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [id, navigate, token])
+
+  const loadRatings = useCallback(async () => {
+    if (!id) return
+    try {
+      const data = await apiRequest(`/ratings/profiles/user:${encodeURIComponent(id)}`, { token: '' })
+      setRatingSummary(data || null)
+    } catch {
+      setRatingSummary(null)
+    }
+  }, [id, token])
+
+  const loadRequests = useCallback(async ({ reset }) => {
+    if (!id) return
+    const cursor = reset ? 0 : requestsCursor
+    setLoadingRequests(true)
+    try {
+      const data = await apiRequest(`/profiles/${encodeURIComponent(id)}/requests?cursor=${cursor}&limit=10`, { token })
+      const rows = Array.isArray(data?.items) ? data.items : []
+      setRequests((prev) => (reset ? rows : [...prev, ...rows]))
+      setRequestsCursor(reset ? 10 : cursor + 10)
+      setRequestsNext(data?.next_cursor ?? null)
+    } catch {
+      // keep current list
+    } finally {
+      setLoadingRequests(false)
+    }
+  }, [id, requestsCursor, token])
+
+  useEffect(() => {
+    loadProfile()
+    loadRatings()
+  }, [loadProfile, loadRatings])
+
+  useEffect(() => {
+    if (activeTab !== 'requests') return
+    if (requests.length) return
+    loadRequests({ reset: true })
+  }, [activeTab, loadRequests, requests.length])
+
+  async function follow() {
+    if (!id) return
+    try {
+      const res = await apiRequest(`/users/${encodeURIComponent(id)}/follow`, { method: 'POST', token })
+      setProfile((prev) => (prev ? { ...prev, relationship: res?.relation || prev.relationship } : prev))
+    } catch {
+      // ignore
+    }
   }
 
-  const requests = [
-    {
-      id: 1,
-      title: 'White cotton tees with custom print',
-      summary: 'Need 2-color chest print, soft combed cotton, stable sizing',
-      budget: '$1.50 - $2.10 / unit',
-      deadline: '2026-03-30',
-      status: 'Open',
-    },
-    {
-      id: 2,
-      title: 'Denim jeans - slim fit',
-      summary: 'Midweight denim, stone wash finish, 6-pocket styling',
-      budget: '$8 - $12 / unit',
-      deadline: '2026-04-15',
-      status: 'In Progress',
-    },
-  ]
+  async function connect() {
+    if (!id) return
+    try {
+      const res = await apiRequest(`/users/${encodeURIComponent(id)}/friend-request`, { method: 'POST', token })
+      setProfile((prev) => (prev ? { ...prev, relationship: res?.relation || prev.relationship } : prev))
+    } catch {
+      // ignore
+    }
+  }
 
-  const pastDeals = {
-    completed: 24,
-    successRate: '92%',
+  function contact() {
+    navigate('/chat', { state: { notice: `Contacting ${user?.name || 'buyer'}. If you are unverified, your first message may appear as a request.` } })
+  }
+
+  if (loading) {
+    return <div className="min-h-screen bg-slate-50 p-6 text-slate-600">Loading profile…</div>
+  }
+  if (error) {
+    return <div className="min-h-screen bg-slate-50 p-6 text-rose-700">{error}</div>
+  }
+  if (!user) {
+    return <div className="min-h-screen bg-slate-50 p-6 text-slate-600">Profile not found.</div>
   }
 
   return (
-    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
-      {/* TOP NAVIGATION */}
-      
-      {/* Shared global NavBar */}
-
-
-      <div className="max-w-7xl mx-auto p-6">
-
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* LEFT SIDEBAR */}
-          <aside className="lg:col-span-1 sticky top-6 self-start">
-            <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-20 h-20 bg-gray-100 rounded-lg"></div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="font-semibold text-lg">{buyer.name}</h2>
-                    {buyer.verified && (
-                      <div className="flex items-center gap-1 bg-[#E8F3FF] text-[#0A66C2] px-2 py-0.5 rounded-full text-sm font-semibold">
-                        <span className="w-5 h-5 bg-[#0A66C2] text-white rounded-full flex items-center justify-center">✓</span>
-                        Verified
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-sm text-[#5A5A5A]">{buyer.location}</p>
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-12 gap-4">
+        <aside className="col-span-12 lg:col-span-4 space-y-4">
+          <div className="bg-white rounded-2xl border border-slate-200 p-4">
+            <div className="flex items-center gap-3">
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
+              <div className="min-w-0">
+                <p className="text-lg font-bold text-slate-900 truncate">{user.name}</p>
+                <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
+                  <span className="uppercase">Buyer</span>
+                  {user.profile?.country ? <span>• {user.profile.country}</span> : null}
+                  {user.verified ? <span className="font-bold text-[#0A66C2]">Verified</span> : null}
                 </div>
-              </div>
-
-              <div className="mt-4 space-y-2 text-sm text-[#5A5A5A]">
-                <div>Industry: <strong className="text-[#1A1A1A]">{buyer.industry}</strong></div>
-                <div>Organization: <strong className="text-[#1A1A1A]">{buyer.orgType}</strong></div>
-                <div>Rating: <strong className="text-[#1A1A1A]">{ratingSummary?.aggregate?.average_score || '0.0'} / 5</strong></div>
-              </div>
-
-              <div className="mt-4 flex gap-2">
-                <button className="flex-1 bg-[#0A66C2] text-white py-2 rounded-xl">Contact</button>
-                <button className="flex-1 border border-gray-200 py-2 rounded-xl">Follow</button>
               </div>
             </div>
-          </aside>
 
-          {/* MAIN CONTENT */}
-          <main className="lg:col-span-2 space-y-6">
-            <section className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
-              <h3 className="font-semibold text-lg mb-2">About {buyer.name}</h3>
-              <p className="text-[#5A5A5A] mb-3">{buyer.about}</p>
+            <div className="mt-4 flex gap-2">
+              <button onClick={contact} className="flex-1 rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182]">Contact</button>
+              <button onClick={follow} className="flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                {relationship.following ? 'Following' : 'Follow'}
+              </button>
+              <button onClick={connect} className="flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                {relationship.friend_status === 'friends' ? 'Connected' : (relationship.friend_status === 'requested' ? 'Requested' : 'Connect')}
+              </button>
+            </div>
 
-              <div className="flex flex-wrap gap-2 mb-3">
-                {buyer.tags.map(tag => (
-                  <span key={tag} className="px-3 py-1 bg-[#F4F9FF] rounded-full text-sm text-[#0A66C2]">{tag}</span>
-                ))}
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <p className="text-[11px] text-slate-500">Rating</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
+                <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
               </div>
-
-              <div className="grid md:grid-cols-3 gap-4 text-sm text-[#5A5A5A]">
-                <div>
-                  <div className="text-xs text-[#5A5A5A]">Typical Order Volume</div>
-                  <div className="font-medium text-[#1A1A1A]">{buyer.orderVolume}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-[#5A5A5A]">Preferred Fabrics</div>
-                  <div className="font-medium text-[#1A1A1A]">{buyer.fabrics.join(', ')}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-[#5A5A5A]">Certifications Required</div>
-                  <div className="font-medium text-[#1A1A1A]">{buyer.certifications.join(', ')}</div>
-                </div>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <p className="text-[11px] text-slate-500">Requests</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{profile?.counts?.requests ?? 0}</p>
+                <p className="text-[11px] text-slate-600">Total posted</p>
               </div>
-            </section>
+            </div>
+          </div>
 
-            <section className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
-              <h3 className="font-semibold text-lg mb-4">Active Buyer Requests</h3>
-              <div className="space-y-4">
-                {requests.map(r => (
-                  <div key={r.id} className="border border-gray-100 rounded-lg p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-semibold">{r.title}</h4>
-                          <span className={`px-2 py-1 text-xs rounded-full font-medium ${r.status === 'Open' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
-                            {r.status}
-                          </span>
-                        </div>
-                        <p className="text-sm text-[#5A5A5A] mt-1">{r.summary}</p>
-                        <div className="text-sm text-[#5A5A5A] mt-2">Budget: <strong className="text-[#1A1A1A]">{r.budget}</strong></div>
-                      </div>
-                      <div className="flex flex-col items-end gap-2 ml-4">
-                        <div className="text-sm text-[#5A5A5A]">Deadline: <strong className="text-[#1A1A1A]">{r.deadline}</strong></div>
-                        <Link to={`/buyer/requests/${r.id}`} className="bg-[#0A66C2] text-white px-4 py-2 rounded-lg hover:bg-[#083B75]">View Details</Link>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
+          <VerificationPanel summary={verification} />
+        </aside>
 
-            <section className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
-              <h3 className="font-semibold text-lg mb-3">Past Deals</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div className="p-4 bg-[#F4F9FF] rounded-lg">
-                  <div className="text-xs text-[#5A5A5A]">Completed Contracts</div>
-                  <div className="font-semibold text-[#1A1A1A] text-xl">{pastDeals.completed}</div>
-                </div>
-                <div className="p-4 bg-[#F4F9FF] rounded-lg">
-                  <div className="text-xs text-[#5A5A5A]">Success Rate</div>
-                  <div className="font-semibold text-[#1A1A1A] text-xl">{pastDeals.successRate}</div>
-                </div>
-                <div className="p-4 bg-[#F4F9FF] rounded-lg">
-                  <div className="text-xs text-[#5A5A5A]">Top Reviews</div>
-                  <div className="text-sm text-[#1A1A1A] mt-2">{(ratingSummary?.recent_reviews || []).slice(0, 2).map((r) => r.comment).filter(Boolean).join(' • ') || 'No reviews yet'}</div>
-                </div>
-              </div>
-            </section>
+        <main className="col-span-12 lg:col-span-8 space-y-4">
+          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-200">
+              {['overview', 'requests', 'reviews'].map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setActiveTab(tab)}
+                  className={`rounded-full px-3 py-2 text-xs font-semibold border ${
+                    activeTab === tab ? 'border-[#0A66C2] bg-[#0A66C2]/5 text-[#0A66C2]' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  {tab === 'overview' ? 'Overview' : tab === 'requests' ? 'Buyer Requests' : 'Reviews'}
+                </button>
+              ))}
+            </div>
 
-            <section className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
-              <h3 className="font-semibold text-lg mb-3">Reviews</h3>
-              <div className="mb-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-3xl font-bold text-[#0A66C2]">{ratingSummary?.aggregate?.average_score || '0.0'}</span>
+            <div className="p-4">
+              {activeTab === 'overview' ? (
+                <div className="space-y-4">
                   <div>
-                    <div className="text-lg">{starsFromAverage(ratingSummary?.aggregate?.average_score)}</div>
-                    <div className="text-sm text-[#5A5A5A]">{ratingSummary?.aggregate?.total_count || 0} reviews</div>
+                    <p className="text-sm font-bold text-slate-900">About</p>
+                    <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">{user.profile?.about || 'No description added yet.'}</p>
                   </div>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 text-xs text-[#5A5A5A]
-              ">
-                <div className="p-3 bg-[#F4F9FF] rounded-lg">Recent Avg: <strong>{ratingSummary?.aggregate?.recent_average_score || '0.0'}</strong></div>
-                <div className="p-3 bg-[#F4F9FF] rounded-lg">Reliability: <strong className="uppercase">{ratingSummary?.aggregate?.reliability?.confidence || 'low'}</strong></div>
-                <div className="p-3 bg-[#F4F9FF] rounded-lg">Qualified Ratings: <strong>{Math.round((ratingSummary?.aggregate?.reliability?.qualified_interaction_ratio || 0) * 100)}%</strong></div>
-              </div>
 
-              <div className="text-xs text-[#5A5A5A] mb-3">Breakdown: 5★ {ratingSummary?.breakdown?.[5] || 0} • 4★ {ratingSummary?.breakdown?.[4] || 0} • 3★ {ratingSummary?.breakdown?.[3] || 0} • 2★ {ratingSummary?.breakdown?.[2] || 0} • 1★ {ratingSummary?.breakdown?.[1] || 0}</div>
-              <div className="space-y-3">
-                {(ratingSummary?.recent_reviews || []).map((r) => (
-                  <div key={r.id} className="border border-gray-100 rounded-lg p-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="font-medium text-[#1A1A1A]">{r.comment || 'No comment provided.'}</div>
-                        <div className="text-xs text-[#5A5A5A] mt-1">— Factory Reviewer • 3 weeks ago</div>
-                      </div>
-                      <div className="text-sm font-semibold text-[#0A66C2]">{r.score || 0}★</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <p className="text-[11px] text-slate-500">Country</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.country || '—'}</p>
+                    </div>
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <p className="text-[11px] text-slate-500">Certifications (declared)</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900">{(user.profile?.certifications || []).join(', ') || '—'}</p>
                     </div>
                   </div>
-                ))}
-                {!ratingSummary?.recent_reviews?.length && (
-                  <div className="rounded-lg border border-dashed border-gray-200 p-3 text-sm text-[#5A5A5A]">No reviews available yet.</div>
-                )}
-              </div>
-            </section>
-          </main>
-        </div>
-      </div>
+                </div>
+              ) : null}
 
+              {activeTab === 'requests' ? (
+                <div className="space-y-3">
+                  {requests.map((r) => (
+                    <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-bold text-slate-900">{r.category || 'Request'}</p>
+                          <p className="mt-1 text-sm text-slate-700 whitespace-pre-wrap">{r.custom_description || ''}</p>
+                          <div className="mt-2 text-xs text-slate-600 grid grid-cols-2 gap-2">
+                            <div>Quantity: <span className="font-semibold text-slate-800">{r.quantity || '-'}</span></div>
+                            <div>Timeline: <span className="font-semibold text-slate-800">{r.timeline_days || '-'}</span></div>
+                            <div>Material: <span className="font-semibold text-slate-800">{r.material || '-'}</span></div>
+                            <div>Status: <span className="font-semibold text-slate-800">{r.status || '-'}</span></div>
+                          </div>
+                        </div>
+                        <div className="shrink-0">
+                          <button onClick={contact} className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182]">Contact</button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {loadingRequests ? <div className="text-sm text-slate-600">Loading…</div> : null}
+                  {requestsNext !== null && !loadingRequests ? (
+                    <button
+                      type="button"
+                      onClick={() => loadRequests({ reset: false })}
+                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                    >
+                      Load more
+                    </button>
+                  ) : null}
+                  {!requests.length && !loadingRequests ? <div className="text-sm text-slate-600">No requests found.</div> : null}
+                </div>
+              ) : null}
+
+              {activeTab === 'reviews' ? (
+                <div className="space-y-3">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <p className="text-sm font-bold text-slate-900">Rating summary</p>
+                    <p className="mt-1 text-sm text-slate-700">
+                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 • {ratingSummary?.aggregate?.total_count ?? 0} reviews • {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
+                    </p>
+                  </div>
+                  {(ratingSummary?.recent_reviews || []).map((r) => (
+                    <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                      <p className="text-sm font-semibold text-slate-900">{r.score}★</p>
+                      <p className="mt-1 text-sm text-slate-700">{r.comment || 'No comment provided.'}</p>
+                    </div>
+                  ))}
+                  {!ratingSummary?.recent_reviews?.length ? <div className="text-sm text-slate-600">No reviews yet.</div> : null}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
   )
 }
+

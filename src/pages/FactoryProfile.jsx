@@ -1,233 +1,287 @@
-import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { apiRequest, getToken } from '../lib/auth'
+import VerificationPanel from '../components/profile/VerificationPanel'
 
+function roleToRoute(role, id) {
+  if (!id) return '/feed'
+  if (role === 'buyer') return `/buyer/${encodeURIComponent(id)}`
+  if (role === 'buying_house') return `/buying-house/${encodeURIComponent(id)}`
+  return `/factory/${encodeURIComponent(id)}`
+}
 
-const API = import.meta.env.VITE_API_URL || '/api'
-
-function starsFromAverage(avg) {
-  const rounded = Math.round(Number(avg || 0))
-  return '★★★★★'.slice(0, rounded).padEnd(5, '☆')
+function isApprovedVideo(product) {
+  return Boolean(product?.video_url) && String(product?.video_review_status || '').toLowerCase() === 'approved' && !product?.video_restricted
 }
 
 export default function FactoryProfile() {
-  const [activeTab, setActiveTab] = useState('overview')
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const token = useMemo(() => getToken(), [])
+
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [profile, setProfile] = useState(null)
   const [ratingSummary, setRatingSummary] = useState(null)
 
-  useEffect(() => {
-    fetch(`${API}/ratings/profiles/factory:premier-textile-mills`)
-      .then((res) => res.json())
-      .then((data) => setRatingSummary(data))
-      .catch(() => setRatingSummary(null))
-  }, [])
+  const [activeTab, setActiveTab] = useState('overview')
+  const [products, setProducts] = useState([])
+  const [productsCursor, setProductsCursor] = useState(0)
+  const [productsNext, setProductsNext] = useState(null)
+  const [loadingProducts, setLoadingProducts] = useState(false)
 
-  const factory = {
-    name: 'Premier Textile Mills',
-    verified: true,
-    location: 'Tirupur, India',
-    capacity: '250,000 units / month',
-    employees: 450,
-    certifications: ['ISO 9001', 'WRAP'],
-    about:
-      'Full-package manufacturer specializing in knitwear and woven garments. Strong focus on lead-time adherence and quality control.',
-    machinery: ['Flat-bed knitting', 'Overlock', 'Auto cutting', 'Industrial washing'],
-    specializations: ['Shirts', 'Knitwear', 'Sportswear'],
-    export: ['USA', 'EU', 'Japan'],
+  const user = profile?.user || null
+  const verification = profile?.verification_summary || null
+  const relationship = profile?.relationship || { following: false, friend_status: 'none' }
+  const viewerPerms = profile?.viewer_permissions || { is_self: false, is_admin: false }
+
+  const loadProfile = useCallback(async () => {
+    if (!id) return
+    setLoading(true)
+    setError('')
+    try {
+      const data = await apiRequest(`/profiles/${encodeURIComponent(id)}`, { token })
+      if (data?.user?.role && data.user.role !== 'factory') {
+        navigate(roleToRoute(data.user.role, id), { replace: true })
+        return
+      }
+      setProfile(data)
+    } catch (err) {
+      setError(err.message || 'Failed to load profile')
+      setProfile(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [id, navigate, token])
+
+  const loadRatings = useCallback(async () => {
+    if (!id) return
+    try {
+      const data = await apiRequest(`/ratings/profiles/user:${encodeURIComponent(id)}`, { token: '' })
+      setRatingSummary(data || null)
+    } catch {
+      setRatingSummary(null)
+    }
+  }, [id])
+
+  const loadProducts = useCallback(async ({ reset }) => {
+    if (!id) return
+    const cursor = reset ? 0 : productsCursor
+    setLoadingProducts(true)
+    try {
+      const data = await apiRequest(`/profiles/${encodeURIComponent(id)}/products?cursor=${cursor}&limit=10`, { token })
+      const rows = Array.isArray(data?.items) ? data.items : []
+      setProducts((prev) => (reset ? rows : [...prev, ...rows]))
+      setProductsCursor(reset ? 10 : cursor + 10)
+      setProductsNext(data?.next_cursor ?? null)
+    } catch {
+      // ignore
+    } finally {
+      setLoadingProducts(false)
+    }
+  }, [id, productsCursor, token])
+
+  useEffect(() => {
+    loadProfile()
+    loadRatings()
+  }, [loadProfile, loadRatings])
+
+  useEffect(() => {
+    if (!['products', 'videos'].includes(activeTab)) return
+    if (products.length) return
+    loadProducts({ reset: true })
+  }, [activeTab, loadProducts, products.length])
+
+  async function follow() {
+    if (!id) return
+    try {
+      const res = await apiRequest(`/users/${encodeURIComponent(id)}/follow`, { method: 'POST', token })
+      setProfile((prev) => (prev ? { ...prev, relationship: res?.relation || prev.relationship } : prev))
+    } catch {
+      // ignore
+    }
   }
 
-  const products = [
-    { id: 1, name: 'Pique Polo', category: 'Knitwear', moq: 200 },
-    { id: 2, name: 'Heavyweight Hoodie', category: 'Knitwear', moq: 300 },
-    { id: 3, name: 'Denim Jacket', category: 'Woven', moq: 400 },
-  ]
+  async function connect() {
+    if (!id) return
+    try {
+      const res = await apiRequest(`/users/${encodeURIComponent(id)}/friend-request`, { method: 'POST', token })
+      setProfile((prev) => (prev ? { ...prev, relationship: res?.relation || prev.relationship } : prev))
+    } catch {
+      // ignore
+    }
+  }
 
+  function contact() {
+    navigate('/chat', { state: { notice: `Contacting ${user?.name || 'factory'}. If you are unverified, your first message may appear as a request.` } })
+  }
 
-  const videoGallery = [
-    {
-      id: 1,
-      title: 'Knitting floor walkthrough',
-      duration: '2:18',
-      reviewStatus: 'approved',
-      summary: 'Shows daily output checks and in-line quality control stations.',
-    },
-    {
-      id: 2,
-      title: 'Packaging and dispatch line',
-      duration: '1:47',
-      reviewStatus: 'pending_review',
-      summary: 'Awaiting compliance review before becoming publicly visible.',
-    },
-    {
-      id: 3,
-      title: 'Internal training clip',
-      duration: '1:12',
-      reviewStatus: 'restricted',
-      summary: 'Hidden due to media policy checks. Only visible to the factory admin.',
-    },
-  ]
+  const visibleVideos = useMemo(() => {
+    if (viewerPerms.is_self || viewerPerms.is_admin) return products.filter((p) => p.video_url)
+    return products.filter(isApprovedVideo)
+  }, [products, viewerPerms.is_admin, viewerPerms.is_self])
 
-  const visibleVideos = videoGallery.filter((video) => video.reviewStatus === 'approved')
+  if (loading) return <div className="min-h-screen bg-slate-50 p-6 text-slate-600">Loading profile…</div>
+  if (error) return <div className="min-h-screen bg-slate-50 p-6 text-rose-700">{error}</div>
+  if (!user) return <div className="min-h-screen bg-slate-50 p-6 text-slate-600">Profile not found.</div>
 
   return (
-    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
-      {/* TOP NAVIGATION */}
-      
-      {/* Shared global NavBar */}
-
-
-      <div className="max-w-7xl mx-auto p-6">
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <aside className="lg:col-span-1 sticky top-6 self-start">
-            <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-20 h-20 bg-gray-100 rounded-lg"></div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="font-semibold text-lg">{factory.name}</h2>
-                    {factory.verified && (
-                      <div className="flex items-center gap-1 bg-[#E8F3FF] text-[#0A66C2] px-2 py-0.5 rounded-full text-sm font-semibold">
-                        <span className="w-5 h-5 bg-[#0A66C2] text-white rounded-full flex items-center justify-center">✓</span>
-                        Verified
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-sm text-[#5A5A5A]">{factory.location}</p>
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-12 gap-4">
+        <aside className="col-span-12 lg:col-span-4 space-y-4">
+          <div className="bg-white rounded-2xl border border-slate-200 p-4">
+            <div className="flex items-center gap-3">
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
+              <div className="min-w-0">
+                <p className="text-lg font-bold text-slate-900 truncate">{user.name}</p>
+                <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
+                  <span className="uppercase">Factory</span>
+                  {user.profile?.country ? <span>• {user.profile.country}</span> : null}
+                  {user.verified ? <span className="font-bold text-[#0A66C2]">Verified</span> : null}
                 </div>
-              </div>
-
-              <div className="mt-4 space-y-2 text-sm text-[#5A5A5A]">
-                <div>Capacity: <strong className="text-[#1A1A1A]">{factory.capacity}</strong></div>
-                <div>Employees: <strong className="text-[#1A1A1A]">{factory.employees}</strong></div>
-                <div>Certifications:</div>
-                <div className="flex gap-2 mt-1">
-                  {factory.certifications.map(c => (
-                    <span key={c} className="px-2 py-1 bg-[#F4F9FF] rounded-md text-sm text-[#0A66C2]">{c}</span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-4 flex gap-2">
-                <Link to="/factory/chat" className="flex-1 bg-[#0A66C2] text-white py-2 rounded-xl text-center hover:bg-[#083B75]">Send Message</Link>
-                <Link to="/factory/products" className="flex-1 border border-gray-200 py-2 rounded-xl text-center hover:bg-gray-50 neo-panel cyberpunk-card">View Products</Link>
               </div>
             </div>
-          </aside>
 
-          <main className="lg:col-span-2 space-y-6">
-            <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-4">
-              <div className="flex gap-4 border-b border-gray-100 pb-3 mb-3">
-                <button onClick={() => setActiveTab('overview')} className={`px-4 py-2 ${activeTab === 'overview' ? 'border-b-2 border-[#0A66C2] text-[#0A66C2]' : 'text-[#5A5A5A]'}`}>Overview</button>
-                <button onClick={() => setActiveTab('products')} className={`px-4 py-2 ${activeTab === 'products' ? 'border-b-2 border-[#0A66C2] text-[#0A66C2]' : 'text-[#5A5A5A]'}`}>Products</button>
-                <button onClick={() => setActiveTab('videos')} className={`px-4 py-2 ${activeTab === 'videos' ? 'border-b-2 border-[#0A66C2] text-[#0A66C2]' : 'text-[#5A5A5A]'}`}>Video Gallery</button>
-                <button onClick={() => setActiveTab('reviews')} className={`px-4 py-2 ${activeTab === 'reviews' ? 'border-b-2 border-[#0A66C2] text-[#0A66C2]' : 'text-[#5A5A5A]'}`}>Reviews</button>
+            <div className="mt-4 flex gap-2">
+              <button onClick={contact} className="flex-1 rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182]">Contact</button>
+              <button onClick={follow} className="flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                {relationship.following ? 'Following' : 'Follow'}
+              </button>
+              <button onClick={connect} className="flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                {relationship.friend_status === 'friends' ? 'Connected' : (relationship.friend_status === 'requested' ? 'Requested' : 'Connect')}
+              </button>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <p className="text-[11px] text-slate-500">Capacity</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.monthly_capacity || '—'}</p>
+                <p className="text-[11px] text-slate-600">Monthly</p>
               </div>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <p className="text-[11px] text-slate-500">MOQ</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.moq || '—'}</p>
+                <p className="text-[11px] text-slate-600">Declared</p>
+              </div>
+            </div>
+          </div>
 
-              {activeTab === 'overview' && (
-                <div className="space-y-4 p-3">
-                  <p className="text-[#5A5A5A]">{factory.about}</p>
+          <VerificationPanel summary={verification} />
+        </aside>
 
+        <main className="col-span-12 lg:col-span-8 space-y-4">
+          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-200">
+              {['overview', 'products', 'videos', 'reviews'].map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setActiveTab(tab)}
+                  className={`rounded-full px-3 py-2 text-xs font-semibold border ${
+                    activeTab === tab ? 'border-[#0A66C2] bg-[#0A66C2]/5 text-[#0A66C2]' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  {tab === 'overview' ? 'Overview' : tab === 'products' ? 'Products' : tab === 'videos' ? 'Video Gallery' : 'Reviews'}
+                </button>
+              ))}
+            </div>
+
+            <div className="p-4">
+              {activeTab === 'overview' ? (
+                <div className="space-y-4">
                   <div>
-                    <h4 className="font-semibold">Machinery</h4>
-                    <ul className="text-sm text-[#5A5A5A] mt-2">
-                      {factory.machinery.map(m => <li key={m}>• {m}</li>)}
-                    </ul>
+                    <p className="text-sm font-bold text-slate-900">About</p>
+                    <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">{user.profile?.about || 'No description added yet.'}</p>
                   </div>
 
-                  <div>
-                    <h4 className="font-semibold">Specializations</h4>
-                    <div className="flex gap-2 mt-2">
-                      {factory.specializations.map(s => (
-                        <span key={s} className="px-3 py-1 bg-[#F4F9FF] rounded-full text-sm text-[#0A66C2]">{s}</span>
-                      ))}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <p className="text-[11px] text-slate-500">Lead time</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.lead_time_days || '—'}</p>
+                    </div>
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <p className="text-[11px] text-slate-500">Certifications</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900">{(user.profile?.certifications || []).join(', ') || '—'}</p>
+                    </div>
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <p className="text-[11px] text-slate-500">Rating</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
+                      <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
                     </div>
                   </div>
-
-                  <div>
-                    <h4 className="font-semibold">Export Countries</h4>
-                    <div className="text-sm text-[#5A5A5A] mt-2">{factory.export.join(', ')}</div>
-                  </div>
                 </div>
-              )}
+              ) : null}
 
-              {activeTab === 'products' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-3">
-                  {products.map(p => (
-                    <div key={p.id} className="bg-white neo-panel cyberpunk-card border border-gray-100 rounded-lg p-3">
-                      <div className="w-full h-36 bg-gray-100 rounded-md mb-2"></div>
-                      <div className="font-semibold">{p.name}</div>
-                      <div className="text-sm text-[#5A5A5A]">{p.category} • MOQ {p.moq}</div>
-                      <div className="mt-2 flex gap-2">
-                        <button className="px-3 py-1 bg-[#0A66C2] text-white rounded-md">Quick View</button>
+              {activeTab === 'products' ? (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {products.map((p) => (
+                      <div key={p.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                        <p className="text-sm font-bold text-slate-900">{p.title || 'Product'}</p>
+                        <p className="mt-1 text-xs text-slate-600">{p.category || '—'} • MOQ {p.moq || '—'} • Lead time {p.lead_time_days || '—'}</p>
+                        <p className="mt-2 text-sm text-slate-700 line-clamp-3">{p.description || ''}</p>
+                        {p.hasVideo ? <p className="mt-2 text-xs font-semibold text-indigo-700">Video available</p> : null}
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {activeTab === 'videos' && (
-                <div className="space-y-4 p-3">
-                  <div>
-                    <h4 className="font-semibold">Video Gallery</h4>
-                    <p className="text-sm text-[#5A5A5A] mt-1">Only approved media is public. Pending or restricted items remain hidden until moderation is completed.</p>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {visibleVideos.map((video) => (
-                      <article key={video.id} className="bg-white neo-panel cyberpunk-card border border-gray-100 rounded-lg p-3">
-                        <div className="bg-gray-100 h-40 rounded-lg flex items-center justify-center text-[#5A5A5A]">Video Preview</div>
-                        <div className="mt-3 flex items-start justify-between gap-2">
-                          <div>
-                            <h5 className="font-semibold text-sm">{video.title}</h5>
-                            <p className="text-xs text-[#5A5A5A] mt-1">{video.summary}</p>
-                          </div>
-                          <span className="text-xs px-2 py-1 rounded-full bg-[#E8F3FF] text-[#0A66C2] font-semibold uppercase">{video.reviewStatus.replace('_', ' ')}</span>
-                        </div>
-                        <div className="text-xs text-[#5A5A5A] mt-2">Duration: {video.duration}</div>
-                      </article>
                     ))}
                   </div>
-
-                  {videoGallery.some((video) => video.reviewStatus !== 'approved') && (
-                    <div className="border border-amber-200 bg-amber-50 rounded-lg px-4 py-3 text-sm text-amber-900">
-                      {videoGallery.filter((video) => video.reviewStatus !== 'approved').length} video(s) are currently hidden due to moderation status.
-                    </div>
-                  )}
+                  {loadingProducts ? <div className="text-sm text-slate-600">Loading…</div> : null}
+                  {productsNext !== null && !loadingProducts ? (
+                    <button
+                      type="button"
+                      onClick={() => loadProducts({ reset: false })}
+                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                    >
+                      Load more
+                    </button>
+                  ) : null}
+                  {!products.length && !loadingProducts ? <div className="text-sm text-slate-600">No products found.</div> : null}
                 </div>
-              )}
+              ) : null}
 
-              {activeTab === 'reviews' && (
-                <div className="space-y-3 p-3">
-                  <div className="mb-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-3xl font-bold text-[#0A66C2]">{ratingSummary?.aggregate?.average_score || '0.0'}</span>
-                      <div>
-                        <div className="text-lg">{starsFromAverage(ratingSummary?.aggregate?.average_score)}</div>
-                        <div className="text-sm text-[#5A5A5A]">{ratingSummary?.aggregate?.total_count || 0} reviews</div>
+              {activeTab === 'videos' ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-slate-700">
+                    Only approved media is public. Pending or restricted media remains hidden unless you are the profile owner or an admin.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {visibleVideos.map((p) => (
+                      <div key={p.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                        <p className="text-sm font-bold text-slate-900">{p.title || 'Video'}</p>
+                        <p className="mt-1 text-xs text-slate-600">Status: {String(p.video_review_status || '—').replaceAll('_', ' ')}</p>
+                        <p className="mt-2 text-sm text-slate-700 line-clamp-3">{p.description || ''}</p>
+                        {p.video_url ? (
+                          <a href={p.video_url} target="_blank" rel="noreferrer" className="mt-3 inline-block text-xs font-semibold text-[#0A66C2] hover:underline">
+                            Open video link
+                          </a>
+                        ) : null}
                       </div>
-                    </div>
+                    ))}
                   </div>
-                  <div className="text-xs text-[#5A5A5A]">Breakdown: 5★ {ratingSummary?.breakdown?.[5] || 0} • 4★ {ratingSummary?.breakdown?.[4] || 0} • 3★ {ratingSummary?.breakdown?.[3] || 0} • 2★ {ratingSummary?.breakdown?.[2] || 0} • 1★ {ratingSummary?.breakdown?.[1] || 0}</div>
+                  {!visibleVideos.length && !loadingProducts ? <div className="text-sm text-slate-600">No public videos available.</div> : null}
+                </div>
+              ) : null}
+
+              {activeTab === 'reviews' ? (
+                <div className="space-y-3">
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <p className="text-sm font-bold text-slate-900">Rating summary</p>
+                    <p className="mt-1 text-sm text-slate-700">
+                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 • {ratingSummary?.aggregate?.total_count ?? 0} reviews • {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
+                    </p>
+                  </div>
                   {(ratingSummary?.recent_reviews || []).map((r) => (
-                    <div key={r.id} className="border border-gray-100 rounded-lg p-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="font-semibold">Partner</div>
-                          <div className="text-sm text-[#5A5A5A]">{r.comment || 'No comment provided.'}</div>
-                        </div>
-                        <div className="text-sm font-semibold text-[#0A66C2]">{r.score || 0}★</div>
-                      </div>
+                    <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                      <p className="text-sm font-semibold text-slate-900">{r.score}★</p>
+                      <p className="mt-1 text-sm text-slate-700">{r.comment || 'No comment provided.'}</p>
                     </div>
                   ))}
-                  {!ratingSummary?.recent_reviews?.length && (
-                    <div className="rounded-lg border border-dashed border-gray-200 p-3 text-sm text-[#5A5A5A]">No reviews available yet.</div>
-                  )}
+                  {!ratingSummary?.recent_reviews?.length ? <div className="text-sm text-slate-600">No reviews yet.</div> : null}
                 </div>
-              )}
+              ) : null}
             </div>
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
-
     </div>
   )
 }

@@ -1,444 +1,429 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Briefcase, Building2, Filter, LayoutGrid, Bell, Search as SearchIcon } from 'lucide-react'
+import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 
-const API = import.meta.env.VITE_API_URL || '/api'
-function getAuthToken() {
-  return localStorage.getItem('jwt') || ''
+const TAB_OPTIONS = [
+  { id: 'all', label: 'All', icon: LayoutGrid },
+  { id: 'requests', label: 'Buyer Requests', icon: Briefcase },
+  { id: 'companies', label: 'Companies', icon: Building2 },
+]
+
+function roleToProfileRoute(role, id) {
+  if (!id) return ''
+  const normalized = String(role || '').toLowerCase()
+  if (normalized === 'buyer') return `/buyer/${encodeURIComponent(id)}`
+  if (normalized === 'buying_house') return `/buying-house/${encodeURIComponent(id)}`
+  return `/factory/${encodeURIComponent(id)}`
 }
 
-async function api(path, options = {}) {
-  const token = getAuthToken()
-  const res = await fetch(`${API}${path}`, {
-    headers: {
-      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options.headers || {}),
-    },
-    ...options,
-  })
+function buildQueryString({ q, category, filters, allowAdvanced }) {
+  const params = new URLSearchParams()
+  if (q) params.set('q', q)
+  if (category) params.set('category', category)
 
-  const data = await res.json().catch(() => null)
-  if (!res.ok) {
-    const error = new Error(data?.error || data?.message || `Request failed (${res.status})`)
-    error.code = data?.code
-    error.quota = data?.quota
-    error.requirements = data?.requirements
-    error.capabilities = data?.capabilities
-    error.remainingQuota = data?.remaining_quota
-    throw error
+  if (allowAdvanced) {
+    if (filters.moqRange) params.set('moqRange', filters.moqRange)
+    if (filters.country) params.set('country', filters.country)
+    if (filters.verifiedOnly) params.set('verifiedOnly', 'true')
+    if (filters.orgType) params.set('orgType', filters.orgType)
   }
 
-  return data
+  return params.toString()
 }
 
-function toArray(value) {
-  if (!value) return []
-  if (Array.isArray(value)) return value
-  if (Array.isArray(value.items)) return value.items
-  if (Array.isArray(value.results)) return value.results
-  if (Array.isArray(value.data)) return value.data
-  return []
-}
-
-function normalizeRequest(raw) {
-  return {
-    id: raw.id ?? raw._id,
-    buyerName: raw.buyerName || raw.organization_name || raw.org || raw.author?.name || 'Unknown buyer',
-    verified: Boolean(raw.verified || raw.author?.verified),
-    requirement: raw.requirement || raw.content || raw.description || raw.title || '',
-    deadline: raw.deadline || raw.timeline || 'N/A',
-    moq: raw.moq || raw.quantity || 'N/A',
-  }
-}
-
-
-function toProfileKey(name) {
-  return `factory:${String(name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`
-}
-
-function normalizeCompany(raw) {
-  return {
-    id: raw.id ?? raw._id,
-    name: raw.name || raw.organization_name || raw.org || raw.author?.name || 'Unknown company',
-    category: raw.category || raw.primary_category || raw.material || 'General',
-    mediaReviewStatus: raw.video_review_status || 'approved',
-    hasVideo: Boolean(raw.hasVideo || (raw.video_review_status === 'approved' && raw.video_url)),
-    profileKey: raw.profile_key || toProfileKey(raw.name || raw.organization_name || raw.org),
-  }
+function formatMoqRangeLabel(value) {
+  if (!value) return 'Any'
+  return value
 }
 
 export default function SearchResults() {
-  const [searchQueryInput, setSearchQueryInput] = useState('cotton shirts MOQ 100+')
-  const [activeQuery, setActiveQuery] = useState('cotton shirts MOQ 100+')
-  const [showFilters, setShowFilters] = useState(false)
+  const navigate = useNavigate()
+  const token = useMemo(() => getToken(), [])
+  const sessionUser = getCurrentUser()
+
+  const [query, setQuery] = useState('')
   const [activeTab, setActiveTab] = useState('all')
-  const [plan, setPlan] = useState('free')
+  const [category, setCategory] = useState('')
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [upgradePrompt, setUpgradePrompt] = useState('')
+  const [alertFeedback, setAlertFeedback] = useState('')
+
   const [filters, setFilters] = useState({
-    primary: '',
-    category: '',
     moqRange: '',
     country: '',
     verifiedOnly: false,
     orgType: '',
   })
 
-  const [buyerRequests, setBuyerRequests] = useState([])
-  const [companies, setCompanies] = useState([])
+  const [capabilities, setCapabilities] = useState(() => ({
+    filters: { advanced: sessionUser?.subscription_status === 'premium' },
+  }))
+  const premiumLocked = !capabilities?.filters?.advanced
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [quotaMessage, setQuotaMessage] = useState('')
-  const [capabilityMessage, setCapabilityMessage] = useState('')
-  const [alertFeedback, setAlertFeedback] = useState('')
-  const [ratingsByProfile, setRatingsByProfile] = useState({})
 
-  const premiumLocked = plan !== 'premium'
-  const totalResults = buyerRequests.length + companies.length
+  const [requests, setRequests] = useState([])
+  const [companies, setCompanies] = useState([])
+  const [ratingsByProfileKey, setRatingsByProfileKey] = useState({})
 
-  const queryString = useMemo(() => {
-    const params = new URLSearchParams()
-    if (activeQuery.trim()) params.set('q', activeQuery.trim())
-    if (!premiumLocked && filters.primary) params.set('primary', filters.primary)
-    if (filters.category) params.set('category', filters.category)
-    if (!premiumLocked && filters.moqRange) params.set('moqRange', filters.moqRange)
-    if (!premiumLocked && filters.country) params.set('country', filters.country)
-    if (!premiumLocked && filters.verifiedOnly) params.set('verifiedOnly', 'true')
-    if (!premiumLocked && filters.orgType) params.set('orgType', filters.orgType)
-    return params.toString()
-  }, [activeQuery, filters, premiumLocked])
+  const totalResults = requests.length + companies.length
+
+  const allowAdvanced = !premiumLocked
 
   const runSearch = useCallback(async () => {
+    const q = query.trim()
     setLoading(true)
     setError('')
     setQuotaMessage('')
     setUpgradePrompt('')
+    setAlertFeedback('')
 
     try {
-      const [requestRes, companyRes] = await Promise.all([
-        api(`/requirements/search?${queryString}`),
-        api(`/products/search?${queryString}`),
+      const qs = buildQueryString({ q, category: category.trim(), filters, allowAdvanced })
+      const [reqRes, prodRes] = await Promise.all([
+        apiRequest(`/requirements/search?${qs}`, { token }),
+        apiRequest(`/products/search?${qs}`, { token }),
       ])
 
-      setBuyerRequests(toArray(requestRes).map(normalizeRequest))
-      setCompanies(toArray(companyRes).map(normalizeCompany))
+      const reqItems = Array.isArray(reqRes?.items) ? reqRes.items : []
+      const prodItems = Array.isArray(prodRes?.items) ? prodRes.items : []
 
-      const requirementQuota = requestRes?.quota
-      const productQuota = companyRes?.quota
-      const requirementPlan = requestRes?.plan || plan
-      const hasAdvancedAccess = Boolean(requestRes?.capabilities?.filters?.advanced)
-      setPlan(requirementPlan === 'premium' ? 'premium' : 'free')
-      setCapabilityMessage(hasAdvancedAccess ? 'Advanced filters enabled for your plan.' : 'Advanced filters are locked on free plans.')
-      if (requirementQuota || productQuota) {
-        setQuotaMessage(`Daily quota remaining — Requirements: ${requirementQuota?.remaining ?? '-'}, Products: ${productQuota?.remaining ?? '-'}`)
+      setRequests(reqItems)
+      setCompanies(prodItems)
+
+      const mergedCapabilities = reqRes?.capabilities || prodRes?.capabilities || { filters: { advanced: false } }
+      setCapabilities(mergedCapabilities)
+
+      if (reqRes?.quota) {
+        setQuotaMessage(`Search quota remaining today: ${reqRes.quota.remaining}`)
       }
     } catch (err) {
-      if (err.code === 'upgrade_required') {
-        const blocked = err?.requirements?.advanced_filters?.join(', ')
-        setError(`This filter is available on premium plans only.${blocked ? ` Blocked: ${blocked}.` : ''} Upgrade to unlock advanced search.`)
-        setUpgradePrompt('Upgrade to Premium to unlock advanced filters and larger daily quotas.')
-      } else if (err.code === 'limit_reached') {
-        const remaining = Number.isFinite(err.remainingQuota) ? err.remainingQuota : err?.quota?.remaining
-        setError(`Daily limit reached for this action.${remaining !== undefined ? ` Remaining today: ${remaining}` : ''}`)
-      } else {
-        setError(err.message || 'Failed to load search results')
-      }
-      setBuyerRequests([])
+      setError(err.message || 'Search failed')
+      setRequests([])
       setCompanies([])
+      if (err?.quota?.remaining !== undefined) {
+        setQuotaMessage(`Remaining today: ${err.quota.remaining}`)
+      }
     } finally {
       setLoading(false)
     }
-  }, [plan, queryString])
+  }, [allowAdvanced, category, filters, query, token])
 
   useEffect(() => {
-    api('/subscriptions/me')
-      .then((sub) => setPlan(sub?.plan === 'premium' ? 'premium' : 'free'))
-      .catch(() => setPlan('free'))
-  }, [])
-
-  useEffect(() => {
-    runSearch()
-  }, [runSearch])
-
-  useEffect(() => {
-    const keys = companies.map((company) => company.profileKey).filter(Boolean)
+    const keys = [...new Set(companies.map((c) => String(c.profile_key || '')).filter(Boolean))]
     if (!keys.length) {
-      setRatingsByProfile({})
+      setRatingsByProfileKey({})
       return
     }
 
-    api(`/ratings/search?profile_keys=${encodeURIComponent(keys.join(','))}`)
-      .then((data) => setRatingsByProfile(data || {}))
-      .catch(() => setRatingsByProfile({}))
-  }, [companies])
+    apiRequest(`/ratings/search?profile_keys=${encodeURIComponent(keys.join(','))}`, { token })
+      .then((data) => setRatingsByProfileKey(data || {}))
+      .catch(() => setRatingsByProfileKey({}))
+  }, [companies, token])
 
-  async function handleSaveAlert() {
-    setAlertFeedback('')
-    const query = searchQueryInput.trim()
-    if (!query) {
-      setAlertFeedback('Please enter a query before saving an alert.')
-      return
-    }
-
-    try {
-      const result = await api('/search/alerts', {
-        method: 'POST',
-        body: JSON.stringify({
-          query,
-          filters,
-        }),
-      })
-      setAlertFeedback(`Alert saved for "${query}". Remaining alert quota: ${result?.quota?.remaining ?? '-'}`)
-    } catch (err) {
-      if (err.code === 'limit_reached') {
-        setAlertFeedback(`You have reached your daily alert limit. Remaining today: ${err?.quota?.remaining ?? 0}`)
-        return
-      }
-      setAlertFeedback(err.message || 'Failed to save alert')
-    }
-  }
-
-  function submitSearch(e) {
-    e.preventDefault()
-    setActiveQuery(searchQueryInput)
-  }
-
-  function handlePremiumFilterChange(key, value) {
+  function updateAdvancedFilter(key, value) {
     if (premiumLocked) {
-      setUpgradePrompt('Upgrade to premium to use advanced filters.')
+      setUpgradePrompt('Upgrade to Premium to use advanced filters.')
       return
     }
-    setFilters((current) => ({ ...current, [key]: value }))
+    setFilters((prev) => ({ ...prev, [key]: value }))
+  }
+
+  async function saveAlert() {
+    setAlertFeedback('')
+    const q = query.trim()
+    if (!q) {
+      setAlertFeedback('Enter a search query first.')
+      return
+    }
+    try {
+      const result = await apiRequest('/search/alerts', {
+        method: 'POST',
+        token,
+        body: { query: q, filters: { category, ...filters } },
+      })
+      setAlertFeedback(`Alert saved. Remaining alert quota today: ${result?.quota?.remaining ?? '-'}`)
+    } catch (err) {
+      setAlertFeedback(err.message || 'Failed to save alert.')
+    }
+  }
+
+  function openChatNotice(name) {
+    navigate('/chat', { state: { notice: `Contacting ${name}. If you are unverified, your first message may appear as a request.` } })
   }
 
   return (
-    <div className="min-h-screen neo-page cyberpunk-page bg-gray-50 neo-panel cyberpunk-card">
-      <div className="max-w-7xl mx-auto p-4">
-        <form onSubmit={submitSearch} className="mb-4 flex flex-col gap-2 md:flex-row">
-          <input
-            value={searchQueryInput}
-            onChange={(e) => setSearchQueryInput(e.target.value)}
-            className="flex-1 rounded-lg border border-gray-300 px-4 py-2"
-            placeholder="Search buyer requests and products"
-          />
-          <button type="submit" className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">Search</button>
-          <button
-            type="button"
-            onClick={() => setShowFilters((current) => !current)}
-            className="rounded-lg border border-gray-300 px-4 py-2 hover:bg-gray-100"
-          >
-            {showFilters ? 'Hide Filters' : 'Show Filters'}
-          </button>
-          <button type="button" onClick={handleSaveAlert} className="rounded-lg border border-blue-600 px-4 py-2 text-blue-700 hover:bg-blue-50">
-            Save Alert
-          </button>
-        </form>
-
-        <p className="mb-2 text-xs text-gray-600">Current plan: <strong className="uppercase">{plan}</strong></p>
-        {premiumLocked && <p className="mb-4 rounded border border-amber-300 bg-amber-50 p-2 text-sm text-amber-800">Upgrade to Premium to unlock advanced filters and higher daily limits.</p>}
-        {upgradePrompt && <p className="mb-4 rounded border border-amber-300 bg-amber-50 p-2 text-sm text-amber-800">{upgradePrompt}</p>}
-        {alertFeedback && <p className="mb-4 text-sm text-blue-700">{alertFeedback}</p>}
-        {quotaMessage && <p className="mb-2 text-xs text-gray-600">{quotaMessage}</p>}
-        {capabilityMessage && <p className="mb-4 text-xs text-gray-600">{capabilityMessage}</p>}
-
-        {showFilters && (
-          <div className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-6 mb-6">
-            <h3 className="font-semibold text-gray-900 mb-4">Filter Results</h3>
-
-            <div className="grid md:grid-cols-2 gap-6 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Primary Filter {premiumLocked && <span className="text-xs text-amber-700">(Premium)</span>}</label>
-                <select
-                  value={filters.primary}
-                  onChange={(e) => handlePremiumFilterChange('primary', e.target.value)}
-                  disabled={premiumLocked}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-gray-100 disabled:text-gray-400"
-                >
-                  <option value="">All</option>
-                  <option value="garments">Garments</option>
-                  <option value="textile">Textile</option>
-                </select>
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="bg-white rounded-2xl border border-slate-200 p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] text-white flex items-center justify-center">
+                <SearchIcon size={18} />
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                <select
-                  value={filters.category}
-                  onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                >
-                  <option value="">All</option>
-                  <option value="shirt">Shirt</option>
-                  <option value="pants">Pants</option>
-                  <option value="knitwear">Knitwear</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">MOQ Range {premiumLocked && <span className="text-xs text-amber-700">(Premium)</span>}</label>
-                <select
-                  value={filters.moqRange}
-                  onChange={(e) => handlePremiumFilterChange('moqRange', e.target.value)}
-                  disabled={premiumLocked}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-gray-100 disabled:text-gray-400"
-                >
-                  <option value="">Any</option>
-                  <option value="0-500">0-500</option>
-                  <option value="500-1000">500-1000</option>
-                  <option value="1000+">1000+</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Country {premiumLocked && <span className="text-xs text-amber-700">(Premium)</span>}</label>
-                <input
-                  value={filters.country}
-                  onChange={(e) => handlePremiumFilterChange('country', e.target.value)}
-                  disabled={premiumLocked}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-gray-100 disabled:text-gray-400"
-                />
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="verifiedOnly"
-                  checked={filters.verifiedOnly}
-                  onChange={(e) => handlePremiumFilterChange('verifiedOnly', e.target.checked)}
-                  disabled={premiumLocked}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 disabled:opacity-50"
-                />
-                <label htmlFor="verifiedOnly" className="ml-2 text-sm text-gray-700">
-                  Verified Only {premiumLocked && <span className="text-xs text-amber-700">(Premium)</span>}
-                </label>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Organization Type {premiumLocked && <span className="text-xs text-amber-700">(Premium)</span>}</label>
-                <select
-                  value={filters.orgType}
-                  onChange={(e) => handlePremiumFilterChange('orgType', e.target.value)}
-                  disabled={premiumLocked}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-gray-100 disabled:text-gray-400"
-                >
-                  <option value="">All</option>
-                  <option value="buyer">Buyer</option>
-                  <option value="factory">Factory</option>
-                  <option value="distributor">Distributor</option>
-                </select>
+                <p className="text-sm font-bold text-slate-900">Search</p>
+                <p className="text-[11px] text-slate-500">Garments & Textile marketplace</p>
               </div>
             </div>
-            {premiumLocked && <p className="text-xs text-amber-700">Premium filters are visible for discovery and disabled on free plans.</p>}
-          </div>
-        )}
 
-        <div className="mb-6">
-          <p className="text-gray-600 mb-4">
-            Results for "<strong>{activeQuery}</strong>" ({totalResults} total)
-          </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setFiltersOpen((v) => !v)}
+                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                <Filter size={16} />
+                Filters
+              </button>
+              <button
+                type="button"
+                onClick={saveAlert}
+                className="inline-flex items-center gap-2 rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182]"
+              >
+                <Bell size={16} />
+                Save alert
+              </button>
+              <Link
+                to="/notifications"
+                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                Alerts
+              </Link>
+            </div>
+          </div>
 
-          <div className="flex gap-2 border-b border-gray-200">
-            <button
-              onClick={() => setActiveTab('all')}
-              className={`px-4 py-2 font-medium text-sm transition border-b-2 ${
-                activeTab === 'all'
-                  ? 'text-blue-600 border-blue-600'
-                  : 'text-gray-600 border-transparent hover:text-gray-900'
-              }`}
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="e.g. cotton shirts MOQ 100"
+              className="flex-1 rounded-full border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
+            />
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="rounded-full border border-slate-200 bg-white px-4 py-3 text-sm"
             >
-              All ({totalResults})
-            </button>
+              <option value="">All categories</option>
+              <option value="Shirts">Shirts</option>
+              <option value="Knitwear">Knitwear</option>
+              <option value="Denim">Denim</option>
+              <option value="Women">Women</option>
+              <option value="Kids">Kids</option>
+            </select>
             <button
-              onClick={() => setActiveTab('requests')}
-              className={`px-4 py-2 font-medium text-sm transition border-b-2 ${
-                activeTab === 'requests'
-                  ? 'text-blue-600 border-blue-600'
-                  : 'text-gray-600 border-transparent hover:text-gray-900'
-              }`}
+              type="button"
+              onClick={runSearch}
+              className="rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+              disabled={loading}
             >
-              Buyer Requests ({buyerRequests.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('companies')}
-              className={`px-4 py-2 font-medium text-sm transition border-b-2 ${
-                activeTab === 'companies'
-                  ? 'text-blue-600 border-blue-600'
-                  : 'text-gray-600 border-transparent hover:text-gray-900'
-              }`}
-            >
-              Companies ({companies.length})
+              {loading ? 'Searching…' : 'Search'}
             </button>
           </div>
+
+          {filtersOpen ? (
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className={`rounded-2xl border p-4 ${premiumLocked ? 'border-amber-200 bg-amber-50' : 'border-slate-200 bg-white'}`}>
+                <p className="text-xs font-bold text-slate-700">Advanced filters</p>
+                <p className="text-[11px] text-slate-500 mt-1">{premiumLocked ? 'Locked on Free plan' : 'Available'}</p>
+
+                <div className="mt-3 grid grid-cols-1 gap-2">
+                  <select
+                    value={filters.moqRange}
+                    onChange={(e) => updateAdvancedFilter('moqRange', e.target.value)}
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                  >
+                    <option value="">{`MOQ: ${formatMoqRangeLabel('Any')}`}</option>
+                    <option value="0-100">MOQ: 0 - 100</option>
+                    <option value="101-300">MOQ: 101 - 300</option>
+                    <option value="301-1000">MOQ: 301 - 1000</option>
+                    <option value="1001-999999">MOQ: 1000+</option>
+                  </select>
+
+                  <input
+                    value={filters.country}
+                    onChange={(e) => updateAdvancedFilter('country', e.target.value)}
+                    placeholder="Country (e.g. Bangladesh)"
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                  />
+
+                  <select
+                    value={filters.orgType}
+                    onChange={(e) => updateAdvancedFilter('orgType', e.target.value)}
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                  >
+                    <option value="">Organization type (Any)</option>
+                    <option value="buyer">Buyer</option>
+                    <option value="factory">Factory</option>
+                    <option value="buying_house">Buying House</option>
+                  </select>
+
+                  <label className="flex items-center gap-2 text-sm text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={filters.verifiedOnly}
+                      onChange={(e) => updateAdvancedFilter('verifiedOnly', e.target.checked)}
+                      className="h-4 w-4"
+                    />
+                    Verified only
+                  </label>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                <p className="text-xs font-bold text-slate-700">Status</p>
+                <div className="mt-2 space-y-2 text-[11px] text-slate-600">
+                  {quotaMessage ? <p>{quotaMessage}</p> : <p>Run a search to see quota status.</p>}
+                  {upgradePrompt ? <p className="text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-2">{upgradePrompt}</p> : null}
+                  {alertFeedback ? <p className="text-sky-800 bg-sky-50 border border-sky-200 rounded-xl p-2">{alertFeedback}</p> : null}
+                </div>
+              </div>
+            </div>
+          ) : null}
         </div>
 
-        {loading && <div className="rounded-lg border border-gray-200 bg-white p-6 text-center text-gray-600">Loading results...</div>}
-        {!loading && error && <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center text-red-700">{error}</div>}
-        {!loading && !error && totalResults === 0 && (
-          <div className="rounded-lg border border-gray-200 bg-white p-6 text-center text-gray-600">
-            No results found. Try adjusting your query or filters.
+        <div className="mt-5 bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-200">
+            {TAB_OPTIONS.map((t) => {
+              const Icon = t.icon
+              const active = activeTab === t.id
+              const count = t.id === 'requests' ? requests.length : t.id === 'companies' ? companies.length : totalResults
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setActiveTab(t.id)}
+                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold ${
+                    active ? 'border-[#0A66C2] bg-[#0A66C2]/5 text-[#0A66C2]' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  <Icon size={16} />
+                  <span>{t.label}</span>
+                  <span className="text-[11px] opacity-70">({count})</span>
+                </button>
+              )
+            })}
           </div>
-        )}
 
-        {!loading && !error && totalResults > 0 && (
-          <div className="space-y-4">
-            {(activeTab === 'all' || activeTab === 'requests') && (
-              <div>
-                {buyerRequests.map((req) => (
-                  <div key={req.id} className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-6 mb-4 hover:shadow-md transition">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <p className="font-semibold text-gray-900">{req.buyerName}</p>
-                          {req.verified && <span className="text-blue-600 text-sm">✓ Verified</span>}
-                        </div>
-                        <p className="text-gray-700 mb-3">{req.requirement}</p>
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                          <span>📦 MOQ: {req.moq} units</span>
-                          <span>⏰ Deadline: {req.deadline}</span>
-                        </div>
-                      </div>
-                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition ml-4">
-                        Take Lead
-                      </button>
-                    </div>
-                  </div>
-                ))}
+          <div className="p-4">
+            {loading ? (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-600 text-center">Loading results…</div>
+            ) : null}
+
+            {!loading && error ? (
+              <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-800 text-center">{error}</div>
+            ) : null}
+
+            {!loading && !error && totalResults === 0 ? (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-600 text-center">
+                No results found. Try a different query or category.
               </div>
-            )}
+            ) : null}
 
-            {(activeTab === 'all' || activeTab === 'companies') && (
-              <div>
-                {companies.map((company) => (
-                  <div key={company.id} className="bg-white neo-panel cyberpunk-card rounded-lg border border-gray-200 p-6 mb-4 hover:shadow-md transition">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="w-12 h-12 bg-gray-300 rounded-lg"></div>
-                          <div>
-                            <p className="font-semibold text-gray-900">{company.name}</p>
-                            <p className="text-sm text-gray-600">{company.category}</p>
+            {!loading && !error ? (
+              <div className="space-y-4">
+                {(activeTab === 'all' || activeTab === 'requests') ? (
+                  <div className="space-y-3">
+                    {requests.map((r) => {
+                      const author = r.author || {}
+                      const profileRoute = roleToProfileRoute(author.role, author.id)
+                      return (
+                        <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <Link to={profileRoute} className="font-semibold text-slate-900 hover:underline truncate">
+                                  {author.name || 'Buyer'}
+                                </Link>
+                                {author.verified ? <span className="text-xs font-bold text-[#0A66C2]">Verified</span> : null}
+                                {author.country ? <span className="text-[11px] text-slate-500">• {author.country}</span> : null}
+                              </div>
+                              <p className="mt-2 text-sm text-slate-800 whitespace-pre-wrap">{r.custom_description || ''}</p>
+                              <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-600">
+                                <div>Category: <span className="font-semibold text-slate-800">{r.category || '-'}</span></div>
+                                <div>Quantity/MOQ: <span className="font-semibold text-slate-800">{r.quantity || '-'}</span></div>
+                                <div>Timeline: <span className="font-semibold text-slate-800">{r.timeline_days || '-'}</span></div>
+                                <div>Material: <span className="font-semibold text-slate-800">{r.material || '-'}</span></div>
+                              </div>
+                            </div>
+                            <div className="flex flex-col gap-2 shrink-0">
+                              <Link to={profileRoute} className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 text-center">
+                                Open profile
+                              </Link>
+                              <button
+                                type="button"
+                                onClick={() => openChatNotice(author.name || 'buyer')}
+                                className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182]"
+                              >
+                                Contact
+                              </button>
+                            </div>
                           </div>
                         </div>
-                        <div className="mt-2 text-sm text-gray-600">⭐ {ratingsByProfile?.[company.profileKey]?.average_score || '0.0'} ({ratingsByProfile?.[company.profileKey]?.total_count || 0} reviews)</div>
-                        <div className="mt-1 text-xs text-gray-500">Breakdown: 5★ {ratingsByProfile?.[company.profileKey]?.breakdown?.[5] || 0} • 4★ {ratingsByProfile?.[company.profileKey]?.breakdown?.[4] || 0} • 3★ {ratingsByProfile?.[company.profileKey]?.breakdown?.[3] || 0}</div>
-                        <div className="mt-1 text-xs text-gray-500">Confidence: {ratingsByProfile?.[company.profileKey]?.confidence || 'low'} • Score confidence {Math.round((ratingsByProfile?.[company.profileKey]?.score_confidence || 0) * 100)}%</div>
-                        {company.hasVideo && (
-                          <div className="mt-3 flex items-center gap-2 text-sm text-gray-600">
-                            <span>🎬</span>
-                            <span>Video available</span>
-                          </div>
-                        )}
-                      </div>
-                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition ml-4">
-                        Message
-                      </button>
-                    </div>
+                      )
+                    })}
                   </div>
-                ))}
+                ) : null}
+
+                {(activeTab === 'all' || activeTab === 'companies') ? (
+                  <div className="space-y-3">
+                    {companies.map((p) => {
+                      const author = p.author || {}
+                      const profileRoute = roleToProfileRoute(author.role, author.id)
+                      const rating = ratingsByProfileKey?.[p.profile_key] || null
+                      return (
+                        <div key={p.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <Link to={profileRoute} className="font-semibold text-slate-900 hover:underline truncate">
+                                  {author.name || p.title || 'Company'}
+                                </Link>
+                                {author.verified ? <span className="text-xs font-bold text-[#0A66C2]">Verified</span> : null}
+                                {author.country ? <span className="text-[11px] text-slate-500">• {author.country}</span> : null}
+                                {author.role ? <span className="text-[11px] text-slate-500 uppercase">• {String(author.role).replaceAll('_', ' ')}</span> : null}
+                              </div>
+                              <p className="mt-2 text-sm text-slate-800 font-semibold">{p.title || 'Product'}</p>
+                              <p className="mt-1 text-sm text-slate-700 line-clamp-2">{p.description || ''}</p>
+                              <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-600">
+                                <div>Category: <span className="font-semibold text-slate-800">{p.category || '-'}</span></div>
+                                <div>MOQ: <span className="font-semibold text-slate-800">{p.moq || '-'}</span></div>
+                                <div>Lead time: <span className="font-semibold text-slate-800">{p.lead_time_days || '-'}</span></div>
+                                <div>Material: <span className="font-semibold text-slate-800">{p.material || '-'}</span></div>
+                              </div>
+
+                              <div className="mt-3 text-xs text-slate-600">
+                                Rating: <span className="font-semibold text-slate-800">{rating?.average_score ?? '0.0'}</span> ({rating?.total_count ?? 0}) • Confidence {Math.round((rating?.score_confidence ?? 0) * 100)}%
+                              </div>
+                              {p.hasVideo ? <div className="mt-2 text-xs font-semibold text-indigo-700">Video available</div> : null}
+                            </div>
+                            <div className="flex flex-col gap-2 shrink-0">
+                              <Link to={profileRoute} className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 text-center">
+                                View profile
+                              </Link>
+                              <button
+                                type="button"
+                                onClick={() => openChatNotice(author.name || 'company')}
+                                className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182]"
+                              >
+                                Contact
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : null}
               </div>
-            )}
+            ) : null}
           </div>
-        )}
+        </div>
       </div>
-
     </div>
   )
 }
