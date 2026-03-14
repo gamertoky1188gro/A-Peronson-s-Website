@@ -198,3 +198,31 @@ What it does:
 ### Electron troubleshooting
 - The build now uses relative asset paths (`vite base: ./`) so Electron `loadFile()` can resolve JS/CSS correctly.
 - A CSP meta tag is included in `index.html` to reduce Electron security warnings.
+# Nginx Reverse Proxy Setup (Production)
+
+This proxy lets the frontend use `/api` and `/ws` on the same host/port.
+Assumes:
+- Frontend runs on port 5173
+- Backend runs on port 4000
+
+## Config File
+See: `docs/nginx/gartexhub.conf`
+
+## Install Nginx (Ubuntu/Debian)
+```bash
+sudo apt update
+sudo apt install nginx -y
+```
+
+## Enable Config
+```bash
+sudo cp /path/to/gartexhub.conf /etc/nginx/sites-available/gartexhub.conf
+sudo ln -s /etc/nginx/sites-available/gartexhub.conf /etc/nginx/sites-enabled/gartexhub.conf
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+## Notes
+- If you use HTTPS, add a `listen 443 ssl;` block with certificates.
+- Update `server_name` to your domain.
+- If your frontend is static (built in `dist/`), use a static file server or `root` + `try_files` instead of proxying to 5173.

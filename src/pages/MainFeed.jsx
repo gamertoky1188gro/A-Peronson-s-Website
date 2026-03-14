@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+const API = import.meta.env.VITE_API_URL || '/api'
 
 function getAuthToken() {
   return localStorage.getItem('jwt') || ''

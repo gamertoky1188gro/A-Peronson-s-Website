@@ -39,7 +39,13 @@ export default function FloatingAssistant() {
 
   // Initialize WebSocket connection
   useEffect(() => {
-    const wsUrl = API_BASE.replace('http', 'ws').replace('/api', '')
+    const wsUrl = (() => {
+      if (API_BASE.startsWith('http://') || API_BASE.startsWith('https://')) {
+        return API_BASE.replace(/^http/, 'ws').replace(/\/api\/?$/, '/ws')
+      }
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+      return `${protocol}//${window.location.host}/ws`
+    })()
     const socket = new WebSocket(wsUrl)
 
     socket.onopen = () => console.log('Assistant WS Connected')

@@ -16,7 +16,11 @@ import {
 } from 'lucide-react'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 
-const WS_BASE = import.meta.env.VITE_WS_URL || 'ws://localhost:4000'
+const WS_BASE = (() => {
+  if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  return `${protocol}//${window.location.host}/ws`
+})()
 
 export default function CallInterface() {
   const [searchParams] = useSearchParams()
@@ -29,6 +33,7 @@ export default function CallInterface() {
   const [timer, setTimer] = useState('00:00:00')
   const [chatDraft, setChatDraft] = useState('')
   const [chatMessages, setChatMessages] = useState([])
+  const [hasRemoteStream, setHasRemoteStream] = useState(false)
 
   const localVideoRef = useRef(null)
   const remoteVideoRef = useRef(null)
@@ -36,12 +41,15 @@ export default function CallInterface() {
   const peerConnectionRef = useRef(null)
   const localStreamRef = useRef(null)
   const remoteStreamRef = useRef(null)
+  const localStreamPromiseRef = useRef(null)
+  const pendingCandidatesRef = useRef([])
+  const mountedRef = useRef(true)
   const redirectedRef = useRef(false)
 
   const callId = useMemo(() => searchParams.get('callId') || '', [searchParams])
   const matchId = useMemo(() => searchParams.get('matchId') || '', [searchParams])
   const user = useMemo(() => getCurrentUser(), [])
-  const participantId = useMemo(() => (user?.id ? user.id : `guest-${Date.now()}`), [user?.id])
+  const participantId = useMemo(() => (user?.id ? String(user.id) : ''), [user?.id])
   const effectiveMatchId = callDetails?.match_id || callDetails?.context?.chat_thread_id || matchId
 
   const localName = user?.name || user?.email || 'You'
@@ -64,6 +72,41 @@ export default function CallInterface() {
     return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   }
 
+  const ensureLocalStream = useCallback(async () => {
+    if (localStreamRef.current) return localStreamRef.current
+    if (localStreamPromiseRef.current) return localStreamPromiseRef.current
+
+    localStreamPromiseRef.current = navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .then((stream) => {
+        localStreamRef.current = stream
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream
+          const playAttempt = localVideoRef.current.play?.()
+          if (playAttempt && typeof playAttempt.catch === 'function') {
+            playAttempt.catch(() => {})
+          }
+        }
+
+        if (peerConnectionRef.current) {
+          stream.getTracks().forEach((track) => {
+            try {
+              peerConnectionRef.current.addTrack(track, stream)
+            } catch {
+              // ignore duplicate track errors
+            }
+          })
+        }
+        return stream
+      })
+      .catch((err) => {
+        localStreamPromiseRef.current = null
+        setStatusMessage('Camera/microphone permission not granted.')
+        throw err
+      })
+
+    return localStreamPromiseRef.current
+  }, [])
+
   const createPeerConnection = useCallback((token) => {
     if (peerConnectionRef.current) return peerConnectionRef.current
     const pc = new RTCPeerConnection({
@@ -82,12 +125,35 @@ export default function CallInterface() {
     }
 
     pc.ontrack = (event) => {
-      const [stream] = event.streams
-      if (stream) {
-        remoteStreamRef.current = stream
-        if (remoteVideoRef.current) {
-          remoteVideoRef.current.srcObject = stream
+      let stream = event.streams?.[0] || null
+      if (!stream) {
+        if (!remoteStreamRef.current) remoteStreamRef.current = new MediaStream()
+        stream = remoteStreamRef.current
+        try {
+          stream.addTrack(event.track)
+        } catch {
+          // ignore duplicate track errors
         }
+      }
+
+      if (!stream) return
+      remoteStreamRef.current = stream
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = stream
+        const playAttempt = remoteVideoRef.current.play?.()
+        if (playAttempt && typeof playAttempt.catch === 'function') {
+          playAttempt.catch(() => {})
+        }
+      }
+      if (mountedRef.current) setHasRemoteStream(true)
+    }
+
+    pc.onconnectionstatechange = () => {
+      if (!mountedRef.current) return
+      if (pc.connectionState === 'connected') {
+        setStatusMessage('Call connected.')
+      } else if (pc.connectionState === 'failed') {
+        setStatusMessage('Call connection failed.')
       }
     }
 
@@ -124,7 +190,7 @@ export default function CallInterface() {
     try {
       const details = await apiRequest(`/calls/${callId}`, { token })
       setCallDetails(details)
-    } catch (err) {
+    } catch {
       if (!redirectedRef.current) {
         redirectedRef.current = true
         navigate('/chat', {
@@ -168,45 +234,44 @@ export default function CallInterface() {
     setChatMessages(Array.isArray(data) ? data : [])
   }, [effectiveMatchId])
 
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
+
   useEffect(() => { loadCallDetails() }, [loadCallDetails])
   useEffect(() => { startCallIfNeeded() }, [startCallIfNeeded])
   useEffect(() => { loadParticipants() }, [loadParticipants])
   useEffect(() => { loadChatMessages() }, [loadChatMessages])
 
   useEffect(() => {
-    let canceled = false
-    async function initMedia() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-        if (canceled) return
-        localStreamRef.current = stream
-        if (localVideoRef.current) {
-          localVideoRef.current.srcObject = stream
-        }
-        if (peerConnectionRef.current) {
-          stream.getTracks().forEach((track) => {
-            peerConnectionRef.current.addTrack(track, stream)
-          })
-        }
-      } catch (err) {
-        setStatusMessage('Camera/microphone permission not granted.')
-      }
-    }
-    initMedia()
+    ensureLocalStream().catch(() => {})
     return () => {
-      canceled = true
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach((track) => track.stop())
       }
     }
-  }, [])
+  }, [ensureLocalStream])
 
   useEffect(() => {
     const token = getToken()
     if (!token || !callId) return
 
+    let active = true
+    const safeSetStatus = (message) => {
+      if (!active || !mountedRef.current) return
+      setStatusMessage(message)
+    }
+    const safeSetRemoteStream = (value) => {
+      if (!active || !mountedRef.current) return
+      setHasRemoteStream(value)
+    }
+
     const ws = new WebSocket(WS_BASE)
     wsRef.current = ws
+    safeSetStatus('Connecting to call server...')
 
     const sendSignal = (payload) => {
       if (ws.readyState !== WebSocket.OPEN) return
@@ -214,6 +279,7 @@ export default function CallInterface() {
     }
 
     ws.onopen = () => {
+      safeSetStatus('Joining call...')
       sendSignal({
         type: 'join_call_room',
         call_id: callId,
@@ -230,9 +296,17 @@ export default function CallInterface() {
         return
       }
 
+      if (payload.type === 'call_error') {
+        safeSetStatus(payload.error || 'Unable to join call room.')
+        return
+      }
+
       if (payload.type === 'joined_call_room') {
-        const pc = createPeerConnection(token)
+        safeSetStatus(payload.should_offer ? 'Participant found. Starting call...' : 'Waiting for participant to join...')
+        createPeerConnection(token)
         if (payload.should_offer) {
+          await ensureLocalStream().catch(() => null)
+          const pc = createPeerConnection(token)
           const offer = await pc.createOffer()
           await pc.setLocalDescription(offer)
           sendSignal({
@@ -246,15 +320,8 @@ export default function CallInterface() {
       }
 
       if (payload.type === 'participant_joined') {
-        const pc = createPeerConnection(token)
-        const offer = await pc.createOffer()
-        await pc.setLocalDescription(offer)
-        sendSignal({
-          type: 'webrtc_signal',
-          call_id: callId,
-          token,
-          signal: { type: 'offer', sdp: pc.localDescription },
-        })
+        safeSetStatus('Participant joined. Connecting...')
+        createPeerConnection(token)
         return
       }
 
@@ -262,6 +329,7 @@ export default function CallInterface() {
         const pc = createPeerConnection(token)
         const signal = payload.signal
         if (signal.type === 'offer') {
+          await ensureLocalStream().catch(() => null)
           await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp))
           const answer = await pc.createAnswer()
           await pc.setLocalDescription(answer)
@@ -271,19 +339,59 @@ export default function CallInterface() {
             token,
             signal: { type: 'answer', sdp: pc.localDescription },
           })
+
+          const pending = pendingCandidatesRef.current
+          pendingCandidatesRef.current = []
+          for (const queued of pending) {
+            try {
+              await pc.addIceCandidate(new RTCIceCandidate(queued))
+            } catch {
+              // ignore candidate errors
+            }
+          }
         } else if (signal.type === 'answer') {
           await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp))
+
+          const pending = pendingCandidatesRef.current
+          pendingCandidatesRef.current = []
+          for (const queued of pending) {
+            try {
+              await pc.addIceCandidate(new RTCIceCandidate(queued))
+            } catch {
+              // ignore candidate errors
+            }
+          }
         } else if (signal.type === 'candidate') {
           try {
-            await pc.addIceCandidate(new RTCIceCandidate(signal.candidate))
+            const candidate = signal.candidate
+            if (pc.remoteDescription && pc.remoteDescription.type) {
+              await pc.addIceCandidate(new RTCIceCandidate(candidate))
+            } else {
+              pendingCandidatesRef.current.push(candidate)
+            }
           } catch {
             // ignore candidate errors
           }
         }
       }
+
+      if (payload.type === 'participant_left') {
+        safeSetStatus('Participant left the call.')
+        safeSetRemoteStream(false)
+        remoteStreamRef.current = null
+        if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null
+      }
+    }
+
+    ws.onerror = () => {
+      safeSetStatus('Unable to reach call server.')
     }
 
     ws.onclose = () => {
+      safeSetStatus('Call server disconnected.')
+      safeSetRemoteStream(false)
+      remoteStreamRef.current = null
+      if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null
       if (peerConnectionRef.current) {
         peerConnectionRef.current.close()
         peerConnectionRef.current = null
@@ -291,9 +399,10 @@ export default function CallInterface() {
     }
 
     return () => {
+      active = false
       ws.close()
     }
-  }, [callId, participantId, createPeerConnection])
+  }, [callId, participantId, createPeerConnection, ensureLocalStream])
 
   useEffect(() => {
     const startedAt = callDetails?.started_at || callDetails?.created_at
@@ -397,7 +506,7 @@ export default function CallInterface() {
               playsInline
               className="h-full w-full object-cover"
             />
-            {!remoteStreamRef.current && (
+            {!hasRemoteStream && (
               <div className="absolute inset-0 flex items-center justify-center text-white/70 text-lg">
                 {remoteName}
               </div>

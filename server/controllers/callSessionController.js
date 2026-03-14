@@ -8,6 +8,8 @@ import {
   startCallSession,
 } from '../services/callSessionService.js'
 import { buildFriendMatchId, isFriendConnected } from '../services/friendService.js'
+import { findUserById } from '../services/userService.js'
+import { consumePendingInvites, enqueuePendingInvites } from '../utils/pendingInvites.js'
 
 export async function createScheduledCall(req, res) {
   const call = await createScheduledCallSession(req.user.id, req.body)
@@ -92,8 +94,42 @@ export async function getCallHistory(req, res) {
   return res.json({ items: history })
 }
 
+export async function getPendingInvites(req, res) {
+  const invites = consumePendingInvites(req.user.id)
+  return res.json({ invites })
+}
+
 export async function joinOrCreateCall(req, res) {
   const result = await findOrCreateCallSession(req.user.id, req.body || {})
+  const call = result?.call || null
+  if (call?.id && Array.isArray(call.participant_ids)) {
+    const caller = await findUserById(req.user.id)
+    const from = caller ? {
+      id: caller.id,
+      name: caller.name || '',
+      email: caller.email || req.user.email || '',
+      avatar: caller.avatar_url || caller.avatar || '',
+      role: caller.role || req.user.role || '',
+      verified: Boolean(caller.verified),
+    } : {
+      id: req.user.id,
+      name: '',
+      email: req.user.email || '',
+      avatar: '',
+      role: req.user.role || '',
+      verified: false,
+    }
+
+    const targets = [...new Set(call.participant_ids)].filter((id) => id && id !== req.user.id)
+    if (targets.length > 0) {
+      enqueuePendingInvites(targets, [{
+        type: 'incoming_call',
+        call_id: call.id,
+        match_id: call.match_id || '',
+        from,
+      }])
+    }
+  }
   return res.status(result.created ? 201 : 200).json(result)
 }
 
@@ -116,6 +152,33 @@ export async function joinFriendCall(req, res) {
     participant_ids: [targetId],
     title: 'Friend call',
   })
+
+  const call = result?.call || null
+  if (call?.id) {
+    const caller = await findUserById(req.user.id)
+    const from = caller ? {
+      id: caller.id,
+      name: caller.name || '',
+      email: caller.email || req.user.email || '',
+      avatar: caller.avatar_url || caller.avatar || '',
+      role: caller.role || req.user.role || '',
+      verified: Boolean(caller.verified),
+    } : {
+      id: req.user.id,
+      name: '',
+      email: req.user.email || '',
+      avatar: '',
+      role: req.user.role || '',
+      verified: false,
+    }
+
+    enqueuePendingInvites([targetId], [{
+      type: 'incoming_call',
+      call_id: call.id,
+      match_id: call.match_id || matchId,
+      from,
+    }])
+  }
 
   return res.status(result.created ? 201 : 200).json(result)
 }

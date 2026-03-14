@@ -35,6 +35,8 @@ import jwt from 'jsonwebtoken'
 import { canAccessMatch, listMessagesByMatch, postMessage } from './services/messageService.js'
 import { getCallSession } from './services/callSessionService.js'
 import { setUserOnline, setUserOffline, touchUser } from './services/presenceService.js'
+import { readJson } from './utils/jsonStore.js'
+import { consumePendingInvites, enqueuePendingInvites } from './utils/pendingInvites.js'
 
 const app = express()
 const PORT = process.env.PORT || 4000
@@ -84,6 +86,7 @@ const wsServer = new WebSocketServer({ server })
 const recentGreetingByIp = new Map()
 const callRooms = new Map()
 const chatRooms = new Map()
+const socketsByUserId = new Map()
 const JWT_SECRET = process.env.JWT_SECRET || 'mvp-dev-secret'
 const JWT_ISSUER = process.env.JWT_ISSUER || 'gartexhub-api'
 const JWT_AUDIENCE = process.env.JWT_AUDIENCE || 'gartexhub-client'
@@ -91,6 +94,33 @@ const JWT_AUDIENCE = process.env.JWT_AUDIENCE || 'gartexhub-client'
 function sendWs(socket, payload) {
   if (socket.readyState !== 1) return
   socket.send(JSON.stringify(payload))
+}
+
+function registerSocketUser(socket, userId) {
+  if (!userId) return
+  if (!socketsByUserId.has(userId)) socketsByUserId.set(userId, new Set())
+  socketsByUserId.get(userId).add(socket)
+}
+
+function unregisterSocketUser(socket, userId) {
+  if (!userId) return
+  const set = socketsByUserId.get(userId)
+  if (!set) return
+  set.delete(socket)
+  if (set.size === 0) socketsByUserId.delete(userId)
+}
+
+function broadcastToUsers(userIds = [], payload) {
+  const undelivered = []
+  userIds.forEach((userId) => {
+    const sockets = socketsByUserId.get(userId)
+    if (!sockets || sockets.size === 0) {
+      undelivered.push(userId)
+      return
+    }
+    sockets.forEach((sock) => sendWs(sock, payload))
+  })
+  return undelivered
 }
 
 function leaveCallRoom(socket) {
@@ -140,6 +170,7 @@ function leaveChatRoom(socket) {
   socket.chatRoomId = null
 
   if (socket.userId) setUserOffline(socket.userId)
+  if (socket.userId) unregisterSocketUser(socket, socket.userId)
 }
 
 
@@ -182,6 +213,7 @@ async function joinChatRoom(socket, payload) {
   }
 
   socket.userId = user.id
+  registerSocketUser(socket, user.id)
   setUserOnline(user.id)
   const canSend = await canAccessMatch(matchId, socket.userId)
   if (!canSend) {
@@ -279,6 +311,8 @@ async function joinCallRoom(socket, payload) {
   room.add(socket)
   socket.callRoomId = callId
   socket.participantId = participantId
+  socket.userId = tokenUser.id
+  registerSocketUser(socket, tokenUser.id)
 
   sendWs(socket, {
     type: 'joined_call_room',
@@ -379,6 +413,44 @@ wsServer.on('connection', (socket, req) => {
       return
     }
 
+    if (payload?.type === 'identify') {
+      const tokenUser = parseSocketUser(payload?.token)
+      if (!tokenUser?.id) return
+      socket.userId = tokenUser.id
+      registerSocketUser(socket, tokenUser.id)
+      const queued = consumePendingInvites(tokenUser.id)
+      if (queued.length > 0) queued.forEach((invite) => sendWs(socket, invite))
+      return
+    }
+
+    if (payload?.type === 'call_invite') {
+      const tokenUser = parseSocketUser(payload?.token)
+      if (!tokenUser?.id) return
+      const participantIds = Array.isArray(payload?.participant_ids) ? payload.participant_ids.map((id) => String(id)) : []
+      if (!participantIds.length) return
+      const users = await readJson('users.json')
+      const caller = users.find((u) => String(u.id) === String(tokenUser.id)) || null
+      const callerPayload = caller ? {
+        id: caller.id,
+        name: caller.name || '',
+        email: caller.email || '',
+        avatar: caller.avatar_url || caller.avatar || '',
+        role: caller.role || '',
+      } : { id: tokenUser.id }
+
+      const targets = participantIds.filter((id) => id && id !== tokenUser.id)
+      if (!targets.length) return
+      const invitePayload = {
+        type: 'incoming_call',
+        call_id: payload?.call_id || null,
+        match_id: payload?.match_id || null,
+        from: callerPayload,
+      }
+      const undelivered = broadcastToUsers(targets, invitePayload)
+      enqueuePendingInvites(undelivered, [invitePayload])
+      return
+    }
+
     if (payload?.type === 'join_chat_room') {
       await joinChatRoom(socket, payload)
       return
@@ -436,6 +508,7 @@ wsServer.on('connection', (socket, req) => {
     leaveCallRoom(socket)
     leaveChatRoom(socket)
     if (socket.userId) setUserOffline(socket.userId)
+    if (socket.userId) unregisterSocketUser(socket, socket.userId)
   })
 })
 

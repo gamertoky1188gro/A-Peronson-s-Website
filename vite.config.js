@@ -14,7 +14,22 @@ export default defineConfig({
     }),
   ],
   server: {
-    allowedHosts: ['liable-marketplace-looked-fda.trycloudflare.com'],
+    allowedHosts: ['broker-already-pills-read.trycloudflare.com'],
+    proxy: {
+      '/api': {
+        target: process.env.VITE_API_PROXY || 'http://localhost:4000',
+        changeOrigin: true,
+      },
+      '/uploads': {
+        target: process.env.VITE_API_PROXY || 'http://localhost:4000',
+        changeOrigin: true,
+      },
+      '/ws': {
+        target: process.env.VITE_API_PROXY || 'http://localhost:4000',
+        changeOrigin: true,
+        ws: true,
+      },
+    },
     watch: {
       ignored: [
         '**/server/database/**',

@@ -5,6 +5,7 @@ import { recordMilestone } from './ratingsService.js'
 
 const FILE = 'call_sessions.json'
 const MESSAGE_FILE = 'messages.json'
+const REQUIREMENT_FILE = 'requirements.json'
 const CALL_STATUS = {
   SCHEDULED: 'scheduled',
   IN_PROGRESS: 'in_progress',
@@ -42,11 +43,29 @@ function parseFriendMatchId(matchId = '') {
   return [first, second]
 }
 
+function parseMarketplaceMatchId(matchId = '') {
+  const parts = String(matchId).split(':')
+  if (parts.length !== 2) return null
+  const requirementId = sanitizeString(parts[0], 120)
+  const factoryId = sanitizeString(parts[1], 120)
+  if (!requirementId || !factoryId) return null
+  return { requirementId, factoryId }
+}
+
 async function deriveParticipantIds(matchId) {
   const ids = new Set()
   const friendPair = parseFriendMatchId(matchId)
   if (Array.isArray(friendPair)) {
     friendPair.forEach((id) => { if (id) ids.add(id) })
+  }
+
+  const marketplacePair = parseMarketplaceMatchId(matchId)
+  if (marketplacePair?.factoryId) {
+    ids.add(marketplacePair.factoryId)
+    const requirements = await readJson(REQUIREMENT_FILE)
+    const requirement = requirements.find((row) => String(row?.id || '') === marketplacePair.requirementId) || null
+    const buyerId = sanitizeString(requirement?.buyer_id || requirement?.buyerId, 120)
+    if (buyerId) ids.add(buyerId)
   }
 
   const messages = await readJson(MESSAGE_FILE)

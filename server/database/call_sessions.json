@@ -429,9 +429,9 @@
       "51d4afc9-e770-4b95-988b-3acc9308f141",
       "6a258ab9-9b56-4192-aa90-6e1ebb81afa8"
     ],
-    "status": "in_progress",
+    "status": "ended",
     "recording_url": "",
-    "recording_status": "pending",
+    "recording_status": "processing",
     "contract_id": "",
     "security_audit_id": "",
     "context": {
@@ -440,7 +440,7 @@
     },
     "created_at": "2026-03-11T04:40:06.692Z",
     "started_at": "2026-03-11T04:40:10.318Z",
-    "ended_at": null,
+    "ended_at": "2026-03-13T10:28:48.287Z",
     "audit_trail": [
       {
         "id": "d5bdfba2-b154-45fb-b723-274978a22950",
@@ -667,6 +667,31 @@
         "actor_id": "51d4afc9-e770-4b95-988b-3acc9308f141",
         "timestamp": "2026-03-11T04:40:50.575Z",
         "metadata": {}
+      },
+      {
+        "id": "8342f9a8-c2bf-48c1-b0ed-3963d2635278",
+        "event": "started",
+        "actor_id": "6a258ab9-9b56-4192-aa90-6e1ebb81afa8",
+        "timestamp": "2026-03-13T10:28:32.946Z",
+        "metadata": {}
+      },
+      {
+        "id": "ae276d9c-9365-41a4-8551-ca9a99a914fd",
+        "event": "ended",
+        "actor_id": "6a258ab9-9b56-4192-aa90-6e1ebb81afa8",
+        "timestamp": "2026-03-13T10:28:48.287Z",
+        "metadata": {
+          "reason": "completed"
+        }
+      },
+      {
+        "id": "d6557c95-bd90-4612-ab6f-57cd301125c5",
+        "event": "recording_processing",
+        "actor_id": "6a258ab9-9b56-4192-aa90-6e1ebb81afa8",
+        "timestamp": "2026-03-13T10:28:48.287Z",
+        "metadata": {
+          "reason": "call_ended"
+        }
       }
     ]
   }

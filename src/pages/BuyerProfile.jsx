@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+const API = import.meta.env.VITE_API_URL || '/api'
 
 function starsFromAverage(avg) {
   const rounded = Math.round(Number(avg || 0))

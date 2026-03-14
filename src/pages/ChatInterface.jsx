@@ -1,10 +1,11 @@
-﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   Bell,
   ChevronDown,
   ChevronUp,
   CircleHelp,
+  Download,
   EllipsisVertical,
   Filter,
   Flag,
@@ -21,8 +22,15 @@ import {
   VolumeX,
 } from 'lucide-react'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
+import AttachmentPreviewModal from '../components/chat/AttachmentPreviewModal'
+import MarkdownMessage from '../components/chat/MarkdownMessage'
+import FileAttachmentCard from '../components/chat/FileAttachmentCard'
 
-const WS_BASE = import.meta.env.VITE_WS_URL || 'ws://localhost:4000'
+const WS_BASE = (() => {
+  if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  return `${protocol}//${window.location.host}/ws`
+})()
 
 const CHAT_NAV_ITEMS = [
   { to: '/feed', label: 'Feed', icon: Home },
@@ -57,13 +65,16 @@ function sortByOldest(a, b) {
   return new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime()
 }
 
-function normalizeThreads(messages = []) {
+function normalizeThreads(messages = [], currentUserId = '') {
   const byMatchId = new Map()
+  const latestByOther = new Map()
 
   messages.forEach((message) => {
     if (!message?.match_id) return
     const existing = byMatchId.get(message.match_id)
     const lock = message.conversation_lock || existing?.lock || null
+    const isOther = currentUserId && message.sender_id && message.sender_id !== currentUserId
+    const otherCandidate = isOther ? message : null
 
     if (!existing) {
       byMatchId.set(message.match_id, {
@@ -82,6 +93,9 @@ function normalizeThreads(messages = []) {
         friendRequestStatus: message.friend_request_status || null,
         friendRequestDirection: message.friend_request_direction || null,
       })
+      if (otherCandidate) {
+        latestByOther.set(message.match_id, otherCandidate)
+      }
       return
     }
 
@@ -96,9 +110,28 @@ function normalizeThreads(messages = []) {
         friendRequestDirection: message.friend_request_direction || existing.friendRequestDirection || null,
       })
     }
+
+    const existingOther = latestByOther.get(message.match_id)
+    if (otherCandidate) {
+      if (!existingOther || new Date(message.timestamp || 0).getTime() > new Date(existingOther.timestamp || 0).getTime()) {
+        latestByOther.set(message.match_id, otherCandidate)
+      }
+    }
   })
 
-  return [...byMatchId.values()].sort(sortByNewest)
+  const normalized = [...byMatchId.values()].map((thread) => {
+    const other = latestByOther.get(thread.matchId)
+    if (!other) return thread
+    return {
+      ...thread,
+      name: formatDisplayName(other.sender_name || other.company_name || other.sender_company_name, other.sender_id),
+      avatar: other.sender_avatar_url || other.sender_avatar || thread.avatar,
+      senderId: other.sender_id,
+      verified: Boolean(other.sender_verified),
+    }
+  })
+
+  return normalized.sort(sortByNewest)
 }
 
 function lockStatusLabel(lock, thread = null) {
@@ -114,18 +147,42 @@ function lockStatusLabel(lock, thread = null) {
   return `Claimed by ${lock.claimed_by_name || 'another agent'}`
 }
 
+const IMAGE_ATTACHMENT_EXTS = new Set(['jpg', 'jpeg', 'png', 'gif', 'apng', 'webp', 'avif', 'svg', 'ico'])
+const VIDEO_ATTACHMENT_EXTS = new Set(['mp4', 'mov', 'avi', 'wmv', 'webm', 'mkv', 'flv', '3gp', 'mpg', 'mpeg', 'm4v', 'amv'])
+
+function safeAttachmentExt(attachment) {
+  const candidates = [attachment?.name, attachment?.url].map((value) => String(value || '').trim()).filter(Boolean)
+  if (candidates.length === 0) return ''
+
+  const raw = candidates[0]
+  const cleaned = raw.split('?')[0].split('#')[0]
+  const tail = cleaned.split('/').pop() || cleaned
+  const match = tail.match(/\.([a-z0-9]+)$/i)
+  return match ? match[1].toLowerCase() : ''
+}
+
+function isImageExt(attachment) {
+  const ext = safeAttachmentExt(attachment)
+  return IMAGE_ATTACHMENT_EXTS.has(ext)
+}
+
+function isVideoExt(attachment) {
+  const ext = safeAttachmentExt(attachment)
+  return VIDEO_ATTACHMENT_EXTS.has(ext)
+}
+
 function isImageMessage(message) {
-  return message?.type === 'image' || String(message?.attachment?.mime_type || '').startsWith('image/')
+  return message?.type === 'image' || String(message?.attachment?.mime_type || '').startsWith('image/') || isImageExt(message?.attachment)
 }
 
 function isVideoMessage(message) {
-  return message?.type === 'video' || String(message?.attachment?.mime_type || '').startsWith('video/')
+  return message?.type === 'video' || String(message?.attachment?.mime_type || '').startsWith('video/') || isVideoExt(message?.attachment)
 }
 
 function toAbsoluteAssetUrl(url = '') {
   if (!url) return ''
   if (url.startsWith('http://') || url.startsWith('https://')) return url
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+  const apiUrl = import.meta.env.VITE_API_URL || '/api'
   const base = apiUrl.replace(/\/api\/?$/, '')
   return `${base}${url.startsWith('/') ? '' : '/'}${url}`
 }
@@ -190,6 +247,18 @@ function formatPresence(iso) {
   return `Last seen ${new Date(iso).toLocaleDateString()}`
 }
 
+function friendCounterpartyId(matchId = '', currentUserId = '') {
+  if (!matchId.startsWith('friend:')) return ''
+  const parts = String(matchId).split(':')
+  if (parts.length !== 3) return ''
+  const a = parts[1]
+  const b = parts[2]
+  if (!currentUserId) return ''
+  if (a === currentUserId) return b
+  if (b === currentUserId) return a
+  return ''
+}
+
 function linkPreviewMeta(url = '') {
   try {
     const parsed = new URL(url)
@@ -226,6 +295,8 @@ export default function ChatInterface() {
   const [, setChatConnectionStatus] = useState('offline')
   const [uploading, setUploading] = useState(false)
   const [uploadStatus, setUploadStatus] = useState('')
+  const [callPromptThread, setCallPromptThread] = useState(null)
+  const [previewAttachment, setPreviewAttachment] = useState(null)
   const [accordionState, setAccordionState] = useState({
     sharedDocument: true,
     sharedMedia: true,
@@ -237,7 +308,8 @@ export default function ChatInterface() {
   const wsRef = useRef(null)
   const fileInputRef = useRef(null)
   const reconnectTimerRef = useRef(null)
-  const currentUser = useMemo(() => getCurrentUser(), [])
+  const activeThreadMatchIdRef = useRef('')
+  const [currentUser, setCurrentUser] = useState(() => getCurrentUser())
   const navigate = useNavigate()
   const location = useLocation()
   const isLight = themeMode === 'light'
@@ -282,6 +354,16 @@ export default function ChatInterface() {
 
     try {
       const token = getToken()
+      let liveUser = getCurrentUser()
+      if (token && !liveUser?.id) {
+        try {
+          liveUser = await apiRequest('/users/me', { token })
+        } catch {
+          liveUser = null
+        }
+      }
+      setCurrentUser(liveUser)
+      const currentUserId = liveUser?.id || ''
       if (!token) {
         setPriorityInbox([])
         setMessageRequests([])
@@ -290,12 +372,42 @@ export default function ChatInterface() {
       }
 
       const data = await apiRequest('/messages/inbox', { token })
-      const priority = normalizeThreads(data?.priority || [])
-      const requests = normalizeThreads(data?.request_pool || [])
+      const priority = normalizeThreads(data?.priority || [], currentUserId)
+      const requests = normalizeThreads(data?.request_pool || [], currentUserId)
       const allMatchIds = [...new Set([...priority, ...requests].map((thread) => thread.matchId).filter(Boolean))]
 
-      setPriorityInbox(priority)
-      setMessageRequests(requests)
+      const friendCounterpartyIds = [...new Set(
+        [...priority, ...requests]
+          .filter((thread) => thread.isFriendThread)
+          .map((thread) => friendCounterpartyId(thread.matchId, currentUserId))
+          .filter(Boolean)
+      )]
+
+      let userById = {}
+      if (friendCounterpartyIds.length > 0) {
+        const lookup = await apiRequest('/users/lookup', { method: 'POST', token, body: { ids: friendCounterpartyIds } })
+        userById = (lookup?.users || []).reduce((acc, user) => {
+          acc[user.id] = user
+          return acc
+        }, {})
+      }
+
+      const applyFriendDisplay = (threads) => threads.map((thread) => {
+        if (!thread.isFriendThread) return thread
+        const counterpartyId = friendCounterpartyId(thread.matchId, currentUserId)
+        const user = userById[counterpartyId]
+        if (!user) return { ...thread, senderId: counterpartyId || thread.senderId }
+        return {
+          ...thread,
+          name: formatDisplayName(user.name, user.id),
+          avatar: user.avatar_url || user.avatar || thread.avatar,
+          senderId: user.id,
+          verified: Boolean(user.verified),
+        }
+      })
+
+      setPriorityInbox(applyFriendDisplay(priority))
+      setMessageRequests(applyFriendDisplay(requests))
       setActiveThreadId((currentThreadId) => {
         const threadStillVisible = [...priority, ...requests].some((thread) => thread.id === currentThreadId)
         if (threadStillVisible) return currentThreadId
@@ -362,6 +474,7 @@ export default function ChatInterface() {
 
   const allVisibleThreads = useMemo(() => [...filteredPriorityInbox, ...filteredRequests], [filteredPriorityInbox, filteredRequests])
   const activeThread = allVisibleThreads.find((thread) => thread.id === activeThreadId)
+  activeThreadMatchIdRef.current = activeThread?.matchId || ''
   const activeCallHistory = useMemo(() => {
     if (!activeThread?.matchId) return []
     return callHistoryByThread[activeThread.matchId] || []
@@ -372,11 +485,17 @@ export default function ChatInterface() {
   }, [activeThread, messagesByThread])
 
   const sharedMedia = useMemo(() => {
-    return activeMessages.filter((message) => isImageMessage(message) && message?.attachment?.url).slice(-9).reverse()
+    return activeMessages
+      .filter((message) => (isImageMessage(message) || isVideoMessage(message)) && message?.attachment?.url)
+      .slice(-9)
+      .reverse()
   }, [activeMessages])
 
   const sharedLinks = useMemo(() => {
-    return activeMessages.filter((message) => message?.attachment?.url && !isImageMessage(message)).slice(-6).reverse()
+    return activeMessages
+      .filter((message) => message?.attachment?.url && !isImageMessage(message) && !isVideoMessage(message))
+      .slice(-6)
+      .reverse()
   }, [activeMessages])
 
   const sharedPosts = useMemo(() => {
@@ -444,10 +563,15 @@ export default function ChatInterface() {
       ws.onopen = () => {
         if (!isActive) return
         setChatConnectionStatus('online')
-        if (activeThread?.matchId) {
+        ws.send(JSON.stringify({
+          type: 'identify',
+          token,
+        }))
+        const matchId = activeThreadMatchIdRef.current
+        if (matchId) {
           ws.send(JSON.stringify({
             type: 'join_chat_room',
-            match_id: activeThread.matchId,
+            match_id: matchId,
             token,
           }))
         }
@@ -475,6 +599,22 @@ export default function ChatInterface() {
               ...previous,
               [roomMatchId]: [...existing, incomingMessage].sort(sortByOldest),
             }
+          })
+          return
+        }
+
+        if (payload.type === 'incoming_call') {
+          const from = payload?.from || {}
+          if (!payload?.call_id) return
+          setCallPromptThread({
+            id: payload.match_id || payload.call_id,
+            matchId: payload.match_id || '',
+            callId: payload.call_id,
+            name: from.name || from.email || 'Caller',
+            avatar: from.avatar || '',
+            senderId: from.id || '',
+            verified: Boolean(from.verified),
+            direction: 'incoming',
           })
           return
         }
@@ -512,7 +652,50 @@ export default function ChatInterface() {
         wsRef.current = null
       }
     }
+  }, [isLiveMessagingEnabled])
+
+  useEffect(() => {
+    if (!isLiveMessagingEnabled) return
+    const token = getToken()
+    const matchId = activeThread?.matchId || ''
+    if (!token || !matchId) return
+    const ws = wsRef.current
+    if (!ws || ws.readyState !== WebSocket.OPEN) return
+    ws.send(JSON.stringify({
+      type: 'join_chat_room',
+      match_id: matchId,
+      token,
+    }))
   }, [isLiveMessagingEnabled, activeThread?.matchId])
+
+  useEffect(() => {
+    const token = getToken()
+    if (!token) return undefined
+
+    const interval = window.setInterval(async () => {
+      if (callPromptThread?.direction === 'incoming') return
+      try {
+        const data = await apiRequest('/calls/pending', { token })
+        const invite = (data?.invites || [])[0]
+        if (!invite?.call_id) return
+        const from = invite?.from || {}
+        setCallPromptThread({
+          id: invite.match_id || invite.call_id,
+          matchId: invite.match_id || '',
+          callId: invite.call_id,
+          name: from.name || from.email || 'Caller',
+          avatar: from.avatar || '',
+          senderId: from.id || '',
+          verified: Boolean(from.verified),
+          direction: 'incoming',
+        })
+      } catch {
+        // silent
+      }
+    }, 2000)
+
+    return () => window.clearInterval(interval)
+  }, [callPromptThread])
 
   async function updateRequestState(thread, decision) {
     const token = getToken()
@@ -587,11 +770,20 @@ export default function ChatInterface() {
     }
 
     const participantIds = new Set()
-    activeMessages.forEach((message) => {
-      if (message?.sender_id) participantIds.add(message.sender_id)
-    })
-    if (thread.senderId) participantIds.add(thread.senderId)
-    if (currentUser?.id) participantIds.delete(currentUser.id)
+    const currentUserId = currentUser?.id || ''
+    if (thread.isFriendThread) {
+      const parts = String(thread.matchId || '').split(':')
+      if (parts.length === 3) {
+        if (parts[1]) participantIds.add(parts[1])
+        if (parts[2]) participantIds.add(parts[2])
+      }
+    } else {
+      activeMessages.forEach((message) => {
+        if (message?.sender_id) participantIds.add(message.sender_id)
+      })
+      if (thread.senderId) participantIds.add(thread.senderId)
+    }
+    if (currentUserId) participantIds.delete(currentUserId)
 
     setScheduleStatus('Starting call room...')
     try {
@@ -614,6 +806,20 @@ export default function ChatInterface() {
     }
   }
 
+  function closeCallPrompt() {
+    setCallPromptThread(null)
+  }
+
+  async function acceptCallPrompt() {
+    if (!callPromptThread) return
+    const thread = callPromptThread
+    setCallPromptThread(null)
+    if (thread.callId) {
+      navigate(`/call?callId=${encodeURIComponent(thread.callId)}&matchId=${encodeURIComponent(thread.matchId || '')}`)
+      return
+    }
+  }
+
   async function sendAttachment(file) {
     const token = getToken()
     if (!token || !activeThread?.matchId || !file) return
@@ -625,7 +831,7 @@ export default function ChatInterface() {
       formData.append('file', file)
       formData.append('message', draftMessage.trim())
 
-      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+      const apiBase = import.meta.env.VITE_API_URL || '/api'
       const response = await fetch(`${apiBase}/messages/${encodeURIComponent(activeThread.matchId)}/upload`, {
         method: 'POST',
         headers: {
@@ -652,15 +858,40 @@ export default function ChatInterface() {
     }
   }
 
-  function renderMessageBody(message) {
+  function openAttachmentPreview(attachment, absoluteUrlOverride = '') {
+    const rawUrl = absoluteUrlOverride || attachment?.url || ''
+    if (!rawUrl) return
+    setPreviewAttachment({
+      url: absoluteUrlOverride ? absoluteUrlOverride : toAbsoluteAssetUrl(rawUrl),
+      name: attachment?.name || 'Attachment',
+      mimeType: attachment?.mime_type || attachment?.mimeType || '',
+    })
+  }
+
+  function renderMessageBody(message, isOwn = false) {
     const attachmentUrl = toAbsoluteAssetUrl(message?.attachment?.url || '')
 
     if (isImageMessage(message) && attachmentUrl) {
       return (
         <div className="space-y-1">
-          {message.message ? <div className="mb-1">{message.message}</div> : null}
-          <a href={attachmentUrl} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-xl border border-slate-100 dark:border-transparent">
+          {message.message ? <div className="mb-1"><MarkdownMessage text={message.message} /></div> : null}
+          <button
+            type="button"
+            onClick={() => openAttachmentPreview(message?.attachment, attachmentUrl)}
+            className="block w-full overflow-hidden rounded-xl border border-slate-100 text-left transition-opacity hover:opacity-95 dark:border-transparent"
+            title="View image"
+          >
             <img src={attachmentUrl} alt={message?.attachment?.name || 'Shared image'} className="max-h-64 w-full object-cover" />
+          </button>
+          <a
+            href={attachmentUrl}
+            download={message?.attachment?.name || undefined}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 underline underline-offset-2 dark:text-blue-200"
+          >
+            <Download size={12} />
+            Download
           </a>
         </div>
       )
@@ -669,8 +900,28 @@ export default function ChatInterface() {
     if (isVideoMessage(message) && attachmentUrl) {
       return (
         <div className="space-y-1">
-          {message.message ? <div className="mb-1">{message.message}</div> : null}
-          <video src={attachmentUrl} controls className="max-h-64 w-full rounded-xl" />
+          {message.message ? <div className="mb-1"><MarkdownMessage text={message.message} /></div> : null}
+          <button
+            type="button"
+            onClick={() => openAttachmentPreview(message?.attachment, attachmentUrl)}
+            className="relative block w-full overflow-hidden rounded-xl border border-slate-100 text-left dark:border-transparent"
+            title="View video"
+          >
+            <video src={attachmentUrl} muted playsInline preload="metadata" className="max-h-64 w-full object-cover" />
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25">
+              <div className="rounded-full bg-black/40 px-3 py-1 text-[11px] font-semibold text-white">Play</div>
+            </div>
+          </button>
+          <a
+            href={attachmentUrl}
+            download={message?.attachment?.name || undefined}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 underline underline-offset-2 dark:text-blue-200"
+          >
+            <Download size={12} />
+            Download
+          </a>
         </div>
       )
     }
@@ -678,11 +929,14 @@ export default function ChatInterface() {
     if (message?.attachment?.url) {
       return (
         <div className="space-y-1">
-          {message.message ? <div className="mb-1">{message.message}</div> : null}
-          <a href={attachmentUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-lg bg-slate-50 p-2 text-blue-600 underline dark:bg-black/20">
-            <Plus size={14} />
-            {message?.attachment?.name || 'Open file'}
-          </a>
+          {message.message && message.message !== 'Shared a file' ? <div className="mb-1"><MarkdownMessage text={message.message} /></div> : null}
+          <FileAttachmentCard
+            attachment={message?.attachment}
+            url={attachmentUrl}
+            isOwn={isOwn}
+            isLight={isLight}
+            onOpen={() => openAttachmentPreview(message?.attachment, attachmentUrl)}
+          />
         </div>
       )
     }
@@ -692,7 +946,7 @@ export default function ChatInterface() {
       const meta = linkPreviewMeta(firstUrl)
       return (
         <div className="space-y-2">
-          <p>{message.message.replace(firstUrl, '').trim() || 'Link shared'}</p>
+          <MarkdownMessage text={message.message} />
           <a href={firstUrl} target="_blank" rel="noreferrer" className="block rounded-xl border border-slate-100 bg-slate-50 p-2 dark:border-transparent dark:bg-black/20">
             <div className="mb-2 h-24 overflow-hidden rounded-lg bg-slate-200 flex items-center justify-center text-xs text-slate-500 dark:bg-[#1f2448] dark:text-[#b8bfe8]">
               {meta.host}
@@ -704,7 +958,7 @@ export default function ChatInterface() {
       )
     }
 
-    return <div>{message.message}</div>
+    return <MarkdownMessage text={message.message} />
   }
 
   async function sendMessage() {
@@ -773,6 +1027,75 @@ export default function ChatInterface() {
         .chat-interface-container input::placeholder {
           color: ${isLight ? '#94a3b8' : '#7f86ae'} !important;
         }
+        .chat-markdown {
+          font-size: 13px;
+          line-height: 1.45;
+          color: inherit;
+          word-break: break-word;
+        }
+        .chat-markdown > :first-child { margin-top: 0; }
+        .chat-markdown > :last-child { margin-bottom: 0; }
+        .chat-markdown p { margin: 0.25rem 0; }
+        .chat-markdown h1, .chat-markdown h2, .chat-markdown h3, .chat-markdown h4, .chat-markdown h5, .chat-markdown h6 {
+          margin: 0.45rem 0 0.25rem;
+          font-weight: 800;
+          line-height: 1.25;
+        }
+        .chat-markdown h1 { font-size: 1.15rem; }
+        .chat-markdown h2 { font-size: 1.08rem; }
+        .chat-markdown h3 { font-size: 1.02rem; }
+        .chat-markdown ul, .chat-markdown ol { margin: 0.25rem 0; padding-left: 1.2rem; }
+        .chat-markdown ul { list-style: disc; }
+        .chat-markdown ol { list-style: decimal; }
+        .chat-markdown li { margin: 0.12rem 0; }
+        .chat-markdown blockquote {
+          margin: 0.35rem 0;
+          padding-left: 0.75rem;
+          border-left: 3px solid ${isLight ? '#cbd5e1' : '#2f295c'};
+          color: ${isLight ? '#334155' : '#cdd2ff'};
+          opacity: ${isLight ? 0.9 : 0.95};
+        }
+        .chat-markdown code {
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+          font-size: 0.92em;
+          padding: 0.12rem 0.28rem;
+          border-radius: 0.35rem;
+          background: ${isLight ? 'rgba(15, 23, 42, 0.08)' : 'rgba(0,0,0,0.35)'};
+        }
+        .chat-markdown pre {
+          margin: 0.35rem 0;
+          padding: 0.75rem;
+          border-radius: 0.85rem;
+          overflow-x: auto;
+          background: ${isLight ? '#0b1020' : 'rgba(0,0,0,0.35)'};
+          color: #e2e8f0;
+        }
+        .chat-markdown pre code {
+          padding: 0;
+          background: transparent;
+        }
+        .chat-markdown table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 0.4rem 0;
+          font-size: 12px;
+        }
+        .chat-markdown th, .chat-markdown td {
+          border: 1px solid ${isLight ? '#e2e8f0' : 'rgba(255,255,255,0.12)'};
+          padding: 0.35rem 0.5rem;
+        }
+        .chat-markdown th {
+          background: ${isLight ? '#f1f5f9' : 'rgba(255,255,255,0.06)'};
+          font-weight: 700;
+        }
+        .chat-markdown input[type="checkbox"] {
+          accent-color: #6366f1;
+        }
+        .chat-markdown hr {
+          border: none;
+          border-top: 1px solid ${isLight ? '#e2e8f0' : 'rgba(255,255,255,0.12)'};
+          margin: 0.5rem 0;
+        }
       `}</style>
       {notice ? (
         <div className="mx-3 mt-2 rounded-xl px-4 py-3 text-sm font-medium shadow-sm"
@@ -786,6 +1109,49 @@ export default function ChatInterface() {
           </div>
         </div>
       ) : null}
+      <AttachmentPreviewModal
+        open={Boolean(previewAttachment)}
+        attachment={previewAttachment}
+        onClose={() => setPreviewAttachment(null)}
+      />
+      {callPromptThread ? (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#14122b] p-6 text-white shadow-2xl">
+            <div className="flex items-center gap-4">
+              {callPromptThread.avatar ? (
+                <img
+                  src={avatarUrl(callPromptThread.avatar)}
+                  alt={callPromptThread.name}
+                  className="h-16 w-16 rounded-full object-cover"
+                />
+              ) : (
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#2a2744] text-lg font-bold">
+                  {getInitials(formatDisplayName(callPromptThread.name, callPromptThread.senderId))}
+                </div>
+              )}
+              <div>
+                <p className="text-sm text-slate-300">{callPromptThread.direction === 'incoming' ? 'Incoming call' : 'Calling'}</p>
+                <p className="text-lg font-semibold">{formatDisplayName(callPromptThread.name, callPromptThread.senderId)}</p>
+                <p className="text-xs text-slate-400">{callPromptThread.direction === 'incoming' ? 'Accept to join the call.' : 'Ready to start the call?'}</p>
+              </div>
+            </div>
+            <div className="mt-6 flex items-center justify-between gap-3">
+              <button
+                onClick={closeCallPrompt}
+                className="flex-1 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-300 hover:bg-red-500/20"
+              >
+                Decline
+              </button>
+              <button
+                onClick={acceptCallPrompt}
+                className="flex-1 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-400"
+              >
+                Accept
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <div className="grid h-full w-full grid-cols-1 gap-2 p-2 md:grid-cols-[62px_1fr] lg:grid-cols-[62px_minmax(260px,22vw)_1fr] xl:grid-cols-[62px_minmax(260px,20vw)_1fr_minmax(280px,22vw)]">
         <aside className="hidden md:flex h-full rounded-[22px] p-2 flex-col items-center justify-between py-1" style={{ background: 'transparent', boxShadow: 'none', border: 'none' }}>
           <div className="space-y-2">
@@ -796,7 +1162,7 @@ export default function ChatInterface() {
               onClick={() => setThemeMode((value) => (value === 'light' ? 'dark' : 'light'))}
               title={isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
             >
-              {isLight ? '☀️' : '🌙'}
+              {isLight ? '??' : '??'}
             </button>
             {CHAT_NAV_ITEMS.map((item) => {
               const Icon = item.icon
@@ -946,7 +1312,7 @@ export default function ChatInterface() {
                             ? 'bg-[#6366f1] text-white rounded-br-none' 
                             : `${isLight ? 'bg-white border border-slate-100' : 'bg-[#2a2744]'} rounded-bl-none`
                         }`} style={!isOwn ? { color: theme.textPrimary } : undefined}>
-                          {renderMessageBody(message)}
+                          {renderMessageBody(message, isOwn)}
                           <div className={`mt-1 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-60 ${isOwn ? 'text-white' : 'text-slate-400'}`}>
                             {formatTime(message.timestamp)}
                           </div>
@@ -964,13 +1330,19 @@ export default function ChatInterface() {
                   <button className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-200/50 dark:hover:bg-slate-700/50" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
                     <Plus size={20} />
                   </button>
-                  <input
-                    className="flex-1 bg-transparent px-2 text-[14px] outline-none placeholder:text-slate-400"
-                    style={{ color: theme.textPrimary }}
+                  <textarea
+                    rows={1}
+                    className="flex-1 resize-none bg-transparent px-2 py-2 text-[14px] leading-5 outline-none placeholder:text-slate-400"
+                    style={{ color: theme.textPrimary, maxHeight: 140 }}
                     placeholder="Write a message..."
                     value={draftMessage}
                     onChange={(event) => setDraftMessage(event.target.value)}
-                    onKeyDown={(event) => { if (event.key === 'Enter') sendMessage() }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault()
+                        sendMessage()
+                      }
+                    }}
                   />
                   <input ref={fileInputRef} type="file" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) sendAttachment(file) }} />
                   <button className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#6366f1] text-white shadow-md transition-transform hover:scale-105 active:scale-95" onClick={sendMessage}>
@@ -1042,21 +1414,49 @@ export default function ChatInterface() {
                       <div className="p-3 bg-white dark:bg-transparent">
                         {section.id === 'sharedDocument' && (
                           <div className="space-y-2">
-                            {sharedLinks.length > 0 ? sharedLinks.map(item => (
-                              <a key={item.id} href={toAbsoluteAssetUrl(item.attachment?.url)} target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-xl border border-slate-50 bg-slate-50/50 p-2.5 text-[11px] font-medium transition-colors hover:border-[#6366f1]/20 dark:border-slate-800 dark:bg-slate-800/30">
-                                <div className="h-6 w-6 rounded bg-white flex items-center justify-center shadow-xs dark:bg-slate-700"><Plus size={12} className="opacity-30" /></div>
-                                <span className="truncate flex-1">{item.attachment?.name || 'File'}</span>
-                              </a>
-                            )) : <p className="text-[10px] text-slate-400 italic text-center py-2">No documents shared</p>}
+                            {sharedLinks.length > 0 ? sharedLinks.map(item => {
+                              const url = toAbsoluteAssetUrl(item.attachment?.url || '')
+                              return (
+                                <button
+                                  key={item.id}
+                                  type="button"
+                                  onClick={() => openAttachmentPreview(item.attachment, url)}
+                                  className="flex w-full items-center gap-2 rounded-xl border border-slate-50 bg-slate-50/50 p-2.5 text-left text-[11px] font-medium transition-colors hover:border-[#6366f1]/20 dark:border-slate-800 dark:bg-slate-800/30"
+                                  title="Preview"
+                                >
+                                  <div className="h-6 w-6 rounded bg-white flex items-center justify-center shadow-xs dark:bg-slate-700"><Plus size={12} className="opacity-30" /></div>
+                                  <span className="truncate flex-1">{item.attachment?.name || 'File'}</span>
+                                </button>
+                              )
+                            }) : <p className="text-[10px] text-slate-400 italic text-center py-2">No documents shared</p>}
                           </div>
                         )}
                         {section.id === 'sharedMedia' && (
                           <div className="grid grid-cols-3 gap-1.5">
-                            {sharedMedia.length > 0 ? sharedMedia.slice(0, 6).map(item => (
-                              <a key={item.id} href={toAbsoluteAssetUrl(item.attachment?.url)} target="_blank" rel="noreferrer" className="aspect-square overflow-hidden rounded-lg">
-                                <img src={toAbsoluteAssetUrl(item.attachment?.url)} alt="" className="h-full w-full object-cover transition-transform hover:scale-110" />
-                              </a>
-                            )) : <p className="col-span-3 text-[10px] text-slate-400 italic text-center py-2">No media shared</p>}
+                            {sharedMedia.length > 0 ? sharedMedia.slice(0, 6).map(item => {
+                              const url = toAbsoluteAssetUrl(item.attachment?.url || '')
+                              const isVideo = isVideoMessage(item)
+                              return (
+                                <button
+                                  key={item.id}
+                                  type="button"
+                                  onClick={() => openAttachmentPreview(item.attachment, url)}
+                                  className="relative aspect-square overflow-hidden rounded-lg"
+                                  title="View"
+                                >
+                                  {isVideo ? (
+                                    <>
+                                      <video src={url} muted playsInline preload="metadata" className="h-full w-full object-cover" />
+                                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25">
+                                        <div className="rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-bold text-white">Play</div>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <img src={url} alt="" className="h-full w-full object-cover transition-transform hover:scale-110" />
+                                  )}
+                                </button>
+                              )
+                            }) : <p className="col-span-3 text-[10px] text-slate-400 italic text-center py-2">No media shared</p>}
                           </div>
                         )}
                         {section.id === 'sharedPost' && (
