@@ -7,6 +7,7 @@ import {
   markRecording,
   startCallSession,
 } from '../services/callSessionService.js'
+import { buildIceServers } from '../services/webrtcService.js'
 import { buildFriendMatchId, isFriendConnected } from '../services/friendService.js'
 import { findUserById } from '../services/userService.js'
 import { consumePendingInvites, enqueuePendingInvites } from '../utils/pendingInvites.js'
@@ -80,6 +81,15 @@ export async function getCall(req, res) {
   if (!result) return res.status(404).json({ error: 'Call session not found' })
   if (result === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
   return res.json(result)
+}
+
+export async function getCallIceServers(req, res) {
+  const result = await getCallSession(req.params.callId, req.user.id)
+  if (!result) return res.status(404).json({ error: 'Call session not found' })
+  if (result === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+
+  const iceServers = buildIceServers({ userId: req.user.id })
+  return res.json({ iceServers })
 }
 
 export async function getCallHistory(req, res) {

@@ -14,7 +14,7 @@ export default defineConfig({
     }),
   ],
   server: {
-    allowedHosts: ['broker-already-pills-read.trycloudflare.com'],
+    allowedHosts: ['reviewing-advertisement-aside-prospects.trycloudflare.com'],
     proxy: {
       '/api': {
         target: process.env.VITE_API_PROXY || 'http://localhost:4000',

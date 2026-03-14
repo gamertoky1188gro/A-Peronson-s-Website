@@ -96,15 +96,15 @@ function AppRoutes() {
 
 function AppLayout() {
   const location = useLocation()
-  const isChatRoute = location.pathname === '/chat'
+  const isImmersiveRoute = location.pathname === '/chat' || location.pathname === '/call'
 
   return (
     <div className="app-shell min-h-screen">
-      {!isChatRoute ? <NavBar /> : null}
-      <main className={isChatRoute ? '' : 'pb-10'}>
+      {!isImmersiveRoute ? <NavBar /> : null}
+      <main className={isImmersiveRoute ? '' : 'pb-10'}>
         <AppRoutes />
       </main>
-      {!isChatRoute ? <Footer /> : null}
+      {!isImmersiveRoute ? <Footer /> : null}
       <FloatingAssistant />
     </div>
   )

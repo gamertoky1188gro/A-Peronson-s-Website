@@ -338,6 +338,16 @@ function relaySignal(socket, payload) {
   const room = callRooms.get(callId)
   if (!room) return
 
+  const signalType = String(payload?.signal?.type || '')
+  if (signalType && signalType !== 'candidate') {
+    logInfo('webrtc_signal', {
+      call_id: callId,
+      from_user_id: socket.userId || null,
+      from_participant_id: socket.participantId || null,
+      signal_type: signalType,
+    })
+  }
+
   for (const peer of room) {
     if (peer === socket) continue
     sendWs(peer, {
