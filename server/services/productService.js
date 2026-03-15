@@ -93,5 +93,60 @@ export async function listProducts(filters = {}) {
   const all = await readJson(FILE)
   return all
     .filter((p) => !filters.category || p.category.toLowerCase() === String(filters.category).toLowerCase())
+    .filter((p) => !filters.companyId || String(p.company_id) === String(filters.companyId))
     .map((p) => normalizeVideoReview(p))
+}
+
+function canMutateProduct(actor, product) {
+  if (!actor || !product) return false
+  if (actor.role === 'admin' || actor.role === 'owner') return true
+  return String(product.company_id) === String(actor.id)
+}
+
+export async function updateProductById(actor, productId, patch = {}) {
+  const id = sanitizeString(String(productId || ''), 120)
+  if (!id) return null
+  const all = await readJson(FILE)
+  const idx = all.findIndex((p) => String(p.id) === id)
+  if (idx < 0) return null
+  const existing = all[idx]
+  if (!canMutateProduct(actor, existing)) return 'forbidden'
+
+  const nextTitle = patch.title !== undefined ? sanitizeString(patch.title, 120) : existing.title
+  const nextDescription = patch.description !== undefined ? sanitizeString(patch.description || '', 1200) : existing.description
+  const nextVideoUrl = patch.video_url !== undefined ? sanitizeString(patch.video_url || '', 260) : existing.video_url
+  const moderation = getVideoModerationResult({ title: nextTitle, description: nextDescription, videoUrl: nextVideoUrl })
+
+  const next = {
+    ...existing,
+    title: nextTitle,
+    category: patch.category !== undefined ? sanitizeString(patch.category, 80) : existing.category,
+    material: patch.material !== undefined ? sanitizeString(patch.material, 80) : existing.material,
+    moq: patch.moq !== undefined ? sanitizeString(patch.moq || '', 40) : existing.moq,
+    lead_time_days: patch.lead_time_days !== undefined ? sanitizeString(patch.lead_time_days || '', 40) : existing.lead_time_days,
+    description: nextDescription,
+    video_url: nextVideoUrl,
+    video_review_status: moderation.videoReviewStatus,
+    video_restricted: moderation.videoRestricted,
+    video_moderation_flags: moderation.flags,
+    updated_at: new Date().toISOString(),
+  }
+
+  all[idx] = next
+  await writeJson(FILE, all)
+  await trackEvent({ type: 'product_updated', actor_id: actor.id, entity_id: next.id })
+  return normalizeVideoReview(next)
+}
+
+export async function removeProduct(actor, productId) {
+  const id = sanitizeString(String(productId || ''), 120)
+  if (!id) return null
+  const all = await readJson(FILE)
+  const existing = all.find((p) => String(p.id) === id)
+  if (!existing) return null
+  if (!canMutateProduct(actor, existing)) return 'forbidden'
+  const next = all.filter((p) => String(p.id) !== id)
+  await writeJson(FILE, next)
+  await trackEvent({ type: 'product_deleted', actor_id: actor.id, entity_id: id })
+  return true
 }

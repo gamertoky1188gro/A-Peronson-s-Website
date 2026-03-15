@@ -27,6 +27,53 @@ function normalizeContractLifecycle(contract) {
   return 'pending_signature'
 }
 
+function canViewContractBankingReferences(actor, contract) {
+  if (!actor || !contract) return false
+  if (isOwnerOrAdmin(actor)) return true
+  const actorId = String(actor.id || '')
+  if (!actorId) return false
+  return (
+    actorId === String(contract.uploaded_by) ||
+    actorId === String(contract.buyer_id) ||
+    actorId === String(contract.factory_id)
+  )
+}
+
+function presentContractForActor(contract, actor) {
+  if (!contract) return contract
+
+  const normalizedPdfPath = (() => {
+    const pdfPath = contract.artifact?.pdf_path || ''
+    if (!pdfPath) return ''
+    if (pdfPath.startsWith('/uploads/')) return pdfPath
+    const normalized = String(pdfPath).replace(/\\/g, '/')
+    const idx = normalized.indexOf('server/uploads/')
+    if (idx >= 0) {
+      const suffix = normalized.slice(idx + 'server/uploads/'.length)
+      return `/uploads/${suffix.replace(/^\/+/, '')}`
+    }
+    return pdfPath
+  })()
+
+  const base = {
+    ...contract,
+    artifact: contract.artifact
+      ? { ...contract.artifact, pdf_path: normalizedPdfPath }
+      : contract.artifact,
+  }
+
+  if (canViewContractBankingReferences(actor, contract)) return base
+  return {
+    ...base,
+    bank_name: '',
+    beneficiary_name: '',
+    transaction_reference: '',
+    artifact: base.artifact
+      ? { ...base.artifact, pdf_path: '' }
+      : base.artifact,
+  }
+}
+
 function sanitizeSignatureState(value, fallback = 'pending') {
   const normalized = sanitizeString(value || fallback, 20).toLowerCase()
   return SIGNATURE_STATES.has(normalized) ? normalized : fallback
@@ -54,10 +101,13 @@ function buildSimpleContractPdf(contract) {
     `Title: ${contract.title || 'Contract'}`,
     `Buyer: ${contract.buyer_name || 'N/A'} (${contract.buyer_id || 'N/A'})`,
     `Factory: ${contract.factory_name || 'N/A'} (${contract.factory_id || 'N/A'})`,
+    contract.bank_name ? `Bank: ${contract.bank_name}` : '',
+    contract.beneficiary_name ? `Beneficiary: ${contract.beneficiary_name}` : '',
+    contract.transaction_reference ? `Transaction Reference: ${contract.transaction_reference}` : '',
     `Buyer Signature Timestamp: ${contract.buyer_signed_at || 'N/A'}`,
     `Factory Signature Timestamp: ${contract.factory_signed_at || 'N/A'}`,
     `Generated At: ${toIsoNow()}`,
-  ]
+  ].filter(Boolean)
 
   const contentLines = lines.map((line, idx) => `BT /F1 12 Tf 50 ${760 - (idx * 22)} Td (${escapePdfText(line)}) Tj ET`).join('\n')
   const contentStream = `${contentLines}\n`
@@ -106,7 +156,7 @@ async function generateContractArtifact(contract) {
   await fs.writeFile(filePath, pdfBuffer)
 
   return {
-    pdf_path: path.relative(process.cwd(), filePath),
+    pdf_path: `/uploads/contracts/${fileName}`,
     pdf_hash: pdfHash,
     status: 'generated',
     generated_at: generatedAt,
@@ -178,6 +228,9 @@ export async function createDraftContract(actor, payload = {}) {
     factory_name: sanitizeString(payload.factory_name || '', 160),
     buyer_id: sanitizeString(payload.buyer_id || '', 120),
     factory_id: sanitizeString(payload.factory_id || '', 120),
+    bank_name: sanitizeString(payload.bank_name || '', 120),
+    beneficiary_name: sanitizeString(payload.beneficiary_name || '', 120),
+    transaction_reference: sanitizeString(payload.transaction_reference || '', 160),
     is_draft: true,
     buyer_signature_state: 'pending',
     factory_signature_state: 'pending',
@@ -218,6 +271,7 @@ export async function listContracts(actor) {
 
   return scoped
     .map((c) => ({ ...c, lifecycle_status: normalizeContractLifecycle(c) }))
+    .map((c) => presentContractForActor(c, actor))
 }
 
 export async function updateContractSignatures(contractId, patch = {}, actor) {
@@ -257,7 +311,7 @@ export async function updateContractSignatures(contractId, patch = {}, actor) {
   next.lifecycle_status = normalizeContractLifecycle(next)
   docs[idx] = next
   await writeJson(FILE, docs)
-  return next
+  return presentContractForActor(next, actor)
 }
 
 export async function updateContractArtifact(contractId, patch = {}, actor) {
@@ -304,5 +358,5 @@ export async function updateContractArtifact(contractId, patch = {}, actor) {
   next.lifecycle_status = normalizeContractLifecycle(next)
   docs[idx] = next
   await writeJson(FILE, docs)
-  return next
+  return presentContractForActor(next, actor)
 }

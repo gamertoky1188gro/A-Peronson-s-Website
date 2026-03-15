@@ -26,6 +26,7 @@ const roleLinks = {
   buying_house: [
     { to: '/owner', label: 'Owner Dashboard' },
     { to: '/agent', label: 'Agent' },
+    { to: '/product-management', label: 'Products' },
     { to: '/member-management', label: 'Members' },
     { to: '/verification', label: 'Verification' },
     { to: '/partner-network', label: 'Partner Network' },

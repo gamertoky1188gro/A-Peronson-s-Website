@@ -3,28 +3,26 @@ import { Link } from 'react-router-dom'
 import AccessDeniedState from '../components/AccessDeniedState'
 import { API_BASE, apiRequest, getCurrentUser, getToken } from '../lib/auth'
 
-const FLOW_STEPS = ['draft_creation', 'buyer_signature', 'factory_signature', 'artifact_finalize', 'archive']
-
 function toLabel(status) {
   switch (status) {
     case 'draft':
       return 'Draft'
     case 'pending_signature':
-      return 'Pending Signature'
+      return 'Pending signatures'
     case 'signed':
-      return 'Signed / Finalized'
+      return 'Signed'
     case 'archived':
       return 'Archived'
     default:
-      return 'Pending Signature'
+      return 'Pending signatures'
   }
 }
 
-function statusStyle(status) {
-  if (status === 'signed') return 'bg-green-100 text-green-700'
-  if (status === 'draft') return 'bg-gray-100 text-gray-700'
-  if (status === 'archived') return 'bg-slate-200 text-slate-700'
-  return 'bg-orange-100 text-orange-700'
+function statusClass(status) {
+  if (status === 'signed') return 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+  if (status === 'draft') return 'bg-slate-50 text-slate-700 ring-slate-200'
+  if (status === 'archived') return 'bg-slate-100 text-slate-700 ring-slate-300'
+  return 'bg-amber-50 text-amber-700 ring-amber-200'
 }
 
 function resolveDownloadUrl(pdfPath) {
@@ -43,30 +41,50 @@ function canCreateDraft(user) {
   return ['owner', 'admin', 'buying_house', 'factory'].includes(user.role)
 }
 
+function canViewBankingReferences(user, contract) {
+  if (!user || !contract) return false
+  if (isOwnerLevel(user)) return true
+  const uid = String(user.id || '')
+  return uid && (uid === String(contract.uploaded_by) || uid === String(contract.buyer_id) || uid === String(contract.factory_id))
+}
+
+function safeDash(value) {
+  const text = String(value || '').trim()
+  return text ? text : '\u2014'
+}
+
+function maskValue(value) {
+  const text = String(value || '').trim()
+  if (!text) return '\u2014'
+  if (text.length <= 4) return '\u2022\u2022\u2022\u2022'
+  return `${text.slice(0, 2)}\u2022\u2022\u2022\u2022${text.slice(-2)}`
+}
+
 function computeFlow(contract) {
   const buyerSigned = contract?.buyer_signature_state === 'signed'
   const factorySigned = contract?.factory_signature_state === 'signed'
-  const generated = Boolean(contract?.artifact?.generated_at && contract?.artifact?.pdf_path)
-  const finalized = contract?.artifact?.status === 'locked'
+  const hasPdf = Boolean(contract?.artifact?.generated_at && contract?.artifact?.pdf_path)
+  const locked = contract?.artifact?.status === 'locked'
   const archived = contract?.artifact?.status === 'archived' || Boolean(contract?.archived_at)
   const draftComplete = !contract?.is_draft
 
   const blockers = []
   if (!buyerSigned) blockers.push('Buyer signature pending')
   if (!factorySigned) blockers.push('Factory signature pending')
-  if (!generated && buyerSigned && factorySigned) blockers.push('Generated artifact pending')
-  if (!finalized && generated) blockers.push('Generated artifact not locked')
-  if (!archived && finalized) blockers.push('Archive not completed')
+  if (buyerSigned && factorySigned && !hasPdf) blockers.push('PDF generation pending')
+  if (hasPdf && !locked) blockers.push('Lock pending')
+  if (locked && !archived) blockers.push('Archive pending')
 
   const stepState = {
     draft_creation: draftComplete,
     buyer_signature: buyerSigned,
     factory_signature: factorySigned,
-    artifact_finalize: finalized,
+    artifact_finalize: locked,
     archive: archived,
   }
 
-  return { stepState, blockers, finalized, generated }
+  const nextAction = blockers[0] || 'Complete'
+  return { stepState, hasPdf, locked, archived, blockers, nextAction }
 }
 
 function canBuyerSign(user, contract) {
@@ -93,49 +111,128 @@ function canArchive(user, contract) {
 function actionBlockers(user, contract) {
   const buyerSigned = contract?.buyer_signature_state === 'signed'
   const factorySigned = contract?.factory_signature_state === 'signed'
-  const artifactGenerated = Boolean(contract?.artifact?.generated_at && contract?.artifact?.pdf_path && contract?.artifact?.pdf_hash)
-  const artifactLocked = contract?.artifact?.status === 'locked'
-  const artifactArchived = contract?.artifact?.status === 'archived'
+  const hasPdf = Boolean(contract?.artifact?.generated_at && contract?.artifact?.pdf_hash && contract?.artifact?.pdf_path)
+  const locked = contract?.artifact?.status === 'locked'
+  const archived = contract?.artifact?.status === 'archived'
 
   const blockers = {
     buyerSign: '',
     factorySign: '',
-    finalize: '',
+    lock: '',
     archive: '',
   }
 
-  if (!canBuyerSign(user, contract)) blockers.buyerSign = 'Only owner/admin or assigned buyer can sign this step.'
-  else if (buyerSigned) blockers.buyerSign = 'Buyer signature already completed.'
+  if (!canBuyerSign(user, contract)) blockers.buyerSign = 'Only owner/admin or the assigned buyer can sign.'
+  else if (buyerSigned) blockers.buyerSign = 'Already signed.'
 
-  if (!canFactorySign(user, contract)) blockers.factorySign = 'Only owner/admin or assigned factory can sign this step.'
-  else if (factorySigned) blockers.factorySign = 'Factory signature already completed.'
+  if (!canFactorySign(user, contract)) blockers.factorySign = 'Only owner/admin or the assigned factory can sign.'
+  else if (factorySigned) blockers.factorySign = 'Already signed.'
 
-  if (!canFinalizeArtifact(user, contract)) blockers.finalize = 'Only owner/admin or the draft uploader can finalize artifact.'
-  else if (!buyerSigned || !factorySigned) blockers.finalize = 'Both buyer and factory signatures are required first.'
-  else if (!artifactGenerated) blockers.finalize = 'Generated artifact is required before lock.'
-  else if (artifactLocked) blockers.finalize = 'Artifact is already finalized.'
+  if (!canFinalizeArtifact(user, contract)) blockers.lock = 'Only owner/admin or the draft uploader can lock the PDF.'
+  else if (!buyerSigned || !factorySigned) blockers.lock = 'Both signatures are required first.'
+  else if (!hasPdf) blockers.lock = 'PDF is not generated yet (generated automatically after both signatures).'
+  else if (locked) blockers.lock = 'Already locked.'
 
   if (!canArchive(user, contract)) blockers.archive = 'Only owner/admin or the draft uploader can archive.'
-  else if (!artifactGenerated) blockers.archive = 'Only generated artifacts can be archived.'
-  else if (!artifactLocked) blockers.archive = 'Lock artifact before archiving.'
-  else if (artifactArchived) blockers.archive = 'Artifact is already archived.'
+  else if (!hasPdf) blockers.archive = 'Generate PDF first.'
+  else if (!locked) blockers.archive = 'Lock the PDF first.'
+  else if (archived) blockers.archive = 'Already archived.'
 
   return blockers
 }
 
-export default function ContractVault(){
-  const [filter, setFilter] = useState('all')
-  const [fromDate, setFromDate] = useState('')
-  const [toDate, setToDate] = useState('')
-  const [selected, setSelected] = useState(null)
-  const [drawerOpen, setDrawerOpen] = useState(false)
+function StepPill({ done, label }) {
+  return (
+    <div className={`flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ring-1 ${done ? 'bg-[#E8F3FF] text-[#0A66C2] ring-[#BBD8FF]' : 'bg-white text-slate-600 ring-slate-200'}`}>
+      <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full ${done ? 'bg-[#0A66C2] text-white' : 'bg-slate-100 text-slate-500'}`}>
+        {done ? '\u2713' : '\u2022'}
+      </span>
+      <span>{label}</span>
+    </div>
+  )
+}
+
+function ContractRow({ contract, active, onSelect }) {
+  const status = contract.lifecycle_status || 'pending_signature'
+  const flow = computeFlow(contract)
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={`w-full rounded-2xl border p-4 text-left transition ${active ? 'border-[#0A66C2] bg-[#F6FAFF]' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <div className="truncate text-sm font-semibold text-slate-900">{contract.contract_number || contract.id}</div>
+            <span className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${statusClass(status)}`}>
+              {toLabel(status)}
+            </span>
+          </div>
+          <div className="mt-1 truncate text-xs text-slate-600">{safeDash(contract.title)}</div>
+          <div className="mt-2 text-xs text-slate-600">
+            <span className="font-semibold text-slate-700">Buyer:</span> {safeDash(contract.buyer_name)} <span className="mx-1">•</span>
+            <span className="font-semibold text-slate-700">Factory:</span> {safeDash(contract.factory_name)}
+          </div>
+        </div>
+
+        <div className="shrink-0 text-right text-xs text-slate-600">
+          <div>{(contract.updated_at || contract.created_at || '').slice(0, 10) || '\u2014'}</div>
+          <div className="mt-2 inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700">
+            Next: {flow.nextAction}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-slate-600">
+        <span className="inline-flex items-center rounded-full bg-white px-2 py-1 ring-1 ring-slate-200">Buyer: {contract.buyer_signature_state || 'pending'}</span>
+        <span className="inline-flex items-center rounded-full bg-white px-2 py-1 ring-1 ring-slate-200">Factory: {contract.factory_signature_state || 'pending'}</span>
+        <span className="inline-flex items-center rounded-full bg-white px-2 py-1 ring-1 ring-slate-200">PDF: {flow.hasPdf ? 'ready' : 'pending'}</span>
+      </div>
+    </button>
+  )
+}
+
+function Drawer({ open, onClose, children }) {
+  if (!open) return null
+  return (
+    <div className="fixed inset-0 z-50 lg:hidden">
+      <div className="absolute inset-0 bg-slate-900/30" onClick={onClose} />
+      <div className="absolute inset-x-0 bottom-0 max-h-[86vh] overflow-auto rounded-t-3xl bg-white p-5 shadow-2xl">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="text-sm font-semibold text-slate-900">Contract details</div>
+          <button type="button" onClick={onClose} className="rounded-full px-3 py-1 text-sm font-semibold text-slate-700 hover:bg-slate-100">Close</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+export default function ContractVault() {
+  const currentUser = useMemo(() => getCurrentUser(), [])
   const [contracts, setContracts] = useState([])
+  const [selectedId, setSelectedId] = useState('')
+  const [drawerOpen, setDrawerOpen] = useState(false)
   const [error, setError] = useState('')
   const [forbidden, setForbidden] = useState(false)
-  const [actionError, setActionError] = useState('')
   const [saving, setSaving] = useState(false)
-  const [draftForm, setDraftForm] = useState({ title: '', buyer_name: '', factory_name: '', buyer_id: '', factory_id: '' })
-  const currentUser = useMemo(() => getCurrentUser(), [])
+  const [actionError, setActionError] = useState('')
+
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [query, setQuery] = useState('')
+
+  const [draftOpen, setDraftOpen] = useState(false)
+  const [draftForm, setDraftForm] = useState({
+    title: '',
+    buyer_name: '',
+    factory_name: '',
+    buyer_id: '',
+    factory_id: '',
+    bank_name: '',
+    beneficiary_name: '',
+    transaction_reference: '',
+  })
 
   const loadContracts = async () => {
     try {
@@ -151,7 +248,7 @@ export default function ContractVault(){
     } catch (err) {
       const isForbidden = err.status === 403
       setForbidden(isForbidden)
-      setError(isForbidden ? 'You do not have permission to view these contracts.' : (err.message || 'Failed to load contracts'))
+      setError(isForbidden ? 'You do not have permission to view contracts.' : (err.message || 'Failed to load contracts.'))
       setContracts([])
     }
   }
@@ -160,23 +257,38 @@ export default function ContractVault(){
     loadContracts()
   }, [])
 
-  const visibleContracts = useMemo(() => contracts.filter((c) => {
-    if (filter !== 'all' && c.lifecycle_status !== filter) return false
-    const effectiveDate = c.updated_at || c.created_at
-    if (fromDate && effectiveDate < fromDate) return false
-    if (toDate && effectiveDate > `${toDate}T23:59:59`) return false
-    return true
-  }), [contracts, filter, fromDate, toDate])
+  const visibleContracts = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return contracts
+      .filter((c) => (statusFilter === 'all' ? true : (c.lifecycle_status || 'pending_signature') === statusFilter))
+      .filter((c) => {
+        if (!q) return true
+        const haystack = `${c.contract_number || ''} ${c.title || ''} ${c.buyer_name || ''} ${c.factory_name || ''} ${c.id || ''}`.toLowerCase()
+        return haystack.includes(q)
+      })
+      .sort((a, b) => String(b.updated_at || b.created_at || '').localeCompare(String(a.updated_at || a.created_at || '')))
+  }, [contracts, statusFilter, query])
+
+  const selected = useMemo(() => {
+    if (!selectedId) return null
+    return contracts.find((c) => String(c.id) === String(selectedId)) || null
+  }, [contracts, selectedId])
+
+  const selectedFlow = computeFlow(selected)
+  const selectedActionBlockers = actionBlockers(currentUser, selected)
+  const downloadUrl = resolveDownloadUrl(selected?.artifact?.pdf_path)
+  const canDownload = Boolean(selectedFlow?.hasPdf && downloadUrl)
 
   const upsertContract = (nextContract) => {
+    if (!nextContract?.id) return
     setContracts((prev) => {
-      const idx = prev.findIndex((entry) => entry.id === nextContract.id)
+      const idx = prev.findIndex((entry) => String(entry.id) === String(nextContract.id))
       if (idx < 0) return [nextContract, ...prev]
       const clone = [...prev]
       clone[idx] = nextContract
       return clone
     })
-    setSelected(nextContract)
+    setSelectedId(String(nextContract.id))
   }
 
   const runStepAction = async (runner) => {
@@ -185,7 +297,7 @@ export default function ContractVault(){
     try {
       const token = getToken()
       const updated = await runner(token)
-      if (updated?.id) upsertContract(updated)
+      upsertContract(updated)
     } catch (err) {
       setActionError(err.message || 'Action failed')
     } finally {
@@ -203,229 +315,322 @@ export default function ContractVault(){
         factory_name: draftForm.factory_name,
         buyer_id: draftForm.buyer_id,
         factory_id: draftForm.factory_id,
+        bank_name: draftForm.bank_name,
+        beneficiary_name: draftForm.beneficiary_name,
+        transaction_reference: draftForm.transaction_reference,
       },
     }))
+    setDraftOpen(false)
+    setDraftForm({
+      title: '',
+      buyer_name: '',
+      factory_name: '',
+      buyer_id: '',
+      factory_id: '',
+      bank_name: '',
+      beneficiary_name: '',
+      transaction_reference: '',
+    })
     await loadContracts()
   }
 
-  const selectedFlow = computeFlow(selected)
-  const selectedActionBlockers = actionBlockers(currentUser, selected)
-  const selectedDownloadUrl = resolveDownloadUrl(selected?.artifact?.pdf_path)
-  const canDownloadSelected = selectedFlow.generated && Boolean(selectedDownloadUrl)
+  const openDetails = (contractId) => {
+    setSelectedId(String(contractId))
+    setDrawerOpen(true)
+  }
 
-  return (
-    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
-      <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <aside className="lg:col-span-1">
-          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow p-4">
-            <h3 className="font-semibold mb-3">Dashboard</h3>
-            <nav className="space-y-2 text-sm">
-              <Link to="/owner" className="block">Overview</Link>
-              <Link to="/buyer-requests" className="block">Buyer Requests</Link>
-              <Link to="/chat" className="block">Chats</Link>
-              <Link to="/partner-network" className="block">Partner Network</Link>
-              <Link to="/contracts" className="block font-semibold text-[#0F3D91]">Contract Vault</Link>
-              <Link to="/insights" className="block">Analytics</Link>
-              <Link to="/org-settings" className="block">Settings</Link>
-            </nav>
+  const detailPanel = selected ? (
+    <div className="rounded-2xl border border-slate-200 bg-white p-5">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <div className="truncate text-lg font-bold text-slate-900">{selected.contract_number || selected.id}</div>
+            <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ${statusClass(selected.lifecycle_status || 'pending_signature')}`}>
+              {toLabel(selected.lifecycle_status || 'pending_signature')}
+            </span>
           </div>
-        </aside>
-
-        <main className="lg:col-span-3 space-y-6">
-          {forbidden ? <AccessDeniedState message={error} /> : null}
-          {!forbidden ? (
-            <>
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div>
-              <h1 className="text-2xl font-bold">🔒 Contract Vault <span className="ml-2 text-sm text-gray-500">Encrypted & Timestamped</span></h1>
-              <p className="text-sm text-[#5A5A5A]">Step-driven execution from draft through signatures, server-generated artifacts, lock, and archive.</p>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <input type="date" value={fromDate} onChange={(e)=>setFromDate(e.target.value)} className="px-3 py-2 border rounded" />
-              <input type="date" value={toDate} onChange={(e)=>setToDate(e.target.value)} className="px-3 py-2 border rounded" />
-              <select value={filter} onChange={(e)=>setFilter(e.target.value)} className="px-3 py-2 border rounded">
-                <option value="all">All</option>
-                <option value="draft">Draft</option>
-                <option value="pending_signature">Pending Signature</option>
-                <option value="signed">Signed</option>
-                <option value="archived">Archived</option>
-              </select>
-            </div>
+          <div className="mt-1 text-sm text-slate-600">{safeDash(selected.title)}</div>
+          <div className="mt-3 text-sm text-slate-700">
+            <span className="font-semibold">Buyer:</span> {safeDash(selected.buyer_name)} <span className="mx-1">•</span>
+            <span className="font-semibold">Factory:</span> {safeDash(selected.factory_name)}
           </div>
-
-          <section className="bg-white border rounded-lg p-4">
-            <h2 className="font-semibold mb-2">Step 1 · Draft creation</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
-              <input placeholder="Contract title" value={draftForm.title} onChange={(e) => setDraftForm((prev) => ({ ...prev, title: e.target.value }))} className="px-3 py-2 border rounded" />
-              <input placeholder="Buyer name" value={draftForm.buyer_name} onChange={(e) => setDraftForm((prev) => ({ ...prev, buyer_name: e.target.value }))} className="px-3 py-2 border rounded" />
-              <input placeholder="Factory name" value={draftForm.factory_name} onChange={(e) => setDraftForm((prev) => ({ ...prev, factory_name: e.target.value }))} className="px-3 py-2 border rounded" />
-              <input placeholder="Buyer user ID" value={draftForm.buyer_id} onChange={(e) => setDraftForm((prev) => ({ ...prev, buyer_id: e.target.value }))} className="px-3 py-2 border rounded" />
-              <input placeholder="Factory user ID" value={draftForm.factory_id} onChange={(e) => setDraftForm((prev) => ({ ...prev, factory_id: e.target.value }))} className="px-3 py-2 border rounded" />
-            </div>
-            <button disabled={!canCreateDraft(currentUser) || saving} onClick={handleCreateDraft} className="px-4 py-2 rounded bg-[#0A66C2] text-white disabled:bg-gray-300">
-              Create Draft (POST /documents/contracts/draft)
-            </button>
-            {!canCreateDraft(currentUser) && <p className="text-xs text-amber-700 mt-2">Your role cannot create contract drafts.</p>}
-          </section>
-
-          {error && <div className="text-sm text-red-600">{error}</div>}
-          {actionError && <div className="text-sm text-red-600">{actionError}</div>}
-
-          <div className="grid gap-4">
-            {visibleContracts.map(c => {
-              const status = c.lifecycle_status || 'pending_signature'
-              const flow = computeFlow(c)
-              const blockersByAction = actionBlockers(currentUser, c)
-              const pdfUrl = resolveDownloadUrl(c.artifact?.pdf_path)
-              const canDownload = flow.generated && Boolean(pdfUrl)
-              return (
-                <div key={c.id} className="bg-white neo-panel cyberpunk-card rounded-lg shadow-sm p-4 flex items-center justify-between gap-4">
-                  <div onClick={() => { setSelected(c); setDrawerOpen(true) }} className="cursor-pointer">
-                    <div className="flex items-center gap-3">
-                      <div className="font-semibold">{c.contract_number || c.id}</div>
-                      <div className={`text-sm px-2 py-1 rounded ${statusStyle(status)}`}>{toLabel(status)}</div>
-                    </div>
-                    <div className="text-sm text-[#5A5A5A]">Buyer: {c.buyer_name || '—'} • Factory: {c.factory_name || '—'}</div>
-                    <div className="text-sm text-[#5A5A5A]">Signer status: Buyer {c.buyer_signature_state || 'pending'} • Factory {c.factory_signature_state || 'pending'}</div>
-                    <div className="text-sm text-[#5A5A5A]">Blockers: {flow.blockers.length ? flow.blockers.join(' · ') : 'None'}</div>
-                    <div className="text-xs text-amber-700">Action blockers: {[blockersByAction.buyerSign, blockersByAction.factorySign, blockersByAction.finalize, blockersByAction.archive].filter(Boolean).join(' · ') || 'None'}</div>
-                    <div className="text-sm text-[#5A5A5A]">Updated: {(c.updated_at || c.created_at || '').slice(0, 10)}</div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => { setSelected(c); setDrawerOpen(true) }} className="px-3 py-1 border rounded">Details</button>
-                    {canDownload ? <a href={pdfUrl} target="_blank" rel="noreferrer" className="px-3 py-1 border rounded">Download Generated PDF</a> : <span className="px-3 py-1 border rounded text-gray-400">Generated PDF pending</span>}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-            </>
-          ) : null}
-        </main>
+        </div>
+        <Link to="/help" className="shrink-0 rounded-full bg-[#E8F3FF] px-3 py-1 text-xs font-semibold text-[#0A66C2] hover:bg-[#D9ECFF]">Help</Link>
       </div>
 
-      {drawerOpen && selected && (
-        <div className="fixed inset-0 z-50 flex">
-          <div className="flex-1" onClick={()=>{setDrawerOpen(false); setSelected(null)}}></div>
-          <aside className="w-[32rem] bg-white neo-panel cyberpunk-card border-l shadow-xl p-6 overflow-auto">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="font-bold">{selected.contract_number || selected.id}</h3>
-                <div className="text-sm text-[#5A5A5A]">{selected.buyer_name || '—'} • {selected.factory_name || '—'}</div>
-              </div>
-              <button onClick={()=>{setDrawerOpen(false); setSelected(null)}} className="px-2 py-1">Close</button>
-            </div>
+      {actionError ? <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-semibold text-rose-700">{actionError}</div> : null}
 
-            <section className="mb-4">
-              <h4 className="font-semibold">Lifecycle timeline</h4>
-              <ol className="mt-2 space-y-2 text-sm">
-                {FLOW_STEPS.map((step, idx) => {
-                  const done = selectedFlow.stepState[step]
-                  const labels = {
-                    draft_creation: 'Draft created and shared',
-                    buyer_signature: 'Buyer signature',
-                    factory_signature: 'Factory signature',
-                    artifact_finalize: 'Generated artifact locked',
-                    archive: 'Archived',
-                  }
-                  return (
-                    <li key={step} className="flex items-start gap-2">
-                      <span className={`inline-block w-5 h-5 rounded-full text-center text-xs leading-5 ${done ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{idx + 1}</span>
-                      <span>{labels[step]} {done ? '✓' : '• pending'}</span>
-                    </li>
-                  )
-                })}
-              </ol>
-              <div className="text-xs text-[#5A5A5A] mt-2">Blockers: {selectedFlow.blockers.length ? selectedFlow.blockers.join(' · ') : 'None'}</div>
-            </section>
+      <div className="mt-5 flex flex-wrap items-center gap-2">
+        <StepPill done={selectedFlow.stepState.draft_creation} label="Draft" />
+        <StepPill done={selectedFlow.stepState.buyer_signature} label="Buyer sign" />
+        <StepPill done={selectedFlow.stepState.factory_signature} label="Factory sign" />
+        <StepPill done={selectedFlow.stepState.artifact_finalize} label="Lock PDF" />
+        <StepPill done={selectedFlow.stepState.archive} label="Archive" />
+      </div>
 
-            <section className="mb-4">
-              <h4 className="font-semibold">Step actions (role-sensitive)</h4>
-              <div className="space-y-2 mt-2 text-sm">
-                <button
-                  disabled={Boolean(selectedActionBlockers.buyerSign) || saving}
-                  onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/signatures`, {
-                    method: 'PATCH',
-                    token,
-                    body: { buyer_signature_state: 'signed', is_draft: false },
-                  }))}
-                  className="w-full px-3 py-2 border rounded disabled:text-gray-400"
-                >
-                  Step 2 · Buyer signature (PATCH /signatures)
-                </button>
-                {selectedActionBlockers.buyerSign ? <p className="text-xs text-amber-700">{selectedActionBlockers.buyerSign}</p> : null}
+      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+          <div className="text-sm font-semibold text-slate-900">Signatures</div>
+          <div className="mt-2 text-sm text-slate-700">Buyer: <span className="font-semibold">{selected.buyer_signature_state || 'pending'}</span> {selected.buyer_signed_at ? <span className="text-xs text-slate-500">({selected.buyer_signed_at})</span> : null}</div>
+          <div className="mt-1 text-sm text-slate-700">Factory: <span className="font-semibold">{selected.factory_signature_state || 'pending'}</span> {selected.factory_signed_at ? <span className="text-xs text-slate-500">({selected.factory_signed_at})</span> : null}</div>
+          <div className="mt-4 grid grid-cols-1 gap-2">
+            <button
+              type="button"
+              disabled={Boolean(selectedActionBlockers.buyerSign) || saving}
+              onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/signatures`, {
+                method: 'PATCH',
+                token,
+                body: { buyer_signature_state: 'signed', is_draft: false },
+              }))}
+              className="rounded-xl bg-[#0A66C2] px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-200 disabled:text-slate-500"
+            >
+              Buyer sign
+            </button>
+            {selectedActionBlockers.buyerSign ? <div className="text-xs text-amber-700">{selectedActionBlockers.buyerSign}</div> : null}
 
-                <button
-                  disabled={Boolean(selectedActionBlockers.factorySign) || saving}
-                  onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/signatures`, {
-                    method: 'PATCH',
-                    token,
-                    body: { factory_signature_state: 'signed', is_draft: false },
-                  }))}
-                  className="w-full px-3 py-2 border rounded disabled:text-gray-400"
-                >
-                  Step 3 · Factory signature (PATCH /signatures)
-                </button>
-                {selectedActionBlockers.factorySign ? <p className="text-xs text-amber-700">{selectedActionBlockers.factorySign}</p> : null}
+            <button
+              type="button"
+              disabled={Boolean(selectedActionBlockers.factorySign) || saving}
+              onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/signatures`, {
+                method: 'PATCH',
+                token,
+                body: { factory_signature_state: 'signed', is_draft: false },
+              }))}
+              className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-[#0A66C2] ring-1 ring-[#BBD8FF] hover:bg-[#F6FAFF] disabled:bg-slate-50 disabled:text-slate-400 disabled:ring-slate-200"
+            >
+              Factory sign
+            </button>
+            {selectedActionBlockers.factorySign ? <div className="text-xs text-amber-700">{selectedActionBlockers.factorySign}</div> : null}
+          </div>
+        </div>
 
-                <div className="border rounded p-2">
-                  <div className="font-medium mb-2">Step 4 · Lock generated artifact</div>
-                  <div className="text-xs text-[#5A5A5A] mb-2">Artifact references are server-generated from signed draft fields.</div>
-                  <button
-                    disabled={Boolean(selectedActionBlockers.finalize) || saving}
-                    onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/artifact`, {
-                      method: 'PATCH',
-                      token,
-                      body: { status: 'locked' },
-                    }))}
-                    className="w-full px-3 py-2 border rounded disabled:text-gray-400"
-                  >
-                    Lock generated artifact (PATCH /artifact)
-                  </button>
-                  {selectedActionBlockers.finalize ? <p className="text-xs text-amber-700 mt-2">{selectedActionBlockers.finalize}</p> : null}
+        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+          <div className="text-sm font-semibold text-slate-900">Artifact (PDF)</div>
+          <div className="mt-2 text-sm text-slate-700">Status: <span className="font-semibold">{selected.artifact?.status || 'draft'}</span></div>
+          <div className="mt-1 text-xs text-slate-500">PDF generates automatically after both signatures.</div>
+
+          <div className="mt-4 grid grid-cols-1 gap-2">
+            <button
+              type="button"
+              disabled={Boolean(selectedActionBlockers.lock) || saving}
+              onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/artifact`, {
+                method: 'PATCH',
+                token,
+                body: { status: 'locked' },
+              }))}
+              className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50 disabled:bg-slate-50 disabled:text-slate-400"
+            >
+              Lock PDF
+            </button>
+            {selectedActionBlockers.lock ? <div className="text-xs text-amber-700">{selectedActionBlockers.lock}</div> : null}
+
+            <button
+              type="button"
+              disabled={Boolean(selectedActionBlockers.archive) || saving}
+              onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/artifact`, {
+                method: 'PATCH',
+                token,
+                body: { status: 'archived' },
+              }))}
+              className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-200 disabled:text-slate-500"
+            >
+              Archive
+            </button>
+            {selectedActionBlockers.archive ? <div className="text-xs text-amber-700">{selectedActionBlockers.archive}</div> : null}
+
+            {canDownload
+              ? <a href={downloadUrl} target="_blank" rel="noreferrer" className="rounded-xl bg-[#0A66C2] px-4 py-2 text-center text-sm font-semibold text-white hover:bg-[#0959A8]">Download PDF</a>
+              : <button type="button" disabled className="rounded-xl bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-500">Download (not ready)</button>}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-sm font-semibold text-slate-900">Banking references (optional)</div>
+            <div className="mt-1 text-xs text-slate-500">For fraud prevention only. No direct payments are processed on-platform.</div>
+          </div>
+          <div className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+            {canViewBankingReferences(currentUser, selected) ? 'Visible' : 'Masked'}
+          </div>
+        </div>
+
+        <div className="mt-3 grid grid-cols-1 gap-2 text-sm text-slate-700">
+          <div>Bank name: {canViewBankingReferences(currentUser, selected) ? safeDash(selected.bank_name) : maskValue(selected.bank_name)}</div>
+          <div>Beneficiary: {canViewBankingReferences(currentUser, selected) ? safeDash(selected.beneficiary_name) : maskValue(selected.beneficiary_name)}</div>
+          <div>Transaction reference: {canViewBankingReferences(currentUser, selected) ? safeDash(selected.transaction_reference) : maskValue(selected.transaction_reference)}</div>
+        </div>
+      </div>
+
+      <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="text-sm font-semibold text-slate-900">Artifact audit</div>
+        <div className="mt-3 grid grid-cols-1 gap-2 text-sm text-slate-700">
+          <div>Status: {safeDash(selected.artifact?.status)}</div>
+          <div>Generated at: {safeDash(selected.artifact?.generated_at)}</div>
+          <div>Version: {selected.artifact?.version ?? 0}</div>
+          <div className="break-all text-xs text-slate-600">Hash: {safeDash(selected.artifact?.pdf_hash)}</div>
+          <div className="text-xs text-slate-600">
+            Signer IDs: Buyer {safeDash(selected.artifact?.signer_ids?.buyer_id)} <span className="mx-1">•</span> Factory {safeDash(selected.artifact?.signer_ids?.factory_id)}
+          </div>
+          <div className="text-xs text-slate-600">
+            Signature timestamps: Buyer {safeDash(selected.artifact?.signature_timestamps?.buyer_signed_at)} <span className="mx-1">•</span> Factory {safeDash(selected.artifact?.signature_timestamps?.factory_signed_at)}
+          </div>
+        </div>
+      </div>
+    </div>
+  ) : (
+    <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-600">
+      Select a contract to see details.
+    </div>
+  )
+
+  return (
+    <div className="min-h-screen bg-[#F5F9FF]">
+      <div className="mx-auto max-w-7xl p-4 sm:p-6">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="text-xs font-semibold text-[#0A66C2]">Vault</div>
+            <h1 className="mt-1 text-2xl font-bold text-slate-900">Contract Vault</h1>
+            <p className="mt-1 text-sm text-slate-600">Draft → Sign → PDF artifact → Lock → Archive</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link to="/owner" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50">Dashboard</Link>
+            <Link to="/notifications" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50">Notifications</Link>
+            <button
+              type="button"
+              disabled={!canCreateDraft(currentUser)}
+              onClick={() => setDraftOpen(true)}
+              className="rounded-full bg-[#0A66C2] px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-200 disabled:text-slate-500"
+            >
+              New draft
+            </button>
+          </div>
+        </div>
+
+        {forbidden ? <AccessDeniedState message={error || 'Access denied.'} /> : null}
+        {!forbidden && error ? <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700">{error}</div> : null}
+
+        {!forbidden ? (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-5">
+              <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="text-sm font-semibold text-slate-900">Contracts</div>
+                  <button type="button" onClick={loadContracts} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-200">Refresh</button>
                 </div>
 
-                <button
-                  disabled={Boolean(selectedActionBlockers.archive) || saving}
-                  onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/artifact`, {
-                    method: 'PATCH',
-                    token,
-                    body: { status: 'archived' },
-                  }))}
-                  className="w-full px-3 py-2 border rounded disabled:text-gray-400"
-                >
-                  Step 5 · Archive (PATCH /artifact)
-                </button>
-                {selectedActionBlockers.archive ? <p className="text-xs text-amber-700">{selectedActionBlockers.archive}</p> : null}
+                <div className="mt-4 grid gap-3">
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Search by number, buyer, factory, title..."
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-[#0A66C2]"
+                  />
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {[
+                      { key: 'all', label: 'All' },
+                      { key: 'draft', label: 'Draft' },
+                      { key: 'pending_signature', label: 'Pending' },
+                      { key: 'signed', label: 'Signed' },
+                      { key: 'archived', label: 'Archived' },
+                    ].map((chip) => (
+                      <button
+                        key={chip.key}
+                        type="button"
+                        onClick={() => setStatusFilter(chip.key)}
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${statusFilter === chip.key ? 'bg-[#E8F3FF] text-[#0A66C2] ring-[#BBD8FF]' : 'bg-white text-slate-700 ring-slate-200 hover:bg-slate-50'}`}
+                      >
+                        {chip.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </section>
 
-            <section className="mb-4 text-sm text-[#5A5A5A]">
-              <h4 className="font-semibold text-black">Digital signatures</h4>
-              <div>Buyer: {selected.buyer_signature_state || 'pending'} {selected.buyer_signed_at ? `(${selected.buyer_signed_at})` : ''}</div>
-              <div>Factory: {selected.factory_signature_state || 'pending'} {selected.factory_signed_at ? `(${selected.factory_signed_at})` : ''}</div>
-            </section>
+              <div className="mt-4 grid gap-3">
+                {visibleContracts.length ? visibleContracts.map((c) => (
+                  <div key={c.id} className="hidden lg:block">
+                    <ContractRow
+                      contract={c}
+                      active={String(c.id) === String(selectedId)}
+                      onSelect={() => setSelectedId(String(c.id))}
+                    />
+                  </div>
+                )) : (
+                  <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-600">
+                    No contracts found.
+                  </div>
+                )}
 
-            <section className="mb-4 text-sm text-[#5A5A5A]">
-              <h4 className="font-semibold text-black">Generated artifact audit</h4>
-              <div>Status: {selected.artifact?.status || 'draft'}</div>
-              <div>Generated at: {selected.artifact?.generated_at || 'N/A'}</div>
-              <div>Version: {selected.artifact?.version || 0}</div>
-              <div className="text-xs break-all">Hash: {selected.artifact?.pdf_hash || 'N/A'}</div>
-              <div>Signer IDs: Buyer {selected.artifact?.signer_ids?.buyer_id || 'N/A'} • Factory {selected.artifact?.signer_ids?.factory_id || 'N/A'}</div>
-              <div>Signature timestamps: Buyer {selected.artifact?.signature_timestamps?.buyer_signed_at || 'N/A'} • Factory {selected.artifact?.signature_timestamps?.factory_signed_at || 'N/A'}</div>
-              <div className="text-xs break-all">Reference: {selected.artifact?.pdf_path || 'N/A'}</div>
-            </section>
-
-            <div className="flex gap-2 mt-6">
-              {canDownloadSelected
-                ? <a href={selectedDownloadUrl} target="_blank" rel="noreferrer" className="px-4 py-2 bg-[#0A66C2] text-white rounded">Download PDF</a>
-                : <button disabled className="px-4 py-2 bg-gray-300 text-white rounded">Download after generation</button>}
+                {visibleContracts.length ? (
+                  <div className="grid gap-3 lg:hidden">
+                    {visibleContracts.map((c) => (
+                      <ContractRow
+                        key={c.id}
+                        contract={c}
+                        active={String(c.id) === String(selectedId)}
+                        onSelect={() => openDetails(c.id)}
+                      />
+                    ))}
+                  </div>
+                ) : null}
+              </div>
             </div>
-          </aside>
-        </div>
-      )}
 
+            <div className="hidden lg:col-span-7 lg:block">
+              {detailPanel}
+            </div>
+          </div>
+        ) : null}
+
+        <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+          {detailPanel}
+        </Drawer>
+
+        {draftOpen ? (
+          <div className="fixed inset-0 z-50">
+            <div className="absolute inset-0 bg-slate-900/30" onClick={() => setDraftOpen(false)} />
+            <div className="absolute left-1/2 top-10 w-[min(40rem,92vw)] -translate-x-1/2 rounded-3xl bg-white p-6 shadow-2xl">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-xs font-semibold text-[#0A66C2]">New</div>
+                  <div className="mt-1 text-lg font-bold text-slate-900">Create contract draft</div>
+                  <div className="mt-1 text-xs text-slate-600">Banking references are optional and should be used only for fraud prevention.</div>
+                </div>
+                <button type="button" onClick={() => setDraftOpen(false)} className="rounded-full px-3 py-1 text-sm font-semibold text-slate-700 hover:bg-slate-100">Close</button>
+              </div>
+
+              <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <input value={draftForm.title} onChange={(e) => setDraftForm((p) => ({ ...p, title: e.target.value }))} placeholder="Title" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2]" />
+                <input value={draftForm.buyer_name} onChange={(e) => setDraftForm((p) => ({ ...p, buyer_name: e.target.value }))} placeholder="Buyer name" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2]" />
+                <input value={draftForm.factory_name} onChange={(e) => setDraftForm((p) => ({ ...p, factory_name: e.target.value }))} placeholder="Factory name" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2]" />
+                <input value={draftForm.buyer_id} onChange={(e) => setDraftForm((p) => ({ ...p, buyer_id: e.target.value }))} placeholder="Buyer user ID" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2]" />
+                <input value={draftForm.factory_id} onChange={(e) => setDraftForm((p) => ({ ...p, factory_id: e.target.value }))} placeholder="Factory user ID" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2]" />
+                <div className="hidden sm:block" />
+
+                <input value={draftForm.bank_name} onChange={(e) => setDraftForm((p) => ({ ...p, bank_name: e.target.value }))} placeholder="Bank name (optional)" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2]" />
+                <input value={draftForm.beneficiary_name} onChange={(e) => setDraftForm((p) => ({ ...p, beneficiary_name: e.target.value }))} placeholder="Beneficiary name (optional)" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2]" />
+                <input value={draftForm.transaction_reference} onChange={(e) => setDraftForm((p) => ({ ...p, transaction_reference: e.target.value }))} placeholder="Transaction reference (optional)" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2] sm:col-span-2" />
+              </div>
+
+              <div className="mt-6 flex items-center justify-end gap-2">
+                <button type="button" onClick={() => setDraftOpen(false)} className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50">Cancel</button>
+                <button
+                  type="button"
+                  disabled={!canCreateDraft(currentUser) || saving}
+                  onClick={handleCreateDraft}
+                  className="rounded-full bg-[#0A66C2] px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-200 disabled:text-slate-500"
+                >
+                  Create draft
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </div>
     </div>
   )
 }
+

@@ -36,6 +36,14 @@ export async function listMySearchAlerts(userId) {
   return alerts.filter((a) => a.user_id === userId)
 }
 
+export async function deleteSearchAlertForUser(userId, alertId) {
+  const alerts = await readJson(ALERTS_FILE)
+  const next = alerts.filter((a) => !(a.user_id === userId && a.id === alertId))
+  if (next.length === alerts.length) return false
+  await writeJson(ALERTS_FILE, next)
+  return true
+}
+
 function matches(alert, text) {
   const hay = String(text || '').toLowerCase()
   return alert.query.split(/\s+/).filter(Boolean).some((part) => hay.includes(part))

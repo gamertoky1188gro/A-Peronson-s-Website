@@ -1,4 +1,4 @@
-import { createProduct, listProducts } from '../services/productService.js'
+import { createProduct, listProducts, removeProduct, updateProductById } from '../services/productService.js'
 import {
   buildLimitError,
   buildSearchAccessPayload,
@@ -9,6 +9,7 @@ import {
   getUserPlan,
 } from '../services/searchAccessService.js'
 import { readJson } from '../utils/jsonStore.js'
+import { listMyProductViews, recordView } from '../services/productViewService.js'
 
 function parseNumber(value) {
   const n = Number(String(value || '').replace(/[^\d.]/g, ''))
@@ -36,7 +37,10 @@ export async function postProduct(req, res) {
 }
 
 export async function getProducts(req, res) {
-  return res.json(await listProducts({ category: req.query.category }))
+  const mine = req.query.mine === 'true'
+  const category = req.query.category || ''
+  const companyId = mine ? req.user.id : ''
+  return res.json(await listProducts({ category, companyId }))
 }
 
 export async function searchProducts(req, res) {
@@ -107,4 +111,31 @@ export async function searchProducts(req, res) {
       quota: quotaUse.quota,
     }),
   })
+}
+
+export async function updateProduct(req, res) {
+  const updated = await updateProductById(req.user, req.params.productId, req.body || {})
+  if (updated === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+  if (!updated) return res.status(404).json({ error: 'Product not found' })
+  return res.json(updated)
+}
+
+export async function deleteProduct(req, res) {
+  const removed = await removeProduct(req.user, req.params.productId)
+  if (removed === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+  if (!removed) return res.status(404).json({ error: 'Product not found' })
+  return res.json({ ok: true })
+}
+
+export async function recordProductView(req, res) {
+  const result = await recordView(req.user.id, req.params.productId, { windowMinutes: 10 })
+  if (result === 'not_found') return res.status(404).json({ error: 'Product not found' })
+  return res.status(201).json(result)
+}
+
+export async function getMyViewedProducts(req, res) {
+  const cursor = Number.isFinite(Number(req.query.cursor)) ? Math.max(0, Math.floor(Number(req.query.cursor))) : 0
+  const limitRaw = Number.isFinite(Number(req.query.limit)) ? Math.floor(Number(req.query.limit)) : 10
+  const limit = Math.min(50, Math.max(1, limitRaw))
+  return res.json(await listMyProductViews(req.user.id, { cursor, limit }))
 }

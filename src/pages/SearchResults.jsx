@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Briefcase, Building2, Filter, LayoutGrid, Bell, Search as SearchIcon } from 'lucide-react'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
+import ProductQuickViewModal from '../components/products/ProductQuickViewModal'
 
 const TAB_OPTIONS = [
   { id: 'all', label: 'All', icon: LayoutGrid },
@@ -68,6 +69,8 @@ export default function SearchResults() {
   const [requests, setRequests] = useState([])
   const [companies, setCompanies] = useState([])
   const [ratingsByProfileKey, setRatingsByProfileKey] = useState({})
+  const [recentViews, setRecentViews] = useState([])
+  const [quickViewItem, setQuickViewItem] = useState(null)
 
   const totalResults = requests.length + companies.length
 
@@ -112,6 +115,15 @@ export default function SearchResults() {
     }
   }, [allowAdvanced, category, filters, query, token])
 
+  const loadRecentViews = useCallback(async () => {
+    try {
+      const data = await apiRequest('/products/views/me?cursor=0&limit=5', { token })
+      setRecentViews(Array.isArray(data?.items) ? data.items : [])
+    } catch {
+      setRecentViews([])
+    }
+  }, [token])
+
   useEffect(() => {
     const keys = [...new Set(companies.map((c) => String(c.profile_key || '')).filter(Boolean))]
     if (!keys.length) {
@@ -123,6 +135,10 @@ export default function SearchResults() {
       .then((data) => setRatingsByProfileKey(data || {}))
       .catch(() => setRatingsByProfileKey({}))
   }, [companies, token])
+
+  useEffect(() => {
+    loadRecentViews()
+  }, [loadRecentViews])
 
   function updateAdvancedFilter(key, value) {
     if (premiumLocked) {
@@ -286,7 +302,8 @@ export default function SearchResults() {
           ) : null}
         </div>
 
-        <div className="mt-5 bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div className="mt-5 grid grid-cols-12 gap-4">
+          <div className="col-span-12 xl:col-span-9 bg-white rounded-2xl border border-slate-200 overflow-hidden">
           <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-200">
             {TAB_OPTIONS.map((t) => {
               const Icon = t.icon
@@ -407,6 +424,13 @@ export default function SearchResults() {
                               </Link>
                               <button
                                 type="button"
+                                onClick={() => setQuickViewItem({ ...p, author })}
+                                className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                              >
+                                Quick view
+                              </button>
+                              <button
+                                type="button"
                                 onClick={() => openChatNotice(author.name || 'company')}
                                 className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182]"
                               >
@@ -422,8 +446,49 @@ export default function SearchResults() {
               </div>
             ) : null}
           </div>
+          </div>
+
+          <aside className="col-span-12 xl:col-span-3 space-y-4">
+            <div className="bg-white rounded-2xl border border-slate-200 p-4">
+              <p className="text-sm font-bold text-slate-900">Recently viewed</p>
+              <p className="mt-1 text-[11px] text-slate-500">Private to you • Recorded on Quick View</p>
+              <div className="mt-3 space-y-2">
+                {recentViews.length ? recentViews.map((row) => (
+                  <button
+                    key={row.id}
+                    type="button"
+                    onClick={() => setQuickViewItem({ ...row.product, author: row.author })}
+                    className="w-full text-left rounded-xl border border-slate-200 bg-white px-3 py-2 hover:bg-slate-50"
+                    title="Open Quick View"
+                  >
+                    <p className="text-xs font-semibold text-slate-900 truncate">{row.product?.title || 'Product'}</p>
+                    <p className="text-[11px] text-slate-500 truncate">{row.author?.name || 'Company'} • {new Date(row.viewed_at).toLocaleString()}</p>
+                  </button>
+                )) : (
+                  <div className="text-xs text-slate-500">No views yet. Use “Quick view” on a product.</div>
+                )}
+              </div>
+              <div className="mt-3">
+                <Link to="/notifications" className="text-xs font-semibold text-[#0A66C2] hover:underline">Open full history</Link>
+              </div>
+            </div>
+
+            {premiumLocked ? (
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+                <p className="text-sm font-bold text-amber-900">Premium filters</p>
+                <p className="mt-1 text-xs text-amber-800">Upgrade to use advanced filters like country, MOQ range, verified-only, and org type.</p>
+              </div>
+            ) : null}
+          </aside>
         </div>
       </div>
+
+      <ProductQuickViewModal
+        open={Boolean(quickViewItem)}
+        item={quickViewItem}
+        onClose={() => setQuickViewItem(null)}
+        onViewed={loadRecentViews}
+      />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { listMySearchAlerts, listNotifications, markNotificationRead, saveSearchAlert } from '../services/notificationService.js'
+import { deleteSearchAlertForUser, listMySearchAlerts, listNotifications, markNotificationRead, saveSearchAlert } from '../services/notificationService.js'
 import { buildLimitError, buildSearchAccessPayload, consumeQuota, getUserPlan } from '../services/searchAccessService.js'
 
 export async function createSearchAlert(req, res) {
@@ -37,4 +37,10 @@ export async function readNotification(req, res) {
   const row = await markNotificationRead(req.user.id, req.params.notificationId)
   if (!row) return res.status(404).json({ error: 'Notification not found' })
   return res.json(row)
+}
+
+export async function deleteSearchAlert(req, res) {
+  const ok = await deleteSearchAlertForUser(req.user.id, req.params.alertId)
+  if (!ok) return res.status(404).json({ error: 'Search alert not found' })
+  return res.json({ ok: true })
 }
