@@ -36,10 +36,11 @@ export function clearSession() {
   sessionStorage.removeItem(TOKEN_KEY)
 }
 
-export async function apiRequest(path, { method = 'GET', token = '', body } = {}) {
+export async function apiRequest(path, { method = 'GET', token = '', body, signal } = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
     method,
     cache: 'no-store',
+    signal,
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),

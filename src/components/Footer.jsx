@@ -1,7 +1,32 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { getCurrentUser } from '../lib/auth';
 
 export default function Footer() {
+  const user = getCurrentUser();
+
+  if (!user) {
+    return (
+      <footer className="border-t border-slate-200 bg-white py-8 dark:border-slate-800 dark:bg-slate-950">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center justify-center gap-4 text-center">
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 px-2 py-0.5 text-xs font-semibold text-white">B2B</span>
+              <span className="text-lg font-bold text-slate-900 dark:text-white">GarTexHub</span>
+            </div>
+            <div className="flex gap-6 text-sm text-slate-600 dark:text-slate-400">
+              <Link to="/terms" className="hover:text-sky-600">Terms & Conditions</Link>
+              <Link to="/privacy" className="hover:text-sky-600">Privacy Policy</Link>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              © 2026 GarTexHub. All Rights Reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
+    );
+  }
+
   return (
     <footer className="border-t border-slate-200 bg-white pt-12 pb-8 dark:border-slate-800 dark:bg-slate-950">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { motion, useReducedMotion } from 'framer-motion'
 import FeedControlBar from '../components/feed/FeedControlBar'
 import FeedItemCard from '../components/feed/FeedItemCard'
 import CommentsDrawer from '../components/feed/CommentsDrawer'
@@ -73,6 +74,34 @@ async function copyToClipboard(text) {
   return ok
 }
 
+function FeedSkeletonCard({ index }) {
+  return (
+    <div
+      className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800"
+      aria-hidden="true"
+    >
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 rounded-full skeleton" />
+        <div className="flex-1 space-y-2">
+          <div className="h-3 w-1/3 rounded-full skeleton" />
+          <div className="h-2 w-1/4 rounded-full skeleton" />
+        </div>
+        <div className="h-6 w-16 rounded-full skeleton" />
+      </div>
+      <div className="mt-4 space-y-2">
+        <div className="h-3 w-2/3 rounded-full skeleton" />
+        <div className="h-3 w-1/2 rounded-full skeleton" />
+        <div className="h-24 w-full rounded-xl skeleton" />
+      </div>
+      <div className="mt-4 flex items-center justify-between">
+        <div className="h-3 w-32 rounded-full skeleton" />
+        <div className="h-9 w-32 rounded-full skeleton" />
+      </div>
+      <span className="sr-only">Loading feed item {index + 1}</span>
+    </div>
+  )
+}
+
 export default function MainFeed() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -103,6 +132,7 @@ export default function MainFeed() {
 
   const highlightKey = searchParams.get('item') || ''
   const sentinelRef = useRef(null)
+  const reduceMotion = useReducedMotion()
 
   const canExpressInterest = useMemo(() => {
     const role = user?.role || ''
@@ -274,7 +304,7 @@ export default function MainFeed() {
   }, [user?.role])
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
       <FeedControlBar
         activeType={activeType}
         onTypeChange={(type) => {
@@ -299,11 +329,11 @@ export default function MainFeed() {
 
       <div className="max-w-7xl mx-auto grid grid-cols-12 gap-4 px-4 py-4">
         <aside className="col-span-12 lg:col-span-3 space-y-4">
-          <div className="bg-white rounded-2xl border border-slate-200 p-4">
+          <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
               <div className="min-w-0">
-                <p className="font-semibold text-slate-900 truncate">{user?.name || 'Member'}</p>
+                <p className="font-semibold text-slate-900 dark:text-slate-100 truncate">{user?.name || 'Member'}</p>
                 <p className="text-xs text-slate-500">{user?.role ? user.role.replaceAll('_', ' ') : 'Account'}</p>
               </div>
             </div>
@@ -325,9 +355,9 @@ export default function MainFeed() {
           </div>
 
           {headerLabel ? (
-            <div className="bg-white rounded-2xl border border-slate-200 p-4 hidden lg:block">
+            <div className="hidden lg:block rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
               <p className="text-xs font-semibold text-slate-500">Viewing</p>
-              <p className="mt-1 text-lg font-bold text-slate-900">{headerLabel}</p>
+              <p className="mt-1 text-lg font-bold text-slate-900 dark:text-slate-100">{headerLabel}</p>
               {activeCategory ? <p className="mt-1 text-xs text-slate-500">Category: {activeCategory}</p> : null}
             </div>
           ) : null}
@@ -335,18 +365,20 @@ export default function MainFeed() {
 
         <main className="col-span-12 lg:col-span-6 space-y-4">
           {headerLabel ? (
-            <div className="bg-white rounded-2xl border border-slate-200 p-4">
+            <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
               <p className="text-xs font-semibold text-slate-500">Feed</p>
-              <p className="mt-1 text-xl font-bold text-slate-900">{headerLabel}</p>
+              <p className="mt-1 text-xl font-bold text-slate-900 dark:text-slate-100">{headerLabel}</p>
               {activeCategory ? <p className="mt-1 text-xs text-slate-500">Category: {activeCategory}</p> : null}
             </div>
           ) : null}
 
           {notice?.message ? (
-            <div className={`rounded-2xl border p-4 text-sm ${
-              notice.type === 'error' ? 'border-rose-200 bg-rose-50 text-rose-800'
-                : notice.type === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
-                  : 'border-sky-200 bg-sky-50 text-sky-800'
+            <div className={`rounded-2xl p-4 text-sm ring-1 ${
+              notice.type === 'error'
+                ? 'bg-rose-50 text-rose-800 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30'
+                : notice.type === 'success'
+                  ? 'bg-emerald-50 text-emerald-800 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-200 dark:ring-emerald-500/25'
+                  : 'bg-sky-50 text-sky-800 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-200 dark:ring-sky-500/25'
             }`}>
               <div className="flex items-center justify-between gap-3">
                 <p className="font-medium">{notice.message}</p>
@@ -354,7 +386,7 @@ export default function MainFeed() {
                   <button
                     type="button"
                     onClick={() => navigate('/chat', { state: { notice: `Buyer request ${claimedRequestId} claimed. Open inbox to continue.` } })}
-                    className="rounded-full bg-white border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                    className="rounded-full bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
                   >
                     Open Chat
                   </button>
@@ -364,17 +396,21 @@ export default function MainFeed() {
           ) : null}
 
           {loading ? (
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">Loading feed…</div>
+            <div className="space-y-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <FeedSkeletonCard key={`feed-skel-${i}`} index={i} />
+              ))}
+            </div>
           ) : null}
 
           {!loading && error ? (
-            <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-800">
+            <div className="rounded-2xl bg-rose-50 p-6 text-sm text-rose-800 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30">
               {error}
               <div className="mt-3">
                 <button
                   type="button"
                   onClick={() => loadFeedPage({ reset: true })}
-                  className="rounded-full bg-white border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
                 >
                   Retry
                 </button>
@@ -383,55 +419,65 @@ export default function MainFeed() {
           ) : null}
 
           {!loading && !error && items.length === 0 ? (
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">No feed items found.</div>
+            <div className="rounded-2xl bg-[#ffffff] p-6 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:text-slate-300 dark:ring-slate-800">
+              No feed items found.
+            </div>
           ) : null}
 
-          {!loading && !error && items.map((item) => {
+          {!loading && !error && items.map((item, idx) => {
             const highlight = highlightKey === `${item.entityType}:${item.id}`
             const reportDisabled = isReportCoolingDown(item)
 
             return (
-              <FeedItemCard
+              <motion.div
                 key={`${item.entityType}:${item.id}`}
-                item={item}
-                highlight={highlight}
-                canExpressInterest={canExpressInterest && item.entityType === 'buyer_request'}
-                expressInterestDisabled={expressBusyId === item.id}
-                onExpressInterest={() => handleExpressInterest(item)}
-                onOpenComments={() => setCommentsItem(item)}
-                onShare={() => handleShare(item)}
-                onReport={() => {
-                  if (reportDisabled) {
-                    setNotice({ type: 'info', message: 'Please wait a few seconds before reporting again.' })
-                    return
-                  }
-                  setReportItem(item)
-                }}
-                onMessage={() => handleMessage(item)}
-              />
+                initial={reduceMotion ? false : { opacity: 0, y: 20 }}
+                animate={reduceMotion ? false : { opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: idx * 0.05 }}
+              >
+                <FeedItemCard
+                  item={item}
+                  highlight={highlight}
+                  canExpressInterest={canExpressInterest && item.entityType === 'buyer_request'}
+                  expressInterestDisabled={expressBusyId === item.id}
+                  onExpressInterest={() => handleExpressInterest(item)}
+                  onOpenComments={() => setCommentsItem(item)}
+                  onShare={() => handleShare(item)}
+                  onReport={() => {
+                    if (reportDisabled) {
+                      setNotice({ type: 'info', message: 'Please wait a few seconds before reporting again.' })
+                      return
+                    }
+                    setReportItem(item)
+                  }}
+                  onMessage={() => handleMessage(item)}
+                />
+              </motion.div>
             )
           })}
 
           <div ref={sentinelRef} className="h-10" />
 
           {loadingMore ? (
-            <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-500 text-center">Loading more…</div>
+            <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+              <div className="h-3 w-40 rounded-full skeleton mx-auto" />
+            </div>
           ) : null}
 
           {!loading && !error && nextCursor === null ? (
-            <div className="text-center text-xs text-slate-400 py-3">You’re all caught up.</div>
+            <div className="text-center text-xs text-slate-400 dark:text-slate-500 py-3">You’re all caught up.</div>
           ) : null}
         </main>
 
         <aside className="col-span-3 hidden xl:block space-y-4">
-          <div className="bg-white rounded-2xl border border-slate-200 p-4">
-            <p className="text-sm font-semibold text-slate-900">Tips</p>
-            <p className="mt-2 text-xs text-slate-600 leading-relaxed">
+          <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Tips</p>
+            <p className="mt-2 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
               Turn on <span className="font-semibold">Unique</span> to avoid seeing only one product type all day. Use the category chips for fast filtering.
             </p>
             <div className="mt-3 flex gap-2">
-              <Link to="/search" className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">Search</Link>
-              <Link to="/notifications" className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">Alerts</Link>
+              <Link to="/search" className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">Search</Link>
+              <Link to="/notifications" className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">Alerts</Link>
             </div>
           </div>
         </aside>

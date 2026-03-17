@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { motion, useReducedMotion } from 'framer-motion'
 import { apiRequest, getToken } from '../lib/auth'
 import VerificationPanel from '../components/profile/VerificationPanel'
 
@@ -29,6 +30,7 @@ export default function FactoryProfile() {
   const [productsCursor, setProductsCursor] = useState(0)
   const [productsNext, setProductsNext] = useState(null)
   const [loadingProducts, setLoadingProducts] = useState(false)
+  const reduceMotion = useReducedMotion()
 
   const user = profile?.user || null
   const verification = profile?.verification_summary || null
@@ -121,15 +123,20 @@ export default function FactoryProfile() {
     return products.filter(isApprovedVideo)
   }, [products, viewerPerms.is_admin, viewerPerms.is_self])
 
-  if (loading) return <div className="min-h-screen bg-slate-50 p-6 text-slate-600">Loading profile…</div>
-  if (error) return <div className="min-h-screen bg-slate-50 p-6 text-rose-700">{error}</div>
-  if (!user) return <div className="min-h-screen bg-slate-50 p-6 text-slate-600">Profile not found.</div>
+  if (loading) return <div className="min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out">Loading profile…</div>
+  if (error) return <div className="min-h-screen bg-slate-50 p-6 text-rose-700 dark:bg-[#020617] dark:text-rose-200 transition-colors duration-500 ease-in-out">{error}</div>
+  if (!user) return <div className="min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out">Profile not found.</div>
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
       <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-12 gap-4">
         <aside className="col-span-12 lg:col-span-4 space-y-4">
-          <div className="bg-white rounded-2xl border border-slate-200 p-4">
+          <motion.div
+            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+            animate={reduceMotion ? false : { opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+            className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800"
+          >
             <div className="flex items-center gap-3">
               <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
               <div className="min-w-0">
@@ -164,23 +171,37 @@ export default function FactoryProfile() {
                 <p className="text-[11px] text-slate-600">Declared</p>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           <VerificationPanel summary={verification} />
         </aside>
 
         <main className="col-span-12 lg:col-span-8 space-y-4">
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-200">
+          <motion.div
+            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+            animate={reduceMotion ? false : { opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
+            className="rounded-2xl bg-[#ffffff] shadow-sm ring-1 ring-slate-200/60 overflow-hidden dark:bg-slate-900/50 dark:ring-slate-800"
+          >
+            <div className="relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 border-b border-slate-200/60 dark:border-transparent dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
               {['overview', 'products', 'videos', 'reviews'].map((tab) => (
                 <button
                   key={tab}
                   type="button"
                   onClick={() => setActiveTab(tab)}
-                  className={`rounded-full px-3 py-2 text-xs font-semibold border ${
-                    activeTab === tab ? 'border-[#0A66C2] bg-[#0A66C2]/5 text-[#0A66C2]' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                  className={`relative rounded-full px-3 py-2 text-xs font-semibold transition ring-1 active:scale-95 ${
+                    activeTab === tab
+                      ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
+                      : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
                   }`}
                 >
+                  {activeTab === tab ? (
+                    <motion.span
+                      layoutId="profile-tab"
+                      className="absolute inset-0 rounded-full bg-indigo-500/10 dark:bg-white/10"
+                      transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                    />
+                  ) : null}
                   {tab === 'overview' ? 'Overview' : tab === 'products' ? 'Products' : tab === 'videos' ? 'Video Gallery' : 'Reviews'}
                 </button>
               ))}
@@ -279,7 +300,7 @@ export default function FactoryProfile() {
                 </div>
               ) : null}
             </div>
-          </div>
+          </motion.div>
         </main>
       </div>
     </div>

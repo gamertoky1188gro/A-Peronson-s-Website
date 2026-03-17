@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { motion, useReducedMotion } from 'framer-motion'
 import AccessDeniedState from '../components/AccessDeniedState'
 import { API_BASE, apiRequest, getCurrentUser, getToken } from '../lib/auth'
 
@@ -159,7 +160,7 @@ function ContractRow({ contract, active, onSelect }) {
     <button
       type="button"
       onClick={onSelect}
-      className={`w-full rounded-2xl border p-4 text-left transition ${active ? 'border-[#0A66C2] bg-[#F6FAFF]' : 'border-slate-200 bg-white hover:bg-slate-50'}`}
+      className={`w-full rounded-2xl p-4 text-left transition ring-1 ${active ? 'bg-indigo-50/60 text-slate-900 ring-indigo-200 shadow-sm dark:bg-white/5 dark:text-slate-100 dark:ring-[#38bdf8]/35' : 'bg-white text-slate-900 ring-slate-200/70 hover:bg-slate-50 dark:bg-slate-900/50 dark:text-slate-100 dark:ring-slate-800 dark:hover:bg-white/5'}`}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
@@ -211,6 +212,10 @@ function Drawer({ open, onClose, children }) {
 
 export default function ContractVault() {
   const currentUser = useMemo(() => getCurrentUser(), [])
+  const reduceMotion = useReducedMotion()
+  const [loadingContracts, setLoadingContracts] = useState(true)
+  const searchRef = useRef(null)
+  const isMac = useMemo(() => (typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)), [])
   const [contracts, setContracts] = useState([])
   const [selectedId, setSelectedId] = useState('')
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -235,10 +240,12 @@ export default function ContractVault() {
   })
 
   const loadContracts = async () => {
+    setLoadingContracts(true)
     try {
       const token = getToken()
       if (!token) {
         setContracts([])
+        setLoadingContracts(false)
         return
       }
       const data = await apiRequest('/documents/contracts', { token })
@@ -250,11 +257,25 @@ export default function ContractVault() {
       setForbidden(isForbidden)
       setError(isForbidden ? 'You do not have permission to view contracts.' : (err.message || 'Failed to load contracts.'))
       setContracts([])
+    } finally {
+      setLoadingContracts(false)
     }
   }
 
   useEffect(() => {
     loadContracts()
+  }, [])
+
+  useEffect(() => {
+    const handler = (e) => {
+      const key = String(e.key || '').toLowerCase()
+      if (key !== 'k') return
+      if (!(e.ctrlKey || e.metaKey)) return
+      e.preventDefault()
+      searchRef.current?.focus?.()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
   }, [])
 
   const visibleContracts = useMemo(() => {
@@ -486,22 +507,22 @@ export default function ContractVault() {
   )
 
   return (
-    <div className="min-h-screen bg-[#F5F9FF]">
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
       <div className="mx-auto max-w-7xl p-4 sm:p-6">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="text-xs font-semibold text-[#0A66C2]">Vault</div>
-            <h1 className="mt-1 text-2xl font-bold text-slate-900">Contract Vault</h1>
-            <p className="mt-1 text-sm text-slate-600">Draft → Sign → PDF artifact → Lock → Archive</p>
+            <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-300">Vault</div>
+            <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">Contract Vault</h1>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Draft → Sign → PDF artifact → Lock → Archive</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Link to="/owner" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50">Dashboard</Link>
-            <Link to="/notifications" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50">Notifications</Link>
+            <Link to="/owner" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8">Dashboard</Link>
+            <Link to="/notifications" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8">Notifications</Link>
             <button
               type="button"
               disabled={!canCreateDraft(currentUser)}
               onClick={() => setDraftOpen(true)}
-              className="rounded-full bg-[#0A66C2] px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-200 disabled:text-slate-500"
+              className="rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95 disabled:bg-slate-200 disabled:text-slate-500 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:text-slate-950"
             >
               New draft
             </button>
@@ -512,21 +533,27 @@ export default function ContractVault() {
         {!forbidden && error ? <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700">{error}</div> : null}
 
         {!forbidden ? (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <div className="secure-grid grid grid-cols-1 gap-6 lg:grid-cols-12">
             <div className="lg:col-span-5">
-              <div className="rounded-2xl border border-slate-200 bg-white p-4">
+              <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="text-sm font-semibold text-slate-900">Contracts</div>
-                  <button type="button" onClick={loadContracts} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-200">Refresh</button>
+                  <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Contracts</div>
+                  <button type="button" onClick={loadContracts} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 active:scale-95 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/8">Refresh</button>
                 </div>
 
                 <div className="mt-4 grid gap-3">
-                  <input
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search by number, buyer, factory, title..."
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-[#0A66C2]"
-                  />
+                  <div className="relative">
+                    <input
+                      ref={searchRef}
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder="Search by number, buyer, factory, title…"
+                      className="w-full rounded-xl bg-white px-3 py-2 pr-16 text-sm text-slate-800 shadow-inner ring-1 ring-slate-200/70 transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                    />
+                    <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-semibold tracking-widest text-slate-500 ring-1 ring-slate-200/70 dark:bg-slate-950/40 dark:text-slate-400 dark:ring-white/10">
+                      {isMac ? '⌘ K' : 'Ctrl K'}
+                    </span>
+                  </div>
 
                   <div className="flex flex-wrap items-center gap-2">
                     {[
@@ -536,30 +563,68 @@ export default function ContractVault() {
                       { key: 'signed', label: 'Signed' },
                       { key: 'archived', label: 'Archived' },
                     ].map((chip) => (
-                      <button
+                      <motion.button
                         key={chip.key}
                         type="button"
                         onClick={() => setStatusFilter(chip.key)}
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${statusFilter === chip.key ? 'bg-[#E8F3FF] text-[#0A66C2] ring-[#BBD8FF]' : 'bg-white text-slate-700 ring-slate-200 hover:bg-slate-50'}`}
+                        whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+                        className={`relative rounded-full px-3 py-1 text-xs font-semibold transition ring-1 ${
+                          statusFilter === chip.key
+                            ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
+                            : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
+                        }`}
                       >
-                        {chip.label}
-                      </button>
+                        {statusFilter === chip.key ? (
+                          <motion.span
+                            layoutId="contract-filter"
+                            className="absolute inset-0 rounded-full bg-indigo-500/10 dark:bg-white/10"
+                            transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                          />
+                        ) : null}
+                        <span className="relative">{chip.label}</span>
+                      </motion.button>
                     ))}
                   </div>
                 </div>
               </div>
 
               <div className="mt-4 grid gap-3">
-                {visibleContracts.length ? visibleContracts.map((c) => (
-                  <div key={c.id} className="hidden lg:block">
+                {loadingContracts ? (
+                  <div className="grid gap-3">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div key={`contract-skel-${i}`} className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1 space-y-2">
+                            <div className="h-3 w-1/3 rounded-full skeleton" />
+                            <div className="h-3 w-2/3 rounded-full skeleton" />
+                            <div className="h-3 w-1/2 rounded-full skeleton" />
+                          </div>
+                          <div className="h-7 w-20 rounded-full skeleton" />
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <div className="h-6 w-24 rounded-full skeleton" />
+                          <div className="h-6 w-24 rounded-full skeleton" />
+                          <div className="h-6 w-20 rounded-full skeleton" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : visibleContracts.length ? visibleContracts.map((c, idx) => (
+                  <motion.div
+                    key={c.id}
+                    initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+                    animate={reduceMotion ? false : { opacity: 1, y: 0 }}
+                    transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: idx * 0.04 }}
+                    className="hidden lg:block"
+                  >
                     <ContractRow
                       contract={c}
                       active={String(c.id) === String(selectedId)}
                       onSelect={() => setSelectedId(String(c.id))}
                     />
-                  </div>
+                  </motion.div>
                 )) : (
-                  <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-600">
+                  <div className="rounded-2xl bg-[#ffffff] p-8 text-center text-sm text-slate-600 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:text-slate-300 dark:ring-slate-800">
                     No contracts found.
                   </div>
                 )}
@@ -633,4 +698,3 @@ export default function ContractVault() {
     </div>
   )
 }
-

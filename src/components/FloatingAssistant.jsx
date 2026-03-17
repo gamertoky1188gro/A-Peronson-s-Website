@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { API_BASE } from '../lib/auth'
 
 /**
@@ -24,6 +25,8 @@ function TypewriterText({ text, speed = 20, onComplete }) {
 }
 
 export default function FloatingAssistant() {
+  const location = useLocation()
+  const orbMode = location.pathname === '/help'
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState([
@@ -124,7 +127,12 @@ export default function FloatingAssistant() {
       <div className="fixed right-6 bottom-6 z-50">
         <button
           onClick={() => setOpen(!open)}
-          className="w-14 h-14 rounded-full bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] shadow-xl flex items-center justify-center text-white text-2xl hover:scale-110 transition-transform active:scale-95"
+          className={[
+            'w-14 h-14 rounded-full flex items-center justify-center text-white text-2xl transition-transform active:scale-95',
+            orbMode
+              ? 'assistant-orb-btn hover:scale-110'
+              : 'bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] shadow-xl hover:scale-110',
+          ].join(' ')}
           aria-label="Toggle assistant"
         >
           {open ? '✕' : '🤖'}

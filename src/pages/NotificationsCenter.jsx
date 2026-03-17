@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Bell, History, ShieldAlert, Sparkles, Trash2 } from 'lucide-react'
+import { motion, useReducedMotion } from 'framer-motion'
 import { apiRequest, getToken } from '../lib/auth'
 import ProductQuickViewModal from '../components/products/ProductQuickViewModal'
 
@@ -20,6 +21,7 @@ function feedLinkForEntity(entityType, entityId) {
 
 export default function NotificationsCenter() {
   const token = useMemo(() => getToken(), [])
+  const reduceMotion = useReducedMotion()
   const [tab, setTab] = useState('all')
   const [unreadOnly, setUnreadOnly] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -111,10 +113,10 @@ export default function NotificationsCenter() {
   }, [items, tab, unreadOnly])
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
       <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-12 gap-4">
         <main className="col-span-12 lg:col-span-8 space-y-4">
-          <div className="bg-white rounded-2xl border border-slate-200 p-4">
+          <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-lg font-bold text-slate-900">Notifications</p>
@@ -131,33 +133,60 @@ export default function NotificationsCenter() {
                 const Icon = t.icon
                 const active = tab === t.id
                 return (
-                  <button
+                  <motion.button
                     key={t.id}
                     type="button"
                     onClick={() => setTab(t.id)}
-                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold ${
-                      active ? 'border-[#0A66C2] bg-[#0A66C2]/5 text-[#0A66C2]' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                    whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+                    className={`relative inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ring-1 ${
+                      active
+                        ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
+                        : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
                     }`}
                   >
-                    <Icon size={16} />
-                    {t.label}
-                  </button>
+                    {active ? (
+                      <motion.span
+                        layoutId="notif-tab"
+                        className="absolute inset-0 rounded-full bg-indigo-500/10 dark:bg-white/10"
+                        transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                      />
+                    ) : null}
+                    <span className="relative inline-flex items-center gap-2">
+                      <Icon size={16} />
+                      {t.label}
+                    </span>
+                  </motion.button>
                 )
               })}
             </div>
           </div>
 
           {tab !== 'viewed' ? (
-            <div className="bg-white rounded-2xl border border-slate-200 p-4">
-              {loading ? <div className="text-sm text-slate-600">Loading…</div> : null}
-              {!loading && error ? <div className="text-sm text-rose-700">{error}</div> : null}
+            <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+              {loading ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={`notif-skel-${i}`} className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-950/30 dark:ring-white/10">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1 space-y-2">
+                          <div className="h-3 w-1/3 rounded-full skeleton" />
+                          <div className="h-3 w-2/3 rounded-full skeleton" />
+                          <div className="h-3 w-1/2 rounded-full skeleton" />
+                        </div>
+                        <div className="h-8 w-20 rounded-full skeleton" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+              {!loading && error ? <div className="text-sm text-rose-700 dark:text-rose-200">{error}</div> : null}
               {!loading && !error && !filteredItems.length ? (
                 <div className="text-sm text-slate-600">No notifications for this tab.</div>
               ) : null}
 
               <div className="space-y-3">
                 {filteredItems.map((i) => (
-                  <div key={i.id} className="rounded-2xl border border-slate-200 bg-white p-4 flex items-start justify-between gap-3">
+                  <div key={i.id} className="rounded-2xl bg-[#ffffff] p-4 ring-1 ring-slate-200/60 shadow-sm transition hover:bg-slate-50/70 dark:bg-slate-950/30 dark:ring-white/10 dark:hover:bg-white/5 flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-slate-900">{i.message || i.title || 'Notification'}</p>
                       <p className="mt-1 text-[11px] text-slate-500">{new Date(i.created_at).toLocaleString()}</p>
@@ -181,7 +210,7 @@ export default function NotificationsCenter() {
               </div>
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border border-slate-200 p-4">
+            <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
               <div className="flex items-center justify-between gap-3 mb-3">
                 <div>
                   <p className="text-sm font-bold text-slate-900">Viewed Products</p>
@@ -198,7 +227,7 @@ export default function NotificationsCenter() {
 
               <div className="space-y-3">
                 {views.map((row) => (
-                  <div key={row.id} className="rounded-2xl border border-slate-200 bg-white p-4 flex items-start justify-between gap-3">
+                  <div key={row.id} className="rounded-2xl bg-[#ffffff] p-4 ring-1 ring-slate-200/60 shadow-sm transition hover:bg-slate-50/70 dark:bg-slate-950/30 dark:ring-white/10 dark:hover:bg-white/5 flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-slate-900 truncate">{row.product?.title || 'Product'}</p>
                       <p className="mt-1 text-[11px] text-slate-500 truncate">{row.author?.name || 'Company'} • {new Date(row.viewed_at).toLocaleString()}</p>
@@ -234,7 +263,7 @@ export default function NotificationsCenter() {
                 <button
                   type="button"
                   onClick={() => loadViews({ reset: false })}
-                  className="mt-4 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  className="mt-4 rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
                 >
                   Load more
                 </button>
@@ -244,12 +273,12 @@ export default function NotificationsCenter() {
         </main>
 
         <aside className="col-span-12 lg:col-span-4 space-y-4">
-          <div className="bg-white rounded-2xl border border-slate-200 p-4">
+          <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
             <p className="text-sm font-bold text-slate-900">Saved Search Alerts</p>
             <p className="mt-1 text-[11px] text-slate-500">These power smart notifications for new matching posts.</p>
             <div className="mt-3 space-y-2">
               {alerts.length ? alerts.map((a) => (
-                <div key={a.id} className="rounded-xl border border-slate-200 bg-white p-3 flex items-start justify-between gap-2">
+                <div key={a.id} className="rounded-xl bg-white p-3 ring-1 ring-slate-200/70 shadow-sm dark:bg-white/5 dark:ring-white/10 flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-slate-900 truncate">{a.query}</p>
                     <p className="text-[11px] text-slate-500">Updated: {new Date(a.updated_at || a.created_at).toLocaleString()}</p>
@@ -270,7 +299,7 @@ export default function NotificationsCenter() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 p-4">
+          <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
             <p className="text-sm font-bold text-slate-900">Tips</p>
             <ul className="mt-2 text-xs text-slate-600 space-y-1">
               <li>- Smart matches trigger when new buyer requests or products match your saved alert keywords.</li>
@@ -290,4 +319,3 @@ export default function NotificationsCenter() {
     </div>
   )
 }
-

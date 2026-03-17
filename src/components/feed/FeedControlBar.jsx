@@ -17,7 +17,7 @@ export default function FeedControlBar({
   onCategoryChange,
 }) {
   return (
-    <div className="sticky top-[64px] z-10 bg-slate-50/90 backdrop-blur supports-[backdrop-filter]:bg-slate-50/70 border-b border-slate-200">
+    <div className="sticky top-[64px] z-10 bg-slate-50/90 backdrop-blur supports-[backdrop-filter]:bg-slate-50/70 border-b border-slate-200 dark:bg-[#020617]/80 dark:supports-[backdrop-filter]:bg-[#020617]/70 dark:border-transparent dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
       <div className="max-w-7xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
@@ -29,8 +29,10 @@ export default function FeedControlBar({
                   key={opt.id}
                   type="button"
                   onClick={() => onTypeChange(opt.id)}
-                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition ${
-                    active ? 'border-[#0A66C2] bg-white text-[#0A66C2] shadow-sm' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                  className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ring-1 active:scale-95 ${
+                    active
+                      ? 'bg-white text-[#2563eb] ring-[#93c5fd] shadow-sm dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
+                      : 'bg-white text-slate-700 ring-slate-200/70 hover:bg-slate-50 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
                   }`}
                   aria-pressed={active}
                   title={opt.label}
@@ -45,8 +47,10 @@ export default function FeedControlBar({
           <button
             type="button"
             onClick={() => onUniqueChange(!unique)}
-            className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition ${
-              unique ? 'border-violet-300 bg-violet-50 text-violet-700' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+            className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ring-1 active:scale-95 ${
+              unique
+                ? 'bg-violet-50 text-violet-700 ring-violet-200 shadow-sm dark:bg-violet-500/10 dark:text-violet-200 dark:ring-violet-400/25'
+                : 'bg-white text-slate-700 ring-slate-200/70 hover:bg-slate-50 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
             }`}
             aria-pressed={unique}
             title="Diversify feed"
@@ -61,8 +65,10 @@ export default function FeedControlBar({
             <button
               type="button"
               onClick={() => onCategoryChange('')}
-              className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold border transition ${
-                !activeCategory ? 'border-[#0A66C2] bg-white text-[#0A66C2]' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+              className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ring-1 active:scale-95 ${
+                !activeCategory
+                  ? 'bg-white text-[#2563eb] ring-[#93c5fd] dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
+                  : 'bg-white text-slate-700 ring-slate-200/70 hover:bg-slate-50 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
               }`}
             >
               All categories
@@ -72,8 +78,10 @@ export default function FeedControlBar({
                 key={c}
                 type="button"
                 onClick={() => onCategoryChange(String(c))}
-                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold border transition ${
-                  activeCategory === c ? 'border-[#0A66C2] bg-white text-[#0A66C2]' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ring-1 active:scale-95 ${
+                  activeCategory === c
+                    ? 'bg-white text-[#2563eb] ring-[#93c5fd] dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
+                    : 'bg-white text-slate-700 ring-slate-200/70 hover:bg-slate-50 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
                 }`}
               >
                 {c}
@@ -85,4 +93,3 @@ export default function FeedControlBar({
     </div>
   )
 }
-
