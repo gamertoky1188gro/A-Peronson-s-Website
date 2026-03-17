@@ -1,0 +1,15 @@
+    1 | import { Router } from 'express'
+    2 | import { allowRoles, requireAuth } from '../middleware/auth.js'
+    3 | import { createBuyerRequirement, deleteRequirement, getRequirement, getRequirements, patchRequirement, searchRequirements } from '../controllers/requirementController.js'
+    4 | 
+    5 | const router = Router()
+    6 | 
+    7 | router.post('/', requireAuth, allowRoles('buyer'), createBuyerRequirement)
+    8 | router.get('/', requireAuth, getRequirements)
+    9 | router.get('/search', requireAuth, searchRequirements)
+   10 | router.get('/:requirementId', requireAuth, getRequirement)
+   11 | router.patch('/:requirementId', requireAuth, allowRoles('buyer', 'admin'), patchRequirement)
+   12 | router.delete('/:requirementId', requireAuth, allowRoles('buyer', 'admin'), deleteRequirement)
+   13 | 
+   14 | export default router
+   15 | 

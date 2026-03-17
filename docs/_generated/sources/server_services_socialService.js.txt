@@ -1,0 +1,53 @@
+    1 | import crypto from 'crypto'
+    2 | import { readJson, writeJson } from '../utils/jsonStore.js'
+    3 | import { sanitizeString } from '../utils/validators.js'
+    4 | 
+    5 | const FILE = 'social_interactions.json'
+    6 | 
+    7 | export async function addComment(user, entityType, entityId, text) {
+    8 |   const all = await readJson(FILE)
+    9 |   const row = {
+   10 |     id: crypto.randomUUID(),
+   11 |     interaction_type: 'comment',
+   12 |     entity_type: sanitizeString(entityType, 60),
+   13 |     entity_id: sanitizeString(entityId, 120),
+   14 |     actor_id: user.id,
+   15 |     actor_name: user.name,
+   16 |     actor_verified: Boolean(user.verified),
+   17 |     text: sanitizeString(text, 800),
+   18 |     created_at: new Date().toISOString(),
+   19 |   }
+   20 |   all.push(row)
+   21 |   await writeJson(FILE, all)
+   22 |   return row
+   23 | }
+   24 | 
+   25 | export async function addAction(user, entityType, entityId, action, reason = '') {
+   26 |   const all = await readJson(FILE)
+   27 |   const row = {
+   28 |     id: crypto.randomUUID(),
+   29 |     interaction_type: action,
+   30 |     entity_type: sanitizeString(entityType, 60),
+   31 |     entity_id: sanitizeString(entityId, 120),
+   32 |     actor_id: user.id,
+   33 |     actor_name: user.name,
+   34 |     actor_verified: Boolean(user.verified),
+   35 |     text: sanitizeString(reason, 800),
+   36 |     created_at: new Date().toISOString(),
+   37 |   }
+   38 |   all.push(row)
+   39 |   await writeJson(FILE, all)
+   40 |   return row
+   41 | }
+   42 | 
+   43 | export async function listInteractions(entityType, entityId) {
+   44 |   const all = await readJson(FILE)
+   45 |   const rows = all.filter((x) => x.entity_type === entityType && x.entity_id === entityId)
+   46 |   const comments = rows.filter((x) => x.interaction_type === 'comment')
+   47 |   return {
+   48 |     comments,
+   49 |     share_count: rows.filter((x) => x.interaction_type === 'share').length,
+   50 |     report_count: rows.filter((x) => x.interaction_type === 'report').length,
+   51 |   }
+   52 | }
+   53 | 

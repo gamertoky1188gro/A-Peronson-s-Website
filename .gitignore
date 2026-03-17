@@ -26,3 +26,6 @@ server/uploads/
 *.njsproj
 *.sln
 *.sw?
+
+# Codex app workspace metadata
+.codex/

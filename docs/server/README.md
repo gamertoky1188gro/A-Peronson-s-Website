@@ -17,6 +17,7 @@ Generated/maintained server feature documentation:
 - [Org](./Org.md)
 - [Partner Network](./PartnerNetwork.md)
 - [Product](./Product.md)
+- [Profile](./Profile.md)
 - [Ratings](./Ratings.md)
 - [RealtimeCommunication](./RealtimeCommunication.md)
 - [Requirement](./Requirement.md)
@@ -26,3 +27,15 @@ Generated/maintained server feature documentation:
 - [System](./System.md)
 - [User](./User.md)
 - [Verification](./Verification.md)
+
+---
+
+## Line-numbered docs (generated)
+
+Run:
+
+```bash
+npm run docs:generate
+```
+
+Sources are snapshotted under `docs/_generated/sources/`.

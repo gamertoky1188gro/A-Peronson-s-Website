@@ -1,0 +1,331 @@
+    1 | /*
+    2 |   Route: /factory/:id
+    3 |   Access: Protected (login required)
+    4 |   Allowed roles: buyer, buying_house, factory, owner, admin, agent
+    5 | 
+    6 |   Public Pages:
+    7 |     /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+    8 |   Protected Pages (login required):
+    9 |     /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+   10 |     /notifications, /chat, /call, /verification, /verification-center
+   11 | 
+   12 |   Primary responsibilities:
+   13 |     - Render the Factory profile (overview + products + requests as applicable).
+   14 |     - Highlight verification/trust and show credibility meter (VerificationPanel).
+   15 |     - Provide relationship actions (follow/connect/message) depending on backend support.
+   16 | 
+   17 |   Key API endpoints:
+   18 |     - GET /api/profiles/:id
+   19 |     - GET /api/profiles/:id/products?cursor=...
+   20 |     - GET /api/ratings/profiles/user::id (public ratings summary)
+   21 | */
+   22 | import React, { useCallback, useEffect, useMemo, useState } from 'react'
+   23 | import { useNavigate, useParams } from 'react-router-dom'
+   24 | import { motion, useReducedMotion } from 'framer-motion'
+   25 | import { apiRequest, getToken } from '../lib/auth'
+   26 | import VerificationPanel from '../components/profile/VerificationPanel'
+   27 | 
+   28 | function roleToRoute(role, id) {
+   29 |   // Safety redirect helper: ensures we land on the correct profile route for a given role.
+   30 |   if (!id) return '/feed'
+   31 |   if (role === 'buyer') return `/buyer/${encodeURIComponent(id)}`
+   32 |   if (role === 'buying_house') return `/buying-house/${encodeURIComponent(id)}`
+   33 |   return `/factory/${encodeURIComponent(id)}`
+   34 | }
+   35 | 
+   36 | function isApprovedVideo(product) {
+   37 |   return Boolean(product?.video_url) && String(product?.video_review_status || '').toLowerCase() === 'approved' && !product?.video_restricted
+   38 | }
+   39 | 
+   40 | export default function FactoryProfile() {
+   41 |   const { id } = useParams()
+   42 |   const navigate = useNavigate()
+   43 |   const token = useMemo(() => getToken(), [])
+   44 | 
+   45 |   const [loading, setLoading] = useState(true)
+   46 |   const [error, setError] = useState('')
+   47 |   const [profile, setProfile] = useState(null)
+   48 |   const [ratingSummary, setRatingSummary] = useState(null)
+   49 | 
+   50 |   const [activeTab, setActiveTab] = useState('overview')
+   51 |   const [products, setProducts] = useState([])
+   52 |   const [productsCursor, setProductsCursor] = useState(0)
+   53 |   const [productsNext, setProductsNext] = useState(null)
+   54 |   const [loadingProducts, setLoadingProducts] = useState(false)
+   55 |   const reduceMotion = useReducedMotion()
+   56 | 
+   57 |   const user = profile?.user || null
+   58 |   const verification = profile?.verification_summary || null
+   59 |   const relationship = profile?.relationship || { following: false, friend_status: 'none' }
+   60 |   const viewerPerms = profile?.viewer_permissions || { is_self: false, is_admin: false }
+   61 | 
+   62 |   const loadProfile = useCallback(async () => {
+   63 |     if (!id) return
+   64 |     setLoading(true)
+   65 |     setError('')
+   66 |     try {
+   67 |       const data = await apiRequest(`/profiles/${encodeURIComponent(id)}`, { token })
+   68 |       if (data?.user?.role && data.user.role !== 'factory') {
+   69 |         navigate(roleToRoute(data.user.role, id), { replace: true })
+   70 |         return
+   71 |       }
+   72 |       setProfile(data)
+   73 |     } catch (err) {
+   74 |       setError(err.message || 'Failed to load profile')
+   75 |       setProfile(null)
+   76 |     } finally {
+   77 |       setLoading(false)
+   78 |     }
+   79 |   }, [id, navigate, token])
+   80 | 
+   81 |   const loadRatings = useCallback(async () => {
+   82 |     if (!id) return
+   83 |     try {
+   84 |       const data = await apiRequest(`/ratings/profiles/user:${encodeURIComponent(id)}`, { token: '' })
+   85 |       setRatingSummary(data || null)
+   86 |     } catch {
+   87 |       setRatingSummary(null)
+   88 |     }
+   89 |   }, [id])
+   90 | 
+   91 |   const loadProducts = useCallback(async ({ reset }) => {
+   92 |     if (!id) return
+   93 |     const cursor = reset ? 0 : productsCursor
+   94 |     setLoadingProducts(true)
+   95 |     try {
+   96 |       const data = await apiRequest(`/profiles/${encodeURIComponent(id)}/products?cursor=${cursor}&limit=10`, { token })
+   97 |       const rows = Array.isArray(data?.items) ? data.items : []
+   98 |       setProducts((prev) => (reset ? rows : [...prev, ...rows]))
+   99 |       setProductsCursor(reset ? 10 : cursor + 10)
+  100 |       setProductsNext(data?.next_cursor ?? null)
+  101 |     } catch {
+  102 |       // ignore
+  103 |     } finally {
+  104 |       setLoadingProducts(false)
+  105 |     }
+  106 |   }, [id, productsCursor, token])
+  107 | 
+  108 |   useEffect(() => {
+  109 |     loadProfile()
+  110 |     loadRatings()
+  111 |   }, [loadProfile, loadRatings])
+  112 | 
+  113 |   useEffect(() => {
+  114 |     if (!['products', 'videos'].includes(activeTab)) return
+  115 |     if (products.length) return
+  116 |     loadProducts({ reset: true })
+  117 |   }, [activeTab, loadProducts, products.length])
+  118 | 
+  119 |   async function follow() {
+  120 |     if (!id) return
+  121 |     try {
+  122 |       const res = await apiRequest(`/users/${encodeURIComponent(id)}/follow`, { method: 'POST', token })
+  123 |       setProfile((prev) => (prev ? { ...prev, relationship: res?.relation || prev.relationship } : prev))
+  124 |     } catch {
+  125 |       // ignore
+  126 |     }
+  127 |   }
+  128 | 
+  129 |   async function connect() {
+  130 |     if (!id) return
+  131 |     try {
+  132 |       const res = await apiRequest(`/users/${encodeURIComponent(id)}/friend-request`, { method: 'POST', token })
+  133 |       setProfile((prev) => (prev ? { ...prev, relationship: res?.relation || prev.relationship } : prev))
+  134 |     } catch {
+  135 |       // ignore
+  136 |     }
+  137 |   }
+  138 | 
+  139 |   function contact() {
+  140 |     navigate('/chat', { state: { notice: `Contacting ${user?.name || 'factory'}. If you are unverified, your first message may appear as a request.` } })
+  141 |   }
+  142 | 
+  143 |   const visibleVideos = useMemo(() => {
+  144 |     if (viewerPerms.is_self || viewerPerms.is_admin) return products.filter((p) => p.video_url)
+  145 |     return products.filter(isApprovedVideo)
+  146 |   }, [products, viewerPerms.is_admin, viewerPerms.is_self])
+  147 | 
+  148 |   if (loading) return <div className="min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out">Loading profile…</div>
+  149 |   if (error) return <div className="min-h-screen bg-slate-50 p-6 text-rose-700 dark:bg-[#020617] dark:text-rose-200 transition-colors duration-500 ease-in-out">{error}</div>
+  150 |   if (!user) return <div className="min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out">Profile not found.</div>
+  151 | 
+  152 |   return (
+  153 |     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
+  154 |       <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-12 gap-4">
+  155 |         <aside className="col-span-12 lg:col-span-4 space-y-4">
+  156 |           <motion.div
+  157 |             initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+  158 |             animate={reduceMotion ? false : { opacity: 1, y: 0 }}
+  159 |             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+  160 |             className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800"
+  161 |           >
+  162 |             <div className="flex items-center gap-3">
+  163 |               <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
+  164 |               <div className="min-w-0">
+  165 |                 <p className="text-lg font-bold text-slate-900 truncate">{user.name}</p>
+  166 |                 <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
+  167 |                   <span className="uppercase">Factory</span>
+  168 |                   {user.profile?.country ? <span>• {user.profile.country}</span> : null}
+  169 |                   {user.verified ? <span className="font-bold text-[#0A66C2]">Verified</span> : null}
+  170 |                 </div>
+  171 |               </div>
+  172 |             </div>
+  173 | 
+  174 |             <div className="mt-4 flex gap-2">
+  175 |               <button onClick={contact} className="flex-1 rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182]">Contact</button>
+  176 |               <button onClick={follow} className="flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+  177 |                 {relationship.following ? 'Following' : 'Follow'}
+  178 |               </button>
+  179 |               <button onClick={connect} className="flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+  180 |                 {relationship.friend_status === 'friends' ? 'Connected' : (relationship.friend_status === 'requested' ? 'Requested' : 'Connect')}
+  181 |               </button>
+  182 |             </div>
+  183 | 
+  184 |             <div className="mt-4 grid grid-cols-2 gap-3">
+  185 |               <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+  186 |                 <p className="text-[11px] text-slate-500">Capacity</p>
+  187 |                 <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.monthly_capacity || '—'}</p>
+  188 |                 <p className="text-[11px] text-slate-600">Monthly</p>
+  189 |               </div>
+  190 |               <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+  191 |                 <p className="text-[11px] text-slate-500">MOQ</p>
+  192 |                 <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.moq || '—'}</p>
+  193 |                 <p className="text-[11px] text-slate-600">Declared</p>
+  194 |               </div>
+  195 |             </div>
+  196 |           </motion.div>
+  197 | 
+  198 |           <VerificationPanel summary={verification} />
+  199 |         </aside>
+  200 | 
+  201 |         <main className="col-span-12 lg:col-span-8 space-y-4">
+  202 |           <motion.div
+  203 |             initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+  204 |             animate={reduceMotion ? false : { opacity: 1, y: 0 }}
+  205 |             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
+  206 |             className="rounded-2xl bg-[#ffffff] shadow-sm ring-1 ring-slate-200/60 overflow-hidden dark:bg-slate-900/50 dark:ring-slate-800"
+  207 |           >
+  208 |             <div className="relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 border-b border-slate-200/60 dark:border-transparent dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
+  209 |               {['overview', 'products', 'videos', 'reviews'].map((tab) => (
+  210 |                 <button
+  211 |                   key={tab}
+  212 |                   type="button"
+  213 |                   onClick={() => setActiveTab(tab)}
+  214 |                   className={`relative rounded-full px-3 py-2 text-xs font-semibold transition ring-1 active:scale-95 ${
+  215 |                     activeTab === tab
+  216 |                       ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
+  217 |                       : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
+  218 |                   }`}
+  219 |                 >
+  220 |                   {activeTab === tab ? (
+  221 |                     <motion.span
+  222 |                       layoutId="profile-tab"
+  223 |                       className="absolute inset-0 rounded-full bg-indigo-500/10 dark:bg-white/10"
+  224 |                       transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+  225 |                     />
+  226 |                   ) : null}
+  227 |                   {tab === 'overview' ? 'Overview' : tab === 'products' ? 'Products' : tab === 'videos' ? 'Video Gallery' : 'Reviews'}
+  228 |                 </button>
+  229 |               ))}
+  230 |             </div>
+  231 | 
+  232 |             <div className="p-4">
+  233 |               {activeTab === 'overview' ? (
+  234 |                 <div className="space-y-4">
+  235 |                   <div>
+  236 |                     <p className="text-sm font-bold text-slate-900">About</p>
+  237 |                     <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">{user.profile?.about || 'No description added yet.'}</p>
+  238 |                   </div>
+  239 | 
+  240 |                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+  241 |                     <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+  242 |                       <p className="text-[11px] text-slate-500">Lead time</p>
+  243 |                       <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.lead_time_days || '—'}</p>
+  244 |                     </div>
+  245 |                     <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+  246 |                       <p className="text-[11px] text-slate-500">Certifications</p>
+  247 |                       <p className="mt-1 text-sm font-semibold text-slate-900">{(user.profile?.certifications || []).join(', ') || '—'}</p>
+  248 |                     </div>
+  249 |                     <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+  250 |                       <p className="text-[11px] text-slate-500">Rating</p>
+  251 |                       <p className="mt-1 text-sm font-semibold text-slate-900">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
+  252 |                       <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
+  253 |                     </div>
+  254 |                   </div>
+  255 |                 </div>
+  256 |               ) : null}
+  257 | 
+  258 |               {activeTab === 'products' ? (
+  259 |                 <div className="space-y-3">
+  260 |                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+  261 |                     {products.map((p) => (
+  262 |                       <div key={p.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+  263 |                         <p className="text-sm font-bold text-slate-900">{p.title || 'Product'}</p>
+  264 |                         <p className="mt-1 text-xs text-slate-600">{p.category || '—'} • MOQ {p.moq || '—'} • Lead time {p.lead_time_days || '—'}</p>
+  265 |                         <p className="mt-2 text-sm text-slate-700 line-clamp-3">{p.description || ''}</p>
+  266 |                         {p.hasVideo ? <p className="mt-2 text-xs font-semibold text-indigo-700">Video available</p> : null}
+  267 |                       </div>
+  268 |                     ))}
+  269 |                   </div>
+  270 |                   {loadingProducts ? <div className="text-sm text-slate-600">Loading…</div> : null}
+  271 |                   {productsNext !== null && !loadingProducts ? (
+  272 |                     <button
+  273 |                       type="button"
+  274 |                       onClick={() => loadProducts({ reset: false })}
+  275 |                       className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+  276 |                     >
+  277 |                       Load more
+  278 |                     </button>
+  279 |                   ) : null}
+  280 |                   {!products.length && !loadingProducts ? <div className="text-sm text-slate-600">No products found.</div> : null}
+  281 |                 </div>
+  282 |               ) : null}
+  283 | 
+  284 |               {activeTab === 'videos' ? (
+  285 |                 <div className="space-y-3">
+  286 |                   <p className="text-sm text-slate-700">
+  287 |                     Only approved media is public. Pending or restricted media remains hidden unless you are the profile owner or an admin.
+  288 |                   </p>
+  289 |                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+  290 |                     {visibleVideos.map((p) => (
+  291 |                       <div key={p.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+  292 |                         <p className="text-sm font-bold text-slate-900">{p.title || 'Video'}</p>
+  293 |                         <p className="mt-1 text-xs text-slate-600">Status: {String(p.video_review_status || '—').replaceAll('_', ' ')}</p>
+  294 |                         <p className="mt-2 text-sm text-slate-700 line-clamp-3">{p.description || ''}</p>
+  295 |                         {p.video_url ? (
+  296 |                           <a href={p.video_url} target="_blank" rel="noreferrer" className="mt-3 inline-block text-xs font-semibold text-[#0A66C2] hover:underline">
+  297 |                             Open video link
+  298 |                           </a>
+  299 |                         ) : null}
+  300 |                       </div>
+  301 |                     ))}
+  302 |                   </div>
+  303 |                   {!visibleVideos.length && !loadingProducts ? <div className="text-sm text-slate-600">No public videos available.</div> : null}
+  304 |                 </div>
+  305 |               ) : null}
+  306 | 
+  307 |               {activeTab === 'reviews' ? (
+  308 |                 <div className="space-y-3">
+  309 |                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+  310 |                     <p className="text-sm font-bold text-slate-900">Rating summary</p>
+  311 |                     <p className="mt-1 text-sm text-slate-700">
+  312 |                       {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 • {ratingSummary?.aggregate?.total_count ?? 0} reviews • {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
+  313 |                     </p>
+  314 |                   </div>
+  315 |                   {(ratingSummary?.recent_reviews || []).map((r) => (
+  316 |                     <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+  317 |                       <p className="text-sm font-semibold text-slate-900">{r.score}★</p>
+  318 |                       <p className="mt-1 text-sm text-slate-700">{r.comment || 'No comment provided.'}</p>
+  319 |                     </div>
+  320 |                   ))}
+  321 |                   {!ratingSummary?.recent_reviews?.length ? <div className="text-sm text-slate-600">No reviews yet.</div> : null}
+  322 |                 </div>
+  323 |               ) : null}
+  324 |             </div>
+  325 |           </motion.div>
+  326 |         </main>
+  327 |       </div>
+  328 |     </div>
+  329 |   )
+  330 | }
+  331 | 

@@ -1,0 +1,133 @@
+    1 | import { createRequirement, listRequirements, removeRequirement, getRequirementById, updateRequirement } from '../services/requirementService.js'
+    2 | import {
+    3 |   buildLimitError,
+    4 |   buildSearchAccessPayload,
+    5 |   canUseAdvancedFilters,
+    6 |   consumeQuota,
+    7 |   extractUsedAdvancedFilters,
+    8 |   getQuotaSnapshot,
+    9 |   getUserPlan,
+   10 | } from '../services/searchAccessService.js'
+   11 | import { readJson } from '../utils/jsonStore.js'
+   12 | 
+   13 | function parseNumber(value) {
+   14 |   const n = Number(String(value || '').replace(/[^\d.]/g, ''))
+   15 |   return Number.isFinite(n) ? n : null
+   16 | }
+   17 | 
+   18 | function matchesMoqRange(rawRange, moqValue) {
+   19 |   if (!rawRange) return true
+   20 |   const moq = Number.isFinite(Number(moqValue)) ? Number(moqValue) : parseNumber(moqValue)
+   21 |   if (!Number.isFinite(moq)) return false
+   22 | 
+   23 |   const range = String(rawRange || '').trim()
+   24 |   const parts = range.split('-').map((p) => parseNumber(p))
+   25 |   const min = Number.isFinite(parts[0]) ? parts[0] : null
+   26 |   const max = Number.isFinite(parts[1]) ? parts[1] : null
+   27 | 
+   28 |   if (min !== null && moq < min) return false
+   29 |   if (max !== null && moq > max) return false
+   30 |   return true
+   31 | }
+   32 | 
+   33 | export async function createBuyerRequirement(req, res) {
+   34 |   const requirement = await createRequirement(req.user.id, req.body)
+   35 |   return res.status(201).json(requirement)
+   36 | }
+   37 | 
+   38 | export async function getRequirements(req, res) {
+   39 |   const filters = {}
+   40 |   if (req.user.role === 'buyer') filters.buyerId = req.user.id
+   41 |   return res.json(await listRequirements(filters))
+   42 | }
+   43 | 
+   44 | export async function getRequirement(req, res) {
+   45 |   const requirement = await getRequirementById(req.params.requirementId)
+   46 |   if (!requirement) return res.status(404).json({ error: 'Requirement not found' })
+   47 |   return res.json(requirement)
+   48 | }
+   49 | 
+   50 | export async function patchRequirement(req, res) {
+   51 |   const updated = await updateRequirement(req.params.requirementId, req.body || {}, req.user)
+   52 |   if (updated === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+   53 |   if (!updated) return res.status(404).json({ error: 'Requirement not found' })
+   54 |   return res.json(updated)
+   55 | }
+   56 | 
+   57 | export async function deleteRequirement(req, res) {
+   58 |   const ok = await removeRequirement(req.params.requirementId, req.user)
+   59 |   if (ok === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+   60 |   if (!ok) return res.status(404).json({ error: 'Requirement not found' })
+   61 |   return res.json({ ok: true })
+   62 | }
+   63 | 
+   64 | export async function searchRequirements(req, res) {
+   65 |   const plan = await getUserPlan(req.user.id)
+   66 |   const advancedFilters = extractUsedAdvancedFilters(req.query)
+   67 |   const quotaPreview = await getQuotaSnapshot(req.user.id, 'requirements_search', plan)
+   68 | 
+   69 |   if (advancedFilters.length > 0 && !canUseAdvancedFilters(plan)) {
+   70 |     return res.status(403).json(buildLimitError({
+   71 |       code: 'upgrade_required',
+   72 |       message: 'Advanced filters require a premium plan',
+   73 |       quota: quotaPreview,
+   74 |       missingFilters: advancedFilters,
+   75 |       upgradeRequired: true,
+   76 |     }))
+   77 |   }
+   78 | 
+   79 |   const quotaUse = await consumeQuota(req.user.id, 'requirements_search', plan)
+   80 |   if (!quotaUse.allowed) {
+   81 |     return res.status(429).json(buildLimitError({
+   82 |       code: 'limit_reached',
+   83 |       message: 'Daily requirement search limit reached',
+   84 |       quota: quotaUse.quota,
+   85 |     }))
+   86 |   }
+   87 | 
+   88 |   const all = await listRequirements({})
+   89 |   const users = await readJson('users.json')
+   90 |   const usersById = new Map(users.map((u) => [u.id, u]))
+   91 | 
+   92 |   const q = String(req.query.q || '').toLowerCase().trim()
+   93 |   const wantedCountry = String(req.query.country || '').trim().toLowerCase()
+   94 |   const wantedOrgType = String(req.query.orgType || '').trim().toLowerCase()
+   95 |   const verifiedOnly = req.query.verifiedOnly === 'true'
+   96 |   const moqRange = String(req.query.moqRange || '').trim()
+   97 | 
+   98 |   const results = all
+   99 |     .map((r) => {
+  100 |       const buyer = usersById.get(r.buyer_id) || null
+  101 |       const authorCountry = String(buyer?.profile?.country || '').trim()
+  102 |       return {
+  103 |         ...r,
+  104 |         author: buyer ? {
+  105 |           id: buyer.id,
+  106 |           name: buyer.name,
+  107 |           role: buyer.role,
+  108 |           verified: Boolean(buyer.verified),
+  109 |           country: authorCountry,
+  110 |         } : { id: r.buyer_id, name: 'Unknown buyer', role: 'buyer', verified: false, country: '' },
+  111 |         profile_key: `user:${r.buyer_id}`,
+  112 |       }
+  113 |     })
+  114 |     .filter((r) => {
+  115 |       if (q && !`${r.category} ${r.material} ${r.custom_description}`.toLowerCase().includes(q)) return false
+  116 |       if (req.query.category && String(r.category).toLowerCase() !== String(req.query.category).toLowerCase()) return false
+  117 |       if (wantedOrgType && String(r.author?.role || '').toLowerCase() !== wantedOrgType) return false
+  118 |       if (wantedCountry && String(r.author?.country || '').toLowerCase() !== wantedCountry) return false
+  119 |       if (verifiedOnly && !r.author?.verified) return false
+  120 |       if (moqRange && !matchesMoqRange(moqRange, r.quantity)) return false
+  121 |       return true
+  122 |     })
+  123 | 
+  124 |   return res.json({
+  125 |     items: results,
+  126 |     ...buildSearchAccessPayload({
+  127 |       action: 'requirements_search',
+  128 |       plan,
+  129 |       quota: quotaUse.quota,
+  130 |     }),
+  131 |   })
+  132 | }
+  133 | 

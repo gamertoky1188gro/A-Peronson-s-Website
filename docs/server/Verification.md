@@ -1,195 +1,113 @@
-# Verification - Server Feature Documentation (Manual)
+# Verification
 
-## File Structure & Overview
-- `server/routes/verificationRoutes.js`: Verification endpoints and admin actions.
-- `server/controllers/verificationController.js`: Verification API transport layer.
-- `server/services/verificationService.js`: Region/role document validation, credibility scoring, approval/revocation logic.
-- `server/services/subscriptionService.js`: Subscription validity check for approval eligibility.
-- `server/services/userService.js`: User existence and verified flag sync.
-- `shared/config/geo.js`: EU country lookup used for buyer region consistency checks.
-- `server/database/verification.json`: Verification records.
-- `server/database/subscriptions.json`: Subscription validity source.
+This doc is generated from source snapshots with `path:line` references.
 
-## Code Explanation
+## Mounted prefixes
 
-### `server/routes/verificationRoutes.js`
-Summary:
-- Defines user self-service verification endpoints and admin approval/revoke operations.
+- `/api/verification` -> `server/routes/verificationRoutes.js:63` (router var: `verificationRoutes`)
 
-Routes:
-- `GET /me` (auth required)
-- `POST /me` (auth + roles `buyer|factory|buying_house`)
-- `POST /admin/:userId/approve` (auth + admin)
-- `POST /admin/revoke-expired` (auth + admin)
+## Routes (ultra-detailed)
 
-### `server/controllers/verificationController.js`
-Summary:
-- Maps request intents to verification service behavior.
+### GET `/api/verification/me`
 
-Functions:
-1. `getMyVerification(req, res)`
-- Returns user verification record or default fallback.
-- Output: `200`.
+- **Route definition:** `server/routes/verificationRoutes.js:7`
 
-2. `submitMyVerification(req, res)`
-- Steps:
-1. Verifies user exists.
-2. Calls `upsertVerification(user, req.body.documents)`.
-3. Converts validation errors to status code from thrown error (`statusCode` default `400`).
-- Outputs: `200`, `404`, `400`.
-
-3. `adminApprove(req, res)`
-- Steps:
-1. Calls `adminApproveVerification(userId)`.
-2. 404 if record missing.
-3. Syncs user’s `verified` flag in `users.json`.
-- Output: `200`, `404`.
-
-4. `adminRevokeExpired(req, res)`
-- Calls `revokeExpiredVerifications`.
-- Output: `200 { ok: true, total }`.
-
-### `server/services/verificationService.js`
-Summary:
-- Implements role-region required-document matrix and approval lifecycle.
-
-Core constants:
-- Buyer regions: `EU`, `USA`, `OTHER`.
-- Required docs matrix by role/region.
-- Field aliases (`tin_or_ein`, `erc_or_eori` support).
-
-Functions:
-- `emptyDocs()`: default document structure.
-- `sanitizeDocsPatch(documentsPatch)`: sanitizes scalar values and optional array docs.
-- `normalizeBuyerRegion(rawRegion)` and `normalizeBuyerCountry(rawCountry)`.
-- `validateBuyerGeography(role, docs, buyerRegion)`:
-  - Ensures EU region selection matches country EU status.
-  - Throws `400` errors for mismatch.
-- `getRequiredFields(role, buyerRegion)`.
-- `hasDocument(docs, field)`:
-  - Supports alias field matching.
-- `buildCredibility(required, docs)`:
-  - Computes score and badge from required completion + optional licenses.
-- `getVerification(userId)`.
-- `upsertVerification(user, documentsPatch)`:
-  - merges existing + patch docs.
-  - computes missing required docs and credibility.
-  - always resets `verified` to false on submission.
-- `adminApproveVerification(userId)`:
-  - requires active subscription.
-  - requires no missing required docs.
-  - writes `verified_at` and `subscription_valid_until`.
-- `revokeExpiredVerifications()`:
-  - revokes verified status when subscription expired.
-- `markVerificationExpiringSoon(userId, remainingDays, thresholdDays)`:
-  - derives expiring flags/status marker.
-
-Dependencies:
-- `jsonStore`, `validators.sanitizeString`, `subscriptionService.isSubscriptionValid`, `geo.isEuCountry`, logger.
-
-## API Endpoints
-
-### `GET /api/verification/me`
-- Auth: required.
-- Response:
-  - `200`: verification record or fallback:
-```json
-{ "user_id": "...", "verified": false, "missing_required": [] }
+```js
+router.get('/me', requireAuth, getMyVerification)
 ```
+- **Middleware stack (in order):**
+  - `requireAuth`
+- **Handler:** `getMyVerification`
+- **Controller file:** `server/controllers/verificationController.js`
 
-### `POST /api/verification/me`
-- Auth: required.
-- Roles allowed: `buyer`, `factory`, `buying_house`.
-- Body shape:
-```json
-{
-  "documents": {
-    "company_registration": "doc-url",
-    "bank_proof": "doc-url",
-    "buyer_country": "Germany",
-    "optional_licenses": ["ISO9001"]
+#### Controller implementation: `server/controllers/verificationController.js:4`
+
+```js
+export async function getMyVerification(req, res) {
+  const rec = await getVerification(req.user.id)
+  return res.json(rec || { user_id: req.user.id, verified: false, missing_required: [] })
+}
+
+```
+### POST `/api/verification/me`
+
+- **Route definition:** `server/routes/verificationRoutes.js:8`
+
+```js
+router.post('/me', requireAuth, allowRoles('buyer', 'factory', 'buying_house'), submitMyVerification)
+```
+- **Middleware stack (in order):**
+  - `requireAuth`
+  - `allowRoles('buyer', 'factory', 'buying_house')`
+- **Handler:** `submitMyVerification`
+- **Controller file:** `server/controllers/verificationController.js`
+
+#### Controller implementation: `server/controllers/verificationController.js:9`
+
+```js
+export async function submitMyVerification(req, res) {
+  const user = await findUserById(req.user.id)
+  if (!user) return res.status(404).json({ error: 'User not found' })
+
+  try {
+    const rec = await upsertVerification(user, req.body?.documents || {})
+    return res.json(rec)
+  } catch (error) {
+    const status = Number(error?.statusCode) || 400
+    return res.status(status).json({ error: error?.message || 'Verification data is invalid' })
   }
 }
+
 ```
-- Response:
-  - `200`: updated verification record
-  - `400`: invalid/mismatched region rules
-  - `404`: user missing
+### POST `/api/verification/admin/:userId/approve`
 
-### `POST /api/verification/admin/:userId/approve`
-- Auth: required.
-- Authorization: `admin`.
-- Response:
-  - `200`: updated verification record (verified true/false based on prerequisites)
-  - `404`: record not found
+- **Route definition:** `server/routes/verificationRoutes.js:9`
 
-### `POST /api/verification/admin/revoke-expired`
-- Auth: required.
-- Authorization: `admin`.
-- Response:
-```json
-{ "ok": true, "total": 42 }
+```js
+router.post('/admin/:userId/approve', requireAuth, allowRoles('admin'), adminApprove)
 ```
+- **Middleware stack (in order):**
+  - `requireAuth`
+  - `allowRoles('admin')`
+- **Handler:** `adminApprove`
+- **Controller file:** `server/controllers/verificationController.js`
 
-## Database / Data Model
+#### Controller implementation: `server/controllers/verificationController.js:22`
 
-### `verification.json`
-Fields:
-- `user_id`
-- `role`
-- `buyer_region`
-- `documents` (document key/value map)
-- `verified`
-- `verified_at`
-- `subscription_valid_until`
-- `missing_required: string[]`
-- `credibility`:
-  - `score`
-  - `badge`
-  - `completeness`
-  - `required_completed`
-  - `required_total`
-  - `optional_licenses_count`
-- `updated_at`
+```js
+export async function adminApprove(req, res) {
+  const rec = await adminApproveVerification(req.params.userId)
+  if (!rec) return res.status(404).json({ error: 'Verification record not found' })
+  await setUserVerification(req.params.userId, rec.verified)
+  return res.json(rec)
+}
 
-### `subscriptions.json` relationship
-- Approval checks whether `subscriptions.end_date` is still in future.
-- Expired subscriptions can trigger revoke flow.
-
-## Business Logic & Workflow
-1. User uploads/enters docs in verification UI.
-2. `/api/verification/me` submission sanitizes and stores docs.
-3. Service computes missing mandatory docs + credibility score.
-4. Admin approve action checks:
-  - subscription active
-  - no missing required docs
-5. User verified state synced into `users.json`.
-6. Admin maintenance can revoke expired verified accounts.
-
-Flow:
-```mermaid
-flowchart TD
-  A["Verification form"] --> B["verificationRoutes"]
-  B --> C["verificationController"]
-  C --> D["verificationService"]
-  D --> E["verification.json"]
-  D --> F["subscriptions.json"]
-  C --> G["userService.setUserVerification"]
-  C --> H["Response JSON"]
 ```
+### POST `/api/verification/admin/revoke-expired`
 
-## Error Handling & Validation
-- Buyer geography mismatch throws explicit `400`.
-- Missing user or verification record returns `404`.
-- Admin approve can return a non-verified record when prerequisites fail (subscription/docs).
-- Submission resets verification status pending re-approval.
+- **Route definition:** `server/routes/verificationRoutes.js:10`
 
-## Security Considerations
-- JWT required everywhere.
-- Role-based access for submit and admin operations.
-- Sanitization for all document fields.
-- Verification approval linked to subscription validity (trust gating).
+```js
+router.post('/admin/revoke-expired', requireAuth, allowRoles('admin'), adminRevokeExpired)
+```
+- **Middleware stack (in order):**
+  - `requireAuth`
+  - `allowRoles('admin')`
+- **Handler:** `adminRevokeExpired`
+- **Controller file:** `server/controllers/verificationController.js`
 
-## Extra Notes / Metadata
-- Region-specific rule engine is hardcoded in service constants; update matrix when compliance policy changes.
-- Optional alias fields reduce form schema rigidity (`tin_or_ein`, `erc_or_eori`).
+#### Controller implementation: `server/controllers/verificationController.js:29`
+
+```js
+export async function adminRevokeExpired(req, res) {
+  const updated = await revokeExpiredVerifications()
+  return res.json({ ok: true, total: updated.length })
+}
+
+```
+## Persistence model (JSON-backed "DB")
+
+- JSON helpers: `server/utils/jsonStore.js` (readJson/writeJson/updateJson).
+- Data files: `server/database/*.json`.
+- Controllers/services often read from `users.json`, `messages.json`, `metrics.json`, etc.
+

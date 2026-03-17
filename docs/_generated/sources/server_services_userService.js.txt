@@ -1,0 +1,263 @@
+    1 | import crypto from 'crypto'
+    2 | import bcrypt from 'bcryptjs'
+    3 | import { readJson, writeJson } from '../utils/jsonStore.js'
+    4 | import { sanitizeString } from '../utils/validators.js'
+    5 | import { upsertSubscription } from './subscriptionService.js'
+    6 | 
+    7 | const FILE = 'users.json'
+    8 | const CONNECTION_FILE = 'user_connections.json'
+    9 | 
+   10 | function cleanUser(user) {
+   11 |   const { password_hash: _passwordHash, ...safe } = user
+   12 |   return safe
+   13 | }
+   14 | 
+   15 | 
+   16 | export function buildFriendMatchId(userA, userB) {
+   17 |   const ids = [sanitizeString(String(userA || ''), 120), sanitizeString(String(userB || ''), 120)].filter(Boolean).sort()
+   18 |   if (ids.length !== 2) return ''
+   19 |   return `friend:${ids[0]}:${ids[1]}`
+   20 | }
+   21 | 
+   22 | export function isUserPairInFriendMatch(matchId, userA, userB) {
+   23 |   if (!String(matchId || '').startsWith('friend:')) return false
+   24 |   return matchId === buildFriendMatchId(userA, userB)
+   25 | }
+   26 | 
+   27 | export async function isFriendConnected(userA, userB) {
+   28 |   if (!userA || !userB || userA === userB) return false
+   29 |   const rows = await readJson(CONNECTION_FILE)
+   30 |   return rows.some((row) => {
+   31 |     const samePair = (row.requester_id === userA && row.receiver_id === userB) || (row.requester_id === userB && row.receiver_id === userA)
+   32 |     if (!samePair) return false
+   33 |     const status = String(row.status || '').toLowerCase()
+   34 |     if (row.type === 'friend' && ['active', 'accepted'].includes(status)) return true
+   35 |     if (row.type === 'friend_request' && ['active', 'accepted'].includes(status)) return true
+   36 |     return false
+   37 |   })
+   38 | }
+   39 | 
+   40 | function connectionSnapshot(connections, viewerId, targetId) {
+   41 |   const following = connections.some((row) => row.type === 'follow' && row.requester_id === viewerId && row.receiver_id === targetId && row.status === 'active')
+   42 | 
+   43 |   const friends = connections.some((row) => {
+   44 |     const samePair = (row.requester_id === viewerId && row.receiver_id === targetId) || (row.requester_id === targetId && row.receiver_id === viewerId)
+   45 |     if (!samePair) return false
+   46 |     const status = String(row.status || '').toLowerCase()
+   47 |     if (row.type === 'friend' && ['active', 'accepted'].includes(status)) return true
+   48 |     if (row.type === 'friend_request' && ['active', 'accepted'].includes(status)) return true
+   49 |     return false
+   50 |   })
+   51 | 
+   52 |   if (friends) {
+   53 |     return { following, friend_status: 'friends' }
+   54 |   }
+   55 | 
+   56 |   const outgoingPending = connections.some((row) => row.type === 'friend_request' && row.requester_id === viewerId && row.receiver_id === targetId && row.status === 'pending')
+   57 |   if (outgoingPending) {
+   58 |     return { following, friend_status: 'requested' }
+   59 |   }
+   60 | 
+   61 |   const incomingPending = connections.some((row) => row.type === 'friend_request' && row.requester_id === targetId && row.receiver_id === viewerId && row.status === 'pending')
+   62 |   if (incomingPending) {
+   63 |     return { following, friend_status: 'incoming' }
+   64 |   }
+   65 | 
+   66 |   return { following, friend_status: 'none' }
+   67 | }
+   68 | 
+   69 | export async function listUsers() {
+   70 |   const users = await readJson(FILE)
+   71 |   return users.map(cleanUser)
+   72 | }
+   73 | 
+   74 | export async function listUsersByIds(ids = []) {
+   75 |   const users = await readJson(FILE)
+   76 |   const set = new Set((Array.isArray(ids) ? ids : []).map((id) => String(id)))
+   77 |   return users.filter((u) => set.has(String(u.id))).map(cleanUser)
+   78 | }
+   79 | 
+   80 | export async function searchUsers(viewerId, query) {
+   81 |   const users = await readJson(FILE)
+   82 |   const connections = await readJson(CONNECTION_FILE)
+   83 |   const search = sanitizeString(query || '', 120).trim().toLowerCase()
+   84 | 
+   85 |   const matches = users
+   86 |     .filter((user) => {
+   87 |       if (!search) return true
+   88 |       return user.name.toLowerCase().includes(search) || user.email.toLowerCase().includes(search) || String(user.role || '').toLowerCase().includes(search)
+   89 |     })
+   90 |     .slice(0, 12)
+   91 |     .map((user) => {
+   92 |       const safe = cleanUser(user)
+   93 |       const isSelf = user.id === viewerId
+   94 |       const relation = isSelf ? { following: false, friend_status: 'self' } : connectionSnapshot(connections, viewerId, user.id)
+   95 |       return {
+   96 |         id: safe.id,
+   97 |         name: safe.name,
+   98 |         email: safe.email,
+   99 |         role: safe.role,
+  100 |         verified: Boolean(safe.verified),
+  101 |         is_self: isSelf,
+  102 |         ...relation,
+  103 |       }
+  104 |     })
+  105 | 
+  106 |   return matches
+  107 | }
+  108 | 
+  109 | export async function followUser(viewerId, targetId) {
+  110 |   const rows = await readJson(CONNECTION_FILE)
+  111 |   const now = new Date().toISOString()
+  112 | 
+  113 |   const existingIndex = rows.findIndex((row) => row.type === 'follow' && row.requester_id === viewerId && row.receiver_id === targetId)
+  114 |   if (existingIndex >= 0) {
+  115 |     rows[existingIndex] = {
+  116 |       ...rows[existingIndex],
+  117 |       status: 'active',
+  118 |       updated_at: now,
+  119 |     }
+  120 |   } else {
+  121 |     rows.push({
+  122 |       id: crypto.randomUUID(),
+  123 |       type: 'follow',
+  124 |       requester_id: viewerId,
+  125 |       receiver_id: targetId,
+  126 |       status: 'active',
+  127 |       created_at: now,
+  128 |       updated_at: now,
+  129 |     })
+  130 |   }
+  131 | 
+  132 |   await writeJson(CONNECTION_FILE, rows)
+  133 |   return connectionSnapshot(rows, viewerId, targetId)
+  134 | }
+  135 | 
+  136 | export async function sendFriendRequest(viewerId, targetId) {
+  137 |   const rows = await readJson(CONNECTION_FILE)
+  138 |   const now = new Date().toISOString()
+  139 | 
+  140 |   const existingFriendIndex = rows.findIndex(
+  141 |     (row) => row.type === 'friend' && ['active', 'accepted'].includes(String(row.status || '').toLowerCase())
+  142 |       && ((row.requester_id === viewerId && row.receiver_id === targetId) || (row.requester_id === targetId && row.receiver_id === viewerId)),
+  143 |   )
+  144 | 
+  145 |   if (existingFriendIndex >= 0) {
+  146 |     return connectionSnapshot(rows, viewerId, targetId)
+  147 |   }
+  148 | 
+  149 |   const incomingIndex = rows.findIndex((row) => row.type === 'friend_request' && row.requester_id === targetId && row.receiver_id === viewerId && row.status === 'pending')
+  150 |   if (incomingIndex >= 0) {
+  151 |     rows[incomingIndex] = {
+  152 |       ...rows[incomingIndex],
+  153 |       type: 'friend',
+  154 |       status: 'active',
+  155 |       updated_at: now,
+  156 |     }
+  157 |     await writeJson(CONNECTION_FILE, rows)
+  158 |     return connectionSnapshot(rows, viewerId, targetId)
+  159 |   }
+  160 | 
+  161 |   const outgoingIndex = rows.findIndex((row) => row.type === 'friend_request' && row.requester_id === viewerId && row.receiver_id === targetId && row.status === 'pending')
+  162 |   if (outgoingIndex < 0) {
+  163 |     rows.push({
+  164 |       id: crypto.randomUUID(),
+  165 |       type: 'friend_request',
+  166 |       requester_id: viewerId,
+  167 |       receiver_id: targetId,
+  168 |       status: 'pending',
+  169 |       created_at: now,
+  170 |       updated_at: now,
+  171 |     })
+  172 |     await writeJson(CONNECTION_FILE, rows)
+  173 |   }
+  174 | 
+  175 |   return connectionSnapshot(rows, viewerId, targetId)
+  176 | }
+  177 | 
+  178 | export async function findUserByEmail(email) {
+  179 |   const users = await readJson(FILE)
+  180 |   return users.find((u) => u.email.toLowerCase() === email.toLowerCase())
+  181 | }
+  182 | 
+  183 | export async function findUserById(id) {
+  184 |   const users = await readJson(FILE)
+  185 |   return users.find((u) => u.id === id)
+  186 | }
+  187 | 
+  188 | export async function registerUser(payload) {
+  189 |   const users = await readJson(FILE)
+  190 |   const hash = await bcrypt.hash(payload.password, 10)
+  191 | 
+  192 |   const user = {
+  193 |     id: crypto.randomUUID(),
+  194 |     name: sanitizeString(payload.name || payload.company_name, 120),
+  195 |     email: payload.email.toLowerCase(),
+  196 |     password_hash: hash,
+  197 |     role: payload.role,
+  198 |     verified: payload.role === 'admin',
+  199 |     subscription_status: payload.subscription_status === 'premium' ? 'premium' : 'free',
+  200 |     created_at: new Date().toISOString(),
+  201 |     profile: {
+  202 |       country: sanitizeString(payload.profile?.country || '', 120),
+  203 |       certifications: Array.isArray(payload.profile?.certifications) ? payload.profile.certifications.map((c) => sanitizeString(c, 80)) : [],
+  204 |       bank_proof: sanitizeString(payload.profile?.bank_proof || '', 200),
+  205 |       export_license: sanitizeString(payload.profile?.export_license || '', 160),
+  206 |       monthly_capacity: sanitizeString(payload.profile?.monthly_capacity || '', 80),
+  207 |       moq: sanitizeString(payload.profile?.moq || '', 40),
+  208 |       lead_time_days: sanitizeString(payload.profile?.lead_time_days || '', 40),
+  209 |     },
+  210 |   }
+  211 | 
+  212 |   users.push(user)
+  213 |   await writeJson(FILE, users)
+  214 |   await upsertSubscription(user.id, user.subscription_status, true)
+  215 |   return cleanUser(user)
+  216 | }
+  217 | 
+  218 | export async function verifyPassword(user, password) {
+  219 |   return bcrypt.compare(password, user.password_hash)
+  220 | }
+  221 | 
+  222 | export async function updateProfile(userId, profilePatch) {
+  223 |   const users = await readJson(FILE)
+  224 |   const index = users.findIndex((u) => u.id === userId)
+  225 |   if (index < 0) return null
+  226 | 
+  227 |   const current = users[index]
+  228 |   const nextProfile = {
+  229 |     ...current.profile,
+  230 |     ...Object.fromEntries(Object.entries(profilePatch).map(([k, v]) => [k, Array.isArray(v) ? v.map((x) => sanitizeString(String(x), 120)) : sanitizeString(String(v ?? ''), 240)])),
+  231 |   }
+  232 | 
+  233 |   users[index] = { ...current, profile: nextProfile }
+  234 |   await writeJson(FILE, users)
+  235 |   return cleanUser(users[index])
+  236 | }
+  237 | 
+  238 | export async function setUserVerification(userId, verified) {
+  239 |   const users = await readJson(FILE)
+  240 |   const index = users.findIndex((u) => u.id === userId)
+  241 |   if (index < 0) return null
+  242 |   users[index].verified = Boolean(verified)
+  243 |   await writeJson(FILE, users)
+  244 |   return cleanUser(users[index])
+  245 | }
+  246 | 
+  247 | export async function setUserSubscriptionStatus(userId, plan) {
+  248 |   const users = await readJson(FILE)
+  249 |   const index = users.findIndex((u) => u.id === userId)
+  250 |   if (index < 0) return null
+  251 |   users[index].subscription_status = plan === 'premium' ? 'premium' : 'free'
+  252 |   await writeJson(FILE, users)
+  253 |   return cleanUser(users[index])
+  254 | }
+  255 | 
+  256 | export async function deleteUser(userId) {
+  257 |   const users = await readJson(FILE)
+  258 |   const next = users.filter((u) => u.id !== userId)
+  259 |   if (next.length === users.length) return false
+  260 |   await writeJson(FILE, next)
+  261 |   return true
+  262 | }
+  263 | 

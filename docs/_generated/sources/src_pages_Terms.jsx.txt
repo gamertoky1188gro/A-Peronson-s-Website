@@ -1,0 +1,364 @@
+    1 | /*
+    2 |   Route: /terms
+    3 |   Access: Public
+    4 | 
+    5 |   Public Pages:
+    6 |     /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+    7 |   Protected Pages (login required):
+    8 |     /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+    9 |     /notifications, /chat, /call, /verification, /verification-center
+   10 | 
+   11 |   Primary responsibilities:
+   12 |     - Render Terms & Conditions content in a readable, scannable layout.
+   13 |     - Use an "Industrial Digital" visual language: paper-like studio (light) + command center (dark).
+   14 | 
+   15 |   Micro-interactions:
+   16 |     - Staggered section reveal (Framer Motion).
+   17 |     - "Signature draw" mark hover (CSS animation) to reinforce legal/contract context.
+   18 | */
+   19 | import React from 'react'
+   20 | import { motion, useReducedMotion } from 'framer-motion'
+   21 | 
+   22 | const easePremium = [0.16, 1, 0.3, 1]
+   23 | 
+   24 | function SignatureMark({ className = '' }) {
+   25 |   return (
+   26 |     <div
+   27 |       className={[
+   28 |         'signature-draw inline-flex items-center justify-center rounded-xl px-3 py-2',
+   29 |         'bg-black/[0.02] dark:bg-white/5 text-[#0f172a] dark:text-white',
+   30 |         className,
+   31 |       ].join(' ')}
+   32 |       aria-hidden="true"
+   33 |     >
+   34 |       <svg width="120" height="28" viewBox="0 0 240 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+   35 |         <path
+   36 |           d="M14 40c10-16 18-24 26-24 12 0 2 30 16 30 12 0 8-36 26-36 18 0 6 36 26 36 16 0 10-26 26-26 14 0 6 22 20 22 14 0 8-18 20-18 12 0 8 16 20 16 10 0 16-10 20-16 4-6 8-12 18-12 10 0 18 10 24 22"
+   37 |           stroke="currentColor"
+   38 |           strokeWidth="4"
+   39 |           strokeLinecap="round"
+   40 |           strokeLinejoin="round"
+   41 |           opacity="0.9"
+   42 |         />
+   43 |       </svg>
+   44 |     </div>
+   45 |   )
+   46 | }
+   47 | 
+   48 | function LegalCard({ children, className = '', index = 0, id }) {
+   49 |   const reduceMotion = useReducedMotion()
+   50 | 
+   51 |   return (
+   52 |     <motion.section
+   53 |       id={id}
+   54 |       initial={reduceMotion ? false : { opacity: 0, y: 20 }}
+   55 |       animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+   56 |       transition={{
+   57 |         duration: 0.55,
+   58 |         ease: easePremium,
+   59 |         delay: reduceMotion ? 0 : index * 0.1,
+   60 |       }}
+   61 |       className={[
+   62 |         'rounded-2xl p-6 lg:p-8 transition-colors duration-500 ease-in-out',
+   63 |         'bg-[#ffffff] border border-slate-200 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
+   64 |         'dark:bg-[#0f172a] dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/5',
+   65 |         className,
+   66 |       ].join(' ')}
+   67 |     >
+   68 |       {children}
+   69 |     </motion.section>
+   70 |   )
+   71 | }
+   72 | 
+   73 | export default function Terms() {
+   74 |   const reduceMotion = useReducedMotion()
+   75 |   const lastUpdated = new Date().toLocaleDateString('en-GB', {
+   76 |     day: 'numeric',
+   77 |     month: 'long',
+   78 |     year: 'numeric',
+   79 |   })
+   80 | 
+   81 |   return (
+   82 |     <div className="min-h-screen legal-weave bg-[#f8fafc] text-[#0f172a] dark:bg-[#020617] dark:text-[#f8fafc] transition-colors duration-500 ease-in-out px-4 py-8 lg:px-12 lg:py-12">
+   83 |       <div className="mx-auto max-w-6xl">
+   84 |         <motion.header
+   85 |           initial={reduceMotion ? false : { opacity: 0, y: -10 }}
+   86 |           animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+   87 |           transition={{ duration: 0.5, ease: easePremium }}
+   88 |           className="mb-8"
+   89 |         >
+   90 |           <div className="rounded-3xl bg-[#ffffff]/80 backdrop-blur-md border border-slate-200 shadow-[0_10px_40px_rgba(2,6,23,0.06)] p-6 lg:p-8 dark:bg-[#0f172a]/70 dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out">
+   91 |             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+   92 |               <div>
+   93 |                 <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase bg-indigo-50 text-indigo-700 border border-indigo-100 dark:bg-white/5 dark:text-indigo-200 dark:border-transparent dark:ring-1 dark:ring-white/10">
+   94 |                   Legal Agreement
+   95 |                 </div>
+   96 |                 <h1 className="mt-4 text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#0f172a] dark:text-white">
+   97 |                   Terms & Conditions
+   98 |                 </h1>
+   99 |                 <p className="mt-2 text-sm font-medium text-slate-600 dark:text-slate-300">
+  100 |                   Last Updated:{' '}
+  101 |                   <span className="text-[#0f172a] dark:text-slate-100">{lastUpdated}</span>
+  102 |                 </p>
+  103 |               </div>
+  104 |               <div className="max-w-xl text-sm md:text-base leading-relaxed text-slate-600 dark:text-slate-300">
+  105 |                 This platform is an international B2B Garments and Textiles Marketplace, where Buyer,
+  106 |                 Factory and Buying House connect for professional business purposes. By creating or
+  107 |                 using an account on the platform, you agree to the following terms and conditions.
+  108 |               </div>
+  109 |             </div>
+  110 |           </div>
+  111 |         </motion.header>
+  112 | 
+  113 |         <div className="grid grid-cols-12 gap-6">
+  114 |           <LegalCard index={0} className="col-span-12 md:col-span-6" id="purpose">
+  115 |             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
+  116 |               <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100 dark:bg-white/5 dark:text-indigo-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm">
+  117 |                 1
+  118 |               </span>
+  119 |               Purpose of the Platform
+  120 |             </h2>
+  121 |             <ul className="space-y-3 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
+  122 |               {[
+  123 |                 'To establish direct and professional connections between international buyers and Garments/Textile Factories',
+  124 |                 'To ensure business matching based on Buyer Request and Company Product',
+  125 |                 'To manage digital contracts, communication and verification processes in a controlled manner',
+  126 |                 'The platform will be operated as a controlled business environment.',
+  127 |               ].map((item, idx) => (
+  128 |                 <li key={idx} className="flex items-start gap-3">
+  129 |                   <span className="mt-2 w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 shrink-0"></span>
+  130 |                   {item}
+  131 |                 </li>
+  132 |               ))}
+  133 |             </ul>
+  134 |           </LegalCard>
+  135 | 
+  136 |           <LegalCard index={1} className="col-span-12 md:col-span-6" id="account-policy">
+  137 |             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
+  138 |               <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100 dark:bg-white/5 dark:text-indigo-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm">
+  139 |                 2
+  140 |               </span>
+  141 |               Account Policy
+  142 |             </h2>
+  143 |             <ul className="space-y-3 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
+  144 |               {[
+  145 |                 'It is mandatory to open an account only for legitimate business purposes.',
+  146 |                 'Accurate, true and up-to-date information must be provided.',
+  147 |                 'Providing incorrect, false or misleading information will result in administrative action.',
+  148 |                 'The owner will create and manage a certain number of IDs in the Buying House Enterprise account.',
+  149 |                 'Each user is responsible for the security of their login information.',
+  150 |               ].map((item, idx) => (
+  151 |                 <li key={idx} className="flex items-start gap-3">
+  152 |                   <span className="mt-2 w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 shrink-0"></span>
+  153 |                   {item}
+  154 |                 </li>
+  155 |               ))}
+  156 |             </ul>
+  157 |           </LegalCard>
+  158 | 
+  159 |           <LegalCard
+  160 |             index={2}
+  161 |             className={[
+  162 |               'col-span-12',
+  163 |               '!bg-rose-50 !text-[#0f172a] !border-rose-200 !shadow-[0_12px_40px_rgba(244,63,94,0.12)]',
+  164 |               'dark:!bg-[#0b1220] dark:!text-white dark:border-transparent dark:ring-1 dark:ring-white/10 dark:shadow-none',
+  165 |             ].join(' ')}
+  166 |             id="conduct"
+  167 |           >
+  168 |             <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-3 flex items-center gap-3 text-[#0f172a] dark:text-white">
+  169 |               <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-rose-100 text-rose-800 border border-rose-200 dark:bg-white/10 dark:text-white dark:border-transparent text-sm">
+  170 |                 3
+  171 |               </span>
+  172 |               User Conduct
+  173 |             </h2>
+  174 |             <p className="mb-4 font-semibold text-rose-950/80 dark:text-white/80">
+  175 |               The following activities are strictly prohibited and will be subject to action:
+  176 |             </p>
+  177 |             <ul className="grid md:grid-cols-2 gap-x-8 gap-y-3 text-slate-800 dark:text-white/85 text-sm md:text-base leading-relaxed list-none p-0 m-0">
+  178 |               {[
+  179 |                 'Posting fake orders or misleading Buyer Requests',
+  180 |                 'Fraudulent or misleading communications',
+  181 |                 'Inducing unsafe transactions outside the platform',
+  182 |                 'Uploading copyright-infringing content',
+  183 |                 'Promoting illegal or prohibited products',
+  184 |                 'Posting obscene, immoral, or offensive content',
+  185 |                 'Uploading videos with excessive musical instruments',
+  186 |                 'Using copyrighted music',
+  187 |               ].map((item, idx) => (
+  188 |                 <li key={idx} className="flex items-start gap-3">
+  189 |                   <span className="mt-1 bg-rose-100 p-1 rounded-full dark:bg-white/10">
+  190 |                     <svg className="w-2.5 h-2.5 text-rose-700 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  191 |                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"></path>
+  192 |                     </svg>
+  193 |                   </span>
+  194 |                   {item}
+  195 |                 </li>
+  196 |               ))}
+  197 |             </ul>
+  198 |             <p className="mt-6 text-sm italic text-slate-600 dark:text-white/80">
+  199 |               All media content must be published in a professional and business-like manner.
+  200 |             </p>
+  201 |           </LegalCard>
+  202 | 
+  203 |           {[
+  204 |             {
+  205 |               id: 4,
+  206 |               title: 'Buyer Request and Communication Policy',
+  207 |               points: [
+  208 |                 'Buyer Requests must be clear, specific, and business-like.',
+  209 |                 'Messages from verified users will be displayed on a priority basis.',
+  210 |                 'Other messages will be stored as requests and displayed in a controlled manner.',
+  211 |                 'Spam and irrelevant communications will be controlled.',
+  212 |                 'The platform will monitor and control communications.',
+  213 |               ],
+  214 |             },
+  215 |             {
+  216 |               id: 5,
+  217 |               title: 'Digital Agreements and Signatures',
+  218 |               points: [
+  219 |                 'Digital signatures executed on the platform will be considered legally binding.',
+  220 |                 'A PDF copy of each agreement will be provided to both parties.',
+  221 |                 'A copy will be stored in the company system as legal evidence if necessary.',
+  222 |               ],
+  223 |             },
+  224 |             {
+  225 |               id: 6,
+  226 |               title: 'Call and Chat Policy',
+  227 |               points: [
+  228 |                 'Video and audio calls made through the platform will be recorded.',
+  229 |                 'All recordings will be stored only with the company.',
+  230 |                 'Recordings will not be provided directly to any party, except as required by law.',
+  231 |                 'Records will only be used for dispute resolution, security and legal purposes.',
+  232 |               ],
+  233 |             },
+  234 |             {
+  235 |               id: 7,
+  236 |               title: 'Ratings and Transparency',
+  237 |               points: [
+  238 |                 'Ratings will be provided by the platform upon successful order completion.',
+  239 |                 'User performance and behavior will directly impact visibility.',
+  240 |                 'Providing artificial or manipulated ratings will result in administrative action.',
+  241 |               ],
+  242 |             },
+  243 |             {
+  244 |               id: 8,
+  245 |               title: 'Subscription and Enterprise Benefits',
+  246 |               points: [
+  247 |                 'Buying House and Enterprise accounts will have enhanced management benefits.',
+  248 |                 'Certain advanced features will be enabled through upgrades.',
+  249 |                 'Subscription policies will apply where applicable.',
+  250 |               ],
+  251 |             },
+  252 |           ].map((section, sectionIndex) => {
+  253 |             const isStitch = section.id === 5
+  254 |             return (
+  255 |               <LegalCard
+  256 |                 key={section.id}
+  257 |                 index={3 + sectionIndex}
+  258 |                 className={[
+  259 |                   'col-span-12 md:col-span-6',
+  260 |                   isStitch ? 'border-dashed border-slate-200 dark:border-transparent outline outline-1 outline-dashed outline-slate-200/80 dark:outline-white/10' : '',
+  261 |                 ].join(' ')}
+  262 |                 id={`section-${section.id}`}
+  263 |               >
+  264 |                 <h2 className="text-lg md:text-xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
+  265 |                   <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 dark:bg-white/5 dark:text-slate-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm">
+  266 |                     {section.id}
+  267 |                   </span>
+  268 |                   {section.title}
+  269 |                 </h2>
+  270 |                 <ul className="space-y-3 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
+  271 |                   {section.points.map((p, idx) => (
+  272 |                     <li key={idx} className="flex items-start gap-3">
+  273 |                       <span className="mt-2 w-1 h-1 rounded-full bg-slate-400 dark:bg-slate-500 shrink-0"></span>
+  274 |                       {p}
+  275 |                     </li>
+  276 |                   ))}
+  277 |                 </ul>
+  278 |                 {isStitch ? (
+  279 |                   <div className="mt-6 flex justify-end">
+  280 |                     <SignatureMark />
+  281 |                   </div>
+  282 |                 ) : null}
+  283 |               </LegalCard>
+  284 |             )
+  285 |           })}
+  286 | 
+  287 |           <LegalCard
+  288 |             index={8}
+  289 |             className="col-span-12 bg-amber-50 border-amber-200 text-amber-950 dark:bg-[rgba(120,53,15,0.10)] dark:text-amber-50 dark:ring-1 dark:ring-amber-500/20"
+  290 |             id="liability"
+  291 |           >
+  292 |             <h2 className="text-lg md:text-xl font-bold tracking-tight mb-3 flex items-center gap-2 text-amber-950 dark:text-white">
+  293 |               <span className="text-amber-600 dark:text-amber-400">⚠</span>
+  294 |               9. Liability
+  295 |             </h2>
+  296 |             <div className="space-y-3 text-sm md:text-base leading-relaxed">
+  297 |               <p>
+  298 |                 The platform provides connectivity between Buyers and Sellers. Strong and effective
+  299 |                 security measures have been implemented to prevent fraud.
+  300 |               </p>
+  301 |               <p className="font-semibold text-amber-800 dark:text-amber-200">
+  302 |                 If the user violates policies, verification processes or security instructions and
+  303 |                 suffers losses, the user will bear the responsibility himself.
+  304 |               </p>
+  305 |             </div>
+  306 |           </LegalCard>
+  307 | 
+  308 |           <LegalCard index={9} className="col-span-12" id="suspension">
+  309 |             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
+  310 |               <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 dark:bg-white/5 dark:text-slate-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm">
+  311 |                 10
+  312 |               </span>
+  313 |               Account Suspension or Cancellation
+  314 |             </h2>
+  315 |             <div className="space-y-4 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
+  316 |               <p>
+  317 |                 Accounts will be suspended or canceled in cases of:{' '}
+  318 |                 <strong>Violation of terms, Fraudulent activity, Providing false information,</strong>{' '}
+  319 |                 or <strong>Behavior that damages reputation</strong>.
+  320 |               </p>
+  321 |               <ul className="list-disc ml-5 space-y-1 text-sm md:text-base">
+  322 |                 <li>The user will be notified before closing the account.</li>
+  323 |                 <li>A warning will be given if necessary.</li>
+  324 |                 <li>In case of repeated or serious violations, the account will be permanently closed.</li>
+  325 |               </ul>
+  326 |             </div>
+  327 |           </LegalCard>
+  328 | 
+  329 |           <LegalCard index={10} className="col-span-12 md:col-span-6" id="change-policy">
+  330 |             <h3 className="text-lg font-bold tracking-tight text-[#0f172a] dark:text-white mb-2">
+  331 |               11. Change Policy
+  332 |             </h3>
+  333 |             <p className="text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
+  334 |               These Terms will be updated as needed. Users will be notified of any significant changes via notification.
+  335 |             </p>
+  336 |           </LegalCard>
+  337 | 
+  338 |           <LegalCard index={11} className="col-span-12 md:col-span-6" id="consent">
+  339 |             <h3 className="text-lg font-bold tracking-tight text-[#0f172a] dark:text-white mb-2">
+  340 |               12. Consent
+  341 |             </h3>
+  342 |             <p className="text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
+  343 |               By creating an account or using the Platform, you agree to be bound by all provisions of these Terms and Conditions.
+  344 |             </p>
+  345 |           </LegalCard>
+  346 | 
+  347 |           <motion.footer
+  348 |             initial={reduceMotion ? false : { opacity: 0, y: 20 }}
+  349 |             animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+  350 |             transition={{ duration: 0.55, ease: easePremium, delay: reduceMotion ? 0 : 12 * 0.1 }}
+  351 |             className="col-span-12 text-center"
+  352 |           >
+  353 |             <div className="rounded-2xl p-6 bg-[#ffffff] border border-slate-200 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#0f172a] dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/5 transition-colors duration-500 ease-in-out">
+  354 |               <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+  355 |                 © 2026 GarTexHub Professional Network. All Rights Reserved.
+  356 |               </p>
+  357 |             </div>
+  358 |           </motion.footer>
+  359 |         </div>
+  360 |       </div>
+  361 |     </div>
+  362 |   )
+  363 | }
+  364 | 

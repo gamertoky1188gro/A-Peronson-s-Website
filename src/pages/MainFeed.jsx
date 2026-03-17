@@ -1,3 +1,29 @@
+/*
+  Route: /feed
+  Access: Protected (login required)
+  Allowed roles: buyer, buying_house, factory, owner, admin, agent
+
+  Public Pages:
+    /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+  Protected Pages (login required):
+    /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+    /notifications, /chat, /call, /verification, /verification-center
+
+  Primary responsibilities:
+    - Render the main "work" feed (buyer requests + company products).
+    - Provide filtering, sorting, and the "Unique toggle" mode.
+    - Support actions: share/copy, open comments drawer, report modal, etc.
+
+  Key API endpoints (high level):
+    - GET /api/feed (and/or role-specific feed endpoints, depending on server implementation)
+    - POST/PATCH for reactions/comments/reporting (via child components)
+
+  Major UI/UX patterns:
+    - Industrial-tech palette: slate-50 in light, slate-950-ish in dark (`#020617`).
+    - Borderless depth: rings in dark mode (avoids global border overrides).
+    - Skeleton shimmer while loading (App.css `.skeleton`).
+    - Staggered entrance for feed items (Framer Motion).
+*/
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
@@ -9,6 +35,7 @@ import useLocalStorageState from '../hooks/useLocalStorageState'
 import { apiRequest, fetchCurrentUser, getCurrentUser, getToken } from '../lib/auth'
 
 function formatRelativeTime(value) {
+  // Convert an ISO timestamp into a short "Just now / 5m ago / 2h ago" label for feed cards.
   if (!value) return ''
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return ''
@@ -23,6 +50,8 @@ function formatRelativeTime(value) {
 }
 
 function normalizeFeedItem(raw) {
+  // Backend feed rows can be buyer requests or company products.
+  // This function normalizes server shape -> UI shape so downstream components can be consistent.
   const entityType = raw.feed_type === 'buyer_request' ? 'buyer_request' : 'company_product'
   const isBuyerRequest = entityType === 'buyer_request'
   const authorId = raw.buyer_id || raw.company_id || raw.author_id || ''
@@ -56,6 +85,8 @@ function normalizeFeedItem(raw) {
 }
 
 async function copyToClipboard(text) {
+  // Utility used for "Copy link" / "Copy details" actions.
+  // Uses modern Clipboard API when available, with a DOM fallback for older browsers.
   if (!text) return false
   if (navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(text)
@@ -103,18 +134,28 @@ function FeedSkeletonCard({ index }) {
 }
 
 export default function MainFeed() {
+  // Router helpers:
+  // - navigate: used for routing to profiles/chat/etc.
+  // - searchParams: used to restore filters from URL query string.
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  // Auth/session:
+  // - token: bearer token for protected API calls
+  // - sessionUser: cached user object stored client-side
   const token = useMemo(() => getToken(), [])
   const sessionUser = getCurrentUser()
   const userId = sessionUser?.id || 'user'
+  // Persistent per-user key for the "Unique toggle" state.
   const uniqueKey = `gartexhub_unique:${userId}`
 
+  // User snapshot (can be refreshed from server if needed).
   const [user, setUser] = useState(sessionUser)
+  // Feed filters (type + category) and the unique-mode toggle.
   const [activeType, setActiveType] = useState('all')
   const [activeCategory, setActiveCategory] = useState('')
   const [unique, setUnique] = useLocalStorageState(uniqueKey, false)
 
+  // Feed data list + pagination cursor.
   const [items, setItems] = useState([])
   const [tags, setTags] = useState([])
   const [nextCursor, setNextCursor] = useState(0)

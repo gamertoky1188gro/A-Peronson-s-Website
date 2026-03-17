@@ -1,3 +1,32 @@
+/*
+  Route: /search
+  Access: Protected (login required)
+  Allowed roles: buyer, buying_house, factory, owner, admin, agent
+
+  Public Pages:
+    /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+  Protected Pages (login required):
+    /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+    /notifications, /chat, /call, /verification, /verification-center
+
+  Primary responsibilities:
+    - Run marketplace search across Buyer Requests and Companies/Products.
+    - Provide basic filters for free tier and advanced filters for premium tier.
+    - Support quick view modals and recent views rail.
+
+  Key API endpoints:
+    - GET /api/requirements/search?... (buyer requests)
+    - GET /api/products/search?... (companies/products)
+    - GET /api/ratings/search?profile_keys=...
+    - GET /api/products/views/me?cursor=...
+    - POST /api/search/alerts (save alerts)
+
+  Major UI/UX patterns:
+    - Glass + glow search bar with shortcut hint (Ctrl/⌘ + K).
+    - layoutId animated tabs for "All / Buyer Requests / Companies".
+    - Skeleton shimmer while loading.
+    - Optional premium-locked overlays for advanced filters.
+*/
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Briefcase, Building2, Filter, LayoutGrid, Bell, Search as SearchIcon } from 'lucide-react'
@@ -12,6 +41,8 @@ const TAB_OPTIONS = [
 ]
 
 function roleToProfileRoute(role, id) {
+  // Convert a company role -> correct profile route.
+  // Used when clicking a search result card to navigate to the right profile page.
   if (!id) return ''
   const normalized = String(role || '').toLowerCase()
   if (normalized === 'buyer') return `/buyer/${encodeURIComponent(id)}`
@@ -20,6 +51,8 @@ function roleToProfileRoute(role, id) {
 }
 
 function buildQueryString({ q, category, filters, allowAdvanced }) {
+  // Build URLSearchParams from UI state.
+  // `allowAdvanced` gates premium-only filters so we don't send params the backend will ignore/reject.
   const params = new URLSearchParams()
   if (q) params.set('q', q)
   if (category) params.set('category', category)

@@ -1,0 +1,347 @@
+    1 | /*
+    2 |   Route: /notifications
+    3 |   Access: Protected (login required)
+    4 |   Allowed roles: buyer, buying_house, factory, owner, admin, agent
+    5 | 
+    6 |   Public Pages:
+    7 |     /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+    8 |   Protected Pages (login required):
+    9 |     /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+   10 |     /notifications, /chat, /call, /verification, /verification-center
+   11 | 
+   12 |   Primary responsibilities:
+   13 |     - Display system + workflow notifications (search matches, conversation locks, rating requests, etc.).
+   14 |     - Provide tabbed filtering with animated active pill indicator.
+   15 |     - Support actions like mark-as-read and manage search alerts.
+   16 | 
+   17 |   Key API endpoints:
+   18 |     - GET /api/notifications
+   19 |     - PATCH /api/notifications/:id/read
+   20 |     - GET /api/notifications/search-alerts
+   21 |     - DELETE /api/notifications/search-alerts/:id
+   22 |     - GET /api/products/views/me (for the "Viewed Products" tab)
+   23 | */
+   24 | import React, { useCallback, useEffect, useMemo, useState } from 'react'
+   25 | import { Link } from 'react-router-dom'
+   26 | import { Bell, History, ShieldAlert, Sparkles, Trash2 } from 'lucide-react'
+   27 | import { motion, useReducedMotion } from 'framer-motion'
+   28 | import { apiRequest, getToken } from '../lib/auth'
+   29 | import ProductQuickViewModal from '../components/products/ProductQuickViewModal'
+   30 | 
+   31 | const TABS = [
+   32 |   // Notification types supported by backend; used to filter the list on the client.
+   33 |   { id: 'all', label: 'All', icon: Bell },
+   34 |   { id: 'smart_search_match', label: 'Search Matches', icon: Sparkles },
+   35 |   { id: 'conversation_lock', label: 'Conversation Locks', icon: ShieldAlert },
+   36 |   { id: 'rating_feedback_request', label: 'Rating Requests', icon: ShieldAlert },
+   37 |   { id: 'system', label: 'System', icon: Bell },
+   38 |   { id: 'viewed', label: 'Viewed Products', icon: History },
+   39 | ]
+   40 | 
+   41 | function feedLinkForEntity(entityType, entityId) {
+   42 |   // Build a deep-link to the feed filtered to a specific entity.
+   43 |   if (!entityType || !entityId) return '/feed'
+   44 |   return `/feed?item=${encodeURIComponent(`${entityType}:${entityId}`)}`
+   45 | }
+   46 | 
+   47 | export default function NotificationsCenter() {
+   48 |   const token = useMemo(() => getToken(), [])
+   49 |   const reduceMotion = useReducedMotion()
+   50 |   const [tab, setTab] = useState('all')
+   51 |   const [unreadOnly, setUnreadOnly] = useState(false)
+   52 |   const [loading, setLoading] = useState(true)
+   53 |   const [error, setError] = useState('')
+   54 | 
+   55 |   const [items, setItems] = useState([])
+   56 |   const [alerts, setAlerts] = useState([])
+   57 | 
+   58 |   const [views, setViews] = useState([])
+   59 |   const [viewsCursor, setViewsCursor] = useState(0)
+   60 |   const [viewsNext, setViewsNext] = useState(null)
+   61 |   const [loadingViews, setLoadingViews] = useState(false)
+   62 |   const [quickViewItem, setQuickViewItem] = useState(null)
+   63 | 
+   64 |   const loadNotifications = useCallback(async () => {
+   65 |     if (!token) return
+   66 |     setLoading(true)
+   67 |     setError('')
+   68 |     try {
+   69 |       const data = await apiRequest('/notifications', { token })
+   70 |       setItems(Array.isArray(data) ? data : [])
+   71 |     } catch (err) {
+   72 |       setError(err.message || 'Failed to load notifications')
+   73 |       setItems([])
+   74 |     } finally {
+   75 |       setLoading(false)
+   76 |     }
+   77 |   }, [token])
+   78 | 
+   79 |   const loadAlerts = useCallback(async () => {
+   80 |     if (!token) return
+   81 |     try {
+   82 |       const data = await apiRequest('/notifications/search-alerts', { token })
+   83 |       setAlerts(Array.isArray(data) ? data : [])
+   84 |     } catch {
+   85 |       setAlerts([])
+   86 |     }
+   87 |   }, [token])
+   88 | 
+   89 |   const loadViews = useCallback(async ({ reset }) => {
+   90 |     if (!token) return
+   91 |     const cursor = reset ? 0 : viewsCursor
+   92 |     setLoadingViews(true)
+   93 |     try {
+   94 |       const data = await apiRequest(`/products/views/me?cursor=${cursor}&limit=10`, { token })
+   95 |       const rows = Array.isArray(data?.items) ? data.items : []
+   96 |       setViews((prev) => (reset ? rows : [...prev, ...rows]))
+   97 |       setViewsCursor(reset ? 10 : cursor + 10)
+   98 |       setViewsNext(data?.next_cursor ?? null)
+   99 |     } catch {
+  100 |       if (reset) setViews([])
+  101 |       setViewsNext(null)
+  102 |     } finally {
+  103 |       setLoadingViews(false)
+  104 |     }
+  105 |   }, [token, viewsCursor])
+  106 | 
+  107 |   useEffect(() => {
+  108 |     loadNotifications()
+  109 |     loadAlerts()
+  110 |   }, [loadAlerts, loadNotifications])
+  111 | 
+  112 |   useEffect(() => {
+  113 |     if (tab !== 'viewed') return
+  114 |     if (views.length) return
+  115 |     loadViews({ reset: true })
+  116 |   }, [loadViews, tab, views.length])
+  117 | 
+  118 |   async function markRead(id) {
+  119 |     if (!token || !id) return
+  120 |     await apiRequest(`/notifications/${encodeURIComponent(id)}/read`, { method: 'PATCH', token })
+  121 |     await loadNotifications()
+  122 |   }
+  123 | 
+  124 |   async function deleteAlert(id) {
+  125 |     if (!token || !id) return
+  126 |     await apiRequest(`/notifications/search-alerts/${encodeURIComponent(id)}`, { method: 'DELETE', token })
+  127 |     await loadAlerts()
+  128 |   }
+  129 | 
+  130 |   const filteredItems = useMemo(() => {
+  131 |     const base = items.filter((it) => {
+  132 |       if (unreadOnly && it.read) return false
+  133 |       if (tab === 'all') return it.type !== 'viewed'
+  134 |       if (tab === 'viewed') return false
+  135 |       return it.type === tab
+  136 |     })
+  137 |     return base
+  138 |   }, [items, tab, unreadOnly])
+  139 | 
+  140 |   return (
+  141 |     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
+  142 |       <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-12 gap-4">
+  143 |         <main className="col-span-12 lg:col-span-8 space-y-4">
+  144 |           <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+  145 |             <div className="flex items-center justify-between gap-3">
+  146 |               <div>
+  147 |                 <p className="text-lg font-bold text-slate-900">Notifications</p>
+  148 |                 <p className="text-[11px] text-slate-500">Smart search matches, system alerts, and your viewed history.</p>
+  149 |               </div>
+  150 |               <label className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700">
+  151 |                 <input type="checkbox" checked={unreadOnly} onChange={(e) => setUnreadOnly(e.target.checked)} className="h-4 w-4" />
+  152 |                 Unread only
+  153 |               </label>
+  154 |             </div>
+  155 | 
+  156 |             <div className="mt-4 flex flex-wrap gap-2">
+  157 |               {TABS.map((t) => {
+  158 |                 const Icon = t.icon
+  159 |                 const active = tab === t.id
+  160 |                 return (
+  161 |                   <motion.button
+  162 |                     key={t.id}
+  163 |                     type="button"
+  164 |                     onClick={() => setTab(t.id)}
+  165 |                     whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+  166 |                     className={`relative inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ring-1 ${
+  167 |                       active
+  168 |                         ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
+  169 |                         : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
+  170 |                     }`}
+  171 |                   >
+  172 |                     {active ? (
+  173 |                       <motion.span
+  174 |                         layoutId="notif-tab"
+  175 |                         className="absolute inset-0 rounded-full bg-indigo-500/10 dark:bg-white/10"
+  176 |                         transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+  177 |                       />
+  178 |                     ) : null}
+  179 |                     <span className="relative inline-flex items-center gap-2">
+  180 |                       <Icon size={16} />
+  181 |                       {t.label}
+  182 |                     </span>
+  183 |                   </motion.button>
+  184 |                 )
+  185 |               })}
+  186 |             </div>
+  187 |           </div>
+  188 | 
+  189 |           {tab !== 'viewed' ? (
+  190 |             <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+  191 |               {loading ? (
+  192 |                 <div className="space-y-3">
+  193 |                   {Array.from({ length: 6 }).map((_, i) => (
+  194 |                     <div key={`notif-skel-${i}`} className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-950/30 dark:ring-white/10">
+  195 |                       <div className="flex items-start justify-between gap-3">
+  196 |                         <div className="min-w-0 flex-1 space-y-2">
+  197 |                           <div className="h-3 w-1/3 rounded-full skeleton" />
+  198 |                           <div className="h-3 w-2/3 rounded-full skeleton" />
+  199 |                           <div className="h-3 w-1/2 rounded-full skeleton" />
+  200 |                         </div>
+  201 |                         <div className="h-8 w-20 rounded-full skeleton" />
+  202 |                       </div>
+  203 |                     </div>
+  204 |                   ))}
+  205 |                 </div>
+  206 |               ) : null}
+  207 |               {!loading && error ? <div className="text-sm text-rose-700 dark:text-rose-200">{error}</div> : null}
+  208 |               {!loading && !error && !filteredItems.length ? (
+  209 |                 <div className="text-sm text-slate-600">No notifications for this tab.</div>
+  210 |               ) : null}
+  211 | 
+  212 |               <div className="space-y-3">
+  213 |                 {filteredItems.map((i) => (
+  214 |                   <div key={i.id} className="rounded-2xl bg-[#ffffff] p-4 ring-1 ring-slate-200/60 shadow-sm transition hover:bg-slate-50/70 dark:bg-slate-950/30 dark:ring-white/10 dark:hover:bg-white/5 flex items-start justify-between gap-3">
+  215 |                     <div className="min-w-0">
+  216 |                       <p className="text-sm font-semibold text-slate-900">{i.message || i.title || 'Notification'}</p>
+  217 |                       <p className="mt-1 text-[11px] text-slate-500">{new Date(i.created_at).toLocaleString()}</p>
+  218 |                       <p className="mt-1 text-[11px] text-slate-500">Type: {i.type}</p>
+  219 |                     </div>
+  220 |                     <div className="flex flex-col gap-2 shrink-0">
+  221 |                       <Link
+  222 |                         to={feedLinkForEntity(i.entity_type, i.entity_id)}
+  223 |                         className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center"
+  224 |                       >
+  225 |                         View
+  226 |                       </Link>
+  227 |                       {!i.read ? (
+  228 |                         <button onClick={() => markRead(i.id)} className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+  229 |                           Mark read
+  230 |                         </button>
+  231 |                       ) : null}
+  232 |                     </div>
+  233 |                   </div>
+  234 |                 ))}
+  235 |               </div>
+  236 |             </div>
+  237 |           ) : (
+  238 |             <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+  239 |               <div className="flex items-center justify-between gap-3 mb-3">
+  240 |                 <div>
+  241 |                   <p className="text-sm font-bold text-slate-900">Viewed Products</p>
+  242 |                   <p className="text-[11px] text-slate-500">Private to you • Recorded on Quick View</p>
+  243 |                 </div>
+  244 |                 <button
+  245 |                   type="button"
+  246 |                   onClick={() => loadViews({ reset: true })}
+  247 |                   className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+  248 |                 >
+  249 |                   Refresh
+  250 |                 </button>
+  251 |               </div>
+  252 | 
+  253 |               <div className="space-y-3">
+  254 |                 {views.map((row) => (
+  255 |                   <div key={row.id} className="rounded-2xl bg-[#ffffff] p-4 ring-1 ring-slate-200/60 shadow-sm transition hover:bg-slate-50/70 dark:bg-slate-950/30 dark:ring-white/10 dark:hover:bg-white/5 flex items-start justify-between gap-3">
+  256 |                     <div className="min-w-0">
+  257 |                       <p className="text-sm font-semibold text-slate-900 truncate">{row.product?.title || 'Product'}</p>
+  258 |                       <p className="mt-1 text-[11px] text-slate-500 truncate">{row.author?.name || 'Company'} • {new Date(row.viewed_at).toLocaleString()}</p>
+  259 |                       <p className="mt-2 text-xs text-slate-600">
+  260 |                         {row.product?.category || '—'} • MOQ {row.product?.moq || '—'} • Lead time {row.product?.lead_time_days || '—'}
+  261 |                       </p>
+  262 |                     </div>
+  263 |                     <div className="flex flex-col gap-2 shrink-0">
+  264 |                       <button
+  265 |                         type="button"
+  266 |                         onClick={() => setQuickViewItem({ ...row.product, author: row.author })}
+  267 |                         className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+  268 |                       >
+  269 |                         Quick view
+  270 |                       </button>
+  271 |                       {row.author?.id ? (
+  272 |                         <Link
+  273 |                           to={row.author.role === 'buying_house' ? `/buying-house/${row.author.id}` : `/factory/${row.author.id}`}
+  274 |                           className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center"
+  275 |                         >
+  276 |                           Company
+  277 |                         </Link>
+  278 |                       ) : null}
+  279 |                     </div>
+  280 |                   </div>
+  281 |                 ))}
+  282 | 
+  283 |                 {loadingViews ? <div className="text-sm text-slate-600">Loading…</div> : null}
+  284 |                 {!views.length && !loadingViews ? <div className="text-sm text-slate-600">No viewed products yet.</div> : null}
+  285 |               </div>
+  286 | 
+  287 |               {viewsNext !== null && !loadingViews ? (
+  288 |                 <button
+  289 |                   type="button"
+  290 |                   onClick={() => loadViews({ reset: false })}
+  291 |                   className="mt-4 rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
+  292 |                 >
+  293 |                   Load more
+  294 |                 </button>
+  295 |               ) : null}
+  296 |             </div>
+  297 |           )}
+  298 |         </main>
+  299 | 
+  300 |         <aside className="col-span-12 lg:col-span-4 space-y-4">
+  301 |           <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+  302 |             <p className="text-sm font-bold text-slate-900">Saved Search Alerts</p>
+  303 |             <p className="mt-1 text-[11px] text-slate-500">These power smart notifications for new matching posts.</p>
+  304 |             <div className="mt-3 space-y-2">
+  305 |               {alerts.length ? alerts.map((a) => (
+  306 |                 <div key={a.id} className="rounded-xl bg-white p-3 ring-1 ring-slate-200/70 shadow-sm dark:bg-white/5 dark:ring-white/10 flex items-start justify-between gap-2">
+  307 |                   <div className="min-w-0">
+  308 |                     <p className="text-xs font-semibold text-slate-900 truncate">{a.query}</p>
+  309 |                     <p className="text-[11px] text-slate-500">Updated: {new Date(a.updated_at || a.created_at).toLocaleString()}</p>
+  310 |                   </div>
+  311 |                   <button
+  312 |                     type="button"
+  313 |                     onClick={() => deleteAlert(a.id)}
+  314 |                     className="rounded-full border border-slate-200 p-2 hover:bg-rose-50"
+  315 |                     aria-label="Delete alert"
+  316 |                     title="Delete alert"
+  317 |                   >
+  318 |                     <Trash2 size={16} className="text-rose-600" />
+  319 |                   </button>
+  320 |                 </div>
+  321 |               )) : (
+  322 |                 <div className="text-xs text-slate-500">No saved alerts yet. Save an alert from the search page.</div>
+  323 |               )}
+  324 |             </div>
+  325 |           </div>
+  326 | 
+  327 |           <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+  328 |             <p className="text-sm font-bold text-slate-900">Tips</p>
+  329 |             <ul className="mt-2 text-xs text-slate-600 space-y-1">
+  330 |               <li>- Smart matches trigger when new buyer requests or products match your saved alert keywords.</li>
+  331 |               <li>- Use verification and credibility to reduce fraud risk.</li>
+  332 |               <li>- Viewed history is private and helps you revisit products quickly.</li>
+  333 |             </ul>
+  334 |           </div>
+  335 |         </aside>
+  336 |       </div>
+  337 | 
+  338 |       <ProductQuickViewModal
+  339 |         open={Boolean(quickViewItem)}
+  340 |         item={quickViewItem}
+  341 |         onClose={() => setQuickViewItem(null)}
+  342 |         onViewed={() => loadViews({ reset: true })}
+  343 |       />
+  344 |     </div>
+  345 |   )
+  346 | }
+  347 | 

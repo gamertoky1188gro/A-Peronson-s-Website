@@ -1,0 +1,285 @@
+    1 | import crypto from 'crypto'
+    2 | import { readJson, writeJson } from '../utils/jsonStore.js'
+    3 | import { sanitizeString } from '../utils/validators.js'
+    4 | import { recordMilestone } from './ratingsService.js'
+    5 | 
+    6 | const FILE = 'call_sessions.json'
+    7 | const MESSAGE_FILE = 'messages.json'
+    8 | const REQUIREMENT_FILE = 'requirements.json'
+    9 | const CALL_STATUS = {
+   10 |   SCHEDULED: 'scheduled',
+   11 |   IN_PROGRESS: 'in_progress',
+   12 |   ENDED: 'ended',
+   13 |   COMPLETED: 'completed',
+   14 | }
+   15 | const RECORDING_STATUS = {
+   16 |   PENDING: 'pending',
+   17 |   PROCESSING: 'processing',
+   18 |   AVAILABLE: 'available',
+   19 |   FAILED: 'failed',
+   20 | }
+   21 | 
+   22 | function normalizeParticipantIds(participantIds = [], ownerId) {
+   23 |   const all = [ownerId, ...(Array.isArray(participantIds) ? participantIds : [])]
+   24 |   return [...new Set(all.filter(Boolean).map((id) => sanitizeString(id, 120)))]
+   25 | }
+   26 | 
+   27 | function buildAuditEntry(event, actorId, metadata = {}) {
+   28 |   return {
+   29 |     id: crypto.randomUUID(),
+   30 |     event,
+   31 |     actor_id: actorId,
+   32 |     timestamp: new Date().toISOString(),
+   33 |     metadata,
+   34 |   }
+   35 | }
+   36 | 
+   37 | function parseFriendMatchId(matchId = '') {
+   38 |   const parts = String(matchId).split(':')
+   39 |   if (parts.length !== 3 || parts[0] !== 'friend') return null
+   40 |   const first = sanitizeString(parts[1], 120)
+   41 |   const second = sanitizeString(parts[2], 120)
+   42 |   if (!first || !second) return null
+   43 |   return [first, second]
+   44 | }
+   45 | 
+   46 | function parseMarketplaceMatchId(matchId = '') {
+   47 |   const parts = String(matchId).split(':')
+   48 |   if (parts.length !== 2) return null
+   49 |   const requirementId = sanitizeString(parts[0], 120)
+   50 |   const factoryId = sanitizeString(parts[1], 120)
+   51 |   if (!requirementId || !factoryId) return null
+   52 |   return { requirementId, factoryId }
+   53 | }
+   54 | 
+   55 | async function deriveParticipantIds(matchId) {
+   56 |   const ids = new Set()
+   57 |   const friendPair = parseFriendMatchId(matchId)
+   58 |   if (Array.isArray(friendPair)) {
+   59 |     friendPair.forEach((id) => { if (id) ids.add(id) })
+   60 |   }
+   61 | 
+   62 |   const marketplacePair = parseMarketplaceMatchId(matchId)
+   63 |   if (marketplacePair?.factoryId) {
+   64 |     ids.add(marketplacePair.factoryId)
+   65 |     const requirements = await readJson(REQUIREMENT_FILE)
+   66 |     const requirement = requirements.find((row) => String(row?.id || '') === marketplacePair.requirementId) || null
+   67 |     const buyerId = sanitizeString(requirement?.buyer_id || requirement?.buyerId, 120)
+   68 |     if (buyerId) ids.add(buyerId)
+   69 |   }
+   70 | 
+   71 |   const messages = await readJson(MESSAGE_FILE)
+   72 |   messages
+   73 |     .filter((message) => message?.match_id === matchId)
+   74 |     .forEach((message) => {
+   75 |       const senderId = sanitizeString(message?.sender_id, 120)
+   76 |       if (senderId) ids.add(senderId)
+   77 |     })
+   78 | 
+   79 |   return [...ids]
+   80 | }
+   81 | 
+   82 | function ensureParticipant(call, userId) {
+   83 |   return call.participant_ids.includes(userId) || call.created_by === userId
+   84 | }
+   85 | 
+   86 | export async function createScheduledCallSession(userId, payload = {}) {
+   87 |   const calls = await readJson(FILE)
+   88 |   const parsedScheduledFor = payload?.scheduled_for ? new Date(payload.scheduled_for) : new Date()
+   89 |   const scheduledFor = Number.isNaN(parsedScheduledFor.getTime()) ? new Date().toISOString() : parsedScheduledFor.toISOString()
+   90 |   const row = {
+   91 |     id: crypto.randomUUID(),
+   92 |     created_by: userId,
+   93 |     match_id: sanitizeString(payload?.match_id, 120),
+   94 |     title: sanitizeString(payload?.title || 'Scheduled call', 180),
+   95 |     scheduled_for: scheduledFor,
+   96 |     duration_minutes: Number(payload?.duration_minutes) > 0 ? Number(payload.duration_minutes) : 30,
+   97 |     participant_ids: normalizeParticipantIds(payload?.participant_ids, userId),
+   98 |     status: CALL_STATUS.SCHEDULED,
+   99 |     recording_url: '',
+  100 |     recording_status: RECORDING_STATUS.PENDING,
+  101 |     contract_id: sanitizeString(payload?.contract_id, 120),
+  102 |     security_audit_id: sanitizeString(payload?.security_audit_id, 120),
+  103 |     context: {
+  104 |       chat_thread_id: sanitizeString(payload?.chat_thread_id || payload?.match_id, 120),
+  105 |       notes: sanitizeString(payload?.notes, 400),
+  106 |     },
+  107 |     created_at: new Date().toISOString(),
+  108 |     started_at: null,
+  109 |     ended_at: null,
+  110 |     audit_trail: [buildAuditEntry('scheduled', userId, { scheduled_for: scheduledFor })],
+  111 |   }
+  112 | 
+  113 |   calls.push(row)
+  114 |   await writeJson(FILE, calls)
+  115 |   return row
+  116 | }
+  117 | 
+  118 | export async function startCallSession(callId, userId) {
+  119 |   const calls = await readJson(FILE)
+  120 |   const idx = calls.findIndex((call) => call.id === callId)
+  121 |   if (idx < 0) return null
+  122 |   const call = calls[idx]
+  123 |   if (!ensureParticipant(call, userId)) return 'forbidden'
+  124 | 
+  125 |   if (![CALL_STATUS.SCHEDULED, CALL_STATUS.IN_PROGRESS].includes(call.status)) return 'invalid_transition'
+  126 | 
+  127 |   const next = {
+  128 |     ...call,
+  129 |     status: CALL_STATUS.IN_PROGRESS,
+  130 |     started_at: call.started_at || new Date().toISOString(),
+  131 |     audit_trail: [...(call.audit_trail || []), buildAuditEntry('started', userId)],
+  132 |   }
+  133 |   calls[idx] = next
+  134 |   await writeJson(FILE, calls)
+  135 | 
+  136 |   return next
+  137 | }
+  138 | 
+  139 | export async function endCallSession(callId, userId, endReason = '') {
+  140 |   const calls = await readJson(FILE)
+  141 |   const idx = calls.findIndex((call) => call.id === callId)
+  142 |   if (idx < 0) return null
+  143 |   const call = calls[idx]
+  144 |   if (!ensureParticipant(call, userId)) return 'forbidden'
+  145 | 
+  146 |   if (![CALL_STATUS.SCHEDULED, CALL_STATUS.IN_PROGRESS].includes(call.status)) return 'invalid_transition'
+  147 | 
+  148 |   const reason = sanitizeString(endReason || 'completed', 120)
+  149 |   const next = {
+  150 |     ...call,
+  151 |     status: CALL_STATUS.ENDED,
+  152 |     ended_at: call.ended_at || new Date().toISOString(),
+  153 |     recording_status: RECORDING_STATUS.PROCESSING,
+  154 |     audit_trail: [
+  155 |       ...(call.audit_trail || []),
+  156 |       buildAuditEntry('ended', userId, { reason }),
+  157 |       buildAuditEntry('recording_processing', userId, { reason: 'call_ended' }),
+  158 |     ],
+  159 |   }
+  160 |   calls[idx] = next
+  161 |   await writeJson(FILE, calls)
+  162 | 
+  163 |   return next
+  164 | }
+  165 | 
+  166 | export async function markRecording(callId, userId, payload = {}) {
+  167 |   const calls = await readJson(FILE)
+  168 |   const idx = calls.findIndex((call) => call.id === callId)
+  169 |   if (idx < 0) return null
+  170 |   const call = calls[idx]
+  171 |   if (!ensureParticipant(call, userId)) return 'forbidden'
+  172 | 
+  173 |   const recordingStatus = sanitizeString(payload?.recording_status || RECORDING_STATUS.AVAILABLE, 30)
+  174 |   const recordingUrl = sanitizeString(payload?.recording_url, 400)
+  175 |   const failureReason = sanitizeString(payload?.failure_reason, 240)
+  176 |   const currentStatus = sanitizeString(call?.recording_status || RECORDING_STATUS.PENDING, 30)
+  177 | 
+  178 |   const transitionKey = `${currentStatus}->${recordingStatus}`
+  179 |   const validTransitions = new Set([
+  180 |     `${RECORDING_STATUS.PENDING}->${RECORDING_STATUS.PROCESSING}`,
+  181 |     `${RECORDING_STATUS.PROCESSING}->${RECORDING_STATUS.AVAILABLE}`,
+  182 |     `${RECORDING_STATUS.PROCESSING}->${RECORDING_STATUS.FAILED}`,
+  183 |   ])
+  184 |   if (!validTransitions.has(transitionKey)) return 'invalid_transition'
+  185 | 
+  186 |   if (recordingStatus === RECORDING_STATUS.AVAILABLE && !recordingUrl) return 'missing_metadata'
+  187 |   if (recordingStatus === RECORDING_STATUS.FAILED && !failureReason) return 'missing_failure_reason'
+  188 | 
+  189 |   const shouldComplete = [RECORDING_STATUS.AVAILABLE, RECORDING_STATUS.FAILED].includes(recordingStatus)
+  190 |   const auditTrail = [
+  191 |     ...(call.audit_trail || []),
+  192 |     buildAuditEntry('recording_updated', userId, {
+  193 |       from: currentStatus,
+  194 |       to: recordingStatus,
+  195 |       recording_url: recordingUrl,
+  196 |       failure_reason: failureReason,
+  197 |     }),
+  198 |   ]
+  199 | 
+  200 |   if (recordingStatus === RECORDING_STATUS.AVAILABLE) {
+  201 |     auditTrail.push(buildAuditEntry('recording_available', userId, { recording_url: recordingUrl }))
+  202 |   }
+  203 | 
+  204 |   if (recordingStatus === RECORDING_STATUS.FAILED) {
+  205 |     auditTrail.push(buildAuditEntry('recording_failed', userId, { failure_reason: failureReason }))
+  206 |   }
+  207 | 
+  208 |   if (shouldComplete) {
+  209 |     auditTrail.push(buildAuditEntry('completed', userId, { recording_status: recordingStatus }))
+  210 |   }
+  211 | 
+  212 |   const next = {
+  213 |     ...call,
+  214 |     recording_status: recordingStatus,
+  215 |     recording_url: recordingUrl,
+  216 |     status: shouldComplete ? CALL_STATUS.COMPLETED : call.status,
+  217 |     audit_trail: auditTrail,
+  218 |   }
+  219 |   calls[idx] = next
+  220 |   await writeJson(FILE, calls)
+  221 | 
+  222 |   if (shouldComplete) {
+  223 |     const participants = normalizeParticipantIds(call.participant_ids, call.created_by).filter((id) => id !== userId)
+  224 |     await Promise.all(participants.map((counterpartyId) => recordMilestone({
+  225 |       profileKey: `user:${userId}`,
+  226 |       counterpartyId,
+  227 |       interactionType: 'call',
+  228 |       milestone: 'communication_completed',
+  229 |       actorId: userId,
+  230 |     })))
+  231 |   }
+  232 | 
+  233 |   return next
+  234 | }
+  235 | 
+  236 | export async function getCallSession(callId, userId) {
+  237 |   const calls = await readJson(FILE)
+  238 |   const call = calls.find((item) => item.id === callId)
+  239 |   if (!call) return null
+  240 |   if (!ensureParticipant(call, userId)) return 'forbidden'
+  241 |   return call
+  242 | }
+  243 | 
+  244 | export async function listCallHistory(matchIds = [], userId) {
+  245 |   const calls = await readJson(FILE)
+  246 |   const allowed = calls.filter((call) => ensureParticipant(call, userId))
+  247 |   if (!Array.isArray(matchIds) || matchIds.length === 0) {
+  248 |     return allowed.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+  249 |   }
+  250 | 
+  251 |   const ids = new Set(matchIds)
+  252 |   return allowed
+  253 |     .filter((call) => ids.has(call.match_id) || ids.has(call.context?.chat_thread_id))
+  254 |     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+  255 | }
+  256 | 
+  257 | 
+  258 | export async function findOrCreateCallSession(userId, payload = {}) {
+  259 |   const matchId = sanitizeString(payload?.match_id, 120)
+  260 |   if (!matchId) {
+  261 |     const error = new Error('match_id is required')
+  262 |     error.status = 400
+  263 |     throw error
+  264 |   }
+  265 | 
+  266 |   const calls = await readJson(FILE)
+  267 |   const candidates = calls
+  268 |     .filter((call) => ensureParticipant(call, userId) && call.match_id === matchId)
+  269 |     .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
+  270 | 
+  271 |   const active = candidates.find((call) => [CALL_STATUS.SCHEDULED, CALL_STATUS.IN_PROGRESS, CALL_STATUS.ENDED].includes(call.status))
+  272 |   if (active) return { call: active, created: false }
+  273 | 
+  274 |   let participantIds = Array.isArray(payload?.participant_ids) ? payload.participant_ids : []
+  275 |   if (participantIds.length === 0) {
+  276 |     participantIds = await deriveParticipantIds(matchId)
+  277 |   }
+  278 | 
+  279 |   const createdCall = await createScheduledCallSession(userId, {
+  280 |     ...payload,
+  281 |     participant_ids: participantIds,
+  282 |   })
+  283 |   return { call: createdCall, created: true }
+  284 | }
+  285 | 

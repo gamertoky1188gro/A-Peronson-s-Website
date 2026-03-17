@@ -1,0 +1,1509 @@
+    1 | /*
+    2 |   Route: /chat
+    3 |   Access: Protected (login required)
+    4 |   Allowed roles: buyer, buying_house, factory, owner, admin, agent
+    5 | 
+    6 |   Public Pages:
+    7 |     /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+    8 |   Protected Pages (login required):
+    9 |     /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+   10 |     /notifications, /chat, /call, /verification, /verification-center
+   11 | 
+   12 |   Primary responsibilities:
+   13 |     - Provide real-time-ish messaging UI: conversations list + message thread.
+   14 |     - Enforce buying-house "conversation lock" rules (ownership/permissions) per backend.
+   15 |     - Support sending attachments/media and viewing shared docs (contract-adjacent UX).
+   16 | 
+   17 |   Key API endpoints (high level):
+   18 |     - GET /api/chat/rooms, GET /api/chat/rooms/:id/messages
+   19 |     - POST /api/chat/rooms, POST /api/chat/messages
+   20 |     - Any lock/permission endpoints (depending on server implementation)
+   21 | 
+   22 |   Notes:
+   23 |     - AppLayout hides NavBar/Footer for /chat (immersive route).
+   24 |     - This file is large; comments focus on major blocks (state/effects/render sections).
+   25 | */
+   26 | import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+   27 | import { Link, useLocation, useNavigate } from 'react-router-dom'
+   28 | import {
+   29 |   Bell,
+   30 |   ChevronDown,
+   31 |   ChevronUp,
+   32 |   CircleHelp,
+   33 |   Download,
+   34 |   EllipsisVertical,
+   35 |   Filter,
+   36 |   Flag,
+   37 |   FolderOpen,
+   38 |   Home,
+   39 |   Info,
+   40 |   Lock,
+   41 |   LogOut,
+   42 |   MessageCircle,
+   43 |   Phone,
+   44 |   Plus,
+   45 |   Search,
+   46 |   SendHorizontal,
+   47 |   VolumeX,
+   48 | } from 'lucide-react'
+   49 | import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
+   50 | import AttachmentPreviewModal from '../components/chat/AttachmentPreviewModal'
+   51 | import MarkdownMessage from '../components/chat/MarkdownMessage'
+   52 | import FileAttachmentCard from '../components/chat/FileAttachmentCard'
+   53 | 
+   54 | const WS_BASE = (() => {
+   55 |   if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL
+   56 |   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+   57 |   return `${protocol}//${window.location.host}/ws`
+   58 | })()
+   59 | 
+   60 | const CHAT_NAV_ITEMS = [
+   61 |   { to: '/feed', label: 'Feed', icon: Home },
+   62 |   { to: '/search', label: 'Search', icon: Search },
+   63 |   { to: '/notifications', label: 'Alerts', icon: Bell },
+   64 |   { to: '/chat', label: 'Chat', icon: MessageCircle },
+   65 |   { to: '/contracts', label: 'Vault', icon: FolderOpen },
+   66 |   { to: '/help', label: 'Help', icon: CircleHelp },
+   67 | ]
+   68 | 
+   69 | 
+   70 | 
+   71 | const PANEL_STYLE = {
+   72 |   background: 'rgb(16, 13, 34)',
+   73 |   border: 'none',
+   74 |   boxShadow: '0 10px 40px rgba(0,0,0,0.45)',
+   75 | }
+   76 | 
+   77 | const RIGHT_PANEL_STYLE = {
+   78 |   background: '#100D22',
+   79 |   border: 'none',
+   80 |   boxShadow: '0 10px 40px rgba(0,0,0,0.45)',
+   81 | }
+   82 | 
+   83 | 
+   84 | 
+   85 | function sortByNewest(a, b) {
+   86 |   return new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime()
+   87 | }
+   88 | 
+   89 | function sortByOldest(a, b) {
+   90 |   return new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime()
+   91 | }
+   92 | 
+   93 | function normalizeThreads(messages = [], currentUserId = '') {
+   94 |   const byMatchId = new Map()
+   95 |   const latestByOther = new Map()
+   96 | 
+   97 |   messages.forEach((message) => {
+   98 |     if (!message?.match_id) return
+   99 |     const existing = byMatchId.get(message.match_id)
+  100 |     const lock = message.conversation_lock || existing?.lock || null
+  101 |     const isOther = currentUserId && message.sender_id && message.sender_id !== currentUserId
+  102 |     const otherCandidate = isOther ? message : null
+  103 | 
+  104 |     if (!existing) {
+  105 |       byMatchId.set(message.match_id, {
+  106 |         id: message.match_id,
+  107 |         matchId: message.match_id,
+  108 |         requestId: message.request_id || String(message.match_id).split(':')[0],
+  109 |         name: formatDisplayName(message.sender_name || message.company_name || message.sender_company_name, message.sender_id),
+  110 |         avatar: message.sender_avatar_url || message.sender_avatar || '',
+  111 |         senderId: message.sender_id,
+  112 |         verified: Boolean(message.sender_verified),
+  113 |         last: String(message.message || '').trim(),
+  114 |         unread: 0,
+  115 |         timestamp: message.timestamp,
+  116 |         lock,
+  117 |         isFriendThread: String(message.match_id || '').startsWith('friend:'),
+  118 |         friendRequestStatus: message.friend_request_status || null,
+  119 |         friendRequestDirection: message.friend_request_direction || null,
+  120 |       })
+  121 |       if (otherCandidate) {
+  122 |         latestByOther.set(message.match_id, otherCandidate)
+  123 |       }
+  124 |       return
+  125 |     }
+  126 | 
+  127 |     if (new Date(message.timestamp || 0).getTime() > new Date(existing.timestamp || 0).getTime()) {
+  128 |       byMatchId.set(message.match_id, {
+  129 |         ...existing,
+  130 |         last: String(message.message || '').trim() || existing.last,
+  131 |         timestamp: message.timestamp,
+  132 |         lock,
+  133 |         isFriendThread: existing.isFriendThread || String(message.match_id || '').startsWith('friend:'),
+  134 |         friendRequestStatus: message.friend_request_status || existing.friendRequestStatus || null,
+  135 |         friendRequestDirection: message.friend_request_direction || existing.friendRequestDirection || null,
+  136 |       })
+  137 |     }
+  138 | 
+  139 |     const existingOther = latestByOther.get(message.match_id)
+  140 |     if (otherCandidate) {
+  141 |       if (!existingOther || new Date(message.timestamp || 0).getTime() > new Date(existingOther.timestamp || 0).getTime()) {
+  142 |         latestByOther.set(message.match_id, otherCandidate)
+  143 |       }
+  144 |     }
+  145 |   })
+  146 | 
+  147 |   const normalized = [...byMatchId.values()].map((thread) => {
+  148 |     const other = latestByOther.get(thread.matchId)
+  149 |     if (!other) return thread
+  150 |     return {
+  151 |       ...thread,
+  152 |       name: formatDisplayName(other.sender_name || other.company_name || other.sender_company_name, other.sender_id),
+  153 |       avatar: other.sender_avatar_url || other.sender_avatar || thread.avatar,
+  154 |       senderId: other.sender_id,
+  155 |       verified: Boolean(other.sender_verified),
+  156 |     }
+  157 |   })
+  158 | 
+  159 |   return normalized.sort(sortByNewest)
+  160 | }
+  161 | 
+  162 | function lockStatusLabel(lock, thread = null) {
+  163 |   if (thread?.isFriendThread) {
+  164 |     if (thread.friendRequestStatus === 'pending' && thread.friendRequestDirection === 'incoming') return 'Incoming friend request'
+  165 |     if (thread.friendRequestStatus === 'pending' && thread.friendRequestDirection === 'outgoing') return 'Friend request pending'
+  166 |     return 'Direct friend chat'
+  167 |   }
+  168 | 
+  169 |   if (!lock || lock.status === 'unclaimed') return 'Unclaimed'
+  170 |   if (lock.status === 'claimed') return `Claimed by ${lock.claimed_by_name || 'you'}`
+  171 |   if (lock.status === 'granted') return 'Access granted'
+  172 |   return `Claimed by ${lock.claimed_by_name || 'another agent'}`
+  173 | }
+  174 | 
+  175 | const IMAGE_ATTACHMENT_EXTS = new Set(['jpg', 'jpeg', 'png', 'gif', 'apng', 'webp', 'avif', 'svg', 'ico'])
+  176 | const VIDEO_ATTACHMENT_EXTS = new Set(['mp4', 'mov', 'avi', 'wmv', 'webm', 'mkv', 'flv', '3gp', 'mpg', 'mpeg', 'm4v', 'amv'])
+  177 | 
+  178 | function safeAttachmentExt(attachment) {
+  179 |   const candidates = [attachment?.name, attachment?.url].map((value) => String(value || '').trim()).filter(Boolean)
+  180 |   if (candidates.length === 0) return ''
+  181 | 
+  182 |   const raw = candidates[0]
+  183 |   const cleaned = raw.split('?')[0].split('#')[0]
+  184 |   const tail = cleaned.split('/').pop() || cleaned
+  185 |   const match = tail.match(/\.([a-z0-9]+)$/i)
+  186 |   return match ? match[1].toLowerCase() : ''
+  187 | }
+  188 | 
+  189 | function isImageExt(attachment) {
+  190 |   const ext = safeAttachmentExt(attachment)
+  191 |   return IMAGE_ATTACHMENT_EXTS.has(ext)
+  192 | }
+  193 | 
+  194 | function isVideoExt(attachment) {
+  195 |   const ext = safeAttachmentExt(attachment)
+  196 |   return VIDEO_ATTACHMENT_EXTS.has(ext)
+  197 | }
+  198 | 
+  199 | function isImageMessage(message) {
+  200 |   return message?.type === 'image' || String(message?.attachment?.mime_type || '').startsWith('image/') || isImageExt(message?.attachment)
+  201 | }
+  202 | 
+  203 | function isVideoMessage(message) {
+  204 |   return message?.type === 'video' || String(message?.attachment?.mime_type || '').startsWith('video/') || isVideoExt(message?.attachment)
+  205 | }
+  206 | 
+  207 | function toAbsoluteAssetUrl(url = '') {
+  208 |   if (!url) return ''
+  209 |   if (url.startsWith('http://') || url.startsWith('https://')) return url
+  210 |   const apiUrl = import.meta.env.VITE_API_URL || '/api'
+  211 |   const base = apiUrl.replace(/\/api\/?$/, '')
+  212 |   return `${base}${url.startsWith('/') ? '' : '/'}${url}`
+  213 | }
+  214 | 
+  215 | function truncateId(value = '', size = 8) {
+  216 |   const normalized = String(value || '')
+  217 |   if (normalized.length <= size) return normalized
+  218 |   return `${normalized.slice(0, size)}...`
+  219 | }
+  220 | 
+  221 | function formatDisplayName(name, fallbackId) {
+  222 |   if (name && String(name).trim()) return String(name).trim()
+  223 |   const cleaned = String(fallbackId || '')
+  224 |     .replace(/^friend:/i, '')
+  225 |     .replace(/[_:.@-]+/g, ' ')
+  226 |     .replace(/\s+/g, ' ')
+  227 |     .trim()
+  228 |   return cleaned || 'Unknown contact'
+  229 | }
+  230 | 
+  231 | function getInitials(label = '') {
+  232 |   const words = String(label).trim().split(/\s+/).filter(Boolean)
+  233 |   if (words.length === 0) return 'U'
+  234 |   if (words.length === 1) return words[0].slice(0, 2).toUpperCase()
+  235 |   return `${words[0][0] || ''}${words[1][0] || ''}`.toUpperCase()
+  236 | }
+  237 | 
+  238 | function formatTime(iso) {
+  239 |   if (!iso) return '--:--'
+  240 |   return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }).toLowerCase()
+  241 | }
+  242 | 
+  243 | function extractFirstUrl(text = '') {
+  244 |   const match = String(text).match(/https?:\/\/[^\s]+/i)
+  245 |   return match ? match[0] : ''
+  246 | }
+  247 | 
+  248 | function avatarUrl(avatar = '') {
+  249 |   return String(avatar || '').trim()
+  250 | }
+  251 | 
+  252 | function dateDividerLabel(iso) {
+  253 |   if (!iso) return 'Recent'
+  254 |   const date = new Date(iso)
+  255 |   const now = new Date()
+  256 |   const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+  257 |   const startDate = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()
+  258 |   const dayDiff = Math.floor((startToday - startDate) / 86400000)
+  259 |   if (dayDiff <= 0) return 'Today'
+  260 |   if (dayDiff === 1) return 'Yesterday'
+  261 |   return date.toLocaleDateString()
+  262 | }
+  263 | 
+  264 | function formatPresence(iso) {
+  265 |   if (!iso) return 'No recent activity'
+  266 |   const ms = Date.now() - new Date(iso).getTime()
+  267 |   const mins = Math.floor(ms / 60000)
+  268 |   if (mins < 2) return 'Online'
+  269 |   if (mins < 60) return `Last seen ${mins}m ago`
+  270 |   const hours = Math.floor(mins / 60)
+  271 |   if (hours < 24) return `Last seen ${hours}h ago`
+  272 |   return `Last seen ${new Date(iso).toLocaleDateString()}`
+  273 | }
+  274 | 
+  275 | function friendCounterpartyId(matchId = '', currentUserId = '') {
+  276 |   if (!matchId.startsWith('friend:')) return ''
+  277 |   const parts = String(matchId).split(':')
+  278 |   if (parts.length !== 3) return ''
+  279 |   const a = parts[1]
+  280 |   const b = parts[2]
+  281 |   if (!currentUserId) return ''
+  282 |   if (a === currentUserId) return b
+  283 |   if (b === currentUserId) return a
+  284 |   return ''
+  285 | }
+  286 | 
+  287 | function linkPreviewMeta(url = '') {
+  288 |   try {
+  289 |     const parsed = new URL(url)
+  290 |     return {
+  291 |       host: parsed.hostname.replace(/^www\./i, ''),
+  292 |       title: parsed.hostname.replace(/^www\./i, ''),
+  293 |       description: parsed.pathname && parsed.pathname !== '/' ? parsed.pathname : 'Shared link',
+  294 |     }
+  295 |   } catch {
+  296 |     return { host: 'link', title: 'Shared link', description: url || 'Open link' }
+  297 |   }
+  298 | }
+  299 | 
+  300 | export default function ChatInterface() {
+  301 |   const [themeMode, setThemeMode] = useState(() => {
+  302 |     try {
+  303 |       return localStorage.getItem('chat-theme-mode') || 'dark'
+  304 |     } catch {
+  305 |       return 'dark'
+  306 |     }
+  307 |   })
+  308 |   const [priorityInbox, setPriorityInbox] = useState([])
+  309 |   // ... rest of state ...
+  310 |   const [messageRequests, setMessageRequests] = useState([])
+  311 |   const [activeThreadId, setActiveThreadId] = useState(null)
+  312 |   const [loading, setLoading] = useState(true)
+  313 |   const [error, setError] = useState('')
+  314 |   const [query, setQuery] = useState('')
+  315 |   const [scheduleStatus, setScheduleStatus] = useState('')
+  316 |   const [callHistoryByThread, setCallHistoryByThread] = useState({})
+  317 |   const [messagesByThread, setMessagesByThread] = useState({})
+  318 |   const [draftMessage, setDraftMessage] = useState('')
+  319 |   const [isLiveMessagingEnabled, setIsLiveMessagingEnabled] = useState(true)
+  320 |   const [, setChatConnectionStatus] = useState('offline')
+  321 |   const [uploading, setUploading] = useState(false)
+  322 |   const [uploadStatus, setUploadStatus] = useState('')
+  323 |   const [callPromptThread, setCallPromptThread] = useState(null)
+  324 |   const [previewAttachment, setPreviewAttachment] = useState(null)
+  325 |   const [accordionState, setAccordionState] = useState({
+  326 |     sharedDocument: true,
+  327 |     sharedMedia: true,
+  328 |     sharedPost: true,
+  329 |   })
+  330 |   const [presenceMap, setPresenceMap] = useState({})
+  331 |   const [notice, setNotice] = useState(null)
+  332 | 
+  333 |   const wsRef = useRef(null)
+  334 |   const fileInputRef = useRef(null)
+  335 |   const reconnectTimerRef = useRef(null)
+  336 |   const activeThreadMatchIdRef = useRef('')
+  337 |   const [currentUser, setCurrentUser] = useState(() => getCurrentUser())
+  338 |   const navigate = useNavigate()
+  339 |   const location = useLocation()
+  340 |   const isLight = themeMode === 'light'
+  341 | 
+  342 |   const presenceStatus = useCallback((userId) => presenceMap?.[userId]?.status || 'offline', [presenceMap])
+  343 |   const presenceLastSeen = useCallback((userId) => presenceMap?.[userId]?.last_seen || null, [presenceMap])
+  344 | 
+  345 |   const theme = useMemo(() => ({
+  346 |     pageBg: isLight ? '#f8fafc' : 'rgb(4, 0, 23)',
+  347 |     panelBg: isLight ? '#ffffff' : 'rgb(16, 13, 34)',
+  348 |     rightPanelBg: isLight ? '#ffffff' : '#100D22',
+  349 |     subPanelBg: isLight ? '#fcfdfe' : '#100D22',
+  350 |     tileBg: isLight ? '#f1f5f9' : '#171031',
+  351 |     threadIdleBg: isLight ? 'transparent' : '#101328',
+  352 |     threadActiveBg: isLight ? '#f0f7ff' : '#2f295c',
+  353 |     textPrimary: isLight ? '#1e293b' : '#ffffff',
+  354 |     textMuted: isLight ? '#64748b' : '#8e93b4',
+  355 |     inputBg: isLight ? '#f1f5f9' : '#171031',
+  356 |     shadow: isLight ? '0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02)' : '0 10px 40px rgba(0,0,0,0.45)',
+  357 |     accent: '#4f46e5',
+  358 |   }), [isLight])
+  359 | 
+  360 |   useEffect(() => {
+  361 |     try {
+  362 |       localStorage.setItem('chat-theme-mode', themeMode)
+  363 |     } catch {
+  364 |       // no-op
+  365 |     }
+  366 |   }, [themeMode])
+  367 | 
+  368 |   useEffect(() => {
+  369 |     if (location.state?.notice) {
+  370 |       setNotice(location.state.notice)
+  371 |       navigate(location.pathname, { replace: true, state: {} })
+  372 |     }
+  373 |   }, [location.state, location.pathname, navigate])
+  374 | 
+  375 |   const loadInbox = useCallback(async () => {
+  376 | 
+  377 |     setLoading(true)
+  378 |     setError('')
+  379 | 
+  380 |     try {
+  381 |       const token = getToken()
+  382 |       let liveUser = getCurrentUser()
+  383 |       if (token && !liveUser?.id) {
+  384 |         try {
+  385 |           liveUser = await apiRequest('/users/me', { token })
+  386 |         } catch {
+  387 |           liveUser = null
+  388 |         }
+  389 |       }
+  390 |       setCurrentUser(liveUser)
+  391 |       const currentUserId = liveUser?.id || ''
+  392 |       if (!token) {
+  393 |         setPriorityInbox([])
+  394 |         setMessageRequests([])
+  395 |         setError('Please sign in to view your inbox.')
+  396 |         return
+  397 |       }
+  398 | 
+  399 |       const data = await apiRequest('/messages/inbox', { token })
+  400 |       const priority = normalizeThreads(data?.priority || [], currentUserId)
+  401 |       const requests = normalizeThreads(data?.request_pool || [], currentUserId)
+  402 |       const allMatchIds = [...new Set([...priority, ...requests].map((thread) => thread.matchId).filter(Boolean))]
+  403 | 
+  404 |       const friendCounterpartyIds = [...new Set(
+  405 |         [...priority, ...requests]
+  406 |           .filter((thread) => thread.isFriendThread)
+  407 |           .map((thread) => friendCounterpartyId(thread.matchId, currentUserId))
+  408 |           .filter(Boolean)
+  409 |       )]
+  410 | 
+  411 |       let userById = {}
+  412 |       if (friendCounterpartyIds.length > 0) {
+  413 |         const lookup = await apiRequest('/users/lookup', { method: 'POST', token, body: { ids: friendCounterpartyIds } })
+  414 |         userById = (lookup?.users || []).reduce((acc, user) => {
+  415 |           acc[user.id] = user
+  416 |           return acc
+  417 |         }, {})
+  418 |       }
+  419 | 
+  420 |       const applyFriendDisplay = (threads) => threads.map((thread) => {
+  421 |         if (!thread.isFriendThread) return thread
+  422 |         const counterpartyId = friendCounterpartyId(thread.matchId, currentUserId)
+  423 |         const user = userById[counterpartyId]
+  424 |         if (!user) return { ...thread, senderId: counterpartyId || thread.senderId }
+  425 |         return {
+  426 |           ...thread,
+  427 |           name: formatDisplayName(user.name, user.id),
+  428 |           avatar: user.avatar_url || user.avatar || thread.avatar,
+  429 |           senderId: user.id,
+  430 |           verified: Boolean(user.verified),
+  431 |         }
+  432 |       })
+  433 | 
+  434 |       setPriorityInbox(applyFriendDisplay(priority))
+  435 |       setMessageRequests(applyFriendDisplay(requests))
+  436 |       setActiveThreadId((currentThreadId) => {
+  437 |         const threadStillVisible = [...priority, ...requests].some((thread) => thread.id === currentThreadId)
+  438 |         if (threadStillVisible) return currentThreadId
+  439 |         if (priority.length > 0) return priority[0].id
+  440 |         if (requests.length > 0) return requests[0].id
+  441 |         return null
+  442 |       })
+  443 | 
+  444 |       if (allMatchIds.length > 0) {
+  445 |         const callHistoryResponse = await apiRequest(`/calls/history?match_ids=${allMatchIds.join(',')}`, { token })
+  446 |         const grouped = (callHistoryResponse?.items || []).reduce((acc, item) => {
+  447 |           const key = item.match_id || item.context?.chat_thread_id
+  448 |           if (!key) return acc
+  449 |           if (!acc[key]) acc[key] = []
+  450 |           acc[key].push(item)
+  451 |           return acc
+  452 |         }, {})
+  453 |         setCallHistoryByThread(grouped)
+  454 |       } else {
+  455 |         setCallHistoryByThread({})
+  456 |       }
+  457 |     } catch (err) {
+  458 |       setPriorityInbox([])
+  459 |       setMessageRequests([])
+  460 |       setError(err.message || 'Failed to load inbox')
+  461 |     } finally {
+  462 |       setLoading(false)
+  463 |     }
+  464 |   }, [])
+  465 | 
+  466 |   const loadThreadMessages = useCallback(async (matchId) => {
+  467 |     const token = getToken()
+  468 |     if (!token || !matchId) return
+  469 | 
+  470 |     try {
+  471 |       const data = await apiRequest(`/messages/${matchId}`, { token })
+  472 |       setMessagesByThread((previous) => ({
+  473 |         ...previous,
+  474 |         [matchId]: Array.isArray(data) ? data.sort(sortByOldest) : [],
+  475 |       }))
+  476 |     } catch {
+  477 |       setMessagesByThread((previous) => ({
+  478 |         ...previous,
+  479 |         [matchId]: [],
+  480 |       }))
+  481 |     }
+  482 |   }, [])
+  483 | 
+  484 |   useEffect(() => {
+  485 |     loadInbox()
+  486 |   }, [loadInbox])
+  487 | 
+  488 |   const filteredPriorityInbox = useMemo(() => {
+  489 |     if (!query.trim()) return priorityInbox
+  490 |     const search = query.toLowerCase()
+  491 |     return priorityInbox.filter((thread) => thread.name.toLowerCase().includes(search) || thread.last.toLowerCase().includes(search))
+  492 |   }, [priorityInbox, query])
+  493 | 
+  494 |   const filteredRequests = useMemo(() => {
+  495 |     if (!query.trim()) return messageRequests
+  496 |     const search = query.toLowerCase()
+  497 |     return messageRequests.filter((thread) => thread.name.toLowerCase().includes(search) || thread.last.toLowerCase().includes(search))
+  498 |   }, [messageRequests, query])
+  499 | 
+  500 |   const allVisibleThreads = useMemo(() => [...filteredPriorityInbox, ...filteredRequests], [filteredPriorityInbox, filteredRequests])
+  501 |   const activeThread = allVisibleThreads.find((thread) => thread.id === activeThreadId)
+  502 |   activeThreadMatchIdRef.current = activeThread?.matchId || ''
+  503 |   const activeCallHistory = useMemo(() => {
+  504 |     if (!activeThread?.matchId) return []
+  505 |     return callHistoryByThread[activeThread.matchId] || []
+  506 |   }, [activeThread, callHistoryByThread])
+  507 |   const activeMessages = useMemo(() => {
+  508 |     if (!activeThread?.matchId) return []
+  509 |     return messagesByThread[activeThread.matchId] || []
+  510 |   }, [activeThread, messagesByThread])
+  511 | 
+  512 |   const sharedMedia = useMemo(() => {
+  513 |     return activeMessages
+  514 |       .filter((message) => (isImageMessage(message) || isVideoMessage(message)) && message?.attachment?.url)
+  515 |       .slice(-9)
+  516 |       .reverse()
+  517 |   }, [activeMessages])
+  518 | 
+  519 |   const sharedLinks = useMemo(() => {
+  520 |     return activeMessages
+  521 |       .filter((message) => message?.attachment?.url && !isImageMessage(message) && !isVideoMessage(message))
+  522 |       .slice(-6)
+  523 |       .reverse()
+  524 |   }, [activeMessages])
+  525 | 
+  526 |   const sharedPosts = useMemo(() => {
+  527 |     return activeMessages.filter((message) => message?.type === 'post').slice(-6).reverse()
+  528 |   }, [activeMessages])
+  529 | 
+  530 |   const participantIds = useMemo(() => {
+  531 |     const ids = new Set()
+  532 |     activeMessages.forEach((m) => {
+  533 |       if (m.sender_id) ids.add(m.sender_id)
+  534 |     })
+  535 |     if (activeThread?.senderId) ids.add(activeThread.senderId)
+  536 |     if (currentUser?.id) ids.add(currentUser.id)
+  537 |     return Array.from(ids)
+  538 |   }, [activeMessages, activeThread, currentUser])
+  539 | 
+  540 |   useEffect(() => {
+  541 |     if (!activeThread?.matchId) return
+  542 |     loadThreadMessages(activeThread.matchId)
+  543 |   }, [activeThread, loadThreadMessages])
+  544 | 
+  545 |   const refreshPresence = useCallback(async (ids) => {
+  546 |     const token = getToken()
+  547 |     if (!token || !ids || ids.length === 0) return
+  548 |     try {
+  549 |       const data = await apiRequest('/presence', { method: 'POST', token, body: { user_ids: ids } })
+  550 |       if (data?.presence) setPresenceMap(data.presence)
+  551 |     } catch {
+  552 |       // silent
+  553 |     }
+  554 |   }, [])
+  555 | 
+  556 |   useEffect(() => {
+  557 |     if (participantIds.length === 0) return
+  558 |     refreshPresence(participantIds)
+  559 |   }, [participantIds, refreshPresence])
+  560 | 
+  561 |   useEffect(() => {
+  562 |     if (!isLiveMessagingEnabled) {
+  563 |       setChatConnectionStatus('offline')
+  564 |       if (wsRef.current) {
+  565 |         wsRef.current.close()
+  566 |         wsRef.current = null
+  567 |       }
+  568 |       if (reconnectTimerRef.current) {
+  569 |         window.clearTimeout(reconnectTimerRef.current)
+  570 |         reconnectTimerRef.current = null
+  571 |       }
+  572 |       return undefined
+  573 |     }
+  574 | 
+  575 |     let isActive = true
+  576 | 
+  577 |     const connect = () => {
+  578 |       const token = getToken()
+  579 |       if (!token) {
+  580 |         setChatConnectionStatus('offline')
+  581 |         return
+  582 |       }
+  583 | 
+  584 |       setChatConnectionStatus('connecting')
+  585 |       const ws = new WebSocket(WS_BASE)
+  586 |       wsRef.current = ws
+  587 | 
+  588 |       ws.onopen = () => {
+  589 |         if (!isActive) return
+  590 |         setChatConnectionStatus('online')
+  591 |         ws.send(JSON.stringify({
+  592 |           type: 'identify',
+  593 |           token,
+  594 |         }))
+  595 |         const matchId = activeThreadMatchIdRef.current
+  596 |         if (matchId) {
+  597 |           ws.send(JSON.stringify({
+  598 |             type: 'join_chat_room',
+  599 |             match_id: matchId,
+  600 |             token,
+  601 |           }))
+  602 |         }
+  603 |       }
+  604 | 
+  605 |       ws.onmessage = (event) => {
+  606 |         if (!isActive) return
+  607 |         const payload = JSON.parse(String(event.data || '{}'))
+  608 | 
+  609 |         if (payload.type === 'joined_chat_room') {
+  610 |           const roomMatchId = payload.match_id
+  611 |           const history = Array.isArray(payload.messages) ? payload.messages.sort(sortByOldest) : []
+  612 |           setMessagesByThread((previous) => ({ ...previous, [roomMatchId]: history }))
+  613 |           return
+  614 |         }
+  615 | 
+  616 |         if (payload.type === 'chat_message') {
+  617 |           const roomMatchId = payload.match_id
+  618 |           const incomingMessage = payload.message
+  619 |           if (!roomMatchId || !incomingMessage?.id) return
+  620 |           setMessagesByThread((previous) => {
+  621 |             const existing = previous[roomMatchId] || []
+  622 |             if (existing.some((message) => message.id === incomingMessage.id)) return previous
+  623 |             return {
+  624 |               ...previous,
+  625 |               [roomMatchId]: [...existing, incomingMessage].sort(sortByOldest),
+  626 |             }
+  627 |           })
+  628 |           return
+  629 |         }
+  630 | 
+  631 |         if (payload.type === 'incoming_call') {
+  632 |           const from = payload?.from || {}
+  633 |           if (!payload?.call_id) return
+  634 |           setCallPromptThread({
+  635 |             id: payload.match_id || payload.call_id,
+  636 |             matchId: payload.match_id || '',
+  637 |             callId: payload.call_id,
+  638 |             name: from.name || from.email || 'Caller',
+  639 |             avatar: from.avatar || '',
+  640 |             senderId: from.id || '',
+  641 |             verified: Boolean(from.verified),
+  642 |             direction: 'incoming',
+  643 |           })
+  644 |           return
+  645 |         }
+  646 | 
+  647 |         if (payload.type === 'chat_error') {
+  648 |           setChatConnectionStatus('online')
+  649 |           if (!String(payload.error || '').toLowerCase().includes('forbidden')) {
+  650 |             setError(payload.error || 'Live messaging issue')
+  651 |           }
+  652 |         }
+  653 |       }
+  654 | 
+  655 |       ws.onerror = () => {
+  656 |         if (isActive) setChatConnectionStatus('online')
+  657 |       }
+  658 | 
+  659 |       ws.onclose = () => {
+  660 |         if (!isActive) return
+  661 |         setChatConnectionStatus('offline')
+  662 |         if (reconnectTimerRef.current) window.clearTimeout(reconnectTimerRef.current)
+  663 |         reconnectTimerRef.current = window.setTimeout(connect, 1500)
+  664 |       }
+  665 |     }
+  666 | 
+  667 |     connect()
+  668 | 
+  669 |     return () => {
+  670 |       isActive = false
+  671 |       if (reconnectTimerRef.current) {
+  672 |         window.clearTimeout(reconnectTimerRef.current)
+  673 |         reconnectTimerRef.current = null
+  674 |       }
+  675 |       if (wsRef.current) {
+  676 |         wsRef.current.close()
+  677 |         wsRef.current = null
+  678 |       }
+  679 |     }
+  680 |   }, [isLiveMessagingEnabled])
+  681 | 
+  682 |   useEffect(() => {
+  683 |     if (!isLiveMessagingEnabled) return
+  684 |     const token = getToken()
+  685 |     const matchId = activeThread?.matchId || ''
+  686 |     if (!token || !matchId) return
+  687 |     const ws = wsRef.current
+  688 |     if (!ws || ws.readyState !== WebSocket.OPEN) return
+  689 |     ws.send(JSON.stringify({
+  690 |       type: 'join_chat_room',
+  691 |       match_id: matchId,
+  692 |       token,
+  693 |     }))
+  694 |   }, [isLiveMessagingEnabled, activeThread?.matchId])
+  695 | 
+  696 |   useEffect(() => {
+  697 |     const token = getToken()
+  698 |     if (!token) return undefined
+  699 | 
+  700 |     const interval = window.setInterval(async () => {
+  701 |       if (callPromptThread?.direction === 'incoming') return
+  702 |       try {
+  703 |         const data = await apiRequest('/calls/pending', { token })
+  704 |         const invite = (data?.invites || [])[0]
+  705 |         if (!invite?.call_id) return
+  706 |         const from = invite?.from || {}
+  707 |         setCallPromptThread({
+  708 |           id: invite.match_id || invite.call_id,
+  709 |           matchId: invite.match_id || '',
+  710 |           callId: invite.call_id,
+  711 |           name: from.name || from.email || 'Caller',
+  712 |           avatar: from.avatar || '',
+  713 |           senderId: from.id || '',
+  714 |           verified: Boolean(from.verified),
+  715 |           direction: 'incoming',
+  716 |         })
+  717 |       } catch {
+  718 |         // silent
+  719 |       }
+  720 |     }, 2000)
+  721 | 
+  722 |     return () => window.clearInterval(interval)
+  723 |   }, [callPromptThread])
+  724 | 
+  725 |   async function updateRequestState(thread, decision) {
+  726 |     const token = getToken()
+  727 |     if (!token || !thread?.id) {
+  728 |       setError('Please sign in to update message requests.')
+  729 |       return
+  730 |     }
+  731 | 
+  732 |     try {
+  733 |       if (thread.isFriendThread) {
+  734 |         if (decision === 'accept') {
+  735 |           await apiRequest(`/users/${thread.senderId}/friend-request`, {
+  736 |             method: 'POST',
+  737 |             token,
+  738 |           })
+  739 |           setError('')
+  740 |         }
+  741 |       } else {
+  742 |         await apiRequest(`/messages/requests/${thread.id}/${decision}`, {
+  743 |           method: 'POST',
+  744 |           token,
+  745 |         })
+  746 |       }
+  747 | 
+  748 |       await loadInbox()
+  749 |     } catch (err) {
+  750 |       setError(err.message || `Failed to ${decision} request`)
+  751 |     }
+  752 |   }
+  753 | 
+  754 |   async function scheduleCall(thread) {
+  755 |     const token = getToken()
+  756 |     if (!token || !thread?.matchId) {
+  757 |       setScheduleStatus('Please sign in and select a valid thread before scheduling.')
+  758 |       return
+  759 |     }
+  760 | 
+  761 |     const scheduledForInput = window.prompt('Schedule date/time (ISO or YYYY-MM-DD HH:mm)', new Date().toISOString())
+  762 |     if (!scheduledForInput) return
+  763 | 
+  764 |     const contractId = window.prompt('Contract ID to link (optional)', '') || ''
+  765 |     const securityAuditId = window.prompt('Security audit ID to link (optional)', '') || ''
+  766 |     const parsedScheduledFor = new Date(scheduledForInput)
+  767 |     const scheduledFor = Number.isNaN(parsedScheduledFor.getTime()) ? new Date().toISOString() : parsedScheduledFor.toISOString()
+  768 | 
+  769 |     setScheduleStatus('Scheduling call...')
+  770 |     try {
+  771 |       const created = await apiRequest('/calls/scheduled', {
+  772 |         method: 'POST',
+  773 |         token,
+  774 |         body: {
+  775 |           match_id: thread.matchId,
+  776 |           title: `Call with ${thread.name}`,
+  777 |           chat_thread_id: thread.id,
+  778 |           scheduled_for: scheduledFor,
+  779 |           contract_id: contractId,
+  780 |           security_audit_id: securityAuditId,
+  781 |         },
+  782 |       })
+  783 |       setScheduleStatus(`Scheduled call for ${new Date(created.scheduled_for).toLocaleString()}.`)
+  784 |       await loadInbox()
+  785 |     } catch (err) {
+  786 |       setScheduleStatus(err.message || 'Failed to schedule call')
+  787 |     }
+  788 |   }
+  789 | 
+  790 |   async function startInstantCall(thread) {
+  791 |     const token = getToken()
+  792 |     if (!token || !thread?.matchId) {
+  793 |       setScheduleStatus('Please sign in and select a valid thread before starting a call.')
+  794 |       return
+  795 |     }
+  796 | 
+  797 |     const participantIds = new Set()
+  798 |     const currentUserId = currentUser?.id || ''
+  799 |     if (thread.isFriendThread) {
+  800 |       const parts = String(thread.matchId || '').split(':')
+  801 |       if (parts.length === 3) {
+  802 |         if (parts[1]) participantIds.add(parts[1])
+  803 |         if (parts[2]) participantIds.add(parts[2])
+  804 |       }
+  805 |     } else {
+  806 |       activeMessages.forEach((message) => {
+  807 |         if (message?.sender_id) participantIds.add(message.sender_id)
+  808 |       })
+  809 |       if (thread.senderId) participantIds.add(thread.senderId)
+  810 |     }
+  811 |     if (currentUserId) participantIds.delete(currentUserId)
+  812 | 
+  813 |     setScheduleStatus('Starting call room...')
+  814 |     try {
+  815 |       const result = await apiRequest('/calls/join', {
+  816 |         method: 'POST',
+  817 |         token,
+  818 |         body: {
+  819 |           match_id: thread.matchId,
+  820 |           chat_thread_id: thread.matchId,
+  821 |           title: `Call with ${thread.name}`,
+  822 |           participant_ids: [...participantIds],
+  823 |         },
+  824 |       })
+  825 |       const callId = result?.call?.id
+  826 |       if (!callId) throw new Error('Unable to open call room')
+  827 |       setScheduleStatus('Call room ready. Redirecting...')
+  828 |       navigate(`/call?callId=${encodeURIComponent(callId)}&matchId=${encodeURIComponent(thread.matchId)}`)
+  829 |     } catch (err) {
+  830 |       setScheduleStatus(err.message || 'Failed to start call')
+  831 |     }
+  832 |   }
+  833 | 
+  834 |   function closeCallPrompt() {
+  835 |     setCallPromptThread(null)
+  836 |   }
+  837 | 
+  838 |   async function acceptCallPrompt() {
+  839 |     if (!callPromptThread) return
+  840 |     const thread = callPromptThread
+  841 |     setCallPromptThread(null)
+  842 |     if (thread.callId) {
+  843 |       navigate(`/call?callId=${encodeURIComponent(thread.callId)}&matchId=${encodeURIComponent(thread.matchId || '')}`)
+  844 |       return
+  845 |     }
+  846 |   }
+  847 | 
+  848 |   async function sendAttachment(file) {
+  849 |     const token = getToken()
+  850 |     if (!token || !activeThread?.matchId || !file) return
+  851 | 
+  852 |     setUploading(true)
+  853 |     setUploadStatus('Uploading file...')
+  854 |     try {
+  855 |       const formData = new FormData()
+  856 |       formData.append('file', file)
+  857 |       formData.append('message', draftMessage.trim())
+  858 | 
+  859 |       const apiBase = import.meta.env.VITE_API_URL || '/api'
+  860 |       const response = await fetch(`${apiBase}/messages/${encodeURIComponent(activeThread.matchId)}/upload`, {
+  861 |         method: 'POST',
+  862 |         headers: {
+  863 |           Authorization: `Bearer ${token}`,
+  864 |         },
+  865 |         body: formData,
+  866 |       })
+  867 | 
+  868 |       const payload = await response.json().catch(() => ({}))
+  869 |       if (!response.ok) throw new Error(payload.error || 'Upload failed')
+  870 | 
+  871 |       setMessagesByThread((previous) => ({
+  872 |         ...previous,
+  873 |         [activeThread.matchId]: [...(previous[activeThread.matchId] || []), payload].sort(sortByOldest),
+  874 |       }))
+  875 |       setDraftMessage('')
+  876 |       setUploadStatus('File sent.')
+  877 |       await loadInbox()
+  878 |     } catch (err) {
+  879 |       setUploadStatus(err.message || 'Unable to upload file')
+  880 |     } finally {
+  881 |       setUploading(false)
+  882 |       if (fileInputRef.current) fileInputRef.current.value = ''
+  883 |     }
+  884 |   }
+  885 | 
+  886 |   function openAttachmentPreview(attachment, absoluteUrlOverride = '') {
+  887 |     const rawUrl = absoluteUrlOverride || attachment?.url || ''
+  888 |     if (!rawUrl) return
+  889 |     setPreviewAttachment({
+  890 |       url: absoluteUrlOverride ? absoluteUrlOverride : toAbsoluteAssetUrl(rawUrl),
+  891 |       name: attachment?.name || 'Attachment',
+  892 |       mimeType: attachment?.mime_type || attachment?.mimeType || '',
+  893 |     })
+  894 |   }
+  895 | 
+  896 |   function renderMessageBody(message, isOwn = false) {
+  897 |     const attachmentUrl = toAbsoluteAssetUrl(message?.attachment?.url || '')
+  898 | 
+  899 |     if (isImageMessage(message) && attachmentUrl) {
+  900 |       return (
+  901 |         <div className="space-y-1">
+  902 |           {message.message ? <div className="mb-1"><MarkdownMessage text={message.message} /></div> : null}
+  903 |           <button
+  904 |             type="button"
+  905 |             onClick={() => openAttachmentPreview(message?.attachment, attachmentUrl)}
+  906 |             className="block w-full overflow-hidden rounded-xl border border-slate-100 text-left transition-opacity hover:opacity-95 dark:border-transparent"
+  907 |             title="View image"
+  908 |           >
+  909 |             <img src={attachmentUrl} alt={message?.attachment?.name || 'Shared image'} className="max-h-64 w-full object-cover" />
+  910 |           </button>
+  911 |           <a
+  912 |             href={attachmentUrl}
+  913 |             download={message?.attachment?.name || undefined}
+  914 |             target="_blank"
+  915 |             rel="noreferrer"
+  916 |             className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 underline underline-offset-2 dark:text-blue-200"
+  917 |           >
+  918 |             <Download size={12} />
+  919 |             Download
+  920 |           </a>
+  921 |         </div>
+  922 |       )
+  923 |     }
+  924 | 
+  925 |     if (isVideoMessage(message) && attachmentUrl) {
+  926 |       return (
+  927 |         <div className="space-y-1">
+  928 |           {message.message ? <div className="mb-1"><MarkdownMessage text={message.message} /></div> : null}
+  929 |           <button
+  930 |             type="button"
+  931 |             onClick={() => openAttachmentPreview(message?.attachment, attachmentUrl)}
+  932 |             className="relative block w-full overflow-hidden rounded-xl border border-slate-100 text-left dark:border-transparent"
+  933 |             title="View video"
+  934 |           >
+  935 |             <video src={attachmentUrl} muted playsInline preload="metadata" className="max-h-64 w-full object-cover" />
+  936 |             <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25">
+  937 |               <div className="rounded-full bg-black/40 px-3 py-1 text-[11px] font-semibold text-white">Play</div>
+  938 |             </div>
+  939 |           </button>
+  940 |           <a
+  941 |             href={attachmentUrl}
+  942 |             download={message?.attachment?.name || undefined}
+  943 |             target="_blank"
+  944 |             rel="noreferrer"
+  945 |             className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 underline underline-offset-2 dark:text-blue-200"
+  946 |           >
+  947 |             <Download size={12} />
+  948 |             Download
+  949 |           </a>
+  950 |         </div>
+  951 |       )
+  952 |     }
+  953 | 
+  954 |     if (message?.attachment?.url) {
+  955 |       return (
+  956 |         <div className="space-y-1">
+  957 |           {message.message && message.message !== 'Shared a file' ? <div className="mb-1"><MarkdownMessage text={message.message} /></div> : null}
+  958 |           <FileAttachmentCard
+  959 |             attachment={message?.attachment}
+  960 |             url={attachmentUrl}
+  961 |             isOwn={isOwn}
+  962 |             isLight={isLight}
+  963 |             onOpen={() => openAttachmentPreview(message?.attachment, attachmentUrl)}
+  964 |           />
+  965 |         </div>
+  966 |       )
+  967 |     }
+  968 | 
+  969 |     const firstUrl = extractFirstUrl(message?.message || '')
+  970 |     if (firstUrl) {
+  971 |       const meta = linkPreviewMeta(firstUrl)
+  972 |       return (
+  973 |         <div className="space-y-2">
+  974 |           <MarkdownMessage text={message.message} />
+  975 |           <a href={firstUrl} target="_blank" rel="noreferrer" className="block rounded-xl border border-slate-100 bg-slate-50 p-2 dark:border-transparent dark:bg-black/20">
+  976 |             <div className="mb-2 h-24 overflow-hidden rounded-lg bg-slate-200 flex items-center justify-center text-xs text-slate-500 dark:bg-[#1f2448] dark:text-[#b8bfe8]">
+  977 |               {meta.host}
+  978 |             </div>
+  979 |             <div className="text-sm font-semibold">{meta.title}</div>
+  980 |             <div className="text-xs opacity-70">{meta.description}</div>
+  981 |           </a>
+  982 |         </div>
+  983 |       )
+  984 |     }
+  985 | 
+  986 |     return <MarkdownMessage text={message.message} />
+  987 |   }
+  988 | 
+  989 |   async function sendMessage() {
+  990 |     const token = getToken()
+  991 |     if (!token || !activeThread?.matchId) return
+  992 | 
+  993 |     const content = draftMessage.trim()
+  994 |     if (!content) return
+  995 | 
+  996 |     try {
+  997 |       if (isLiveMessagingEnabled && wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+  998 |         wsRef.current.send(JSON.stringify({
+  999 |           type: 'chat_message',
+ 1000 |           match_id: activeThread.matchId,
+ 1001 |           token,
+ 1002 |           message: content,
+ 1003 |           message_type: 'text',
+ 1004 |         }))
+ 1005 |       } else {
+ 1006 |         const created = await apiRequest(`/messages/${activeThread.matchId}`, {
+ 1007 |           method: 'POST',
+ 1008 |           token,
+ 1009 |           body: {
+ 1010 |             message: content,
+ 1011 |             type: 'text',
+ 1012 |           },
+ 1013 |         })
+ 1014 |         setMessagesByThread((previous) => ({
+ 1015 |           ...previous,
+ 1016 |           [activeThread.matchId]: [...(previous[activeThread.matchId] || []), created].sort(sortByOldest),
+ 1017 |         }))
+ 1018 |       }
+ 1019 | 
+ 1020 |       setDraftMessage('')
+ 1021 |       await loadInbox()
+ 1022 |     } catch (err) {
+ 1023 |       setError(err.message || 'Unable to send message')
+ 1024 |     }
+ 1025 |   }
+ 1026 | 
+ 1027 |   const activeThreadDisplayName = formatDisplayName(activeThread?.name, activeThread?.senderId || activeThread?.matchId)
+ 1028 |   const activeThreadInitials = getInitials(activeThreadDisplayName)
+ 1029 |   const activeAvatar = avatarUrl(activeThread?.avatar)
+ 1030 |   const visibleError = String(error || '').toLowerCase().includes('forbidden') ? '' : error
+ 1031 |   const todayLabel = dateDividerLabel(activeMessages[activeMessages.length - 1]?.timestamp)
+ 1032 | 
+ 1033 |   return (
+ 1034 |     <div
+ 1035 |       className="h-screen w-screen font-['Poppins',sans-serif] text-white chat-interface-container overflow-hidden"
+ 1036 |       style={{
+ 1037 |         background: theme.pageBg,
+ 1038 |         color: theme.textPrimary,
+ 1039 |       }}
+ 1040 |     >
+ 1041 |       <style>{`
+ 1042 |         .chat-interface-container *,
+ 1043 |         .chat-interface-container *:before,
+ 1044 |         .chat-interface-container *:after {
+ 1045 |           border-color: ${isLight ? '#e2e8f0' : 'transparent'} !important;
+ 1046 |           box-shadow: none !important;
+ 1047 |           outline: none !important;
+ 1048 |         }
+ 1049 |         .chat-interface-container img {
+ 1050 |           border: none !important;
+ 1051 |         }
+ 1052 |         .chat-interface-container input::placeholder {
+ 1053 |           color: ${isLight ? '#94a3b8' : '#7f86ae'} !important;
+ 1054 |         }
+ 1055 |         .chat-markdown {
+ 1056 |           font-size: 13px;
+ 1057 |           line-height: 1.45;
+ 1058 |           color: inherit;
+ 1059 |           word-break: break-word;
+ 1060 |         }
+ 1061 |         .chat-markdown > :first-child { margin-top: 0; }
+ 1062 |         .chat-markdown > :last-child { margin-bottom: 0; }
+ 1063 |         .chat-markdown p { margin: 0.25rem 0; }
+ 1064 |         .chat-markdown h1, .chat-markdown h2, .chat-markdown h3, .chat-markdown h4, .chat-markdown h5, .chat-markdown h6 {
+ 1065 |           margin: 0.45rem 0 0.25rem;
+ 1066 |           font-weight: 800;
+ 1067 |           line-height: 1.25;
+ 1068 |         }
+ 1069 |         .chat-markdown h1 { font-size: 1.15rem; }
+ 1070 |         .chat-markdown h2 { font-size: 1.08rem; }
+ 1071 |         .chat-markdown h3 { font-size: 1.02rem; }
+ 1072 |         .chat-markdown ul, .chat-markdown ol { margin: 0.25rem 0; padding-left: 1.2rem; }
+ 1073 |         .chat-markdown ul { list-style: disc; }
+ 1074 |         .chat-markdown ol { list-style: decimal; }
+ 1075 |         .chat-markdown li { margin: 0.12rem 0; }
+ 1076 |         .chat-markdown blockquote {
+ 1077 |           margin: 0.35rem 0;
+ 1078 |           padding-left: 0.75rem;
+ 1079 |           border-left: 3px solid ${isLight ? '#cbd5e1' : '#2f295c'};
+ 1080 |           color: ${isLight ? '#334155' : '#cdd2ff'};
+ 1081 |           opacity: ${isLight ? 0.9 : 0.95};
+ 1082 |         }
+ 1083 |         .chat-markdown code {
+ 1084 |           font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+ 1085 |           font-size: 0.92em;
+ 1086 |           padding: 0.12rem 0.28rem;
+ 1087 |           border-radius: 0.35rem;
+ 1088 |           background: ${isLight ? 'rgba(15, 23, 42, 0.08)' : 'rgba(0,0,0,0.35)'};
+ 1089 |         }
+ 1090 |         .chat-markdown pre {
+ 1091 |           margin: 0.35rem 0;
+ 1092 |           padding: 0.75rem;
+ 1093 |           border-radius: 0.85rem;
+ 1094 |           overflow-x: auto;
+ 1095 |           background: ${isLight ? '#0b1020' : 'rgba(0,0,0,0.35)'};
+ 1096 |           color: #e2e8f0;
+ 1097 |         }
+ 1098 |         .chat-markdown pre code {
+ 1099 |           padding: 0;
+ 1100 |           background: transparent;
+ 1101 |         }
+ 1102 |         .chat-markdown table {
+ 1103 |           width: 100%;
+ 1104 |           border-collapse: collapse;
+ 1105 |           margin: 0.4rem 0;
+ 1106 |           font-size: 12px;
+ 1107 |         }
+ 1108 |         .chat-markdown th, .chat-markdown td {
+ 1109 |           border: 1px solid ${isLight ? '#e2e8f0' : 'rgba(255,255,255,0.12)'};
+ 1110 |           padding: 0.35rem 0.5rem;
+ 1111 |         }
+ 1112 |         .chat-markdown th {
+ 1113 |           background: ${isLight ? '#f1f5f9' : 'rgba(255,255,255,0.06)'};
+ 1114 |           font-weight: 700;
+ 1115 |         }
+ 1116 |         .chat-markdown input[type="checkbox"] {
+ 1117 |           accent-color: #6366f1;
+ 1118 |         }
+ 1119 |         .chat-markdown hr {
+ 1120 |           border: none;
+ 1121 |           border-top: 1px solid ${isLight ? '#e2e8f0' : 'rgba(255,255,255,0.12)'};
+ 1122 |           margin: 0.5rem 0;
+ 1123 |         }
+ 1124 |       `}</style>
+ 1125 |       {notice ? (
+ 1126 |         <div className="mx-3 mt-2 rounded-xl px-4 py-3 text-sm font-medium shadow-sm"
+ 1127 |           style={{ background: notice.type === 'error' ? '#fee2e2' : '#e0f2fe', color: '#0f172a' }}>
+ 1128 |           <div className="flex items-center justify-between gap-4">
+ 1129 |             <div>
+ 1130 |               <div className="text-[13px] font-semibold">{notice.title || 'Notice'}</div>
+ 1131 |               <div className="text-[12px] opacity-80">{notice.message || ''}</div>
+ 1132 |             </div>
+ 1133 |             <button onClick={() => setNotice(null)} className="text-xs font-semibold">Dismiss</button>
+ 1134 |           </div>
+ 1135 |         </div>
+ 1136 |       ) : null}
+ 1137 |       <AttachmentPreviewModal
+ 1138 |         open={Boolean(previewAttachment)}
+ 1139 |         attachment={previewAttachment}
+ 1140 |         onClose={() => setPreviewAttachment(null)}
+ 1141 |       />
+ 1142 |       {callPromptThread ? (
+ 1143 |         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-4">
+ 1144 |           <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#14122b] p-6 text-white shadow-2xl">
+ 1145 |             <div className="flex items-center gap-4">
+ 1146 |               {callPromptThread.avatar ? (
+ 1147 |                 <img
+ 1148 |                   src={avatarUrl(callPromptThread.avatar)}
+ 1149 |                   alt={callPromptThread.name}
+ 1150 |                   className="h-16 w-16 rounded-full object-cover"
+ 1151 |                 />
+ 1152 |               ) : (
+ 1153 |                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#2a2744] text-lg font-bold">
+ 1154 |                   {getInitials(formatDisplayName(callPromptThread.name, callPromptThread.senderId))}
+ 1155 |                 </div>
+ 1156 |               )}
+ 1157 |               <div>
+ 1158 |                 <p className="text-sm text-slate-300">{callPromptThread.direction === 'incoming' ? 'Incoming call' : 'Calling'}</p>
+ 1159 |                 <p className="text-lg font-semibold">{formatDisplayName(callPromptThread.name, callPromptThread.senderId)}</p>
+ 1160 |                 <p className="text-xs text-slate-400">{callPromptThread.direction === 'incoming' ? 'Accept to join the call.' : 'Ready to start the call?'}</p>
+ 1161 |               </div>
+ 1162 |             </div>
+ 1163 |             <div className="mt-6 flex items-center justify-between gap-3">
+ 1164 |               <button
+ 1165 |                 onClick={closeCallPrompt}
+ 1166 |                 className="flex-1 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-300 hover:bg-red-500/20"
+ 1167 |               >
+ 1168 |                 Decline
+ 1169 |               </button>
+ 1170 |               <button
+ 1171 |                 onClick={acceptCallPrompt}
+ 1172 |                 className="flex-1 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-400"
+ 1173 |               >
+ 1174 |                 Accept
+ 1175 |               </button>
+ 1176 |             </div>
+ 1177 |           </div>
+ 1178 |         </div>
+ 1179 |       ) : null}
+ 1180 |       <div className="grid h-full w-full grid-cols-1 gap-2 p-2 md:grid-cols-[62px_1fr] lg:grid-cols-[62px_minmax(260px,22vw)_1fr] xl:grid-cols-[62px_minmax(260px,20vw)_1fr_minmax(280px,22vw)]">
+ 1181 |         <aside className="hidden md:flex h-full rounded-[22px] p-2 flex-col items-center justify-between py-1" style={{ background: 'transparent', boxShadow: 'none', border: 'none' }}>
+ 1182 |           <div className="space-y-2">
+ 1183 |             <button
+ 1184 |               className={`mb-4 flex h-10 w-10 items-center justify-center rounded-[12px] border-none shadow-none text-lg transition-colors ${
+ 1185 |                 isLight ? 'bg-white text-orange-400 shadow-sm' : 'bg-[#171031] text-[#D4FF59]'
+ 1186 |               }`}
+ 1187 |               onClick={() => setThemeMode((value) => (value === 'light' ? 'dark' : 'light'))}
+ 1188 |               title={isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+ 1189 |             >
+ 1190 |               {isLight ? '??' : '??'}
+ 1191 |             </button>
+ 1192 |             {CHAT_NAV_ITEMS.map((item) => {
+ 1193 |               const Icon = item.icon
+ 1194 |               const isActive = location.pathname === item.to
+ 1195 |               return (
+ 1196 |                 <Link
+ 1197 |                   key={item.to}
+ 1198 |                   to={item.to}
+ 1199 |                   className={`relative flex h-10 w-10 items-center justify-center rounded-[12px] transition-all ${
+ 1200 |                     isActive
+ 1201 |                       ? (isLight ? 'bg-[#6366f1] text-white' : 'bg-[#6e4ff6]/20 text-[#D4FF59]')
+ 1202 |                       : (isLight ? 'text-slate-400 hover:bg-white hover:text-[#6366f1]' : 'bg-[#171031] text-[#8f95bb] hover:text-white')
+ 1203 |                   }`}
+ 1204 |                   title={item.label}
+ 1205 |                 >
+ 1206 |                   <Icon size={18} strokeWidth={1.5} />
+ 1207 |                 </Link>
+ 1208 |               )
+ 1209 |             })}
+ 1210 |           </div>
+ 1211 |           <button
+ 1212 |             className="flex h-10 w-10 items-center justify-center rounded-[12px] transition-colors"
+ 1213 |             style={{ background: isLight ? '#ffffff' : theme.tileBg, color: isLight ? '#ef4444' : '#8f95bb' }}
+ 1214 |             onClick={() => navigate('/login')}
+ 1215 |             title="Logout"
+ 1216 |           >
+ 1217 |             <LogOut size={18} strokeWidth={1.5} />
+ 1218 |           </button>
+ 1219 |         </aside>
+ 1220 | 
+ 1221 |         <aside className="hidden lg:block rounded-[24px] p-5 overflow-hidden border border-slate-200/50 dark:border-none" style={{ background: theme.panelBg, boxShadow: theme.shadow }}>
+ 1222 |           <div className="mb-6">
+ 1223 |             <h2 className="text-xl font-bold tracking-tight">Messages</h2>
+ 1224 |             <p className="text-xs font-medium" style={{ color: theme.textMuted }}>{currentUser?.email || 'No email available'}</p>
+ 1225 |           </div>
+ 1226 | 
+ 1227 |           <div className="relative mb-6">
+ 1228 |             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+ 1229 |             <input
+ 1230 |               className="h-11 w-full appearance-none rounded-[14px] border border-transparent pl-10 pr-11 text-[13px] outline-none transition-all focus:border-[#6366f1]/50"
+ 1231 |               style={{ background: theme.inputBg, color: theme.textPrimary }}
+ 1232 |               placeholder="Search conversations..."
+ 1233 |               value={query}
+ 1234 |               onChange={(event) => setQuery(event.target.value)}
+ 1235 |             />
+ 1236 |           </div>
+ 1237 | 
+ 1238 |           <div className="mb-3 flex items-center justify-between px-1">
+ 1239 |             <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: theme.textMuted }}>Direct Messages</h3>
+ 1240 |             <span className="text-[10px] font-bold text-[#6366f1]">{allVisibleThreads.length}</span>
+ 1241 |           </div>
+ 1242 | 
+ 1243 |           <div className="h-[calc(100vh-250px)] space-y-1 overflow-auto pr-1 custom-scrollbar">
+ 1244 |             {loading ? <div className="p-4 text-center text-sm text-slate-400">Loading inbox...</div> : null}
+ 1245 |             {!loading && visibleError ? <div className="p-4 text-center text-sm text-red-400">{visibleError}</div> : null}
+ 1246 |             {!loading &&
+ 1247 |               !visibleError &&
+ 1248 |               [...filteredPriorityInbox, ...filteredRequests].map((thread) => {
+ 1249 |                 const threadName = formatDisplayName(thread.name, thread.senderId || thread.id)
+ 1250 |                 const isActive = activeThreadId === thread.id
+ 1251 |                 return (
+ 1252 |                   <button
+ 1253 |                     key={thread.id}
+ 1254 |                     className="group w-full rounded-[16px] px-3 py-3 text-left transition-all"
+ 1255 |                     style={{ background: isActive ? theme.threadActiveBg : 'transparent' }}
+ 1256 |                     onClick={() => setActiveThreadId(thread.id)}
+ 1257 |                   >
+ 1258 |                     <div className="flex items-center gap-3">
+ 1259 |                       <div className="relative flex-shrink-0">
+ 1260 |                         {thread.avatar ? (
+ 1261 |                           <img src={avatarUrl(thread.avatar)} alt={threadName} className="h-11 w-11 rounded-full object-cover shadow-sm" />
+ 1262 |                         ) : (
+ 1263 |                           <div className={`flex h-11 w-11 items-center justify-center rounded-full text-xs font-bold shadow-sm ${isActive ? 'bg-[#6366f1] text-white' : 'bg-slate-100 text-slate-500'}`}>{getInitials(threadName)}</div>
+ 1264 |                         )}
+ 1265 |                         <span
+ 1266 |                           className="absolute bottom-0 right-0 h-3 w-3 rounded-full"
+ 1267 |                           style={{ background: presenceStatus(thread.senderId) === 'online' ? '#22c55e' : '#94a3b8', border: '2px solid transparent' }}
+ 1268 |                         />
+ 1269 |                       </div>
+ 1270 |                       <div className="min-w-0 flex-1">
+ 1271 |                         <div className="flex items-center justify-between gap-1">
+ 1272 |                           <p className={`truncate text-[14px] font-semibold ${isActive ? 'text-[#6366f1]' : ''}`}>{threadName}</p>
+ 1273 |                           <span className="flex-shrink-0 text-[10px] font-medium text-slate-400">{formatTime(thread.timestamp)}</span>
+ 1274 |                         </div>
+ 1275 |                         <p className={`truncate text-xs ${isActive ? 'text-slate-600' : 'text-slate-400'}`}>{thread.last || 'No messages'}</p>
+ 1276 |                       </div>
+ 1277 |                     </div>
+ 1278 |                   </button>
+ 1279 |                 )
+ 1280 |               })}
+ 1281 |           </div>
+ 1282 |         </aside>
+ 1283 | 
+ 1284 |         <main className="rounded-[24px] p-0 flex flex-col h-full overflow-hidden border border-slate-200/50 dark:border-none" style={{ background: theme.panelBg, boxShadow: theme.shadow }}>
+ 1285 |           {activeThread ? (
+ 1286 |             <>
+ 1287 |               <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800/50">
+ 1288 |                 <div className="flex items-center gap-3">
+ 1289 |                   <div className="relative">
+ 1290 |                     {activeAvatar ? (
+ 1291 |                       <img src={activeAvatar} alt={activeThreadDisplayName} className="h-10 w-10 rounded-full object-cover shadow-sm" />
+ 1292 |                     ) : (
+ 1293 |                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500">{activeThreadInitials}</div>
+ 1294 |                     )}
+ 1295 |                     <span
+ 1296 |                       className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full"
+ 1297 |                       style={{ background: presenceStatus(activeThread?.senderId) === 'online' ? '#22c55e' : '#94a3b8', border: '2px solid transparent' }}
+ 1298 |                     />
+ 1299 |                   </div>
+ 1300 |                   <div>
+ 1301 |                     <p className="text-sm font-bold tracking-tight">{activeThreadDisplayName}</p>
+ 1302 |                     <p className="text-[11px] font-medium text-slate-400">
+ 1303 |                       {presenceStatus(activeThread?.senderId) === 'online'
+ 1304 |                         ? 'Online'
+ 1305 |                         : formatPresence(presenceLastSeen(activeThread?.senderId))}
+ 1306 |                     </p>
+ 1307 |                   </div>
+ 1308 |                 </div>
+ 1309 |                 <div className="flex items-center gap-3">
+ 1310 |                   <button
+ 1311 |                     onClick={() => startInstantCall(activeThread)}
+ 1312 |                     className="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50"
+ 1313 |                     title="Start call"
+ 1314 |                   >
+ 1315 |                     <Phone size={16} />
+ 1316 |                   </button>
+ 1317 |                   <button className="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50">
+ 1318 |                     <Search size={16} />
+ 1319 |                   </button>
+ 1320 |                   <button className="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50">
+ 1321 |                     <EllipsisVertical size={16} />
+ 1322 |                   </button>
+ 1323 |                 </div>
+ 1324 |               </div>
+ 1325 | 
+ 1326 |               <div className="flex-1 space-y-4 overflow-auto p-6 custom-scrollbar" style={{ background: isLight ? '#f8fafc' : 'transparent' }}>
+ 1327 |                 <div className="flex justify-center mb-6">
+ 1328 |                   <span className="rounded-full bg-transparent border border-slate-200/60 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:border-slate-800 dark:text-slate-600">{todayLabel}</span>
+ 1329 |                 </div>
+ 1330 |                 {activeMessages.length > 0 ? (
+ 1331 |                   activeMessages.map((message) => {
+ 1332 |                     const isOwn = message.sender_id === currentUser?.id
+ 1333 |                     return (
+ 1334 |                       <div key={message.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
+ 1335 |                         <div className={`group relative max-w-[80%] sm:max-w-[70%] rounded-[20px] px-4 py-3 text-[13.5px] shadow-sm transition-all ${
+ 1336 |                           isOwn 
+ 1337 |                             ? 'bg-[#6366f1] text-white rounded-br-none' 
+ 1338 |                             : `${isLight ? 'bg-white border border-slate-100' : 'bg-[#2a2744]'} rounded-bl-none`
+ 1339 |                         }`} style={!isOwn ? { color: theme.textPrimary } : undefined}>
+ 1340 |                           {renderMessageBody(message, isOwn)}
+ 1341 |                           <div className={`mt-1 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-60 ${isOwn ? 'text-white' : 'text-slate-400'}`}>
+ 1342 |                             {formatTime(message.timestamp)}
+ 1343 |                           </div>
+ 1344 |                         </div>
+ 1345 |                       </div>
+ 1346 |                     )
+ 1347 |                   })
+ 1348 |                 ) : (
+ 1349 |                   <div className="flex h-full items-center justify-center text-sm font-medium text-slate-400 italic">No messages yet. Start the conversation!</div>
+ 1350 |                 )}
+ 1351 |               </div>
+ 1352 | 
+ 1353 |               <div className="p-4 border-t border-slate-100 dark:border-slate-800/50">
+ 1354 |                 <div className="relative flex items-center gap-2 rounded-[18px] p-1.5" style={{ background: theme.inputBg }}>
+ 1355 |                   <button className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-200/50 dark:hover:bg-slate-700/50" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+ 1356 |                     <Plus size={20} />
+ 1357 |                   </button>
+ 1358 |                   <textarea
+ 1359 |                     rows={1}
+ 1360 |                     className="flex-1 resize-none bg-transparent px-2 py-2 text-[14px] leading-5 outline-none placeholder:text-slate-400"
+ 1361 |                     style={{ color: theme.textPrimary, maxHeight: 140 }}
+ 1362 |                     placeholder="Write a message..."
+ 1363 |                     value={draftMessage}
+ 1364 |                     onChange={(event) => setDraftMessage(event.target.value)}
+ 1365 |                     onKeyDown={(event) => {
+ 1366 |                       if (event.key === 'Enter' && !event.shiftKey) {
+ 1367 |                         event.preventDefault()
+ 1368 |                         sendMessage()
+ 1369 |                       }
+ 1370 |                     }}
+ 1371 |                   />
+ 1372 |                   <input ref={fileInputRef} type="file" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) sendAttachment(file) }} />
+ 1373 |                   <button className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#6366f1] text-white shadow-md transition-transform hover:scale-105 active:scale-95" onClick={sendMessage}>
+ 1374 |                     <SendHorizontal size={18} />
+ 1375 |                   </button>
+ 1376 |                 </div>
+ 1377 |                 {uploadStatus || scheduleStatus ? (
+ 1378 |                   <p className="mt-2 px-4 text-[11px] font-medium text-[#6366f1]">{uploadStatus || scheduleStatus}</p>
+ 1379 |                 ) : null}
+ 1380 |               </div>
+ 1381 |             </>
+ 1382 |           ) : <div className="flex h-full flex-col items-center justify-center text-slate-400 gap-4">
+ 1383 |                 <div className="h-20 w-20 rounded-full bg-slate-50 flex items-center justify-center dark:bg-slate-800/30">
+ 1384 |                   <MessageCircle size={32} className="opacity-20" />
+ 1385 |                 </div>
+ 1386 |                 <p className="text-sm font-medium">Select a conversation to start chatting</p>
+ 1387 |               </div>}
+ 1388 |         </main>
+ 1389 | 
+ 1390 |         <aside className="hidden xl:block rounded-[24px] p-6 h-full overflow-auto border border-slate-200/50 dark:border-none" style={{ background: theme.panelBg, boxShadow: theme.shadow }}>
+ 1391 |           {activeThread ? (
+ 1392 |             <>
+ 1393 |               <div className="mb-8 text-center">
+ 1394 |                 <div className="mx-auto mb-4 h-24 w-24 rounded-full border-4 border-white shadow-md dark:border-slate-800">
+ 1395 |                   {activeAvatar ? (
+ 1396 |                     <img src={activeAvatar} alt={activeThreadDisplayName} className="h-full w-full rounded-full object-cover" />
+ 1397 |                   ) : (
+ 1398 |                     <div className="flex h-full w-full items-center justify-center rounded-full bg-slate-100 text-2xl font-bold text-slate-400">{activeThreadInitials}</div>
+ 1399 |                   )}
+ 1400 |                 </div>
+ 1401 |                 <h3 className="text-lg font-bold tracking-tight">{activeThreadDisplayName}</h3>
+ 1402 |                 <p className="text-xs font-medium text-slate-400 tracking-wide">@{truncateId(activeThread.senderId || activeThread.matchId, 16)}</p>
+ 1403 |               </div>
+ 1404 | 
+ 1405 |               <div className="mb-8 grid grid-cols-4 gap-3">
+ 1406 |                 {[
+ 1407 |                   { icon: Flag, title: 'Report' },
+ 1408 |                   { icon: Lock, title: 'Block' },
+ 1409 |                   { icon: Info, title: 'Info' },
+ 1410 |                   { icon: VolumeX, title: 'Mute' }
+ 1411 |                 ].map((action, i) => (
+ 1412 |                   <button key={i} className="flex flex-col items-center gap-1.5 transition-opacity hover:opacity-70" title={action.title}>
+ 1413 |                     <div className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-transparent text-slate-400 dark:text-slate-500">
+ 1414 |                       <action.icon size={16} strokeWidth={2} />
+ 1415 |                     </div>
+ 1416 |                   </button>
+ 1417 |                 ))}
+ 1418 |               </div>
+ 1419 | 
+ 1420 |               <div className="space-y-4">
+ 1421 |                 {[
+ 1422 |                   { id: 'sharedDocument', label: 'Documents', count: sharedLinks.length, icon: FolderOpen },
+ 1423 |                   { id: 'sharedMedia', label: 'Media', count: sharedMedia.length, icon: Search },
+ 1424 |                   { id: 'sharedPost', label: 'Posts', count: sharedPosts.length, icon: Home }
+ 1425 |                 ].map((section) => (
+ 1426 |                   <div key={section.id} className="overflow-hidden rounded-[18px] border border-slate-100/50 dark:border-slate-800/50">
+ 1427 |                     <button 
+ 1428 |                       className="flex w-full items-center justify-between p-4 text-xs font-bold uppercase tracking-wider transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50" 
+ 1429 |                       style={{ background: isLight ? '#f8fafc' : '#101328', color: theme.textMuted }}
+ 1430 |                       onClick={() => setAccordionState(prev => ({ ...prev, [section.id]: !prev[section.id] }))}
+ 1431 |                     >
+ 1432 |                       <div className="flex items-center gap-2">
+ 1433 |                         <section.icon size={14} className="opacity-50" />
+ 1434 |                         <span>{section.label} <span className="ml-1 opacity-50">({section.count})</span></span>
+ 1435 |                       </div>
+ 1436 |                       {accordionState[section.id] ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+ 1437 |                     </button>
+ 1438 |                     {accordionState[section.id] && (
+ 1439 |                       <div className="p-3 bg-white dark:bg-transparent">
+ 1440 |                         {section.id === 'sharedDocument' && (
+ 1441 |                           <div className="space-y-2">
+ 1442 |                             {sharedLinks.length > 0 ? sharedLinks.map(item => {
+ 1443 |                               const url = toAbsoluteAssetUrl(item.attachment?.url || '')
+ 1444 |                               return (
+ 1445 |                                 <button
+ 1446 |                                   key={item.id}
+ 1447 |                                   type="button"
+ 1448 |                                   onClick={() => openAttachmentPreview(item.attachment, url)}
+ 1449 |                                   className="flex w-full items-center gap-2 rounded-xl border border-slate-50 bg-slate-50/50 p-2.5 text-left text-[11px] font-medium transition-colors hover:border-[#6366f1]/20 dark:border-slate-800 dark:bg-slate-800/30"
+ 1450 |                                   title="Preview"
+ 1451 |                                 >
+ 1452 |                                   <div className="h-6 w-6 rounded bg-white flex items-center justify-center shadow-xs dark:bg-slate-700"><Plus size={12} className="opacity-30" /></div>
+ 1453 |                                   <span className="truncate flex-1">{item.attachment?.name || 'File'}</span>
+ 1454 |                                 </button>
+ 1455 |                               )
+ 1456 |                             }) : <p className="text-[10px] text-slate-400 italic text-center py-2">No documents shared</p>}
+ 1457 |                           </div>
+ 1458 |                         )}
+ 1459 |                         {section.id === 'sharedMedia' && (
+ 1460 |                           <div className="grid grid-cols-3 gap-1.5">
+ 1461 |                             {sharedMedia.length > 0 ? sharedMedia.slice(0, 6).map(item => {
+ 1462 |                               const url = toAbsoluteAssetUrl(item.attachment?.url || '')
+ 1463 |                               const isVideo = isVideoMessage(item)
+ 1464 |                               return (
+ 1465 |                                 <button
+ 1466 |                                   key={item.id}
+ 1467 |                                   type="button"
+ 1468 |                                   onClick={() => openAttachmentPreview(item.attachment, url)}
+ 1469 |                                   className="relative aspect-square overflow-hidden rounded-lg"
+ 1470 |                                   title="View"
+ 1471 |                                 >
+ 1472 |                                   {isVideo ? (
+ 1473 |                                     <>
+ 1474 |                                       <video src={url} muted playsInline preload="metadata" className="h-full w-full object-cover" />
+ 1475 |                                       <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25">
+ 1476 |                                         <div className="rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-bold text-white">Play</div>
+ 1477 |                                       </div>
+ 1478 |                                     </>
+ 1479 |                                   ) : (
+ 1480 |                                     <img src={url} alt="" className="h-full w-full object-cover transition-transform hover:scale-110" />
+ 1481 |                                   )}
+ 1482 |                                 </button>
+ 1483 |                               )
+ 1484 |                             }) : <p className="col-span-3 text-[10px] text-slate-400 italic text-center py-2">No media shared</p>}
+ 1485 |                           </div>
+ 1486 |                         )}
+ 1487 |                         {section.id === 'sharedPost' && (
+ 1488 |                           <div className="space-y-2">
+ 1489 |                             {sharedPosts.length > 0 ? sharedPosts.map(item => (
+ 1490 |                               <div key={item.id} style={{ background: isLight ? '#f1f5f9' : 'rgba(255,255,255,0.03)' }}>
+ 1491 |                                 <p className="line-clamp-2 leading-relaxed opacity-80">{item.message}</p>
+ 1492 |                               </div>
+ 1493 |                             )) : <p className="text-[10px] text-slate-400 italic text-center py-2">No posts shared</p>}
+ 1494 |                           </div>
+ 1495 |                         )}
+ 1496 |                       </div>
+ 1497 |                     )}
+ 1498 |                   </div>
+ 1499 |                 ))}
+ 1500 |               </div>
+ 1501 |             </>
+ 1502 |           ) : <div className="flex h-full flex-col items-center justify-center text-slate-400 text-xs italic">Details will appear here</div>}
+ 1503 |         </aside>
+ 1504 |       </div>
+ 1505 |     </div>
+ 1506 |   )
+ 1507 | }
+ 1508 | 
+ 1509 | 

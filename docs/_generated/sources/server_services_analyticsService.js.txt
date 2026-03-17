@@ -1,0 +1,115 @@
+    1 | import crypto from 'crypto'
+    2 | import { readJson, writeJson } from '../utils/jsonStore.js'
+    3 | import { canViewAnalytics, canViewAnalyticsAdmin, forbiddenError, scopeRecordsForUser } from '../utils/permissions.js'
+    4 | 
+    5 | const FILE = 'analytics.json'
+    6 | 
+    7 | export async function trackEvent({ type, actor_id, entity_id, metadata = {} }) {
+    8 |   const all = await readJson(FILE)
+    9 |   all.push({
+   10 |     id: crypto.randomUUID(),
+   11 |     type,
+   12 |     actor_id,
+   13 |     entity_id,
+   14 |     metadata,
+   15 |     created_at: new Date().toISOString(),
+   16 |   })
+   17 |   await writeJson(FILE, all)
+   18 | }
+   19 | 
+   20 | function ensureAnalyticsAccess(user) {
+   21 |   if (canViewAnalytics(user)) return
+   22 |   throw forbiddenError()
+   23 | }
+   24 | 
+   25 | function ensureAnalyticsAdminAccess(user) {
+   26 |   if (canViewAnalyticsAdmin(user)) return
+   27 |   throw forbiddenError()
+   28 | }
+   29 | 
+   30 | function scopeAnalyticsRecords(user, records, idFields) {
+   31 |   return scopeRecordsForUser(user, records, {
+   32 |     idFields,
+   33 |     assignmentFields: ['assigned_agent_id', 'agent_id'],
+   34 |   })
+   35 | }
+   36 | 
+   37 | export async function getAnalyticsSummary(user) {
+   38 |   ensureAnalyticsAccess(user)
+   39 |   const all = await readJson(FILE)
+   40 |   const scoped = scopeAnalyticsRecords(user, all, ['actor_id', 'entity_id'])
+   41 |   const byType = scoped.reduce((acc, e) => {
+   42 |     acc[e.type] = (acc[e.type] || 0) + 1
+   43 |     return acc
+   44 |   }, {})
+   45 |   return { total_events: scoped.length, by_type: byType }
+   46 | }
+   47 | 
+   48 | function monthKey(value) {
+   49 |   const d = new Date(value || '')
+   50 |   if (Number.isNaN(d.getTime())) return null
+   51 |   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`
+   52 | }
+   53 | 
+   54 | function toMonthlySeries(items, dateKey) {
+   55 |   const bucket = items.reduce((acc, item) => {
+   56 |     const key = monthKey(item[dateKey])
+   57 |     if (!key) return acc
+   58 |     acc[key] = (acc[key] || 0) + 1
+   59 |     return acc
+   60 |   }, {})
+   61 | 
+   62 |   return Object.entries(bucket)
+   63 |     .sort(([a], [b]) => a.localeCompare(b))
+   64 |     .map(([month, count]) => ({ month, count }))
+   65 | }
+   66 | 
+   67 | export async function getDashboardAnalytics(user) {
+   68 |   ensureAnalyticsAdminAccess(user)
+   69 | 
+   70 |   const [events, requirements, messages, matches, documents, users] = await Promise.all([
+   71 |     readJson(FILE),
+   72 |     readJson('requirements.json'),
+   73 |     readJson('messages.json'),
+   74 |     readJson('matches.json'),
+   75 |     readJson('documents.json'),
+   76 |     readJson('users.json'),
+   77 |   ])
+   78 | 
+   79 |   const scopedEvents = scopeAnalyticsRecords(user, events, ['actor_id', 'entity_id'])
+   80 |   const scopedRequirements = scopeAnalyticsRecords(user, requirements, ['buyer_id', 'requester_id'])
+   81 |   const scopedMessages = scopeAnalyticsRecords(user, messages, ['sender_id', 'receiver_id'])
+   82 |   const scopedMatches = scopeAnalyticsRecords(user, matches, ['buyer_id', 'factory_id'])
+   83 |   const scopedDocuments = scopeAnalyticsRecords(user, documents, ['uploaded_by', 'buyer_id', 'factory_id', 'entity_id'])
+   84 | 
+   85 |   const uniqueActiveChats = new Set(scopedMessages.map((m) => m.match_id).filter(Boolean)).size
+   86 |   const connectedPartners = new Set(scopedMatches.map((m) => m.factory_id).filter(Boolean)).size
+   87 |   const contractDocs = scopedDocuments.filter((d) => d.entity_type === 'contract' || String(d.type || '').toLowerCase().includes('contract'))
+   88 |   const byType = scopedEvents.reduce((acc, e) => {
+   89 |     acc[e.type] = (acc[e.type] || 0) + 1
+   90 |     return acc
+   91 |   }, {})
+   92 | 
+   93 |   return {
+   94 |     totals: {
+   95 |       buyer_requests: scopedRequirements.length,
+   96 |       open_buyer_requests: scopedRequirements.filter((r) => r.status === 'open').length,
+   97 |       chats: uniqueActiveChats,
+   98 |       messages: scopedMessages.length,
+   99 |       partner_network: connectedPartners,
+  100 |       contracts: contractDocs.length,
+  101 |       documents: scopedDocuments.length,
+  102 |       factories: users.filter((u) => u.role === 'factory').length,
+  103 |     },
+  104 |     analytics_events: {
+  105 |       total: scopedEvents.length,
+  106 |       by_type: byType,
+  107 |     },
+  108 |     series: {
+  109 |       buyer_requests: toMonthlySeries(scopedRequirements, 'created_at'),
+  110 |       chats: toMonthlySeries(scopedMessages, 'timestamp'),
+  111 |       documents: toMonthlySeries(scopedDocuments, 'created_at'),
+  112 |     },
+  113 |   }
+  114 | }
+  115 | 

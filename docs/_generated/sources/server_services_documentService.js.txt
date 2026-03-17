@@ -1,0 +1,363 @@
+    1 | import crypto from 'crypto'
+    2 | import path from 'path'
+    3 | import fs from 'fs/promises'
+    4 | import { readJson, writeJson } from '../utils/jsonStore.js'
+    5 | import { sanitizeString } from '../utils/validators.js'
+    6 | import { canManagePartnerNetwork, canModifyContract, isAgent, isOwnerOrAdmin, scopeRecordsForUser } from '../utils/permissions.js'
+    7 | 
+    8 | const FILE = 'documents.json'
+    9 | 
+   10 | const SIGNATURE_STATES = new Set(['pending', 'signed'])
+   11 | const ARTIFACT_STATES = new Set(['draft', 'generated', 'locked', 'archived'])
+   12 | 
+   13 | function toIsoNow() {
+   14 |   return new Date().toISOString()
+   15 | }
+   16 | 
+   17 | function normalizeContractLifecycle(contract) {
+   18 |   if (contract.artifact?.status === 'archived' || contract.archived_at) return 'archived'
+   19 |   if (contract.is_draft) return 'draft'
+   20 |   if (
+   21 |     contract.buyer_signature_state === 'signed' &&
+   22 |     contract.factory_signature_state === 'signed' &&
+   23 |     ['generated', 'locked'].includes(contract.artifact?.status)
+   24 |   ) {
+   25 |     return 'signed'
+   26 |   }
+   27 |   return 'pending_signature'
+   28 | }
+   29 | 
+   30 | function canViewContractBankingReferences(actor, contract) {
+   31 |   if (!actor || !contract) return false
+   32 |   if (isOwnerOrAdmin(actor)) return true
+   33 |   const actorId = String(actor.id || '')
+   34 |   if (!actorId) return false
+   35 |   return (
+   36 |     actorId === String(contract.uploaded_by) ||
+   37 |     actorId === String(contract.buyer_id) ||
+   38 |     actorId === String(contract.factory_id)
+   39 |   )
+   40 | }
+   41 | 
+   42 | function presentContractForActor(contract, actor) {
+   43 |   if (!contract) return contract
+   44 | 
+   45 |   const normalizedPdfPath = (() => {
+   46 |     const pdfPath = contract.artifact?.pdf_path || ''
+   47 |     if (!pdfPath) return ''
+   48 |     if (pdfPath.startsWith('/uploads/')) return pdfPath
+   49 |     const normalized = String(pdfPath).replace(/\\/g, '/')
+   50 |     const idx = normalized.indexOf('server/uploads/')
+   51 |     if (idx >= 0) {
+   52 |       const suffix = normalized.slice(idx + 'server/uploads/'.length)
+   53 |       return `/uploads/${suffix.replace(/^\/+/, '')}`
+   54 |     }
+   55 |     return pdfPath
+   56 |   })()
+   57 | 
+   58 |   const base = {
+   59 |     ...contract,
+   60 |     artifact: contract.artifact
+   61 |       ? { ...contract.artifact, pdf_path: normalizedPdfPath }
+   62 |       : contract.artifact,
+   63 |   }
+   64 | 
+   65 |   if (canViewContractBankingReferences(actor, contract)) return base
+   66 |   return {
+   67 |     ...base,
+   68 |     bank_name: '',
+   69 |     beneficiary_name: '',
+   70 |     transaction_reference: '',
+   71 |     artifact: base.artifact
+   72 |       ? { ...base.artifact, pdf_path: '' }
+   73 |       : base.artifact,
+   74 |   }
+   75 | }
+   76 | 
+   77 | function sanitizeSignatureState(value, fallback = 'pending') {
+   78 |   const normalized = sanitizeString(value || fallback, 20).toLowerCase()
+   79 |   return SIGNATURE_STATES.has(normalized) ? normalized : fallback
+   80 | }
+   81 | 
+   82 | function sanitizeArtifactState(value, fallback = 'draft') {
+   83 |   const normalized = sanitizeString(value || fallback, 20).toLowerCase()
+   84 |   return ARTIFACT_STATES.has(normalized) ? normalized : fallback
+   85 | }
+   86 | 
+   87 | function ensureAllowed(file) {
+   88 |   const ext = path.extname(file.originalname || '').toLowerCase()
+   89 |   const allowed = ['.pdf', '.png', '.jpg', '.jpeg']
+   90 |   if (!allowed.includes(ext)) throw new Error('Invalid file type')
+   91 | }
+   92 | 
+   93 | function escapePdfText(value = '') {
+   94 |   return String(value).replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)')
+   95 | }
+   96 | 
+   97 | function buildSimpleContractPdf(contract) {
+   98 |   const lines = [
+   99 |     'A-Personson Contract Artifact',
+  100 |     `Contract Number: ${contract.contract_number || contract.id}`,
+  101 |     `Title: ${contract.title || 'Contract'}`,
+  102 |     `Buyer: ${contract.buyer_name || 'N/A'} (${contract.buyer_id || 'N/A'})`,
+  103 |     `Factory: ${contract.factory_name || 'N/A'} (${contract.factory_id || 'N/A'})`,
+  104 |     contract.bank_name ? `Bank: ${contract.bank_name}` : '',
+  105 |     contract.beneficiary_name ? `Beneficiary: ${contract.beneficiary_name}` : '',
+  106 |     contract.transaction_reference ? `Transaction Reference: ${contract.transaction_reference}` : '',
+  107 |     `Buyer Signature Timestamp: ${contract.buyer_signed_at || 'N/A'}`,
+  108 |     `Factory Signature Timestamp: ${contract.factory_signed_at || 'N/A'}`,
+  109 |     `Generated At: ${toIsoNow()}`,
+  110 |   ].filter(Boolean)
+  111 | 
+  112 |   const contentLines = lines.map((line, idx) => `BT /F1 12 Tf 50 ${760 - (idx * 22)} Td (${escapePdfText(line)}) Tj ET`).join('\n')
+  113 |   const contentStream = `${contentLines}\n`
+  114 | 
+  115 |   const objects = []
+  116 |   objects.push('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n')
+  117 |   objects.push('2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n')
+  118 |   objects.push('3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n')
+  119 |   objects.push('4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n')
+  120 |   objects.push(`5 0 obj\n<< /Length ${Buffer.byteLength(contentStream, 'utf8')} >>\nstream\n${contentStream}endstream\nendobj\n`)
+  121 | 
+  122 |   let offset = 0
+  123 |   let pdf = '%PDF-1.4\n'
+  124 |   offset = Buffer.byteLength(pdf, 'utf8')
+  125 |   const xrefOffsets = [0]
+  126 | 
+  127 |   for (const object of objects) {
+  128 |     xrefOffsets.push(offset)
+  129 |     pdf += object
+  130 |     offset = Buffer.byteLength(pdf, 'utf8')
+  131 |   }
+  132 | 
+  133 |   const xrefStart = offset
+  134 |   pdf += `xref\n0 ${objects.length + 1}\n`
+  135 |   pdf += '0000000000 65535 f \n'
+  136 |   for (const objOffset of xrefOffsets.slice(1)) {
+  137 |     pdf += `${String(objOffset).padStart(10, '0')} 00000 n \n`
+  138 |   }
+  139 | 
+  140 |   pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefStart}\n%%EOF\n`
+  141 |   return Buffer.from(pdf, 'utf8')
+  142 | }
+  143 | 
+  144 | async function generateContractArtifact(contract) {
+  145 |   const generatedAt = toIsoNow()
+  146 |   const generationVersion = Number(contract.artifact?.version || 0) + 1
+  147 |   const pdfBuffer = buildSimpleContractPdf(contract)
+  148 |   const pdfHash = crypto.createHash('sha256').update(pdfBuffer).digest('hex')
+  149 | 
+  150 |   const uploadsDir = path.join(process.cwd(), 'server', 'uploads', 'contracts')
+  151 |   await fs.mkdir(uploadsDir, { recursive: true })
+  152 | 
+  153 |   const safeContractNumber = sanitizeString(contract.contract_number || contract.id, 80).replace(/[^a-zA-Z0-9_-]/g, '_')
+  154 |   const fileName = `${safeContractNumber || contract.id}-v${generationVersion}.pdf`
+  155 |   const filePath = path.join(uploadsDir, fileName)
+  156 |   await fs.writeFile(filePath, pdfBuffer)
+  157 | 
+  158 |   return {
+  159 |     pdf_path: `/uploads/contracts/${fileName}`,
+  160 |     pdf_hash: pdfHash,
+  161 |     status: 'generated',
+  162 |     generated_at: generatedAt,
+  163 |     version: generationVersion,
+  164 |     signer_ids: {
+  165 |       buyer_id: sanitizeString(contract.buyer_id || '', 120),
+  166 |       factory_id: sanitizeString(contract.factory_id || '', 120),
+  167 |     },
+  168 |     signature_timestamps: {
+  169 |       buyer_signed_at: contract.buyer_signed_at || '',
+  170 |       factory_signed_at: contract.factory_signed_at || '',
+  171 |     },
+  172 |   }
+  173 | }
+  174 | 
+  175 | export async function saveDocumentMetadata(ownerId, entityType, entityId, type, file) {
+  176 |   const docs = await readJson(FILE)
+  177 |   ensureAllowed(file)
+  178 |   const safeName = `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`
+  179 |   const targetPath = path.join(process.cwd(), 'server', 'uploads', safeName)
+  180 |   await fs.writeFile(targetPath, file.buffer)
+  181 | 
+  182 |   const doc = {
+  183 |     id: crypto.randomUUID(),
+  184 |     uploaded_by: ownerId,
+  185 |     entity_type: sanitizeString(entityType, 60),
+  186 |     entity_id: sanitizeString(entityId, 100),
+  187 |     file_path: path.relative(process.cwd(), targetPath),
+  188 |     type: sanitizeString(type || 'other', 60),
+  189 |     created_at: new Date().toISOString(),
+  190 |   }
+  191 | 
+  192 |   docs.push(doc)
+  193 |   await writeJson(FILE, docs)
+  194 |   return doc
+  195 | }
+  196 | 
+  197 | export async function listDocuments(entityType, entityId) {
+  198 |   const docs = await readJson(FILE)
+  199 |   return docs.filter((d) => d.entity_type === entityType && d.entity_id === entityId)
+  200 | }
+  201 | 
+  202 | export async function deleteDocument(docId, actor) {
+  203 |   const docs = await readJson(FILE)
+  204 |   const target = docs.find((d) => d.id === docId)
+  205 |   if (!target) return false
+  206 |   if (!isOwnerOrAdmin(actor) && target.uploaded_by !== actor.id) return 'forbidden'
+  207 | 
+  208 |   const next = docs.filter((d) => d.id !== docId)
+  209 |   await writeJson(FILE, next)
+  210 |   return true
+  211 | }
+  212 | 
+  213 | export async function createDraftContract(actor, payload = {}) {
+  214 |   if (isAgent(actor) || !canManagePartnerNetwork(actor)) {
+  215 |     const err = new Error('Forbidden')
+  216 |     err.status = 403
+  217 |     throw err
+  218 |   }
+  219 | 
+  220 |   const ownerId = actor.id
+  221 |   const docs = await readJson(FILE)
+  222 |   const contract = {
+  223 |     id: crypto.randomUUID(),
+  224 |     entity_type: 'contract',
+  225 |     contract_number: sanitizeString(payload.contract_number || `CN-${Date.now()}`, 80),
+  226 |     title: sanitizeString(payload.title || 'Draft Contract', 160),
+  227 |     buyer_name: sanitizeString(payload.buyer_name || '', 160),
+  228 |     factory_name: sanitizeString(payload.factory_name || '', 160),
+  229 |     buyer_id: sanitizeString(payload.buyer_id || '', 120),
+  230 |     factory_id: sanitizeString(payload.factory_id || '', 120),
+  231 |     bank_name: sanitizeString(payload.bank_name || '', 120),
+  232 |     beneficiary_name: sanitizeString(payload.beneficiary_name || '', 120),
+  233 |     transaction_reference: sanitizeString(payload.transaction_reference || '', 160),
+  234 |     is_draft: true,
+  235 |     buyer_signature_state: 'pending',
+  236 |     factory_signature_state: 'pending',
+  237 |     buyer_signed_at: '',
+  238 |     factory_signed_at: '',
+  239 |     artifact: {
+  240 |       pdf_path: '',
+  241 |       pdf_hash: '',
+  242 |       status: 'draft',
+  243 |       generated_at: '',
+  244 |       version: 0,
+  245 |       signer_ids: {
+  246 |         buyer_id: '',
+  247 |         factory_id: '',
+  248 |       },
+  249 |       signature_timestamps: {
+  250 |         buyer_signed_at: '',
+  251 |         factory_signed_at: '',
+  252 |       },
+  253 |     },
+  254 |     uploaded_by: ownerId,
+  255 |     created_at: toIsoNow(),
+  256 |     updated_at: toIsoNow(),
+  257 |   }
+  258 |   contract.lifecycle_status = normalizeContractLifecycle(contract)
+  259 |   docs.push(contract)
+  260 |   await writeJson(FILE, docs)
+  261 |   return contract
+  262 | }
+  263 | 
+  264 | export async function listContracts(actor) {
+  265 |   const docs = await readJson(FILE)
+  266 |   const contracts = docs.filter((d) => d.entity_type === 'contract')
+  267 |   const scoped = scopeRecordsForUser(actor, contracts, {
+  268 |     idFields: ['uploaded_by', 'buyer_id', 'factory_id'],
+  269 |     assignmentFields: ['assigned_agent_id', 'agent_id'],
+  270 |   })
+  271 | 
+  272 |   return scoped
+  273 |     .map((c) => ({ ...c, lifecycle_status: normalizeContractLifecycle(c) }))
+  274 |     .map((c) => presentContractForActor(c, actor))
+  275 | }
+  276 | 
+  277 | export async function updateContractSignatures(contractId, patch = {}, actor) {
+  278 |   const docs = await readJson(FILE)
+  279 |   const idx = docs.findIndex((d) => d.id === contractId && d.entity_type === 'contract')
+  280 |   if (idx < 0) return null
+  281 |   const existing = docs[idx]
+  282 |   if (!canModifyContract(actor, existing)) return 'forbidden'
+  283 | 
+  284 |   const nextBuyerState = patch.buyer_signature_state !== undefined
+  285 |     ? sanitizeSignatureState(patch.buyer_signature_state, existing.buyer_signature_state)
+  286 |     : existing.buyer_signature_state
+  287 |   const nextFactoryState = patch.factory_signature_state !== undefined
+  288 |     ? sanitizeSignatureState(patch.factory_signature_state, existing.factory_signature_state)
+  289 |     : existing.factory_signature_state
+  290 | 
+  291 |   const next = {
+  292 |     ...existing,
+  293 |     is_draft: patch.is_draft !== undefined ? Boolean(patch.is_draft) : existing.is_draft,
+  294 |     buyer_signature_state: nextBuyerState,
+  295 |     factory_signature_state: nextFactoryState,
+  296 |     buyer_signed_at: nextBuyerState === 'signed'
+  297 |       ? (existing.buyer_signed_at || toIsoNow())
+  298 |       : '',
+  299 |     factory_signed_at: nextFactoryState === 'signed'
+  300 |       ? (existing.factory_signed_at || toIsoNow())
+  301 |       : '',
+  302 |     updated_at: toIsoNow(),
+  303 |   }
+  304 | 
+  305 |   const bothSigned = next.buyer_signature_state === 'signed' && next.factory_signature_state === 'signed'
+  306 |   const hasGeneratedArtifact = Boolean(next.artifact?.generated_at && next.artifact?.pdf_hash && next.artifact?.pdf_path)
+  307 |   if (bothSigned && !hasGeneratedArtifact) {
+  308 |     next.artifact = await generateContractArtifact(next)
+  309 |   }
+  310 | 
+  311 |   next.lifecycle_status = normalizeContractLifecycle(next)
+  312 |   docs[idx] = next
+  313 |   await writeJson(FILE, docs)
+  314 |   return presentContractForActor(next, actor)
+  315 | }
+  316 | 
+  317 | export async function updateContractArtifact(contractId, patch = {}, actor) {
+  318 |   const docs = await readJson(FILE)
+  319 |   const idx = docs.findIndex((d) => d.id === contractId && d.entity_type === 'contract')
+  320 |   if (idx < 0) return null
+  321 |   const existing = docs[idx]
+  322 |   if (!canModifyContract(actor, existing)) return 'forbidden'
+  323 | 
+  324 |   const artifactStatus = patch.status !== undefined
+  325 |     ? sanitizeArtifactState(patch.status, existing.artifact?.status || 'draft')
+  326 |     : (existing.artifact?.status || 'draft')
+  327 | 
+  328 |   const hasGeneratedArtifact = Boolean(existing.artifact?.generated_at && existing.artifact?.pdf_hash && existing.artifact?.pdf_path)
+  329 |   if (['locked', 'archived'].includes(artifactStatus) && !hasGeneratedArtifact) {
+  330 |     const err = new Error('Only generated artifacts can be locked or archived.')
+  331 |     err.status = 400
+  332 |     throw err
+  333 |   }
+  334 | 
+  335 |   const next = {
+  336 |     ...existing,
+  337 |     is_draft: artifactStatus === 'draft' ? existing.is_draft : false,
+  338 |     artifact: {
+  339 |       ...(existing.artifact || {}),
+  340 |       status: artifactStatus,
+  341 |       pdf_path: existing.artifact?.pdf_path || '',
+  342 |       pdf_hash: existing.artifact?.pdf_hash || '',
+  343 |       generated_at: existing.artifact?.generated_at || '',
+  344 |       version: Number(existing.artifact?.version || 0),
+  345 |       signer_ids: {
+  346 |         buyer_id: existing.artifact?.signer_ids?.buyer_id || '',
+  347 |         factory_id: existing.artifact?.signer_ids?.factory_id || '',
+  348 |       },
+  349 |       signature_timestamps: {
+  350 |         buyer_signed_at: existing.artifact?.signature_timestamps?.buyer_signed_at || '',
+  351 |         factory_signed_at: existing.artifact?.signature_timestamps?.factory_signed_at || '',
+  352 |       },
+  353 |     },
+  354 |     archived_at: artifactStatus === 'archived' ? toIsoNow() : existing.archived_at,
+  355 |     updated_at: toIsoNow(),
+  356 |   }
+  357 | 
+  358 |   next.lifecycle_status = normalizeContractLifecycle(next)
+  359 |   docs[idx] = next
+  360 |   await writeJson(FILE, docs)
+  361 |   return presentContractForActor(next, actor)
+  362 | }
+  363 | 

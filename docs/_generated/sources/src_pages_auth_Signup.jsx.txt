@@ -1,0 +1,143 @@
+    1 | /*
+    2 |   Route: /signup
+    3 |   Access: Public
+    4 | 
+    5 |   Public Pages:
+    6 |     /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+    7 |   Protected Pages (login required):
+    8 |     /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+    9 |     /notifications, /chat, /call, /verification, /verification-center
+   10 | 
+   11 |   Purpose:
+   12 |     - Register a new account (Buyer / Factory / Buying House).
+   13 |     - Immediately create a session and route the user to the correct role home.
+   14 | 
+   15 |   Key API:
+   16 |     - POST /api/auth/register (via `apiRequest('/auth/register')`)
+   17 | 
+   18 |   Notes:
+   19 |     - This file currently uses legacy `neo-page` / `cyberpunk-card` styles.
+   20 |       We are only adding comments, not altering visuals or behavior.
+   21 | */
+   22 | import React, { useState } from 'react'
+   23 | import { Link, useNavigate } from 'react-router-dom'
+   24 | import { apiRequest, getRoleHome, saveSession } from '../../lib/auth'
+   25 | 
+   26 | export default function Signup() {
+   27 |   // Router navigation after successful account creation.
+   28 |   const navigate = useNavigate()
+   29 |   // UX state for async submit + error display.
+   30 |   const [loading, setLoading] = useState(false)
+   31 |   const [error, setError] = useState('')
+   32 |   // Controlled form model (single object keeps submission payload building simple).
+   33 |   const [form, setForm] = useState({
+   34 |     name: '',
+   35 |     email: '',
+   36 |     password: '',
+   37 |     role: 'buyer',
+   38 |     country: '',
+   39 |     organization: '',
+   40 |   })
+   41 | 
+   42 |   // Generic onChange helper so each input doesn't need its own setter function.
+   43 |   const onChange = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
+   44 | 
+   45 |   // Submit handler: builds backend payload, calls register endpoint, and saves session.
+   46 |   const handleSubmit = async (e) => {
+   47 |     e.preventDefault()
+   48 |     setLoading(true)
+   49 |     setError('')
+   50 |     try {
+   51 |       // Backend expects a slightly different field naming; map UI fields -> API fields here.
+   52 |       const payload = {
+   53 |         name: form.name,
+   54 |         email: form.email,
+   55 |         password: form.password,
+   56 |         role: form.role,
+   57 |         company_name: form.organization,
+   58 |         profile: { country: form.country },
+   59 |       }
+   60 | 
+   61 |       // Create the account on the server.
+   62 |       const data = await apiRequest('/auth/register', { method: 'POST', body: payload })
+   63 |       // Persist session immediately so user can access protected routes right away.
+   64 |       saveSession(data.user, data.token)
+   65 |       // Route user to role-specific landing (feed/dashboard/etc).
+   66 |       navigate(getRoleHome(data.user.role), { replace: true })
+   67 |     } catch (err) {
+   68 |       setError(err.message)
+   69 |     } finally {
+   70 |       setLoading(false)
+   71 |     }
+   72 |   }
+   73 | 
+   74 |   return (
+   75 |     // Page wrapper: centers the signup card and applies legacy base styles.
+   76 |     <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card flex items-center justify-center p-4">
+   77 |       {/* Wider card because signup has more fields than login. */}
+   78 |       <div className="w-full max-w-2xl bg-white neo-panel cyberpunk-card rounded-xl p-8">
+   79 |         <h1 className="text-3xl font-bold">Create account</h1>
+   80 |         <p className="mt-2 text-sm text-gray-600">3-step onboarding starts after signup: profile image, organization name, category selection.</p>
+   81 | 
+   82 |         {/* Responsive 2-column form on desktop; stacks on mobile. */}
+   83 |         <form className="mt-6 grid md:grid-cols-2 gap-4" onSubmit={handleSubmit}>
+   84 |           <div>
+   85 |             <label className="block text-sm font-medium mb-1">Full Name</label>
+   86 |             <input className="w-full px-4 py-3 border rounded-lg" value={form.name} onChange={(e) => onChange('name', e.target.value)} required />
+   87 |           </div>
+   88 |           <div>
+   89 |             <label className="block text-sm font-medium mb-1">Email</label>
+   90 |             <input type="email" className="w-full px-4 py-3 border rounded-lg" value={form.email} onChange={(e) => onChange('email', e.target.value)} required />
+   91 |           </div>
+   92 |           <div>
+   93 |             <label className="block text-sm font-medium mb-1">Password</label>
+   94 |             <input type="password" className="w-full px-4 py-3 border rounded-lg" value={form.password} onChange={(e) => onChange('password', e.target.value)} required />
+   95 |           </div>
+   96 |           <div>
+   97 |             <label className="block text-sm font-medium mb-1">Account Type</label>
+   98 |             {/* Choosing a role affects what documents are required later in Verification Center. */}
+   99 |             <select className="w-full px-4 py-3 border rounded-lg" value={form.role} onChange={(e) => onChange('role', e.target.value)}>
+  100 |               <option value="buyer">Buyer</option>
+  101 |               <option value="factory">Factory</option>
+  102 |               <option value="buying_house">Buying House</option>
+  103 |             </select>
+  104 |           </div>
+  105 |           <div>
+  106 |             <label className="block text-sm font-medium mb-1">Country</label>
+  107 |             <input className="w-full px-4 py-3 border rounded-lg" value={form.country} onChange={(e) => onChange('country', e.target.value)} required />
+  108 |           </div>
+  109 |           <div>
+  110 |             <label className="block text-sm font-medium mb-1">Organization Name</label>
+  111 |             <input className="w-full px-4 py-3 border rounded-lg" value={form.organization} onChange={(e) => onChange('organization', e.target.value)} />
+  112 |           </div>
+  113 | 
+  114 |           {/* Info panel: sets expectations (verification happens post-signup). */}
+  115 |           <div className="md:col-span-2 bg-gray-50 neo-panel cyberpunk-card border rounded-lg p-3 text-sm text-gray-700">
+  116 |             <p><strong>Verification happens after signup.</strong> Create your account first, then upload role and region-specific documents in Verification Center.</p>
+  117 |             <p className="mt-2">
+  118 |               Need the full checklist?
+  119 |               {' '}
+  120 |               <Link to="/verification" className="text-indigo-700 underline">Go to Verification Center</Link>
+  121 |               {' '}
+  122 |               or
+  123 |               {' '}
+  124 |               <Link to="/help" className="text-indigo-700 underline">read Help Center guidance</Link>.
+  125 |             </p>
+  126 |           </div>
+  127 | 
+  128 |           {/* API error state (e.g. email already used). */}
+  129 |           {error ? <p className="md:col-span-2 text-sm text-red-500">{error}</p> : null}
+  130 | 
+  131 |           {/* Footer actions: primary submit + link to login. */}
+  132 |           <div className="md:col-span-2 flex gap-3">
+  133 |             <button disabled={loading} className="px-5 py-3 rounded-lg bg-indigo-600 text-white disabled:opacity-70">
+  134 |               {loading ? 'Creating account...' : 'Create account'}
+  135 |             </button>
+  136 |             <Link to="/login" className="px-5 py-3 rounded-lg border">Have an account? Login</Link>
+  137 |           </div>
+  138 |         </form>
+  139 |       </div>
+  140 |     </div>
+  141 |   )
+  142 | }
+  143 | 

@@ -1,0 +1,152 @@
+    1 | import { FILTER_TIERS, PLAN_DAILY_LIMITS, PLAN_FILTER_ACCESS, SEARCH_CAPABILITIES } from '../config/searchAccessConfig.js'
+    2 | import { getSubscription } from './subscriptionService.js'
+    3 | import { readJson, writeJson } from '../utils/jsonStore.js'
+    4 | 
+    5 | const USAGE_FILE = 'search_usage_counters.json'
+    6 | 
+    7 | function todayKey() {
+    8 |   return new Date().toISOString().slice(0, 10)
+    9 | }
+   10 | 
+   11 | function resolvePlan(plan) {
+   12 |   return plan === 'premium' ? 'premium' : 'free'
+   13 | }
+   14 | 
+   15 | export async function getUserPlan(userId) {
+   16 |   const sub = await getSubscription(userId)
+   17 |   return resolvePlan(sub?.plan)
+   18 | }
+   19 | 
+   20 | export function extractUsedAdvancedFilters(filters = {}) {
+   21 |   return FILTER_TIERS.advanced.filter((key) => {
+   22 |     const value = filters[key]
+   23 |     if (typeof value === 'boolean') return value
+   24 |     return value !== undefined && value !== null && String(value).trim() !== ''
+   25 |   })
+   26 | }
+   27 | 
+   28 | export function canUseAdvancedFilters(plan) {
+   29 |   const resolvedPlan = resolvePlan(plan)
+   30 |   const allowed = PLAN_FILTER_ACCESS[resolvedPlan]?.allowedTiers || ['basic']
+   31 |   return allowed.includes('advanced')
+   32 | }
+   33 | 
+   34 | async function getUsageRows() {
+   35 |   return readJson(USAGE_FILE)
+   36 | }
+   37 | 
+   38 | async function upsertUsageRow(userId, action, dateKey, incrementBy = 0) {
+   39 |   const rows = await getUsageRows()
+   40 |   const idx = rows.findIndex((row) => row.user_id === userId && row.action === action)
+   41 | 
+   42 |   if (idx >= 0) {
+   43 |     const nextCount = rows[idx].date === dateKey ? Number(rows[idx].count || 0) + incrementBy : incrementBy
+   44 |     rows[idx] = {
+   45 |       ...rows[idx],
+   46 |       date: dateKey,
+   47 |       count: Math.max(0, nextCount),
+   48 |       updated_at: new Date().toISOString(),
+   49 |       ...(rows[idx].date !== dateKey ? { reset_at: new Date().toISOString() } : {}),
+   50 |     }
+   51 |   } else {
+   52 |     rows.push({
+   53 |       user_id: userId,
+   54 |       action,
+   55 |       date: dateKey,
+   56 |       count: Math.max(0, incrementBy),
+   57 |       updated_at: new Date().toISOString(),
+   58 |     })
+   59 |   }
+   60 | 
+   61 |   await writeJson(USAGE_FILE, rows)
+   62 |   return rows.find((row) => row.user_id === userId && row.action === action)
+   63 | }
+   64 | 
+   65 | export async function getQuotaSnapshot(userId, action, plan) {
+   66 |   const resolvedPlan = resolvePlan(plan)
+   67 |   const dailyLimit = Number(PLAN_DAILY_LIMITS[resolvedPlan]?.[action] || 0)
+   68 |   const today = todayKey()
+   69 |   const rows = await getUsageRows()
+   70 |   const usage = rows.find((row) => row.user_id === userId && row.action === action)
+   71 | 
+   72 |   let used = 0
+   73 |   if (usage?.date === today) {
+   74 |     used = Number(usage.count || 0)
+   75 |   } else if (usage) {
+   76 |     await upsertUsageRow(userId, action, today, 0)
+   77 |   }
+   78 | 
+   79 |   const remaining = Math.max(0, dailyLimit - used)
+   80 |   return {
+   81 |     action,
+   82 |     plan: resolvedPlan,
+   83 |     date: today,
+   84 |     daily_limit: dailyLimit,
+   85 |     used,
+   86 |     remaining,
+   87 |   }
+   88 | }
+   89 | 
+   90 | export async function consumeQuota(userId, action, plan) {
+   91 |   const snapshot = await getQuotaSnapshot(userId, action, plan)
+   92 |   if (snapshot.remaining <= 0) {
+   93 |     return { allowed: false, quota: snapshot }
+   94 |   }
+   95 | 
+   96 |   await upsertUsageRow(userId, action, snapshot.date, 1)
+   97 |   return {
+   98 |     allowed: true,
+   99 |     quota: {
+  100 |       ...snapshot,
+  101 |       used: snapshot.used + 1,
+  102 |       remaining: Math.max(0, snapshot.remaining - 1),
+  103 |     },
+  104 |   }
+  105 | }
+  106 | 
+  107 | export function getSearchCapabilities(plan) {
+  108 |   const resolvedPlan = resolvePlan(plan)
+  109 |   return {
+  110 |     plan: resolvedPlan,
+  111 |     ...SEARCH_CAPABILITIES[resolvedPlan],
+  112 |   }
+  113 | }
+  114 | 
+  115 | export function buildSearchAccessPayload({ action, plan, quota, missingFilters = [], upgradeRequired = false }) {
+  116 |   const capabilities = getSearchCapabilities(plan)
+  117 |   return {
+  118 |     action,
+  119 |     plan: capabilities.plan,
+  120 |     capabilities,
+  121 |     quota,
+  122 |     requirements: {
+  123 |       upgrade_required: Boolean(upgradeRequired || missingFilters.length > 0),
+  124 |       ...(missingFilters.length ? { advanced_filters: missingFilters } : {}),
+  125 |     },
+  126 |   }
+  127 | }
+  128 | 
+  129 | export function buildLimitError({ code, message, quota, missingFilters = [], upgradeRequired = false }) {
+  130 |   const action = quota?.action || null
+  131 |   const plan = quota?.plan || 'free'
+  132 |   const access = buildSearchAccessPayload({
+  133 |     action,
+  134 |     plan,
+  135 |     quota,
+  136 |     missingFilters,
+  137 |     upgradeRequired,
+  138 |   })
+  139 | 
+  140 |   return {
+  141 |     error: message,
+  142 |     code,
+  143 |     action,
+  144 |     plan,
+  145 |     quota,
+  146 |     remaining_quota: quota?.remaining ?? 0,
+  147 |     requirements: access.requirements,
+  148 |     capabilities: access.capabilities,
+  149 |     ...(missingFilters.length ? { advanced_filters: missingFilters } : {}),
+  150 |   }
+  151 | }
+  152 | 

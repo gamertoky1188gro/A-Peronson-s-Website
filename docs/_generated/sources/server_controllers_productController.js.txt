@@ -1,0 +1,142 @@
+    1 | import { createProduct, listProducts, removeProduct, updateProductById } from '../services/productService.js'
+    2 | import {
+    3 |   buildLimitError,
+    4 |   buildSearchAccessPayload,
+    5 |   canUseAdvancedFilters,
+    6 |   consumeQuota,
+    7 |   extractUsedAdvancedFilters,
+    8 |   getQuotaSnapshot,
+    9 |   getUserPlan,
+   10 | } from '../services/searchAccessService.js'
+   11 | import { readJson } from '../utils/jsonStore.js'
+   12 | import { listMyProductViews, recordView } from '../services/productViewService.js'
+   13 | 
+   14 | function parseNumber(value) {
+   15 |   const n = Number(String(value || '').replace(/[^\d.]/g, ''))
+   16 |   return Number.isFinite(n) ? n : null
+   17 | }
+   18 | 
+   19 | function matchesMoqRange(rawRange, moqValue) {
+   20 |   if (!rawRange) return true
+   21 |   const moq = Number.isFinite(Number(moqValue)) ? Number(moqValue) : parseNumber(moqValue)
+   22 |   if (!Number.isFinite(moq)) return false
+   23 | 
+   24 |   const range = String(rawRange || '').trim()
+   25 |   const parts = range.split('-').map((p) => parseNumber(p))
+   26 |   const min = Number.isFinite(parts[0]) ? parts[0] : null
+   27 |   const max = Number.isFinite(parts[1]) ? parts[1] : null
+   28 | 
+   29 |   if (min !== null && moq < min) return false
+   30 |   if (max !== null && moq > max) return false
+   31 |   return true
+   32 | }
+   33 | 
+   34 | export async function postProduct(req, res) {
+   35 |   const row = await createProduct(req.user, req.body)
+   36 |   return res.status(201).json(row)
+   37 | }
+   38 | 
+   39 | export async function getProducts(req, res) {
+   40 |   const mine = req.query.mine === 'true'
+   41 |   const category = req.query.category || ''
+   42 |   const companyId = mine ? req.user.id : ''
+   43 |   return res.json(await listProducts({ category, companyId }))
+   44 | }
+   45 | 
+   46 | export async function searchProducts(req, res) {
+   47 |   const plan = await getUserPlan(req.user.id)
+   48 |   const advancedFilters = extractUsedAdvancedFilters(req.query)
+   49 |   const quotaPreview = await getQuotaSnapshot(req.user.id, 'products_search', plan)
+   50 | 
+   51 |   if (advancedFilters.length > 0 && !canUseAdvancedFilters(plan)) {
+   52 |     return res.status(403).json(buildLimitError({
+   53 |       code: 'upgrade_required',
+   54 |       message: 'Advanced filters require a premium plan',
+   55 |       quota: quotaPreview,
+   56 |       missingFilters: advancedFilters,
+   57 |       upgradeRequired: true,
+   58 |     }))
+   59 |   }
+   60 | 
+   61 |   const quotaUse = await consumeQuota(req.user.id, 'products_search', plan)
+   62 |   if (!quotaUse.allowed) {
+   63 |     return res.status(429).json(buildLimitError({
+   64 |       code: 'limit_reached',
+   65 |       message: 'Daily product search limit reached',
+   66 |       quota: quotaUse.quota,
+   67 |     }))
+   68 |   }
+   69 | 
+   70 |   const all = await listProducts({})
+   71 |   const users = await readJson('users.json')
+   72 |   const usersById = new Map(users.map((u) => [u.id, u]))
+   73 | 
+   74 |   const q = String(req.query.q || '').toLowerCase().trim()
+   75 |   const wantedCountry = String(req.query.country || '').trim().toLowerCase()
+   76 |   const wantedOrgType = String(req.query.orgType || '').trim().toLowerCase()
+   77 |   const verifiedOnly = req.query.verifiedOnly === 'true'
+   78 |   const moqRange = String(req.query.moqRange || '').trim()
+   79 | 
+   80 |   const results = all
+   81 |     .map((p) => {
+   82 |       const company = usersById.get(p.company_id) || null
+   83 |       const authorCountry = String(company?.profile?.country || '').trim()
+   84 |       return {
+   85 |         ...p,
+   86 |         author: company ? {
+   87 |           id: company.id,
+   88 |           name: company.name,
+   89 |           role: company.role,
+   90 |           verified: Boolean(company.verified),
+   91 |           country: authorCountry,
+   92 |         } : { id: p.company_id, name: 'Unknown company', role: 'factory', verified: false, country: '' },
+   93 |         profile_key: `user:${p.company_id}`,
+   94 |       }
+   95 |     })
+   96 |     .filter((p) => {
+   97 |       if (q && !`${p.title} ${p.category} ${p.material} ${p.description}`.toLowerCase().includes(q)) return false
+   98 |       if (req.query.category && String(p.category).toLowerCase() !== String(req.query.category).toLowerCase()) return false
+   99 |       if (wantedOrgType && String(p.author?.role || '').toLowerCase() !== wantedOrgType) return false
+  100 |       if (wantedCountry && String(p.author?.country || '').toLowerCase() !== wantedCountry) return false
+  101 |       if (verifiedOnly && !p.author?.verified) return false
+  102 |       if (moqRange && !matchesMoqRange(moqRange, p.moq)) return false
+  103 |       return true
+  104 |     })
+  105 | 
+  106 |   return res.json({
+  107 |     items: results,
+  108 |     ...buildSearchAccessPayload({
+  109 |       action: 'products_search',
+  110 |       plan,
+  111 |       quota: quotaUse.quota,
+  112 |     }),
+  113 |   })
+  114 | }
+  115 | 
+  116 | export async function updateProduct(req, res) {
+  117 |   const updated = await updateProductById(req.user, req.params.productId, req.body || {})
+  118 |   if (updated === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+  119 |   if (!updated) return res.status(404).json({ error: 'Product not found' })
+  120 |   return res.json(updated)
+  121 | }
+  122 | 
+  123 | export async function deleteProduct(req, res) {
+  124 |   const removed = await removeProduct(req.user, req.params.productId)
+  125 |   if (removed === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+  126 |   if (!removed) return res.status(404).json({ error: 'Product not found' })
+  127 |   return res.json({ ok: true })
+  128 | }
+  129 | 
+  130 | export async function recordProductView(req, res) {
+  131 |   const result = await recordView(req.user.id, req.params.productId, { windowMinutes: 10 })
+  132 |   if (result === 'not_found') return res.status(404).json({ error: 'Product not found' })
+  133 |   return res.status(201).json(result)
+  134 | }
+  135 | 
+  136 | export async function getMyViewedProducts(req, res) {
+  137 |   const cursor = Number.isFinite(Number(req.query.cursor)) ? Math.max(0, Math.floor(Number(req.query.cursor))) : 0
+  138 |   const limitRaw = Number.isFinite(Number(req.query.limit)) ? Math.floor(Number(req.query.limit)) : 10
+  139 |   const limit = Math.min(50, Math.max(1, limitRaw))
+  140 |   return res.json(await listMyProductViews(req.user.id, { cursor, limit }))
+  141 | }
+  142 | 

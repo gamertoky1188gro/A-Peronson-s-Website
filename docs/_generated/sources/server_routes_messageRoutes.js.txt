@@ -1,0 +1,40 @@
+    1 | import { Router } from 'express'
+    2 | import multer from 'multer'
+    3 | import path from 'path'
+    4 | import { requireAuth } from '../middleware/auth.js'
+    5 | import {
+    6 |   acceptRequest,
+    7 |   getMessages,
+    8 |   inbox,
+    9 |   rejectRequest,
+   10 |   sendFriendDirectMessage,
+   11 |   sendMessage,
+   12 |   uploadMessageAttachment,
+   13 | } from '../controllers/messageController.js'
+   14 | 
+   15 | const router = Router()
+   16 | 
+   17 | const uploadDir = path.join(process.cwd(), 'server', 'uploads', 'chat')
+   18 | const upload = multer({
+   19 |   storage: multer.diskStorage({
+   20 |     destination: (_req, _file, cb) => cb(null, uploadDir),
+   21 |     filename: (_req, file, cb) => {
+   22 |       const ext = path.extname(file.originalname || '').slice(0, 12)
+   23 |       const baseWithoutExt = path.basename(file.originalname || 'file', ext)
+   24 |       const safeBase = baseWithoutExt.replace(/[^a-zA-Z0-9_.-]/g, '_').slice(0, 80) || 'file'
+   25 |       cb(null, `${Date.now()}-${safeBase}${ext || ''}`)
+   26 |     },
+   27 |   }),
+   28 |   limits: { fileSize: 25 * 1024 * 1024 },
+   29 | })
+   30 | 
+   31 | router.get('/inbox', requireAuth, inbox)
+   32 | router.post('/requests/:threadId/accept', requireAuth, acceptRequest)
+   33 | router.post('/requests/:threadId/reject', requireAuth, rejectRequest)
+   34 | router.post('/friend/:userId', requireAuth, sendFriendDirectMessage)
+   35 | router.post('/:matchId/upload', requireAuth, upload.single('file'), uploadMessageAttachment)
+   36 | router.post('/:matchId', requireAuth, sendMessage)
+   37 | router.get('/:matchId', requireAuth, getMessages)
+   38 | 
+   39 | export default router
+   40 | 

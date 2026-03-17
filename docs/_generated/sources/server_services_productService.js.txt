@@ -1,0 +1,153 @@
+    1 | import crypto from 'crypto'
+    2 | import { readJson, writeJson } from '../utils/jsonStore.js'
+    3 | import { sanitizeString } from '../utils/validators.js'
+    4 | import { trackEvent } from './analyticsService.js'
+    5 | import { emitNotificationsForEntity } from './notificationService.js'
+    6 | 
+    7 | const FILE = 'company_products.json'
+    8 | const PROHIBITED_MEDIA_KEYWORDS = ['porn', 'explicit', 'nudity', 'violence', 'weapon', 'drugs', 'hate']
+    9 | const TRUSTED_VIDEO_HOSTS = ['youtube.com', 'youtu.be', 'vimeo.com', 'loom.com', 'drive.google.com']
+   10 | 
+   11 | function normalizeVideoReview(row) {
+   12 |   const reviewStatus = row.video_review_status || 'approved'
+   13 |   const restricted = Boolean(row.video_restricted || reviewStatus !== 'approved')
+   14 |   return {
+   15 |     ...row,
+   16 |     video_review_status: reviewStatus,
+   17 |     video_restricted: restricted,
+   18 |     video_moderation_flags: Array.isArray(row.video_moderation_flags) ? row.video_moderation_flags : [],
+   19 |     video_url: restricted ? '' : row.video_url,
+   20 |     hasVideo: !restricted && Boolean(row.video_url),
+   21 |   }
+   22 | }
+   23 | 
+   24 | function getVideoModerationResult({ title = '', description = '', videoUrl = '' }) {
+   25 |   const flags = []
+   26 |   if (!videoUrl) {
+   27 |     return { flags, videoReviewStatus: 'approved', videoRestricted: false }
+   28 |   }
+   29 | 
+   30 |   let parsed = null
+   31 |   try {
+   32 |     parsed = new URL(videoUrl)
+   33 |   } catch {
+   34 |     flags.push('invalid_video_url')
+   35 |   }
+   36 | 
+   37 |   if (parsed && !['http:', 'https:'].includes(parsed.protocol)) {
+   38 |     flags.push('invalid_video_protocol')
+   39 |   }
+   40 | 
+   41 |   if (parsed) {
+   42 |     const host = parsed.hostname.toLowerCase()
+   43 |     if (!TRUSTED_VIDEO_HOSTS.some((allowed) => host === allowed || host.endsWith(`.${allowed}`))) {
+   44 |       flags.push('untrusted_video_host')
+   45 |     }
+   46 |   }
+   47 | 
+   48 |   const searchableText = `${title} ${description} ${videoUrl}`.toLowerCase()
+   49 |   for (const keyword of PROHIBITED_MEDIA_KEYWORDS) {
+   50 |     if (searchableText.includes(keyword)) {
+   51 |       flags.push(`prohibited_media_keyword:${keyword}`)
+   52 |     }
+   53 |   }
+   54 | 
+   55 |   const videoRestricted = flags.length > 0
+   56 |   return {
+   57 |     flags,
+   58 |     videoReviewStatus: videoRestricted ? 'restricted' : 'pending_review',
+   59 |     videoRestricted,
+   60 |   }
+   61 | }
+   62 | 
+   63 | export async function createProduct(user, payload) {
+   64 |   const all = await readJson(FILE)
+   65 |   const title = sanitizeString(payload.title, 120)
+   66 |   const description = sanitizeString(payload.description || '', 1200)
+   67 |   const videoUrl = sanitizeString(payload.video_url || '', 260)
+   68 |   const moderation = getVideoModerationResult({ title, description, videoUrl })
+   69 |   const row = {
+   70 |     id: crypto.randomUUID(),
+   71 |     company_id: user.id,
+   72 |     company_role: user.role,
+   73 |     title,
+   74 |     category: sanitizeString(payload.category, 80),
+   75 |     material: sanitizeString(payload.material, 80),
+   76 |     moq: sanitizeString(payload.moq || '', 40),
+   77 |     lead_time_days: sanitizeString(payload.lead_time_days || '', 40),
+   78 |     description,
+   79 |     video_url: videoUrl,
+   80 |     video_review_status: moderation.videoReviewStatus,
+   81 |     video_restricted: moderation.videoRestricted,
+   82 |     video_moderation_flags: moderation.flags,
+   83 |     created_at: new Date().toISOString(),
+   84 |   }
+   85 |   all.push(row)
+   86 |   await writeJson(FILE, all)
+   87 |   await trackEvent({ type: 'product_created', actor_id: user.id, entity_id: row.id })
+   88 |   await emitNotificationsForEntity('company_product', row)
+   89 |   return normalizeVideoReview(row)
+   90 | }
+   91 | 
+   92 | export async function listProducts(filters = {}) {
+   93 |   const all = await readJson(FILE)
+   94 |   return all
+   95 |     .filter((p) => !filters.category || p.category.toLowerCase() === String(filters.category).toLowerCase())
+   96 |     .filter((p) => !filters.companyId || String(p.company_id) === String(filters.companyId))
+   97 |     .map((p) => normalizeVideoReview(p))
+   98 | }
+   99 | 
+  100 | function canMutateProduct(actor, product) {
+  101 |   if (!actor || !product) return false
+  102 |   if (actor.role === 'admin' || actor.role === 'owner') return true
+  103 |   return String(product.company_id) === String(actor.id)
+  104 | }
+  105 | 
+  106 | export async function updateProductById(actor, productId, patch = {}) {
+  107 |   const id = sanitizeString(String(productId || ''), 120)
+  108 |   if (!id) return null
+  109 |   const all = await readJson(FILE)
+  110 |   const idx = all.findIndex((p) => String(p.id) === id)
+  111 |   if (idx < 0) return null
+  112 |   const existing = all[idx]
+  113 |   if (!canMutateProduct(actor, existing)) return 'forbidden'
+  114 | 
+  115 |   const nextTitle = patch.title !== undefined ? sanitizeString(patch.title, 120) : existing.title
+  116 |   const nextDescription = patch.description !== undefined ? sanitizeString(patch.description || '', 1200) : existing.description
+  117 |   const nextVideoUrl = patch.video_url !== undefined ? sanitizeString(patch.video_url || '', 260) : existing.video_url
+  118 |   const moderation = getVideoModerationResult({ title: nextTitle, description: nextDescription, videoUrl: nextVideoUrl })
+  119 | 
+  120 |   const next = {
+  121 |     ...existing,
+  122 |     title: nextTitle,
+  123 |     category: patch.category !== undefined ? sanitizeString(patch.category, 80) : existing.category,
+  124 |     material: patch.material !== undefined ? sanitizeString(patch.material, 80) : existing.material,
+  125 |     moq: patch.moq !== undefined ? sanitizeString(patch.moq || '', 40) : existing.moq,
+  126 |     lead_time_days: patch.lead_time_days !== undefined ? sanitizeString(patch.lead_time_days || '', 40) : existing.lead_time_days,
+  127 |     description: nextDescription,
+  128 |     video_url: nextVideoUrl,
+  129 |     video_review_status: moderation.videoReviewStatus,
+  130 |     video_restricted: moderation.videoRestricted,
+  131 |     video_moderation_flags: moderation.flags,
+  132 |     updated_at: new Date().toISOString(),
+  133 |   }
+  134 | 
+  135 |   all[idx] = next
+  136 |   await writeJson(FILE, all)
+  137 |   await trackEvent({ type: 'product_updated', actor_id: actor.id, entity_id: next.id })
+  138 |   return normalizeVideoReview(next)
+  139 | }
+  140 | 
+  141 | export async function removeProduct(actor, productId) {
+  142 |   const id = sanitizeString(String(productId || ''), 120)
+  143 |   if (!id) return null
+  144 |   const all = await readJson(FILE)
+  145 |   const existing = all.find((p) => String(p.id) === id)
+  146 |   if (!existing) return null
+  147 |   if (!canMutateProduct(actor, existing)) return 'forbidden'
+  148 |   const next = all.filter((p) => String(p.id) !== id)
+  149 |   await writeJson(FILE, next)
+  150 |   await trackEvent({ type: 'product_deleted', actor_id: actor.id, entity_id: id })
+  151 |   return true
+  152 | }
+  153 | 

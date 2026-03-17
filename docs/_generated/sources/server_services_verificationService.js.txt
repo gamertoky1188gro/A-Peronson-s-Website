@@ -1,0 +1,301 @@
+    1 | import { readJson, writeJson } from '../utils/jsonStore.js'
+    2 | import { sanitizeString } from '../utils/validators.js'
+    3 | import { isSubscriptionValid } from './subscriptionService.js'
+    4 | import { logInfo } from '../utils/logger.js'
+    5 | import { isEuCountry } from '../../shared/config/geo.js'
+    6 | 
+    7 | const FILE = 'verification.json'
+    8 | 
+    9 | const BUYER_REGIONS = {
+   10 |   EU: 'EU',
+   11 |   USA: 'USA',
+   12 |   OTHER: 'OTHER',
+   13 | }
+   14 | 
+   15 | const requiredByRoleRegion = {
+   16 |   factory: ['company_registration', 'trade_license', 'tin', 'authorized_person_nid', 'bank_proof', 'erc'],
+   17 |   buying_house: ['company_registration', 'trade_license', 'tin', 'authorized_person_nid', 'bank_proof'],
+   18 |   buyer: {
+   19 |     EU: ['company_registration', 'vat', 'eori', 'bank_proof'],
+   20 |     USA: ['company_registration', 'ein', 'ior', 'bank_proof'],
+   21 |     OTHER: ['company_registration', 'bank_proof'],
+   22 |   },
+   23 | }
+   24 | 
+   25 | const fieldAliases = {
+   26 |   tin: ['tin', 'tin_or_ein'],
+   27 |   ein: ['ein', 'tin_or_ein'],
+   28 |   erc: ['erc', 'erc_or_eori'],
+   29 |   eori: ['eori', 'erc_or_eori'],
+   30 | }
+   31 | 
+   32 | export const VERIFICATION_FIELD_LABELS = {
+   33 |   company_registration: 'Company Registration',
+   34 |   trade_license: 'Trade License',
+   35 |   tin: 'TIN (Tax Identification Number)',
+   36 |   ein: 'EIN (Employer Identification Number)',
+   37 |   vat: 'VAT Number',
+   38 |   eori: 'EORI (Customs Registration)',
+   39 |   ior: 'IOR (Importer of Record)',
+   40 |   authorized_person_nid: 'Authorized Person NID',
+   41 |   bank_proof: 'Company Bank Proof',
+   42 |   erc: 'ERC (Export Registration)',
+   43 | }
+   44 | 
+   45 | function emptyDocs() {
+   46 |   return {
+   47 |     company_registration: '',
+   48 |     trade_license: '',
+   49 |     tin: '',
+   50 |     ein: '',
+   51 |     vat: '',
+   52 |     eori: '',
+   53 |     ior: '',
+   54 |     authorized_person_nid: '',
+   55 |     bank_proof: '',
+   56 |     erc: '',
+   57 |     tin_or_ein: '',
+   58 |     erc_or_eori: '',
+   59 |     buyer_country: '',
+   60 |     optional_licenses: [],
+   61 |   }
+   62 | }
+   63 | 
+   64 | function sanitizeDocsPatch(documentsPatch = {}) {
+   65 |   const entries = Object.entries(documentsPatch)
+   66 |   const out = {}
+   67 | 
+   68 |   for (const [key, value] of entries) {
+   69 |     if (key === 'optional_licenses') {
+   70 |       const values = Array.isArray(value) ? value : [value]
+   71 |       out.optional_licenses = values
+   72 |         .map((v) => sanitizeString(String(v || ''), 240))
+   73 |         .filter(Boolean)
+   74 |       continue
+   75 |     }
+   76 | 
+   77 |     out[key] = sanitizeString(String(value || ''), 240)
+   78 |   }
+   79 | 
+   80 |   return out
+   81 | }
+   82 | 
+   83 | function normalizeBuyerCountry(rawCountry) {
+   84 |   return sanitizeString(String(rawCountry || ''), 60)
+   85 | }
+   86 | 
+   87 | function validateBuyerGeography(role, docs, buyerRegion) {
+   88 |   if (role !== 'buyer') return
+   89 | 
+   90 |   const buyerCountry = normalizeBuyerCountry(docs?.buyer_country)
+   91 |   const countryIsEu = isEuCountry(buyerCountry)
+   92 | 
+   93 |   if (countryIsEu && buyerRegion !== BUYER_REGIONS.EU) {
+   94 |     const err = new Error('Selected buyer country is in the EU. Set buyer_region to EU.')
+   95 |     err.statusCode = 400
+   96 |     throw err
+   97 |   }
+   98 | 
+   99 |   if (buyerRegion === BUYER_REGIONS.EU && !countryIsEu) {
+  100 |     const err = new Error('buyer_region=EU requires selecting a valid EU country in buyer_country.')
+  101 |     err.statusCode = 400
+  102 |     throw err
+  103 |   }
+  104 | }
+  105 | 
+  106 | function normalizeBuyerRegion(rawRegion) {
+  107 |   const region = sanitizeString(String(rawRegion || ''), 20).toUpperCase()
+  108 |   return BUYER_REGIONS[region] || BUYER_REGIONS.OTHER
+  109 | }
+  110 | 
+  111 | function getRequiredFields(role, buyerRegion) {
+  112 |   if (role !== 'buyer') return requiredByRoleRegion[role] || []
+  113 |   return requiredByRoleRegion.buyer[buyerRegion] || requiredByRoleRegion.buyer.OTHER
+  114 | }
+  115 | 
+  116 | function hasDocument(docs, field) {
+  117 |   const possibleFields = fieldAliases[field] || [field]
+  118 |   return possibleFields.some((name) => !!docs?.[name])
+  119 | }
+  120 | 
+  121 | function buildCredibility(required, docs) {
+  122 |   const completedRequired = required.filter((field) => hasDocument(docs, field)).length
+  123 |   const requiredTotal = required.length
+  124 |   const optionalLicenses = Array.isArray(docs?.optional_licenses) ? docs.optional_licenses.filter(Boolean) : []
+  125 |   const requiredCompletionPct = requiredTotal > 0 ? (completedRequired / requiredTotal) * 100 : 100
+  126 | 
+  127 |   const requiredScore = requiredCompletionPct * 0.85
+  128 |   const optionalScore = Math.min(optionalLicenses.length, 5) * 3
+  129 |   const score = Math.min(100, Math.round(requiredScore + optionalScore))
+  130 | 
+  131 |   let badge = 'Basic credibility'
+  132 |   if (score >= 90) badge = 'High credibility'
+  133 |   else if (score >= 70) badge = 'Strong credibility'
+  134 |   else if (score >= 40) badge = 'Moderate credibility'
+  135 | 
+  136 |   return {
+  137 |     score,
+  138 |     badge,
+  139 |     completeness: `${completedRequired}/${requiredTotal} required documents submitted`,
+  140 |     required_completed: completedRequired,
+  141 |     required_total: requiredTotal,
+  142 |     optional_licenses_count: optionalLicenses.length,
+  143 |   }
+  144 | }
+  145 | 
+  146 | export async function getVerification(userId) {
+  147 |   const all = await readJson(FILE)
+  148 |   return all.find((v) => v.user_id === userId) || null
+  149 | }
+  150 | 
+  151 | function normalizeCountryCode(value) {
+  152 |   return sanitizeString(String(value || ''), 80).trim()
+  153 | }
+  154 | 
+  155 | function inferBuyerRegion(user, record) {
+  156 |   if (record?.buyer_region) return record.buyer_region
+  157 |   const docsCountry = normalizeBuyerCountry(record?.documents?.buyer_country)
+  158 |   const profileCountry = normalizeCountryCode(user?.profile?.country)
+  159 |   const candidate = docsCountry || profileCountry
+  160 |   const upper = candidate.toUpperCase()
+  161 | 
+  162 |   if (isEuCountry(candidate)) return BUYER_REGIONS.EU
+  163 |   if (upper === 'USA' || upper === 'US' || upper === 'UNITED STATES' || upper === 'UNITED STATES OF AMERICA') return BUYER_REGIONS.USA
+  164 |   return BUYER_REGIONS.OTHER
+  165 | }
+  166 | 
+  167 | export function getVerificationPublicSummary(user, record) {
+  168 |   const role = user?.role || record?.role || ''
+  169 |   const buyerRegion = role === 'buyer' ? inferBuyerRegion(user, record) : ''
+  170 |   const required = getRequiredFields(role, buyerRegion)
+  171 |   const docs = record?.documents || emptyDocs()
+  172 |   const credibility = record?.credibility || buildCredibility(required, docs)
+  173 | 
+  174 |   const required_checklist = required.map((key) => ({
+  175 |     key,
+  176 |     label: VERIFICATION_FIELD_LABELS[key] || key,
+  177 |     submitted: hasDocument(docs, key),
+  178 |   }))
+  179 | 
+  180 |   const optionalLicenses = Array.isArray(docs?.optional_licenses) ? docs.optional_licenses.filter(Boolean) : []
+  181 | 
+  182 |   return {
+  183 |     verified: Boolean(record?.verified),
+  184 |     buyer_region: buyerRegion,
+  185 |     credibility,
+  186 |     required_checklist,
+  187 |     optional_licenses_count: optionalLicenses.length,
+  188 |   }
+  189 | }
+  190 | 
+  191 | export async function upsertVerification(user, documentsPatch) {
+  192 |   const all = await readJson(FILE)
+  193 |   const idx = all.findIndex((v) => v.user_id === user.id)
+  194 |   const existing = idx >= 0 ? all[idx] : null
+  195 | 
+  196 |   const docs = {
+  197 |     ...(existing?.documents || emptyDocs()),
+  198 |     ...sanitizeDocsPatch(documentsPatch || {}),
+  199 |   }
+  200 | 
+  201 |   const buyerRegion = user.role === 'buyer'
+  202 |     ? normalizeBuyerRegion(documentsPatch?.buyer_region || existing?.buyer_region)
+  203 |     : ''
+  204 | 
+  205 |   validateBuyerGeography(user.role, docs, buyerRegion)
+  206 | 
+  207 |   const required = getRequiredFields(user.role, buyerRegion)
+  208 |   const missing_required = required.filter((key) => !hasDocument(docs, key))
+  209 |   const credibility = buildCredibility(required, docs)
+  210 | 
+  211 |   const record = {
+  212 |     user_id: user.id,
+  213 |     role: user.role,
+  214 |     buyer_region: buyerRegion,
+  215 |     documents: docs,
+  216 |     verified: false,
+  217 |     verified_at: existing?.verified_at || '',
+  218 |     subscription_valid_until: existing?.subscription_valid_until || '',
+  219 |     missing_required,
+  220 |     credibility,
+  221 |     updated_at: new Date().toISOString(),
+  222 |   }
+  223 | 
+  224 |   if (idx >= 0) all[idx] = record
+  225 |   else all.push(record)
+  226 | 
+  227 |   await writeJson(FILE, all)
+  228 |   logInfo('Verification documents updated', {
+  229 |     user_id: user.id,
+  230 |     buyer_region: buyerRegion,
+  231 |     missing_required: missing_required.length,
+  232 |     credibility_score: credibility.score,
+  233 |   })
+  234 |   return record
+  235 | }
+  236 | 
+  237 | export async function adminApproveVerification(userId) {
+  238 |   const all = await readJson(FILE)
+  239 |   const idx = all.findIndex((v) => v.user_id === userId)
+  240 |   if (idx < 0) return null
+  241 | 
+  242 |   const validSub = await isSubscriptionValid(userId)
+  243 |   if (!validSub) {
+  244 |     all[idx].verified = false
+  245 |     all[idx].missing_required = [...(all[idx].missing_required || []), 'premium_subscription_required_for_verification']
+  246 |     await writeJson(FILE, all)
+  247 |     return all[idx]
+  248 |   }
+  249 | 
+  250 |   if ((all[idx].missing_required || []).length > 0) {
+  251 |     all[idx].verified = false
+  252 |     await writeJson(FILE, all)
+  253 |     return all[idx]
+  254 |   }
+  255 | 
+  256 |   all[idx].verified = true
+  257 |   all[idx].verified_at = new Date().toISOString()
+  258 |   all[idx].subscription_valid_until = (await readJson('subscriptions.json')).find((s) => s.user_id === userId)?.end_date || ''
+  259 |   await writeJson(FILE, all)
+  260 |   logInfo('Verification approved', { user_id: userId })
+  261 |   return all[idx]
+  262 | }
+  263 | 
+  264 | export async function revokeExpiredVerifications() {
+  265 |   const all = await readJson(FILE)
+  266 |   const subs = await readJson('subscriptions.json')
+  267 |   let changed = false
+  268 | 
+  269 |   for (const rec of all) {
+  270 |     const sub = subs.find((s) => s.user_id === rec.user_id)
+  271 |     const active = sub && new Date(sub.end_date).getTime() > Date.now()
+  272 |     if (!active && rec.verified) {
+  273 |       rec.verified = false
+  274 |       rec.subscription_valid_until = sub?.end_date || ''
+  275 |       changed = true
+  276 |     }
+  277 |   }
+  278 | 
+  279 |   if (changed) await writeJson(FILE, all)
+  280 |   return all
+  281 | }
+  282 | 
+  283 | export async function markVerificationExpiringSoon(userId, remainingDays, thresholdDays = 7) {
+  284 |   const all = await readJson(FILE)
+  285 |   const idx = all.findIndex((v) => v.user_id === userId)
+  286 |   if (idx < 0) return null
+  287 | 
+  288 |   const nextRemainingDays = Math.max(0, Number(remainingDays) || 0)
+  289 |   const isExpiringSoon = all[idx].verified && nextRemainingDays > 0 && nextRemainingDays <= thresholdDays
+  290 | 
+  291 |   all[idx].subscription_remaining_days = nextRemainingDays
+  292 |   all[idx].expiring_soon = isExpiringSoon
+  293 |   all[idx].verification_status = all[idx].verified
+  294 |     ? (isExpiringSoon ? 'expiring_soon' : 'verified_active')
+  295 |     : 'expired'
+  296 |   all[idx].updated_at = new Date().toISOString()
+  297 | 
+  298 |   await writeJson(FILE, all)
+  299 |   return all[idx]
+  300 | }
+  301 | 

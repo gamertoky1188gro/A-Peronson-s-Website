@@ -1,3 +1,21 @@
+/*
+  Route: /terms
+  Access: Public
+
+  Public Pages:
+    /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+  Protected Pages (login required):
+    /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+    /notifications, /chat, /call, /verification, /verification-center
+
+  Primary responsibilities:
+    - Render Terms & Conditions content in a readable, scannable layout.
+    - Use an "Industrial Digital" visual language: paper-like studio (light) + command center (dark).
+
+  Micro-interactions:
+    - Staggered section reveal (Framer Motion).
+    - "Signature draw" mark hover (CSS animation) to reinforce legal/contract context.
+*/
 import React from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 

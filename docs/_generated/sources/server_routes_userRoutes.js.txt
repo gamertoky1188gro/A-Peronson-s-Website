@@ -1,0 +1,29 @@
+    1 | import { Router } from 'express'
+    2 | import { allowRoles, requireAuth } from '../middleware/auth.js'
+    3 | import {
+    4 |   adminDeleteUser,
+    5 |   adminListUsers,
+    6 |   adminVerifyUser,
+    7 |   followUserController,
+    8 |   friendRequestController,
+    9 |   lookupUsers,
+   10 |   me,
+   11 |   searchUsersController,
+   12 |   updateMyProfile,
+   13 | } from '../controllers/userController.js'
+   14 | 
+   15 | const router = Router()
+   16 | 
+   17 | router.get('/me', requireAuth, me)
+   18 | router.patch('/me/profile', requireAuth, updateMyProfile)
+   19 | router.get('/search', requireAuth, searchUsersController)
+   20 | router.post('/lookup', requireAuth, lookupUsers)
+   21 | router.post('/:userId/follow', requireAuth, followUserController)
+   22 | router.post('/:userId/friend-request', requireAuth, friendRequestController)
+   23 | 
+   24 | router.get('/', requireAuth, allowRoles('owner', 'admin'), adminListUsers)
+   25 | router.patch('/:userId/verify', requireAuth, allowRoles('owner', 'admin'), adminVerifyUser)
+   26 | router.delete('/:userId', requireAuth, allowRoles('owner', 'admin'), adminDeleteUser)
+   27 | 
+   28 | export default router
+   29 | 

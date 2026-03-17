@@ -1,0 +1,160 @@
+    1 | import { findUserById } from './userService.js'
+    2 | import { getVerification, getVerificationPublicSummary } from './verificationService.js'
+    3 | import { sanitizeString } from '../utils/validators.js'
+    4 | import { readJson } from '../utils/jsonStore.js'
+    5 | 
+    6 | const CONNECTION_FILE = 'user_connections.json'
+    7 | const REQUIREMENTS_FILE = 'requirements.json'
+    8 | const PRODUCTS_FILE = 'company_products.json'
+    9 | const PARTNER_REQUESTS_FILE = 'partner_requests.json'
+   10 | 
+   11 | function cleanUserPublic(user) {
+   12 |   if (!user) return null
+   13 |   const profile = user.profile || {}
+   14 | 
+   15 |   return {
+   16 |     id: user.id,
+   17 |     name: user.name,
+   18 |     role: user.role,
+   19 |     verified: Boolean(user.verified),
+   20 |     subscription_status: user.subscription_status || 'free',
+   21 |     created_at: user.created_at || '',
+   22 |     profile: {
+   23 |       country: profile.country || '',
+   24 |       certifications: Array.isArray(profile.certifications) ? profile.certifications : [],
+   25 |       monthly_capacity: profile.monthly_capacity || '',
+   26 |       moq: profile.moq || '',
+   27 |       lead_time_days: profile.lead_time_days || '',
+   28 |       about: sanitizeString(profile.about || '', 1200),
+   29 |       tags: Array.isArray(profile.tags) ? profile.tags : [],
+   30 |     },
+   31 |     flags: {
+   32 |       has_bank_proof: Boolean(profile.bank_proof),
+   33 |       has_export_license: Boolean(profile.export_license),
+   34 |     },
+   35 |   }
+   36 | }
+   37 | 
+   38 | function connectionSnapshot(connections, viewerId, targetId) {
+   39 |   const following = connections.some((row) => row.type === 'follow' && row.requester_id === viewerId && row.receiver_id === targetId && row.status === 'active')
+   40 | 
+   41 |   const friends = connections.some((row) => {
+   42 |     const samePair = (row.requester_id === viewerId && row.receiver_id === targetId) || (row.requester_id === targetId && row.receiver_id === viewerId)
+   43 |     if (!samePair) return false
+   44 |     const status = String(row.status || '').toLowerCase()
+   45 |     if (row.type === 'friend' && ['active', 'accepted'].includes(status)) return true
+   46 |     if (row.type === 'friend_request' && ['active', 'accepted'].includes(status)) return true
+   47 |     return false
+   48 |   })
+   49 | 
+   50 |   if (friends) return { following, friend_status: 'friends' }
+   51 | 
+   52 |   const outgoingPending = connections.some((row) => row.type === 'friend_request' && row.requester_id === viewerId && row.receiver_id === targetId && row.status === 'pending')
+   53 |   if (outgoingPending) return { following, friend_status: 'requested' }
+   54 | 
+   55 |   const incomingPending = connections.some((row) => row.type === 'friend_request' && row.requester_id === targetId && row.receiver_id === viewerId && row.status === 'pending')
+   56 |   if (incomingPending) return { following, friend_status: 'incoming' }
+   57 | 
+   58 |   return { following, friend_status: 'none' }
+   59 | }
+   60 | 
+   61 | function sortNewest(a, b) {
+   62 |   return String(b.created_at || '').localeCompare(String(a.created_at || ''))
+   63 | }
+   64 | 
+   65 | export async function getProfileOverview(viewerId, profileUserId) {
+   66 |   const user = await findUserById(profileUserId)
+   67 |   if (!user) return 'not_found'
+   68 | 
+   69 |   const viewer = viewerId ? await findUserById(viewerId) : null
+   70 |   const isAdmin = Boolean(viewer && ['admin', 'owner'].includes(viewer.role))
+   71 | 
+   72 |   const [connections, requirements, products, partnerRequests] = await Promise.all([
+   73 |     readJson(CONNECTION_FILE),
+   74 |     readJson(REQUIREMENTS_FILE),
+   75 |     readJson(PRODUCTS_FILE),
+   76 |     readJson(PARTNER_REQUESTS_FILE),
+   77 |   ])
+   78 | 
+   79 |   const safeUser = cleanUserPublic(user)
+   80 |   const relationship = viewerId === profileUserId ? { following: false, friend_status: 'self' } : connectionSnapshot(connections, viewerId, profileUserId)
+   81 | 
+   82 |   const verificationRecord = await getVerification(profileUserId)
+   83 |   const verification_summary = getVerificationPublicSummary(user, verificationRecord)
+   84 | 
+   85 |   const counts = {
+   86 |     requests: requirements.filter((r) => r.buyer_id === profileUserId).length,
+   87 |     products: products.filter((p) => p.company_id === profileUserId).length,
+   88 |     connected_factories: null,
+   89 |   }
+   90 | 
+   91 |   if (user.role === 'buying_house') {
+   92 |     const connected = partnerRequests.filter((r) => r.status === 'connected' && (r.requester_id === profileUserId || r.target_id === profileUserId))
+   93 |     counts.connected_factories = connected.length
+   94 |   }
+   95 | 
+   96 |   return {
+   97 |     user: safeUser,
+   98 |     rating_key: `user:${profileUserId}`,
+   99 |     relationship,
+  100 |     verification_summary,
+  101 |     counts,
+  102 |     viewer_permissions: {
+  103 |       is_self: viewerId === profileUserId,
+  104 |       is_admin: isAdmin,
+  105 |     },
+  106 |   }
+  107 | }
+  108 | 
+  109 | export async function getProfileRequestsPage(_viewerId, profileUserId, { cursor = 0, limit = 12 } = {}) {
+  110 |   const user = await findUserById(profileUserId)
+  111 |   if (!user) return 'not_found'
+  112 |   if (user.role !== 'buyer') return 'invalid_role'
+  113 | 
+  114 |   const requirements = await readJson(REQUIREMENTS_FILE)
+  115 |   const all = requirements.filter((r) => r.buyer_id === profileUserId).sort(sortNewest)
+  116 |   const pageItems = all.slice(cursor, cursor + limit)
+  117 |   const nextCursor = cursor + limit < all.length ? cursor + limit : null
+  118 | 
+  119 |   return { items: pageItems, cursor, next_cursor: nextCursor, total: all.length }
+  120 | }
+  121 | 
+  122 | export async function getProfileProductsPage(_viewerId, profileUserId, { cursor = 0, limit = 12 } = {}) {
+  123 |   const user = await findUserById(profileUserId)
+  124 |   if (!user) return 'not_found'
+  125 |   if (!['factory', 'buying_house'].includes(user.role)) return 'invalid_role'
+  126 | 
+  127 |   const products = await readJson(PRODUCTS_FILE)
+  128 |   const all = products.filter((p) => p.company_id === profileUserId).sort(sortNewest)
+  129 |   const pageItems = all.slice(cursor, cursor + limit)
+  130 |   const nextCursor = cursor + limit < all.length ? cursor + limit : null
+  131 | 
+  132 |   return { items: pageItems, cursor, next_cursor: nextCursor, total: all.length }
+  133 | }
+  134 | 
+  135 | export async function getProfilePartnerNetworkSummary(viewerId, profileUserId) {
+  136 |   const user = await findUserById(profileUserId)
+  137 |   if (!user) return 'not_found'
+  138 |   if (user.role !== 'buying_house') return 'invalid_role'
+  139 | 
+  140 |   const [requests, users] = await Promise.all([readJson(PARTNER_REQUESTS_FILE), readJson('users.json')])
+  141 |   const usersById = new Map(users.map((u) => [u.id, u]))
+  142 | 
+  143 |   const connected = requests.filter((r) => r.status === 'connected' && (r.requester_id === profileUserId || r.target_id === profileUserId))
+  144 |   const factories = connected
+  145 |     .map((r) => (r.requester_id === profileUserId ? r.target_id : r.requester_id))
+  146 |     .map((id) => usersById.get(id))
+  147 |     .filter((u) => u && u.role === 'factory')
+  148 |     .map((u) => ({ id: u.id, name: u.name, verified: Boolean(u.verified) }))
+  149 | 
+  150 |   const viewer = usersById.get(viewerId)
+  151 |   const isAdmin = viewer && ['admin', 'owner'].includes(viewer.role)
+  152 |   const showList = viewerId === profileUserId || isAdmin
+  153 | 
+  154 |   if (!showList) {
+  155 |     return { total_connected: factories.length }
+  156 |   }
+  157 | 
+  158 |   return { total_connected: factories.length, factories }
+  159 | }
+  160 | 

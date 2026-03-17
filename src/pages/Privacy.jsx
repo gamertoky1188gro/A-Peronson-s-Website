@@ -1,3 +1,22 @@
+/*
+  Route: /privacy
+  Access: Public
+
+  Public Pages:
+    /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+  Protected Pages (login required):
+    /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+    /notifications, /chat, /call, /verification, /verification-center
+
+  Primary responsibilities:
+    - Render the Privacy Policy content (legal).
+    - Provide clear, scannable sections (bento layout + optional sticky TOC).
+    - Use "Industrial Digital" palette: paper-gray (light) + slate command center (dark).
+
+  Notes:
+    - Keep the legal text exact; only structure/styling should change.
+    - This page does not fetch data; it is static content.
+*/
 import React from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 

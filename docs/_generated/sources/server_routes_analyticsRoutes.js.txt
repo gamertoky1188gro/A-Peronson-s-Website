@@ -1,0 +1,11 @@
+    1 | import { Router } from 'express'
+    2 | import { allowRoles, requireAuth } from '../middleware/auth.js'
+    3 | import { analyticsDashboard, analyticsSummary } from '../controllers/analyticsController.js'
+    4 | 
+    5 | const router = Router()
+    6 | 
+    7 | router.get('/summary', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory', 'buyer', 'agent'), analyticsSummary)
+    8 | router.get('/dashboard', requireAuth, allowRoles('owner', 'admin'), analyticsDashboard)
+    9 | 
+   10 | export default router
+   11 | 

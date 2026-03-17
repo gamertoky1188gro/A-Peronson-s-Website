@@ -1,0 +1,1646 @@
+    1 | /*
+    2 |   Route: /call
+    3 |   Access: Protected (login required)
+    4 |   Allowed roles: buyer, buying_house, factory, owner, admin, agent
+    5 | 
+    6 |   Public Pages:
+    7 |     /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+    8 |   Protected Pages (login required):
+    9 |     /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+   10 |     /notifications, /chat, /call, /verification, /verification-center
+   11 | 
+   12 |   Primary responsibilities:
+   13 |     - Provide video/audio call UI and call controls (mic/cam, participants, share links).
+   14 |     - Enforce any call-related permissions and safety cues (recording / identity / dispute context).
+   15 | 
+   16 |   Key API endpoints (high level):
+   17 |     - POST /api/calls (create) / GET /api/calls/:id (status) (depending on server)
+   18 |     - Any signaling endpoints if implemented (or WebRTC signaling via WS)
+   19 | 
+   20 |   Notes:
+   21 |     - AppLayout hides NavBar/Footer for /call (immersive route).
+   22 | */
+   23 | import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+   24 | import { useNavigate, useSearchParams } from 'react-router-dom'
+   25 | import {
+   26 |   ChevronLeft,
+   27 |   Copy,
+   28 |   RefreshCw,
+   29 |   ShieldAlert,
+   30 |   MessageSquare,
+   31 |   Mic,
+   32 |   MicOff,
+   33 |   Video,
+   34 |   VideoOff,
+   35 |   PhoneOff,
+   36 |   Volume2,
+   37 |   VolumeX,
+   38 |   Maximize,
+   39 |   Send,
+   40 |   Smile,
+   41 |   MoreHorizontal,
+   42 | } from 'lucide-react'
+   43 | import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
+   44 | import MarkdownMessage from '../components/chat/MarkdownMessage'
+   45 | 
+   46 | const WS_BASE = (() => {
+   47 |   if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL
+   48 |   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+   49 |   return `${protocol}//${window.location.host}/ws`
+   50 | })()
+   51 | 
+   52 | const ICE_SERVERS = (() => {
+   53 |   const fallback = [{ urls: 'stun:stun.l.google.com:19302' }]
+   54 |   const raw = import.meta.env.VITE_ICE_SERVERS
+   55 |   if (!raw) return fallback
+   56 |   try {
+   57 |     const parsed = JSON.parse(raw)
+   58 |     if (Array.isArray(parsed) && parsed.length > 0) return parsed
+   59 |     return fallback
+   60 |   } catch {
+   61 |     return fallback
+   62 |   }
+   63 | })()
+   64 | 
+   65 | const QUICK_EMOJIS = [
+   66 |   '😀', '😁', '😂', '🤣', '😊', '😍', '😎', '🤝',
+   67 |   '👍', '👎', '🙏', '👏', '🎉', '🔥', '💯', '✅',
+   68 |   '⚡', '💡', '📝', '📎', '🧠', '🚀', '❤️', '✨',
+   69 | ]
+   70 | 
+   71 | export default function CallInterface() {
+   72 |   const [searchParams] = useSearchParams()
+   73 |   const navigate = useNavigate()
+   74 |   const [statusMessage, setStatusMessage] = useState('')
+   75 |   const [callDetails, setCallDetails] = useState(null)
+   76 |   const [participants, setParticipants] = useState([])
+   77 |   const [isMuted, setIsMuted] = useState(false)
+   78 |   const [isSpeakerMuted, setIsSpeakerMuted] = useState(false)
+   79 |   const [isCameraOn, setIsCameraOn] = useState(true)
+   80 |   const [isFullscreen, setIsFullscreen] = useState(false)
+   81 |   const [timer, setTimer] = useState('00:00:00')
+   82 |   const [chatDraft, setChatDraft] = useState('')
+   83 |   const [chatMessages, setChatMessages] = useState([])
+   84 |   const [isChatOpen, setIsChatOpen] = useState(() => {
+   85 |     if (typeof window === 'undefined') return true
+   86 |     return window.innerWidth >= 1024
+   87 |   })
+   88 |   const [unreadChatCount, setUnreadChatCount] = useState(0)
+   89 |   const [isChatLive, setIsChatLive] = useState(false)
+   90 |   const [wsStatus, setWsStatus] = useState('offline')
+   91 |   const [rtcConnectionState, setRtcConnectionState] = useState('new')
+   92 |   const [rtcIceState, setRtcIceState] = useState('new')
+   93 |   const [micLevel, setMicLevel] = useState(0)
+   94 |   const [isEmojiOpen, setIsEmojiOpen] = useState(false)
+   95 |   const [isMoreOpen, setIsMoreOpen] = useState(false)
+   96 |   const [toast, setToast] = useState(null)
+   97 |   const [reconnectNonce, setReconnectNonce] = useState(0)
+   98 |   const [hasRemoteStream, setHasRemoteStream] = useState(false)
+   99 |   const [hasLocalStream, setHasLocalStream] = useState(false)
+  100 |   const [isRequestingMedia, setIsRequestingMedia] = useState(false)
+  101 |   const [mediaGate, setMediaGate] = useState(null)
+  102 | 
+  103 |   const localVideoRef = useRef(null)
+  104 |   const remoteVideoRef = useRef(null)
+  105 |   const stageRef = useRef(null)
+  106 |   const chatScrollRef = useRef(null)
+  107 |   const chatEndRef = useRef(null)
+  108 |   const chatInputRef = useRef(null)
+  109 |   const emojiPopoverRef = useRef(null)
+  110 |   const morePopoverRef = useRef(null)
+  111 |   const toastTimerRef = useRef(null)
+  112 |   const wsRef = useRef(null)
+  113 |   const peerConnectionRef = useRef(null)
+  114 |   const iceServersRef = useRef(ICE_SERVERS)
+  115 |   const localStreamRef = useRef(null)
+  116 |   const remoteStreamRef = useRef(null)
+  117 |   const localStreamPromiseRef = useRef(null)
+  118 |   const pendingCandidatesRef = useRef([])
+  119 |   const pendingRemoteOfferRef = useRef(null)
+  120 |   const shouldOfferRef = useRef(false)
+  121 |   const offerSentRef = useRef(false)
+  122 |   const tokenRef = useRef('')
+  123 |   const hasLocalStreamRef = useRef(false)
+  124 |   const mediaGateRef = useRef(null)
+  125 |   const isMutedRef = useRef(false)
+  126 |   const audioRafRef = useRef(null)
+  127 |   const audioContextRef = useRef(null)
+  128 |   const isChatOpenRef = useRef(true)
+  129 |   const chatRoomMatchIdRef = useRef('')
+  130 |   const chatInitializedRef = useRef(false)
+  131 |   const mountedRef = useRef(true)
+  132 |   const redirectedRef = useRef(false)
+  133 | 
+  134 |   const callId = useMemo(() => searchParams.get('callId') || '', [searchParams])
+  135 |   const matchId = useMemo(() => searchParams.get('matchId') || '', [searchParams])
+  136 |   const user = useMemo(() => getCurrentUser(), [])
+  137 |   const participantId = useMemo(() => (user?.id ? String(user.id) : ''), [user?.id])
+  138 |   const effectiveMatchId = callDetails?.match_id || callDetails?.context?.chat_thread_id || matchId
+  139 | 
+  140 |   const localName = user?.name || user?.email || 'You'
+  141 |   const remoteParticipant = participants.find((p) => p.id && p.id !== user?.id) || null
+  142 |   const remoteName = remoteParticipant?.name || remoteParticipant?.email || callDetails?.title || 'Participant'
+  143 | 
+  144 |   const userMap = useMemo(() => {
+  145 |     const map = new Map()
+  146 |     participants.forEach((p) => { if (p?.id) map.set(p.id, p) })
+  147 |     if (user?.id) map.set(user.id, user)
+  148 |     return map
+  149 |   }, [participants, user])
+  150 | 
+  151 |   const sortedChatMessages = useMemo(() => {
+  152 |     return [...chatMessages].sort((a, b) => new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime())
+  153 |   }, [chatMessages])
+  154 | 
+  155 |   const isSpeaking = !isMuted && micLevel > 0.12
+  156 | 
+  157 |   const connectionBadge = useMemo(() => {
+  158 |     const wsOnline = wsStatus === 'online'
+  159 |     const rtcConnected = rtcConnectionState === 'connected'
+  160 |     const rtcFailed = rtcConnectionState === 'failed' || rtcIceState === 'failed'
+  161 |     const rtcConnecting = ['new', 'connecting'].includes(rtcConnectionState) || ['checking'].includes(rtcIceState)
+  162 | 
+  163 |     if (!wsOnline) {
+  164 |       return {
+  165 |         label: wsStatus === 'connecting' ? 'Connecting' : 'Offline',
+  166 |         pillClass: 'bg-slate-500/10 text-slate-700 ring-slate-200/60 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10',
+  167 |         dotClass: wsStatus === 'connecting' ? 'bg-amber-500 animate-pulse' : 'bg-slate-400',
+  168 |       }
+  169 |     }
+  170 | 
+  171 |     if (rtcFailed) {
+  172 |       return {
+  173 |         label: 'Connection issue',
+  174 |         pillClass: 'bg-rose-500/10 text-rose-700 ring-rose-500/20 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/25',
+  175 |         dotClass: 'bg-rose-500',
+  176 |       }
+  177 |     }
+  178 | 
+  179 |     if (rtcConnected) {
+  180 |       return {
+  181 |         label: 'Live',
+  182 |         pillClass: 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200 dark:ring-emerald-500/25',
+  183 |         dotClass: 'bg-emerald-500 animate-pulse',
+  184 |       }
+  185 |     }
+  186 | 
+  187 |     if (rtcConnecting) {
+  188 |       return {
+  189 |         label: 'Connecting',
+  190 |         pillClass: 'bg-amber-500/10 text-amber-800 ring-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/25',
+  191 |         dotClass: 'bg-amber-500 animate-pulse',
+  192 |       }
+  193 |     }
+  194 | 
+  195 |     return {
+  196 |       label: 'Waiting',
+  197 |       pillClass: 'bg-slate-500/10 text-slate-700 ring-slate-200/60 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10',
+  198 |       dotClass: 'bg-slate-400',
+  199 |     }
+  200 |   }, [rtcConnectionState, rtcIceState, wsStatus])
+  201 | 
+  202 |   const formatMessageTime = (iso) => {
+  203 |     if (!iso) return ''
+  204 |     return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  205 |   }
+  206 | 
+  207 |   const buildMediaGate = (error) => {
+  208 |     if (!window.isSecureContext) {
+  209 |       return {
+  210 |         title: 'Camera/microphone requires HTTPS',
+  211 |         message: 'Open this app on https:// (or localhost). Then refresh and try again.',
+  212 |         actionLabel: null,
+  213 |       }
+  214 |     }
+  215 | 
+  216 |     const name = String(error?.name || '')
+  217 |     if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+  218 |       return {
+  219 |         title: 'Camera/microphone blocked',
+  220 |         message: 'Allow Camera + Microphone for this site (browser lock icon → Site settings), then click “Try again”.',
+  221 |         actionLabel: 'Try again',
+  222 |       }
+  223 |     }
+  224 | 
+  225 |     if (name === 'NotFoundError') {
+  226 |       return {
+  227 |         title: 'No camera/microphone found',
+  228 |         message: 'Connect a camera/microphone (or enable it in OS settings), then click “Try again”.',
+  229 |         actionLabel: 'Try again',
+  230 |       }
+  231 |     }
+  232 | 
+  233 |     if (name === 'NotReadableError') {
+  234 |       return {
+  235 |         title: 'Camera/microphone is busy',
+  236 |         message: 'Close other apps using your camera/microphone (Zoom/Meet/etc.), then click “Try again”.',
+  237 |         actionLabel: 'Try again',
+  238 |       }
+  239 |     }
+  240 | 
+  241 |     return {
+  242 |       title: 'Unable to access camera/microphone',
+  243 |       message: error?.message ? String(error.message) : 'Please check browser and OS permissions, then try again.',
+  244 |       actionLabel: 'Try again',
+  245 |     }
+  246 |   }
+  247 | 
+  248 |   const ensureLocalStream = useCallback(async () => {
+  249 |     if (localStreamRef.current) return localStreamRef.current
+  250 |     if (localStreamPromiseRef.current) return localStreamPromiseRef.current
+  251 | 
+  252 |     if (!window.isSecureContext) {
+  253 |       const error = new Error('Camera/microphone requires a secure context (HTTPS or localhost).')
+  254 |       if (mountedRef.current) {
+  255 |         setHasLocalStream(false)
+  256 |         setMediaGate(buildMediaGate(error))
+  257 |         setStatusMessage('Camera/microphone requires HTTPS.')
+  258 |       }
+  259 |       throw error
+  260 |     }
+  261 | 
+  262 |     if (!navigator?.mediaDevices?.getUserMedia) {
+  263 |       const error = new Error('getUserMedia is not supported in this browser/environment.')
+  264 |       if (mountedRef.current) {
+  265 |         setHasLocalStream(false)
+  266 |         setMediaGate(buildMediaGate(error))
+  267 |         setStatusMessage('Camera/microphone is not supported here.')
+  268 |       }
+  269 |       throw error
+  270 |     }
+  271 | 
+  272 |     if (mountedRef.current) {
+  273 |       setIsRequestingMedia(true)
+  274 |     }
+  275 | 
+  276 |     localStreamPromiseRef.current = navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+  277 |       .then((stream) => {
+  278 |         localStreamRef.current = stream
+  279 |         if (mountedRef.current) {
+  280 |           setHasLocalStream(true)
+  281 |           setMediaGate(null)
+  282 |         }
+  283 |         if (localVideoRef.current) {
+  284 |           localVideoRef.current.srcObject = stream
+  285 |           const playAttempt = localVideoRef.current.play?.()
+  286 |           if (playAttempt && typeof playAttempt.catch === 'function') {
+  287 |             playAttempt.catch(() => {})
+  288 |           }
+  289 |         }
+  290 | 
+  291 |         if (peerConnectionRef.current) {
+  292 |           stream.getTracks().forEach((track) => {
+  293 |             try {
+  294 |               peerConnectionRef.current.addTrack(track, stream)
+  295 |             } catch {
+  296 |               // ignore duplicate track errors
+  297 |             }
+  298 |           })
+  299 |         }
+  300 |         return stream
+  301 |       })
+  302 |       .catch((err) => {
+  303 |         localStreamPromiseRef.current = null
+  304 |         if (mountedRef.current) {
+  305 |           setHasLocalStream(false)
+  306 |           setMediaGate(buildMediaGate(err))
+  307 |           setStatusMessage('Camera/microphone permission not granted.')
+  308 |         }
+  309 |         throw err
+  310 |       })
+  311 |       .finally(() => {
+  312 |         if (mountedRef.current) {
+  313 |           setIsRequestingMedia(false)
+  314 |         }
+  315 |       })
+  316 | 
+  317 |     return localStreamPromiseRef.current
+  318 |   }, [])
+  319 | 
+  320 |   const toSessionDescriptionInit = (description) => {
+  321 |     if (!description) return null
+  322 |     if (typeof description.toJSON === 'function') return description.toJSON()
+  323 |     if (typeof description.sdp === 'string' && typeof description.type === 'string') {
+  324 |       return { type: description.type, sdp: description.sdp }
+  325 |     }
+  326 |     return description
+  327 |   }
+  328 | 
+  329 |   const toIceCandidateInit = (candidate) => {
+  330 |     if (!candidate) return null
+  331 |     if (typeof candidate.toJSON === 'function') return candidate.toJSON()
+  332 |     return candidate
+  333 |   }
+  334 | 
+  335 |   const createPeerConnection = useCallback((token) => {
+  336 |     if (peerConnectionRef.current) return peerConnectionRef.current
+  337 |     const pc = new RTCPeerConnection({
+  338 |       iceServers: iceServersRef.current,
+  339 |     })
+  340 | 
+  341 |     pc.onicecandidate = (event) => {
+  342 |       if (!event.candidate) return
+  343 |       if (wsRef.current?.readyState !== WebSocket.OPEN) return
+  344 |       wsRef.current.send(JSON.stringify({
+  345 |         type: 'webrtc_signal',
+  346 |         call_id: callId,
+  347 |         token,
+  348 |         signal: { type: 'candidate', candidate: toIceCandidateInit(event.candidate) },
+  349 |       }))
+  350 |     }
+  351 | 
+  352 |     pc.ontrack = (event) => {
+  353 |       let stream = event.streams?.[0] || null
+  354 |       if (!stream) {
+  355 |         if (!remoteStreamRef.current) remoteStreamRef.current = new MediaStream()
+  356 |         stream = remoteStreamRef.current
+  357 |         try {
+  358 |           stream.addTrack(event.track)
+  359 |         } catch {
+  360 |           // ignore duplicate track errors
+  361 |         }
+  362 |       }
+  363 | 
+  364 |       if (!stream) return
+  365 |       remoteStreamRef.current = stream
+  366 |       if (remoteVideoRef.current) {
+  367 |         remoteVideoRef.current.srcObject = stream
+  368 |         const playAttempt = remoteVideoRef.current.play?.()
+  369 |         if (playAttempt && typeof playAttempt.catch === 'function') {
+  370 |           playAttempt.catch(() => {})
+  371 |         }
+  372 |       }
+  373 |       if (mountedRef.current) setHasRemoteStream(true)
+  374 |     }
+  375 | 
+  376 |     pc.onconnectionstatechange = () => {
+  377 |       if (!mountedRef.current) return
+  378 |       setRtcConnectionState(pc.connectionState || 'new')
+  379 |       if (pc.connectionState === 'connected') {
+  380 |         setStatusMessage('Call connected.')
+  381 |       } else if (pc.connectionState === 'failed') {
+  382 |         setStatusMessage('Call connection failed.')
+  383 |       }
+  384 |     }
+  385 | 
+  386 |     pc.oniceconnectionstatechange = () => {
+  387 |       if (!mountedRef.current) return
+  388 |       setRtcIceState(pc.iceConnectionState || 'new')
+  389 |       if (pc.iceConnectionState === 'failed') {
+  390 |         setStatusMessage('ICE negotiation failed (TURN server may be required).')
+  391 |       } else if (pc.iceConnectionState === 'disconnected') {
+  392 |         setStatusMessage('ICE disconnected.')
+  393 |       }
+  394 |     }
+  395 | 
+  396 |     if (mountedRef.current) {
+  397 |       setRtcConnectionState(pc.connectionState || 'new')
+  398 |       setRtcIceState(pc.iceConnectionState || 'new')
+  399 |     }
+  400 | 
+  401 |     if (localStreamRef.current) {
+  402 |       localStreamRef.current.getTracks().forEach((track) => {
+  403 |         pc.addTrack(track, localStreamRef.current)
+  404 |       })
+  405 |     }
+  406 | 
+  407 |     peerConnectionRef.current = pc
+  408 |     return pc
+  409 |   }, [callId])
+  410 | 
+  411 |   const tryStartOffer = useCallback(async () => {
+  412 |     if (!shouldOfferRef.current) return false
+  413 |     if (offerSentRef.current) return false
+  414 |     if (!hasLocalStreamRef.current) return false
+  415 | 
+  416 |     const token = tokenRef.current
+  417 |     if (!token) return false
+  418 |     if (!callId) return false
+  419 |     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return false
+  420 | 
+  421 |     try {
+  422 |       const pc = createPeerConnection(token)
+  423 |       const offer = await pc.createOffer()
+  424 |       await pc.setLocalDescription(offer)
+  425 |       wsRef.current.send(JSON.stringify({
+  426 |         type: 'webrtc_signal',
+  427 |         call_id: callId,
+  428 |         token,
+  429 |         signal: { type: 'offer', sdp: toSessionDescriptionInit(pc.localDescription) || offer },
+  430 |       }))
+  431 | 
+  432 |       offerSentRef.current = true
+  433 |       if (mountedRef.current) {
+  434 |         setStatusMessage('Offer sent. Waiting for answer...')
+  435 |       }
+  436 |       return true
+  437 |     } catch (error) {
+  438 |       offerSentRef.current = false
+  439 |       throw error
+  440 |     }
+  441 |   }, [callId, createPeerConnection])
+  442 | 
+  443 |   const tryAnswerPendingOffer = useCallback(async () => {
+  444 |     const pendingOffer = pendingRemoteOfferRef.current
+  445 |     if (!pendingOffer) return false
+  446 |     if (!hasLocalStreamRef.current) return false
+  447 | 
+  448 |     const token = tokenRef.current
+  449 |     if (!token) return false
+  450 |     if (!callId) return false
+  451 |     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return false
+  452 | 
+  453 |     try {
+  454 |       const pc = createPeerConnection(token)
+  455 |       await pc.setRemoteDescription(pendingOffer)
+  456 |       const answer = await pc.createAnswer()
+  457 |       await pc.setLocalDescription(answer)
+  458 |       wsRef.current.send(JSON.stringify({
+  459 |         type: 'webrtc_signal',
+  460 |         call_id: callId,
+  461 |         token,
+  462 |         signal: { type: 'answer', sdp: toSessionDescriptionInit(pc.localDescription) || answer },
+  463 |       }))
+  464 | 
+  465 |       pendingRemoteOfferRef.current = null
+  466 |       const pending = pendingCandidatesRef.current
+  467 |       pendingCandidatesRef.current = []
+  468 |       for (const queued of pending) {
+  469 |         try {
+  470 |           await pc.addIceCandidate(queued)
+  471 |         } catch {
+  472 |           // ignore candidate errors
+  473 |         }
+  474 |       }
+  475 | 
+  476 |       if (mountedRef.current) {
+  477 |         setStatusMessage('Answer sent. Connecting...')
+  478 |       }
+  479 |       return true
+  480 |     } catch (error) {
+  481 |       // Keep pending offer for retry after the user fixes permissions.
+  482 |       pendingRemoteOfferRef.current = pendingOffer
+  483 |       throw error
+  484 |     }
+  485 |   }, [callId, createPeerConnection])
+  486 | 
+  487 |   useEffect(() => {
+  488 |     if (!callId) {
+  489 |       if (!redirectedRef.current) {
+  490 |         redirectedRef.current = true
+  491 |         navigate('/chat', {
+  492 |           state: {
+  493 |             notice: {
+  494 |               type: 'error',
+  495 |               title: 'Call link missing',
+  496 |               message: 'You were redirected because this page needs a valid call id. Please start a call from the chat page.',
+  497 |             },
+  498 |           },
+  499 |         })
+  500 |       }
+  501 |     }
+  502 |   }, [callId, navigate])
+  503 | 
+  504 |   const loadCallDetails = useCallback(async () => {
+  505 |     const token = getToken()
+  506 |     if (!token || !callId) return
+  507 |     try {
+  508 |       const details = await apiRequest(`/calls/${callId}`, { token })
+  509 |       setCallDetails(details)
+  510 |     } catch {
+  511 |       if (!redirectedRef.current) {
+  512 |         redirectedRef.current = true
+  513 |         navigate('/chat', {
+  514 |           state: {
+  515 |             notice: {
+  516 |               type: 'error',
+  517 |               title: 'Call not available',
+  518 |               message: 'You were redirected because the call id is invalid or you no longer have access.',
+  519 |             },
+  520 |           },
+  521 |         })
+  522 |       }
+  523 |     }
+  524 |   }, [callId, navigate])
+  525 | 
+  526 |   const startCallIfNeeded = useCallback(async () => {
+  527 |     const token = getToken()
+  528 |     if (!token || !callId) return
+  529 |     try {
+  530 |       await apiRequest(`/calls/${callId}/start`, { method: 'POST', token })
+  531 |     } catch {
+  532 |       // no-op
+  533 |     }
+  534 |   }, [callId])
+  535 | 
+  536 |   const loadParticipants = useCallback(async () => {
+  537 |     const token = getToken()
+  538 |     if (!token || !callDetails?.participant_ids?.length) return
+  539 |     const data = await apiRequest('/users/lookup', {
+  540 |       method: 'POST',
+  541 |       token,
+  542 |       body: { ids: callDetails.participant_ids },
+  543 |     })
+  544 |     setParticipants(data?.users || [])
+  545 |   }, [callDetails])
+  546 | 
+  547 |   const loadChatMessages = useCallback(async () => {
+  548 |     const token = getToken()
+  549 |     if (!token || !effectiveMatchId) return
+  550 |     const data = await apiRequest(`/messages/${effectiveMatchId}`, { token })
+  551 |     setChatMessages(Array.isArray(data) ? data : [])
+  552 |   }, [effectiveMatchId])
+  553 | 
+  554 |   const loadIceServers = useCallback(async (token) => {
+  555 |     if (!token || !callId) return ICE_SERVERS
+  556 |     try {
+  557 |       const data = await apiRequest(`/calls/${callId}/ice`, { token })
+  558 |       const servers = Array.isArray(data?.iceServers) ? data.iceServers : []
+  559 |       if (servers.length > 0) return servers
+  560 |     } catch {
+  561 |       // fallback to VITE_ICE_SERVERS / STUN-only
+  562 |     }
+  563 |     return ICE_SERVERS
+  564 |   }, [callId])
+  565 | 
+  566 |   const joinChatRoom = useCallback((matchToJoin) => {
+  567 |     const matchToJoinId = String(matchToJoin || '').trim()
+  568 |     if (!matchToJoinId) return false
+  569 | 
+  570 |     const ws = wsRef.current
+  571 |     if (!ws || ws.readyState !== WebSocket.OPEN) return false
+  572 | 
+  573 |     const token = tokenRef.current || getToken()
+  574 |     if (!token) return false
+  575 | 
+  576 |     chatRoomMatchIdRef.current = matchToJoinId
+  577 |     chatInitializedRef.current = false
+  578 |     if (mountedRef.current) setIsChatLive(false)
+  579 | 
+  580 |     try {
+  581 |       ws.send(JSON.stringify({
+  582 |         type: 'join_chat_room',
+  583 |         match_id: matchToJoinId,
+  584 |         token,
+  585 |       }))
+  586 |       return true
+  587 |     } catch {
+  588 |       return false
+  589 |     }
+  590 |   }, [])
+  591 | 
+  592 |   const pushToast = useCallback((message, tone = 'info') => {
+  593 |     const safeMessage = String(message || '').trim()
+  594 |     if (!safeMessage) return
+  595 |     if (!mountedRef.current) return
+  596 | 
+  597 |     setToast({ message: safeMessage, tone })
+  598 |     if (toastTimerRef.current && typeof window !== 'undefined') {
+  599 |       window.clearTimeout(toastTimerRef.current)
+  600 |     }
+  601 |     if (typeof window !== 'undefined') {
+  602 |       toastTimerRef.current = window.setTimeout(() => {
+  603 |         if (mountedRef.current) setToast(null)
+  604 |       }, 2200)
+  605 |     }
+  606 |   }, [])
+  607 | 
+  608 |   const reconnectCall = useCallback(() => {
+  609 |     offerSentRef.current = false
+  610 |     shouldOfferRef.current = false
+  611 |     pendingRemoteOfferRef.current = null
+  612 |     pendingCandidatesRef.current = []
+  613 | 
+  614 |     if (mountedRef.current) {
+  615 |       setStatusMessage('Reconnecting...')
+  616 |       setHasRemoteStream(false)
+  617 |       setIsChatLive(false)
+  618 |       setWsStatus('connecting')
+  619 |       setRtcConnectionState('new')
+  620 |       setRtcIceState('new')
+  621 |     }
+  622 | 
+  623 |     remoteStreamRef.current = null
+  624 |     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null
+  625 | 
+  626 |     try {
+  627 |       peerConnectionRef.current?.close?.()
+  628 |     } catch {
+  629 |       // ignore
+  630 |     }
+  631 |     peerConnectionRef.current = null
+  632 | 
+  633 |     try {
+  634 |       wsRef.current?.close?.()
+  635 |     } catch {
+  636 |       // ignore
+  637 |     }
+  638 | 
+  639 |     setReconnectNonce((value) => value + 1)
+  640 |   }, [])
+  641 | 
+  642 |   const copyCallLink = useCallback(async () => {
+  643 |     try {
+  644 |       await navigator.clipboard.writeText(window.location.href)
+  645 |       pushToast('Call link copied.', 'success')
+  646 |     } catch {
+  647 |       pushToast('Unable to copy call link.', 'error')
+  648 |     }
+  649 |   }, [pushToast])
+  650 | 
+  651 |   const requestMediaPermissions = useCallback(() => {
+  652 |     if (mountedRef.current) setMediaGate(null)
+  653 |     ensureLocalStream()
+  654 |       .then(() => pushToast('Camera & microphone ready.', 'success'))
+  655 |       .catch(() => pushToast('Please allow camera & microphone for calls.', 'error'))
+  656 |   }, [ensureLocalStream, pushToast])
+  657 | 
+  658 |   useEffect(() => {
+  659 |     mountedRef.current = true
+  660 |     return () => {
+  661 |       mountedRef.current = false
+  662 |       if (toastTimerRef.current && typeof window !== 'undefined') {
+  663 |         window.clearTimeout(toastTimerRef.current)
+  664 |       }
+  665 |       if (audioRafRef.current && typeof window !== 'undefined') {
+  666 |         window.cancelAnimationFrame(audioRafRef.current)
+  667 |       }
+  668 |       if (audioContextRef.current) {
+  669 |         audioContextRef.current.close?.().catch?.(() => {})
+  670 |       }
+  671 |     }
+  672 |   }, [])
+  673 | 
+  674 |   useEffect(() => {
+  675 |     hasLocalStreamRef.current = Boolean(hasLocalStream)
+  676 |   }, [hasLocalStream])
+  677 | 
+  678 |   useEffect(() => {
+  679 |     isMutedRef.current = Boolean(isMuted)
+  680 |   }, [isMuted])
+  681 | 
+  682 |   useEffect(() => {
+  683 |     mediaGateRef.current = mediaGate
+  684 |   }, [mediaGate])
+  685 | 
+  686 |   useEffect(() => {
+  687 |     isChatOpenRef.current = Boolean(isChatOpen)
+  688 |     if (isChatOpen) setUnreadChatCount(0)
+  689 |   }, [isChatOpen])
+  690 | 
+  691 |   useEffect(() => {
+  692 |     if (!isChatOpen) return
+  693 |     if (typeof window === 'undefined') return
+  694 |     window.requestAnimationFrame(() => {
+  695 |       chatEndRef.current?.scrollIntoView?.({ behavior: 'auto', block: 'end' })
+  696 |     })
+  697 |   }, [isChatOpen])
+  698 | 
+  699 |   useEffect(() => { loadCallDetails() }, [loadCallDetails])
+  700 |   useEffect(() => { startCallIfNeeded() }, [startCallIfNeeded])
+  701 |   useEffect(() => { loadParticipants() }, [loadParticipants])
+  702 |   useEffect(() => { loadChatMessages() }, [loadChatMessages])
+  703 | 
+  704 |   useEffect(() => {
+  705 |     if (!effectiveMatchId) return
+  706 |     joinChatRoom(effectiveMatchId)
+  707 |   }, [effectiveMatchId, joinChatRoom])
+  708 | 
+  709 |   useEffect(() => {
+  710 |     if (sortedChatMessages.length === 0) return
+  711 | 
+  712 |     const last = sortedChatMessages[sortedChatMessages.length - 1]
+  713 |     const lastIsOwn = last?.sender_id === user?.id
+  714 |     const firstLoad = !chatInitializedRef.current
+  715 | 
+  716 |     const scrollEl = chatScrollRef.current
+  717 |     const distanceFromBottom = scrollEl
+  718 |       ? scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight
+  719 |       : 0
+  720 |     const nearBottom = distanceFromBottom < 140
+  721 | 
+  722 |     const shouldAutoScroll = firstLoad || (isChatOpenRef.current && (lastIsOwn || nearBottom))
+  723 |     if (firstLoad) chatInitializedRef.current = true
+  724 | 
+  725 |     if (shouldAutoScroll) {
+  726 |       setUnreadChatCount(0)
+  727 |       chatEndRef.current?.scrollIntoView?.({ behavior: firstLoad ? 'auto' : 'smooth', block: 'end' })
+  728 |       return
+  729 |     }
+  730 | 
+  731 |     if (!firstLoad && !lastIsOwn && !isChatOpenRef.current) {
+  732 |       setUnreadChatCount((count) => count + 1)
+  733 |     }
+  734 |   }, [sortedChatMessages, user?.id])
+  735 | 
+  736 |   useEffect(() => {
+  737 |     if (isChatOpen) return
+  738 |     if (isEmojiOpen) setIsEmojiOpen(false)
+  739 |     if (isMoreOpen) setIsMoreOpen(false)
+  740 |   }, [isChatOpen, isEmojiOpen, isMoreOpen])
+  741 | 
+  742 |   useEffect(() => {
+  743 |     if (!isEmojiOpen && !isMoreOpen) return undefined
+  744 | 
+  745 |     const handleKeyDown = (event) => {
+  746 |       if (event.key !== 'Escape') return
+  747 |       setIsEmojiOpen(false)
+  748 |       setIsMoreOpen(false)
+  749 |     }
+  750 | 
+  751 |     const handleMouseDown = (event) => {
+  752 |       const target = event.target
+  753 |       if (isEmojiOpen && emojiPopoverRef.current && emojiPopoverRef.current.contains(target)) return
+  754 |       if (isMoreOpen && morePopoverRef.current && morePopoverRef.current.contains(target)) return
+  755 |       setIsEmojiOpen(false)
+  756 |       setIsMoreOpen(false)
+  757 |     }
+  758 | 
+  759 |     document.addEventListener('keydown', handleKeyDown)
+  760 |     document.addEventListener('mousedown', handleMouseDown)
+  761 |     return () => {
+  762 |       document.removeEventListener('keydown', handleKeyDown)
+  763 |       document.removeEventListener('mousedown', handleMouseDown)
+  764 |     }
+  765 |   }, [isEmojiOpen, isMoreOpen])
+  766 | 
+  767 |   useEffect(() => {
+  768 |     if (!hasLocalStream) {
+  769 |       setMicLevel(0)
+  770 |       return undefined
+  771 |     }
+  772 | 
+  773 |     if (typeof window === 'undefined') return undefined
+  774 |     const stream = localStreamRef.current
+  775 |     const audioTrack = stream?.getAudioTracks?.()[0] || null
+  776 |     if (!audioTrack) {
+  777 |       setMicLevel(0)
+  778 |       return undefined
+  779 |     }
+  780 | 
+  781 |     const AudioContextCtor = window.AudioContext || window.webkitAudioContext
+  782 |     if (!AudioContextCtor) return undefined
+  783 | 
+  784 |     let cancelled = false
+  785 |     let ctx = null
+  786 |     let analyser = null
+  787 |     let source = null
+  788 |     let smoothing = 0
+  789 |     let lastUiUpdateAt = 0
+  790 | 
+  791 |     try {
+  792 |       ctx = new AudioContextCtor()
+  793 |       audioContextRef.current = ctx
+  794 |       analyser = ctx.createAnalyser()
+  795 |       analyser.fftSize = 512
+  796 |       source = ctx.createMediaStreamSource(new MediaStream([audioTrack]))
+  797 |       source.connect(analyser)
+  798 |     } catch {
+  799 |       setMicLevel(0)
+  800 |       return undefined
+  801 |     }
+  802 | 
+  803 |     const data = new Uint8Array(analyser.fftSize)
+  804 | 
+  805 |     const tick = (timestamp) => {
+  806 |       if (cancelled) return
+  807 |       try {
+  808 |         analyser.getByteTimeDomainData(data)
+  809 |         let sum = 0
+  810 |         for (let i = 0; i < data.length; i++) {
+  811 |           const v = (data[i] - 128) / 128
+  812 |           sum += v * v
+  813 |         }
+  814 |         const rms = Math.sqrt(sum / data.length)
+  815 |         const level = Math.min(1, rms * 3.2)
+  816 |         smoothing = smoothing * 0.82 + level * 0.18
+  817 | 
+  818 |         if (mountedRef.current && timestamp - lastUiUpdateAt > 90) {
+  819 |           lastUiUpdateAt = timestamp
+  820 |           setMicLevel(isMutedRef.current ? 0 : Number(smoothing.toFixed(3)))
+  821 |         }
+  822 |       } catch {
+  823 |         // ignore
+  824 |       }
+  825 |       audioRafRef.current = window.requestAnimationFrame(tick)
+  826 |     }
+  827 | 
+  828 |     audioRafRef.current = window.requestAnimationFrame(tick)
+  829 |     ctx.resume?.().catch?.(() => {})
+  830 | 
+  831 |     return () => {
+  832 |       cancelled = true
+  833 |       if (audioRafRef.current && typeof window !== 'undefined') {
+  834 |         window.cancelAnimationFrame(audioRafRef.current)
+  835 |       }
+  836 |       try { source?.disconnect?.() } catch { /* ignore */ }
+  837 |       try { analyser?.disconnect?.() } catch { /* ignore */ }
+  838 |       try { ctx?.close?.() } catch { /* ignore */ }
+  839 |       audioContextRef.current = null
+  840 |       if (mountedRef.current) setMicLevel(0)
+  841 |     }
+  842 |   }, [hasLocalStream])
+  843 | 
+  844 |   useEffect(() => {
+  845 |     let active = true
+  846 |     async function initPermissions() {
+  847 |       if (!active) return
+  848 | 
+  849 |       if (!window.isSecureContext) {
+  850 |         if (mountedRef.current) {
+  851 |           setMediaGate(buildMediaGate(new Error('insecure_context')))
+  852 |           setHasLocalStream(false)
+  853 |         }
+  854 |         return
+  855 |       }
+  856 | 
+  857 |       if (!navigator?.permissions?.query) {
+  858 |         ensureLocalStream().catch(() => {})
+  859 |         return
+  860 |       }
+  861 | 
+  862 |       try {
+  863 |         const [cam, mic] = await Promise.all([
+  864 |           navigator.permissions.query({ name: 'camera' }),
+  865 |           navigator.permissions.query({ name: 'microphone' }),
+  866 |         ])
+  867 | 
+  868 |         const state = [cam?.state, mic?.state]
+  869 |         if (state.includes('denied')) {
+  870 |           if (mountedRef.current) {
+  871 |             setMediaGate(buildMediaGate({ name: 'NotAllowedError' }))
+  872 |             setHasLocalStream(false)
+  873 |           }
+  874 |           return
+  875 |         }
+  876 | 
+  877 |         if (state.includes('prompt')) {
+  878 |           if (mountedRef.current) {
+  879 |             setMediaGate({
+  880 |               title: 'Enable camera & microphone',
+  881 |               message: 'Click “Allow access” to let this page use your camera/microphone for the call.',
+  882 |               actionLabel: 'Allow access',
+  883 |             })
+  884 |             setHasLocalStream(false)
+  885 |           }
+  886 |           return
+  887 |         }
+  888 | 
+  889 |         ensureLocalStream().catch(() => {})
+  890 |       } catch {
+  891 |         ensureLocalStream().catch(() => {})
+  892 |       }
+  893 |     }
+  894 | 
+  895 |     initPermissions()
+  896 |     return () => {
+  897 |       active = false
+  898 |       if (localStreamRef.current) {
+  899 |         localStreamRef.current.getTracks().forEach((track) => track.stop())
+  900 |       }
+  901 |       if (mountedRef.current) {
+  902 |         setHasLocalStream(false)
+  903 |       }
+  904 |     }
+  905 |   }, [ensureLocalStream])
+  906 | 
+  907 |   useEffect(() => {
+  908 |     if (!hasLocalStream) return
+  909 |     tryAnswerPendingOffer().catch(() => {})
+  910 |     tryStartOffer().catch(() => {})
+  911 |   }, [hasLocalStream, tryAnswerPendingOffer, tryStartOffer])
+  912 | 
+  913 |   useEffect(() => {
+  914 |     const token = getToken()
+  915 |     if (!token || !callId) return
+  916 |     tokenRef.current = token
+  917 | 
+  918 |     let active = true
+  919 |     const safeSetStatus = (message) => {
+  920 |       if (!active || !mountedRef.current) return
+  921 |       setStatusMessage(message)
+  922 |     }
+  923 |     const safeSetWsStatus = (next) => {
+  924 |       if (!active || !mountedRef.current) return
+  925 |       setWsStatus(next)
+  926 |     }
+  927 |     const safeSetRemoteStream = (value) => {
+  928 |       if (!active || !mountedRef.current) return
+  929 |       setHasRemoteStream(value)
+  930 |     }
+  931 | 
+  932 |     let ws = null
+  933 | 
+  934 |     async function connect() {
+  935 |       safeSetStatus('Fetching ICE servers...')
+  936 |       const resolvedIceServers = await loadIceServers(token)
+  937 |       iceServersRef.current = resolvedIceServers
+  938 |       if (!active) return
+  939 | 
+  940 |       safeSetWsStatus('connecting')
+  941 |       ws = new WebSocket(WS_BASE)
+  942 |       wsRef.current = ws
+  943 |       safeSetStatus('Connecting to call server...')
+  944 | 
+  945 |       const sendSignal = (payload) => {
+  946 |         if (ws.readyState !== WebSocket.OPEN) return
+  947 |         ws.send(JSON.stringify(payload))
+  948 |       }
+  949 | 
+  950 |       ws.onopen = () => {
+  951 |         safeSetWsStatus('online')
+  952 |         safeSetStatus('Joining call...')
+  953 |         sendSignal({
+  954 |           type: 'join_call_room',
+  955 |           call_id: callId,
+  956 |           token,
+  957 |           participant_id: participantId,
+  958 |         })
+  959 |         const chatToJoin = chatRoomMatchIdRef.current || matchId
+  960 |         if (chatToJoin) joinChatRoom(chatToJoin)
+  961 |       }
+  962 | 
+  963 |       ws.onmessage = async (event) => {
+  964 |         let payload
+  965 |         try {
+  966 |           payload = JSON.parse(String(event.data || ''))
+  967 |         } catch {
+  968 |           return
+  969 |         }
+  970 | 
+  971 |         if (payload.type === 'call_error') {
+  972 |           safeSetStatus(payload.error || 'Unable to join call room.')
+  973 |           return
+  974 |         }
+  975 | 
+  976 |         if (payload.type === 'joined_call_room') {
+  977 |           safeSetStatus(payload.should_offer ? 'Participant found. Starting call...' : 'Waiting for participant to join...')
+  978 |           shouldOfferRef.current = Boolean(payload.should_offer)
+  979 |           offerSentRef.current = false
+  980 |           createPeerConnection(token)
+  981 |           if (payload.should_offer) {
+  982 |             if (!hasLocalStreamRef.current) {
+  983 |               safeSetStatus('Allow camera/mic access to start the call.')
+  984 |               if (!mediaGateRef.current && mountedRef.current) {
+  985 |                 setMediaGate({
+  986 |                   title: 'Enable camera & microphone',
+  987 |                   message: 'Click “Allow access” to start the call.',
+  988 |                   actionLabel: 'Allow access',
+  989 |                 })
+  990 |               }
+  991 |               return
+  992 |             }
+  993 | 
+  994 |             tryStartOffer().catch((error) => {
+  995 |               safeSetStatus(`Unable to start call: ${error?.message || 'offer failed'}`)
+  996 |             })
+  997 |           }
+  998 |           return
+  999 |         }
+ 1000 | 
+ 1001 |         if (payload.type === 'participant_joined') {
+ 1002 |           safeSetStatus('Participant joined. Connecting...')
+ 1003 |           createPeerConnection(token)
+ 1004 |           return
+ 1005 |         }
+ 1006 | 
+ 1007 |         if (payload.type === 'joined_chat_room') {
+ 1008 |           const history = Array.isArray(payload.messages) ? [...payload.messages] : []
+ 1009 |           history.sort((a, b) => new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime())
+ 1010 |           chatInitializedRef.current = false
+ 1011 |           if (payload.match_id) chatRoomMatchIdRef.current = String(payload.match_id)
+ 1012 |           setChatMessages(history)
+ 1013 |           setIsChatLive(true)
+ 1014 |           return
+ 1015 |         }
+ 1016 | 
+ 1017 |         if (payload.type === 'chat_message') {
+ 1018 |           const incoming = payload.message
+ 1019 |           if (!incoming?.id) return
+ 1020 |           setIsChatLive(true)
+ 1021 |           setChatMessages((previous) => {
+ 1022 |             if (previous.some((msg) => msg.id === incoming.id)) return previous
+ 1023 |             return [...previous, incoming]
+ 1024 |           })
+ 1025 |           return
+ 1026 |         }
+ 1027 | 
+ 1028 |         if (payload.type === 'chat_error') {
+ 1029 |           safeSetStatus(payload.error || 'Chat error.')
+ 1030 |           return
+ 1031 |         }
+ 1032 | 
+ 1033 |         if (payload.type === 'webrtc_signal' && payload.signal) {
+ 1034 |           const pc = createPeerConnection(token)
+ 1035 |           const signal = payload.signal
+ 1036 |           if (signal.type === 'offer') {
+ 1037 |             if (!signal.sdp) {
+ 1038 |               safeSetStatus('Offer handling failed: Missing offer SDP')
+ 1039 |               return
+ 1040 |             }
+ 1041 | 
+ 1042 |             if (!hasLocalStreamRef.current) {
+ 1043 |               pendingRemoteOfferRef.current = signal.sdp
+ 1044 |               safeSetStatus('Incoming call. Allow camera/mic to answer...')
+ 1045 |               if (!mediaGateRef.current && mountedRef.current) {
+ 1046 |                 setMediaGate({
+ 1047 |                   title: 'Enable camera & microphone',
+ 1048 |                   message: 'Click “Allow access” to answer the call.',
+ 1049 |                   actionLabel: 'Allow access',
+ 1050 |                 })
+ 1051 |               }
+ 1052 |               return
+ 1053 |             }
+ 1054 | 
+ 1055 |             try {
+ 1056 |               safeSetStatus('Offer received. Sending answer...')
+ 1057 |               await pc.setRemoteDescription(signal.sdp)
+ 1058 |               const answer = await pc.createAnswer()
+ 1059 |               await pc.setLocalDescription(answer)
+ 1060 |               sendSignal({
+ 1061 |                 type: 'webrtc_signal',
+ 1062 |                 call_id: callId,
+ 1063 |                 token,
+ 1064 |                 signal: { type: 'answer', sdp: toSessionDescriptionInit(pc.localDescription) || answer },
+ 1065 |               })
+ 1066 |               safeSetStatus('Answer sent. Connecting...')
+ 1067 | 
+ 1068 |               const pending = pendingCandidatesRef.current
+ 1069 |               pendingCandidatesRef.current = []
+ 1070 |               for (const queued of pending) {
+ 1071 |                 try {
+ 1072 |                   await pc.addIceCandidate(queued)
+ 1073 |                 } catch {
+ 1074 |                   // ignore candidate errors
+ 1075 |                 }
+ 1076 |               }
+ 1077 |             } catch (error) {
+ 1078 |               safeSetStatus(`Offer handling failed: ${error?.message || 'unknown error'}`)
+ 1079 |             }
+ 1080 |           } else if (signal.type === 'answer') {
+ 1081 |             try {
+ 1082 |               safeSetStatus('Answer received. Connecting...')
+ 1083 |               if (!signal.sdp) throw new Error('Missing answer SDP')
+ 1084 |               await pc.setRemoteDescription(signal.sdp)
+ 1085 | 
+ 1086 |               const pending = pendingCandidatesRef.current
+ 1087 |               pendingCandidatesRef.current = []
+ 1088 |               for (const queued of pending) {
+ 1089 |                 try {
+ 1090 |                   await pc.addIceCandidate(queued)
+ 1091 |                 } catch {
+ 1092 |                   // ignore candidate errors
+ 1093 |                 }
+ 1094 |               }
+ 1095 |             } catch (error) {
+ 1096 |               safeSetStatus(`Answer handling failed: ${error?.message || 'unknown error'}`)
+ 1097 |             }
+ 1098 |           } else if (signal.type === 'candidate') {
+ 1099 |             try {
+ 1100 |               const candidate = signal.candidate
+ 1101 |               if (pc.remoteDescription && pc.remoteDescription.type) {
+ 1102 |                 await pc.addIceCandidate(candidate)
+ 1103 |               } else {
+ 1104 |                 pendingCandidatesRef.current.push(candidate)
+ 1105 |               }
+ 1106 |             } catch {
+ 1107 |               // ignore candidate errors
+ 1108 |             }
+ 1109 |           }
+ 1110 |         }
+ 1111 | 
+ 1112 |         if (payload.type === 'participant_left') {
+ 1113 |           safeSetStatus('Participant left the call.')
+ 1114 |           safeSetRemoteStream(false)
+ 1115 |           remoteStreamRef.current = null
+ 1116 |           if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null
+ 1117 |         }
+ 1118 |       }
+ 1119 | 
+ 1120 |       ws.onerror = () => {
+ 1121 |         safeSetWsStatus('error')
+ 1122 |         safeSetStatus('Unable to reach call server.')
+ 1123 |       }
+ 1124 | 
+ 1125 |       ws.onclose = () => {
+ 1126 |         safeSetWsStatus('offline')
+ 1127 |         safeSetStatus('Call server disconnected.')
+ 1128 |         if (mountedRef.current) setIsChatLive(false)
+ 1129 |         safeSetRemoteStream(false)
+ 1130 |         remoteStreamRef.current = null
+ 1131 |         if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null
+ 1132 |         if (peerConnectionRef.current) {
+ 1133 |           peerConnectionRef.current.close()
+ 1134 |           peerConnectionRef.current = null
+ 1135 |         }
+ 1136 |         if (mountedRef.current) {
+ 1137 |           setRtcConnectionState('new')
+ 1138 |           setRtcIceState('new')
+ 1139 |         }
+ 1140 |       }
+ 1141 |     }
+ 1142 | 
+ 1143 |     connect().catch(() => {
+ 1144 |       safeSetStatus('Unable to start call signaling.')
+ 1145 |     })
+ 1146 | 
+ 1147 |     return () => {
+ 1148 |       active = false
+ 1149 |       if (ws) ws.close()
+ 1150 |     }
+ 1151 |   }, [callId, matchId, participantId, reconnectNonce, createPeerConnection, joinChatRoom, loadIceServers, tryStartOffer])
+ 1152 | 
+ 1153 |   useEffect(() => {
+ 1154 |     const startedAt = callDetails?.started_at || callDetails?.created_at
+ 1155 |     if (!startedAt) return
+ 1156 |     const startMs = new Date(startedAt).getTime()
+ 1157 |     const interval = setInterval(() => {
+ 1158 |       const elapsed = Math.max(0, Date.now() - startMs)
+ 1159 |       const totalSeconds = Math.floor(elapsed / 1000)
+ 1160 |       const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0')
+ 1161 |       const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0')
+ 1162 |       const seconds = String(totalSeconds % 60).padStart(2, '0')
+ 1163 |       setTimer(`${hours}:${minutes}:${seconds}`)
+ 1164 |     }, 1000)
+ 1165 |     return () => clearInterval(interval)
+ 1166 |   }, [callDetails])
+ 1167 | 
+ 1168 |   useEffect(() => {
+ 1169 |     const handleFullscreenChange = () => {
+ 1170 |       setIsFullscreen(Boolean(document.fullscreenElement))
+ 1171 |     }
+ 1172 | 
+ 1173 |     document.addEventListener('fullscreenchange', handleFullscreenChange)
+ 1174 |     return () => {
+ 1175 |       document.removeEventListener('fullscreenchange', handleFullscreenChange)
+ 1176 |     }
+ 1177 |   }, [])
+ 1178 | 
+ 1179 |   const toggleMute = () => {
+ 1180 |     setIsMuted((prev) => {
+ 1181 |       const next = !prev
+ 1182 |       if (localStreamRef.current) {
+ 1183 |         localStreamRef.current.getAudioTracks().forEach((track) => { track.enabled = !next })
+ 1184 |       }
+ 1185 |       return next
+ 1186 |     })
+ 1187 |   }
+ 1188 | 
+ 1189 |   const toggleSpeaker = () => {
+ 1190 |     setIsSpeakerMuted((prev) => {
+ 1191 |       const next = !prev
+ 1192 |       if (remoteVideoRef.current) {
+ 1193 |         remoteVideoRef.current.muted = next
+ 1194 |         if (!next) {
+ 1195 |           const playAttempt = remoteVideoRef.current.play?.()
+ 1196 |           if (playAttempt && typeof playAttempt.catch === 'function') {
+ 1197 |             playAttempt.catch(() => {})
+ 1198 |           }
+ 1199 |         }
+ 1200 |       }
+ 1201 |       return next
+ 1202 |     })
+ 1203 |   }
+ 1204 | 
+ 1205 |   const toggleCamera = () => {
+ 1206 |     setIsCameraOn((prev) => {
+ 1207 |       const next = !prev
+ 1208 |       if (localStreamRef.current) {
+ 1209 |         localStreamRef.current.getVideoTracks().forEach((track) => { track.enabled = !next })
+ 1210 |       }
+ 1211 |       return next
+ 1212 |     })
+ 1213 |   }
+ 1214 | 
+ 1215 |   const toggleFullscreen = async () => {
+ 1216 |     try {
+ 1217 |       if (document.fullscreenElement) {
+ 1218 |         await document.exitFullscreen?.()
+ 1219 |         return
+ 1220 |       }
+ 1221 |       await stageRef.current?.requestFullscreen?.()
+ 1222 |     } catch {
+ 1223 |       // ignore
+ 1224 |     }
+ 1225 |   }
+ 1226 | 
+ 1227 |   const endCall = async () => {
+ 1228 |     const token = getToken()
+ 1229 |     if (token && callId) {
+ 1230 |       try {
+ 1231 |         await apiRequest(`/calls/${callId}/end`, { method: 'POST', token })
+ 1232 |       } catch {
+ 1233 |         // ignore
+ 1234 |       }
+ 1235 |     }
+ 1236 |     navigate('/chat')
+ 1237 |   }
+ 1238 | 
+ 1239 |   const sendChatMessage = async () => {
+ 1240 |     setIsEmojiOpen(false)
+ 1241 |     const token = getToken()
+ 1242 |     const content = chatDraft.trim()
+ 1243 |     const threadId = effectiveMatchId || matchId
+ 1244 |     if (!token || !content || !threadId) return
+ 1245 |     try {
+ 1246 |       if (isChatLive && wsRef.current && wsRef.current.readyState === WebSocket.OPEN && chatRoomMatchIdRef.current === threadId) {
+ 1247 |         wsRef.current.send(JSON.stringify({
+ 1248 |           type: 'chat_message',
+ 1249 |           match_id: threadId,
+ 1250 |           token,
+ 1251 |           message: content,
+ 1252 |           message_type: 'text',
+ 1253 |         }))
+ 1254 |       } else {
+ 1255 |         const created = await apiRequest(`/messages/${threadId}`, {
+ 1256 |           method: 'POST',
+ 1257 |           token,
+ 1258 |           body: { message: content, type: 'text' },
+ 1259 |         })
+ 1260 |         setChatMessages((prev) => [...prev, created])
+ 1261 |       }
+ 1262 |       setChatDraft('')
+ 1263 |     } catch (err) {
+ 1264 |       setStatusMessage(err?.message || 'Unable to send message')
+ 1265 |     }
+ 1266 |   }
+ 1267 | 
+ 1268 |   return (
+ 1269 |     <div className="relative isolate flex h-screen w-screen flex-col overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 font-sans text-slate-900 dark:from-[#050816] dark:via-slate-950/10 dark:to-[#120726] dark:text-slate-100">
+ 1270 |       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+ 1271 |         <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-cyan-400/20 blur-3xl motion-safe:animate-[callFloat_14s_ease-in-out_infinite] dark:bg-cyan-400/10" />
+ 1272 |         <div className="absolute -bottom-32 -right-32 h-[28rem] w-[28rem] rounded-full bg-fuchsia-400/20 blur-3xl motion-safe:animate-[callFloat_18s_ease-in-out_infinite] dark:bg-fuchsia-400/10" style={{ animationDelay: '-6s' }} />
+ 1273 |         <div className="absolute right-[-6rem] top-[35%] h-80 w-80 rounded-full bg-indigo-400/15 blur-3xl motion-safe:animate-[callFloat_16s_ease-in-out_infinite] dark:bg-indigo-400/10" style={{ animationDelay: '-12s' }} />
+ 1274 |       </div>
+ 1275 |       {toast ? (
+ 1276 |         <div className="pointer-events-none fixed left-1/2 top-[76px] z-[70] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 px-2">
+ 1277 |           <div className={`rounded-2xl px-4 py-2 text-center text-sm font-semibold shadow-lg ring-1 backdrop-blur-xl ${toast.tone === 'error' ? 'bg-rose-500/15 text-rose-100 ring-rose-500/25' : toast.tone === 'success' ? 'bg-emerald-500/15 text-emerald-50 ring-emerald-500/25' : 'bg-slate-950/75 text-white ring-white/10'}`}>
+ 1278 |             {toast.message}
+ 1279 |           </div>
+ 1280 |         </div>
+ 1281 |       ) : null}
+ 1282 |       {/* Top Header */}
+ 1283 |       <header className="flex h-16 items-center justify-between gap-4 border-b border-slate-200/60 bg-white/70 px-4 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/40 sm:px-6">
+ 1284 |         <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+ 1285 |           <button
+ 1286 |             type="button"
+ 1287 |             onClick={() => navigate(-1)}
+ 1288 |             className="group flex h-9 w-9 items-center justify-center rounded-xl bg-white/80 text-slate-600 shadow-sm ring-1 ring-slate-200/60 transition hover:bg-white hover:text-slate-900 active:scale-95 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10"
+ 1289 |             title="Back"
+ 1290 |           >
+ 1291 |             <ChevronLeft size={18} className="transition-transform group-hover:-translate-x-0.5" />
+ 1292 |           </button>
+ 1293 |           <div className="min-w-0">
+ 1294 |             <div className="truncate text-sm font-semibold tracking-tight text-slate-900 dark:text-white sm:text-base">
+ 1295 |               Call with <span className="text-slate-600 dark:text-slate-300">“{remoteName}”</span>
+ 1296 |             </div>
+ 1297 |             <div className="hidden truncate text-xs text-slate-500 dark:text-slate-300/80 sm:block">
+ 1298 |               {statusMessage || 'Preparing call…'}
+ 1299 |             </div>
+ 1300 |           </div>
+ 1301 |         </div>
+ 1302 | 
+ 1303 |         <div className="flex flex-none items-center gap-2">
+ 1304 |           <span className={`hidden items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ring-1 sm:inline-flex ${connectionBadge.pillClass}`}>
+ 1305 |             <span className={`h-2 w-2 rounded-full ${connectionBadge.dotClass}`} />
+ 1306 |             {connectionBadge.label}
+ 1307 |           </span>
+ 1308 |           <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-bold tabular-nums text-slate-700 ring-1 ring-slate-200/60 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+ 1309 |             {timer}
+ 1310 |           </span>
+ 1311 |         </div>
+ 1312 |       </header>
+ 1313 | 
+ 1314 |       {/* Main Layout Content */}
+ 1315 |       <div className="flex flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-6 lg:flex-row">
+ 1316 |         
+ 1317 |         {/* Left Side: Video Feed Area */}
+ 1318 |         <div className="relative flex min-h-[520px] flex-1 flex-col overflow-hidden rounded-[28px] bg-white/70 shadow-xl shadow-slate-900/5 ring-1 ring-slate-200/60 backdrop-blur-xl dark:bg-white/5 dark:ring-white/10">
+ 1319 |           
+ 1320 |           <div ref={stageRef} className="relative flex-1 overflow-hidden rounded-[24px] bg-slate-950">
+ 1321 |             {/* Remote Participant Label */}
+ 1322 |             <div className="absolute left-5 top-5 z-20 flex items-center gap-2 rounded-full bg-black/35 px-3 py-2 text-xs font-semibold text-white backdrop-blur-md ring-1 ring-white/10">
+ 1323 |               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-[11px] font-bold">
+ 1324 |                 {(remoteName || 'U').slice(0, 1).toUpperCase()}
+ 1325 |               </div>
+ 1326 |               <div className="max-w-[220px] truncate">{remoteName}</div>
+ 1327 |             </div>
+ 1328 | 
+ 1329 |             {/* Remote Video (Main) */}
+ 1330 |             <video
+ 1331 |               ref={remoteVideoRef}
+ 1332 |               autoPlay
+ 1333 |               playsInline
+ 1334 |               muted={isSpeakerMuted}
+ 1335 |               className="absolute inset-0 h-full w-full object-cover"
+ 1336 |             />
+ 1337 |             <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/50" />
+ 1338 |             {!hasRemoteStream && (
+ 1339 |               <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-white/80">
+ 1340 |                 <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/10 text-3xl font-bold ring-1 ring-white/10">
+ 1341 |                   {(remoteName || 'U').slice(0, 1).toUpperCase()}
+ 1342 |                 </div>
+ 1343 |                 <div className="text-base font-semibold">{remoteName}</div>
+ 1344 |                 <div className="max-w-xs text-center text-xs text-white/60">
+ 1345 |                   {statusMessage || 'Waiting to connect…'}
+ 1346 |                 </div>
+ 1347 |               </div>
+ 1348 |             )}
+ 1349 | 
+ 1350 |             {mediaGate && !hasLocalStream && (
+ 1351 |               <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 p-6">
+ 1352 |                 <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/10 p-6 text-center text-white backdrop-blur-md">
+ 1353 |                   <div className="text-lg font-semibold">{mediaGate.title}</div>
+ 1354 |                   <div className="mt-2 text-sm text-white/80">{mediaGate.message}</div>
+ 1355 |                   <div className="mt-5 flex items-center justify-center gap-3">
+ 1356 |                     {mediaGate.actionLabel ? (
+ 1357 |                       <button
+ 1358 |                         type="button"
+ 1359 |                         onClick={() => ensureLocalStream().catch(() => {})}
+ 1360 |                         disabled={isRequestingMedia}
+ 1361 |                         className="rounded-xl bg-blue-500 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600 disabled:opacity-60"
+ 1362 |                       >
+ 1363 |                         {isRequestingMedia ? 'Requesting…' : mediaGate.actionLabel}
+ 1364 |                       </button>
+ 1365 |                     ) : null}
+ 1366 |                     <button
+ 1367 |                       type="button"
+ 1368 |                       onClick={() => setMediaGate(null)}
+ 1369 |                       className="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20"
+ 1370 |                     >
+ 1371 |                       Dismiss
+ 1372 |                     </button>
+ 1373 |                   </div>
+ 1374 |                 </div>
+ 1375 |               </div>
+ 1376 |             )}
+ 1377 | 
+ 1378 |             {/* Local Video (PiP) */}
+ 1379 |             <div
+ 1380 |               className={`absolute right-5 top-5 z-30 aspect-video w-40 overflow-hidden rounded-2xl bg-black/80 ring-1 ${isSpeaking ? 'ring-cyan-300/70' : 'ring-white/20'} shadow-2xl shadow-black/40 sm:w-56`}
+ 1381 |               style={isSpeaking ? { boxShadow: '0 22px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(34,211,238,0.35), 0 0 34px rgba(34,211,238,0.25)' } : undefined}
+ 1382 |             >
+ 1383 |               <video 
+ 1384 |                 ref={localVideoRef} 
+ 1385 |                 autoPlay 
+ 1386 |                 playsInline 
+ 1387 |                 muted 
+ 1388 |                 className="h-full w-full object-cover"
+ 1389 |               />
+ 1390 |               <div className="absolute bottom-2 left-2 rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur">
+ 1391 |                 {localName}
+ 1392 |               </div>
+ 1393 |             </div>
+ 1394 | 
+ 1395 |             {/* Floating Call Controls */}
+ 1396 |             <div className="absolute bottom-5 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-2xl bg-black/35 p-2 backdrop-blur-xl ring-1 ring-white/10 shadow-lg">
+ 1397 |               <button
+ 1398 |                 type="button"
+ 1399 |                 onClick={() => setIsChatOpen((prev) => !prev)}
+ 1400 |                 className={`relative flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95 ${isChatOpen ? 'bg-sky-500/90 hover:bg-sky-500' : 'bg-white/10 hover:bg-white/15'}`}
+ 1401 |                 title={isChatOpen ? 'Hide chat' : 'Show chat'}
+ 1402 |               >
+ 1403 |                 <MessageSquare size={20} />
+ 1404 |                 {unreadChatCount > 0 ? (
+ 1405 |                   <span className="absolute -right-1 -top-1 inline-flex min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white ring-2 ring-black/40">
+ 1406 |                     {unreadChatCount > 99 ? '99+' : unreadChatCount}
+ 1407 |                   </span>
+ 1408 |                 ) : null}
+ 1409 |               </button>
+ 1410 |               <button
+ 1411 |                 type="button"
+ 1412 |                 onClick={toggleSpeaker}
+ 1413 |                 className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95 ${isSpeakerMuted ? 'bg-amber-500/90 hover:bg-amber-500' : 'bg-white/10 hover:bg-white/15'}`}
+ 1414 |                 title={isSpeakerMuted ? 'Unmute speaker' : 'Mute speaker'}
+ 1415 |               >
+ 1416 |                 {isSpeakerMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+ 1417 |               </button>
+ 1418 |               <button 
+ 1419 |                 type="button"
+ 1420 |                 onClick={toggleMute}
+ 1421 |                 className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95 ${isMuted ? 'bg-rose-500 hover:bg-rose-600' : 'bg-white/10 hover:bg-white/15'}`}
+ 1422 |                 title={isMuted ? 'Unmute mic' : 'Mute mic'}
+ 1423 |                 aria-pressed={!isMuted}
+ 1424 |                 style={!isMuted && micLevel > 0.02 ? { boxShadow: `0 0 ${10 + micLevel * 26}px rgba(34,211,238,${0.18 + micLevel * 0.35})` } : undefined}
+ 1425 |               >
+ 1426 |                 {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
+ 1427 |               </button>
+ 1428 |               <button 
+ 1429 |                 type="button"
+ 1430 |                 onClick={endCall}
+ 1431 |                 className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-500 text-white transition-all hover:bg-rose-600 active:scale-95"
+ 1432 |                 title="End call"
+ 1433 |               >
+ 1434 |                 <PhoneOff size={20} />
+ 1435 |               </button>
+ 1436 |               <button 
+ 1437 |                 type="button"
+ 1438 |                 onClick={toggleCamera}
+ 1439 |                 className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95 ${!isCameraOn ? 'bg-rose-500 hover:bg-rose-600' : 'bg-white/10 hover:bg-white/15'}`}
+ 1440 |                 title={!isCameraOn ? 'Turn camera on' : 'Turn camera off'}
+ 1441 |               >
+ 1442 |                 {!isCameraOn ? <VideoOff size={20} /> : <Video size={20} />}
+ 1443 |               </button>
+ 1444 |               <button
+ 1445 |                 type="button"
+ 1446 |                 onClick={toggleFullscreen}
+ 1447 |                 className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95 ${isFullscreen ? 'bg-white/20' : 'bg-white/10 hover:bg-white/15'}`}
+ 1448 |                 title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+ 1449 |               >
+ 1450 |                 <Maximize size={20} />
+ 1451 |               </button>
+ 1452 |             </div>
+ 1453 |           </div>
+ 1454 | 
+ 1455 |           {/* Transcription Bar */}
+ 1456 |           <div className="flex items-center gap-3 border-t border-slate-200/60 bg-white/70 px-4 py-3 backdrop-blur-xl dark:border-white/10 dark:bg-white/5 sm:px-6">
+ 1457 |             <div className="flex items-end gap-1.5 text-sky-600 dark:text-cyan-300" aria-hidden="true">
+ 1458 |               {[0.28, 0.44, 0.72, 0.44, 0.28].map((base, index) => (
+ 1459 |                 <span
+ 1460 |                   key={index}
+ 1461 |                   className="h-5 w-1.5 rounded-full bg-current transition-transform duration-150 will-change-transform"
+ 1462 |                   style={{ transformOrigin: 'bottom', transform: `scaleY(${Math.max(0.18, base + micLevel * 0.9)})` }}
+ 1463 |                 />
+ 1464 |               ))}
+ 1465 |             </div>
+ 1466 |             <p className="min-w-0 flex-1 truncate text-sm font-medium text-slate-700 dark:text-slate-200">
+ 1467 |               {statusMessage || callDetails?.context?.notes || 'Live call in progress.'}
+ 1468 |             </p>
+ 1469 |           </div>
+ 1470 |         </div>
+ 1471 | 
+ 1472 |         {/* Right Side: Chat Sidebar */}
+ 1473 |         {isChatOpen ? (
+ 1474 |           <aside className="flex w-full flex-col overflow-hidden rounded-[28px] bg-white/70 shadow-xl shadow-slate-900/5 ring-1 ring-slate-200/60 backdrop-blur-xl dark:bg-white/5 dark:ring-white/10 lg:w-[380px]">
+ 1475 |             <div className="flex h-14 items-center justify-between gap-3 border-b border-slate-200/60 bg-white/40 px-5 backdrop-blur-xl dark:border-white/10 dark:bg-white/5">
+ 1476 |               <div className="min-w-0">
+ 1477 |                 <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300/80">Chat</h2>
+ 1478 |                 <p className="truncate text-[11px] text-slate-500 dark:text-slate-300/70">{remoteName}</p>
+ 1479 |               </div>
+ 1480 |               <div ref={morePopoverRef} className="relative flex items-center gap-2">
+ 1481 |                 <span className={`hidden items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold ring-1 sm:inline-flex ${isChatLive ? 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-200' : 'bg-slate-500/10 text-slate-600 ring-slate-400/20 dark:text-slate-300'}`}>
+ 1482 |                   <span className={`h-2 w-2 rounded-full ${isChatLive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+ 1483 |                   {isChatLive ? 'Live' : 'Syncing'}
+ 1484 |                 </span>
+ 1485 |                 <button
+ 1486 |                   type="button"
+ 1487 |                   onClick={() => {
+ 1488 |                     setIsMoreOpen((prev) => !prev)
+ 1489 |                     setIsEmojiOpen(false)
+ 1490 |                   }}
+ 1491 |                   className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-slate-200"
+ 1492 |                   title="More"
+ 1493 |                 >
+ 1494 |                   <MoreHorizontal size={20} />
+ 1495 |                 </button>
+ 1496 | 
+ 1497 |                 {isMoreOpen ? (
+ 1498 |                   <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-2xl bg-white/90 p-2 shadow-xl ring-1 ring-slate-200/60 backdrop-blur-xl dark:bg-slate-950/60 dark:ring-white/10">
+ 1499 |                     <button
+ 1500 |                       type="button"
+ 1501 |                       onClick={() => {
+ 1502 |                         copyCallLink()
+ 1503 |                         setIsMoreOpen(false)
+ 1504 |                       }}
+ 1505 |                       className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-white/10"
+ 1506 |                     >
+ 1507 |                       <Copy size={16} className="opacity-80" />
+ 1508 |                       Copy call link
+ 1509 |                     </button>
+ 1510 |                     <button
+ 1511 |                       type="button"
+ 1512 |                       onClick={() => {
+ 1513 |                         requestMediaPermissions()
+ 1514 |                         setIsMoreOpen(false)
+ 1515 |                       }}
+ 1516 |                       className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-white/10"
+ 1517 |                     >
+ 1518 |                       <ShieldAlert size={16} className="opacity-80" />
+ 1519 |                       Request permissions
+ 1520 |                     </button>
+ 1521 |                     <button
+ 1522 |                       type="button"
+ 1523 |                       onClick={() => {
+ 1524 |                         reconnectCall()
+ 1525 |                         pushToast('Reconnecting call...', 'info')
+ 1526 |                         setIsMoreOpen(false)
+ 1527 |                       }}
+ 1528 |                       className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-white/10"
+ 1529 |                     >
+ 1530 |                       <RefreshCw size={16} className="opacity-80" />
+ 1531 |                       Reconnect
+ 1532 |                     </button>
+ 1533 |                     <button
+ 1534 |                       type="button"
+ 1535 |                       onClick={() => {
+ 1536 |                         setIsChatOpen(false)
+ 1537 |                         setIsMoreOpen(false)
+ 1538 |                       }}
+ 1539 |                       className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-white/10"
+ 1540 |                     >
+ 1541 |                       <MessageSquare size={16} className="opacity-80" />
+ 1542 |                       Hide chat
+ 1543 |                     </button>
+ 1544 |                   </div>
+ 1545 |                 ) : null}
+ 1546 |               </div>
+ 1547 |             </div>
+ 1548 | 
+ 1549 |           <div ref={chatScrollRef} className="flex-1 overflow-y-auto bg-slate-50/60 p-5 space-y-6 dark:bg-black/20 scrollbar-hide">
+ 1550 |             {sortedChatMessages.length > 0 ? sortedChatMessages.map((msg) => {
+ 1551 |               const isOwn = msg.sender_id === user?.id
+ 1552 |               const sender = userMap.get(msg.sender_id)
+ 1553 |               const senderName = msg.sender_name || sender?.name || sender?.email || 'User'
+ 1554 |               return (
+ 1555 |                 <div key={msg.id} className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
+ 1556 |                   <div className="flex items-center gap-2 mb-1">
+ 1557 |                     {!isOwn && (
+ 1558 |                       <div className="h-6 w-6 rounded-full bg-green-500 flex items-center justify-center text-[10px] text-white font-bold">
+ 1559 |                         {senderName[0] || 'U'}
+ 1560 |                       </div>
+ 1561 |                     )}
+ 1562 |                     <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{senderName}</span>
+ 1563 |                     <span className="text-[10px] text-slate-400 dark:text-slate-400/80">{formatMessageTime(msg.timestamp)}</span>
+ 1564 |                   </div>
+ 1565 |                   <div className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm leading-relaxed shadow-sm ${
+ 1566 |                     isOwn
+ 1567 |                       ? 'bg-blue-600 text-white rounded-tr-none'
+ 1568 |                       : 'bg-white/80 text-slate-800 ring-1 ring-slate-200/60 rounded-tl-none dark:bg-white/5 dark:text-slate-100 dark:ring-white/10'
+ 1569 |                   }`}>
+ 1570 |                     <MarkdownMessage text={msg.message || ''} />
+ 1571 |                   </div>
+ 1572 |                 </div>
+ 1573 |               )
+ 1574 |             }) : (
+ 1575 |               <div className="text-sm text-slate-400">No messages yet.</div>
+ 1576 |             )}
+ 1577 |             <div ref={chatEndRef} />
+ 1578 |           </div>
+ 1579 | 
+ 1580 |             <div className="border-t border-slate-200/60 p-4 dark:border-white/10">
+ 1581 |               <div className="relative flex items-center gap-2 rounded-2xl bg-white/70 p-2 shadow-sm ring-1 ring-slate-200/60 focus-within:ring-sky-500/30 dark:bg-white/5 dark:ring-white/10">
+ 1582 |                 <div ref={emojiPopoverRef} className="relative ml-1">
+ 1583 |                   <button
+ 1584 |                     type="button"
+ 1585 |                     onClick={() => {
+ 1586 |                       setIsEmojiOpen((prev) => !prev)
+ 1587 |                       setIsMoreOpen(false)
+ 1588 |                     }}
+ 1589 |                     className={`flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-slate-200 ${isEmojiOpen ? 'bg-slate-100 dark:bg-white/10' : ''}`}
+ 1590 |                     title="Emoji"
+ 1591 |                   >
+ 1592 |                     <Smile size={20} />
+ 1593 |                   </button>
+ 1594 | 
+ 1595 |                   {isEmojiOpen ? (
+ 1596 |                     <div className="absolute bottom-full left-0 z-50 mb-2 w-72 rounded-2xl bg-white/90 p-3 shadow-xl ring-1 ring-slate-200/60 backdrop-blur-xl dark:bg-slate-950/60 dark:ring-white/10">
+ 1597 |                       <div className="grid grid-cols-8 gap-1">
+ 1598 |                         {QUICK_EMOJIS.map((emoji) => (
+ 1599 |                           <button
+ 1600 |                             key={emoji}
+ 1601 |                             type="button"
+ 1602 |                             onClick={() => {
+ 1603 |                               setChatDraft((prev) => `${prev}${emoji}`)
+ 1604 |                               setIsEmojiOpen(false)
+ 1605 |                               chatInputRef.current?.focus?.()
+ 1606 |                             }}
+ 1607 |                             className="flex h-8 w-8 items-center justify-center rounded-xl text-lg transition hover:bg-slate-100 dark:hover:bg-white/10"
+ 1608 |                             title={`Insert ${emoji}`}
+ 1609 |                           >
+ 1610 |                             {emoji}
+ 1611 |                           </button>
+ 1612 |                         ))}
+ 1613 |                       </div>
+ 1614 |                       <div className="mt-2 text-[11px] font-medium text-slate-500 dark:text-slate-300/70">Press Esc to close.</div>
+ 1615 |                     </div>
+ 1616 |                   ) : null}
+ 1617 |                 </div>
+ 1618 |                 <input 
+ 1619 |                   ref={chatInputRef}
+ 1620 |                   type="text" 
+ 1621 |                   placeholder="Type here..."
+ 1622 |                   className="flex-1 bg-transparent px-1 text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400/70"
+ 1623 |                   value={chatDraft}
+ 1624 |                   onChange={(e) => setChatDraft(e.target.value)}
+ 1625 |                   onKeyDown={(e) => { if (e.key === 'Enter') sendChatMessage() }}
+ 1626 |                   onFocus={() => setIsEmojiOpen(false)}
+ 1627 |                 />
+ 1628 |                 <button
+ 1629 |                   type="button"
+ 1630 |                   onClick={sendChatMessage}
+ 1631 |                   className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white shadow-md transition hover:bg-blue-700 active:scale-95"
+ 1632 |                   title="Send"
+ 1633 |                 >
+ 1634 |                   <Send size={16} />
+ 1635 |                 </button>
+ 1636 |               </div>
+ 1637 |             </div>
+ 1638 |           </aside>
+ 1639 |         ) : null}
+ 1640 | 
+ 1641 |       </div>
+ 1642 |     </div>
+ 1643 |   )
+ 1644 | }
+ 1645 | 
+ 1646 | 

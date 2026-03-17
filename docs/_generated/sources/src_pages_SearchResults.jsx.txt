@@ -1,0 +1,613 @@
+    1 | /*
+    2 |   Route: /search
+    3 |   Access: Protected (login required)
+    4 |   Allowed roles: buyer, buying_house, factory, owner, admin, agent
+    5 | 
+    6 |   Public Pages:
+    7 |     /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+    8 |   Protected Pages (login required):
+    9 |     /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+   10 |     /notifications, /chat, /call, /verification, /verification-center
+   11 | 
+   12 |   Primary responsibilities:
+   13 |     - Run marketplace search across Buyer Requests and Companies/Products.
+   14 |     - Provide basic filters for free tier and advanced filters for premium tier.
+   15 |     - Support quick view modals and recent views rail.
+   16 | 
+   17 |   Key API endpoints:
+   18 |     - GET /api/requirements/search?... (buyer requests)
+   19 |     - GET /api/products/search?... (companies/products)
+   20 |     - GET /api/ratings/search?profile_keys=...
+   21 |     - GET /api/products/views/me?cursor=...
+   22 |     - POST /api/search/alerts (save alerts)
+   23 | 
+   24 |   Major UI/UX patterns:
+   25 |     - Glass + glow search bar with shortcut hint (Ctrl/⌘ + K).
+   26 |     - layoutId animated tabs for "All / Buyer Requests / Companies".
+   27 |     - Skeleton shimmer while loading.
+   28 |     - Optional premium-locked overlays for advanced filters.
+   29 | */
+   30 | import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+   31 | import { Link, useNavigate } from 'react-router-dom'
+   32 | import { Briefcase, Building2, Filter, LayoutGrid, Bell, Search as SearchIcon } from 'lucide-react'
+   33 | import { motion, useReducedMotion } from 'framer-motion'
+   34 | import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
+   35 | import ProductQuickViewModal from '../components/products/ProductQuickViewModal'
+   36 | 
+   37 | const TAB_OPTIONS = [
+   38 |   { id: 'all', label: 'All', icon: LayoutGrid },
+   39 |   { id: 'requests', label: 'Buyer Requests', icon: Briefcase },
+   40 |   { id: 'companies', label: 'Companies', icon: Building2 },
+   41 | ]
+   42 | 
+   43 | function roleToProfileRoute(role, id) {
+   44 |   // Convert a company role -> correct profile route.
+   45 |   // Used when clicking a search result card to navigate to the right profile page.
+   46 |   if (!id) return ''
+   47 |   const normalized = String(role || '').toLowerCase()
+   48 |   if (normalized === 'buyer') return `/buyer/${encodeURIComponent(id)}`
+   49 |   if (normalized === 'buying_house') return `/buying-house/${encodeURIComponent(id)}`
+   50 |   return `/factory/${encodeURIComponent(id)}`
+   51 | }
+   52 | 
+   53 | function buildQueryString({ q, category, filters, allowAdvanced }) {
+   54 |   // Build URLSearchParams from UI state.
+   55 |   // `allowAdvanced` gates premium-only filters so we don't send params the backend will ignore/reject.
+   56 |   const params = new URLSearchParams()
+   57 |   if (q) params.set('q', q)
+   58 |   if (category) params.set('category', category)
+   59 | 
+   60 |   if (allowAdvanced) {
+   61 |     if (filters.moqRange) params.set('moqRange', filters.moqRange)
+   62 |     if (filters.country) params.set('country', filters.country)
+   63 |     if (filters.verifiedOnly) params.set('verifiedOnly', 'true')
+   64 |     if (filters.orgType) params.set('orgType', filters.orgType)
+   65 |   }
+   66 | 
+   67 |   return params.toString()
+   68 | }
+   69 | 
+   70 | function formatMoqRangeLabel(value) {
+   71 |   if (!value) return 'Any'
+   72 |   return value
+   73 | }
+   74 | 
+   75 | function ResultSkeletonCard({ index }) {
+   76 |   return (
+   77 |     <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800" aria-hidden="true">
+   78 |       <div className="flex items-start justify-between gap-3">
+   79 |         <div className="min-w-0 flex-1">
+   80 |           <div className="h-3 w-1/3 rounded-full skeleton" />
+   81 |           <div className="mt-3 h-3 w-3/4 rounded-full skeleton" />
+   82 |           <div className="mt-2 h-3 w-2/3 rounded-full skeleton" />
+   83 |           <div className="mt-4 grid grid-cols-2 gap-2">
+   84 |             <div className="h-3 rounded-full skeleton" />
+   85 |             <div className="h-3 rounded-full skeleton" />
+   86 |             <div className="h-3 rounded-full skeleton" />
+   87 |             <div className="h-3 rounded-full skeleton" />
+   88 |           </div>
+   89 |         </div>
+   90 |         <div className="flex flex-col gap-2">
+   91 |           <div className="h-9 w-28 rounded-full skeleton" />
+   92 |           <div className="h-9 w-28 rounded-full skeleton" />
+   93 |         </div>
+   94 |       </div>
+   95 |       <span className="sr-only">Loading result {index + 1}</span>
+   96 |     </div>
+   97 |   )
+   98 | }
+   99 | 
+  100 | export default function SearchResults() {
+  101 |   const navigate = useNavigate()
+  102 |   const token = useMemo(() => getToken(), [])
+  103 |   const sessionUser = getCurrentUser()
+  104 |   const reduceMotion = useReducedMotion()
+  105 |   const queryInputRef = useRef(null)
+  106 |   const isMac = useMemo(() => (typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)), [])
+  107 | 
+  108 |   const [query, setQuery] = useState('')
+  109 |   const [activeTab, setActiveTab] = useState('all')
+  110 |   const [category, setCategory] = useState('')
+  111 |   const [filtersOpen, setFiltersOpen] = useState(false)
+  112 |   const [upgradePrompt, setUpgradePrompt] = useState('')
+  113 |   const [alertFeedback, setAlertFeedback] = useState('')
+  114 | 
+  115 |   const [filters, setFilters] = useState({
+  116 |     moqRange: '',
+  117 |     country: '',
+  118 |     verifiedOnly: false,
+  119 |     orgType: '',
+  120 |   })
+  121 | 
+  122 |   const [capabilities, setCapabilities] = useState(() => ({
+  123 |     filters: { advanced: sessionUser?.subscription_status === 'premium' },
+  124 |   }))
+  125 |   const premiumLocked = !capabilities?.filters?.advanced
+  126 | 
+  127 |   const [loading, setLoading] = useState(false)
+  128 |   const [error, setError] = useState('')
+  129 |   const [quotaMessage, setQuotaMessage] = useState('')
+  130 | 
+  131 |   const [requests, setRequests] = useState([])
+  132 |   const [companies, setCompanies] = useState([])
+  133 |   const [ratingsByProfileKey, setRatingsByProfileKey] = useState({})
+  134 |   const [recentViews, setRecentViews] = useState([])
+  135 |   const [quickViewItem, setQuickViewItem] = useState(null)
+  136 | 
+  137 |   const totalResults = requests.length + companies.length
+  138 | 
+  139 |   const allowAdvanced = !premiumLocked
+  140 | 
+  141 |   useEffect(() => {
+  142 |     const handler = (e) => {
+  143 |       const key = String(e.key || '').toLowerCase()
+  144 |       if (key !== 'k') return
+  145 |       if (!(e.ctrlKey || e.metaKey)) return
+  146 |       e.preventDefault()
+  147 |       queryInputRef.current?.focus?.()
+  148 |     }
+  149 |     window.addEventListener('keydown', handler)
+  150 |     return () => window.removeEventListener('keydown', handler)
+  151 |   }, [])
+  152 | 
+  153 |   const runSearch = useCallback(async () => {
+  154 |     const q = query.trim()
+  155 |     setLoading(true)
+  156 |     setError('')
+  157 |     setQuotaMessage('')
+  158 |     setUpgradePrompt('')
+  159 |     setAlertFeedback('')
+  160 | 
+  161 |     try {
+  162 |       const qs = buildQueryString({ q, category: category.trim(), filters, allowAdvanced })
+  163 |       const [reqRes, prodRes] = await Promise.all([
+  164 |         apiRequest(`/requirements/search?${qs}`, { token }),
+  165 |         apiRequest(`/products/search?${qs}`, { token }),
+  166 |       ])
+  167 | 
+  168 |       const reqItems = Array.isArray(reqRes?.items) ? reqRes.items : []
+  169 |       const prodItems = Array.isArray(prodRes?.items) ? prodRes.items : []
+  170 | 
+  171 |       setRequests(reqItems)
+  172 |       setCompanies(prodItems)
+  173 | 
+  174 |       const mergedCapabilities = reqRes?.capabilities || prodRes?.capabilities || { filters: { advanced: false } }
+  175 |       setCapabilities(mergedCapabilities)
+  176 | 
+  177 |       if (reqRes?.quota) {
+  178 |         setQuotaMessage(`Search quota remaining today: ${reqRes.quota.remaining}`)
+  179 |       }
+  180 |     } catch (err) {
+  181 |       setError(err.message || 'Search failed')
+  182 |       setRequests([])
+  183 |       setCompanies([])
+  184 |       if (err?.quota?.remaining !== undefined) {
+  185 |         setQuotaMessage(`Remaining today: ${err.quota.remaining}`)
+  186 |       }
+  187 |     } finally {
+  188 |       setLoading(false)
+  189 |     }
+  190 |   }, [allowAdvanced, category, filters, query, token])
+  191 | 
+  192 |   const loadRecentViews = useCallback(async () => {
+  193 |     try {
+  194 |       const data = await apiRequest('/products/views/me?cursor=0&limit=5', { token })
+  195 |       setRecentViews(Array.isArray(data?.items) ? data.items : [])
+  196 |     } catch {
+  197 |       setRecentViews([])
+  198 |     }
+  199 |   }, [token])
+  200 | 
+  201 |   useEffect(() => {
+  202 |     const keys = [...new Set(companies.map((c) => String(c.profile_key || '')).filter(Boolean))]
+  203 |     if (!keys.length) {
+  204 |       setRatingsByProfileKey({})
+  205 |       return
+  206 |     }
+  207 | 
+  208 |     apiRequest(`/ratings/search?profile_keys=${encodeURIComponent(keys.join(','))}`, { token })
+  209 |       .then((data) => setRatingsByProfileKey(data || {}))
+  210 |       .catch(() => setRatingsByProfileKey({}))
+  211 |   }, [companies, token])
+  212 | 
+  213 |   useEffect(() => {
+  214 |     loadRecentViews()
+  215 |   }, [loadRecentViews])
+  216 | 
+  217 |   function updateAdvancedFilter(key, value) {
+  218 |     if (premiumLocked) {
+  219 |       setUpgradePrompt('Upgrade to Premium to use advanced filters.')
+  220 |       return
+  221 |     }
+  222 |     setFilters((prev) => ({ ...prev, [key]: value }))
+  223 |   }
+  224 | 
+  225 |   async function saveAlert() {
+  226 |     setAlertFeedback('')
+  227 |     const q = query.trim()
+  228 |     if (!q) {
+  229 |       setAlertFeedback('Enter a search query first.')
+  230 |       return
+  231 |     }
+  232 |     try {
+  233 |       const result = await apiRequest('/search/alerts', {
+  234 |         method: 'POST',
+  235 |         token,
+  236 |         body: { query: q, filters: { category, ...filters } },
+  237 |       })
+  238 |       setAlertFeedback(`Alert saved. Remaining alert quota today: ${result?.quota?.remaining ?? '-'}`)
+  239 |     } catch (err) {
+  240 |       setAlertFeedback(err.message || 'Failed to save alert.')
+  241 |     }
+  242 |   }
+  243 | 
+  244 |   function openChatNotice(name) {
+  245 |     navigate('/chat', { state: { notice: `Contacting ${name}. If you are unverified, your first message may appear as a request.` } })
+  246 |   }
+  247 | 
+  248 |   return (
+  249 |     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
+  250 |       <div className="max-w-7xl mx-auto px-4 py-6">
+  251 |         <div className="rounded-2xl bg-white/70 p-4 shadow-sm ring-1 ring-slate-200/60 backdrop-blur-md dark:bg-slate-950/40 dark:ring-white/10">
+  252 |           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+  253 |             <div className="flex items-center gap-2">
+  254 |               <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] text-white flex items-center justify-center">
+  255 |                 <SearchIcon size={18} />
+  256 |               </div>
+  257 |               <div>
+  258 |                 <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Search</p>
+  259 |                 <p className="text-[11px] text-slate-500 dark:text-slate-400">Garments & Textile marketplace</p>
+  260 |               </div>
+  261 |             </div>
+  262 | 
+  263 |             <div className="flex gap-2">
+  264 |               <button
+  265 |                 type="button"
+  266 |                 onClick={() => setFiltersOpen((v) => !v)}
+  267 |                 className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200/70 transition hover:bg-white active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
+  268 |               >
+  269 |                 <Filter size={16} />
+  270 |                 Filters
+  271 |               </button>
+  272 |               <button
+  273 |                 type="button"
+  274 |                 onClick={saveAlert}
+  275 |                 className="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:text-slate-950"
+  276 |               >
+  277 |                 <Bell size={16} />
+  278 |                 Save alert
+  279 |               </button>
+  280 |               <Link
+  281 |                 to="/notifications"
+  282 |                 className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200/70 transition hover:bg-white active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
+  283 |               >
+  284 |                 Alerts
+  285 |               </Link>
+  286 |             </div>
+  287 |           </div>
+  288 | 
+  289 |           <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+  290 |             <div className="relative flex-1">
+  291 |               <input
+  292 |                 ref={queryInputRef}
+  293 |                 value={query}
+  294 |                 onChange={(e) => setQuery(e.target.value)}
+  295 |                 placeholder="Search requests, factories, products…"
+  296 |                 className="w-full rounded-full bg-slate-100/70 px-4 py-3 pr-16 text-sm text-slate-800 shadow-inner ring-1 ring-slate-200/70 transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+  297 |               />
+  298 |               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-semibold tracking-widest text-slate-500 ring-1 ring-slate-200/70 dark:bg-slate-950/40 dark:text-slate-400 dark:ring-white/10">
+  299 |                 {isMac ? '⌘ K' : 'Ctrl K'}
+  300 |               </span>
+  301 |             </div>
+  302 |             <select
+  303 |               value={category}
+  304 |               onChange={(e) => setCategory(e.target.value)}
+  305 |               className="rounded-full bg-white px-4 py-3 text-sm text-slate-800 ring-1 ring-slate-200/70 transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+  306 |             >
+  307 |               <option value="">All categories</option>
+  308 |               <option value="Shirts">Shirts</option>
+  309 |               <option value="Knitwear">Knitwear</option>
+  310 |               <option value="Denim">Denim</option>
+  311 |               <option value="Women">Women</option>
+  312 |               <option value="Kids">Kids</option>
+  313 |             </select>
+  314 |             <button
+  315 |               type="button"
+  316 |               onClick={runSearch}
+  317 |               className="rounded-full bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95 disabled:opacity-60 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:text-slate-950"
+  318 |               disabled={loading}
+  319 |             >
+  320 |               {loading ? 'Searching…' : 'Search'}
+  321 |             </button>
+  322 |           </div>
+  323 | 
+  324 |           {filtersOpen ? (
+  325 |             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+  326 |               <div className={`rounded-2xl p-4 ring-1 shadow-sm ${premiumLocked ? 'bg-amber-50 ring-amber-200 dark:bg-amber-500/10 dark:ring-amber-500/30' : 'bg-[#ffffff] ring-slate-200/70 dark:bg-slate-900/40 dark:ring-white/10'}`}>
+  327 |                 <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Advanced filters</p>
+  328 |                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">{premiumLocked ? 'Locked on Free plan' : 'Available'}</p>
+  329 | 
+  330 |                 <div className="mt-3 grid grid-cols-1 gap-2">
+  331 |                   <select
+  332 |                     value={filters.moqRange}
+  333 |                     onChange={(e) => updateAdvancedFilter('moqRange', e.target.value)}
+  334 |                     className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+  335 |                   >
+  336 |                     <option value="">{`MOQ: ${formatMoqRangeLabel('Any')}`}</option>
+  337 |                     <option value="0-100">MOQ: 0 - 100</option>
+  338 |                     <option value="101-300">MOQ: 101 - 300</option>
+  339 |                     <option value="301-1000">MOQ: 301 - 1000</option>
+  340 |                     <option value="1001-999999">MOQ: 1000+</option>
+  341 |                   </select>
+  342 | 
+  343 |                   <input
+  344 |                     value={filters.country}
+  345 |                     onChange={(e) => updateAdvancedFilter('country', e.target.value)}
+  346 |                     placeholder="Country (e.g. Bangladesh)"
+  347 |                     className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+  348 |                   />
+  349 | 
+  350 |                   <select
+  351 |                     value={filters.orgType}
+  352 |                     onChange={(e) => updateAdvancedFilter('orgType', e.target.value)}
+  353 |                     className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+  354 |                   >
+  355 |                     <option value="">Organization type (Any)</option>
+  356 |                     <option value="buyer">Buyer</option>
+  357 |                     <option value="factory">Factory</option>
+  358 |                     <option value="buying_house">Buying House</option>
+  359 |                   </select>
+  360 | 
+  361 |                   <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
+  362 |                     <input
+  363 |                       type="checkbox"
+  364 |                       checked={filters.verifiedOnly}
+  365 |                       onChange={(e) => updateAdvancedFilter('verifiedOnly', e.target.checked)}
+  366 |                       className="h-4 w-4"
+  367 |                     />
+  368 |                     Verified only
+  369 |                   </label>
+  370 |                 </div>
+  371 |               </div>
+  372 | 
+  373 |               <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/70 dark:bg-slate-900/40 dark:ring-white/10">
+  374 |                 <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Status</p>
+  375 |                 <div className="mt-2 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
+  376 |                   {quotaMessage ? <p>{quotaMessage}</p> : <p>Run a search to see quota status.</p>}
+  377 |                   {upgradePrompt ? <p className="text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-2">{upgradePrompt}</p> : null}
+  378 |                   {alertFeedback ? <p className="text-sky-800 bg-sky-50 border border-sky-200 rounded-xl p-2">{alertFeedback}</p> : null}
+  379 |                 </div>
+  380 |               </div>
+  381 |             </div>
+  382 |           ) : null}
+  383 |         </div>
+  384 | 
+  385 |         <div className="mt-5 grid grid-cols-12 gap-4">
+  386 |           <div className="col-span-12 xl:col-span-9 rounded-2xl bg-white/70 shadow-sm ring-1 ring-slate-200/60 backdrop-blur-md overflow-hidden dark:bg-slate-950/30 dark:ring-white/10">
+  387 |           <div className="relative flex items-center gap-2 px-4 py-3 bg-white/40 dark:bg-slate-950/20 border-b border-slate-200/60 dark:border-transparent dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
+  388 |             {TAB_OPTIONS.map((t) => {
+  389 |               const Icon = t.icon
+  390 |               const active = activeTab === t.id
+  391 |               const count = t.id === 'requests' ? requests.length : t.id === 'companies' ? companies.length : totalResults
+  392 |               return (
+  393 |                 <motion.button
+  394 |                   key={t.id}
+  395 |                   type="button"
+  396 |                   onClick={() => setActiveTab(t.id)}
+  397 |                   whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+  398 |                   className={`relative inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ring-1 ${
+  399 |                     active
+  400 |                       ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
+  401 |                       : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
+  402 |                   }`}
+  403 |                 >
+  404 |                   {active ? (
+  405 |                     <motion.span
+  406 |                       layoutId="search-tab"
+  407 |                       className="absolute inset-0 rounded-full bg-indigo-500/10 dark:bg-white/10"
+  408 |                       transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+  409 |                     />
+  410 |                   ) : null}
+  411 |                   <span className="relative inline-flex items-center gap-2">
+  412 |                     <Icon size={16} />
+  413 |                     <span>{t.label}</span>
+  414 |                     <span className="text-[11px] opacity-70">({count})</span>
+  415 |                   </span>
+  416 |                 </motion.button>
+  417 |               )
+  418 |             })}
+  419 |           </div>
+  420 | 
+  421 |           <div className="p-4">
+  422 |             {loading ? (
+  423 |               <div className="space-y-3">
+  424 |                 {Array.from({ length: 6 }).map((_, i) => (
+  425 |                   <ResultSkeletonCard key={`result-skel-${i}`} index={i} />
+  426 |                 ))}
+  427 |               </div>
+  428 |             ) : null}
+  429 | 
+  430 |             {!loading && error ? (
+  431 |               <div className="rounded-2xl bg-rose-50 p-6 text-sm text-rose-800 text-center ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30">
+  432 |                 {error}
+  433 |               </div>
+  434 |             ) : null}
+  435 | 
+  436 |             {!loading && !error && totalResults === 0 ? (
+  437 |               <div className="rounded-2xl bg-slate-50 p-6 text-sm text-slate-700 text-center ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+  438 |                 No results found. Try a different query or category.
+  439 |               </div>
+  440 |             ) : null}
+  441 | 
+  442 |             {!loading && !error ? (
+  443 |               <div className="space-y-4">
+  444 |                 {(activeTab === 'all' || activeTab === 'requests') ? (
+  445 |                   <div className="space-y-3">
+  446 |                     {requests.map((r, idx) => {
+  447 |                       const author = r.author || {}
+  448 |                       const profileRoute = roleToProfileRoute(author.role, author.id)
+  449 |                       return (
+  450 |                         <motion.div
+  451 |                           key={r.id}
+  452 |                           initial={reduceMotion ? false : { opacity: 0, y: 20 }}
+  453 |                           animate={reduceMotion ? false : { opacity: 1, y: 0 }}
+  454 |                           transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: idx * 0.05 }}
+  455 |                           className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 transition hover:-translate-y-0.5 hover:shadow-md dark:bg-slate-900/50 dark:ring-slate-800"
+  456 |                         >
+  457 |                           <div className="flex items-start justify-between gap-3">
+  458 |                             <div className="min-w-0">
+  459 |                               <div className="flex items-center gap-2">
+  460 |                                 <Link to={profileRoute} className="font-semibold text-slate-900 dark:text-slate-100 hover:underline truncate">
+  461 |                                   {author.name || 'Buyer'}
+  462 |                                 </Link>
+  463 |                                 {author.verified ? (
+  464 |                                   <span className="verified-shimmer inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 px-2 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:from-emerald-500/12 dark:to-teal-400/10 dark:text-emerald-200 dark:ring-emerald-400/25">
+  465 |                                     Verified
+  466 |                                   </span>
+  467 |                                 ) : null}
+  468 |                                 {author.country ? <span className="text-[11px] text-slate-500 dark:text-slate-400">• {author.country}</span> : null}
+  469 |                               </div>
+  470 |                               <p className="mt-2 text-sm text-slate-800 dark:text-slate-200 whitespace-pre-wrap">{r.custom_description || ''}</p>
+  471 |                               <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-300">
+  472 |                                 <div>Category: <span className="font-semibold text-slate-800 dark:text-slate-100">{r.category || '-'}</span></div>
+  473 |                                 <div>Quantity/MOQ: <span className="font-semibold text-slate-800 dark:text-slate-100">{r.quantity || '-'}</span></div>
+  474 |                                 <div>Timeline: <span className="font-semibold text-slate-800 dark:text-slate-100">{r.timeline_days || '-'}</span></div>
+  475 |                                 <div>Material: <span className="font-semibold text-slate-800 dark:text-slate-100">{r.material || '-'}</span></div>
+  476 |                               </div>
+  477 |                             </div>
+  478 |                             <div className="flex flex-col gap-2 shrink-0">
+  479 |                               <Link to={profileRoute} className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 text-center dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">
+  480 |                                 Open profile
+  481 |                               </Link>
+  482 |                               <button
+  483 |                                 type="button"
+  484 |                                 onClick={() => openChatNotice(author.name || 'buyer')}
+  485 |                                 className="rounded-full bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:text-slate-950"
+  486 |                               >
+  487 |                                 Contact
+  488 |                               </button>
+  489 |                             </div>
+  490 |                           </div>
+  491 |                         </motion.div>
+  492 |                       )
+  493 |                     })}
+  494 |                   </div>
+  495 |                 ) : null}
+  496 | 
+  497 |                 {(activeTab === 'all' || activeTab === 'companies') ? (
+  498 |                   <div className="space-y-3">
+  499 |                     {companies.map((p, idx) => {
+  500 |                       const author = p.author || {}
+  501 |                       const profileRoute = roleToProfileRoute(author.role, author.id)
+  502 |                       const rating = ratingsByProfileKey?.[p.profile_key] || null
+  503 |                       return (
+  504 |                         <motion.div
+  505 |                           key={p.id}
+  506 |                           initial={reduceMotion ? false : { opacity: 0, y: 20 }}
+  507 |                           animate={reduceMotion ? false : { opacity: 1, y: 0 }}
+  508 |                           transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: idx * 0.05 }}
+  509 |                           className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 transition hover:-translate-y-0.5 hover:shadow-md dark:bg-slate-900/50 dark:ring-slate-800"
+  510 |                         >
+  511 |                           <div className="flex items-start justify-between gap-3">
+  512 |                             <div className="min-w-0">
+  513 |                               <div className="flex items-center gap-2">
+  514 |                                 <Link to={profileRoute} className="font-semibold text-slate-900 dark:text-slate-100 hover:underline truncate">
+  515 |                                   {author.name || p.title || 'Company'}
+  516 |                                 </Link>
+  517 |                                 {author.verified ? (
+  518 |                                   <span className="verified-shimmer inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 px-2 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:from-emerald-500/12 dark:to-teal-400/10 dark:text-emerald-200 dark:ring-emerald-400/25">
+  519 |                                     Verified
+  520 |                                   </span>
+  521 |                                 ) : null}
+  522 |                                 {author.country ? <span className="text-[11px] text-slate-500 dark:text-slate-400">• {author.country}</span> : null}
+  523 |                                 {author.role ? <span className="text-[11px] text-slate-500 dark:text-slate-400 uppercase">• {String(author.role).replaceAll('_', ' ')}</span> : null}
+  524 |                               </div>
+  525 |                               <p className="mt-2 text-sm text-slate-800 dark:text-slate-100 font-semibold">{p.title || 'Product'}</p>
+  526 |                               <p className="mt-1 text-sm text-slate-700 dark:text-slate-300 line-clamp-2">{p.description || ''}</p>
+  527 |                               <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-300">
+  528 |                                 <div>Category: <span className="font-semibold text-slate-800 dark:text-slate-100">{p.category || '-'}</span></div>
+  529 |                                 <div>MOQ: <span className="font-semibold text-slate-800 dark:text-slate-100">{p.moq || '-'}</span></div>
+  530 |                                 <div>Lead time: <span className="font-semibold text-slate-800 dark:text-slate-100">{p.lead_time_days || '-'}</span></div>
+  531 |                                 <div>Material: <span className="font-semibold text-slate-800 dark:text-slate-100">{p.material || '-'}</span></div>
+  532 |                               </div>
+  533 | 
+  534 |                               <div className="mt-3 text-xs text-slate-600 dark:text-slate-300">
+  535 |                                 Rating: <span className="font-semibold text-slate-800 dark:text-slate-100">{rating?.average_score ?? '0.0'}</span> ({rating?.total_count ?? 0}) • Confidence {Math.round((rating?.score_confidence ?? 0) * 100)}%
+  536 |                               </div>
+  537 |                               {p.hasVideo ? <div className="mt-2 text-xs font-semibold text-indigo-700 dark:text-indigo-200">Video available</div> : null}
+  538 |                             </div>
+  539 |                             <div className="flex flex-col gap-2 shrink-0">
+  540 |                               <Link to={profileRoute} className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 text-center dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">
+  541 |                                 View profile
+  542 |                               </Link>
+  543 |                               <button
+  544 |                                 type="button"
+  545 |                                 onClick={() => setQuickViewItem({ ...p, author })}
+  546 |                                 className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5"
+  547 |                               >
+  548 |                                 Quick view
+  549 |                               </button>
+  550 |                               <button
+  551 |                                 type="button"
+  552 |                                 onClick={() => openChatNotice(author.name || 'company')}
+  553 |                                 className="rounded-full bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:text-slate-950"
+  554 |                               >
+  555 |                                 Contact
+  556 |                               </button>
+  557 |                             </div>
+  558 |                           </div>
+  559 |                         </motion.div>
+  560 |                       )
+  561 |                     })}
+  562 |                   </div>
+  563 |                 ) : null}
+  564 |               </div>
+  565 |             ) : null}
+  566 |           </div>
+  567 |           </div>
+  568 | 
+  569 |           <aside className="col-span-12 xl:col-span-3 space-y-4">
+  570 |             <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+  571 |               <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Recently viewed</p>
+  572 |               <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Private to you • Recorded on Quick View</p>
+  573 |               <div className="mt-3 space-y-2">
+  574 |                 {recentViews.length ? recentViews.map((row) => (
+  575 |                   <button
+  576 |                     key={row.id}
+  577 |                     type="button"
+  578 |                     onClick={() => setQuickViewItem({ ...row.product, author: row.author })}
+  579 |                     className="w-full text-left rounded-xl bg-white px-3 py-2 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-[0.99] dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/8"
+  580 |                     title="Open Quick View"
+  581 |                   >
+  582 |                     <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{row.product?.title || 'Product'}</p>
+  583 |                     <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{row.author?.name || 'Company'} • {new Date(row.viewed_at).toLocaleString()}</p>
+  584 |                   </button>
+  585 |                 )) : (
+  586 |                   <div className="text-xs text-slate-500 dark:text-slate-400">No views yet. Use “Quick view” on a product.</div>
+  587 |                 )}
+  588 |               </div>
+  589 |               <div className="mt-3">
+  590 |                 <Link to="/notifications" className="text-xs font-semibold text-indigo-600 hover:underline dark:text-indigo-300">Open full history</Link>
+  591 |               </div>
+  592 |             </div>
+  593 | 
+  594 |             {premiumLocked ? (
+  595 |               <div className="rounded-2xl p-4 ring-1 ring-amber-200 bg-amber-50 dark:bg-amber-500/10 dark:ring-amber-500/30">
+  596 |                 <p className="text-sm font-bold text-amber-900 dark:text-amber-200">Premium filters</p>
+  597 |                 <p className="mt-1 text-xs text-amber-800 dark:text-amber-200/90">Upgrade to use advanced filters like country, MOQ range, verified-only, and org type.</p>
+  598 |               </div>
+  599 |             ) : null}
+  600 |           </aside>
+  601 |         </div>
+  602 |       </div>
+  603 | 
+  604 |       <ProductQuickViewModal
+  605 |         open={Boolean(quickViewItem)}
+  606 |         item={quickViewItem}
+  607 |         onClose={() => setQuickViewItem(null)}
+  608 |         onViewed={loadRecentViews}
+  609 |       />
+  610 |     </div>
+  611 |   )
+  612 | }
+  613 | 

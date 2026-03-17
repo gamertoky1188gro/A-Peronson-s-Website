@@ -1,3 +1,32 @@
+/*
+  Route: /help
+  Access: Public
+
+  Public Pages:
+    /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+  Protected Pages (login required):
+    /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+    /notifications, /chat, /call, /verification, /verification-center
+
+  Primary responsibilities:
+    - Help Center documentation + admin FAQ management UI (if user has permissions).
+    - Keep the existing 2-column layout: main content + sticky sidebar.
+    - Provide a bento-grid navigation hub for quick jumping to sections.
+
+  Key API endpoints:
+    - GET /api/assistant/knowledge (FAQ list)
+    - POST/DELETE endpoints for FAQ management (depending on existing server implementation)
+
+  Major UI/UX patterns:
+    - "Modern Industrialist" palette:
+      light = slate-50 studio; dark = deep slate (#0B0F1A).
+    - Glassmorphism cards, spotlight hover, staggered entry motion.
+    - Role glows in dark mode (Buyer/Factory/Buying House).
+    - Verified shimmer badge styling (trust indicator).
+
+  Special:
+    - FloatingAssistant switches to "Orb" styling only on this route.
+*/
 import React, { useCallback, useMemo, useState, useEffect } from 'react'
 import { Check, ChevronDown, FileText, Lock, ShieldCheck, Sparkles } from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'

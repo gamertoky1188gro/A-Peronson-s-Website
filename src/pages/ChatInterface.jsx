@@ -1,3 +1,28 @@
+/*
+  Route: /chat
+  Access: Protected (login required)
+  Allowed roles: buyer, buying_house, factory, owner, admin, agent
+
+  Public Pages:
+    /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+  Protected Pages (login required):
+    /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+    /notifications, /chat, /call, /verification, /verification-center
+
+  Primary responsibilities:
+    - Provide real-time-ish messaging UI: conversations list + message thread.
+    - Enforce buying-house "conversation lock" rules (ownership/permissions) per backend.
+    - Support sending attachments/media and viewing shared docs (contract-adjacent UX).
+
+  Key API endpoints (high level):
+    - GET /api/chat/rooms, GET /api/chat/rooms/:id/messages
+    - POST /api/chat/rooms, POST /api/chat/messages
+    - Any lock/permission endpoints (depending on server implementation)
+
+  Notes:
+    - AppLayout hides NavBar/Footer for /chat (immersive route).
+    - This file is large; comments focus on major blocks (state/effects/render sections).
+*/
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {

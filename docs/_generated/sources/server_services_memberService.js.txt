@@ -1,0 +1,299 @@
+    1 | import crypto from 'crypto'
+    2 | import bcrypt from 'bcryptjs'
+    3 | import { readJson, writeJson } from '../utils/jsonStore.js'
+    4 | import { sanitizeString } from '../utils/validators.js'
+    5 | import { getSubscription } from './subscriptionService.js'
+    6 | 
+    7 | const FILE = 'members.json'
+    8 | const FREE_MEMBER_LIMIT = 10
+    9 | const VALID_PERMISSIONS = new Set(['view_requests', 'assign_requests', 'manage_members', 'reports_only'])
+   10 | const PERMISSION_CONFLICTS = [['manage_members', 'reports_only']]
+   11 | const MATRIX_SECTIONS = ['requests', 'products', 'analytics', 'members', 'documents']
+   12 | 
+   13 | function sanitizePermissions(permissions) {
+   14 |   if (!Array.isArray(permissions)) return []
+   15 |   return [...new Set(permissions.map((p) => sanitizeString(String(p), 64)).filter((p) => VALID_PERMISSIONS.has(p)))]
+   16 | }
+   17 | 
+   18 | function sanitizePermissionMatrix(rawMatrix) {
+   19 |   const input = rawMatrix && typeof rawMatrix === 'object' ? rawMatrix : {}
+   20 |   const matrix = {}
+   21 | 
+   22 |   for (const section of MATRIX_SECTIONS) {
+   23 |     const sectionValue = input?.[section] && typeof input[section] === 'object' ? input[section] : {}
+   24 |     matrix[section] = {
+   25 |       view: Boolean(sectionValue.view),
+   26 |       edit: Boolean(sectionValue.edit),
+   27 |     }
+   28 |   }
+   29 | 
+   30 |   return matrix
+   31 | }
+   32 | 
+   33 | function hasPermissionConflict(permissions) {
+   34 |   return PERMISSION_CONFLICTS.find(([a, b]) => permissions.includes(a) && permissions.includes(b)) || null
+   35 | }
+   36 | 
+   37 | function cleanMember(member) {
+   38 |   const { password_hash: _passwordHash, ...safe } = member
+   39 |   return safe
+   40 | }
+   41 | 
+   42 | function normalizeMember(member) {
+   43 |   const username = sanitizeString(member.username || member.account_id, 64)
+   44 |   const memberId = sanitizeString(member.member_id || member.account_id, 64)
+   45 |   const orgOwnerId = sanitizeString(member.org_owner_id || member.organization_id, 120)
+   46 | 
+   47 |   return {
+   48 |     ...member,
+   49 |     org_owner_id: orgOwnerId,
+   50 |     organization_id: orgOwnerId,
+   51 |     username,
+   52 |     member_id: memberId,
+   53 |     account_id: member.account_id || memberId,
+   54 |     permission_matrix: sanitizePermissionMatrix(member.permission_matrix),
+   55 |   }
+   56 | }
+   57 | 
+   58 | async function getOrgMembers(orgOwnerId) {
+   59 |   const members = await readJson(FILE)
+   60 |   return members.filter((m) => String(m.org_owner_id) === String(orgOwnerId)).map(normalizeMember)
+   61 | }
+   62 | 
+   63 | async function readAllMembers() {
+   64 |   const members = await readJson(FILE)
+   65 |   return members.map(normalizeMember)
+   66 | }
+   67 | 
+   68 | export async function listMembers(orgOwnerId) {
+   69 |   const members = await getOrgMembers(orgOwnerId)
+   70 |   return members.map(cleanMember)
+   71 | }
+   72 | 
+   73 | async function assertFreePlanMemberLimit(orgOwnerId, allMembers, currentMember = null, nextStatus = 'active') {
+   74 |   const subscription = await getSubscription(orgOwnerId)
+   75 |   const plan = subscription?.plan === 'premium' ? 'premium' : 'free'
+   76 |   if (plan !== 'free') return
+   77 | 
+   78 |   const orgMembers = allMembers.filter((m) => String(m.org_owner_id) === String(orgOwnerId))
+   79 |   const activeCount = orgMembers.filter((m) => m.status === 'active' && String(m.id) !== String(currentMember?.id)).length
+   80 |   if (nextStatus === 'active' && activeCount >= FREE_MEMBER_LIMIT) {
+   81 |     const error = new Error('Free plan allows up to 10 active sub-accounts')
+   82 |     error.status = 403
+   83 |     throw error
+   84 |   }
+   85 | }
+   86 | 
+   87 | function ensureUniqueIdentity({ members, orgOwnerId, username, memberId, currentMemberId = null }) {
+   88 |   const duplicateUsername = members.find(
+   89 |     (m) =>
+   90 |       String(m.org_owner_id) === String(orgOwnerId) &&
+   91 |       String(m.id) !== String(currentMemberId) &&
+   92 |       m.username.toLowerCase() === username.toLowerCase(),
+   93 |   )
+   94 |   if (duplicateUsername) {
+   95 |     const error = new Error('Duplicate username in this organization')
+   96 |     error.status = 409
+   97 |     throw error
+   98 |   }
+   99 | 
+  100 |   const duplicateMemberId = members.find(
+  101 |     (m) =>
+  102 |       String(m.org_owner_id) === String(orgOwnerId) &&
+  103 |       String(m.id) !== String(currentMemberId) &&
+  104 |       String(m.member_id || '').toLowerCase() === memberId.toLowerCase(),
+  105 |   )
+  106 |   if (duplicateMemberId) {
+  107 |     const error = new Error('Member ID already exists')
+  108 |     error.status = 409
+  109 |     throw error
+  110 |   }
+  111 | }
+  112 | 
+  113 | export async function createMember(orgOwnerId, payload) {
+  114 |   const members = await readAllMembers()
+  115 | 
+  116 |   const name = sanitizeString(payload.name, 120)
+  117 |   const username = sanitizeString(payload.username, 64)
+  118 |   const memberId = sanitizeString(payload.member_id || payload.account_id, 64)
+  119 |   const role = sanitizeString(payload.role, 64)
+  120 |   const permissions = sanitizePermissions(payload.permissions)
+  121 |   const permissionMatrix = sanitizePermissionMatrix(payload.permission_matrix)
+  122 | 
+  123 |   if (!name || !username || !memberId || !role || !payload.password) {
+  124 |     const error = new Error('name, username, member_id, role and password are required')
+  125 |     error.status = 400
+  126 |     throw error
+  127 |   }
+  128 | 
+  129 |   ensureUniqueIdentity({ members, orgOwnerId, username, memberId })
+  130 | 
+  131 |   const conflict = hasPermissionConflict(permissions)
+  132 |   if (conflict) {
+  133 |     const error = new Error(`Permission conflict: ${conflict[0]} cannot be combined with ${conflict[1]}`)
+  134 |     error.status = 400
+  135 |     throw error
+  136 |   }
+  137 | 
+  138 |   await assertFreePlanMemberLimit(orgOwnerId, members)
+  139 | 
+  140 |   const hash = await bcrypt.hash(String(payload.password), 10)
+  141 |   const member = {
+  142 |     id: crypto.randomUUID(),
+  143 |     org_owner_id: orgOwnerId,
+  144 |     organization_id: orgOwnerId,
+  145 |     name,
+  146 |     username,
+  147 |     member_id: memberId,
+  148 |     account_id: memberId,
+  149 |     role,
+  150 |     permissions,
+  151 |     permission_matrix: permissionMatrix,
+  152 |     password_hash: hash,
+  153 |     status: 'active',
+  154 |     assigned_requests: Number(payload.assigned_requests || 0),
+  155 |     performance_score: Number(payload.performance_score || 0),
+  156 |     created_at: new Date().toISOString(),
+  157 |     updated_at: new Date().toISOString(),
+  158 |   }
+  159 | 
+  160 |   members.push(member)
+  161 |   await writeJson(FILE, members)
+  162 |   return cleanMember(member)
+  163 | }
+  164 | 
+  165 | export async function updateMember(orgOwnerId, memberId, payload) {
+  166 |   const members = await readAllMembers()
+  167 |   const idx = members.findIndex((m) => String(m.id) === String(memberId) && String(m.org_owner_id) === String(orgOwnerId))
+  168 |   if (idx < 0) return null
+  169 | 
+  170 |   const current = members[idx]
+  171 |   const name = payload.name === undefined ? current.name : sanitizeString(payload.name, 120)
+  172 |   const username = payload.username === undefined ? current.username : sanitizeString(payload.username, 64)
+  173 |   const normalizedMemberId =
+  174 |     payload.member_id === undefined && payload.account_id === undefined
+  175 |       ? current.member_id
+  176 |       : sanitizeString(payload.member_id || payload.account_id, 64)
+  177 |   const role = payload.role === undefined ? current.role : sanitizeString(payload.role, 64)
+  178 |   const status = payload.status === undefined ? current.status : sanitizeString(payload.status, 32)
+  179 |   const permissions = payload.permissions === undefined ? current.permissions : sanitizePermissions(payload.permissions)
+  180 |   const permissionMatrix =
+  181 |     payload.permission_matrix === undefined
+  182 |       ? sanitizePermissionMatrix(current.permission_matrix)
+  183 |       : sanitizePermissionMatrix(payload.permission_matrix)
+  184 | 
+  185 |   if (!name || !username || !normalizedMemberId || !role) {
+  186 |     const error = new Error('name, username, member_id and role are required')
+  187 |     error.status = 400
+  188 |     throw error
+  189 |   }
+  190 | 
+  191 |   if (!['active', 'inactive'].includes(status)) {
+  192 |     const error = new Error('status must be active or inactive')
+  193 |     error.status = 400
+  194 |     throw error
+  195 |   }
+  196 | 
+  197 |   ensureUniqueIdentity({
+  198 |     members,
+  199 |     orgOwnerId,
+  200 |     username,
+  201 |     memberId: normalizedMemberId,
+  202 |     currentMemberId: current.id,
+  203 |   })
+  204 | 
+  205 |   const conflict = hasPermissionConflict(permissions)
+  206 |   if (conflict) {
+  207 |     const error = new Error(`Permission conflict: ${conflict[0]} cannot be combined with ${conflict[1]}`)
+  208 |     error.status = 400
+  209 |     throw error
+  210 |   }
+  211 | 
+  212 |   await assertFreePlanMemberLimit(orgOwnerId, members, current, status)
+  213 | 
+  214 |   members[idx] = {
+  215 |     ...current,
+  216 |     name,
+  217 |     username,
+  218 |     member_id: normalizedMemberId,
+  219 |     account_id: normalizedMemberId,
+  220 |     role,
+  221 |     status,
+  222 |     permissions,
+  223 |     permission_matrix: permissionMatrix,
+  224 |     updated_at: new Date().toISOString(),
+  225 |   }
+  226 | 
+  227 |   await writeJson(FILE, members)
+  228 |   return cleanMember(members[idx])
+  229 | }
+  230 | 
+  231 | export async function updateMemberPermissions(orgOwnerId, memberId, permissionsPayload, permissionMatrixPayload) {
+  232 |   const members = await readAllMembers()
+  233 |   const idx = members.findIndex((m) => String(m.id) === String(memberId) && String(m.org_owner_id) === String(orgOwnerId))
+  234 |   if (idx < 0) return null
+  235 | 
+  236 |   const permissions = sanitizePermissions(permissionsPayload)
+  237 |   const conflict = hasPermissionConflict(permissions)
+  238 |   if (conflict) {
+  239 |     const error = new Error(`Permission conflict: ${conflict[0]} cannot be combined with ${conflict[1]}`)
+  240 |     error.status = 400
+  241 |     throw error
+  242 |   }
+  243 | 
+  244 |   members[idx] = {
+  245 |     ...members[idx],
+  246 |     permissions,
+  247 |     permission_matrix: sanitizePermissionMatrix(permissionMatrixPayload),
+  248 |     updated_at: new Date().toISOString(),
+  249 |   }
+  250 |   await writeJson(FILE, members)
+  251 |   return cleanMember(members[idx])
+  252 | }
+  253 | 
+  254 | export async function resetMemberPassword(orgOwnerId, memberId) {
+  255 |   const members = await readAllMembers()
+  256 |   const idx = members.findIndex((m) => String(m.id) === String(memberId) && String(m.org_owner_id) === String(orgOwnerId))
+  257 |   if (idx < 0) return null
+  258 | 
+  259 |   const tempPassword = crypto.randomBytes(6).toString('base64url')
+  260 |   members[idx] = {
+  261 |     ...members[idx],
+  262 |     password_hash: await bcrypt.hash(tempPassword, 10),
+  263 |     password_reset_at: new Date().toISOString(),
+  264 |     updated_at: new Date().toISOString(),
+  265 |   }
+  266 | 
+  267 |   await writeJson(FILE, members)
+  268 |   return { member: cleanMember(members[idx]), temporary_password: tempPassword }
+  269 | }
+  270 | 
+  271 | export async function deactivateOrRemoveMember(orgOwnerId, memberId, mode = 'deactivate') {
+  272 |   const members = await readAllMembers()
+  273 |   const idx = members.findIndex((m) => String(m.id) === String(memberId) && String(m.org_owner_id) === String(orgOwnerId))
+  274 |   if (idx < 0) return null
+  275 | 
+  276 |   if (mode === 'remove') {
+  277 |     const [removed] = members.splice(idx, 1)
+  278 |     await writeJson(FILE, members)
+  279 |     return { removed: cleanMember(removed), mode: 'remove' }
+  280 |   }
+  281 | 
+  282 |   members[idx] = {
+  283 |     ...members[idx],
+  284 |     status: 'inactive',
+  285 |     updated_at: new Date().toISOString(),
+  286 |   }
+  287 |   await writeJson(FILE, members)
+  288 |   return { member: cleanMember(members[idx]), mode: 'deactivate' }
+  289 | }
+  290 | 
+  291 | export function getMemberConstraints() {
+  292 |   return {
+  293 |     free_member_limit: FREE_MEMBER_LIMIT,
+  294 |     valid_permissions: [...VALID_PERMISSIONS],
+  295 |     permission_conflicts: PERMISSION_CONFLICTS,
+  296 |     permission_matrix_sections: MATRIX_SECTIONS,
+  297 |   }
+  298 | }
+  299 | 

@@ -1,219 +1,216 @@
-# Requirement - Server Feature Documentation (Manual)
+# Requirement
 
-## File Structure & Overview
-- `server/routes/requirementRoutes.js`: Requirement CRUD/search endpoints under `/api/requirements`.
-- `server/controllers/requirementController.js`: HTTP-layer validation and response mapping.
-- `server/services/requirementService.js`: Requirement persistence and update logic.
-- `server/services/searchAccessService.js`: Plan/quota/advanced-filter gating.
-- `server/services/notificationService.js`: Emits notifications when new requirement is created.
-- `server/services/ratingsService.js`: Milestone recording on completion transitions.
-- `server/database/requirements.json`: Requirement records.
+This doc is generated from source snapshots with `path:line` references.
 
-## Code Explanation
+## Mounted prefixes
 
-### `server/routes/requirementRoutes.js`
-Summary:
-- Restricts create to buyers.
-- Restricts patch/delete to buyer/admin.
+- `/api/requirements` -> `server/routes/requirementRoutes.js:61` (router var: `requirementRoutes`)
 
-Endpoints:
-- `POST /` -> `createBuyerRequirement`
-- `GET /` -> `getRequirements`
-- `GET /search` -> `searchRequirements`
-- `GET /:requirementId` -> `getRequirement`
-- `PATCH /:requirementId` -> `patchRequirement`
-- `DELETE /:requirementId` -> `deleteRequirement`
+## Routes (ultra-detailed)
 
-### `server/controllers/requirementController.js`
-Summary:
-- Delegates core data operations to service layer.
-- Applies authorization outcome mapping (`forbidden`, not found).
-- Enforces plan-based search policy.
+### POST `/api/requirements/`
 
-Functions:
-1. `createBuyerRequirement(req, res)`
-- Input: buyer JWT user id, payload in `req.body`.
-- Output: `201` requirement.
-- Dependency: `createRequirement`.
+- **Route definition:** `server/routes/requirementRoutes.js:7`
 
-2. `getRequirements(req, res)`
-- Input: JWT role.
-- Logic: buyers get only own requirements; other roles can get all.
-- Output: `200 Requirement[]`.
-- Dependency: `listRequirements`.
-
-3. `getRequirement(req, res)`
-- Input: `req.params.requirementId`.
-- Output: `200 Requirement` or `404`.
-- Dependency: `getRequirementById`.
-
-4. `patchRequirement(req, res)`
-- Input: requirement id + patch body + actor.
-- Output: `200` updated, `403`, `404`.
-- Dependency: `updateRequirement`.
-
-5. `deleteRequirement(req, res)`
-- Input: requirement id + actor.
-- Output: `200 {ok:true}`, `403`, `404`.
-- Dependency: `removeRequirement`.
-
-6. `searchRequirements(req, res)`
-- Step-by-step:
-1. Gets user plan and quota snapshot.
-2. Detects advanced filters in query.
-3. Blocks advanced filters for non-premium plan (`403`).
-4. Consumes daily quota; blocks on limit (`429`).
-5. Reads full requirement set and applies query/category/verified filters.
-6. Returns items plus access/quota payload.
-- Inputs:
-  - Query: `q`, `category`, `verifiedOnly`, plus optional advanced filters.
-- Outputs:
-  - `200`: `{ items: Requirement[], access metadata }`
-  - `403`: upgrade required
-  - `429`: daily limit reached
-
-### `server/services/requirementService.js`
-Summary:
-- Normalizes, sanitizes, persists, updates, and removes requirement records.
-
-Functions:
-- `normalizeRequirement(buyerId, payload)`: creates canonical requirement object.
-- `createRequirement(buyerId, payload)`:
-  - Writes requirement.
-  - Emits notifications (`emitNotificationsForEntity('buyer_request', requirement)`).
-  - Logs creation.
-- `listRequirements(filters)`: filter by buyer and/or status.
-- `getRequirementById(id)`: direct lookup.
-- `updateRequirement(requirementId, patch, actor)`:
-  - Ownership enforcement for buyer role.
-  - Sanitized field-level patching.
-  - Optional milestone recording when status transitions to completed states and `counterparty_id` is provided.
-- `removeRequirement(requirementId, actor)`: delete with ownership enforcement.
-
-Dependencies:
-- `readJson`, `writeJson`, `sanitizeString`, logger, notification service, ratings service.
-
-## API Endpoints
-
-### `POST /api/requirements/`
-- Method: `POST`
-- Auth: required.
-- Authorization: role must be `buyer`.
-- Body example:
-```json
-{
-  "category": "Knitwear",
-  "quantity": "10000 pcs",
-  "price_range": "$4-$6",
-  "material": "Cotton",
-  "timeline_days": "30",
-  "certifications_required": ["OEKO-TEX"],
-  "shipping_terms": "FOB Chittagong",
-  "custom_description": "Need breathable jersey knit."
-}
-```
-- Responses:
-  - `201`: created requirement.
-  - `401`, `403`.
-
-### `GET /api/requirements/`
-- Method: `GET`
-- Auth: required.
-- Behavior:
-  - buyer -> own requirements.
-  - non-buyer -> broader list.
-- Response: `200 Requirement[]`.
-
-### `GET /api/requirements/search`
-- Method: `GET`
-- Auth: required.
-- Query:
-  - `q`, `category`, `verifiedOnly` (+ advanced filter keys if premium).
-- Responses:
-  - `200`: `{ items, access payload }`
-  - `403`: advanced filters need premium
-  - `429`: daily search limit reached
-
-### `GET /api/requirements/:requirementId`
-- Response: `200` or `404`.
-
-### `PATCH /api/requirements/:requirementId`
-- Auth: required.
-- Authorization: `buyer` (owner only) or `admin`.
-- Body: partial requirement patch (including optional `status`, `counterparty_id` for milestone context).
-- Response: `200`, `403`, `404`.
-
-### `DELETE /api/requirements/:requirementId`
-- Auth: required.
-- Authorization: `buyer` (owner only) or `admin`.
-- Response: `200 {ok:true}`, `403`, `404`.
-
-## Database / Data Model
-
-Primary store:
-- `server/database/requirements.json`
-
-Canonical requirement fields:
-- `id: string`
-- `buyer_id: string`
-- `category: string`
-- `quantity: string`
-- `price_range: string`
-- `material: string`
-- `timeline_days: string`
-- `certifications_required: string[]`
-- `shipping_terms: string`
-- `custom_description: string`
-- `status: string` (starts at `open`)
-- `created_at: string (ISO)`
-
-Related data effects:
-- Notifications generated for new requirement.
-- Optional rating milestone events generated on qualifying status transitions.
-
-Example in-code filter query:
 ```js
-requirements.filter((r) => {
-  if (filters.buyerId && r.buyer_id !== filters.buyerId) return false
-  if (filters.status && r.status !== filters.status) return false
-  return true
-})
+router.post('/', requireAuth, allowRoles('buyer'), createBuyerRequirement)
 ```
+- **Middleware stack (in order):**
+  - `requireAuth`
+  - `allowRoles('buyer')`
+- **Handler:** `createBuyerRequirement`
+- **Controller file:** `server/controllers/requirementController.js`
 
-## Business Logic & Workflow
-1. Buyer submits requirement from frontend.
-2. Controller calls service to normalize + sanitize + persist.
-3. Service emits downstream notification event hooks.
-4. Feed/search pages read requirements through listing/search endpoints.
-5. Updates can advance status; completion-like transitions can write milestone entries.
+#### Controller implementation: `server/controllers/requirementController.js:33`
 
-Flow:
-```mermaid
-flowchart TD
-  A["Buyer request form"] --> B["/api/requirements"]
-  B --> C["requirementController"]
-  C --> D["requirementService"]
-  D --> E["requirements.json"]
-  D --> F["notificationService"]
-  D --> G["ratingsService (milestones)"]
-  C --> H["Response to frontend"]
+```js
+export async function createBuyerRequirement(req, res) {
+  const requirement = await createRequirement(req.user.id, req.body)
+  return res.status(201).json(requirement)
+}
+
 ```
+### GET `/api/requirements/`
 
-## Error Handling & Validation
-- Unauthorized role access blocked by middleware.
-- Ownership checks return `403`.
-- Missing entities return `404`.
-- Search policy failures:
-  - `403` for premium-only filter usage.
-  - `429` for quota limits.
-- Input strings are sanitized before persistence.
+- **Route definition:** `server/routes/requirementRoutes.js:8`
 
-## Security Considerations
-- JWT required for all requirement routes.
-- Role and ownership checks prevent unauthorized writes.
-- Sanitization limits payload injection/noise.
-- Search quota controls reduce abuse.
+```js
+router.get('/', requireAuth, getRequirements)
+```
+- **Middleware stack (in order):**
+  - `requireAuth`
+- **Handler:** `getRequirements`
+- **Controller file:** `server/controllers/requirementController.js`
 
-## Extra Notes / Metadata
-- Data types are string-heavy by MVP design; stronger typed domain model may be beneficial later.
-- JSON datastore means no transactional locking across concurrent edits.
+#### Controller implementation: `server/controllers/requirementController.js:38`
+
+```js
+export async function getRequirements(req, res) {
+  const filters = {}
+  if (req.user.role === 'buyer') filters.buyerId = req.user.id
+  return res.json(await listRequirements(filters))
+}
+
+```
+### GET `/api/requirements/search`
+
+- **Route definition:** `server/routes/requirementRoutes.js:9`
+
+```js
+router.get('/search', requireAuth, searchRequirements)
+```
+- **Middleware stack (in order):**
+  - `requireAuth`
+- **Handler:** `searchRequirements`
+- **Controller file:** `server/controllers/requirementController.js`
+
+#### Controller implementation: `server/controllers/requirementController.js:64`
+
+```js
+export async function searchRequirements(req, res) {
+  const plan = await getUserPlan(req.user.id)
+  const advancedFilters = extractUsedAdvancedFilters(req.query)
+  const quotaPreview = await getQuotaSnapshot(req.user.id, 'requirements_search', plan)
+
+  if (advancedFilters.length > 0 && !canUseAdvancedFilters(plan)) {
+    return res.status(403).json(buildLimitError({
+      code: 'upgrade_required',
+      message: 'Advanced filters require a premium plan',
+      quota: quotaPreview,
+      missingFilters: advancedFilters,
+      upgradeRequired: true,
+    }))
+  }
+
+  const quotaUse = await consumeQuota(req.user.id, 'requirements_search', plan)
+  if (!quotaUse.allowed) {
+    return res.status(429).json(buildLimitError({
+      code: 'limit_reached',
+      message: 'Daily requirement search limit reached',
+      quota: quotaUse.quota,
+    }))
+  }
+
+  const all = await listRequirements({})
+  const users = await readJson('users.json')
+  const usersById = new Map(users.map((u) => [u.id, u]))
+
+  const q = String(req.query.q || '').toLowerCase().trim()
+  const wantedCountry = String(req.query.country || '').trim().toLowerCase()
+  const wantedOrgType = String(req.query.orgType || '').trim().toLowerCase()
+  const verifiedOnly = req.query.verifiedOnly === 'true'
+  const moqRange = String(req.query.moqRange || '').trim()
+
+  const results = all
+    .map((r) => {
+      const buyer = usersById.get(r.buyer_id) || null
+      const authorCountry = String(buyer?.profile?.country || '').trim()
+      return {
+        ...r,
+        author: buyer ? {
+          id: buyer.id,
+          name: buyer.name,
+          role: buyer.role,
+          verified: Boolean(buyer.verified),
+          country: authorCountry,
+        } : { id: r.buyer_id, name: 'Unknown buyer', role: 'buyer', verified: false, country: '' },
+        profile_key: `user:${r.buyer_id}`,
+      }
+    })
+    .filter((r) => {
+      if (q && !`${r.category} ${r.material} ${r.custom_description}`.toLowerCase().includes(q)) return false
+      if (req.query.category && String(r.category).toLowerCase() !== String(req.query.category).toLowerCase()) return false
+      if (wantedOrgType && String(r.author?.role || '').toLowerCase() !== wantedOrgType) return false
+      if (wantedCountry && String(r.author?.country || '').toLowerCase() !== wantedCountry) return false
+      if (verifiedOnly && !r.author?.verified) return false
+      if (moqRange && !matchesMoqRange(moqRange, r.quantity)) return false
+      return true
+    })
+
+  return res.json({
+    items: results,
+    ...buildSearchAccessPayload({
+      action: 'requirements_search',
+      plan,
+      quota: quotaUse.quota,
+    }),
+  })
+}
+
+```
+### GET `/api/requirements/:requirementId`
+
+- **Route definition:** `server/routes/requirementRoutes.js:10`
+
+```js
+router.get('/:requirementId', requireAuth, getRequirement)
+```
+- **Middleware stack (in order):**
+  - `requireAuth`
+- **Handler:** `getRequirement`
+- **Controller file:** `server/controllers/requirementController.js`
+
+#### Controller implementation: `server/controllers/requirementController.js:44`
+
+```js
+export async function getRequirement(req, res) {
+  const requirement = await getRequirementById(req.params.requirementId)
+  if (!requirement) return res.status(404).json({ error: 'Requirement not found' })
+  return res.json(requirement)
+}
+
+```
+### PATCH `/api/requirements/:requirementId`
+
+- **Route definition:** `server/routes/requirementRoutes.js:11`
+
+```js
+router.patch('/:requirementId', requireAuth, allowRoles('buyer', 'admin'), patchRequirement)
+```
+- **Middleware stack (in order):**
+  - `requireAuth`
+  - `allowRoles('buyer', 'admin')`
+- **Handler:** `patchRequirement`
+- **Controller file:** `server/controllers/requirementController.js`
+
+#### Controller implementation: `server/controllers/requirementController.js:50`
+
+```js
+export async function patchRequirement(req, res) {
+  const updated = await updateRequirement(req.params.requirementId, req.body || {}, req.user)
+  if (updated === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+  if (!updated) return res.status(404).json({ error: 'Requirement not found' })
+  return res.json(updated)
+}
+
+```
+### DELETE `/api/requirements/:requirementId`
+
+- **Route definition:** `server/routes/requirementRoutes.js:12`
+
+```js
+router.delete('/:requirementId', requireAuth, allowRoles('buyer', 'admin'), deleteRequirement)
+```
+- **Middleware stack (in order):**
+  - `requireAuth`
+  - `allowRoles('buyer', 'admin')`
+- **Handler:** `deleteRequirement`
+- **Controller file:** `server/controllers/requirementController.js`
+
+#### Controller implementation: `server/controllers/requirementController.js:57`
+
+```js
+export async function deleteRequirement(req, res) {
+  const ok = await removeRequirement(req.params.requirementId, req.user)
+  if (ok === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+  if (!ok) return res.status(404).json({ error: 'Requirement not found' })
+  return res.json({ ok: true })
+}
+
+```
+## Persistence model (JSON-backed "DB")
+
+- JSON helpers: `server/utils/jsonStore.js` (readJson/writeJson/updateJson).
+- Data files: `server/database/*.json`.
+- Controllers/services often read from `users.json`, `messages.json`, `metrics.json`, etc.
+

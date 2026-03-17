@@ -1,0 +1,113 @@
+    1 | /*
+    2 |   Route: /login
+    3 |   Access: Public
+    4 | 
+    5 |   Public Pages:
+    6 |     /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+    7 |   Protected Pages (login required):
+    8 |     /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+    9 |     /notifications, /chat, /call, /verification, /verification-center
+   10 | 
+   11 |   Purpose:
+   12 |     - Authenticate the user and persist a session (token + user object).
+   13 |     - Redirect the user back to the originally requested page (if present),
+   14 |       otherwise redirect to the role home route.
+   15 | 
+   16 |   Key API:
+   17 |     - POST /api/auth/login  (via `apiRequest('/auth/login')`)
+   18 | 
+   19 |   Notes:
+   20 |     - Styling is still using legacy `neo-page` / `cyberpunk-card` utilities.
+   21 |       (We are only adding comments here; not changing styles/behavior.)
+   22 | */
+   23 | import React, { useState } from 'react'
+   24 | import { Link, useLocation, useNavigate } from 'react-router-dom'
+   25 | import { apiRequest, getRoleHome, saveSession } from '../../lib/auth'
+   26 | 
+   27 | export default function Login() {
+   28 |   // `navigate` is used after a successful login (or when routing needs to change).
+   29 |   const navigate = useNavigate()
+   30 |   // `location` holds router state, including the "from" path set by ProtectedRoute when redirecting to /login.
+   31 |   const location = useLocation()
+   32 | 
+   33 |   // Form fields (controlled inputs).
+   34 |   const [email, setEmail] = useState('')
+   35 |   const [password, setPassword] = useState('')
+   36 |   // Whether to persist session in longer-lived storage (implementation handled by `saveSession`).
+   37 |   const [rememberMe, setRememberMe] = useState(true)
+   38 |   // UX states for the submit button + inline error message.
+   39 |   const [loading, setLoading] = useState(false)
+   40 |   const [error, setError] = useState('')
+   41 | 
+   42 |   // If ProtectedRoute sent us here, it passes the blocked path in state so we can return after login.
+   43 |   const redirectTo = location.state?.from || null
+   44 | 
+   45 |   // Submit handler: calls backend auth endpoint, stores the session, and redirects.
+   46 |   const handleLogin = async (e) => {
+   47 |     e.preventDefault()
+   48 |     setError('')
+   49 |     setLoading(true)
+   50 |     try {
+   51 |       // Authenticate (server returns { user, token } on success).
+   52 |       const data = await apiRequest('/auth/login', {
+   53 |         method: 'POST',
+   54 |         body: { email, password },
+   55 |       })
+   56 | 
+   57 |       // Persist user + token (optionally "remember me") so protected routes can use them.
+   58 |       saveSession(data.user, data.token, { remember: rememberMe })
+   59 |       // Go back to the original route, or to the default role home screen.
+   60 |       navigate(redirectTo || getRoleHome(data.user.role), { replace: true })
+   61 |     } catch (err) {
+   62 |       // Surface backend message for incorrect credentials or other auth failures.
+   63 |       setError(err.message)
+   64 |     } finally {
+   65 |       setLoading(false)
+   66 |     }
+   67 |   }
+   68 | 
+   69 |   return (
+   70 |     // Page wrapper: centers the login panel and applies the current "neo/cyberpunk" base style utilities.
+   71 |     <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card flex items-center justify-center p-4">
+   72 |       {/* Login card container (max width keeps form readable). */}
+   73 |       <div className="w-full max-w-md bg-white neo-panel cyberpunk-card rounded-xl p-8">
+   74 |         <h1 className="text-3xl font-bold">Login</h1>
+   75 |         <p className="mt-2 text-sm text-gray-600">Access pages based on your role (Buyer, Factory, Buying House, Admin).</p>
+   76 | 
+   77 |         {/* Controlled form: React state is the single source of truth for inputs. */}
+   78 |         <form onSubmit={handleLogin} className="mt-6 space-y-4">
+   79 |           <div>
+   80 |             <label className="block text-sm font-medium mb-1">Email</label>
+   81 |             {/* Email is required; browser validates type=email too. */}
+   82 |             <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required className="w-full px-4 py-3 border rounded-lg" />
+   83 |           </div>
+   84 |           <div>
+   85 |             <label className="block text-sm font-medium mb-1">Password</label>
+   86 |             {/* Password is required; actual auth validation happens server-side. */}
+   87 |             <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required className="w-full px-4 py-3 border rounded-lg" />
+   88 |           </div>
+   89 | 
+   90 |           {/* "Remember me" determines how session is stored (cookie/localStorage) based on `saveSession` implementation. */}
+   91 |           <label className="flex items-center gap-2 text-sm">
+   92 |             <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
+   93 |             Remember me
+   94 |           </label>
+   95 | 
+   96 |           {/* Inline error (only renders when there is an error string). */}
+   97 |           {error ? <p className="text-sm text-red-500">{error}</p> : null}
+   98 | 
+   99 |           {/* Primary CTA: disabled while API request is in flight. */}
+  100 |           <button disabled={loading} className="w-full px-4 py-3 rounded-lg bg-indigo-600 text-white disabled:opacity-70">
+  101 |             {loading ? 'Signing in...' : 'Sign in'}
+  102 |           </button>
+  103 |         </form>
+  104 | 
+  105 |         {/* Secondary nav: send user to signup if they do not have an account yet. */}
+  106 |         <p className="mt-6 text-sm text-gray-600">
+  107 |           New here? <Link className="text-indigo-500" to="/signup">Create account</Link>
+  108 |         </p>
+  109 |       </div>
+  110 |     </div>
+  111 |   )
+  112 | }
+  113 | 

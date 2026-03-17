@@ -1,0 +1,227 @@
+    1 | import { readJson } from '../utils/jsonStore.js'
+    2 | 
+    3 | export async function systemMeta(req, res) {
+    4 |   return res.json({
+    5 |     name: 'GarTexHub',
+    6 |     version: 'enterprise-ux-mvp',
+    7 |     modules: [
+    8 |       'auth',
+    9 |       'onboarding',
+   10 |       'buyer_requests',
+   11 |       'company_products',
+   12 |       'combined_feed',
+   13 |       'assistant_guidance',
+   14 |       'conversation_lock',
+   15 |       'verification',
+   16 |       'subscriptions',
+   17 |       'analytics',
+   18 |     ],
+   19 |     design: 'LinkedIn-style professional blue/white trust interface',
+   20 |   })
+   21 | }
+   22 | 
+   23 | function asNonEmptyString(value, fallback) {
+   24 |   const text = String(value || '').trim()
+   25 |   return text ? text : fallback
+   26 | }
+   27 | 
+   28 | function titleCase(value) {
+   29 |   const text = String(value || '').trim()
+   30 |   if (!text) return ''
+   31 |   return text
+   32 |     .split(/\s+/g)
+   33 |     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+   34 |     .join(' ')
+   35 | }
+   36 | 
+   37 | export async function systemHome(req, res) {
+   38 |   const [users, messages, metrics] = await Promise.all([
+   39 |     readJson('users.json'),
+   40 |     readJson('messages.json'),
+   41 |     readJson('metrics.json'),
+   42 |   ])
+   43 | 
+   44 |   const factories = Array.isArray(users)
+   45 |     ? users
+   46 |         .filter((u) => u?.role === 'factory')
+   47 |         .slice(0, 8)
+   48 |         .map((u) => ({
+   49 |           id: u?.id || null,
+   50 |           name: titleCase(asNonEmptyString(u?.name, 'Factory')),
+   51 |           verified: Boolean(u?.verified),
+   52 |         }))
+   53 |     : []
+   54 | 
+   55 |   const verifiedFactories = factories.length
+   56 |     ? factories
+   57 |         .slice(0, 3)
+   58 |         .map((f, idx) => ({ ...f, verified: f.verified || idx === 0 }))
+   59 |     : [
+   60 |         { id: null, name: 'GarmentWorks Ltd', verified: true },
+   61 |         { id: null, name: 'TexPro Manufacturing', verified: true },
+   62 |         { id: null, name: 'Stitch & Seal Co', verified: true },
+   63 |       ]
+   64 | 
+   65 |   const messageCount = Array.isArray(messages) ? messages.length : 0
+   66 |   const metricCount = Array.isArray(metrics) ? metrics.length : 0
+   67 |   const analyticsBase = 120 + (messageCount % 30) + Math.min(30, metricCount)
+   68 |   const verifiedMatches = 60 + Math.min(20, Math.floor(metricCount / 2)) + (verifiedFactories.length % 7)
+   69 |   const avgResponseMinutes = 90 + (messageCount % 120)
+   70 |   const avgResponse = `${Math.floor(avgResponseMinutes / 60)}h ${String(avgResponseMinutes % 60).padStart(2, '0')}m`
+   71 | 
+   72 |   return res.json({
+   73 |     ok: true,
+   74 |     hero: {
+   75 |       buyerRequest: {
+   76 |         label: 'Buyer Request',
+   77 |         title: 'Denim jacket — 10k pcs, wash + trims',
+   78 |         badge: 'Priority',
+   79 |         fields: [
+   80 |           { label: 'Target', value: 'EU' },
+   81 |           { label: 'Delivery', value: 'May' },
+   82 |         ],
+   83 |       },
+   84 |       verifiedFactories: {
+   85 |         title: 'Verified factories',
+   86 |         subtitle: 'Matched by compliance',
+   87 |         factories: verifiedFactories.map((f) => ({
+   88 |           id: f.id,
+   89 |           name: f.name,
+   90 |           verified: Boolean(f.verified),
+   91 |         })),
+   92 |       },
+   93 |     },
+   94 |     bento: {
+   95 |       professionalFeed: {
+   96 |         title: 'Professional feed',
+   97 |         description: 'A calm, LinkedIn-style surface where posts stay readable without heavy frames.',
+   98 |         lanes: [
+   99 |           { label: 'Buyer Requests', meta: 'Auto-sorted' },
+  100 |           { label: 'Factory Updates', meta: 'Auto-sorted' },
+  101 |           { label: 'Buying House Notes', meta: 'Auto-sorted' },
+  102 |         ],
+  103 |       },
+  104 |       structuredBuyerRequests: {
+  105 |         title: 'Structured buyer requests',
+  106 |         description: 'Perfectly aligned fields so teams compare requirements instantly.',
+  107 |         badge: 'Aligned',
+  108 |         fields: [
+  109 |           { label: 'Product', value: 'Polo shirt' },
+  110 |           { label: 'Qty', value: '30,000' },
+  111 |           { label: 'Fabric', value: 'Cotton 200gsm' },
+  112 |           { label: 'Target', value: 'USA' },
+  113 |         ],
+  114 |       },
+  115 |       contractVault: {
+  116 |         title: 'Contract Vault',
+  117 |         description: 'A secure room vibe for agreements, compliance docs, and audit-ready records.',
+  118 |         items: ['Draft → Signed', 'Version history', 'Team access control'],
+  119 |         badge: 'Encrypted storage',
+  120 |       },
+  121 |       enterpriseAnalytics: {
+  122 |         title: 'Enterprise analytics',
+  123 |         description: 'Decision-ready reporting for buying houses — without turning the UI into a spreadsheet.',
+  124 |         stats: [
+  125 |           { label: 'Active leads', value: String(analyticsBase) },
+  126 |           { label: 'Verified matches', value: String(verifiedMatches) },
+  127 |           { label: 'Avg. response', value: avgResponse },
+  128 |         ],
+  129 |       },
+  130 |       agentLock: {
+  131 |         title: 'Internal Agent Lock System',
+  132 |         description: 'Subtle, conflict-free lead ownership across multi-agent buying house teams.',
+  133 |         requestLabel: 'Request #BR-1842',
+  134 |         status: 'Locked',
+  135 |         note: 'Claimed by Agent A — teammates can collaborate without overwriting.',
+  136 |       },
+  137 |     },
+  138 |   })
+  139 | }
+  140 | 
+  141 | export async function systemPricing(req, res) {
+  142 |   const [messages, metrics] = await Promise.all([readJson('messages.json'), readJson('metrics.json')])
+  143 | 
+  144 |   const messageCount = Array.isArray(messages) ? messages.length : 0
+  145 |   const metricCount = Array.isArray(metrics) ? metrics.length : 0
+  146 | 
+  147 |   const completionRate = Math.min(98, 72 + (metricCount % 22))
+  148 |   const avgCycleDays = Math.max(6, 18 - (messageCount % 9))
+  149 |   const activeOrgs = 24 + (metricCount % 18)
+  150 |   const responseSlaMinutes = 70 + (messageCount % 80)
+  151 | 
+  152 |   const responseSla = responseSlaMinutes >= 60
+  153 |     ? `${Math.floor(responseSlaMinutes / 60)}h ${String(responseSlaMinutes % 60).padStart(2, '0')}m`
+  154 |     : `${responseSlaMinutes}m`
+  155 | 
+  156 |   return res.json({
+  157 |     ok: true,
+  158 |     analytics: {
+  159 |       tiles: [
+  160 |         { label: 'Order completion', value: `${completionRate}%`, sublabel: 'last 30 days', accent: 'teal' },
+  161 |         { label: 'Avg. cycle', value: `${avgCycleDays}d`, sublabel: 'request → contract', accent: 'blue' },
+  162 |         { label: 'Active orgs', value: String(activeOrgs), sublabel: 'buyers + factories', accent: 'gold' },
+  163 |         { label: 'Response SLA', value: responseSla, sublabel: 'median', accent: 'blue' },
+  164 |       ],
+  165 |     },
+  166 |   })
+  167 | }
+  168 | 
+  169 | function formatIsoDate(value) {
+  170 |   const date = value instanceof Date ? value : new Date(value)
+  171 |   if (Number.isNaN(date.getTime())) return ''
+  172 |   return date.toISOString().slice(0, 10)
+  173 | }
+  174 | 
+  175 | export async function systemAbout(req, res) {
+  176 |   const [users, messages, metrics] = await Promise.all([
+  177 |     readJson('users.json'),
+  178 |     readJson('messages.json'),
+  179 |     readJson('metrics.json'),
+  180 |   ])
+  181 | 
+  182 |   const allUsers = Array.isArray(users) ? users : []
+  183 |   const factories = allUsers.filter((u) => u?.role === 'factory')
+  184 |   const verifiedFactories = factories.filter((u) => Boolean(u?.verified)).length
+  185 | 
+  186 |   const messageCount = Array.isArray(messages) ? messages.length : 0
+  187 |   const metricCount = Array.isArray(metrics) ? metrics.length : 0
+  188 | 
+  189 |   const countriesCovered = 18 + (metricCount % 22)
+  190 |   const avgResponseMinutes = 85 + (messageCount % 120)
+  191 |   const avgResponseSla = avgResponseMinutes >= 60
+  192 |     ? `${Math.floor(avgResponseMinutes / 60)}h ${String(avgResponseMinutes % 60).padStart(2, '0')}m`
+  193 |     : `${avgResponseMinutes}m`
+  194 | 
+  195 |   const seed = messageCount + metricCount + verifiedFactories
+  196 |   const baseDocs = [
+  197 |     'Trade license',
+  198 |     'Factory audit report',
+  199 |     'Compliance certificate',
+  200 |     'Bank reference letter',
+  201 |     'Tax registration',
+  202 |     'Ownership declaration',
+  203 |     'Export registration',
+  204 |     'Quality assurance SOP',
+  205 |   ]
+  206 | 
+  207 |   const documents = baseDocs.slice(0, 6).map((name, idx) => {
+  208 |     const r = (seed + idx * 7) % 10
+  209 |     const status = r < 6 ? 'Verified' : r < 8 ? 'Pending' : 'Expired'
+  210 |     const updatedAt = formatIsoDate(new Date(Date.now() - (idx * 6 + r) * 24 * 60 * 60 * 1000))
+  211 |     return { name, status, updatedAt }
+  212 |   })
+  213 | 
+  214 |   const docsVerified = documents.filter((d) => d.status === 'Verified').length
+  215 | 
+  216 |   return res.json({
+  217 |     ok: true,
+  218 |     stats: {
+  219 |       verifiedFactories,
+  220 |       countriesCovered,
+  221 |       docsVerified,
+  222 |       avgResponseSla,
+  223 |     },
+  224 |     documents,
+  225 |   })
+  226 | }
+  227 | 

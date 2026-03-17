@@ -1,0 +1,293 @@
+    1 | import crypto from 'crypto'
+    2 | import { readJson, writeJson } from '../utils/jsonStore.js'
+    3 | import { sanitizeString } from '../utils/validators.js'
+    4 | import { trackTransition } from '../utils/metrics.js'
+    5 | import {
+    6 |   buildFriendMatchId,
+    7 |   hasFriendRelationship,
+    8 |   isFriendConnected,
+    9 |   listFriendConnectionsForUser,
+   10 | } from './friendService.js'
+   11 | 
+   12 | const FILE = 'messages.json'
+   13 | const USERS_FILE = 'users.json'
+   14 | const MESSAGE_REQUESTS_FILE = 'message_requests.json'
+   15 | const CONVERSATION_LOCKS_FILE = 'conversation_locks.json'
+   16 | 
+   17 | function buildUsersById(users = []) {
+   18 |   return new Map((Array.isArray(users) ? users : []).map((user) => [user.id, user]))
+   19 | }
+   20 | 
+   21 | function enrichMessage(message = {}, usersById = new Map()) {
+   22 |   const sender = usersById.get(message.sender_id) || null
+   23 |   const senderName = sanitizeString(sender?.name || '', 120)
+   24 |   return {
+   25 |     ...message,
+   26 |     sender_name: senderName || message.sender_name || '',
+   27 |     sender_email: sender?.email || message.sender_email || '',
+   28 |     sender_verified: Boolean(sender?.verified),
+   29 |     sender_role: sender?.role || message.sender_role || '',
+   30 |   }
+   31 | }
+   32 | 
+   33 | function parseFriendMatchId(matchId = '') {
+   34 |   const parts = String(matchId).split(':')
+   35 |   if (parts.length !== 3 || parts[0] !== 'friend') return null
+   36 |   const first = sanitizeString(parts[1], 120)
+   37 |   const second = sanitizeString(parts[2], 120)
+   38 |   if (!first || !second) return null
+   39 |   return [first, second]
+   40 | }
+   41 | 
+   42 | export async function canAccessMatch(matchId, userId) {
+   43 |   const pair = parseFriendMatchId(matchId)
+   44 |   if (!pair) return true
+   45 |   if (!pair.includes(userId)) return false
+   46 |   return hasFriendRelationship(pair[0], pair[1], { includePending: true })
+   47 | }
+   48 | 
+   49 | export async function postFriendMessage(senderId, targetUserId, message, type = 'text') {
+   50 |   const targetId = sanitizeString(String(targetUserId || ''), 120)
+   51 |   if (!targetId || senderId === targetId) {
+   52 |     const err = new Error('Invalid friend target')
+   53 |     err.status = 400
+   54 |     throw err
+   55 |   }
+   56 | 
+   57 |   const connected = await isFriendConnected(senderId, targetId)
+   58 |   if (!connected) {
+   59 |     const err = new Error('Only friends can send direct messages')
+   60 |     err.status = 403
+   61 |     throw err
+   62 |   }
+   63 | 
+   64 |   const matchId = buildFriendMatchId(senderId, targetId)
+   65 |   const entry = await postMessage(matchId, senderId, message, type)
+   66 |   return { match_id: matchId, message: entry }
+   67 | }
+   68 | 
+   69 | export async function listFriendMatchIdsForUser(userId) {
+   70 |   const connections = await listFriendConnectionsForUser(userId)
+   71 |   const ids = new Set(connections.map((row) => row.match_id).filter(Boolean))
+   72 | 
+   73 |   const messages = await readJson(FILE)
+   74 |   messages
+   75 |     .map((row) => row.match_id)
+   76 |     .filter((matchId) => {
+   77 |       const pair = parseFriendMatchId(matchId)
+   78 |       return Array.isArray(pair) && pair.includes(userId)
+   79 |     })
+   80 |     .forEach((matchId) => ids.add(matchId))
+   81 | 
+   82 |   return [...ids]
+   83 | }
+   84 | 
+   85 | function upsertRequestState(requests, threadId, updates = {}) {
+   86 |   const existingIndex = requests.findIndex((request) => request.thread_id === threadId)
+   87 |   const nextEntry = {
+   88 |     thread_id: threadId,
+   89 |     status: 'pending',
+   90 |     acted_by: null,
+   91 |     acted_at: null,
+   92 |     ...updates,
+   93 |   }
+   94 | 
+   95 |   if (existingIndex === -1) {
+   96 |     requests.push(nextEntry)
+   97 |     return nextEntry
+   98 |   }
+   99 | 
+  100 |   requests[existingIndex] = {
+  101 |     ...requests[existingIndex],
+  102 |     ...updates,
+  103 |   }
+  104 |   return requests[existingIndex]
+  105 | }
+  106 | 
+  107 | function requestIdFromMatchId(matchId = '') {
+  108 |   return String(matchId).split(':')[0] || ''
+  109 | }
+  110 | 
+  111 | function buildLockMeta(lock, usersById, currentUserId) {
+  112 |   if (!lock) {
+  113 |     return {
+  114 |       status: 'unclaimed',
+  115 |       can_request_access: true,
+  116 |       claimed_by: null,
+  117 |       claimed_by_name: '',
+  118 |     }
+  119 |   }
+  120 | 
+  121 |   const claimedByName = usersById.get(lock.locked_by)?.name || lock.locked_by
+  122 |   const isOwner = lock.locked_by === currentUserId
+  123 |   const isGranted = Array.isArray(lock.allowed_agents) && lock.allowed_agents.includes(currentUserId)
+  124 | 
+  125 |   if (isOwner) {
+  126 |     return {
+  127 |       status: 'claimed',
+  128 |       can_request_access: false,
+  129 |       claimed_by: lock.locked_by,
+  130 |       claimed_by_name: claimedByName,
+  131 |     }
+  132 |   }
+  133 | 
+  134 |   if (isGranted) {
+  135 |     return {
+  136 |       status: 'granted',
+  137 |       can_request_access: false,
+  138 |       claimed_by: lock.locked_by,
+  139 |       claimed_by_name: claimedByName,
+  140 |     }
+  141 |   }
+  142 | 
+  143 |   return {
+  144 |     status: 'request_access',
+  145 |     can_request_access: true,
+  146 |     claimed_by: lock.locked_by,
+  147 |     claimed_by_name: claimedByName,
+  148 |   }
+  149 | }
+  150 | 
+  151 | function withConversationMeta(message, usersById, lock, currentUserId) {
+  152 |   return {
+  153 |     ...message,
+  154 |     request_id: requestIdFromMatchId(message.match_id),
+  155 |     conversation_lock: buildLockMeta(lock, usersById, currentUserId),
+  156 |   }
+  157 | }
+  158 | 
+  159 | function applyFriendThreadMeta(message, fallbackFriend, currentUserId) {
+  160 |   if (!fallbackFriend) return message
+  161 | 
+  162 |   const direction = fallbackFriend.requester_id === currentUserId ? 'outgoing' : 'incoming'
+  163 |   return {
+  164 |     ...message,
+  165 |     friend_request_status: fallbackFriend.type === 'friend_request' ? String(fallbackFriend.status || 'pending') : 'accepted',
+  166 |     friend_request_direction: fallbackFriend.type === 'friend_request' ? direction : 'accepted',
+  167 |   }
+  168 | }
+  169 | 
+  170 | export async function postMessage(matchId, senderId, message, type = 'text', attachment = null) {
+  171 |   const messages = await readJson(FILE)
+  172 |   const users = await readJson(USERS_FILE)
+  173 |   const usersById = buildUsersById(users)
+  174 |   const messageRequests = await readJson(MESSAGE_REQUESTS_FILE)
+  175 |   const safeAttachment = attachment ? {
+  176 |     name: sanitizeString(attachment?.name, 220),
+  177 |     url: sanitizeString(attachment?.url, 600),
+  178 |     mime_type: sanitizeString(attachment?.mime_type, 120),
+  179 |     size: Number(attachment?.size || 0),
+  180 |   } : null
+  181 | 
+  182 |   const entry = {
+  183 |     id: crypto.randomUUID(),
+  184 |     match_id: matchId,
+  185 |     sender_id: senderId,
+  186 |     message: sanitizeString(message, 2000),
+  187 |     timestamp: new Date().toISOString(),
+  188 |     type,
+  189 |     attachment: safeAttachment && safeAttachment.url ? safeAttachment : null,
+  190 |   }
+  191 |   messages.push(entry)
+  192 | 
+  193 |   const sender = users.find((u) => u.id === senderId)
+  194 |   if (!sender?.verified) {
+  195 |     upsertRequestState(messageRequests, matchId, { status: 'pending', acted_by: null, acted_at: null })
+  196 |   }
+  197 | 
+  198 |   await writeJson(FILE, messages)
+  199 |   await writeJson(MESSAGE_REQUESTS_FILE, messageRequests)
+  200 |   await trackTransition(matchId, 'matched', 'first_message_sent', { sender_id: senderId })
+  201 |   return enrichMessage(entry, usersById)
+  202 | }
+  203 | 
+  204 | export async function listMessagesByMatch(matchId) {
+  205 |   const messages = await readJson(FILE)
+  206 |   const users = await readJson(USERS_FILE)
+  207 |   const usersById = buildUsersById(users)
+  208 |   return messages
+  209 |     .filter((m) => m.match_id === matchId)
+  210 |     .map((message) => enrichMessage(message, usersById))
+  211 | }
+  212 | 
+  213 | export async function tieredInbox(matchIds, currentUserId) {
+  214 |   const users = await readJson(USERS_FILE)
+  215 |   const usersById = buildUsersById(users)
+  216 |   const messages = await readJson(FILE)
+  217 |   const messageRequests = await readJson(MESSAGE_REQUESTS_FILE)
+  218 |   const conversationLocks = await readJson(CONVERSATION_LOCKS_FILE)
+  219 |   const lockByRequestId = new Map(conversationLocks.map((lock) => [lock.request_id, lock]))
+  220 | 
+  221 |   const filtered = messages
+  222 |     .filter((m) => matchIds.includes(m.match_id))
+  223 |     .map((message) => enrichMessage(message, usersById))
+  224 |   const requestMap = new Map(messageRequests.map((request) => [request.thread_id, request]))
+  225 |   const latestByThread = new Map()
+  226 |   const friendConnections = await listFriendConnectionsForUser(currentUserId)
+  227 |   const friendConnectionByMatchId = new Map(friendConnections.map((row) => [row.match_id, row]))
+  228 | 
+  229 |   for (const message of filtered) {
+  230 |     const existing = latestByThread.get(message.match_id)
+  231 |     if (!existing || new Date(message.timestamp || 0).getTime() > new Date(existing.timestamp || 0).getTime()) {
+  232 |       latestByThread.set(message.match_id, message)
+  233 |     }
+  234 |   }
+  235 | 
+  236 |   const priority = []
+  237 |   const requestPool = []
+  238 |   for (const matchId of matchIds) {
+  239 |     const fallbackFriend = friendConnectionByMatchId.get(matchId)
+  240 |     const m = latestByThread.get(matchId) || (fallbackFriend ? enrichMessage({
+  241 |       id: `friend-thread-${matchId}` ,
+  242 |       match_id: matchId,
+  243 |       sender_id: fallbackFriend.other_user_id,
+  244 |       message: fallbackFriend.type === 'friend_request'
+  245 |         ? (fallbackFriend.requester_id === currentUserId ? 'Friend request sent. Start chatting after acceptance.' : 'Incoming friend request. Accept to start chatting.')
+  246 |         : 'You are now friends. Say hello!',
+  247 |       timestamp: fallbackFriend.updated_at || fallbackFriend.created_at || new Date().toISOString(),
+  248 |       type: 'system',
+  249 |       attachment: null,
+  250 |     }, usersById) : null)
+  251 |     if (!m) continue
+  252 | 
+  253 |     const request = requestMap.get(m.match_id)
+  254 |     if (request?.status === 'rejected') continue
+  255 | 
+  256 |     const sender = usersById.get(m.sender_id)
+  257 |     const requestId = requestIdFromMatchId(m.match_id)
+  258 |     const lock = lockByRequestId.get(requestId)
+  259 |     const withMeta = applyFriendThreadMeta(withConversationMeta(m, usersById, lock, currentUserId), fallbackFriend, currentUserId)
+  260 | 
+  261 |     const isPendingFriend = fallbackFriend?.type === 'friend_request' && fallbackFriend?.status === 'pending'
+  262 | 
+  263 |     if (isPendingFriend) {
+  264 |       requestPool.push(withMeta)
+  265 |       continue
+  266 |     }
+  267 | 
+  268 |     if (request?.status === 'accepted' || sender?.verified || fallbackFriend?.type === 'friend') priority.push(withMeta)
+  269 |     else requestPool.push(withMeta)
+  270 |   }
+  271 |   return { priority, request_pool: requestPool }
+  272 | }
+  273 | 
+  274 | async function updateRequestStatus(threadId, status, actedBy) {
+  275 |   const messageRequests = await readJson(MESSAGE_REQUESTS_FILE)
+  276 |   const actedAt = new Date().toISOString()
+  277 |   const request = upsertRequestState(messageRequests, threadId, {
+  278 |     status,
+  279 |     acted_by: actedBy,
+  280 |     acted_at: actedAt,
+  281 |   })
+  282 |   await writeJson(MESSAGE_REQUESTS_FILE, messageRequests)
+  283 |   return request
+  284 | }
+  285 | 
+  286 | export async function acceptMessageRequest(threadId, actedBy) {
+  287 |   return updateRequestStatus(threadId, 'accepted', actedBy)
+  288 | }
+  289 | 
+  290 | export async function rejectMessageRequest(threadId, actedBy) {
+  291 |   return updateRequestStatus(threadId, 'rejected', actedBy)
+  292 | }
+  293 | 

@@ -1,0 +1,743 @@
+    1 | @import "tailwindcss";
+    2 | 
+    3 | /* Tailwind v4: make `dark:` respond to the `.dark` class (not OS media). */
+    4 | @custom-variant dark (&:where(.dark, .dark *));
+    5 | 
+    6 | @layer base {
+    7 |   :root {
+    8 |     --bg: #f8fafc;
+    9 |     --surface: #ffffff;
+   10 |     --text: #1e293b;
+   11 |     --muted: #475569;
+   12 |     --border: #cbd5e1;
+   13 |     --accent: #10b981;
+   14 |   }
+   15 | 
+   16 |   :root.dark {
+   17 |     --bg: #0b1220;
+   18 |     --surface: #111827;
+   19 |     --text: #e5e7eb;
+   20 |     --muted: #9ca3af;
+   21 |     --border: #374151;
+   22 |     --accent: #10b981;
+   23 |   }
+   24 | 
+   25 |   body {
+   26 |     margin: 0;
+   27 |     background: var(--bg);
+   28 |     color: var(--text);
+   29 |     font-family: Inter, system-ui, sans-serif;
+   30 |   }
+   31 | 
+   32 |   button { cursor: pointer; }
+   33 |   ul { padding-left: 1rem; }
+   34 |   li { margin: 0.35rem 0; }
+   35 | 
+   36 |   /* Base polish (utilities can override these) */
+   37 |   .card,
+   38 |   .bg-white,
+   39 |   .bg-gray-50,
+   40 |   .bg-gray-100,
+   41 |   section,
+   42 |   article,
+   43 |   aside,
+   44 |   dialog {
+   45 |     box-shadow:
+   46 |       inset 0 1px 0 rgba(255, 255, 255, 0.62),
+   47 |       0 14px 32px rgba(15, 23, 42, 0.1);
+   48 |     transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease, filter 220ms ease;
+   49 |   }
+   50 | 
+   51 |   button,
+   52 |   .btn,
+   53 |   a[class*='px-'],
+   54 |   a[class*='py-'],
+   55 |   a[class*='btn'] {
+   56 |     border: 1px solid var(--border);
+   57 |     border-radius: 12px;
+   58 |     box-shadow:
+   59 |       inset 0 1px 0 rgba(255, 255, 255, 0.58),
+   60 |       0 10px 20px rgba(15, 23, 42, 0.12);
+   61 |     transition: transform 160ms ease, box-shadow 180ms ease, filter 180ms ease, background 180ms ease;
+   62 |   }
+   63 | 
+   64 |   button:hover,
+   65 |   .btn:hover,
+   66 |   a:hover {
+   67 |     transform: translateY(-2px);
+   68 |   }
+   69 | 
+   70 |   input, select, textarea {
+   71 |     border: 1px solid var(--border);
+   72 |     background: color-mix(in srgb, var(--surface) 95%, transparent);
+   73 |     color: var(--text);
+   74 |     padding: 0.6rem 0.75rem;
+   75 |     border-radius: 12px;
+   76 |     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 8px 18px rgba(15, 23, 42, 0.06);
+   77 |   }
+   78 | 
+   79 |   input:focus,
+   80 |   select:focus,
+   81 |   textarea:focus {
+   82 |     outline: none;
+   83 |     border-color: #8b5cf6;
+   84 |     box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.16), 0 10px 28px rgba(14, 165, 233, 0.16);
+   85 |   }
+   86 | 
+   87 |   img,
+   88 |   video,
+   89 |   canvas {
+   90 |     border-radius: 14px;
+   91 |     box-shadow: 0 14px 30px rgba(15, 23, 42, 0.2);
+   92 |   }
+   93 | 
+   94 |   table,
+   95 |   thead,
+   96 |   tbody,
+   97 |   tr,
+   98 |   th,
+   99 |   td {
+  100 |     border-color: var(--border);
+  101 |   }
+  102 | 
+  103 |   /* Shared modern dark styling across every page */
+  104 |   :root.dark body {
+  105 |     background: #0b1220;
+  106 |   }
+  107 | 
+  108 |   :root.dark .neo-page::before,
+  109 |   :root.dark .cyberpunk-page::before,
+  110 |   :root.dark .cyberpunk-card::after {
+  111 |     opacity: 0;
+  112 |     background: none;
+  113 |     filter: none;
+  114 |   }
+  115 | 
+  116 |   :root.dark .neo-panel,
+  117 |   :root.dark .cyberpunk-card,
+  118 |   :root.dark .card,
+  119 |   :root.dark .bg-white,
+  120 |   :root.dark .bg-gray-50,
+  121 |   :root.dark .bg-gray-100,
+  122 |   :root.dark .bg-slate-900,
+  123 |   :root.dark nav,
+  124 |   :root.dark header,
+  125 |   :root.dark footer,
+  126 |   :root.dark section,
+  127 |   :root.dark article,
+  128 |   :root.dark aside {
+  129 |     background: var(--surface);
+  130 |     border-color: transparent;
+  131 |     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  132 |   }
+  133 | }
+  134 | 
+  135 | @layer components {
+  136 |   .page {
+  137 |     max-width: 1200px;
+  138 |     margin: 0 auto;
+  139 |     padding: 1rem;
+  140 |   }
+  141 | 
+  142 |   .neo-page {
+  143 |     position: relative;
+  144 |     isolation: isolate;
+  145 |   }
+  146 | 
+  147 |   .neo-page::before {
+  148 |     content: '';
+  149 |     position: fixed;
+  150 |     inset: -20% -10% auto -10%;
+  151 |     height: 65vh;
+  152 |     pointer-events: none;
+  153 |     z-index: -1;
+  154 |     opacity: 0;
+  155 |     background:
+  156 |       conic-gradient(from 140deg at 30% 40%, rgba(139, 92, 246, 0.3), rgba(34, 211, 238, 0.24), rgba(236, 72, 153, 0.22), rgba(139, 92, 246, 0.3));
+  157 |     filter: blur(38px);
+  158 |     transition: opacity 240ms ease;
+  159 |   }
+  160 | 
+  161 |   .neo-panel {
+  162 |     border-radius: 14px;
+  163 |   }
+  164 | 
+  165 |   .cyberpunk-page {
+  166 |     position: relative;
+  167 |   }
+  168 | 
+  169 |   .cyberpunk-card {
+  170 |     position: relative;
+  171 |     overflow: hidden;
+  172 |   }
+  173 | 
+  174 |   .cyberpunk-card::after {
+  175 |     content: '';
+  176 |     position: absolute;
+  177 |     inset: 0;
+  178 |     pointer-events: none;
+  179 |     opacity: 0;
+  180 |     background:
+  181 |       linear-gradient(120deg, transparent 0%, rgba(196, 181, 253, 0.12) 28%, transparent 62%),
+  182 |       radial-gradient(circle at 92% 8%, rgba(34, 211, 238, 0.2), transparent 46%);
+  183 |     transition: opacity 220ms ease;
+  184 |   }
+  185 | 
+  186 |   .topbar {
+  187 |     display: flex;
+  188 |     justify-content: space-between;
+  189 |     align-items: center;
+  190 |     gap: 1rem;
+  191 |     flex-wrap: wrap;
+  192 |   }
+  193 | 
+  194 |   .top-actions { display: flex; gap: 0.5rem; }
+  195 |   .feedback { color: var(--muted); }
+  196 | 
+  197 |   .grid { display: grid; gap: 1rem; }
+  198 |   .two-col { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  199 |   .full { grid-column: 1 / -1; }
+  200 | 
+  201 |   .card {
+  202 |     background: var(--surface);
+  203 |     border: 1px solid var(--border);
+  204 |     border-radius: 12px;
+  205 |     padding: 1rem;
+  206 |   }
+  207 | 
+  208 |   .stack { display: grid; gap: 0.5rem; }
+  209 | }
+  210 | 
+  211 | @layer base {
+  212 |   :root.dark button,
+  213 |   :root.dark .btn,
+  214 |   :root.dark [role='button'],
+  215 |   :root.dark a[class*='px-'],
+  216 |   :root.dark a[class*='py-'] {
+  217 |     background: #1f2937;
+  218 |     color: #e5e7eb;
+  219 |     border-color: transparent;
+  220 |     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.24);
+  221 |   }
+  222 | 
+  223 |   :root.dark button:hover,
+  224 |   :root.dark .btn:hover,
+  225 |   :root.dark a:hover {
+  226 |     transform: translateY(-1px);
+  227 |     filter: none;
+  228 |     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+  229 |   }
+  230 | 
+  231 |   :root.dark input,
+  232 |   :root.dark select,
+  233 |   :root.dark textarea {
+  234 |     background: #0f172a;
+  235 |     color: #e5e7eb;
+  236 |     border-color: transparent;
+  237 |     box-shadow: none;
+  238 |   }
+  239 | 
+  240 |   :root.dark input:focus,
+  241 |   :root.dark select:focus,
+  242 |   :root.dark textarea:focus {
+  243 |     border-color: transparent;
+  244 |     box-shadow: none;
+  245 |   }
+  246 | 
+  247 |   :root.dark h1,
+  248 |   :root.dark h2,
+  249 |   :root.dark h3,
+  250 |   :root.dark h4,
+  251 |   :root.dark h5,
+  252 |   :root.dark h6 {
+  253 |     color: #f3f4f6;
+  254 |     text-shadow: none;
+  255 |   }
+  256 | 
+  257 |   :root.dark .text-purple-600,
+  258 |   :root.dark .text-purple-700,
+  259 |   :root.dark .text-violet-600,
+  260 |   :root.dark .text-fuchsia-600 {
+  261 |     color: #c4b5fd !important;
+  262 |     text-shadow: none;
+  263 |   }
+  264 | }
+  265 | 
+  266 | @layer components {
+  267 |   .spotlight-card {
+  268 |     position: relative;
+  269 |     overflow: hidden;
+  270 |     --spotlight-x: 50%;
+  271 |     --spotlight-y: 50%;
+  272 |   }
+  273 | 
+  274 |   .spotlight-card::before {
+  275 |     content: '';
+  276 |     position: absolute;
+  277 |     inset: -1px;
+  278 |     pointer-events: none;
+  279 |     opacity: 0;
+  280 |     transition: opacity 220ms ease;
+  281 |     background: radial-gradient(520px circle at var(--spotlight-x) var(--spotlight-y), rgba(15, 23, 42, 0.06), transparent 42%);
+  282 |   }
+  283 | 
+  284 |   :root.dark .spotlight-card::before {
+  285 |     background: radial-gradient(620px circle at var(--spotlight-x) var(--spotlight-y), rgba(16, 185, 129, 0.10), transparent 45%);
+  286 |     mix-blend-mode: screen;
+  287 |   }
+  288 | 
+  289 |   .spotlight-card:hover::before {
+  290 |     opacity: 1;
+  291 |   }
+  292 | 
+  293 |   .verified-pulse {
+  294 |     animation: verifiedPulse 1.5s ease-in-out infinite;
+  295 |   }
+  296 | 
+  297 |   @keyframes verifiedPulse {
+  298 |     0%, 100% { transform: scale(1); filter: saturate(1); }
+  299 |     50% { transform: scale(1.03); filter: saturate(1.15); }
+  300 |   }
+  301 | 
+  302 |   .conic-beam {
+  303 |     position: relative;
+  304 |   }
+  305 | 
+  306 |   .conic-beam::before {
+  307 |     content: '';
+  308 |     position: absolute;
+  309 |     inset: -1px;
+  310 |     border-radius: inherit;
+  311 |     padding: 1px;
+  312 |     pointer-events: none;
+  313 |     background: conic-gradient(
+  314 |       from 180deg,
+  315 |       transparent 0deg,
+  316 |       rgba(45, 212, 191, 0.0) 40deg,
+  317 |       rgba(45, 212, 191, 0.55) 110deg,
+  318 |       rgba(59, 130, 246, 0.55) 170deg,
+  319 |       rgba(245, 158, 11, 0.55) 230deg,
+  320 |       rgba(45, 212, 191, 0.0) 300deg,
+  321 |       transparent 360deg
+  322 |     );
+  323 |     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  324 |     -webkit-mask-composite: xor;
+  325 |     mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  326 |     mask-composite: exclude;
+  327 |     opacity: 0.85;
+  328 |     animation: conicSpin 12s linear infinite;
+  329 |   }
+  330 | 
+  331 |   @keyframes conicSpin {
+  332 |     to { transform: rotate(360deg); }
+  333 |   }
+  334 | 
+  335 |   @media (prefers-reduced-motion: reduce) {
+  336 |     .verified-pulse { animation: none; }
+  337 |     .conic-beam::before { animation: none; }
+  338 |   }
+  339 | 
+  340 |   .weave-bg {
+  341 |     position: relative;
+  342 |     isolation: isolate;
+  343 |   }
+  344 | 
+  345 |   .weave-bg::before {
+  346 |     content: '';
+  347 |     position: absolute;
+  348 |     inset: 0;
+  349 |     pointer-events: none;
+  350 |     z-index: -1;
+  351 |     opacity: 0.06;
+  352 |     background-image:
+  353 |       repeating-linear-gradient(0deg, rgba(15, 23, 42, 0.08) 0px, rgba(15, 23, 42, 0.08) 1px, transparent 1px, transparent 14px),
+  354 |       repeating-linear-gradient(90deg, rgba(15, 23, 42, 0.06) 0px, rgba(15, 23, 42, 0.06) 1px, transparent 1px, transparent 14px);
+  355 |     mix-blend-mode: multiply;
+  356 |   }
+  357 | 
+  358 |   :root.dark .weave-bg::before {
+  359 |     opacity: 0.10;
+  360 |     background-image:
+  361 |       repeating-linear-gradient(0deg, rgba(56, 189, 248, 0.10) 0px, rgba(56, 189, 248, 0.10) 1px, transparent 1px, transparent 16px),
+  362 |       repeating-linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0px, rgba(16, 185, 129, 0.08) 1px, transparent 1px, transparent 16px);
+  363 |     mix-blend-mode: screen;
+  364 |   }
+  365 | 
+  366 |   .legal-weave {
+  367 |     position: relative;
+  368 |     isolation: isolate;
+  369 |   }
+  370 | 
+  371 |   .legal-weave::before {
+  372 |     content: '';
+  373 |     position: absolute;
+  374 |     inset: 0;
+  375 |     pointer-events: none;
+  376 |     z-index: -1;
+  377 |     opacity: 0.035;
+  378 |     background-image:
+  379 |       repeating-linear-gradient(0deg, rgba(15, 23, 42, 0.08) 0px, rgba(15, 23, 42, 0.08) 1px, transparent 1px, transparent 16px),
+  380 |       repeating-linear-gradient(90deg, rgba(15, 23, 42, 0.06) 0px, rgba(15, 23, 42, 0.06) 1px, transparent 1px, transparent 16px);
+  381 |     mix-blend-mode: multiply;
+  382 |   }
+  383 | 
+  384 |   :root.dark .legal-weave::before {
+  385 |     opacity: 0.06;
+  386 |     background-image:
+  387 |       repeating-linear-gradient(0deg, rgba(99, 102, 241, 0.10) 0px, rgba(99, 102, 241, 0.10) 1px, transparent 1px, transparent 18px),
+  388 |       repeating-linear-gradient(90deg, rgba(16, 185, 129, 0.08) 0px, rgba(16, 185, 129, 0.08) 1px, transparent 1px, transparent 18px);
+  389 |     mix-blend-mode: screen;
+  390 |   }
+  391 | 
+  392 |   .breath-verified {
+  393 |     animation: breathVerified 3s ease-in-out infinite;
+  394 |   }
+  395 | 
+  396 |   @keyframes breathVerified {
+  397 |     0%, 100% { opacity: 0.7; transform: translateZ(0); }
+  398 |     50% { opacity: 1; transform: translateZ(0); }
+  399 |   }
+  400 | 
+  401 |   .signature-draw {
+  402 |     --sig-len: 220;
+  403 |   }
+  404 | 
+  405 |   .signature-draw path {
+  406 |     stroke-dasharray: var(--sig-len);
+  407 |     stroke-dashoffset: var(--sig-len);
+  408 |     transition: stroke-dashoffset 520ms cubic-bezier(0.4, 0, 0.2, 1);
+  409 |   }
+  410 | 
+  411 |   .signature-draw:hover path {
+  412 |     stroke-dashoffset: 0;
+  413 |   }
+  414 | 
+  415 |   .liquid-btn {
+  416 |     position: relative;
+  417 |     overflow: hidden;
+  418 |   }
+  419 | 
+  420 |   .liquid-btn::before {
+  421 |     content: '';
+  422 |     position: absolute;
+  423 |     inset: 0;
+  424 |     transform: translateX(-110%);
+  425 |     background: linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.22) 35%, rgba(16, 185, 129, 0.18) 65%, transparent 100%);
+  426 |     transition: transform 420ms cubic-bezier(0.4, 0, 0.2, 1);
+  427 |     pointer-events: none;
+  428 |   }
+  429 | 
+  430 |   .liquid-btn:hover::before {
+  431 |     transform: translateX(110%);
+  432 |   }
+  433 | 
+  434 |   .verified-shimmer {
+  435 |     position: relative;
+  436 |     overflow: hidden;
+  437 |   }
+  438 | 
+  439 |   .verified-shimmer::after {
+  440 |     content: '';
+  441 |     position: absolute;
+  442 |     inset: 0;
+  443 |     transform: translateX(-140%);
+  444 |     background: linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.22) 45%, transparent 70%);
+  445 |     animation: shimmer 4s ease-in-out infinite;
+  446 |     opacity: 0.55;
+  447 |     pointer-events: none;
+  448 |   }
+  449 | 
+  450 |   :root.dark .verified-shimmer::after {
+  451 |     background: linear-gradient(115deg, transparent 0%, rgba(16, 185, 129, 0.22) 45%, transparent 70%);
+  452 |     opacity: 0.45;
+  453 |     mix-blend-mode: screen;
+  454 |   }
+  455 | 
+  456 |   .needle-area {
+  457 |     position: relative;
+  458 |     cursor: crosshair;
+  459 |     --needle-x: 50%;
+  460 |     --needle-y: 50%;
+  461 |   }
+  462 | 
+  463 |   .needle-area .needle-cursor {
+  464 |     position: absolute;
+  465 |     left: 0;
+  466 |     top: 0;
+  467 |     width: 2px;
+  468 |     height: 2px;
+  469 |     transform: translate3d(calc(var(--needle-x) - 1px), calc(var(--needle-y) - 1px), 0);
+  470 |     opacity: 0;
+  471 |     transition: opacity 180ms ease;
+  472 |     pointer-events: none;
+  473 |     z-index: 5;
+  474 |   }
+  475 | 
+  476 |   .needle-area:hover .needle-cursor {
+  477 |     opacity: 1;
+  478 |   }
+  479 | 
+  480 |   .needle-area .needle-cursor::before {
+  481 |     content: '';
+  482 |     position: absolute;
+  483 |     width: 6px;
+  484 |     height: 6px;
+  485 |     left: -2px;
+  486 |     top: -2px;
+  487 |     border-radius: 999px;
+  488 |     background: rgba(5, 150, 105, 0.9);
+  489 |     box-shadow: 0 0 18px rgba(5, 150, 105, 0.35);
+  490 |   }
+  491 | 
+  492 |   .needle-area .needle-cursor::after {
+  493 |     content: '';
+  494 |     position: absolute;
+  495 |     width: 22px;
+  496 |     height: 1px;
+  497 |     left: 10px;
+  498 |     top: 1px;
+  499 |     background: linear-gradient(90deg, rgba(5, 150, 105, 0.65), transparent);
+  500 |     box-shadow: 0 0 14px rgba(5, 150, 105, 0.22);
+  501 |   }
+  502 | 
+  503 |   :root.dark .needle-area .needle-cursor::before {
+  504 |     background: rgba(16, 185, 129, 0.95);
+  505 |     box-shadow: 0 0 22px rgba(16, 185, 129, 0.35);
+  506 |   }
+  507 | 
+  508 |   :root.dark .needle-area .needle-cursor::after {
+  509 |     background: linear-gradient(90deg, rgba(16, 185, 129, 0.70), transparent);
+  510 |     box-shadow: 0 0 16px rgba(16, 185, 129, 0.26);
+  511 |   }
+  512 | 
+  513 |   @media (prefers-reduced-motion: reduce) {
+  514 |     .liquid-btn::before { transition: none; }
+  515 |     .breath-verified { animation: none; }
+  516 |     .signature-draw path { transition: none; stroke-dashoffset: 0; }
+  517 |     .needle-area .needle-cursor { display: none; }
+  518 |     .assistant-orb-btn::before { animation: none; }
+  519 |   }
+  520 | 
+  521 |   .assistant-orb-btn {
+  522 |     position: relative;
+  523 |     overflow: hidden;
+  524 |     backdrop-filter: blur(18px);
+  525 |     background: rgba(255, 255, 255, 0.18);
+  526 |     border: 1px solid rgba(255, 255, 255, 0.35);
+  527 |     box-shadow:
+  528 |       0 18px 44px rgba(2, 6, 23, 0.20),
+  529 |       inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  530 |   }
+  531 | 
+  532 |   :root.dark .assistant-orb-btn {
+  533 |     background: rgba(15, 23, 42, 0.55);
+  534 |     border-color: rgba(56, 189, 248, 0.20);
+  535 |     box-shadow:
+  536 |       0 22px 60px rgba(0, 0, 0, 0.55),
+  537 |       inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  538 |   }
+  539 | 
+  540 |   :root.dark .assistant-orb-btn::before {
+  541 |     content: '';
+  542 |     position: absolute;
+  543 |     inset: -1px;
+  544 |     border-radius: inherit;
+  545 |     padding: 1px;
+  546 |     pointer-events: none;
+  547 |     background: conic-gradient(
+  548 |       from 180deg,
+  549 |       rgba(56, 189, 248, 0.0) 0deg,
+  550 |       rgba(56, 189, 248, 0.55) 120deg,
+  551 |       rgba(16, 185, 129, 0.45) 210deg,
+  552 |       rgba(56, 189, 248, 0.0) 360deg
+  553 |     );
+  554 |     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  555 |     -webkit-mask-composite: xor;
+  556 |     mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  557 |     mask-composite: exclude;
+  558 |     opacity: 0.95;
+  559 |     animation: conicSpin 9s linear infinite;
+  560 |   }
+  561 | 
+  562 |   .shimmer-btn {
+  563 |     position: relative;
+  564 |     overflow: hidden;
+  565 |   }
+  566 | 
+  567 |   .shimmer-btn::after {
+  568 |     content: '';
+  569 |     position: absolute;
+  570 |     inset: 0;
+  571 |     transform: translateX(-140%);
+  572 |     background: linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.14) 45%, transparent 70%);
+  573 |     animation: shimmer 3s ease-in-out infinite;
+  574 |     pointer-events: none;
+  575 |   }
+  576 | 
+  577 |   @keyframes shimmer {
+  578 |     0%, 55% { transform: translateX(-140%); opacity: 0; }
+  579 |     65% { opacity: 1; }
+  580 |     100% { transform: translateX(140%); opacity: 0; }
+  581 |   }
+  582 | 
+  583 |   .skeleton {
+  584 |     position: relative;
+  585 |     overflow: hidden;
+  586 |     border-radius: inherit;
+  587 |     background: rgba(15, 23, 42, 0.06);
+  588 |   }
+  589 | 
+  590 |   :root.dark .skeleton {
+  591 |     background: rgba(255, 255, 255, 0.06);
+  592 |   }
+  593 | 
+  594 |   .skeleton::after {
+  595 |     content: '';
+  596 |     position: absolute;
+  597 |     inset: 0;
+  598 |     transform: translateX(-140%);
+  599 |     background: linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.28) 45%, transparent 70%);
+  600 |     animation: skeletonShimmer 1.4s linear infinite;
+  601 |     pointer-events: none;
+  602 |     opacity: 0.7;
+  603 |   }
+  604 | 
+  605 |   :root.dark .skeleton::after {
+  606 |     background: linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.16) 45%, transparent 70%);
+  607 |     opacity: 0.9;
+  608 |   }
+  609 | 
+  610 |   @keyframes skeletonShimmer {
+  611 |     0% { transform: translateX(-140%); }
+  612 |     100% { transform: translateX(140%); }
+  613 |   }
+  614 | 
+  615 |   .nav-glass {
+  616 |     background: rgba(255, 255, 255, 0.80) !important;
+  617 |     border-bottom-color: rgba(226, 232, 240, 0.60) !important;
+  618 |     backdrop-filter: blur(12px);
+  619 |   }
+  620 | 
+  621 |   :root.dark .nav-glass {
+  622 |     background: rgba(2, 6, 23, 0.78) !important;
+  623 |     border-bottom-color: rgba(30, 41, 59, 0.55) !important;
+  624 |     backdrop-filter: blur(14px);
+  625 |   }
+  626 | 
+  627 |   .secure-grid {
+  628 |     position: relative;
+  629 |     isolation: isolate;
+  630 |   }
+  631 | 
+  632 |   .secure-grid::before {
+  633 |     content: '';
+  634 |     position: absolute;
+  635 |     inset: 0;
+  636 |     pointer-events: none;
+  637 |     z-index: 0;
+  638 |     opacity: 0.06;
+  639 |     background-image:
+  640 |       linear-gradient(rgba(15, 23, 42, 0.10) 1px, transparent 1px),
+  641 |       linear-gradient(90deg, rgba(15, 23, 42, 0.08) 1px, transparent 1px);
+  642 |     background-size: 28px 28px;
+  643 |     mask-image: radial-gradient(circle at 30% 30%, rgba(0, 0, 0, 1), transparent 68%);
+  644 |   }
+  645 | 
+  646 |   :root.dark .secure-grid::before {
+  647 |     opacity: 0.10;
+  648 |     background-image:
+  649 |       linear-gradient(rgba(255, 255, 255, 0.10) 1px, transparent 1px),
+  650 |       linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  651 |     background-size: 28px 28px;
+  652 |     mix-blend-mode: screen;
+  653 |   }
+  654 | }
+  655 | 
+  656 | @media (max-width: 900px) {
+  657 |   .two-col { grid-template-columns: 1fr; }
+  658 | }
+  659 | 
+  660 | @keyframes callFloat {
+  661 |   0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  662 |   50% { transform: translate3d(18px, -14px, 0) scale(1.04); }
+  663 | }
+  664 | 
+  665 | .chat-markdown {
+  666 |   font-size: 13px;
+  667 |   line-height: 1.45;
+  668 |   color: inherit;
+  669 |   word-break: break-word;
+  670 | }
+  671 | 
+  672 | .chat-markdown > :first-child { margin-top: 0; }
+  673 | .chat-markdown > :last-child { margin-bottom: 0; }
+  674 | .chat-markdown p { margin: 0.25rem 0; }
+  675 | 
+  676 | .chat-markdown code {
+  677 |   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  678 |   font-size: 0.92em;
+  679 |   padding: 0.12rem 0.28rem;
+  680 |   border-radius: 0.35rem;
+  681 |   background: rgba(15, 23, 42, 0.08);
+  682 | }
+  683 | 
+  684 | :root.dark .chat-markdown code {
+  685 |   background: rgba(0, 0, 0, 0.35);
+  686 | }
+  687 | 
+  688 | .chat-markdown pre {
+  689 |   margin: 0.35rem 0;
+  690 |   padding: 0.75rem;
+  691 |   border-radius: 0.85rem;
+  692 |   overflow-x: auto;
+  693 |   background: #0b1020;
+  694 |   color: #e2e8f0;
+  695 | }
+  696 | 
+  697 | :root.dark .chat-markdown pre {
+  698 |   background: rgba(0, 0, 0, 0.35);
+  699 | }
+  700 | 
+  701 | .chat-markdown pre code {
+  702 |   padding: 0;
+  703 |   background: transparent;
+  704 | }
+  705 | 
+  706 | .chat-markdown blockquote {
+  707 |   margin: 0.35rem 0;
+  708 |   padding-left: 0.75rem;
+  709 |   border-left: 3px solid rgba(148, 163, 184, 0.75);
+  710 |   opacity: 0.95;
+  711 | }
+  712 | 
+  713 | :root.dark .chat-markdown blockquote {
+  714 |   border-left-color: rgba(255, 255, 255, 0.12);
+  715 | }
+  716 | 
+  717 | .chat-markdown table {
+  718 |   width: 100%;
+  719 |   border-collapse: collapse;
+  720 |   margin: 0.4rem 0;
+  721 |   font-size: 12px;
+  722 | }
+  723 | 
+  724 | .chat-markdown th,
+  725 | .chat-markdown td {
+  726 |   border: 1px solid rgba(148, 163, 184, 0.35);
+  727 |   padding: 0.35rem 0.5rem;
+  728 | }
+  729 | 
+  730 | :root.dark .chat-markdown th,
+  731 | :root.dark .chat-markdown td {
+  732 |   border-color: rgba(255, 255, 255, 0.12);
+  733 | }
+  734 | 
+  735 | .chat-markdown th {
+  736 |   background: rgba(15, 23, 42, 0.06);
+  737 |   font-weight: 700;
+  738 | }
+  739 | 
+  740 | :root.dark .chat-markdown th {
+  741 |   background: rgba(255, 255, 255, 0.06);
+  742 | }
+  743 | 

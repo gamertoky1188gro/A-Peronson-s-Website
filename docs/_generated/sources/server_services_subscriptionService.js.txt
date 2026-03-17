@@ -1,0 +1,76 @@
+    1 | import { readJson, writeJson } from '../utils/jsonStore.js'
+    2 | 
+    3 | const FILE = 'subscriptions.json'
+    4 | 
+    5 | function nowIso() {
+    6 |   return new Date().toISOString()
+    7 | }
+    8 | 
+    9 | function plusDays(days) {
+   10 |   return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString()
+   11 | }
+   12 | 
+   13 | function diffDaysFromNow(endDate) {
+   14 |   const endTime = new Date(endDate || '').getTime()
+   15 |   if (!Number.isFinite(endTime)) return 0
+   16 |   const diffMs = endTime - Date.now()
+   17 |   if (diffMs <= 0) return 0
+   18 |   return Math.ceil(diffMs / (24 * 60 * 60 * 1000))
+   19 | }
+   20 | 
+   21 | export async function getSubscription(userId) {
+   22 |   const subs = await readJson(FILE)
+   23 |   return subs.find((s) => s.user_id === userId) || null
+   24 | }
+   25 | 
+   26 | export async function upsertSubscription(userId, plan = 'free', autoRenew = true) {
+   27 |   const subs = await readJson(FILE)
+   28 |   const idx = subs.findIndex((s) => s.user_id === userId)
+   29 |   const start = nowIso()
+   30 |   const end = plan === 'premium' ? plusDays(30) : plusDays(3650)
+   31 |   const next = { user_id: userId, plan, start_date: start, end_date: end, auto_renew: Boolean(autoRenew) }
+   32 | 
+   33 |   if (idx >= 0) subs[idx] = { ...subs[idx], ...next }
+   34 |   else subs.push(next)
+   35 | 
+   36 |   await writeJson(FILE, subs)
+   37 |   return next
+   38 | }
+   39 | 
+   40 | export async function renewPremiumMonthly(userId, autoRenew = true) {
+   41 |   const subs = await readJson(FILE)
+   42 |   const idx = subs.findIndex((s) => s.user_id === userId)
+   43 |   const current = idx >= 0 ? subs[idx] : null
+   44 | 
+   45 |   const currentEndTime = new Date(current?.end_date || '').getTime()
+   46 |   const baseTime = Number.isFinite(currentEndTime) && currentEndTime > Date.now() ? currentEndTime : Date.now()
+   47 |   const end = new Date(baseTime + (30 * 24 * 60 * 60 * 1000)).toISOString()
+   48 |   const start = nowIso()
+   49 | 
+   50 |   const next = {
+   51 |     user_id: userId,
+   52 |     plan: 'premium',
+   53 |     start_date: start,
+   54 |     end_date: end,
+   55 |     auto_renew: Boolean(autoRenew),
+   56 |   }
+   57 | 
+   58 |   if (idx >= 0) subs[idx] = { ...current, ...next }
+   59 |   else subs.push(next)
+   60 | 
+   61 |   await writeJson(FILE, subs)
+   62 |   return next
+   63 | }
+   64 | 
+   65 | export async function getRemainingDays(userId) {
+   66 |   const sub = await getSubscription(userId)
+   67 |   if (!sub) return 0
+   68 |   return diffDaysFromNow(sub.end_date)
+   69 | }
+   70 | 
+   71 | export async function isSubscriptionValid(userId) {
+   72 |   const sub = await getSubscription(userId)
+   73 |   if (!sub) return false
+   74 |   return diffDaysFromNow(sub.end_date) > 0
+   75 | }
+   76 | 

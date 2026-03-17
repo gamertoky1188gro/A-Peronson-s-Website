@@ -1,0 +1,191 @@
+    1 | import crypto from 'crypto'
+    2 | import { readJson, updateJson } from '../utils/jsonStore.js'
+    3 | import { findUserById, listUsers } from './userService.js'
+    4 | import { recordMilestone } from './ratingsService.js'
+    5 | import {
+    6 |   canManagePartnerNetwork,
+    7 |   canViewPartnerNetwork,
+    8 |   isAgent,
+    9 |   isOwnerOrAdmin,
+   10 |   scopeRecordsForUser,
+   11 | } from '../utils/permissions.js'
+   12 | 
+   13 | const FILE = 'partner_requests.json'
+   14 | 
+   15 | function isAllowedPair(fromRole, toRole) {
+   16 |   return (fromRole === 'factory' && toRole === 'buying_house') || (fromRole === 'buying_house' && toRole === 'factory')
+   17 | }
+   18 | 
+   19 | function mapWithCounterparty(request, me, usersById) {
+   20 |   const counterpartyId = request.requester_id === me.id ? request.target_id : request.requester_id
+   21 |   const counterparty = usersById.get(counterpartyId)
+   22 |   return {
+   23 |     ...request,
+   24 |     direction: request.requester_id === me.id ? 'outgoing' : 'incoming',
+   25 |     counterparty: counterparty
+   26 |       ? { id: counterparty.id, name: counterparty.name, role: counterparty.role, verified: Boolean(counterparty.verified) }
+   27 |       : { id: counterpartyId, name: 'Unknown account', role: 'unknown', verified: false },
+   28 |   }
+   29 | }
+   30 | 
+   31 | export async function getPartnerNetwork(user, { status } = {}) {
+   32 |   if (!canViewPartnerNetwork(user)) {
+   33 |     const err = new Error('Forbidden')
+   34 |     err.status = 403
+   35 |     throw err
+   36 |   }
+   37 | 
+   38 |   const [requests, users] = await Promise.all([readJson(FILE), listUsers()])
+   39 |   const usersById = new Map(users.map((u) => [u.id, u]))
+   40 | 
+   41 |   const scoped = scopeRecordsForUser(user, requests, {
+   42 |     idFields: ['requester_id', 'target_id'],
+   43 |     assignmentFields: ['assigned_agent_id', 'agent_id'],
+   44 |   })
+   45 | 
+   46 |   const filtered = status ? scoped.filter((r) => r.status === status) : scoped
+   47 |   const rows = filtered.map((r) => mapWithCounterparty(r, user, usersById)).sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)))
+   48 |   const connectedFactories = rows
+   49 |     .filter((r) => r.status === 'connected' && r.counterparty?.role === 'factory')
+   50 |     .map((r) => r.counterparty)
+   51 | 
+   52 |   return {
+   53 |     requests: rows,
+   54 |     connected_factories: connectedFactories,
+   55 |     permissions: {
+   56 |       view_only: isAgent(user),
+   57 |       can_manage: canManagePartnerNetwork(user),
+   58 |     },
+   59 |   }
+   60 | }
+   61 | 
+   62 | export async function sendPartnerRequest(user, targetAccountId) {
+   63 |   if (!canManagePartnerNetwork(user)) {
+   64 |     const err = new Error('Forbidden')
+   65 |     err.status = 403
+   66 |     throw err
+   67 |   }
+   68 | 
+   69 |   const target = await findUserById(targetAccountId)
+   70 |   if (!target) {
+   71 |     const err = new Error('Target account not found')
+   72 |     err.status = 404
+   73 |     throw err
+   74 |   }
+   75 | 
+   76 |   if (target.id === user.id) {
+   77 |     const err = new Error('Cannot request your own account')
+   78 |     err.status = 400
+   79 |     throw err
+   80 |   }
+   81 | 
+   82 |   if (!isAllowedPair(user.role, target.role)) {
+   83 |     const err = new Error('Partner requests only allowed between factory and buying house accounts')
+   84 |     err.status = 400
+   85 |     throw err
+   86 |   }
+   87 | 
+   88 |   const now = new Date().toISOString()
+   89 |   const id = crypto.randomUUID()
+   90 | 
+   91 |   const created = await updateJson(FILE, (rows) => {
+   92 |     const duplicate = rows.find((r) =>
+   93 |       ((r.requester_id === user.id && r.target_id === target.id) || (r.requester_id === target.id && r.target_id === user.id))
+   94 |       && (r.status === 'pending' || r.status === 'connected'))
+   95 |     if (duplicate) {
+   96 |       const err = new Error('An active partner relationship/request already exists between these accounts')
+   97 |       err.status = 409
+   98 |       throw err
+   99 |     }
+  100 | 
+  101 |     const row = {
+  102 |       id,
+  103 |       requester_id: user.id,
+  104 |       requester_role: user.role,
+  105 |       target_id: target.id,
+  106 |       target_role: target.role,
+  107 |       status: 'pending',
+  108 |       created_at: now,
+  109 |       updated_at: now,
+  110 |     }
+  111 |     rows.push(row)
+  112 |     return rows
+  113 |   })
+  114 | 
+  115 |   return created.find((r) => r.id === id)
+  116 | }
+  117 | 
+  118 | export async function updatePartnerRequestStatus(user, requestId, action) {
+  119 |   if (!canManagePartnerNetwork(user)) {
+  120 |     const err = new Error('Forbidden')
+  121 |     err.status = 403
+  122 |     throw err
+  123 |   }
+  124 | 
+  125 |   if (!['accept', 'reject', 'cancel'].includes(action)) {
+  126 |     const err = new Error('Invalid action')
+  127 |     err.status = 400
+  128 |     throw err
+  129 |   }
+  130 | 
+  131 |   let updatedRow = null
+  132 |   const nextStatus = action === 'accept' ? 'connected' : action === 'reject' ? 'rejected' : 'cancelled'
+  133 | 
+  134 |   await updateJson(FILE, (rows) => {
+  135 |     const index = rows.findIndex((r) => r.id === requestId)
+  136 |     if (index < 0) {
+  137 |       const err = new Error('Request not found')
+  138 |       err.status = 404
+  139 |       throw err
+  140 |     }
+  141 | 
+  142 |     const current = rows[index]
+  143 |     if (current.status !== 'pending') {
+  144 |       const err = new Error('Only pending requests can be updated')
+  145 |       err.status = 400
+  146 |       throw err
+  147 |     }
+  148 | 
+  149 |     const isAdmin = isOwnerOrAdmin(user)
+  150 |     if (!isAdmin) {
+  151 |       if (action === 'cancel' && current.requester_id !== user.id) {
+  152 |         const err = new Error('Only requester can cancel this request')
+  153 |         err.status = 403
+  154 |         throw err
+  155 |       }
+  156 |       if ((action === 'accept' || action === 'reject') && current.target_id !== user.id) {
+  157 |         const err = new Error('Only target account can accept/reject this request')
+  158 |         err.status = 403
+  159 |         throw err
+  160 |       }
+  161 |     }
+  162 | 
+  163 |     const now = new Date().toISOString()
+  164 |     const next = { ...current, status: nextStatus, updated_at: now }
+  165 |     rows[index] = next
+  166 |     updatedRow = next
+  167 |     return rows
+  168 |   })
+  169 | 
+  170 |   if (updatedRow && nextStatus === 'connected') {
+  171 |     await Promise.all([
+  172 |       recordMilestone({
+  173 |         profileKey: `user:${updatedRow.requester_id}`,
+  174 |         counterpartyId: updatedRow.target_id,
+  175 |         interactionType: 'contract',
+  176 |         milestone: 'contract_signed',
+  177 |         actorId: user.id,
+  178 |       }),
+  179 |       recordMilestone({
+  180 |         profileKey: `user:${updatedRow.target_id}`,
+  181 |         counterpartyId: updatedRow.requester_id,
+  182 |         interactionType: 'contract',
+  183 |         milestone: 'contract_signed',
+  184 |         actorId: user.id,
+  185 |       }),
+  186 |     ])
+  187 |   }
+  188 | 
+  189 |   return updatedRow
+  190 | }
+  191 | 

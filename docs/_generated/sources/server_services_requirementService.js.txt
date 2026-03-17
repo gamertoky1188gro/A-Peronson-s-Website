@@ -1,0 +1,100 @@
+    1 | import crypto from 'crypto'
+    2 | import { readJson, writeJson } from '../utils/jsonStore.js'
+    3 | import { sanitizeString } from '../utils/validators.js'
+    4 | import { logInfo } from '../utils/logger.js'
+    5 | import { emitNotificationsForEntity } from './notificationService.js'
+    6 | import { recordMilestone } from './ratingsService.js'
+    7 | 
+    8 | const FILE = 'requirements.json'
+    9 | 
+   10 | function normalizeRequirement(buyerId, payload) {
+   11 |   return {
+   12 |     id: crypto.randomUUID(),
+   13 |     buyer_id: buyerId,
+   14 |     category: sanitizeString(payload.category, 120),
+   15 |     quantity: sanitizeString(payload.quantity, 40),
+   16 |     price_range: sanitizeString(payload.price_range || payload.target_price, 80),
+   17 |     material: sanitizeString(payload.material || payload.fabric_type, 120),
+   18 |     timeline_days: sanitizeString(payload.timeline_days, 40),
+   19 |     certifications_required: Array.isArray(payload.certifications_required) ? payload.certifications_required.map((c) => sanitizeString(c, 80)) : [],
+   20 |     shipping_terms: sanitizeString(payload.shipping_terms || payload.shipping_port, 120),
+   21 |     custom_description: sanitizeString(payload.custom_description || '', 1500),
+   22 |     status: 'open',
+   23 |     created_at: new Date().toISOString(),
+   24 |   }
+   25 | }
+   26 | 
+   27 | export async function createRequirement(buyerId, payload) {
+   28 |   const requirements = await readJson(FILE)
+   29 |   const requirement = normalizeRequirement(buyerId, payload)
+   30 |   requirements.push(requirement)
+   31 |   await writeJson(FILE, requirements)
+   32 |   await emitNotificationsForEntity('buyer_request', requirement)
+   33 |   logInfo('Buyer request created', { requirement_id: requirement.id, buyer_id: buyerId, at: requirement.created_at })
+   34 |   return requirement
+   35 | }
+   36 | 
+   37 | export async function listRequirements(filters = {}) {
+   38 |   const requirements = await readJson(FILE)
+   39 |   return requirements.filter((r) => {
+   40 |     if (filters.buyerId && r.buyer_id !== filters.buyerId) return false
+   41 |     if (filters.status && r.status !== filters.status) return false
+   42 |     return true
+   43 |   })
+   44 | }
+   45 | 
+   46 | export async function getRequirementById(id) {
+   47 |   const requirements = await readJson(FILE)
+   48 |   return requirements.find((r) => r.id === id)
+   49 | }
+   50 | 
+   51 | export async function updateRequirement(requirementId, patch, actor) {
+   52 |   const requirements = await readJson(FILE)
+   53 |   const idx = requirements.findIndex((r) => r.id === requirementId)
+   54 |   if (idx < 0) return null
+   55 |   if (actor.role === 'buyer' && requirements[idx].buyer_id !== actor.id) return 'forbidden'
+   56 | 
+   57 |   const previous = requirements[idx]
+   58 |   const next = {
+   59 |     ...previous,
+   60 |     category: patch.category !== undefined ? sanitizeString(patch.category, 120) : requirements[idx].category,
+   61 |     quantity: patch.quantity !== undefined ? sanitizeString(patch.quantity, 40) : requirements[idx].quantity,
+   62 |     price_range: patch.price_range !== undefined ? sanitizeString(patch.price_range, 80) : requirements[idx].price_range,
+   63 |     material: patch.material !== undefined ? sanitizeString(patch.material, 120) : requirements[idx].material,
+   64 |     timeline_days: patch.timeline_days !== undefined ? sanitizeString(patch.timeline_days, 40) : requirements[idx].timeline_days,
+   65 |     certifications_required: patch.certifications_required !== undefined
+   66 |       ? (Array.isArray(patch.certifications_required) ? patch.certifications_required.map((c) => sanitizeString(c, 80)) : [])
+   67 |       : requirements[idx].certifications_required,
+   68 |     shipping_terms: patch.shipping_terms !== undefined ? sanitizeString(patch.shipping_terms, 120) : requirements[idx].shipping_terms,
+   69 |     custom_description: patch.custom_description !== undefined ? sanitizeString(patch.custom_description, 1500) : requirements[idx].custom_description,
+   70 |     status: patch.status !== undefined ? sanitizeString(patch.status, 20) : requirements[idx].status,
+   71 |   }
+   72 | 
+   73 |   requirements[idx] = next
+   74 |   await writeJson(FILE, requirements)
+   75 | 
+   76 |   const normalizedStatus = String(next.status || '').toLowerCase()
+   77 |   const statusTransitioned = normalizedStatus !== String(previous.status || '').toLowerCase()
+   78 |   if (statusTransitioned && ['deal_completed', 'closed', 'fulfilled', 'completed'].includes(normalizedStatus) && patch?.counterparty_id) {
+   79 |     await recordMilestone({
+   80 |       profileKey: `user:${actor.id}`,
+   81 |       counterpartyId: sanitizeString(patch.counterparty_id, 120),
+   82 |       interactionType: 'deal',
+   83 |       milestone: 'deal_completed',
+   84 |       actorId: actor.id,
+   85 |     })
+   86 |   }
+   87 | 
+   88 |   return next
+   89 | }
+   90 | 
+   91 | export async function removeRequirement(requirementId, actor) {
+   92 |   const requirements = await readJson(FILE)
+   93 |   const target = requirements.find((r) => r.id === requirementId)
+   94 |   if (!target) return false
+   95 |   if (actor.role === 'buyer' && target.buyer_id !== actor.id) return 'forbidden'
+   96 |   const next = requirements.filter((r) => r.id !== requirementId)
+   97 |   await writeJson(FILE, next)
+   98 |   return true
+   99 | }
+  100 | 

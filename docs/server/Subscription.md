@@ -1,101 +1,150 @@
-# Subscription - Server Feature Documentation (Manual)
+# Subscription
 
-## File Structure & Overview
-- `server/routes/subscriptionRoutes.js`: Subscription endpoints and admin set endpoint.
-- `server/controllers/subscriptionController.js`: Plan update, renew, remaining-days and verification-expiry helpers.
-- `server/services/subscriptionService.js`: Core subscription persistence and date math.
-- `server/services/verificationService.js`: Expiring-soon marker integration.
-- `server/services/userService.js`: Admin user existence check.
-- `server/database/subscriptions.json`: Subscription records.
-- `server/database/verification.json`: Updated by expiring-soon marker endpoint.
+This doc is generated from source snapshots with `path:line` references.
 
-## Code Explanation
+## Mounted prefixes
 
-### `subscriptionRoutes.js`
-- Registers:
-  - `GET /me`
-  - `POST /me`
-  - `POST /me/renew-monthly`
-  - `GET /me/remaining-days`
-  - `POST /me/verification/mark-expiring-soon`
-  - `POST /admin/:userId` (admin only)
+- `/api/subscriptions` -> `server/routes/subscriptionRoutes.js:64` (router var: `subscriptionRoutes`)
 
-### `subscriptionController.js`
-Functions:
-- `getMySubscription`: returns user subscription or free-plan fallback object.
-- `updateMySubscription`: upserts plan (`premium` or `free`) + auto_renew.
-- `adminSetUserSubscription`: validates target user then upserts their plan.
-- `renewMyPremiumMonthly`: extends premium by ~30 days from current valid end or now.
-- `getMyRemainingDays`: returns integer days remaining.
-- `markMyVerificationExpiringSoon`: updates verification record expiring flags based on remaining days.
+## Routes (ultra-detailed)
 
-### `subscriptionService.js`
-Functions:
-- `getSubscription(userId)`: lookup by `user_id`.
-- `upsertSubscription(userId, plan, autoRenew)`:
-  - `premium` -> 30-day window.
-  - `free` -> very long horizon (3650 days).
-- `renewPremiumMonthly(userId, autoRenew)`:
-  - extends from existing end if still active.
-- `getRemainingDays(userId)`: days to expiry (rounded up).
-- `isSubscriptionValid(userId)`: remaining days > 0.
+### GET `/api/subscriptions/me`
 
-Data types:
-- Subscription:
-  - `user_id`, `plan`, `start_date`, `end_date`, `auto_renew`.
+- **Route definition:** `server/routes/subscriptionRoutes.js:7`
 
-Dependencies:
-- `jsonStore`, date helpers in same module.
-
-## API Endpoints
-- `GET /api/subscriptions/me`
-  - Auth: required.
-  - Response: subscription object or default free fallback.
-- `POST /api/subscriptions/me`
-  - Body: `{ "plan": "premium|free", "auto_renew": true }`
-  - Response: updated subscription.
-- `POST /api/subscriptions/me/renew-monthly`
-  - Body optional: `{ "auto_renew": true }`
-  - Response: renewed premium subscription.
-- `GET /api/subscriptions/me/remaining-days`
-  - Response: `{ "user_id": "...", "remaining_days": <number> }`
-- `POST /api/subscriptions/me/verification/mark-expiring-soon`
-  - Body optional: `{ "threshold_days": 7 }`
-  - Response: updated verification record or `404`.
-- `POST /api/subscriptions/admin/:userId`
-  - Auth + admin role.
-  - Body: `{ "plan": "premium|free", "auto_renew": true }`
-  - Response: updated subscription or `404` user.
-
-## Database / Data Model
-- `subscriptions.json`:
-  - one row per user id.
-- Related:
-  - `verification.json` receives derived status fields from expiring-soon endpoint.
-
-Example service query:
 ```js
-subs.find((s) => s.user_id === userId)
+router.get('/me', requireAuth, getMySubscription)
 ```
+- **Middleware stack (in order):**
+  - `requireAuth`
+- **Handler:** `getMySubscription`
+- **Controller file:** `server/controllers/subscriptionController.js`
 
-## Business Logic & Workflow
-1. Frontend subscription page calls `/me` and `/me/remaining-days`.
-2. Plan change calls `/me` (POST), persisted in `subscriptions.json`.
-3. Renewal endpoint extends premium window.
-4. Verification status helper endpoint derives expiring flags in verification records.
-5. Admin endpoint can override user plan.
+#### Controller implementation: `server/controllers/subscriptionController.js:5`
 
-## Error Handling & Validation
-- Non-admin blocked on admin endpoint by middleware.
-- Admin set returns `404` when target user not found.
-- Expiring-soon endpoint returns `404` if verification record absent.
-- Plan values normalized to `premium` else `free`.
+```js
+export async function getMySubscription(req, res) {
+  const sub = await getSubscription(req.user.id)
+  return res.json(sub || { user_id: req.user.id, plan: 'free', start_date: '', end_date: '', auto_renew: true })
+}
 
-## Security Considerations
-- JWT required on all routes.
-- Admin-only override route enforced via `allowRoles('admin')`.
-- No sensitive card/payment data handled in this service.
+```
+### POST `/api/subscriptions/me`
 
-## Extra Notes / Metadata
-- Free plan end date is intentionally far-future, not true “no-expiry”.
-- Premium renewal logic preserves remaining paid time when active.
+- **Route definition:** `server/routes/subscriptionRoutes.js:8`
+
+```js
+router.post('/me', requireAuth, updateMySubscription)
+```
+- **Middleware stack (in order):**
+  - `requireAuth`
+- **Handler:** `updateMySubscription`
+- **Controller file:** `server/controllers/subscriptionController.js`
+
+#### Controller implementation: `server/controllers/subscriptionController.js:10`
+
+```js
+export async function updateMySubscription(req, res) {
+  const plan = req.body?.plan === 'premium' ? 'premium' : 'free'
+  const sub = await upsertSubscription(req.user.id, plan, req.body?.auto_renew)
+  return res.json(sub)
+}
+
+```
+### POST `/api/subscriptions/me/renew-monthly`
+
+- **Route definition:** `server/routes/subscriptionRoutes.js:9`
+
+```js
+router.post('/me/renew-monthly', requireAuth, renewMyPremiumMonthly)
+```
+- **Middleware stack (in order):**
+  - `requireAuth`
+- **Handler:** `renewMyPremiumMonthly`
+- **Controller file:** `server/controllers/subscriptionController.js`
+
+#### Controller implementation: `server/controllers/subscriptionController.js:25`
+
+```js
+export async function renewMyPremiumMonthly(req, res) {
+  const sub = await renewPremiumMonthly(req.user.id, req.body?.auto_renew)
+  return res.json(sub)
+}
+
+```
+### GET `/api/subscriptions/me/remaining-days`
+
+- **Route definition:** `server/routes/subscriptionRoutes.js:10`
+
+```js
+router.get('/me/remaining-days', requireAuth, getMyRemainingDays)
+```
+- **Middleware stack (in order):**
+  - `requireAuth`
+- **Handler:** `getMyRemainingDays`
+- **Controller file:** `server/controllers/subscriptionController.js`
+
+#### Controller implementation: `server/controllers/subscriptionController.js:30`
+
+```js
+export async function getMyRemainingDays(req, res) {
+  const remaining_days = await getRemainingDays(req.user.id)
+  return res.json({ user_id: req.user.id, remaining_days })
+}
+
+```
+### POST `/api/subscriptions/me/verification/mark-expiring-soon`
+
+- **Route definition:** `server/routes/subscriptionRoutes.js:11`
+
+```js
+router.post('/me/verification/mark-expiring-soon', requireAuth, markMyVerificationExpiringSoon)
+```
+- **Middleware stack (in order):**
+  - `requireAuth`
+- **Handler:** `markMyVerificationExpiringSoon`
+- **Controller file:** `server/controllers/subscriptionController.js`
+
+#### Controller implementation: `server/controllers/subscriptionController.js:35`
+
+```js
+export async function markMyVerificationExpiringSoon(req, res) {
+  const remainingDays = await getRemainingDays(req.user.id)
+  const rec = await markVerificationExpiringSoon(req.user.id, remainingDays, req.body?.threshold_days || 7)
+  if (!rec) return res.status(404).json({ error: 'Verification record not found' })
+  return res.json(rec)
+}
+
+```
+### POST `/api/subscriptions/admin/:userId`
+
+- **Route definition:** `server/routes/subscriptionRoutes.js:12`
+
+```js
+router.post('/admin/:userId', requireAuth, allowRoles('admin'), adminSetUserSubscription)
+```
+- **Middleware stack (in order):**
+  - `requireAuth`
+  - `allowRoles('admin')`
+- **Handler:** `adminSetUserSubscription`
+- **Controller file:** `server/controllers/subscriptionController.js`
+
+#### Controller implementation: `server/controllers/subscriptionController.js:16`
+
+```js
+export async function adminSetUserSubscription(req, res) {
+  const user = await findUserById(req.params.userId)
+  if (!user) return res.status(404).json({ error: 'User not found' })
+  const plan = req.body?.plan === 'premium' ? 'premium' : 'free'
+  const sub = await upsertSubscription(user.id, plan, req.body?.auto_renew)
+  return res.json(sub)
+}
+
+
+```
+## Persistence model (JSON-backed "DB")
+
+- JSON helpers: `server/utils/jsonStore.js` (readJson/writeJson/updateJson).
+- Data files: `server/database/*.json`.
+- Controllers/services often read from `users.json`, `messages.json`, `metrics.json`, etc.
+

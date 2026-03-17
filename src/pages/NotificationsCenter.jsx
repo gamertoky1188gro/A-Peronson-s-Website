@@ -1,3 +1,26 @@
+/*
+  Route: /notifications
+  Access: Protected (login required)
+  Allowed roles: buyer, buying_house, factory, owner, admin, agent
+
+  Public Pages:
+    /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+  Protected Pages (login required):
+    /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+    /notifications, /chat, /call, /verification, /verification-center
+
+  Primary responsibilities:
+    - Display system + workflow notifications (search matches, conversation locks, rating requests, etc.).
+    - Provide tabbed filtering with animated active pill indicator.
+    - Support actions like mark-as-read and manage search alerts.
+
+  Key API endpoints:
+    - GET /api/notifications
+    - PATCH /api/notifications/:id/read
+    - GET /api/notifications/search-alerts
+    - DELETE /api/notifications/search-alerts/:id
+    - GET /api/products/views/me (for the "Viewed Products" tab)
+*/
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Bell, History, ShieldAlert, Sparkles, Trash2 } from 'lucide-react'
@@ -6,6 +29,7 @@ import { apiRequest, getToken } from '../lib/auth'
 import ProductQuickViewModal from '../components/products/ProductQuickViewModal'
 
 const TABS = [
+  // Notification types supported by backend; used to filter the list on the client.
   { id: 'all', label: 'All', icon: Bell },
   { id: 'smart_search_match', label: 'Search Matches', icon: Sparkles },
   { id: 'conversation_lock', label: 'Conversation Locks', icon: ShieldAlert },
@@ -15,6 +39,7 @@ const TABS = [
 ]
 
 function feedLinkForEntity(entityType, entityId) {
+  // Build a deep-link to the feed filtered to a specific entity.
   if (!entityType || !entityId) return '/feed'
   return `/feed?item=${encodeURIComponent(`${entityType}:${entityId}`)}`
 }

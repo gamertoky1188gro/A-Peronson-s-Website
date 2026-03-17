@@ -1,0 +1,41 @@
+    1 | import { findUserById } from '../services/userService.js'
+    2 | import { markVerificationExpiringSoon } from '../services/verificationService.js'
+    3 | import { getRemainingDays, getSubscription, renewPremiumMonthly, upsertSubscription } from '../services/subscriptionService.js'
+    4 | 
+    5 | export async function getMySubscription(req, res) {
+    6 |   const sub = await getSubscription(req.user.id)
+    7 |   return res.json(sub || { user_id: req.user.id, plan: 'free', start_date: '', end_date: '', auto_renew: true })
+    8 | }
+    9 | 
+   10 | export async function updateMySubscription(req, res) {
+   11 |   const plan = req.body?.plan === 'premium' ? 'premium' : 'free'
+   12 |   const sub = await upsertSubscription(req.user.id, plan, req.body?.auto_renew)
+   13 |   return res.json(sub)
+   14 | }
+   15 | 
+   16 | export async function adminSetUserSubscription(req, res) {
+   17 |   const user = await findUserById(req.params.userId)
+   18 |   if (!user) return res.status(404).json({ error: 'User not found' })
+   19 |   const plan = req.body?.plan === 'premium' ? 'premium' : 'free'
+   20 |   const sub = await upsertSubscription(user.id, plan, req.body?.auto_renew)
+   21 |   return res.json(sub)
+   22 | }
+   23 | 
+   24 | 
+   25 | export async function renewMyPremiumMonthly(req, res) {
+   26 |   const sub = await renewPremiumMonthly(req.user.id, req.body?.auto_renew)
+   27 |   return res.json(sub)
+   28 | }
+   29 | 
+   30 | export async function getMyRemainingDays(req, res) {
+   31 |   const remaining_days = await getRemainingDays(req.user.id)
+   32 |   return res.json({ user_id: req.user.id, remaining_days })
+   33 | }
+   34 | 
+   35 | export async function markMyVerificationExpiringSoon(req, res) {
+   36 |   const remainingDays = await getRemainingDays(req.user.id)
+   37 |   const rec = await markVerificationExpiringSoon(req.user.id, remainingDays, req.body?.threshold_days || 7)
+   38 |   if (!rec) return res.status(404).json({ error: 'Verification record not found' })
+   39 |   return res.json(rec)
+   40 | }
+   41 | 

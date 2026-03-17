@@ -1,0 +1,730 @@
+    1 | /*
+    2 |   Route: /contracts
+    3 |   Access: Protected (login required)
+    4 |   Allowed roles: buyer, buying_house, factory, owner, admin, agent
+    5 | 
+    6 |   Public Pages:
+    7 |     /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+    8 |   Protected Pages (login required):
+    9 |     /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+   10 |     /notifications, /chat, /call, /verification, /verification-center
+   11 | 
+   12 |   Primary responsibilities:
+   13 |     - Provide the "Contract Vault" experience (secure documents + signing workflow visibility).
+   14 |     - Filter contracts by state (All/Draft/Pending/Signed/Archived) with animated tab indicator.
+   15 |     - Show contract details, signature status, and downloadable artifacts.
+   16 | 
+   17 |   Key API endpoints (high level):
+   18 |     - GET /api/contracts (list)
+   19 |     - GET /api/contracts/:id (details)
+   20 |     - POST/PATCH for signing/finalizing/archiving (actions depend on role)
+   21 | 
+   22 |   Major UI/UX patterns:
+   23 |     - Secure grid background inside the vault area (visual cue for confidentiality).
+   24 |     - Shortcut hint on search (Ctrl/⌘ + K style) where applicable.
+   25 |     - Skeleton shimmer for list/detail while loading.
+   26 | */
+   27 | import React, { useEffect, useMemo, useRef, useState } from 'react'
+   28 | import { Link } from 'react-router-dom'
+   29 | import { motion, useReducedMotion } from 'framer-motion'
+   30 | import AccessDeniedState from '../components/AccessDeniedState'
+   31 | import { API_BASE, apiRequest, getCurrentUser, getToken } from '../lib/auth'
+   32 | 
+   33 | function toLabel(status) {
+   34 |   // Map backend status -> readable label for UI chips.
+   35 |   switch (status) {
+   36 |     case 'draft':
+   37 |       return 'Draft'
+   38 |     case 'pending_signature':
+   39 |       return 'Pending signatures'
+   40 |     case 'signed':
+   41 |       return 'Signed'
+   42 |     case 'archived':
+   43 |       return 'Archived'
+   44 |     default:
+   45 |       return 'Pending signatures'
+   46 |   }
+   47 | }
+   48 | 
+   49 | function statusClass(status) {
+   50 |   // Chip styling for contract status pills (light mode defaults; dark mode handled by parent surfaces).
+   51 |   if (status === 'signed') return 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+   52 |   if (status === 'draft') return 'bg-slate-50 text-slate-700 ring-slate-200'
+   53 |   if (status === 'archived') return 'bg-slate-100 text-slate-700 ring-slate-300'
+   54 |   return 'bg-amber-50 text-amber-700 ring-amber-200'
+   55 | }
+   56 | 
+   57 | function resolveDownloadUrl(pdfPath) {
+   58 |   // Normalize relative file paths returned by the backend into an absolute URL.
+   59 |   if (!pdfPath) return ''
+   60 |   if (pdfPath.startsWith('http://') || pdfPath.startsWith('https://')) return pdfPath
+   61 |   const baseOrigin = API_BASE.replace(/\/api\/?$/, '')
+   62 |   return `${baseOrigin}${pdfPath.startsWith('/') ? '' : '/'}${pdfPath}`
+   63 | }
+   64 | 
+   65 | function isOwnerLevel(user) {
+   66 |   return user?.role === 'owner' || user?.role === 'admin'
+   67 | }
+   68 | 
+   69 | function canCreateDraft(user) {
+   70 |   if (!user?.role) return false
+   71 |   return ['owner', 'admin', 'buying_house', 'factory'].includes(user.role)
+   72 | }
+   73 | 
+   74 | function canViewBankingReferences(user, contract) {
+   75 |   if (!user || !contract) return false
+   76 |   if (isOwnerLevel(user)) return true
+   77 |   const uid = String(user.id || '')
+   78 |   return uid && (uid === String(contract.uploaded_by) || uid === String(contract.buyer_id) || uid === String(contract.factory_id))
+   79 | }
+   80 | 
+   81 | function safeDash(value) {
+   82 |   const text = String(value || '').trim()
+   83 |   return text ? text : '\u2014'
+   84 | }
+   85 | 
+   86 | function maskValue(value) {
+   87 |   const text = String(value || '').trim()
+   88 |   if (!text) return '\u2014'
+   89 |   if (text.length <= 4) return '\u2022\u2022\u2022\u2022'
+   90 |   return `${text.slice(0, 2)}\u2022\u2022\u2022\u2022${text.slice(-2)}`
+   91 | }
+   92 | 
+   93 | function computeFlow(contract) {
+   94 |   const buyerSigned = contract?.buyer_signature_state === 'signed'
+   95 |   const factorySigned = contract?.factory_signature_state === 'signed'
+   96 |   const hasPdf = Boolean(contract?.artifact?.generated_at && contract?.artifact?.pdf_path)
+   97 |   const locked = contract?.artifact?.status === 'locked'
+   98 |   const archived = contract?.artifact?.status === 'archived' || Boolean(contract?.archived_at)
+   99 |   const draftComplete = !contract?.is_draft
+  100 | 
+  101 |   const blockers = []
+  102 |   if (!buyerSigned) blockers.push('Buyer signature pending')
+  103 |   if (!factorySigned) blockers.push('Factory signature pending')
+  104 |   if (buyerSigned && factorySigned && !hasPdf) blockers.push('PDF generation pending')
+  105 |   if (hasPdf && !locked) blockers.push('Lock pending')
+  106 |   if (locked && !archived) blockers.push('Archive pending')
+  107 | 
+  108 |   const stepState = {
+  109 |     draft_creation: draftComplete,
+  110 |     buyer_signature: buyerSigned,
+  111 |     factory_signature: factorySigned,
+  112 |     artifact_finalize: locked,
+  113 |     archive: archived,
+  114 |   }
+  115 | 
+  116 |   const nextAction = blockers[0] || 'Complete'
+  117 |   return { stepState, hasPdf, locked, archived, blockers, nextAction }
+  118 | }
+  119 | 
+  120 | function canBuyerSign(user, contract) {
+  121 |   if (!user || !contract) return false
+  122 |   return isOwnerLevel(user) || (user.role === 'buyer' && String(user.id) === String(contract.buyer_id))
+  123 | }
+  124 | 
+  125 | function canFactorySign(user, contract) {
+  126 |   if (!user || !contract) return false
+  127 |   return isOwnerLevel(user) || (user.role === 'factory' && String(user.id) === String(contract.factory_id))
+  128 | }
+  129 | 
+  130 | function canFinalizeArtifact(user, contract) {
+  131 |   if (!user || !contract) return false
+  132 |   if (isOwnerLevel(user)) return true
+  133 |   return String(user.id) === String(contract.uploaded_by)
+  134 | }
+  135 | 
+  136 | function canArchive(user, contract) {
+  137 |   if (!user || !contract) return false
+  138 |   return isOwnerLevel(user) || String(user.id) === String(contract.uploaded_by)
+  139 | }
+  140 | 
+  141 | function actionBlockers(user, contract) {
+  142 |   const buyerSigned = contract?.buyer_signature_state === 'signed'
+  143 |   const factorySigned = contract?.factory_signature_state === 'signed'
+  144 |   const hasPdf = Boolean(contract?.artifact?.generated_at && contract?.artifact?.pdf_hash && contract?.artifact?.pdf_path)
+  145 |   const locked = contract?.artifact?.status === 'locked'
+  146 |   const archived = contract?.artifact?.status === 'archived'
+  147 | 
+  148 |   const blockers = {
+  149 |     buyerSign: '',
+  150 |     factorySign: '',
+  151 |     lock: '',
+  152 |     archive: '',
+  153 |   }
+  154 | 
+  155 |   if (!canBuyerSign(user, contract)) blockers.buyerSign = 'Only owner/admin or the assigned buyer can sign.'
+  156 |   else if (buyerSigned) blockers.buyerSign = 'Already signed.'
+  157 | 
+  158 |   if (!canFactorySign(user, contract)) blockers.factorySign = 'Only owner/admin or the assigned factory can sign.'
+  159 |   else if (factorySigned) blockers.factorySign = 'Already signed.'
+  160 | 
+  161 |   if (!canFinalizeArtifact(user, contract)) blockers.lock = 'Only owner/admin or the draft uploader can lock the PDF.'
+  162 |   else if (!buyerSigned || !factorySigned) blockers.lock = 'Both signatures are required first.'
+  163 |   else if (!hasPdf) blockers.lock = 'PDF is not generated yet (generated automatically after both signatures).'
+  164 |   else if (locked) blockers.lock = 'Already locked.'
+  165 | 
+  166 |   if (!canArchive(user, contract)) blockers.archive = 'Only owner/admin or the draft uploader can archive.'
+  167 |   else if (!hasPdf) blockers.archive = 'Generate PDF first.'
+  168 |   else if (!locked) blockers.archive = 'Lock the PDF first.'
+  169 |   else if (archived) blockers.archive = 'Already archived.'
+  170 | 
+  171 |   return blockers
+  172 | }
+  173 | 
+  174 | function StepPill({ done, label }) {
+  175 |   return (
+  176 |     <div className={`flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ring-1 ${done ? 'bg-[#E8F3FF] text-[#0A66C2] ring-[#BBD8FF]' : 'bg-white text-slate-600 ring-slate-200'}`}>
+  177 |       <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full ${done ? 'bg-[#0A66C2] text-white' : 'bg-slate-100 text-slate-500'}`}>
+  178 |         {done ? '\u2713' : '\u2022'}
+  179 |       </span>
+  180 |       <span>{label}</span>
+  181 |     </div>
+  182 |   )
+  183 | }
+  184 | 
+  185 | function ContractRow({ contract, active, onSelect }) {
+  186 |   const status = contract.lifecycle_status || 'pending_signature'
+  187 |   const flow = computeFlow(contract)
+  188 |   return (
+  189 |     <button
+  190 |       type="button"
+  191 |       onClick={onSelect}
+  192 |       className={`w-full rounded-2xl p-4 text-left transition ring-1 ${active ? 'bg-indigo-50/60 text-slate-900 ring-indigo-200 shadow-sm dark:bg-white/5 dark:text-slate-100 dark:ring-[#38bdf8]/35' : 'bg-white text-slate-900 ring-slate-200/70 hover:bg-slate-50 dark:bg-slate-900/50 dark:text-slate-100 dark:ring-slate-800 dark:hover:bg-white/5'}`}
+  193 |     >
+  194 |       <div className="flex items-start justify-between gap-4">
+  195 |         <div className="min-w-0">
+  196 |           <div className="flex items-center gap-2">
+  197 |             <div className="truncate text-sm font-semibold text-slate-900">{contract.contract_number || contract.id}</div>
+  198 |             <span className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${statusClass(status)}`}>
+  199 |               {toLabel(status)}
+  200 |             </span>
+  201 |           </div>
+  202 |           <div className="mt-1 truncate text-xs text-slate-600">{safeDash(contract.title)}</div>
+  203 |           <div className="mt-2 text-xs text-slate-600">
+  204 |             <span className="font-semibold text-slate-700">Buyer:</span> {safeDash(contract.buyer_name)} <span className="mx-1">•</span>
+  205 |             <span className="font-semibold text-slate-700">Factory:</span> {safeDash(contract.factory_name)}
+  206 |           </div>
+  207 |         </div>
+  208 | 
+  209 |         <div className="shrink-0 text-right text-xs text-slate-600">
+  210 |           <div>{(contract.updated_at || contract.created_at || '').slice(0, 10) || '\u2014'}</div>
+  211 |           <div className="mt-2 inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700">
+  212 |             Next: {flow.nextAction}
+  213 |           </div>
+  214 |         </div>
+  215 |       </div>
+  216 | 
+  217 |       <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-slate-600">
+  218 |         <span className="inline-flex items-center rounded-full bg-white px-2 py-1 ring-1 ring-slate-200">Buyer: {contract.buyer_signature_state || 'pending'}</span>
+  219 |         <span className="inline-flex items-center rounded-full bg-white px-2 py-1 ring-1 ring-slate-200">Factory: {contract.factory_signature_state || 'pending'}</span>
+  220 |         <span className="inline-flex items-center rounded-full bg-white px-2 py-1 ring-1 ring-slate-200">PDF: {flow.hasPdf ? 'ready' : 'pending'}</span>
+  221 |       </div>
+  222 |     </button>
+  223 |   )
+  224 | }
+  225 | 
+  226 | function Drawer({ open, onClose, children }) {
+  227 |   if (!open) return null
+  228 |   return (
+  229 |     <div className="fixed inset-0 z-50 lg:hidden">
+  230 |       <div className="absolute inset-0 bg-slate-900/30" onClick={onClose} />
+  231 |       <div className="absolute inset-x-0 bottom-0 max-h-[86vh] overflow-auto rounded-t-3xl bg-white p-5 shadow-2xl">
+  232 |         <div className="mb-4 flex items-center justify-between">
+  233 |           <div className="text-sm font-semibold text-slate-900">Contract details</div>
+  234 |           <button type="button" onClick={onClose} className="rounded-full px-3 py-1 text-sm font-semibold text-slate-700 hover:bg-slate-100">Close</button>
+  235 |         </div>
+  236 |         {children}
+  237 |       </div>
+  238 |     </div>
+  239 |   )
+  240 | }
+  241 | 
+  242 | export default function ContractVault() {
+  243 |   const currentUser = useMemo(() => getCurrentUser(), [])
+  244 |   const reduceMotion = useReducedMotion()
+  245 |   const [loadingContracts, setLoadingContracts] = useState(true)
+  246 |   const searchRef = useRef(null)
+  247 |   const isMac = useMemo(() => (typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)), [])
+  248 |   const [contracts, setContracts] = useState([])
+  249 |   const [selectedId, setSelectedId] = useState('')
+  250 |   const [drawerOpen, setDrawerOpen] = useState(false)
+  251 |   const [error, setError] = useState('')
+  252 |   const [forbidden, setForbidden] = useState(false)
+  253 |   const [saving, setSaving] = useState(false)
+  254 |   const [actionError, setActionError] = useState('')
+  255 | 
+  256 |   const [statusFilter, setStatusFilter] = useState('all')
+  257 |   const [query, setQuery] = useState('')
+  258 | 
+  259 |   const [draftOpen, setDraftOpen] = useState(false)
+  260 |   const [draftForm, setDraftForm] = useState({
+  261 |     title: '',
+  262 |     buyer_name: '',
+  263 |     factory_name: '',
+  264 |     buyer_id: '',
+  265 |     factory_id: '',
+  266 |     bank_name: '',
+  267 |     beneficiary_name: '',
+  268 |     transaction_reference: '',
+  269 |   })
+  270 | 
+  271 |   const loadContracts = async () => {
+  272 |     setLoadingContracts(true)
+  273 |     try {
+  274 |       const token = getToken()
+  275 |       if (!token) {
+  276 |         setContracts([])
+  277 |         setLoadingContracts(false)
+  278 |         return
+  279 |       }
+  280 |       const data = await apiRequest('/documents/contracts', { token })
+  281 |       setContracts(Array.isArray(data) ? data : [])
+  282 |       setError('')
+  283 |       setForbidden(false)
+  284 |     } catch (err) {
+  285 |       const isForbidden = err.status === 403
+  286 |       setForbidden(isForbidden)
+  287 |       setError(isForbidden ? 'You do not have permission to view contracts.' : (err.message || 'Failed to load contracts.'))
+  288 |       setContracts([])
+  289 |     } finally {
+  290 |       setLoadingContracts(false)
+  291 |     }
+  292 |   }
+  293 | 
+  294 |   useEffect(() => {
+  295 |     loadContracts()
+  296 |   }, [])
+  297 | 
+  298 |   useEffect(() => {
+  299 |     const handler = (e) => {
+  300 |       const key = String(e.key || '').toLowerCase()
+  301 |       if (key !== 'k') return
+  302 |       if (!(e.ctrlKey || e.metaKey)) return
+  303 |       e.preventDefault()
+  304 |       searchRef.current?.focus?.()
+  305 |     }
+  306 |     window.addEventListener('keydown', handler)
+  307 |     return () => window.removeEventListener('keydown', handler)
+  308 |   }, [])
+  309 | 
+  310 |   const visibleContracts = useMemo(() => {
+  311 |     const q = query.trim().toLowerCase()
+  312 |     return contracts
+  313 |       .filter((c) => (statusFilter === 'all' ? true : (c.lifecycle_status || 'pending_signature') === statusFilter))
+  314 |       .filter((c) => {
+  315 |         if (!q) return true
+  316 |         const haystack = `${c.contract_number || ''} ${c.title || ''} ${c.buyer_name || ''} ${c.factory_name || ''} ${c.id || ''}`.toLowerCase()
+  317 |         return haystack.includes(q)
+  318 |       })
+  319 |       .sort((a, b) => String(b.updated_at || b.created_at || '').localeCompare(String(a.updated_at || a.created_at || '')))
+  320 |   }, [contracts, statusFilter, query])
+  321 | 
+  322 |   const selected = useMemo(() => {
+  323 |     if (!selectedId) return null
+  324 |     return contracts.find((c) => String(c.id) === String(selectedId)) || null
+  325 |   }, [contracts, selectedId])
+  326 | 
+  327 |   const selectedFlow = computeFlow(selected)
+  328 |   const selectedActionBlockers = actionBlockers(currentUser, selected)
+  329 |   const downloadUrl = resolveDownloadUrl(selected?.artifact?.pdf_path)
+  330 |   const canDownload = Boolean(selectedFlow?.hasPdf && downloadUrl)
+  331 | 
+  332 |   const upsertContract = (nextContract) => {
+  333 |     if (!nextContract?.id) return
+  334 |     setContracts((prev) => {
+  335 |       const idx = prev.findIndex((entry) => String(entry.id) === String(nextContract.id))
+  336 |       if (idx < 0) return [nextContract, ...prev]
+  337 |       const clone = [...prev]
+  338 |       clone[idx] = nextContract
+  339 |       return clone
+  340 |     })
+  341 |     setSelectedId(String(nextContract.id))
+  342 |   }
+  343 | 
+  344 |   const runStepAction = async (runner) => {
+  345 |     setSaving(true)
+  346 |     setActionError('')
+  347 |     try {
+  348 |       const token = getToken()
+  349 |       const updated = await runner(token)
+  350 |       upsertContract(updated)
+  351 |     } catch (err) {
+  352 |       setActionError(err.message || 'Action failed')
+  353 |     } finally {
+  354 |       setSaving(false)
+  355 |     }
+  356 |   }
+  357 | 
+  358 |   const handleCreateDraft = async () => {
+  359 |     await runStepAction(async (token) => apiRequest('/documents/contracts/draft', {
+  360 |       method: 'POST',
+  361 |       token,
+  362 |       body: {
+  363 |         title: draftForm.title,
+  364 |         buyer_name: draftForm.buyer_name,
+  365 |         factory_name: draftForm.factory_name,
+  366 |         buyer_id: draftForm.buyer_id,
+  367 |         factory_id: draftForm.factory_id,
+  368 |         bank_name: draftForm.bank_name,
+  369 |         beneficiary_name: draftForm.beneficiary_name,
+  370 |         transaction_reference: draftForm.transaction_reference,
+  371 |       },
+  372 |     }))
+  373 |     setDraftOpen(false)
+  374 |     setDraftForm({
+  375 |       title: '',
+  376 |       buyer_name: '',
+  377 |       factory_name: '',
+  378 |       buyer_id: '',
+  379 |       factory_id: '',
+  380 |       bank_name: '',
+  381 |       beneficiary_name: '',
+  382 |       transaction_reference: '',
+  383 |     })
+  384 |     await loadContracts()
+  385 |   }
+  386 | 
+  387 |   const openDetails = (contractId) => {
+  388 |     setSelectedId(String(contractId))
+  389 |     setDrawerOpen(true)
+  390 |   }
+  391 | 
+  392 |   const detailPanel = selected ? (
+  393 |     <div className="rounded-2xl border border-slate-200 bg-white p-5">
+  394 |       <div className="flex items-start justify-between gap-4">
+  395 |         <div className="min-w-0">
+  396 |           <div className="flex items-center gap-2">
+  397 |             <div className="truncate text-lg font-bold text-slate-900">{selected.contract_number || selected.id}</div>
+  398 |             <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ${statusClass(selected.lifecycle_status || 'pending_signature')}`}>
+  399 |               {toLabel(selected.lifecycle_status || 'pending_signature')}
+  400 |             </span>
+  401 |           </div>
+  402 |           <div className="mt-1 text-sm text-slate-600">{safeDash(selected.title)}</div>
+  403 |           <div className="mt-3 text-sm text-slate-700">
+  404 |             <span className="font-semibold">Buyer:</span> {safeDash(selected.buyer_name)} <span className="mx-1">•</span>
+  405 |             <span className="font-semibold">Factory:</span> {safeDash(selected.factory_name)}
+  406 |           </div>
+  407 |         </div>
+  408 |         <Link to="/help" className="shrink-0 rounded-full bg-[#E8F3FF] px-3 py-1 text-xs font-semibold text-[#0A66C2] hover:bg-[#D9ECFF]">Help</Link>
+  409 |       </div>
+  410 | 
+  411 |       {actionError ? <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-semibold text-rose-700">{actionError}</div> : null}
+  412 | 
+  413 |       <div className="mt-5 flex flex-wrap items-center gap-2">
+  414 |         <StepPill done={selectedFlow.stepState.draft_creation} label="Draft" />
+  415 |         <StepPill done={selectedFlow.stepState.buyer_signature} label="Buyer sign" />
+  416 |         <StepPill done={selectedFlow.stepState.factory_signature} label="Factory sign" />
+  417 |         <StepPill done={selectedFlow.stepState.artifact_finalize} label="Lock PDF" />
+  418 |         <StepPill done={selectedFlow.stepState.archive} label="Archive" />
+  419 |       </div>
+  420 | 
+  421 |       <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+  422 |         <div className="rounded-2xl border border-slate-200 bg-white p-4">
+  423 |           <div className="text-sm font-semibold text-slate-900">Signatures</div>
+  424 |           <div className="mt-2 text-sm text-slate-700">Buyer: <span className="font-semibold">{selected.buyer_signature_state || 'pending'}</span> {selected.buyer_signed_at ? <span className="text-xs text-slate-500">({selected.buyer_signed_at})</span> : null}</div>
+  425 |           <div className="mt-1 text-sm text-slate-700">Factory: <span className="font-semibold">{selected.factory_signature_state || 'pending'}</span> {selected.factory_signed_at ? <span className="text-xs text-slate-500">({selected.factory_signed_at})</span> : null}</div>
+  426 |           <div className="mt-4 grid grid-cols-1 gap-2">
+  427 |             <button
+  428 |               type="button"
+  429 |               disabled={Boolean(selectedActionBlockers.buyerSign) || saving}
+  430 |               onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/signatures`, {
+  431 |                 method: 'PATCH',
+  432 |                 token,
+  433 |                 body: { buyer_signature_state: 'signed', is_draft: false },
+  434 |               }))}
+  435 |               className="rounded-xl bg-[#0A66C2] px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-200 disabled:text-slate-500"
+  436 |             >
+  437 |               Buyer sign
+  438 |             </button>
+  439 |             {selectedActionBlockers.buyerSign ? <div className="text-xs text-amber-700">{selectedActionBlockers.buyerSign}</div> : null}
+  440 | 
+  441 |             <button
+  442 |               type="button"
+  443 |               disabled={Boolean(selectedActionBlockers.factorySign) || saving}
+  444 |               onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/signatures`, {
+  445 |                 method: 'PATCH',
+  446 |                 token,
+  447 |                 body: { factory_signature_state: 'signed', is_draft: false },
+  448 |               }))}
+  449 |               className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-[#0A66C2] ring-1 ring-[#BBD8FF] hover:bg-[#F6FAFF] disabled:bg-slate-50 disabled:text-slate-400 disabled:ring-slate-200"
+  450 |             >
+  451 |               Factory sign
+  452 |             </button>
+  453 |             {selectedActionBlockers.factorySign ? <div className="text-xs text-amber-700">{selectedActionBlockers.factorySign}</div> : null}
+  454 |           </div>
+  455 |         </div>
+  456 | 
+  457 |         <div className="rounded-2xl border border-slate-200 bg-white p-4">
+  458 |           <div className="text-sm font-semibold text-slate-900">Artifact (PDF)</div>
+  459 |           <div className="mt-2 text-sm text-slate-700">Status: <span className="font-semibold">{selected.artifact?.status || 'draft'}</span></div>
+  460 |           <div className="mt-1 text-xs text-slate-500">PDF generates automatically after both signatures.</div>
+  461 | 
+  462 |           <div className="mt-4 grid grid-cols-1 gap-2">
+  463 |             <button
+  464 |               type="button"
+  465 |               disabled={Boolean(selectedActionBlockers.lock) || saving}
+  466 |               onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/artifact`, {
+  467 |                 method: 'PATCH',
+  468 |                 token,
+  469 |                 body: { status: 'locked' },
+  470 |               }))}
+  471 |               className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50 disabled:bg-slate-50 disabled:text-slate-400"
+  472 |             >
+  473 |               Lock PDF
+  474 |             </button>
+  475 |             {selectedActionBlockers.lock ? <div className="text-xs text-amber-700">{selectedActionBlockers.lock}</div> : null}
+  476 | 
+  477 |             <button
+  478 |               type="button"
+  479 |               disabled={Boolean(selectedActionBlockers.archive) || saving}
+  480 |               onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/artifact`, {
+  481 |                 method: 'PATCH',
+  482 |                 token,
+  483 |                 body: { status: 'archived' },
+  484 |               }))}
+  485 |               className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-200 disabled:text-slate-500"
+  486 |             >
+  487 |               Archive
+  488 |             </button>
+  489 |             {selectedActionBlockers.archive ? <div className="text-xs text-amber-700">{selectedActionBlockers.archive}</div> : null}
+  490 | 
+  491 |             {canDownload
+  492 |               ? <a href={downloadUrl} target="_blank" rel="noreferrer" className="rounded-xl bg-[#0A66C2] px-4 py-2 text-center text-sm font-semibold text-white hover:bg-[#0959A8]">Download PDF</a>
+  493 |               : <button type="button" disabled className="rounded-xl bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-500">Download (not ready)</button>}
+  494 |           </div>
+  495 |         </div>
+  496 |       </div>
+  497 | 
+  498 |       <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
+  499 |         <div className="flex items-start justify-between gap-4">
+  500 |           <div>
+  501 |             <div className="text-sm font-semibold text-slate-900">Banking references (optional)</div>
+  502 |             <div className="mt-1 text-xs text-slate-500">For fraud prevention only. No direct payments are processed on-platform.</div>
+  503 |           </div>
+  504 |           <div className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+  505 |             {canViewBankingReferences(currentUser, selected) ? 'Visible' : 'Masked'}
+  506 |           </div>
+  507 |         </div>
+  508 | 
+  509 |         <div className="mt-3 grid grid-cols-1 gap-2 text-sm text-slate-700">
+  510 |           <div>Bank name: {canViewBankingReferences(currentUser, selected) ? safeDash(selected.bank_name) : maskValue(selected.bank_name)}</div>
+  511 |           <div>Beneficiary: {canViewBankingReferences(currentUser, selected) ? safeDash(selected.beneficiary_name) : maskValue(selected.beneficiary_name)}</div>
+  512 |           <div>Transaction reference: {canViewBankingReferences(currentUser, selected) ? safeDash(selected.transaction_reference) : maskValue(selected.transaction_reference)}</div>
+  513 |         </div>
+  514 |       </div>
+  515 | 
+  516 |       <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
+  517 |         <div className="text-sm font-semibold text-slate-900">Artifact audit</div>
+  518 |         <div className="mt-3 grid grid-cols-1 gap-2 text-sm text-slate-700">
+  519 |           <div>Status: {safeDash(selected.artifact?.status)}</div>
+  520 |           <div>Generated at: {safeDash(selected.artifact?.generated_at)}</div>
+  521 |           <div>Version: {selected.artifact?.version ?? 0}</div>
+  522 |           <div className="break-all text-xs text-slate-600">Hash: {safeDash(selected.artifact?.pdf_hash)}</div>
+  523 |           <div className="text-xs text-slate-600">
+  524 |             Signer IDs: Buyer {safeDash(selected.artifact?.signer_ids?.buyer_id)} <span className="mx-1">•</span> Factory {safeDash(selected.artifact?.signer_ids?.factory_id)}
+  525 |           </div>
+  526 |           <div className="text-xs text-slate-600">
+  527 |             Signature timestamps: Buyer {safeDash(selected.artifact?.signature_timestamps?.buyer_signed_at)} <span className="mx-1">•</span> Factory {safeDash(selected.artifact?.signature_timestamps?.factory_signed_at)}
+  528 |           </div>
+  529 |         </div>
+  530 |       </div>
+  531 |     </div>
+  532 |   ) : (
+  533 |     <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-600">
+  534 |       Select a contract to see details.
+  535 |     </div>
+  536 |   )
+  537 | 
+  538 |   return (
+  539 |     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
+  540 |       <div className="mx-auto max-w-7xl p-4 sm:p-6">
+  541 |         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+  542 |           <div>
+  543 |             <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-300">Vault</div>
+  544 |             <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">Contract Vault</h1>
+  545 |             <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Draft → Sign → PDF artifact → Lock → Archive</p>
+  546 |           </div>
+  547 |           <div className="flex flex-wrap items-center gap-2">
+  548 |             <Link to="/owner" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8">Dashboard</Link>
+  549 |             <Link to="/notifications" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8">Notifications</Link>
+  550 |             <button
+  551 |               type="button"
+  552 |               disabled={!canCreateDraft(currentUser)}
+  553 |               onClick={() => setDraftOpen(true)}
+  554 |               className="rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95 disabled:bg-slate-200 disabled:text-slate-500 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:text-slate-950"
+  555 |             >
+  556 |               New draft
+  557 |             </button>
+  558 |           </div>
+  559 |         </div>
+  560 | 
+  561 |         {forbidden ? <AccessDeniedState message={error || 'Access denied.'} /> : null}
+  562 |         {!forbidden && error ? <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700">{error}</div> : null}
+  563 | 
+  564 |         {!forbidden ? (
+  565 |           <div className="secure-grid grid grid-cols-1 gap-6 lg:grid-cols-12">
+  566 |             <div className="lg:col-span-5">
+  567 |               <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+  568 |                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+  569 |                   <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Contracts</div>
+  570 |                   <button type="button" onClick={loadContracts} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 active:scale-95 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/8">Refresh</button>
+  571 |                 </div>
+  572 | 
+  573 |                 <div className="mt-4 grid gap-3">
+  574 |                   <div className="relative">
+  575 |                     <input
+  576 |                       ref={searchRef}
+  577 |                       value={query}
+  578 |                       onChange={(e) => setQuery(e.target.value)}
+  579 |                       placeholder="Search by number, buyer, factory, title…"
+  580 |                       className="w-full rounded-xl bg-white px-3 py-2 pr-16 text-sm text-slate-800 shadow-inner ring-1 ring-slate-200/70 transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+  581 |                     />
+  582 |                     <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-semibold tracking-widest text-slate-500 ring-1 ring-slate-200/70 dark:bg-slate-950/40 dark:text-slate-400 dark:ring-white/10">
+  583 |                       {isMac ? '⌘ K' : 'Ctrl K'}
+  584 |                     </span>
+  585 |                   </div>
+  586 | 
+  587 |                   <div className="flex flex-wrap items-center gap-2">
+  588 |                     {[
+  589 |                       { key: 'all', label: 'All' },
+  590 |                       { key: 'draft', label: 'Draft' },
+  591 |                       { key: 'pending_signature', label: 'Pending' },
+  592 |                       { key: 'signed', label: 'Signed' },
+  593 |                       { key: 'archived', label: 'Archived' },
+  594 |                     ].map((chip) => (
+  595 |                       <motion.button
+  596 |                         key={chip.key}
+  597 |                         type="button"
+  598 |                         onClick={() => setStatusFilter(chip.key)}
+  599 |                         whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+  600 |                         className={`relative rounded-full px-3 py-1 text-xs font-semibold transition ring-1 ${
+  601 |                           statusFilter === chip.key
+  602 |                             ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
+  603 |                             : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
+  604 |                         }`}
+  605 |                       >
+  606 |                         {statusFilter === chip.key ? (
+  607 |                           <motion.span
+  608 |                             layoutId="contract-filter"
+  609 |                             className="absolute inset-0 rounded-full bg-indigo-500/10 dark:bg-white/10"
+  610 |                             transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+  611 |                           />
+  612 |                         ) : null}
+  613 |                         <span className="relative">{chip.label}</span>
+  614 |                       </motion.button>
+  615 |                     ))}
+  616 |                   </div>
+  617 |                 </div>
+  618 |               </div>
+  619 | 
+  620 |               <div className="mt-4 grid gap-3">
+  621 |                 {loadingContracts ? (
+  622 |                   <div className="grid gap-3">
+  623 |                     {Array.from({ length: 5 }).map((_, i) => (
+  624 |                       <div key={`contract-skel-${i}`} className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+  625 |                         <div className="flex items-start justify-between gap-3">
+  626 |                           <div className="min-w-0 flex-1 space-y-2">
+  627 |                             <div className="h-3 w-1/3 rounded-full skeleton" />
+  628 |                             <div className="h-3 w-2/3 rounded-full skeleton" />
+  629 |                             <div className="h-3 w-1/2 rounded-full skeleton" />
+  630 |                           </div>
+  631 |                           <div className="h-7 w-20 rounded-full skeleton" />
+  632 |                         </div>
+  633 |                         <div className="mt-3 flex flex-wrap gap-2">
+  634 |                           <div className="h-6 w-24 rounded-full skeleton" />
+  635 |                           <div className="h-6 w-24 rounded-full skeleton" />
+  636 |                           <div className="h-6 w-20 rounded-full skeleton" />
+  637 |                         </div>
+  638 |                       </div>
+  639 |                     ))}
+  640 |                   </div>
+  641 |                 ) : visibleContracts.length ? visibleContracts.map((c, idx) => (
+  642 |                   <motion.div
+  643 |                     key={c.id}
+  644 |                     initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+  645 |                     animate={reduceMotion ? false : { opacity: 1, y: 0 }}
+  646 |                     transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: idx * 0.04 }}
+  647 |                     className="hidden lg:block"
+  648 |                   >
+  649 |                     <ContractRow
+  650 |                       contract={c}
+  651 |                       active={String(c.id) === String(selectedId)}
+  652 |                       onSelect={() => setSelectedId(String(c.id))}
+  653 |                     />
+  654 |                   </motion.div>
+  655 |                 )) : (
+  656 |                   <div className="rounded-2xl bg-[#ffffff] p-8 text-center text-sm text-slate-600 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:text-slate-300 dark:ring-slate-800">
+  657 |                     No contracts found.
+  658 |                   </div>
+  659 |                 )}
+  660 | 
+  661 |                 {visibleContracts.length ? (
+  662 |                   <div className="grid gap-3 lg:hidden">
+  663 |                     {visibleContracts.map((c) => (
+  664 |                       <ContractRow
+  665 |                         key={c.id}
+  666 |                         contract={c}
+  667 |                         active={String(c.id) === String(selectedId)}
+  668 |                         onSelect={() => openDetails(c.id)}
+  669 |                       />
+  670 |                     ))}
+  671 |                   </div>
+  672 |                 ) : null}
+  673 |               </div>
+  674 |             </div>
+  675 | 
+  676 |             <div className="hidden lg:col-span-7 lg:block">
+  677 |               {detailPanel}
+  678 |             </div>
+  679 |           </div>
+  680 |         ) : null}
+  681 | 
+  682 |         <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+  683 |           {detailPanel}
+  684 |         </Drawer>
+  685 | 
+  686 |         {draftOpen ? (
+  687 |           <div className="fixed inset-0 z-50">
+  688 |             <div className="absolute inset-0 bg-slate-900/30" onClick={() => setDraftOpen(false)} />
+  689 |             <div className="absolute left-1/2 top-10 w-[min(40rem,92vw)] -translate-x-1/2 rounded-3xl bg-white p-6 shadow-2xl">
+  690 |               <div className="flex items-start justify-between gap-4">
+  691 |                 <div>
+  692 |                   <div className="text-xs font-semibold text-[#0A66C2]">New</div>
+  693 |                   <div className="mt-1 text-lg font-bold text-slate-900">Create contract draft</div>
+  694 |                   <div className="mt-1 text-xs text-slate-600">Banking references are optional and should be used only for fraud prevention.</div>
+  695 |                 </div>
+  696 |                 <button type="button" onClick={() => setDraftOpen(false)} className="rounded-full px-3 py-1 text-sm font-semibold text-slate-700 hover:bg-slate-100">Close</button>
+  697 |               </div>
+  698 | 
+  699 |               <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+  700 |                 <input value={draftForm.title} onChange={(e) => setDraftForm((p) => ({ ...p, title: e.target.value }))} placeholder="Title" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2]" />
+  701 |                 <input value={draftForm.buyer_name} onChange={(e) => setDraftForm((p) => ({ ...p, buyer_name: e.target.value }))} placeholder="Buyer name" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2]" />
+  702 |                 <input value={draftForm.factory_name} onChange={(e) => setDraftForm((p) => ({ ...p, factory_name: e.target.value }))} placeholder="Factory name" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2]" />
+  703 |                 <input value={draftForm.buyer_id} onChange={(e) => setDraftForm((p) => ({ ...p, buyer_id: e.target.value }))} placeholder="Buyer user ID" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2]" />
+  704 |                 <input value={draftForm.factory_id} onChange={(e) => setDraftForm((p) => ({ ...p, factory_id: e.target.value }))} placeholder="Factory user ID" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2]" />
+  705 |                 <div className="hidden sm:block" />
+  706 | 
+  707 |                 <input value={draftForm.bank_name} onChange={(e) => setDraftForm((p) => ({ ...p, bank_name: e.target.value }))} placeholder="Bank name (optional)" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2]" />
+  708 |                 <input value={draftForm.beneficiary_name} onChange={(e) => setDraftForm((p) => ({ ...p, beneficiary_name: e.target.value }))} placeholder="Beneficiary name (optional)" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2]" />
+  709 |                 <input value={draftForm.transaction_reference} onChange={(e) => setDraftForm((p) => ({ ...p, transaction_reference: e.target.value }))} placeholder="Transaction reference (optional)" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2] sm:col-span-2" />
+  710 |               </div>
+  711 | 
+  712 |               <div className="mt-6 flex items-center justify-end gap-2">
+  713 |                 <button type="button" onClick={() => setDraftOpen(false)} className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50">Cancel</button>
+  714 |                 <button
+  715 |                   type="button"
+  716 |                   disabled={!canCreateDraft(currentUser) || saving}
+  717 |                   onClick={handleCreateDraft}
+  718 |                   className="rounded-full bg-[#0A66C2] px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-200 disabled:text-slate-500"
+  719 |                 >
+  720 |                   Create draft
+  721 |                 </button>
+  722 |               </div>
+  723 |             </div>
+  724 |           </div>
+  725 |         ) : null}
+  726 |       </div>
+  727 |     </div>
+  728 |   )
+  729 | }
+  730 | 

@@ -1,0 +1,9 @@
+    1 | import { Router } from 'express'
+    2 | import { allowRoles, requireAuth } from '../middleware/auth.js'
+    3 | import { claim, grant } from '../controllers/conversationController.js'
+    4 | 
+    5 | const router = Router()
+    6 | router.post('/:requestId/claim', requireAuth, allowRoles('buying_house', 'admin'), claim)
+    7 | router.post('/:requestId/grant', requireAuth, allowRoles('buying_house', 'admin'), grant)
+    8 | export default router
+    9 | 

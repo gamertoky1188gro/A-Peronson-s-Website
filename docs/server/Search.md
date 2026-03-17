@@ -1,69 +1,56 @@
-# Search - Server Feature Documentation (Manual)
+# Search
 
-## File Structure & Overview
-- `server/routes/searchRoutes.js`: search module route registration.
-- `server/controllers/notificationController.js`: `createSearchAlert` handler reused by search route.
-- `server/services/notificationService.js`: alert persistence.
-- `server/services/searchAccessService.js`: quota and plan enforcement.
-- `server/database/search_alerts.json`: alert store.
+This doc is generated from source snapshots with `path:line` references.
 
-## Code Explanation
+## Mounted prefixes
 
-### `searchRoutes.js`
-- Defines:
-  - `POST /api/search/alerts`
-- Middleware:
-  - `requireAuth`.
-- Handler:
-  - `createSearchAlert` imported from notification controller.
+- `/api/search` -> `server/routes/searchRoutes.js:76` (router var: `searchRoutes`)
 
-### `notificationController.createSearchAlert`
-Process:
-1. Retrieves user plan.
-2. Consumes quota for action `search_alerts_create`.
-3. Returns `429` when quota exhausted.
-4. Saves search alert (query + filters).
-5. Returns `201` plus search-access payload.
+## Routes (ultra-detailed)
 
-## API Endpoints
-- `POST /api/search/alerts`
-- Auth: required.
-- Body:
-```json
-{
-  "query": "cotton polo factory",
-  "filters": {
-    "category": "shirt",
-    "verifiedOnly": true
-  }
-}
+### POST `/api/search/alerts`
+
+- **Route definition:** `server/routes/searchRoutes.js:7`
+
+```js
+router.post('/alerts', requireAuth, createSearchAlert)
 ```
-- Response:
-  - `201`: alert row + quota/access details.
-  - `400`: query missing.
-  - `429`: daily limit reached.
+- **Middleware stack (in order):**
+  - `requireAuth`
+- **Handler:** `createSearchAlert`
+- **Controller file:** `server/controllers/notificationController.js`
 
-## Database / Data Model
-- `search_alerts.json` fields:
-  - `id`, `user_id`, `query`, `filters`, `created_at`, `updated_at`.
-- Duplicate behavior:
-  - same user + same normalized query updates existing alert instead of creating new row.
+#### Controller implementation: `server/controllers/notificationController.js:4`
 
-## Business Logic & Workflow
-1. Search UI invokes `/api/search/alerts`.
-2. Backend checks quota by plan.
-3. Alert saved/updated.
-4. Later, entity emission logic can match alert query tokens and generate notifications.
+```js
+export async function createSearchAlert(req, res) {
+  const plan = await getUserPlan(req.user.id)
+  const quotaUse = await consumeQuota(req.user.id, 'search_alerts_create', plan)
 
-## Error Handling & Validation
-- Empty query -> `400`.
-- Quota exceeded -> `429` structured limit payload.
-- Auth failures -> middleware `401`.
+  if (!quotaUse.allowed) {
+    return res.status(429).json(buildLimitError({
+      code: 'limit_reached',
+      message: 'Daily alert creation limit reached',
+      quota: quotaUse.quota,
+    }))
+  }
 
-## Security Considerations
-- Auth required.
-- Quota protections reduce abuse/spam.
-- Query sanitized before persistence.
+  const row = await saveSearchAlert(req.user.id, req.body?.query, req.body?.filters || {})
+  if (!row) return res.status(400).json({ error: 'Query is required' })
+  return res.status(201).json({
+    ...row,
+    ...buildSearchAccessPayload({
+      action: 'search_alerts_create',
+      plan,
+      quota: quotaUse.quota,
+    }),
+  })
+}
 
-## Extra Notes / Metadata
-- Search route intentionally delegates to notification controller to keep alert business rules centralized.
+```
+## Persistence model (JSON-backed "DB")
+
+- JSON helpers: `server/utils/jsonStore.js` (readJson/writeJson/updateJson).
+- Data files: `server/database/*.json`.
+- Controllers/services often read from `users.json`, `messages.json`, `metrics.json`, etc.
+

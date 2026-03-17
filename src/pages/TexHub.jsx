@@ -1,3 +1,29 @@
+/*
+  Route: /
+  Page Name: Landing (TexHub)
+  Access: Public
+
+  Public Pages:
+    /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+  Protected Pages (login required):
+    /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+    /notifications, /chat, /call, /verification, /verification-center
+
+  Primary responsibilities:
+    - Marketing/landing surface for GarTexHub (hero + bento features).
+    - Demonstrate key platform concepts: Buyer Requests, Verified Factories, Contract Vault, Analytics, Agent Lock, etc.
+    - Fetch "dynamic preview" data from a public system endpoint, and show skeleton shimmer while loading.
+
+  Key API endpoints:
+    - GET /api/system/home  (via `apiRequest('/system/home')`)
+
+  Major UI/UX patterns used:
+    - Borderless surfaces: depth via shadows/rings instead of hard borders.
+    - Dark mode: deep midnight background + lifted card surfaces.
+    - Motion: Framer Motion stagger entrances, hero character animation, magnetic buttons, spotlight hover.
+    - `spotlight-card` custom utility (App.css): mouse-follow radial highlight inside cards.
+    - `skeleton` custom utility (App.css): diagonal shimmer placeholder while loading.
+*/
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiRequest } from '../lib/auth'
@@ -5,6 +31,9 @@ import { AnimatePresence, motion, useMotionValue, useReducedMotion, useSpring } 
 
 function VerifiedBadge({ label = 'Verified' }) {
   return (
+    // "Trust anchor" badge:
+    // - Light mode: subtle emerald tint + soft glow
+    // - Dark mode: slightly brighter mint glow (still subdued)
     <span
       className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_10px_24px_rgba(16,185,129,0.12)] dark:bg-emerald-400/8 dark:text-emerald-200 dark:shadow-[0_0_0_1px_rgba(16,185,129,0.14),0_0_32px_rgba(16,185,129,0.16)]"
       title="Verified"
@@ -17,6 +46,9 @@ function VerifiedBadge({ label = 'Verified' }) {
 
 function Surface({ className = '', children }) {
   function handleSpotlightMove(event) {
+    // Mouse-follow spotlight:
+    // - store cursor position inside the card as CSS variables
+    // - `spotlight-card::before` reads these variables to draw a radial gradient highlight
     const rect = event.currentTarget.getBoundingClientRect()
     event.currentTarget.style.setProperty('--spotlight-x', `${event.clientX - rect.left}px`)
     event.currentTarget.style.setProperty('--spotlight-y', `${event.clientY - rect.top}px`)
@@ -25,6 +57,7 @@ function Surface({ className = '', children }) {
   return (
     <div
       className={[
+        // Visual: borderless card with depth via shadows (light) + lifted slate surface (dark).
         'spotlight-card rounded-3xl bg-white/75 backdrop-blur-sm',
         'shadow-[0_18px_46px_rgba(15,23,42,0.08)]',
         'dark:bg-[#0D0D14] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]',
@@ -42,6 +75,7 @@ function Surface({ className = '', children }) {
 
 function GlassSurface({ className = '', children }) {
   function handleSpotlightMove(event) {
+    // Same spotlight behavior as `Surface`, but on a darker "secure room" glass surface.
     const rect = event.currentTarget.getBoundingClientRect()
     event.currentTarget.style.setProperty('--spotlight-x', `${event.clientX - rect.left}px`)
     event.currentTarget.style.setProperty('--spotlight-y', `${event.clientY - rect.top}px`)
@@ -52,6 +86,7 @@ function GlassSurface({ className = '', children }) {
       className={[
         // Intentionally dark glass in *both* light + dark mode (Contract Vault = "secure room" vibe).
         // Avoid multiple `bg-*` utilities here (Tailwind utility ordering can make overrides unreliable).
+        // `ring-1 ring-white/12` gives the "glass edge" without using borders (which are globally overridden in dark mode).
         'spotlight-card rounded-3xl bg-white/10 backdrop-blur-md text-[#1E293B] dark:text-white',
         'shadow-[0_22px_60px_rgba(2,6,23,0.55)]',
         'ring-1 ring-white/12',
@@ -68,16 +103,19 @@ function GlassSurface({ className = '', children }) {
 
 function BentoMotion({ index, className = '', children }) {
   const reduceMotion = useReducedMotion()
+  // Accessibility: if user prefers reduced motion, render without animation.
   if (reduceMotion) return <div className={className}>{children}</div>
 
   return (
     <motion.div
       className={className}
+      // Entrance: fade + slide up (and a tiny scale) to mimic modern "bento" reveal.
       initial={{ opacity: 0, y: 20, scale: 0.985 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{
         duration: 0.5,
         ease: [0.16, 1, 0.3, 1],
+        // Stagger timing: each card waits `index * 100ms`.
         delay: index * 0.1,
       }}
     >
@@ -88,8 +126,10 @@ function BentoMotion({ index, className = '', children }) {
 
 function AnimatedHeroHeading({ text, className = '' }) {
   const reduceMotion = useReducedMotion()
+  // Reduced-motion users get static text (no per-character animation).
   if (reduceMotion) return <span className={className}>{text}</span>
 
+  // Split into words, then characters, so we can stagger a micro animation per character.
   const words = String(text).split(' ')
   let globalIndex = 0
   return (
@@ -129,14 +169,17 @@ function AnimatedHeroHeading({ text, className = '' }) {
 
 function MagneticLinkButton({ to, className = '', children }) {
   const reduceMotion = useReducedMotion()
+  // Motion values track the current offset; springs return to center smoothly.
   const x = useMotionValue(0)
   const y = useMotionValue(0)
   const springX = useSpring(x, { stiffness: 300, damping: 20, mass: 0.4 })
   const springY = useSpring(y, { stiffness: 300, damping: 20, mass: 0.4 })
+  // Maximum translation in px (keep subtle so it feels premium, not gimmicky).
   const maxShift = 9
 
   function handleMove(event) {
     if (reduceMotion) return
+    // Convert cursor position to -1..1 range and apply a scaled translation.
     const rect = event.currentTarget.getBoundingClientRect()
     const relX = (event.clientX - rect.left) / rect.width
     const relY = (event.clientY - rect.top) / rect.height
@@ -147,6 +190,7 @@ function MagneticLinkButton({ to, className = '', children }) {
   }
 
   function handleLeave() {
+    // Snap motion values back to 0; the spring will animate it.
     x.set(0)
     y.set(0)
   }
@@ -168,6 +212,7 @@ function MagneticLinkButton({ to, className = '', children }) {
 }
 
 function SkeletonLine({ className = '' }) {
+  // Skeleton shimmer utility (App.css): used during loading to avoid layout shifts.
   return <div className={['skeleton rounded-xl', className].join(' ')} />
 }
 
@@ -242,12 +287,18 @@ export default function TexHub() {
     [],
   )
 
+  // `home` holds dynamic landing content fetched from the server (fallback to `initialHome`).
   const [home, setHome] = useState(initialHome)
+  // Non-blocking error message for the public preview fetch.
   const [loadError, setLoadError] = useState('')
+  // Loading flag for skeleton shimmer placeholders (prevents layout jump).
   const [loading, setLoading] = useState(true)
+  // "Unique toggle" mode: switches between a strict professional view and a broader discovery view.
   const [mode, setMode] = useState('professional')
 
   useEffect(() => {
+    // Fetch dynamic landing page content from `/system/home`.
+    // We guard with `alive` + AbortController to avoid setState after unmount.
     let alive = true
     const controller = new AbortController()
 
@@ -255,12 +306,14 @@ export default function TexHub() {
       .then((data) => {
         if (!alive) return
         if (data?.ok && data?.hero && data?.bento) {
+          // Merge server data over local defaults (keeps layout stable if server omits a field).
           setHome((prev) => ({ ...prev, ...data }))
         }
       })
       .catch((err) => {
         if (!alive) return
         if (err?.name === 'AbortError') return
+        // Keep rendering fallback content; only show a small inline error in the UI.
         setLoadError(String(err?.message || 'Failed to load'))
       })
       .finally(() => {
@@ -279,6 +332,8 @@ export default function TexHub() {
   const bento = home?.bento || initialHome.bento
 
   const bentoView = useMemo(() => {
+    // Derived bento data based on the current `mode` toggle.
+    // This is where we can swap copy, lanes, and badge semantics while keeping structure aligned.
     if (mode === 'professional') return bento
     return {
       ...bento,

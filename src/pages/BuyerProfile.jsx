@@ -1,3 +1,29 @@
+/*
+  Route: /buyer/:id
+  Access: Protected (login required)
+  Allowed roles: buyer, buying_house, factory, owner, admin, agent
+
+  Public Pages:
+    /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+  Protected Pages (login required):
+    /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+    /notifications, /chat, /call, /verification, /verification-center
+
+  Primary responsibilities:
+    - Render the Buyer profile (overview + requests).
+    - Show trust indicators (verification summary, credibility meter, verified badge).
+    - Provide relationship actions (follow/connect/message).
+
+  Key API endpoints:
+    - GET /api/profiles/:id
+    - GET /api/ratings/profiles/user::id (public ratings summary)
+    - GET /api/profiles/:id/requests?cursor=...
+
+  Major UI/UX patterns:
+    - Industrial-tech surfaces: white cards + subtle borders (light), ringed slate cards (dark).
+    - layoutId animated tab indicator.
+    - Tactile CTA feedback (active:scale-95).
+*/
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
@@ -5,6 +31,7 @@ import { apiRequest, getToken } from '../lib/auth'
 import VerificationPanel from '../components/profile/VerificationPanel'
 
 function roleToRoute(role, id) {
+  // Safety: if a user opens a profile id that is not a buyer, redirect to the correct role route.
   if (!id) return '/feed'
   if (role === 'buyer') return `/buyer/${encodeURIComponent(id)}`
   if (role === 'buying_house') return `/buying-house/${encodeURIComponent(id)}`

@@ -1,3 +1,28 @@
+/*
+  Route: /pricing
+  Access: Public
+
+  Public Pages:
+    /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+  Protected Pages (login required):
+    /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+    /notifications, /chat, /call, /verification, /verification-center
+
+  Primary responsibilities:
+    - Present pricing tiers (Free vs Premium).
+    - Present enterprise-style analytics preview tiles (dynamic, public).
+    - Feature comparison table (icons, row hover, no vertical lines).
+
+  Key API endpoints:
+    - GET /api/system/pricing  (via `apiRequest('/system/pricing')`)
+
+  Major UI/UX patterns:
+    - Zinc-first palette (pricing-only) for a clean SaaS look.
+    - Spotlight hover (`SpotlightCard`) for borderless depth.
+    - Premium card perimeter beam (CSS conic gradient) + pulse badge.
+    - Staggered entrance via Framer Motion (bento tiles + cards).
+    - Magnetic CTAs via `MagneticButton`.
+*/
 import React, { useEffect, useMemo, useState } from 'react'
 import { Check, Minus } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
@@ -5,6 +30,7 @@ import { apiRequest } from '../lib/auth'
 import MagneticButton from '../components/ui/MagneticButton'
 import SpotlightCard from '../components/ui/SpotlightCard'
 
+// Static fallback values (used when API is loading or errors).
 const defaultPricing = {
   ok: true,
   analytics: {
@@ -18,16 +44,19 @@ const defaultPricing = {
 }
 
 function Skeleton({ className = '' }) {
+  // Shimmer skeleton block (App.css `.skeleton`).
   return <div className={['skeleton', className].join(' ')} />
 }
 
 function MotionItem({ index, className = '', children }) {
   const reduceMotion = useReducedMotion()
+  // Respect reduced-motion preference.
   if (reduceMotion) return <div className={className}>{children}</div>
 
   return (
     <motion.div
       className={className}
+      // Bento entrance: fade + slide up (20px) with a small stagger per index.
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: index * 0.05 }}
@@ -606,4 +635,3 @@ export default function Pricing() {
     </div>
   )
 }
-

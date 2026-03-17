@@ -1,0 +1,109 @@
+    1 | import { promises as fs } from 'fs'
+    2 | import path from 'path'
+    3 | import { listMatchesForFactory, listMatchesForRequirement } from '../services/matchingService.js'
+    4 | import {
+    5 |   acceptMessageRequest,
+    6 |   canAccessMatch,
+    7 |   listFriendMatchIdsForUser,
+    8 |   listMessagesByMatch,
+    9 |   postFriendMessage,
+   10 |   postMessage,
+   11 |   rejectMessageRequest,
+   12 |   tieredInbox,
+   13 | } from '../services/messageService.js'
+   14 | import { readJson } from '../utils/jsonStore.js'
+   15 | 
+   16 | export async function sendMessage(req, res) {
+   17 |   const allowed = await canAccessMatch(req.params.matchId, req.user.id)
+   18 |   if (!allowed) return res.status(403).json({ error: 'Only connected friends can message in this thread' })
+   19 | 
+   20 |   const msg = await postMessage(req.params.matchId, req.user.id, req.body?.message || '', req.body?.type || 'text')
+   21 |   return res.status(201).json(msg)
+   22 | }
+   23 | 
+   24 | export async function getMessages(req, res) {
+   25 |   const allowed = await canAccessMatch(req.params.matchId, req.user.id)
+   26 |   if (!allowed) return res.status(403).json({ error: 'Forbidden' })
+   27 |   return res.json(await listMessagesByMatch(req.params.matchId))
+   28 | }
+   29 | 
+   30 | export async function sendFriendDirectMessage(req, res) {
+   31 |   const payloadMessage = String(req.body?.message || '').trim()
+   32 |   const text = payloadMessage || 'Hi! We are connected now.'
+   33 | 
+   34 |   try {
+   35 |     const result = await postFriendMessage(req.user.id, req.params.userId, text, req.body?.type || 'text')
+   36 |     return res.status(201).json(result)
+   37 |   } catch (error) {
+   38 |     return res.status(error.status || 400).json({ error: error.message || 'Unable to send friend message' })
+   39 |   }
+   40 | }
+   41 | 
+   42 | 
+   43 | export async function uploadMessageAttachment(req, res) {
+   44 |   const file = req.file
+   45 |   const matchId = String(req.params.matchId || '').trim()
+   46 | 
+   47 |   if (!file) return res.status(400).json({ error: 'File is required' })
+   48 |   if (!matchId) return res.status(400).json({ error: 'matchId is required' })
+   49 | 
+   50 |   const allowed = await canAccessMatch(matchId, req.user.id)
+   51 |   if (!allowed) {
+   52 |     try {
+   53 |       await fs.unlink(file.path)
+   54 |     } catch {
+   55 |       // ignore cleanup failure
+   56 |     }
+   57 |     return res.status(403).json({ error: 'Only connected friends can upload in this thread' })
+   58 |   }
+   59 | 
+   60 |   const uploadBase = path.join(process.cwd(), 'server', 'uploads')
+   61 |   const normalized = String(file.path || '').replace(/\\/g, '/')
+   62 |   const relative = normalized.startsWith(uploadBase.replace(/\\/g, '/'))
+   63 |     ? normalized.replace(uploadBase.replace(/\\/g, '/'), '')
+   64 |     : normalized.replace(String(process.cwd()).replace(/\\/g, '/'), '')
+   65 |   const publicUrl = `/uploads${relative.startsWith('/') ? relative : `/${relative}`}`
+   66 | 
+   67 |   const mime = String(file.mimetype || '')
+   68 |   const messageType = mime.startsWith('image/') ? 'image' : (mime.startsWith('video/') ? 'video' : 'file')
+   69 |   const fallbackText = messageType === 'image' ? 'Shared an image' : (messageType === 'video' ? 'Shared a video' : 'Shared a file')
+   70 | 
+   71 |   const created = await postMessage(matchId, req.user.id, req.body?.message || fallbackText, messageType, {
+   72 |     name: file.originalname,
+   73 |     url: publicUrl,
+   74 |     mime_type: mime,
+   75 |     size: file.size,
+   76 |   })
+   77 | 
+   78 |   return res.status(201).json(created)
+   79 | }
+   80 | 
+   81 | export async function inbox(req, res) {
+   82 |   let matchIds = []
+   83 |   if (req.user.role === 'factory') {
+   84 |     const myMatches = await listMatchesForFactory(req.user.id)
+   85 |     matchIds = myMatches.map((m) => `${m.requirement_id}:${m.factory_id}`)
+   86 |   } else if (req.user.role === 'buyer') {
+   87 |     const requirements = await readJson('requirements.json')
+   88 |     const mine = requirements.filter((r) => r.buyer_id === req.user.id)
+   89 |     const all = []
+   90 |     for (const r of mine) {
+   91 |       const mr = await listMatchesForRequirement(r.id)
+   92 |       all.push(...mr.map((m) => `${m.requirement_id}:${m.factory_id}`))
+   93 |     }
+   94 |     matchIds = all
+   95 |   }
+   96 |   const friendMatchIds = await listFriendMatchIdsForUser(req.user.id)
+   97 |   return res.json(await tieredInbox([...new Set([...matchIds, ...friendMatchIds])], req.user.id))
+   98 | }
+   99 | 
+  100 | export async function acceptRequest(req, res) {
+  101 |   const request = await acceptMessageRequest(req.params.threadId, req.user.id)
+  102 |   return res.json({ ok: true, request })
+  103 | }
+  104 | 
+  105 | export async function rejectRequest(req, res) {
+  106 |   const request = await rejectMessageRequest(req.params.threadId, req.user.id)
+  107 |   return res.json({ ok: true, request })
+  108 | }
+  109 | 

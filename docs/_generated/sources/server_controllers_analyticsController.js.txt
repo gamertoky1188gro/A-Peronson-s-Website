@@ -1,0 +1,25 @@
+    1 | import { getAnalyticsSummary, getDashboardAnalytics } from '../services/analyticsService.js'
+    2 | import { handleControllerError } from '../utils/permissions.js'
+    3 | 
+    4 | function handleError(res, error) {
+    5 |   return handleControllerError(res, error)
+    6 | }
+    7 | 
+    8 | export async function analyticsSummary(req, res) {
+    9 |   try {
+   10 |     const summary = await getAnalyticsSummary(req.user)
+   11 |     return res.json(summary)
+   12 |   } catch (error) {
+   13 |     return handleError(res, error)
+   14 |   }
+   15 | }
+   16 | 
+   17 | export async function analyticsDashboard(req, res) {
+   18 |   try {
+   19 |     const dashboard = await getDashboardAnalytics(req.user)
+   20 |     return res.json(dashboard)
+   21 |   } catch (error) {
+   22 |     return handleError(res, error)
+   23 |   }
+   24 | }
+   25 | 

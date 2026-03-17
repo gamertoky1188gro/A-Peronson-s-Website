@@ -1,8 +1,33 @@
+/*
+  Routes: /verification and /verification-center
+  Access: Protected (login required)
+  Allowed roles: buyer, buying_house, factory, owner, admin, agent
+
+  Public Pages:
+    /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+  Protected Pages (login required):
+    /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+    /notifications, /chat, /call, /verification, /verification-center
+
+  Primary responsibilities:
+    - Let users upload required verification documents based on role + buyer region.
+    - Show verification status per document (submitted, missing, etc.).
+    - Enforce subscription rules (verification is subscription-based and renewed).
+
+  Key API endpoints:
+    - GET /api/verification/me
+    - POST /api/verification/me  (update documents + upload references)
+    - GET /api/subscriptions/me
+
+  Notes:
+    - Buyer required documents vary by region (EU/USA/OTHER), derived from country.
+*/
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { API_BASE, apiRequest, getCurrentUser, getToken } from '../lib/auth'
 import { BUYER_COUNTRY_OPTIONS, isEuCountry } from '../../shared/config/geo.js'
 
 const LABELS = {
+  // Human-readable labels for backend document keys.
   company_registration: 'Company Registration',
   trade_license: 'Trade License',
   tin: 'TIN (Tax Identification Number)',
@@ -17,17 +42,21 @@ const LABELS = {
 }
 
 const REQUIRED_BY_ROLE = {
+  // Required document keys per role (non-buyers).
   factory: ['company_registration', 'trade_license', 'tin', 'authorized_person_nid', 'bank_proof', 'erc'],
   buying_house: ['company_registration', 'trade_license', 'tin', 'authorized_person_nid', 'bank_proof'],
 }
 
 const REQUIRED_BUYER_BY_REGION = {
+  // Buyers have region-specific requirements (derived from their selected country).
   EU: ['company_registration', 'vat', 'eori', 'bank_proof'],
   USA: ['company_registration', 'ein', 'ior', 'bank_proof'],
   OTHER: ['company_registration', 'bank_proof'],
 }
 
 function normalizeBuyerRegionFromCountry(country) {
+  // Convert a free-form country value into a normalized region bucket.
+  // Used to pick the buyer verification checklist.
   const value = String(country || '').trim()
   if (!value) return 'OTHER'
   if (isEuCountry(value)) return 'EU'
@@ -37,6 +66,7 @@ function normalizeBuyerRegionFromCountry(country) {
 }
 
 function statusChipClass(status) {
+  // Visual chip class for the per-document status.
   if (status === 'submitted') return 'bg-emerald-50 text-emerald-800 border-emerald-200'
   return 'bg-rose-50 text-rose-800 border-rose-200'
 }

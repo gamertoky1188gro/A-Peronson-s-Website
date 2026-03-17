@@ -1,3 +1,25 @@
+/*
+  Route: /call
+  Access: Protected (login required)
+  Allowed roles: buyer, buying_house, factory, owner, admin, agent
+
+  Public Pages:
+    /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+  Protected Pages (login required):
+    /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+    /notifications, /chat, /call, /verification, /verification-center
+
+  Primary responsibilities:
+    - Provide video/audio call UI and call controls (mic/cam, participants, share links).
+    - Enforce any call-related permissions and safety cues (recording / identity / dispute context).
+
+  Key API endpoints (high level):
+    - POST /api/calls (create) / GET /api/calls/:id (status) (depending on server)
+    - Any signaling endpoints if implemented (or WebRTC signaling via WS)
+
+  Notes:
+    - AppLayout hides NavBar/Footer for /call (immersive route).
+*/
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {

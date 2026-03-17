@@ -1,3 +1,29 @@
+/*
+  Route: /contracts
+  Access: Protected (login required)
+  Allowed roles: buyer, buying_house, factory, owner, admin, agent
+
+  Public Pages:
+    /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+  Protected Pages (login required):
+    /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+    /notifications, /chat, /call, /verification, /verification-center
+
+  Primary responsibilities:
+    - Provide the "Contract Vault" experience (secure documents + signing workflow visibility).
+    - Filter contracts by state (All/Draft/Pending/Signed/Archived) with animated tab indicator.
+    - Show contract details, signature status, and downloadable artifacts.
+
+  Key API endpoints (high level):
+    - GET /api/contracts (list)
+    - GET /api/contracts/:id (details)
+    - POST/PATCH for signing/finalizing/archiving (actions depend on role)
+
+  Major UI/UX patterns:
+    - Secure grid background inside the vault area (visual cue for confidentiality).
+    - Shortcut hint on search (Ctrl/⌘ + K style) where applicable.
+    - Skeleton shimmer for list/detail while loading.
+*/
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
@@ -5,6 +31,7 @@ import AccessDeniedState from '../components/AccessDeniedState'
 import { API_BASE, apiRequest, getCurrentUser, getToken } from '../lib/auth'
 
 function toLabel(status) {
+  // Map backend status -> readable label for UI chips.
   switch (status) {
     case 'draft':
       return 'Draft'
@@ -20,6 +47,7 @@ function toLabel(status) {
 }
 
 function statusClass(status) {
+  // Chip styling for contract status pills (light mode defaults; dark mode handled by parent surfaces).
   if (status === 'signed') return 'bg-emerald-50 text-emerald-700 ring-emerald-200'
   if (status === 'draft') return 'bg-slate-50 text-slate-700 ring-slate-200'
   if (status === 'archived') return 'bg-slate-100 text-slate-700 ring-slate-300'
@@ -27,6 +55,7 @@ function statusClass(status) {
 }
 
 function resolveDownloadUrl(pdfPath) {
+  // Normalize relative file paths returned by the backend into an absolute URL.
   if (!pdfPath) return ''
   if (pdfPath.startsWith('http://') || pdfPath.startsWith('https://')) return pdfPath
   const baseOrigin = API_BASE.replace(/\/api\/?$/, '')

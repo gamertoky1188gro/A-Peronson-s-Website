@@ -1,0 +1,310 @@
+    1 | import crypto from 'crypto'
+    2 | import { readJson, writeJson } from '../utils/jsonStore.js'
+    3 | import { sanitizeString } from '../utils/validators.js'
+    4 | 
+    5 | const FILE = 'ratings.json'
+    6 | const NOTIFICATIONS_FILE = 'notifications.json'
+    7 | const QUALIFICATION_RULES = [
+    8 |   ['contract_signed', 'communication_completed'],
+    9 |   ['deal_completed'],
+   10 | ]
+   11 | const RECENT_LIMIT = 10
+   12 | 
+   13 | function normalizeProfileKey(profileKey) {
+   14 |   const value = sanitizeString(profileKey, 160)
+   15 |   return value || ''
+   16 | }
+   17 | 
+   18 | function safeNumber(value, fallback = 0) {
+   19 |   const parsed = Number(value)
+   20 |   return Number.isFinite(parsed) ? parsed : fallback
+   21 | }
+   22 | 
+   23 | function emptyStore() {
+   24 |   return { ratings: [], milestones: [], feedback_requests: [], feedback_events: [] }
+   25 | }
+   26 | 
+   27 | async function readStore() {
+   28 |   const store = await readJson(FILE)
+   29 |   if (!store || typeof store !== 'object' || Array.isArray(store)) return emptyStore()
+   30 |   return {
+   31 |     ratings: Array.isArray(store.ratings) ? store.ratings : [],
+   32 |     milestones: Array.isArray(store.milestones) ? store.milestones : [],
+   33 |     feedback_requests: Array.isArray(store.feedback_requests) ? store.feedback_requests : [],
+   34 |     feedback_events: Array.isArray(store.feedback_events) ? store.feedback_events : [],
+   35 |   }
+   36 | }
+   37 | 
+   38 | async function saveStore(store) {
+   39 |   await writeJson(FILE, store)
+   40 | }
+   41 | 
+   42 | async function createFeedbackRequestNotification(counterpartyId, profileKey) {
+   43 |   const notifications = await readJson(NOTIFICATIONS_FILE)
+   44 |   notifications.push({
+   45 |     id: crypto.randomUUID(),
+   46 |     user_id: counterpartyId,
+   47 |     type: 'rating_feedback_request',
+   48 |     entity_type: 'profile',
+   49 |     entity_id: profileKey,
+   50 |     message: 'A completed interaction qualifies for feedback. Please submit a rating.',
+   51 |     read: false,
+   52 |     created_at: new Date().toISOString(),
+   53 |   })
+   54 |   await writeJson(NOTIFICATIONS_FILE, notifications)
+   55 | }
+   56 | 
+   57 | function sortByCreatedAtDesc(rows) {
+   58 |   return [...rows].sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')))
+   59 | }
+   60 | 
+   61 | function computeBreakdown(ratings) {
+   62 |   const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+   63 |   for (const rating of ratings) {
+   64 |     const value = Math.min(5, Math.max(1, Math.round(safeNumber(rating.score, 0))))
+   65 |     counts[value] += 1
+   66 |   }
+   67 |   return counts
+   68 | }
+   69 | 
+   70 | function computeReliability(ratings) {
+   71 |   if (!ratings.length) {
+   72 |     return { confidence: 'low', verified_counterparty_ratio: 0, qualified_interaction_ratio: 0, recent_volume: 0 }
+   73 |   }
+   74 | 
+   75 |   let verifiedCounterparty = 0
+   76 |   let qualifiedInteraction = 0
+   77 |   const recent = sortByCreatedAtDesc(ratings).slice(0, 30)
+   78 | 
+   79 |   for (const row of ratings) {
+   80 |     if (row.reliability_flags?.verified_counterparty) verifiedCounterparty += 1
+   81 |     if (row.reliability_flags?.qualified_milestone_pair) qualifiedInteraction += 1
+   82 |   }
+   83 | 
+   84 |   const verifiedRatio = verifiedCounterparty / ratings.length
+   85 |   const qualifiedRatio = qualifiedInteraction / ratings.length
+   86 |   const recentVolume = recent.length
+   87 |   const confidence = ratings.length >= 20 && verifiedRatio >= 0.6 ? 'high' : ratings.length >= 8 ? 'medium' : 'low'
+   88 | 
+   89 |   return {
+   90 |     confidence,
+   91 |     verified_counterparty_ratio: Number(verifiedRatio.toFixed(2)),
+   92 |     qualified_interaction_ratio: Number(qualifiedRatio.toFixed(2)),
+   93 |     recent_volume: recentVolume,
+   94 |   }
+   95 | }
+   96 | 
+   97 | function computeConfidenceMetadata(ratings, averageScore) {
+   98 |   const sampleSize = ratings.length
+   99 |   if (!sampleSize) {
+  100 |     return {
+  101 |       sample_size: 0,
+  102 |       score_confidence: 0,
+  103 |       standard_deviation: 0,
+  104 |       margin_of_error_95: 0,
+  105 |       ci95_lower: 0,
+  106 |       ci95_upper: 0,
+  107 |     }
+  108 |   }
+  109 | 
+  110 |   const variance = ratings.reduce((acc, row) => {
+  111 |     const delta = safeNumber(row.score, 0) - averageScore
+  112 |     return acc + (delta * delta)
+  113 |   }, 0) / sampleSize
+  114 | 
+  115 |   const stdDev = Math.sqrt(variance)
+  116 |   const marginError = 1.96 * (stdDev / Math.sqrt(sampleSize))
+  117 |   const normalizedConfidence = Math.max(0, Math.min(1, (sampleSize / (sampleSize + 6)) * (1 - (stdDev / 2.5))))
+  118 | 
+  119 |   return {
+  120 |     sample_size: sampleSize,
+  121 |     score_confidence: Number(normalizedConfidence.toFixed(2)),
+  122 |     standard_deviation: Number(stdDev.toFixed(2)),
+  123 |     margin_of_error_95: Number(marginError.toFixed(2)),
+  124 |     ci95_lower: Number(Math.max(0, averageScore - marginError).toFixed(2)),
+  125 |     ci95_upper: Number(Math.min(5, averageScore + marginError).toFixed(2)),
+  126 |   }
+  127 | }
+  128 | 
+  129 | function profileQualifiesForFeedback(completedMilestones = []) {
+  130 |   return QUALIFICATION_RULES.some((rule) => rule.every((milestone) => completedMilestones.includes(milestone)))
+  131 | }
+  132 | 
+  133 | export async function recordMilestone({ profileKey, counterpartyId, interactionType, milestone, actorId }) {
+  134 |   const normalizedProfile = normalizeProfileKey(profileKey)
+  135 |   const normalizedCounterparty = sanitizeString(counterpartyId, 120)
+  136 |   const normalizedInteractionType = sanitizeString(interactionType || 'deal', 40)
+  137 |   const normalizedMilestone = sanitizeString(milestone, 60)
+  138 | 
+  139 |   if (!normalizedProfile || !normalizedCounterparty || !normalizedMilestone) return null
+  140 | 
+  141 |   const store = await readStore()
+  142 |   const now = new Date().toISOString()
+  143 |   const existingIndex = store.milestones.findIndex((row) =>
+  144 |     row.profile_key === normalizedProfile
+  145 |       && row.counterparty_id === normalizedCounterparty
+  146 |       && row.interaction_type === normalizedInteractionType
+  147 |       && row.milestone === normalizedMilestone)
+  148 | 
+  149 |   if (existingIndex >= 0) {
+  150 |     store.milestones[existingIndex] = {
+  151 |       ...store.milestones[existingIndex],
+  152 |       status: 'completed',
+  153 |       completed_at: now,
+  154 |       updated_at: now,
+  155 |       updated_by: actorId,
+  156 |     }
+  157 |   } else {
+  158 |     store.milestones.push({
+  159 |       id: crypto.randomUUID(),
+  160 |       profile_key: normalizedProfile,
+  161 |       counterparty_id: normalizedCounterparty,
+  162 |       interaction_type: normalizedInteractionType,
+  163 |       milestone: normalizedMilestone,
+  164 |       status: 'completed',
+  165 |       completed_at: now,
+  166 |       created_at: now,
+  167 |       updated_at: now,
+  168 |       updated_by: actorId,
+  169 |     })
+  170 |   }
+  171 | 
+  172 |   const completed = store.milestones
+  173 |     .filter((row) => row.profile_key === normalizedProfile && row.counterparty_id === normalizedCounterparty && row.status === 'completed')
+  174 |     .map((row) => row.milestone)
+  175 |   const qualifies = profileQualifiesForFeedback(completed)
+  176 | 
+  177 |   let feedbackRequest = null
+  178 |   if (qualifies) {
+  179 |     const existingRequest = store.feedback_requests.find((row) =>
+  180 |       row.profile_key === normalizedProfile
+  181 |         && row.counterparty_id === normalizedCounterparty
+  182 |         && row.status === 'pending')
+  183 | 
+  184 |     if (!existingRequest) {
+  185 |       feedbackRequest = {
+  186 |         id: crypto.randomUUID(),
+  187 |         profile_key: normalizedProfile,
+  188 |         counterparty_id: normalizedCounterparty,
+  189 |         interaction_type: normalizedInteractionType,
+  190 |         qualification_rules: QUALIFICATION_RULES,
+  191 |         status: 'pending',
+  192 |         triggered_by: actorId,
+  193 |         created_at: now,
+  194 |       }
+  195 |       store.feedback_requests.push(feedbackRequest)
+  196 |       store.feedback_events.push({
+  197 |         id: crypto.randomUUID(),
+  198 |         profile_key: normalizedProfile,
+  199 |         counterparty_id: normalizedCounterparty,
+  200 |         interaction_type: normalizedInteractionType,
+  201 |         event: 'feedback_requested',
+  202 |         milestone: normalizedMilestone,
+  203 |         created_at: now,
+  204 |       })
+  205 |       await createFeedbackRequestNotification(normalizedCounterparty, normalizedProfile)
+  206 |     }
+  207 |   }
+  208 | 
+  209 |   await saveStore(store)
+  210 |   return { feedback_request: feedbackRequest, qualifies }
+  211 | }
+  212 | 
+  213 | export async function createRating({ profileKey, fromUserId, interactionType, score, comment = '', reliabilityFlags = {} }) {
+  214 |   const normalizedProfile = normalizeProfileKey(profileKey)
+  215 |   const normalizedFrom = sanitizeString(fromUserId, 120)
+  216 |   const normalizedInteractionType = sanitizeString(interactionType || 'deal', 40)
+  217 |   const normalizedComment = sanitizeString(comment, 500)
+  218 |   const numericScore = Math.min(5, Math.max(1, Math.round(safeNumber(score, 0))))
+  219 | 
+  220 |   if (!normalizedProfile || !normalizedFrom || !numericScore) {
+  221 |     const err = new Error('profile_key, from_user_id and score are required')
+  222 |     err.status = 400
+  223 |     throw err
+  224 |   }
+  225 | 
+  226 |   const store = await readStore()
+  227 |   const pendingIdx = store.feedback_requests.findIndex((row) => row.profile_key === normalizedProfile && row.counterparty_id === normalizedFrom && row.status === 'pending')
+  228 |   if (pendingIdx >= 0) {
+  229 |     store.feedback_requests[pendingIdx].status = 'fulfilled'
+  230 |     store.feedback_requests[pendingIdx].fulfilled_at = new Date().toISOString()
+  231 |   }
+  232 | 
+  233 |   const rating = {
+  234 |     id: crypto.randomUUID(),
+  235 |     profile_key: normalizedProfile,
+  236 |     from_user_id: normalizedFrom,
+  237 |     interaction_type: normalizedInteractionType,
+  238 |     score: numericScore,
+  239 |     comment: normalizedComment,
+  240 |     reliability_flags: {
+  241 |       verified_counterparty: Boolean(reliabilityFlags.verified_counterparty),
+  242 |       qualified_milestone_pair: Boolean(reliabilityFlags.qualified_milestone_pair),
+  243 |     },
+  244 |     created_at: new Date().toISOString(),
+  245 |   }
+  246 | 
+  247 |   store.ratings.push(rating)
+  248 |   await saveStore(store)
+  249 |   return rating
+  250 | }
+  251 | 
+  252 | export async function getProfileRatingsSummary(profileKey) {
+  253 |   const normalizedProfile = normalizeProfileKey(profileKey)
+  254 |   const store = await readStore()
+  255 |   const ratings = sortByCreatedAtDesc(store.ratings.filter((row) => row.profile_key === normalizedProfile))
+  256 |   const recent = ratings.slice(0, RECENT_LIMIT)
+  257 |   const totalCount = ratings.length
+  258 |   const average = totalCount ? ratings.reduce((sum, row) => sum + safeNumber(row.score, 0), 0) / totalCount : 0
+  259 |   const recentAverage = recent.length ? recent.reduce((sum, row) => sum + safeNumber(row.score, 0), 0) / recent.length : 0
+  260 | 
+  261 |   return {
+  262 |     profile_key: normalizedProfile,
+  263 |     aggregate: {
+  264 |       average_score: Number(average.toFixed(2)),
+  265 |       recent_average_score: Number(recentAverage.toFixed(2)),
+  266 |       total_count: totalCount,
+  267 |       reliability: computeReliability(ratings),
+  268 |       confidence_metadata: computeConfidenceMetadata(ratings, average),
+  269 |     },
+  270 |     breakdown: computeBreakdown(ratings),
+  271 |     recent_reviews: recent.slice(0, 5).map((row) => ({
+  272 |       id: row.id,
+  273 |       score: row.score,
+  274 |       comment: row.comment,
+  275 |       interaction_type: row.interaction_type,
+  276 |       created_at: row.created_at,
+  277 |     })),
+  278 |     feedback_requests: store.feedback_requests.filter((row) => row.profile_key === normalizedProfile && row.status === 'pending').length,
+  279 |   }
+  280 | }
+  281 | 
+  282 | export async function getRatingsForProfiles(profileKeys = []) {
+  283 |   const keys = [...new Set((Array.isArray(profileKeys) ? profileKeys : []).map(normalizeProfileKey).filter(Boolean))]
+  284 |   const result = {}
+  285 |   for (const key of keys) {
+  286 |     result[key] = await getProfileRatingsSummary(key)
+  287 |   }
+  288 |   return result
+  289 | }
+  290 | 
+  291 | export async function getAggregateForProfile(profileKey) {
+  292 |   const summary = await getProfileRatingsSummary(profileKey)
+  293 |   return {
+  294 |     profile_key: summary.profile_key,
+  295 |     aggregate: summary.aggregate,
+  296 |     feedback_requests: summary.feedback_requests,
+  297 |   }
+  298 | }
+  299 | 
+  300 | export async function getSearchRatingCards(profileKeys = []) {
+  301 |   const summaries = await getRatingsForProfiles(profileKeys)
+  302 |   return Object.fromEntries(Object.entries(summaries).map(([profileKey, summary]) => [profileKey, {
+  303 |     average_score: summary.aggregate.average_score,
+  304 |     total_count: summary.aggregate.total_count,
+  305 |     confidence: summary.aggregate.reliability.confidence,
+  306 |     score_confidence: summary.aggregate.confidence_metadata.score_confidence,
+  307 |     breakdown: summary.breakdown,
+  308 |   }]))
+  309 | }
+  310 | 

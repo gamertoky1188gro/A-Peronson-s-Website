@@ -1,3 +1,27 @@
+/*
+  Route: /about
+  Access: Public
+
+  Public Pages:
+    /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+  Protected Pages (login required):
+    /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+    /notifications, /chat, /call, /verification, /verification-center
+
+  Primary responsibilities:
+    - Explain what GarTexHub is and why it exists (mission/vision/how it works).
+    - Display trust-focused stats + verified documents (dynamic).
+    - Use bento-grid layout + glass surfaces + subtle weave background (texture reference to textiles).
+
+  Key API endpoints:
+    - GET /api/system/about  (via `apiRequest('/system/about')`)
+
+  Major UI/UX patterns:
+    - Bento grid + glassmorphism surfaces.
+    - Staggered reveal animations (Framer Motion).
+    - Skeleton -> fade-in "trust load" while documents/stats fetch.
+    - Verified glow indicators (trust anchors).
+*/
 import React, { useEffect, useMemo, useState } from 'react'
 import { Check, FileText, ShieldCheck } from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
@@ -5,6 +29,7 @@ import { apiRequest } from '../lib/auth'
 import MagneticButton from '../components/ui/MagneticButton'
 import SpotlightCard from '../components/ui/SpotlightCard'
 
+// Fallback content keeps layout stable and provides "real-ish" numbers if API fails.
 const fallbackAbout = {
   ok: true,
   stats: {

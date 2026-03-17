@@ -32,3 +32,15 @@ Generated/maintained page specifications:
 - [TexHub](./TexHub.md)
 - [VerificationCenter](./VerificationCenter.md)
 - [VerificationPage](./VerificationPage.md)
+
+---
+
+## Line-numbered docs (generated)
+
+Run:
+
+```bash
+npm run docs:generate
+```
+
+Sources are snapshotted under `docs/_generated/sources/`.

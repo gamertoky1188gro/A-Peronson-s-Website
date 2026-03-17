@@ -1,0 +1,48 @@
+    1 | import fs from 'fs/promises'
+    2 | import path from 'path'
+    3 | 
+    4 | const locks = new Map()
+    5 | 
+    6 | function dbPath(fileName) {
+    7 |   return path.join(process.cwd(), 'server', 'database', fileName)
+    8 | }
+    9 | 
+   10 | async function withLock(fileName, action) {
+   11 |   const prior = locks.get(fileName) || Promise.resolve()
+   12 |   const next = prior.then(action, action)
+   13 |   locks.set(fileName, next.finally(() => {
+   14 |     if (locks.get(fileName) === next) {
+   15 |       locks.delete(fileName)
+   16 |     }
+   17 |   }))
+   18 |   return next
+   19 | }
+   20 | 
+   21 | export async function readJson(fileName) {
+   22 |   const fullPath = dbPath(fileName)
+   23 |   try {
+   24 |     const raw = await fs.readFile(fullPath, 'utf-8')
+   25 |     return JSON.parse(raw || '[]')
+   26 |   } catch {
+   27 |     return []
+   28 |   }
+   29 | }
+   30 | 
+   31 | export async function writeJson(fileName, data) {
+   32 |   return withLock(fileName, async () => {
+   33 |     const fullPath = dbPath(fileName)
+   34 |     await fs.writeFile(fullPath, JSON.stringify(data, null, 2), 'utf-8')
+   35 |     return data
+   36 |   })
+   37 | }
+   38 | 
+   39 | export async function updateJson(fileName, updater) {
+   40 |   return withLock(fileName, async () => {
+   41 |     const existing = await readJson(fileName)
+   42 |     const next = await updater(existing)
+   43 |     const fullPath = dbPath(fileName)
+   44 |     await fs.writeFile(fullPath, JSON.stringify(next, null, 2), 'utf-8')
+   45 |     return next
+   46 |   })
+   47 | }
+   48 | 

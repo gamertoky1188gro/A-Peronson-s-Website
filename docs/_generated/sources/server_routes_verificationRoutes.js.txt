@@ -1,0 +1,13 @@
+    1 | import { Router } from 'express'
+    2 | import { allowRoles, requireAuth } from '../middleware/auth.js'
+    3 | import { adminApprove, adminRevokeExpired, getMyVerification, submitMyVerification } from '../controllers/verificationController.js'
+    4 | 
+    5 | const router = Router()
+    6 | 
+    7 | router.get('/me', requireAuth, getMyVerification)
+    8 | router.post('/me', requireAuth, allowRoles('buyer', 'factory', 'buying_house'), submitMyVerification)
+    9 | router.post('/admin/:userId/approve', requireAuth, allowRoles('admin'), adminApprove)
+   10 | router.post('/admin/revoke-expired', requireAuth, allowRoles('admin'), adminRevokeExpired)
+   11 | 
+   12 | export default router
+   13 | 

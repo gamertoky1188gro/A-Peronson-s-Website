@@ -1,0 +1,89 @@
+    1 | import {
+    2 |   createMember,
+    3 |   deactivateOrRemoveMember,
+    4 |   getMemberConstraints,
+    5 |   listMembers,
+    6 |   resetMemberPassword,
+    7 |   updateMember,
+    8 |   updateMemberPermissions,
+    9 | } from '../services/memberService.js'
+   10 | import { canManageMembers, deny, handleControllerError } from '../utils/permissions.js'
+   11 | 
+   12 | function orgOwnerIdFromUser(user) {
+   13 |   return user?.org_owner_id || user?.org_id || user?.organization_id || user?.id
+   14 | }
+   15 | 
+   16 | function handleError(res, error) {
+   17 |   return handleControllerError(res, error)
+   18 | }
+   19 | 
+   20 | export async function createOrgMember(req, res) {
+   21 |   if (!canManageMembers(req.user)) return deny(res)
+   22 |   try {
+   23 |     const member = await createMember(orgOwnerIdFromUser(req.user), req.body || {})
+   24 |     return res.status(201).json({ member })
+   25 |   } catch (error) {
+   26 |     return handleError(res, error)
+   27 |   }
+   28 | }
+   29 | 
+   30 | export async function listOrgMembers(req, res) {
+   31 |   if (!canManageMembers(req.user)) return deny(res)
+   32 |   try {
+   33 |     const members = await listMembers(orgOwnerIdFromUser(req.user))
+   34 |     return res.json({ members, constraints: getMemberConstraints() })
+   35 |   } catch (error) {
+   36 |     return handleError(res, error)
+   37 |   }
+   38 | }
+   39 | 
+   40 | export async function putOrgMember(req, res) {
+   41 |   if (!canManageMembers(req.user)) return deny(res)
+   42 |   try {
+   43 |     const member = await updateMember(orgOwnerIdFromUser(req.user), req.params.memberId, req.body || {})
+   44 |     if (!member) return res.status(404).json({ error: 'Member not found' })
+   45 |     return res.json({ member })
+   46 |   } catch (error) {
+   47 |     return handleError(res, error)
+   48 |   }
+   49 | }
+   50 | 
+   51 | export async function patchMemberPermissions(req, res) {
+   52 |   if (!canManageMembers(req.user)) return deny(res)
+   53 |   try {
+   54 |     const member = await updateMemberPermissions(
+   55 |       orgOwnerIdFromUser(req.user),
+   56 |       req.params.memberId,
+   57 |       req.body?.permissions,
+   58 |       req.body?.permission_matrix,
+   59 |     )
+   60 |     if (!member) return res.status(404).json({ error: 'Member not found' })
+   61 |     return res.json({ member })
+   62 |   } catch (error) {
+   63 |     return handleError(res, error)
+   64 |   }
+   65 | }
+   66 | 
+   67 | export async function postMemberPasswordReset(req, res) {
+   68 |   if (!canManageMembers(req.user)) return deny(res)
+   69 |   try {
+   70 |     const result = await resetMemberPassword(orgOwnerIdFromUser(req.user), req.params.memberId)
+   71 |     if (!result) return res.status(404).json({ error: 'Member not found' })
+   72 |     return res.json(result)
+   73 |   } catch (error) {
+   74 |     return handleError(res, error)
+   75 |   }
+   76 | }
+   77 | 
+   78 | export async function deactivateOrRemoveOrgMember(req, res) {
+   79 |   if (!canManageMembers(req.user)) return deny(res)
+   80 |   try {
+   81 |     const mode = req.query.remove === 'true' ? 'remove' : 'deactivate'
+   82 |     const result = await deactivateOrRemoveMember(orgOwnerIdFromUser(req.user), req.params.memberId, mode)
+   83 |     if (!result) return res.status(404).json({ error: 'Member not found' })
+   84 |     return res.json(result)
+   85 |   } catch (error) {
+   86 |     return handleError(res, error)
+   87 |   }
+   88 | }
+   89 | 

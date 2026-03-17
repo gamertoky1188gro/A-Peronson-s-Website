@@ -1,0 +1,638 @@
+    1 | /*
+    2 |   Route: /pricing
+    3 |   Access: Public
+    4 | 
+    5 |   Public Pages:
+    6 |     /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+    7 |   Protected Pages (login required):
+    8 |     /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+    9 |     /notifications, /chat, /call, /verification, /verification-center
+   10 | 
+   11 |   Primary responsibilities:
+   12 |     - Present pricing tiers (Free vs Premium).
+   13 |     - Present enterprise-style analytics preview tiles (dynamic, public).
+   14 |     - Feature comparison table (icons, row hover, no vertical lines).
+   15 | 
+   16 |   Key API endpoints:
+   17 |     - GET /api/system/pricing  (via `apiRequest('/system/pricing')`)
+   18 | 
+   19 |   Major UI/UX patterns:
+   20 |     - Zinc-first palette (pricing-only) for a clean SaaS look.
+   21 |     - Spotlight hover (`SpotlightCard`) for borderless depth.
+   22 |     - Premium card perimeter beam (CSS conic gradient) + pulse badge.
+   23 |     - Staggered entrance via Framer Motion (bento tiles + cards).
+   24 |     - Magnetic CTAs via `MagneticButton`.
+   25 | */
+   26 | import React, { useEffect, useMemo, useState } from 'react'
+   27 | import { Check, Minus } from 'lucide-react'
+   28 | import { motion, useReducedMotion } from 'framer-motion'
+   29 | import { apiRequest } from '../lib/auth'
+   30 | import MagneticButton from '../components/ui/MagneticButton'
+   31 | import SpotlightCard from '../components/ui/SpotlightCard'
+   32 | 
+   33 | // Static fallback values (used when API is loading or errors).
+   34 | const defaultPricing = {
+   35 |   ok: true,
+   36 |   analytics: {
+   37 |     tiles: [
+   38 |       { label: 'Order completion', value: '84%', sublabel: 'last 30 days', accent: 'teal' },
+   39 |       { label: 'Avg. cycle', value: '12d', sublabel: 'request → contract', accent: 'blue' },
+   40 |       { label: 'Active orgs', value: '32', sublabel: 'buyers + factories', accent: 'gold' },
+   41 |       { label: 'Response SLA', value: '1h 22m', sublabel: 'median', accent: 'blue' },
+   42 |     ],
+   43 |   },
+   44 | }
+   45 | 
+   46 | function Skeleton({ className = '' }) {
+   47 |   // Shimmer skeleton block (App.css `.skeleton`).
+   48 |   return <div className={['skeleton', className].join(' ')} />
+   49 | }
+   50 | 
+   51 | function MotionItem({ index, className = '', children }) {
+   52 |   const reduceMotion = useReducedMotion()
+   53 |   // Respect reduced-motion preference.
+   54 |   if (reduceMotion) return <div className={className}>{children}</div>
+   55 | 
+   56 |   return (
+   57 |     <motion.div
+   58 |       className={className}
+   59 |       // Bento entrance: fade + slide up (20px) with a small stagger per index.
+   60 |       initial={{ opacity: 0, y: 20 }}
+   61 |       animate={{ opacity: 1, y: 0 }}
+   62 |       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: index * 0.05 }}
+   63 |     >
+   64 |       {children}
+   65 |     </motion.div>
+   66 |   )
+   67 | }
+   68 | 
+   69 | function accentClasses(accent) {
+   70 |   if (accent === 'teal') return 'text-[#2dd4bf]'
+   71 |   if (accent === 'gold') return 'text-[#f59e0b]'
+   72 |   return 'text-[#3b82f6]'
+   73 | }
+   74 | 
+   75 | export default function Pricing() {
+   76 |   const showDevControls = import.meta.env.DEV
+   77 |   const [pricing, setPricing] = useState(defaultPricing)
+   78 |   const [loading, setLoading] = useState(true)
+   79 |   const [loadError, setLoadError] = useState('')
+   80 | 
+   81 |   const [isLoggedIn, setIsLoggedIn] = useState(false)
+   82 |   const [accountType, setAccountType] = useState('General')
+   83 |   const [remainingDays, setRemainingDays] = useState(12)
+   84 | 
+   85 |   useEffect(() => {
+   86 |     let alive = true
+   87 |     const controller = new AbortController()
+   88 | 
+   89 |     apiRequest('/system/pricing', { signal: controller.signal })
+   90 |       .then((data) => {
+   91 |         if (!alive) return
+   92 |         if (data?.ok && data?.analytics?.tiles) setPricing(data)
+   93 |       })
+   94 |       .catch((err) => {
+   95 |         if (!alive) return
+   96 |         if (err?.name === 'AbortError') return
+   97 |         setLoadError(String(err?.message || 'Failed to load analytics'))
+   98 |       })
+   99 |       .finally(() => {
+  100 |         if (!alive) return
+  101 |         setLoading(false)
+  102 |       })
+  103 | 
+  104 |     return () => {
+  105 |       alive = false
+  106 |       controller.abort()
+  107 |     }
+  108 |   }, [])
+  109 | 
+  110 |   const features = useMemo(() => ({
+  111 |     notLoggedIn: {
+  112 |       Free: [
+  113 |         'Basic dashboard access',
+  114 |         'Partner network access',
+  115 |         'Claim buyer requests',
+  116 |         'Chat & call access',
+  117 |         'Contract Vault (basic)',
+  118 |         'Limited sub-accounts',
+  119 |       ],
+  120 |       Premium: [
+  121 |         'Dedicated analytics',
+  122 |         'Exportable reports',
+  123 |         'Advanced insights',
+  124 |         'Priority messaging',
+  125 |         'Extended Contract Vault',
+  126 |         'Unlimited sub-accounts',
+  127 |         'Increased account reach',
+  128 |       ],
+  129 |     },
+  130 |     loggedIn: {
+  131 |       General: {
+  132 |         Free: [
+  133 |           'Basic dashboard access',
+  134 |           'Partner network access',
+  135 |           'Claim buyer requests',
+  136 |           'Chat & call access',
+  137 |           'Contract Vault (basic)',
+  138 |           'Sub-accounts: limit 10',
+  139 |         ],
+  140 |         Premium: [
+  141 |           'Dedicated analytics',
+  142 |           'Exportable reports',
+  143 |           'Advanced insights',
+  144 |           'Priority messaging inbox',
+  145 |           'Extended Contract Vault',
+  146 |           'Unlimited sub-accounts',
+  147 |           'Increased account reach',
+  148 |         ],
+  149 |       },
+  150 |       Factory: {
+  151 |         Free: [
+  152 |           'Product management',
+  153 |           'Video gallery',
+  154 |           'Partner network requests',
+  155 |           'Chat & call access',
+  156 |           'Contract Vault (basic)',
+  157 |           'Multiple account IDs: supported',
+  158 |           'Sub-accounts: limit 10',
+  159 |         ],
+  160 |         Premium: [
+  161 |           'Full product & order management',
+  162 |           'Video & media showcase',
+  163 |           'AI assistance for requests',
+  164 |           'Exportable reports',
+  165 |           'Extended Contract Vault',
+  166 |           'Multiple account IDs: unlimited',
+  167 |           'Unlimited sub-accounts',
+  168 |           'Increased account reach',
+  169 |         ],
+  170 |       },
+  171 |     },
+  172 |   }), [])
+  173 | 
+  174 |   const effectiveLoggedIn = showDevControls ? isLoggedIn : false
+  175 |   const accountTypes = effectiveLoggedIn ? ['General', 'Factory'] : []
+  176 |   const freeFeatures = effectiveLoggedIn ? features.loggedIn[accountType].Free : features.notLoggedIn.Free
+  177 |   const premiumFeatures = effectiveLoggedIn ? features.loggedIn[accountType].Premium : features.notLoggedIn.Premium
+  178 | 
+  179 |   const verificationStatus = showDevControls
+  180 |     ? (remainingDays <= 0 ? 'expired' : remainingDays <= 7 ? 'expiring_soon' : 'verified_active')
+  181 |     : 'verified_active'
+  182 | 
+  183 |   const statusLabel = {
+  184 |     verified_active: 'Verified active',
+  185 |     expiring_soon: 'Expiring soon',
+  186 |     expired: 'Expired (renew to restore badge)',
+  187 |   }
+  188 | 
+  189 |   const statusChip = {
+  190 |     verified_active:
+  191 |       'verified-pulse bg-[rgba(245,158,11,0.18)] text-[#f59e0b] shadow-[0_0_0_1px_rgba(245,158,11,0.22),0_18px_40px_rgba(245,158,11,0.10)] dark:bg-[rgba(245,158,11,0.14)]',
+  192 |     expiring_soon:
+  193 |       'bg-[rgba(245,158,11,0.16)] text-[#f59e0b] shadow-[0_0_0_1px_rgba(245,158,11,0.18)] dark:bg-[rgba(245,158,11,0.12)]',
+  194 |     expired:
+  195 |       'bg-[rgba(244,63,94,0.16)] text-[#fb7185] shadow-[0_0_0_1px_rgba(244,63,94,0.20)] dark:bg-[rgba(244,63,94,0.12)]',
+  196 |   }
+  197 | 
+  198 |   const tableRows = [
+  199 |     { label: 'Dedicated analytics page', free: false, premium: true },
+  200 |     { label: 'Exportable reports', free: false, premium: true },
+  201 |     { label: 'Priority inbox', free: false, premium: true },
+  202 |     { label: 'Unlimited sub-accounts', free: false, premium: true },
+  203 |     { label: 'Contract Vault storage', free: 'Basic', premium: 'Extended' },
+  204 |     { label: 'Order completion certification', free: false, premium: true },
+  205 |     { label: 'Search filtering priority', free: 'Standard', premium: 'Advanced' },
+  206 |     { label: 'Support level', free: 'Standard', premium: 'Dedicated' },
+  207 |   ]
+  208 | 
+  209 |   return (
+  210 |     <div className="relative min-h-screen overflow-x-hidden bg-[#fafafa] text-[#09090b] dark:bg-[#09090b] dark:text-[#fafafa]">
+  211 |       <div className="mx-auto max-w-7xl px-4 pb-16 pt-14 sm:px-6 lg:px-8">
+  212 |         <div className="grid gap-10 lg:grid-cols-12 lg:items-start">
+  213 |           <div className="lg:col-span-7">
+  214 |             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#52525b] dark:text-[#a1a1aa]">
+  215 |               Pricing
+  216 |             </p>
+  217 |             <h1 className="mt-3 text-4xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa] sm:text-5xl">
+  218 |               Clear plans for serious sourcing teams
+  219 |             </h1>
+  220 |             <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-[#52525b] dark:text-[#a1a1aa]">
+  221 |               Borderless surfaces, verified signals, and export-ready reporting — built for buying houses and factories.
+  222 |             </p>
+  223 | 
+  224 |             <div className="mt-8 flex flex-wrap gap-3">
+  225 |               <MagneticButton
+  226 |                 to="/signup"
+  227 |                 className="shimmer-btn inline-flex items-center justify-center rounded-md bg-[#3b82f6] px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(59,130,246,0.25)] transition hover:brightness-105 dark:shadow-none"
+  228 |               >
+  229 |                 Create your organization
+  230 |               </MagneticButton>
+  231 |               <MagneticButton
+  232 |                 to="#plans"
+  233 |                 className="inline-flex items-center justify-center rounded-md bg-[rgba(9,9,11,0.06)] px-5 py-3 text-sm font-semibold text-[#09090b] transition hover:bg-[rgba(9,9,11,0.08)] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#fafafa] dark:hover:bg-[rgba(250,250,250,0.08)]"
+  234 |               >
+  235 |                 View plans
+  236 |               </MagneticButton>
+  237 |             </div>
+  238 |           </div>
+  239 | 
+  240 |           <MotionItem index={0} className="lg:col-span-5">
+  241 |             <SpotlightCard
+  242 |               className={[
+  243 |                 'rounded-xl p-6',
+  244 |                 'bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
+  245 |                 'dark:bg-[#18181b] dark:border dark:border-[#27272a] dark:shadow-none',
+  246 |                 'transition duration-300 ease-out',
+  247 |                 'hover:-translate-y-0.5 hover:shadow-[0_12px_34px_-8px_rgba(0,0,0,0.18)]',
+  248 |                 'dark:hover:translate-y-0 dark:hover:shadow-none',
+  249 |               ].join(' ')}
+  250 |             >
+  251 |               <div className="flex items-center justify-between">
+  252 |                 <p className="text-sm font-semibold text-[#09090b] dark:text-[#fafafa]">Analytics snapshot</p>
+  253 |                 <span className="rounded-full bg-[rgba(9,9,11,0.06)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#52525b] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#a1a1aa]">
+  254 |                   Live
+  255 |                 </span>
+  256 |               </div>
+  257 |               {loadError ? (
+  258 |                 <p className="mt-3 text-xs text-[#a1a1aa]">Analytics unavailable — showing defaults.</p>
+  259 |               ) : null}
+  260 |               <div className="mt-5 grid gap-3 sm:grid-cols-2">
+  261 |                 {(pricing?.analytics?.tiles || []).slice(0, 4).map((tile) => (
+  262 |                   <div
+  263 |                     key={tile.label}
+  264 |                     className="rounded-lg bg-[rgba(9,9,11,0.04)] p-4 dark:bg-[rgba(250,250,250,0.04)]"
+  265 |                   >
+  266 |                     {loading ? (
+  267 |                       <>
+  268 |                         <Skeleton className="h-3 w-24 rounded" />
+  269 |                         <Skeleton className="mt-3 h-7 w-16 rounded" />
+  270 |                         <Skeleton className="mt-3 h-3 w-28 rounded" />
+  271 |                       </>
+  272 |                     ) : (
+  273 |                       <>
+  274 |                         <p className="text-xs font-semibold text-[#52525b] dark:text-[#a1a1aa]">{tile.label}</p>
+  275 |                         <p className={['mt-2 text-2xl font-bold tracking-tight', accentClasses(tile.accent)].join(' ')}>
+  276 |                           {tile.value}
+  277 |                         </p>
+  278 |                         <p className="mt-2 text-xs text-[#52525b] dark:text-[#a1a1aa]">{tile.sublabel}</p>
+  279 |                       </>
+  280 |                     )}
+  281 |                   </div>
+  282 |                 ))}
+  283 |               </div>
+  284 |             </SpotlightCard>
+  285 |           </MotionItem>
+  286 |         </div>
+  287 | 
+  288 |         <div className="mt-16" id="plans">
+  289 |           <div className="text-center">
+  290 |             <h2 className="text-3xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">Simple, transparent pricing</h2>
+  291 |             <p className="mt-3 text-sm leading-relaxed text-[#52525b] dark:text-[#a1a1aa]">
+  292 |               Choose the surface you need today — upgrade when your team scales.
+  293 |             </p>
+  294 |           </div>
+  295 | 
+  296 |           {showDevControls ? (
+  297 |             <div className="mx-auto mt-8 max-w-3xl rounded-xl bg-[rgba(9,9,11,0.04)] p-4 dark:bg-[rgba(250,250,250,0.04)]">
+  298 |               <div className="flex flex-wrap items-center justify-between gap-3">
+  299 |                 <div className="flex items-center gap-2">
+  300 |                   <span className="text-xs font-semibold text-[#52525b] dark:text-[#a1a1aa]">Preview:</span>
+  301 |                   <button
+  302 |                     type="button"
+  303 |                     onClick={() => {
+  304 |                       setIsLoggedIn((v) => !v)
+  305 |                       setAccountType('General')
+  306 |                     }}
+  307 |                     className="rounded-md bg-[#ffffff] px-3 py-2 text-xs font-semibold text-[#09090b] shadow-[0_4px_16px_rgba(0,0,0,0.06)] transition hover:-translate-y-0.5 dark:bg-[#18181b] dark:text-[#fafafa] dark:shadow-none"
+  308 |                   >
+  309 |                     {effectiveLoggedIn ? 'Sign out' : 'Mock sign in'}
+  310 |                   </button>
+  311 |                 </div>
+  312 | 
+  313 |                 {effectiveLoggedIn && accountTypes.length ? (
+  314 |                   <div className="flex flex-wrap gap-2">
+  315 |                     {accountTypes.map((t) => (
+  316 |                       <button
+  317 |                         key={t}
+  318 |                         type="button"
+  319 |                         onClick={() => setAccountType(t)}
+  320 |                         className={[
+  321 |                           'rounded-md px-3 py-2 text-xs font-semibold transition',
+  322 |                           accountType === t
+  323 |                             ? 'bg-[#3b82f6] text-white shadow-[0_10px_24px_rgba(59,130,246,0.24)]'
+  324 |                             : 'bg-[#ffffff] text-[#09090b] shadow-[0_4px_16px_rgba(0,0,0,0.06)] dark:bg-[#18181b] dark:text-[#fafafa] dark:shadow-none',
+  325 |                         ].join(' ')}
+  326 |                       >
+  327 |                         {t}
+  328 |                       </button>
+  329 |                     ))}
+  330 |                   </div>
+  331 |                 ) : null}
+  332 |               </div>
+  333 | 
+  334 |               <div className="mt-4 flex flex-wrap items-center gap-2">
+  335 |                 <span className={['inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold', statusChip[verificationStatus]].join(' ')}>
+  336 |                   {statusLabel[verificationStatus]}
+  337 |                 </span>
+  338 |                 <span className="text-xs text-[#52525b] dark:text-[#a1a1aa]">Remaining: {Math.max(0, remainingDays)} day(s)</span>
+  339 |                 <button
+  340 |                   type="button"
+  341 |                   onClick={() => setRemainingDays((d) => d - 1)}
+  342 |                   className="rounded-md bg-[rgba(9,9,11,0.06)] px-3 py-2 text-xs font-semibold text-[#09090b] transition hover:bg-[rgba(9,9,11,0.08)] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#fafafa] dark:hover:bg-[rgba(250,250,250,0.08)]"
+  343 |                 >
+  344 |                   -1 day
+  345 |                 </button>
+  346 |                 <button
+  347 |                   type="button"
+  348 |                   onClick={() => setRemainingDays((d) => d + 1)}
+  349 |                   className="rounded-md bg-[rgba(9,9,11,0.06)] px-3 py-2 text-xs font-semibold text-[#09090b] transition hover:bg-[rgba(9,9,11,0.08)] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#fafafa] dark:hover:bg-[rgba(250,250,250,0.08)]"
+  350 |                 >
+  351 |                   +1 day
+  352 |                 </button>
+  353 |               </div>
+  354 |             </div>
+  355 |           ) : null}
+  356 | 
+  357 |           <div className="mt-10 grid gap-6 lg:grid-cols-2">
+  358 |             <MotionItem index={1}>
+  359 |               <SpotlightCard
+  360 |                 className={[
+  361 |                   'rounded-xl p-7',
+  362 |                   'bg-[rgba(9,9,11,0.02)] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
+  363 |                   'transition duration-300 ease-out',
+  364 |                   'hover:-translate-y-0.5 hover:shadow-[0_14px_44px_-18px_rgba(0,0,0,0.22)]',
+  365 |                   'dark:bg-[#18181b] dark:border dark:border-[#27272a] dark:shadow-none',
+  366 |                   'dark:hover:translate-y-0 dark:hover:shadow-none',
+  367 |                 ].join(' ')}
+  368 |               >
+  369 |                 <div className="flex items-start justify-between gap-6">
+  370 |                   <div>
+  371 |                     <h3 className="text-lg font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">Free</h3>
+  372 |                     <p className="mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">Start with essential workflow.</p>
+  373 |                   </div>
+  374 |                   <div className="text-right">
+  375 |                     <p className="text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">$0</p>
+  376 |                     <p className="text-xs text-[#52525b] dark:text-[#a1a1aa]">per month</p>
+  377 |                   </div>
+  378 |                 </div>
+  379 | 
+  380 |                 <ul className="mt-6 space-y-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">
+  381 |                   {freeFeatures.map((f) => (
+  382 |                     <li key={f} className="flex items-start gap-2">
+  383 |                       <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[rgba(9,9,11,0.06)] text-[#52525b] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#a1a1aa]">
+  384 |                         <Minus className="h-3 w-3" />
+  385 |                       </span>
+  386 |                       <span>{f}</span>
+  387 |                     </li>
+  388 |                   ))}
+  389 |                 </ul>
+  390 | 
+  391 |                 <div className="mt-7">
+  392 |                   <MagneticButton
+  393 |                     to="/signup"
+  394 |                     className="inline-flex w-full items-center justify-center rounded-md bg-[rgba(9,9,11,0.06)] px-5 py-3 text-sm font-semibold text-[#09090b] transition hover:bg-[rgba(9,9,11,0.08)] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#fafafa] dark:hover:bg-[rgba(250,250,250,0.08)]"
+  395 |                   >
+  396 |                     Get started
+  397 |                   </MagneticButton>
+  398 |                 </div>
+  399 |               </SpotlightCard>
+  400 |             </MotionItem>
+  401 | 
+  402 |             <MotionItem index={2}>
+  403 |               <SpotlightCard
+  404 |                 className={[
+  405 |                   'conic-beam rounded-xl p-7',
+  406 |                   'bg-[rgba(255,255,255,0.70)] backdrop-blur-[12px]',
+  407 |                   'border border-black/5 shadow-[0_10px_38px_-18px_rgba(0,0,0,0.22)]',
+  408 |                   'transition duration-300 ease-out',
+  409 |                   'hover:-translate-y-0.5 hover:shadow-[0_16px_54px_-22px_rgba(0,0,0,0.26)]',
+  410 |                   'dark:bg-[rgba(24,24,27,0.70)] dark:border-[#27272a] dark:shadow-none',
+  411 |                   'dark:hover:translate-y-0 dark:hover:shadow-none',
+  412 |                 ].join(' ')}
+  413 |               >
+  414 |                 <div className="flex items-start justify-between gap-6">
+  415 |                   <div>
+  416 |                     <div className="flex items-center gap-2">
+  417 |                       <h3 className="text-lg font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">Premium</h3>
+  418 |                       <span className={['inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold', statusChip[verificationStatus]].join(' ')}>
+  419 |                         {statusLabel[verificationStatus]}
+  420 |                       </span>
+  421 |                     </div>
+  422 |                     <p className="mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">Built for buying houses & enterprise teams.</p>
+  423 |                   </div>
+  424 |                   <div className="text-right">
+  425 |                     <p className="text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">$199</p>
+  426 |                     <p className="text-xs text-[#52525b] dark:text-[#a1a1aa]">per month</p>
+  427 |                   </div>
+  428 |                 </div>
+  429 | 
+  430 |                 <ul className="mt-6 space-y-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">
+  431 |                   {premiumFeatures.map((f) => (
+  432 |                     <li key={f} className="flex items-start gap-2">
+  433 |                       <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[rgba(45,212,191,0.14)] text-[#2dd4bf]">
+  434 |                         <Check className="h-3 w-3" />
+  435 |                       </span>
+  436 |                       <span>{f}</span>
+  437 |                     </li>
+  438 |                   ))}
+  439 |                 </ul>
+  440 | 
+  441 |                 <div className="mt-7">
+  442 |                   <MagneticButton
+  443 |                     to="/signup"
+  444 |                     className="shimmer-btn inline-flex w-full items-center justify-center rounded-md bg-[#2dd4bf] px-5 py-3 text-sm font-semibold text-[#09090b] shadow-[0_12px_34px_rgba(45,212,191,0.22)] transition hover:brightness-105 dark:shadow-none"
+  445 |                   >
+  446 |                     Choose premium
+  447 |                   </MagneticButton>
+  448 |                 </div>
+  449 |               </SpotlightCard>
+  450 |             </MotionItem>
+  451 |           </div>
+  452 |         </div>
+  453 | 
+  454 |         <div className="mt-16">
+  455 |           <div className="grid gap-6 md:grid-cols-6">
+  456 |             <MotionItem index={3} className="md:col-span-3">
+  457 |               <SpotlightCard
+  458 |                 className={[
+  459 |                   'rounded-xl p-7',
+  460 |                   'bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
+  461 |                   'dark:bg-[#18181b] dark:border dark:border-[#27272a] dark:shadow-none',
+  462 |                   'transition duration-300 ease-out',
+  463 |                   'hover:-translate-y-0.5 hover:shadow-[0_12px_34px_-8px_rgba(0,0,0,0.18)]',
+  464 |                   'dark:hover:translate-y-0 dark:hover:shadow-none',
+  465 |                 ].join(' ')}
+  466 |               >
+  467 |                 <h3 className="text-lg font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">Why enterprise matters</h3>
+  468 |                 <p className="mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">
+  469 |                   When your team scales, structure beats noise. Premium keeps workflows conflict-free and audit-ready.
+  470 |                 </p>
+  471 |                 <ul className="mt-5 space-y-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">
+  472 |                   {['Team scale without limits', 'Decision-ready visibility', 'Secure contract trail', 'Verified trust signals'].map((item) => (
+  473 |                     <li key={item} className="flex items-start gap-2">
+  474 |                       <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[rgba(59,130,246,0.14)] text-[#3b82f6]">
+  475 |                         <Check className="h-3 w-3" />
+  476 |                       </span>
+  477 |                       <span>{item}</span>
+  478 |                     </li>
+  479 |                   ))}
+  480 |                 </ul>
+  481 |               </SpotlightCard>
+  482 |             </MotionItem>
+  483 | 
+  484 |             <MotionItem index={4} className="md:col-span-3">
+  485 |               <SpotlightCard
+  486 |                 className={[
+  487 |                   'rounded-xl p-7',
+  488 |                   'bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
+  489 |                   'dark:bg-[#18181b] dark:border dark:border-[#27272a] dark:shadow-none',
+  490 |                   'transition duration-300 ease-out',
+  491 |                   'hover:-translate-y-0.5 hover:shadow-[0_12px_34px_-8px_rgba(0,0,0,0.18)]',
+  492 |                   'dark:hover:translate-y-0 dark:hover:shadow-none',
+  493 |                 ].join(' ')}
+  494 |               >
+  495 |                 <div className="flex items-center justify-between">
+  496 |                   <h3 className="text-lg font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">Enterprise analytics</h3>
+  497 |                   <span className="rounded-full bg-[rgba(9,9,11,0.06)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#52525b] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#a1a1aa]">
+  498 |                     Auto-sorted
+  499 |                   </span>
+  500 |                 </div>
+  501 |                 <p className="mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">Decision-ready metrics without spreadsheet UI.</p>
+  502 | 
+  503 |                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
+  504 |                   {(pricing?.analytics?.tiles || []).slice(0, 4).map((tile) => (
+  505 |                     <div
+  506 |                       key={tile.label}
+  507 |                       className="rounded-lg bg-[rgba(9,9,11,0.04)] p-4 dark:bg-[rgba(250,250,250,0.04)]"
+  508 |                     >
+  509 |                       {loading ? (
+  510 |                         <>
+  511 |                           <Skeleton className="h-3 w-24 rounded" />
+  512 |                           <Skeleton className="mt-3 h-7 w-14 rounded" />
+  513 |                           <Skeleton className="mt-3 h-3 w-20 rounded" />
+  514 |                         </>
+  515 |                       ) : (
+  516 |                         <>
+  517 |                           <p className="text-xs font-semibold text-[#52525b] dark:text-[#a1a1aa]">{tile.label}</p>
+  518 |                           <p className={['mt-2 text-2xl font-bold tracking-tight', accentClasses(tile.accent)].join(' ')}>
+  519 |                             {tile.value}
+  520 |                           </p>
+  521 |                           <p className="mt-2 text-xs text-[#52525b] dark:text-[#a1a1aa]">{tile.sublabel}</p>
+  522 |                         </>
+  523 |                       )}
+  524 |                     </div>
+  525 |                   ))}
+  526 |                 </div>
+  527 |               </SpotlightCard>
+  528 |             </MotionItem>
+  529 |           </div>
+  530 |         </div>
+  531 | 
+  532 |         <div className="mt-16">
+  533 |           <div className="text-center">
+  534 |             <h2 className="text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">Feature comparison</h2>
+  535 |             <p className="mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">Horizontal lines only. Clear, audit-ready differences.</p>
+  536 |           </div>
+  537 | 
+  538 |           <div className="mt-6 overflow-x-auto rounded-xl bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#18181b] dark:border dark:border-[#27272a] dark:shadow-none">
+  539 |             <table className="min-w-full text-left text-sm">
+  540 |               <thead>
+  541 |                 <tr className="text-xs font-semibold uppercase tracking-[0.12em] text-[#52525b] dark:text-[#a1a1aa]">
+  542 |                   <th className="px-6 py-4">Feature</th>
+  543 |                   <th className="px-6 py-4">Free</th>
+  544 |                   <th className="px-6 py-4">Premium</th>
+  545 |                 </tr>
+  546 |               </thead>
+  547 |               <tbody className="divide-y divide-[#e4e4e7] dark:divide-[#27272a]">
+  548 |                 {tableRows.map((row) => (
+  549 |                   <tr key={row.label} className="transition-colors hover:bg-black/[0.02] dark:hover:bg-white/[0.02]">
+  550 |                     <td className="px-6 py-4 font-medium text-[#09090b] dark:text-[#fafafa]">{row.label}</td>
+  551 |                     <td className="px-6 py-4 text-[#52525b] dark:text-[#a1a1aa]">
+  552 |                       {typeof row.free === 'boolean' ? (
+  553 |                         row.free ? <Check className="h-4 w-4 text-[#2dd4bf]" /> : <Minus className="h-4 w-4 text-[#a1a1aa]" />
+  554 |                       ) : (
+  555 |                         row.free
+  556 |                       )}
+  557 |                     </td>
+  558 |                     <td className="px-6 py-4 text-[#52525b] dark:text-[#a1a1aa]">
+  559 |                       {typeof row.premium === 'boolean' ? (
+  560 |                         row.premium ? <Check className="h-4 w-4 text-[#2dd4bf]" /> : <Minus className="h-4 w-4 text-[#a1a1aa]" />
+  561 |                       ) : (
+  562 |                         row.premium
+  563 |                       )}
+  564 |                     </td>
+  565 |                   </tr>
+  566 |                 ))}
+  567 |               </tbody>
+  568 |             </table>
+  569 |           </div>
+  570 |         </div>
+  571 | 
+  572 |         <div className="mt-16">
+  573 |           <div className="mx-auto max-w-3xl text-center">
+  574 |             <h2 className="text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">FAQ</h2>
+  575 |             <p className="mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">Short answers, no sales noise.</p>
+  576 |           </div>
+  577 | 
+  578 |           <div className="mx-auto mt-6 grid max-w-3xl gap-4">
+  579 |             {[
+  580 |               { q: 'Can I upgrade anytime?', a: 'Yes — your data stays intact.' },
+  581 |               { q: 'Can I downgrade?', a: 'Yes — plan limits apply immediately.' },
+  582 |               { q: 'Does GarTexHub handle payments?', a: 'Not yet. The platform focuses on workflow + coordination.' },
+  583 |               { q: 'Are calls recorded?', a: 'Yes — for documentation and compliance.' },
+  584 |             ].map((item, idx) => (
+  585 |               <MotionItem key={item.q} index={5 + idx}>
+  586 |                 <SpotlightCard
+  587 |                   className={[
+  588 |                     'rounded-xl p-6',
+  589 |                     'bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
+  590 |                     'dark:bg-[#18181b] dark:border dark:border-[#27272a] dark:shadow-none',
+  591 |                     'transition duration-300 ease-out',
+  592 |                     'hover:-translate-y-0.5 hover:shadow-[0_12px_34px_-8px_rgba(0,0,0,0.18)]',
+  593 |                     'dark:hover:translate-y-0 dark:hover:shadow-none',
+  594 |                   ].join(' ')}
+  595 |                 >
+  596 |                   <p className="font-semibold text-[#09090b] dark:text-[#fafafa]">{item.q}</p>
+  597 |                   <p className="mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">{item.a}</p>
+  598 |                 </SpotlightCard>
+  599 |               </MotionItem>
+  600 |             ))}
+  601 |           </div>
+  602 |         </div>
+  603 | 
+  604 |         <div className="mt-16 pb-4">
+  605 |           <SpotlightCard
+  606 |             className={[
+  607 |               'rounded-xl p-10 text-center',
+  608 |               'bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
+  609 |               'dark:bg-[#18181b] dark:border dark:border-[#27272a] dark:shadow-none',
+  610 |             ].join(' ')}
+  611 |           >
+  612 |             <h2 className="text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">
+  613 |               Build a structured textile network today
+  614 |             </h2>
+  615 |             <p className="mx-auto mt-3 max-w-xl text-sm text-[#52525b] dark:text-[#a1a1aa]">
+  616 |               Start free, upgrade when your org needs analytics, export, and secure contract management.
+  617 |             </p>
+  618 |             <div className="mt-7 flex flex-wrap justify-center gap-3">
+  619 |               <MagneticButton
+  620 |                 to="/signup"
+  621 |                 className="shimmer-btn inline-flex items-center justify-center rounded-md bg-[#3b82f6] px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(59,130,246,0.25)] transition hover:brightness-105 dark:shadow-none"
+  622 |               >
+  623 |                 Create your organization
+  624 |               </MagneticButton>
+  625 |               <MagneticButton
+  626 |                 to="/signup"
+  627 |                 className="inline-flex items-center justify-center rounded-md bg-[#2dd4bf] px-6 py-3 text-sm font-semibold text-[#09090b] shadow-[0_12px_34px_rgba(45,212,191,0.22)] transition hover:brightness-105 dark:shadow-none"
+  628 |               >
+  629 |                 Choose premium
+  630 |               </MagneticButton>
+  631 |             </div>
+  632 |           </SpotlightCard>
+  633 |         </div>
+  634 |       </div>
+  635 |     </div>
+  636 |   )
+  637 | }
+  638 | 

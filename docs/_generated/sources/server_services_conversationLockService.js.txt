@@ -1,0 +1,63 @@
+    1 | import crypto from 'crypto'
+    2 | import { readJson, writeJson } from '../utils/jsonStore.js'
+    3 | 
+    4 | const FILE = 'conversation_locks.json'
+    5 | const NOTIFICATIONS_FILE = 'notifications.json'
+    6 | 
+    7 | async function createLockNotification(userId, message, requestId, actorId) {
+    8 |   if (!userId) return
+    9 |   const notifications = await readJson(NOTIFICATIONS_FILE)
+   10 |   notifications.push({
+   11 |     id: crypto.randomUUID(),
+   12 |     user_id: userId,
+   13 |     type: 'conversation_lock',
+   14 |     entity_type: 'buyer_request',
+   15 |     entity_id: requestId,
+   16 |     message,
+   17 |     actor_id: actorId,
+   18 |     read: false,
+   19 |     created_at: new Date().toISOString(),
+   20 |   })
+   21 |   await writeJson(NOTIFICATIONS_FILE, notifications)
+   22 | }
+   23 | 
+   24 | export async function claimConversation(requestId, agent) {
+   25 |   const all = await readJson(FILE)
+   26 |   const existing = all.find((x) => x.request_id === requestId)
+   27 |   if (!existing) {
+   28 |     const row = {
+   29 |       request_id: requestId,
+   30 |       locked_by: agent.id,
+   31 |       allowed_agents: [agent.id],
+   32 |       created_at: new Date().toISOString(),
+   33 |     }
+   34 |     all.push(row)
+   35 |     await writeJson(FILE, all)
+   36 |     await createLockNotification(agent.id, `You claimed buyer request ${requestId}.`, requestId, agent.id)
+   37 |     return { status: 'claimed', ...row }
+   38 |   }
+   39 | 
+   40 |   if (existing.locked_by === agent.id || existing.allowed_agents.includes(agent.id)) {
+   41 |     return { status: 'granted', ...existing }
+   42 |   }
+   43 | 
+   44 |   return { status: 'locked', notification: 'Conversation is locked by another agent.' }
+   45 | }
+   46 | 
+   47 | export async function grantConversationAccess(requestId, ownerId, targetAgentId) {
+   48 |   if (!targetAgentId) return 'invalid_target'
+   49 |   const all = await readJson(FILE)
+   50 |   const idx = all.findIndex((x) => x.request_id === requestId)
+   51 |   if (idx < 0) return null
+   52 |   if (all[idx].locked_by !== ownerId) return 'forbidden'
+   53 |   if (!all[idx].allowed_agents.includes(targetAgentId)) all[idx].allowed_agents.push(targetAgentId)
+   54 |   await writeJson(FILE, all)
+   55 |   await createLockNotification(
+   56 |     targetAgentId,
+   57 |     `Access granted for buyer request ${requestId}. You can now join this conversation.`,
+   58 |     requestId,
+   59 |     ownerId,
+   60 |   )
+   61 |   return all[idx]
+   62 | }
+   63 | 

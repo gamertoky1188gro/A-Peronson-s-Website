@@ -1,0 +1,195 @@
+    1 | import {
+    2 |   createScheduledCallSession,
+    3 |   endCallSession,
+    4 |   findOrCreateCallSession,
+    5 |   getCallSession,
+    6 |   listCallHistory,
+    7 |   markRecording,
+    8 |   startCallSession,
+    9 | } from '../services/callSessionService.js'
+   10 | import { buildIceServers } from '../services/webrtcService.js'
+   11 | import { buildFriendMatchId, isFriendConnected } from '../services/friendService.js'
+   12 | import { findUserById } from '../services/userService.js'
+   13 | import { consumePendingInvites, enqueuePendingInvites } from '../utils/pendingInvites.js'
+   14 | 
+   15 | export async function createScheduledCall(req, res) {
+   16 |   const call = await createScheduledCallSession(req.user.id, req.body)
+   17 |   return res.status(201).json(call)
+   18 | }
+   19 | 
+   20 | export async function startCall(req, res) {
+   21 |   const result = await startCallSession(req.params.callId, req.user.id)
+   22 |   if (!result) return res.status(404).json({ error: 'Call session not found' })
+   23 |   if (result === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+   24 |   if (result === 'invalid_transition') return res.status(409).json({ error: 'Call cannot be started from current state' })
+   25 |   return res.json(result)
+   26 | }
+   27 | 
+   28 | export async function endCall(req, res) {
+   29 |   const result = await endCallSession(req.params.callId, req.user.id, req.body?.reason)
+   30 |   if (!result) return res.status(404).json({ error: 'Call session not found' })
+   31 |   if (result === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+   32 |   if (result === 'invalid_transition') return res.status(409).json({ error: 'Call cannot be ended from current state' })
+   33 |   return res.json(result)
+   34 | }
+   35 | 
+   36 | export async function updateRecording(req, res) {
+   37 |   const requestedStatus = String(req.body?.recording_status || '').trim()
+   38 |   const validStatuses = new Set(['processing', 'available', 'failed'])
+   39 | 
+   40 |   if (!requestedStatus || !validStatuses.has(requestedStatus)) {
+   41 |     return res.status(400).json({ error: 'Invalid recording_status. Use processing, available, or failed.' })
+   42 |   }
+   43 | 
+   44 |   if (requestedStatus === 'available' && !String(req.body?.recording_url || '').trim()) {
+   45 |     return res.status(400).json({ error: 'recording_url is required when recording_status is available' })
+   46 |   }
+   47 | 
+   48 |   if (requestedStatus === 'failed' && !String(req.body?.failure_reason || '').trim()) {
+   49 |     return res.status(400).json({ error: 'failure_reason is required when recording_status is failed' })
+   50 |   }
+   51 | 
+   52 |   const call = await getCallSession(req.params.callId, req.user.id)
+   53 |   if (!call) return res.status(404).json({ error: 'Call session not found' })
+   54 |   if (call === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+   55 | 
+   56 |   const currentRecordingStatus = String(call.recording_status || 'pending').trim()
+   57 |   const allowedTransitions = {
+   58 |     pending: new Set(['processing']),
+   59 |     processing: new Set(['available', 'failed']),
+   60 |     available: new Set(),
+   61 |     failed: new Set(),
+   62 |   }
+   63 | 
+   64 |   if (!allowedTransitions[currentRecordingStatus]?.has(requestedStatus)) {
+   65 |     return res.status(409).json({
+   66 |       error: `Invalid recording status transition from ${currentRecordingStatus} to ${requestedStatus}`,
+   67 |     })
+   68 |   }
+   69 | 
+   70 |   const result = await markRecording(req.params.callId, req.user.id, req.body)
+   71 |   if (!result) return res.status(404).json({ error: 'Call session not found' })
+   72 |   if (result === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+   73 |   if (result === 'invalid_transition') return res.status(409).json({ error: 'Invalid recording status transition for this call' })
+   74 |   if (result === 'missing_metadata') return res.status(400).json({ error: 'recording_url is required when recording_status is available' })
+   75 |   if (result === 'missing_failure_reason') return res.status(400).json({ error: 'failure_reason is required when recording_status is failed' })
+   76 |   return res.json(result)
+   77 | }
+   78 | 
+   79 | export async function getCall(req, res) {
+   80 |   const result = await getCallSession(req.params.callId, req.user.id)
+   81 |   if (!result) return res.status(404).json({ error: 'Call session not found' })
+   82 |   if (result === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+   83 |   return res.json(result)
+   84 | }
+   85 | 
+   86 | export async function getCallIceServers(req, res) {
+   87 |   const result = await getCallSession(req.params.callId, req.user.id)
+   88 |   if (!result) return res.status(404).json({ error: 'Call session not found' })
+   89 |   if (result === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+   90 | 
+   91 |   const iceServers = buildIceServers({ userId: req.user.id })
+   92 |   return res.json({ iceServers })
+   93 | }
+   94 | 
+   95 | export async function getCallHistory(req, res) {
+   96 |   const matchIds = req.query.match_ids
+   97 |     ? String(req.query.match_ids)
+   98 |       .split(',')
+   99 |       .map((id) => id.trim())
+  100 |       .filter(Boolean)
+  101 |     : []
+  102 | 
+  103 |   const history = await listCallHistory(matchIds, req.user.id)
+  104 |   return res.json({ items: history })
+  105 | }
+  106 | 
+  107 | export async function getPendingInvites(req, res) {
+  108 |   const invites = consumePendingInvites(req.user.id)
+  109 |   return res.json({ invites })
+  110 | }
+  111 | 
+  112 | export async function joinOrCreateCall(req, res) {
+  113 |   const result = await findOrCreateCallSession(req.user.id, req.body || {})
+  114 |   const call = result?.call || null
+  115 |   if (call?.id && Array.isArray(call.participant_ids)) {
+  116 |     const caller = await findUserById(req.user.id)
+  117 |     const from = caller ? {
+  118 |       id: caller.id,
+  119 |       name: caller.name || '',
+  120 |       email: caller.email || req.user.email || '',
+  121 |       avatar: caller.avatar_url || caller.avatar || '',
+  122 |       role: caller.role || req.user.role || '',
+  123 |       verified: Boolean(caller.verified),
+  124 |     } : {
+  125 |       id: req.user.id,
+  126 |       name: '',
+  127 |       email: req.user.email || '',
+  128 |       avatar: '',
+  129 |       role: req.user.role || '',
+  130 |       verified: false,
+  131 |     }
+  132 | 
+  133 |     const targets = [...new Set(call.participant_ids)].filter((id) => id && id !== req.user.id)
+  134 |     if (targets.length > 0) {
+  135 |       enqueuePendingInvites(targets, [{
+  136 |         type: 'incoming_call',
+  137 |         call_id: call.id,
+  138 |         match_id: call.match_id || '',
+  139 |         from,
+  140 |       }])
+  141 |     }
+  142 |   }
+  143 |   return res.status(result.created ? 201 : 200).json(result)
+  144 | }
+  145 | 
+  146 | 
+  147 | export async function joinFriendCall(req, res) {
+  148 |   const targetId = String(req.params.userId || '').trim()
+  149 |   if (!targetId || targetId === req.user.id) {
+  150 |     return res.status(400).json({ error: 'Invalid friend target' })
+  151 |   }
+  152 | 
+  153 |   const connected = await isFriendConnected(req.user.id, targetId)
+  154 |   if (!connected) {
+  155 |     return res.status(403).json({ error: 'Only friends can start direct calls' })
+  156 |   }
+  157 | 
+  158 |   const matchId = buildFriendMatchId(req.user.id, targetId)
+  159 |   const result = await findOrCreateCallSession(req.user.id, {
+  160 |     match_id: matchId,
+  161 |     chat_thread_id: matchId,
+  162 |     participant_ids: [targetId],
+  163 |     title: 'Friend call',
+  164 |   })
+  165 | 
+  166 |   const call = result?.call || null
+  167 |   if (call?.id) {
+  168 |     const caller = await findUserById(req.user.id)
+  169 |     const from = caller ? {
+  170 |       id: caller.id,
+  171 |       name: caller.name || '',
+  172 |       email: caller.email || req.user.email || '',
+  173 |       avatar: caller.avatar_url || caller.avatar || '',
+  174 |       role: caller.role || req.user.role || '',
+  175 |       verified: Boolean(caller.verified),
+  176 |     } : {
+  177 |       id: req.user.id,
+  178 |       name: '',
+  179 |       email: req.user.email || '',
+  180 |       avatar: '',
+  181 |       role: req.user.role || '',
+  182 |       verified: false,
+  183 |     }
+  184 | 
+  185 |     enqueuePendingInvites([targetId], [{
+  186 |       type: 'incoming_call',
+  187 |       call_id: call.id,
+  188 |       match_id: call.match_id || matchId,
+  189 |       from,
+  190 |     }])
+  191 |   }
+  192 | 
+  193 |   return res.status(result.created ? 201 : 200).json(result)
+  194 | }
+  195 | 

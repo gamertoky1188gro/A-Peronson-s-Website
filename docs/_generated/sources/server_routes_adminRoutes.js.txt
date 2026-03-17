@@ -1,0 +1,12 @@
+    1 | import { Router } from 'express'
+    2 | import { allowRoles, requireAuth } from '../middleware/auth.js'
+    3 | import { subscriptionsAudit, usersAudit, verificationAudit } from '../controllers/adminController.js'
+    4 | 
+    5 | const router = Router()
+    6 | 
+    7 | router.get('/users', requireAuth, allowRoles('owner', 'admin'), usersAudit)
+    8 | router.get('/verification', requireAuth, allowRoles('owner', 'admin'), verificationAudit)
+    9 | router.get('/subscriptions', requireAuth, allowRoles('owner', 'admin'), subscriptionsAudit)
+   10 | 
+   11 | export default router
+   12 | 

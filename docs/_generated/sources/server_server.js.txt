@@ -1,0 +1,530 @@
+    1 | import express from 'express'
+    2 | import cors from 'cors'
+    3 | import path from 'path'
+    4 | import fs from 'fs'
+    5 | import http from 'http'
+    6 | import { WebSocketServer } from 'ws'
+    7 | import authRoutes from './routes/authRoutes.js'
+    8 | import userRoutes from './routes/userRoutes.js'
+    9 | import requirementRoutes from './routes/requirementRoutes.js'
+   10 | import documentRoutes from './routes/documentRoutes.js'
+   11 | import adminRoutes from './routes/adminRoutes.js'
+   12 | import systemRoutes from './routes/systemRoutes.js'
+   13 | import notificationRoutes from './routes/notificationRoutes.js'
+   14 | import socialRoutes from './routes/socialRoutes.js'
+   15 | import searchRoutes from './routes/searchRoutes.js'
+   16 | import verificationRoutes from './routes/verificationRoutes.js'
+   17 | import subscriptionRoutes from './routes/subscriptionRoutes.js'
+   18 | import feedRoutes from './routes/feedRoutes.js'
+   19 | import productRoutes from './routes/productRoutes.js'
+   20 | import onboardingRoutes from './routes/onboardingRoutes.js'
+   21 | import assistantRoutes from './routes/assistantRoutes.js'
+   22 | import conversationRoutes from './routes/conversationRoutes.js'
+   23 | import analyticsRoutes from './routes/analyticsRoutes.js'
+   24 | import messageRoutes from './routes/messageRoutes.js'
+   25 | import partnerNetworkRoutes from './routes/partnerNetworkRoutes.js'
+   26 | import callSessionRoutes from './routes/callSessionRoutes.js'
+   27 | import memberRoutes from './routes/memberRoutes.js'
+   28 | import orgRoutes from './routes/orgRoutes.js'
+   29 | import ratingsRoutes from './routes/ratingsRoutes.js'
+   30 | import presenceRoutes from './routes/presenceRoutes.js'
+   31 | import profileRoutes from './routes/profileRoutes.js'
+   32 | import { errorHandler } from './middleware/errorHandler.js'
+   33 | import { logInfo, logError } from './utils/logger.js'
+   34 | import { assistantReply } from './services/assistantService.js'
+   35 | import jwt from 'jsonwebtoken'
+   36 | import { canAccessMatch, listMessagesByMatch, postMessage } from './services/messageService.js'
+   37 | import { getCallSession } from './services/callSessionService.js'
+   38 | import { setUserOnline, setUserOffline, touchUser } from './services/presenceService.js'
+   39 | import { readJson } from './utils/jsonStore.js'
+   40 | import { consumePendingInvites, enqueuePendingInvites } from './utils/pendingInvites.js'
+   41 | 
+   42 | const app = express()
+   43 | const PORT = process.env.PORT || 4000
+   44 | 
+   45 | app.use(cors())
+   46 | app.use(express.json({ limit: '5mb' }))
+   47 | 
+   48 | const uploadsRoot = path.join(process.cwd(), 'server', 'uploads')
+   49 | const chatUploadsRoot = path.join(uploadsRoot, 'chat')
+   50 | if (!fs.existsSync(uploadsRoot)) fs.mkdirSync(uploadsRoot, { recursive: true })
+   51 | if (!fs.existsSync(chatUploadsRoot)) fs.mkdirSync(chatUploadsRoot, { recursive: true })
+   52 | 
+   53 | app.use('/uploads', express.static(uploadsRoot))
+   54 | 
+   55 | app.get('/api/health', (req, res) => {
+   56 |   res.json({ ok: true, service: 'textile-trust-verification-mvp' })
+   57 | })
+   58 | 
+   59 | app.use('/api/auth', authRoutes)
+   60 | app.use('/api/users', userRoutes)
+   61 | app.use('/api/requirements', requirementRoutes)
+   62 | app.use('/api/documents', documentRoutes)
+   63 | app.use('/api/verification', verificationRoutes)
+   64 | app.use('/api/subscriptions', subscriptionRoutes)
+   65 | app.use('/api/admin', adminRoutes)
+   66 | app.use('/api/feed', feedRoutes)
+   67 | app.use('/api/products', productRoutes)
+   68 | app.use('/api/onboarding', onboardingRoutes)
+   69 | app.use('/api/assistant', assistantRoutes)
+   70 | app.use('/api/conversations', conversationRoutes)
+   71 | app.use('/api/messages', messageRoutes)
+   72 | app.use('/api/analytics', analyticsRoutes)
+   73 | app.use('/api/system', systemRoutes)
+   74 | app.use('/api/notifications', notificationRoutes)
+   75 | app.use('/api/social', socialRoutes)
+   76 | app.use('/api/search', searchRoutes)
+   77 | app.use('/api/partners', partnerNetworkRoutes)
+   78 | app.use('/api/calls', callSessionRoutes)
+   79 | app.use('/api/org', orgRoutes)
+   80 | app.use('/api/members', memberRoutes)
+   81 | app.use('/api/ratings', ratingsRoutes)
+   82 | app.use('/api/presence', presenceRoutes)
+   83 | app.use('/api/profiles', profileRoutes)
+   84 | app.use(errorHandler)
+   85 | 
+   86 | const server = http.createServer(app)
+   87 | const wsServer = new WebSocketServer({ server })
+   88 | const recentGreetingByIp = new Map()
+   89 | const callRooms = new Map()
+   90 | const chatRooms = new Map()
+   91 | const socketsByUserId = new Map()
+   92 | const JWT_SECRET = process.env.JWT_SECRET || 'mvp-dev-secret'
+   93 | const JWT_ISSUER = process.env.JWT_ISSUER || 'gartexhub-api'
+   94 | const JWT_AUDIENCE = process.env.JWT_AUDIENCE || 'gartexhub-client'
+   95 | 
+   96 | function sendWs(socket, payload) {
+   97 |   if (socket.readyState !== 1) return
+   98 |   socket.send(JSON.stringify(payload))
+   99 | }
+  100 | 
+  101 | function registerSocketUser(socket, userId) {
+  102 |   if (!userId) return
+  103 |   if (!socketsByUserId.has(userId)) socketsByUserId.set(userId, new Set())
+  104 |   socketsByUserId.get(userId).add(socket)
+  105 | }
+  106 | 
+  107 | function unregisterSocketUser(socket, userId) {
+  108 |   if (!userId) return
+  109 |   const set = socketsByUserId.get(userId)
+  110 |   if (!set) return
+  111 |   set.delete(socket)
+  112 |   if (set.size === 0) socketsByUserId.delete(userId)
+  113 | }
+  114 | 
+  115 | function broadcastToUsers(userIds = [], payload) {
+  116 |   const undelivered = []
+  117 |   userIds.forEach((userId) => {
+  118 |     const sockets = socketsByUserId.get(userId)
+  119 |     if (!sockets || sockets.size === 0) {
+  120 |       undelivered.push(userId)
+  121 |       return
+  122 |     }
+  123 |     sockets.forEach((sock) => sendWs(sock, payload))
+  124 |   })
+  125 |   return undelivered
+  126 | }
+  127 | 
+  128 | function leaveCallRoom(socket) {
+  129 |   const callId = socket.callRoomId
+  130 |   if (!callId) return
+  131 | 
+  132 |   const room = callRooms.get(callId)
+  133 |   if (!room) {
+  134 |     socket.callRoomId = null
+  135 |     return
+  136 |   }
+  137 | 
+  138 |   room.delete(socket)
+  139 |   for (const peer of room) {
+  140 |     sendWs(peer, {
+  141 |       type: 'participant_left',
+  142 |       call_id: callId,
+  143 |       participant_id: socket.participantId || null,
+  144 |     })
+  145 |   }
+  146 | 
+  147 |   if (room.size === 0) callRooms.delete(callId)
+  148 |   socket.callRoomId = null
+  149 | }
+  150 | 
+  151 | function leaveChatRoom(socket) {
+  152 |   const matchId = socket.chatRoomId
+  153 |   if (!matchId) return
+  154 | 
+  155 |   const room = chatRooms.get(matchId)
+  156 |   if (!room) {
+  157 |     socket.chatRoomId = null
+  158 |     return
+  159 |   }
+  160 | 
+  161 |   room.delete(socket)
+  162 | 
+  163 |   for (const peer of room) {
+  164 |     sendWs(peer, {
+  165 |       type: 'chat_participant_left',
+  166 |       match_id: matchId,
+  167 |       participant_id: socket.userId || null,
+  168 |     })
+  169 |   }
+  170 | 
+  171 |   if (room.size === 0) chatRooms.delete(matchId)
+  172 |   socket.chatRoomId = null
+  173 | 
+  174 |   if (socket.userId) setUserOffline(socket.userId)
+  175 |   if (socket.userId) unregisterSocketUser(socket, socket.userId)
+  176 | }
+  177 | 
+  178 | 
+  179 | function parseSocketUser(token) {
+  180 |   if (!token) return null
+  181 |   try {
+  182 |     return jwt.verify(String(token), JWT_SECRET, {
+  183 |       issuer: JWT_ISSUER,
+  184 |       audience: JWT_AUDIENCE,
+  185 |     })
+  186 |   } catch {
+  187 |     return null
+  188 |   }
+  189 | }
+  190 | 
+  191 | async function joinChatRoom(socket, payload) {
+  192 |   const matchId = String(payload?.match_id || '').trim()
+  193 |   const user = parseSocketUser(payload?.token)
+  194 | 
+  195 |   if (!matchId) {
+  196 |     sendWs(socket, { type: 'chat_error', error: 'match_id is required to join chat room' })
+  197 |     return
+  198 |   }
+  199 | 
+  200 |   if (!user?.id) {
+  201 |     sendWs(socket, { type: 'chat_error', error: 'Valid token is required to join chat room' })
+  202 |     return
+  203 |   }
+  204 | 
+  205 |   const canJoin = await canAccessMatch(matchId, user.id)
+  206 |   if (!canJoin) {
+  207 |     sendWs(socket, { type: 'chat_error', error: 'Forbidden: thread access denied' })
+  208 |     return
+  209 |   }
+  210 | 
+  211 |   leaveChatRoom(socket)
+  212 | 
+  213 |   if (!chatRooms.has(matchId)) {
+  214 |     chatRooms.set(matchId, new Set())
+  215 |   }
+  216 | 
+  217 |   socket.userId = user.id
+  218 |   registerSocketUser(socket, user.id)
+  219 |   setUserOnline(user.id)
+  220 |   const canSend = await canAccessMatch(matchId, socket.userId)
+  221 |   if (!canSend) {
+  222 |     sendWs(socket, { type: 'chat_error', error: 'Forbidden: thread access denied' })
+  223 |     return
+  224 |   }
+  225 | 
+  226 |   const room = chatRooms.get(matchId)
+  227 |   const participants = [...room].map((participantSocket) => participantSocket.userId).filter(Boolean)
+  228 |   room.add(socket)
+  229 |   socket.chatRoomId = matchId
+  230 |   touchUser(user.id)
+  231 | 
+  232 |   const history = await listMessagesByMatch(matchId)
+  233 |   sendWs(socket, {
+  234 |     type: 'joined_chat_room',
+  235 |     match_id: matchId,
+  236 |     participant_id: user.id,
+  237 |     participants,
+  238 |     messages: history,
+  239 |   })
+  240 | 
+  241 |   for (const peer of room) {
+  242 |     if (peer === socket) continue
+  243 |     sendWs(peer, {
+  244 |       type: 'chat_participant_joined',
+  245 |       match_id: matchId,
+  246 |       participant_id: user.id,
+  247 |     })
+  248 |   }
+  249 | }
+  250 | 
+  251 | async function relayChatMessage(socket, payload) {
+  252 |   const matchId = socket.chatRoomId
+  253 |   if (!matchId || !socket.userId) {
+  254 |     sendWs(socket, { type: 'chat_error', error: 'Join a chat room before sending messages' })
+  255 |     return
+  256 |   }
+  257 | 
+  258 |   const canSend = await canAccessMatch(matchId, socket.userId)
+  259 |   if (!canSend) {
+  260 |     sendWs(socket, { type: 'chat_error', error: 'Forbidden: thread access denied' })
+  261 |     return
+  262 |   }
+  263 | 
+  264 |   const room = chatRooms.get(matchId)
+  265 |   if (!room) return
+  266 | 
+  267 |   const messageText = String(payload?.message || '').trim()
+  268 |   if (!messageText) return
+  269 | 
+  270 |   try {
+  271 |     const created = await postMessage(matchId, socket.userId, messageText, payload?.message_type || 'text')
+  272 |     for (const peer of room) {
+  273 |       sendWs(peer, {
+  274 |         type: 'chat_message',
+  275 |         match_id: matchId,
+  276 |         message: created,
+  277 |       })
+  278 |     }
+  279 |   } catch (error) {
+  280 |     logError('chat_message_failed', error)
+  281 |     sendWs(socket, { type: 'chat_error', error: 'Unable to send message' })
+  282 |   }
+  283 | }
+  284 | 
+  285 | async function joinCallRoom(socket, payload) {
+  286 |   const callId = String(payload?.call_id || '').trim()
+  287 |   const tokenUser = parseSocketUser(payload?.token)
+  288 |   const participantId = String(payload?.participant_id || '').trim() || tokenUser?.id || `anon-${Date.now()}`
+  289 |   if (!callId) {
+  290 |     sendWs(socket, { type: 'call_error', error: 'call_id is required to join room' })
+  291 |     return
+  292 |   }
+  293 | 
+  294 |   if (!tokenUser?.id) {
+  295 |     sendWs(socket, { type: 'call_error', error: 'Valid token is required to join call room' })
+  296 |     return
+  297 |   }
+  298 | 
+  299 |   const call = await getCallSession(callId, tokenUser.id)
+  300 |   if (!call || call === 'forbidden') {
+  301 |     sendWs(socket, { type: 'call_error', error: 'Forbidden: call access denied' })
+  302 |     return
+  303 |   }
+  304 | 
+  305 |   leaveCallRoom(socket)
+  306 | 
+  307 |   if (!callRooms.has(callId)) {
+  308 |     callRooms.set(callId, new Set())
+  309 |   }
+  310 | 
+  311 |   const room = callRooms.get(callId)
+  312 |   const existingParticipants = [...room].map((s) => s.participantId).filter(Boolean)
+  313 |   room.add(socket)
+  314 |   socket.callRoomId = callId
+  315 |   socket.participantId = participantId
+  316 |   socket.userId = tokenUser.id
+  317 |   registerSocketUser(socket, tokenUser.id)
+  318 | 
+  319 |   sendWs(socket, {
+  320 |     type: 'joined_call_room',
+  321 |     call_id: callId,
+  322 |     participant_id: participantId,
+  323 |     participants: existingParticipants,
+  324 |     should_offer: existingParticipants.length > 0,
+  325 |   })
+  326 | 
+  327 |   for (const peer of room) {
+  328 |     if (peer === socket) continue
+  329 |     sendWs(peer, {
+  330 |       type: 'participant_joined',
+  331 |       call_id: callId,
+  332 |       participant_id: participantId,
+  333 |     })
+  334 |   }
+  335 | }
+  336 | 
+  337 | function relaySignal(socket, payload) {
+  338 |   const callId = socket.callRoomId
+  339 |   if (!callId) return
+  340 |   const room = callRooms.get(callId)
+  341 |   if (!room) return
+  342 | 
+  343 |   const signalType = String(payload?.signal?.type || '')
+  344 |   if (signalType && signalType !== 'candidate') {
+  345 |     logInfo('webrtc_signal', {
+  346 |       call_id: callId,
+  347 |       from_user_id: socket.userId || null,
+  348 |       from_participant_id: socket.participantId || null,
+  349 |       signal_type: signalType,
+  350 |     })
+  351 |   }
+  352 | 
+  353 |   for (const peer of room) {
+  354 |     if (peer === socket) continue
+  355 |     sendWs(peer, {
+  356 |       type: 'webrtc_signal',
+  357 |       call_id: callId,
+  358 |       from: socket.participantId || null,
+  359 |       signal: payload?.signal || null,
+  360 |     })
+  361 |   }
+  362 | }
+  363 | 
+  364 | wsServer.on('connection', (socket, req) => {
+  365 |   logInfo('Assistant WebSocket connected')
+  366 |   let lastQuestion = ''
+  367 |   let lastQuestionAt = 0
+  368 | 
+  369 |   function sendReply(payload) {
+  370 |     const answer = payload?.matched_answer || payload?.answer || payload?.message || ''
+  371 |     sendWs(socket, {
+  372 |       ...payload,
+  373 |       matched_answer: answer,
+  374 |       answer,
+  375 |       message: answer,
+  376 |     })
+  377 |   }
+  378 | 
+  379 |   const clientIp = req?.socket?.remoteAddress || 'unknown'
+  380 |   const now = Date.now()
+  381 |   const lastGreetingAt = Number(recentGreetingByIp.get(clientIp) || 0)
+  382 |   if (now - lastGreetingAt > 5_000) {
+  383 |     recentGreetingByIp.set(clientIp, now)
+  384 |     sendReply({
+  385 |       type: 'reply',
+  386 |       question: null,
+  387 |       matched_answer: 'Hello! I am your GarTex Assistant (WS). How can I help you with your textile business today?',
+  388 |       source: 'system:greeting',
+  389 |       metadata: {
+  390 |         matched_source: 'system:greeting',
+  391 |         matched_type: 'system',
+  392 |         confidence: 1,
+  393 |         fallback_reason: null,
+  394 |       },
+  395 |     })
+  396 |   }
+  397 | 
+  398 |   socket.on('message', async (rawMessage) => {
+  399 |     let payload
+  400 |     try {
+  401 |       payload = JSON.parse(String(rawMessage || ''))
+  402 |     } catch {
+  403 |       sendReply({
+  404 |         type: 'reply',
+  405 |         question: null,
+  406 |         matched_answer: 'Invalid message format. Please send JSON like {"type":"ask","question":"..."}.',
+  407 |         source: 'ws:error',
+  408 |         metadata: {
+  409 |           matched_source: 'ws:error',
+  410 |           matched_type: 'error',
+  411 |           confidence: 0,
+  412 |           fallback_reason: 'invalid_json',
+  413 |         },
+  414 |       })
+  415 |       return
+  416 |     }
+  417 | 
+  418 |     if (payload?.type === 'join_call_room') {
+  419 |       await joinCallRoom(socket, payload)
+  420 |       return
+  421 |     }
+  422 | 
+  423 |     if (payload?.type === 'webrtc_signal') {
+  424 |       relaySignal(socket, payload)
+  425 |       return
+  426 |     }
+  427 | 
+  428 |     if (payload?.type === 'identify') {
+  429 |       const tokenUser = parseSocketUser(payload?.token)
+  430 |       if (!tokenUser?.id) return
+  431 |       socket.userId = tokenUser.id
+  432 |       registerSocketUser(socket, tokenUser.id)
+  433 |       const queued = consumePendingInvites(tokenUser.id)
+  434 |       if (queued.length > 0) queued.forEach((invite) => sendWs(socket, invite))
+  435 |       return
+  436 |     }
+  437 | 
+  438 |     if (payload?.type === 'call_invite') {
+  439 |       const tokenUser = parseSocketUser(payload?.token)
+  440 |       if (!tokenUser?.id) return
+  441 |       const participantIds = Array.isArray(payload?.participant_ids) ? payload.participant_ids.map((id) => String(id)) : []
+  442 |       if (!participantIds.length) return
+  443 |       const users = await readJson('users.json')
+  444 |       const caller = users.find((u) => String(u.id) === String(tokenUser.id)) || null
+  445 |       const callerPayload = caller ? {
+  446 |         id: caller.id,
+  447 |         name: caller.name || '',
+  448 |         email: caller.email || '',
+  449 |         avatar: caller.avatar_url || caller.avatar || '',
+  450 |         role: caller.role || '',
+  451 |       } : { id: tokenUser.id }
+  452 | 
+  453 |       const targets = participantIds.filter((id) => id && id !== tokenUser.id)
+  454 |       if (!targets.length) return
+  455 |       const invitePayload = {
+  456 |         type: 'incoming_call',
+  457 |         call_id: payload?.call_id || null,
+  458 |         match_id: payload?.match_id || null,
+  459 |         from: callerPayload,
+  460 |       }
+  461 |       const undelivered = broadcastToUsers(targets, invitePayload)
+  462 |       enqueuePendingInvites(undelivered, [invitePayload])
+  463 |       return
+  464 |     }
+  465 | 
+  466 |     if (payload?.type === 'join_chat_room') {
+  467 |       await joinChatRoom(socket, payload)
+  468 |       return
+  469 |     }
+  470 | 
+  471 |     if (payload?.type === 'chat_message') {
+  472 |       await relayChatMessage(socket, payload)
+  473 |       return
+  474 |     }
+  475 | 
+  476 |     if (payload?.type !== 'ask') return
+  477 | 
+  478 |     const question = String(payload?.question || '')
+  479 |     const messageNow = Date.now()
+  480 |     if (question && question === lastQuestion && messageNow - lastQuestionAt < 1500) return
+  481 |     lastQuestion = question
+  482 |     lastQuestionAt = messageNow
+  483 |     logInfo('Assistant WebSocket ask received', { question_chars: question.length })
+  484 | 
+  485 |     try {
+  486 |       const result = await assistantReply('public_ws', question)
+  487 |       const answer = result?.matched_answer || 'I could not find a response right now. Please try again.'
+  488 |       sendReply({
+  489 |         type: 'reply',
+  490 |         request_id: payload?.request_id || null,
+  491 |         question,
+  492 |         matched_answer: answer,
+  493 |         source: result?.source || 'ws:fallback',
+  494 |         metadata: result?.metadata || {
+  495 |           matched_source: null,
+  496 |           matched_type: null,
+  497 |           confidence: 0,
+  498 |           fallback_reason: 'empty_result',
+  499 |         },
+  500 |       })
+  501 |     } catch (error) {
+  502 |       logError('Assistant WebSocket ask failed', error)
+  503 |       sendReply({
+  504 |         type: 'reply',
+  505 |         request_id: payload?.request_id || null,
+  506 |         question,
+  507 |         matched_answer: 'I could not reach the AI model right now. Please try again.',
+  508 |         source: 'ws:error',
+  509 |         metadata: {
+  510 |           matched_source: 'ws:error',
+  511 |           matched_type: 'error',
+  512 |           confidence: 0,
+  513 |           fallback_reason: 'assistant_exception',
+  514 |         },
+  515 |       })
+  516 |     }
+  517 |   })
+  518 | 
+  519 |   socket.on('close', () => {
+  520 |     leaveCallRoom(socket)
+  521 |     leaveChatRoom(socket)
+  522 |     if (socket.userId) setUserOffline(socket.userId)
+  523 |     if (socket.userId) unregisterSocketUser(socket, socket.userId)
+  524 |   })
+  525 | })
+  526 | 
+  527 | server.listen(PORT, () => {
+  528 |   logInfo(`Verification MVP API running on http://localhost:${PORT}`)
+  529 | })
+  530 | 

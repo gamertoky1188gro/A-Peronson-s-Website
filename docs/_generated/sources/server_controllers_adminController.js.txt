@@ -1,0 +1,21 @@
+    1 | import { readJson } from '../utils/jsonStore.js'
+    2 | 
+    3 | export async function verificationAudit(req, res) {
+    4 |   const verification = await readJson('verification.json')
+    5 |   return res.json(verification)
+    6 | }
+    7 | 
+    8 | export async function subscriptionsAudit(req, res) {
+    9 |   const subscriptions = await readJson('subscriptions.json')
+   10 |   return res.json(subscriptions)
+   11 | }
+   12 | 
+   13 | export async function usersAudit(req, res) {
+   14 |   const users = await readJson('users.json')
+   15 |   return res.json(users.map((user) => {
+   16 |     const safe = { ...user }
+   17 |     delete safe.password_hash
+   18 |     return safe
+   19 |   }))
+   20 | }
+   21 | 

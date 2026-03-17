@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "server": "node server/server.js",
     "dev:full": "concurrently \"npm run server\" \"npm run dev\"",
-    "app": "npm run build && concurrently -k -s first \"npm run server\" \"wait-on tcp:4000 dist/index.html && electron electron/main.cjs\""
+    "app": "npm run build && concurrently -k -s first \"npm run server\" \"wait-on tcp:4000 dist/index.html && electron electron/main.cjs\"",
+    "docs:generate": "node scripts/generate-docs-index.mjs && node scripts/render-docs.mjs"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.2.0",

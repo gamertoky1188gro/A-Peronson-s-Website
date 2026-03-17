@@ -1,15 +1,45 @@
+/*
+  Component: NavBar (global)
+
+  Routes impacted:
+    - Appears on most routes except immersive pages (/chat and /call) where AppLayout hides it.
+    - Public links shown when logged out: /pricing, /about, /help
+    - Authenticated icon links shown when logged in: /feed, /search, /contracts, /notifications, /chat, /verification
+
+  Purpose:
+    - Provide navigation (public + authenticated).
+    - Provide theme toggle (light/dark via `.dark` class on <html>).
+    - Provide user search suggestions dropdown (backend user search).
+    - Provide unread notification badge (backend notifications list).
+    - Provide mobile navigation drawer.
+
+  Key UX patterns:
+    - Glassmorphism base via `.nav-glass` (App.css): semi-transparent + blur + subtle border.
+    - "Active" indicator uses Framer Motion `layoutId="nav-active"` so it smoothly slides between links.
+    - Ctrl+K / ⌘K focuses search.
+
+  Key APIs:
+    - GET /api/notifications (unread count)
+    - GET /api/users/search?q=... (user suggestion search)
+    - POST /api/users/:id/friend-request (connect)
+    - POST /api/users/:id/follow (follow)
+    - POST /api/chat/rooms (create/start conversation)
+    - POST /api/calls (start call)
+*/
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Bell, FileText, LayoutDashboard, Menu, MessageSquare, Moon, Search, ShieldCheck, Sun } from 'lucide-react'
 import { motion, useMotionValue, useReducedMotion, useSpring } from 'framer-motion'
 import { apiRequest, clearSession, getCurrentUser, getRoleHome, getToken } from '../lib/auth'
 
+// Public navigation (shown for logged-out visitors).
 const publicLinks = [
   { to: '/pricing', label: 'Pricing' },
   { to: '/about', label: 'About' },
   { to: '/help', label: 'Help' },
 ]
 
+// Auth navigation (shown for logged-in users). Each item maps to a page route + lucide icon.
 const authenticatedLinks = [
   { to: '/feed', label: 'Feed', icon: LayoutDashboard },
   { to: '/search', label: 'Search', icon: Search },
@@ -19,19 +49,24 @@ const authenticatedLinks = [
   { to: '/verification', label: 'Verification', icon: ShieldCheck },
 ]
 
+// Premium-feeling easing curve used across nav animations.
 const easePremium = [0.16, 1, 0.3, 1]
 
+// Utility: keep values within a range (used for magnetic hover translation).
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value))
 }
 
 function MagneticNavLink({ to, label, active }) {
+  // Reduced motion: when user prefers reduced motion, disable the magnetic movement.
   const reduceMotion = useReducedMotion()
+  // Motion values hold the current offset; springs smooth the movement.
   const x = useMotionValue(0)
   const y = useMotionValue(0)
   const springX = useSpring(x, { stiffness: 500, damping: 32, mass: 0.6 })
   const springY = useSpring(y, { stiffness: 500, damping: 32, mass: 0.6 })
 
+  // Active state changes typography + color (also used by the moving `layoutId` pill below).
   const className = `relative inline-flex items-center rounded-full px-3 py-2 text-sm transition-colors ${
     active
       ? 'font-semibold text-sky-600 dark:text-sky-400'
@@ -44,6 +79,7 @@ function MagneticNavLink({ to, label, active }) {
       className={className}
       onMouseMove={(e) => {
         if (reduceMotion) return
+        // Compute relative mouse position so the label subtly "pulls" toward the cursor.
         const rect = e.currentTarget.getBoundingClientRect()
         const relX = e.clientX - rect.left - rect.width / 2
         const relY = e.clientY - rect.top - rect.height / 2
@@ -53,17 +89,20 @@ function MagneticNavLink({ to, label, active }) {
         y.set(clamp((relY / (rect.height / 2)) * maxY, -maxY, maxY))
       }}
       onMouseLeave={() => {
+        // Spring back to center when cursor leaves.
         x.set(0)
         y.set(0)
       }}
     >
       {active ? (
+        // The "active" pill: uses layoutId so it animates between links.
         <motion.span
           layoutId="nav-active"
           className="absolute inset-x-1 inset-y-1 rounded-full bg-sky-500/10 dark:bg-white/10"
           transition={{ type: 'spring', stiffness: 420, damping: 32 }}
         />
       ) : null}
+      {/* Text wrapper uses spring x/y to create magnetic feel. */}
       <motion.span style={{ x: springX, y: springY }} className="relative inline-block">
         {label}
       </motion.span>
@@ -74,14 +113,17 @@ function MagneticNavLink({ to, label, active }) {
 function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
   const reduceMotion = useReducedMotion()
   return (
+    // Wrapper is `group` so the tooltip can animate on hover.
     <div className="group relative flex items-center justify-center">
       <motion.div
+        // Hover bounce: subtle scale + lift to signal interactivity.
         whileHover={reduceMotion ? undefined : { scale: 1.08, y: -1 }}
         whileTap={reduceMotion ? undefined : { scale: 0.98, y: 0 }}
         transition={{ type: 'spring', stiffness: 520, damping: 28 }}
       >
         <Link
           to={to}
+          // Visual: rounded icon button with soft hover background (light + dark).
           className={`relative rounded-full p-2 transition-colors ${
             active
               ? 'text-sky-600 dark:text-sky-400'
@@ -90,6 +132,7 @@ function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
           aria-label={label}
         >
           {active ? (
+            // Active pill behind the icon (also uses layoutId for smooth transitions).
             <motion.span
               layoutId="nav-active"
               className="absolute inset-0 rounded-full bg-sky-500/10 dark:bg-white/10"
@@ -99,6 +142,7 @@ function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
           <span className="relative inline-flex">
             <Icon className="h-5 w-5" />
             {badgeCount > 0 ? (
+              // Notification dot + ping layer (ping sits behind the solid dot).
               <span className="absolute -right-0.5 -top-0.5 inline-flex h-2.5 w-2.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gradient-to-tr from-red-500 to-pink-500 opacity-35" />
                 <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-gradient-to-tr from-red-500 to-pink-500" />
@@ -108,6 +152,7 @@ function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
         </Link>
       </motion.div>
 
+      {/* Tooltip: hidden by default; fades/scales in on group hover. */}
       <span className="pointer-events-none absolute top-full z-50 mt-2 w-max origin-top scale-0 rounded bg-slate-800 px-2 py-1 text-xs text-white opacity-0 shadow-md transition-all duration-200 group-hover:scale-100 group-hover:opacity-100 dark:bg-slate-700">
         {label}
       </span>
@@ -116,25 +161,36 @@ function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
 }
 
 export default function NavBar() {
+  // Theme preference: read on first render; subsequent changes sync to <html class="dark"> + localStorage.
   const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark')
+  // Mobile nav drawer open/close state.
   const [mobileOpen, setMobileOpen] = useState(false)
+  // Global user search input + dropdown state (suggestions list).
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState([])
   const [searchLoading, setSearchLoading] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchError, setSearchError] = useState('')
+  // Unread badge count for notifications icon.
   const [unreadCount, setUnreadCount] = useState(0)
+  // Small ephemeral feedback strings for inline actions (follow/connect/message/call).
   const [actionStatus, setActionStatus] = useState('')
+  // Used to disable only the button that's currently running (prevents double-submits).
   const [actionBusyKey, setActionBusyKey] = useState('')
 
+  // Current route used to highlight active link and to re-run unread refresh on navigation.
   const location = useLocation()
   const navigate = useNavigate()
+  // Session user is stored client-side; when absent we show public links.
   const user = getCurrentUser()
   const userId = user?.id || ''
+  // Ref to focus the search input via Ctrl/⌘+K.
   const searchInputRef = useRef(null)
+  // Used to render the correct keyboard shortcut hint depending on platform.
   const isMac = useMemo(() => (typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)), [])
 
   useEffect(() => {
+    // Toggle `.dark` class on <html> so Tailwind `dark:` variants activate.
     const root = document.documentElement
     if (dark) {
       root.classList.add('dark')
@@ -146,6 +202,7 @@ export default function NavBar() {
   }, [dark])
 
   useEffect(() => {
+    // Global shortcut to focus search (mirrors modern SaaS patterns).
     const handler = (e) => {
       const key = String(e.key || '').toLowerCase()
       if (key !== 'k') return
@@ -332,15 +389,21 @@ export default function NavBar() {
   }
 
   return (
+    // Top navigation shell.
+    // `nav-glass` is a custom utility (src/App.css) that provides: translucent background + blur + safe borders in dark mode.
+    // `sticky top-0 z-50` keeps the nav pinned and above content during scroll.
     <nav className="nav-glass sticky top-0 z-50 border-b">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex min-h-16 flex-wrap items-center justify-between gap-3 py-2">
+          {/* Left cluster: brand + primary nav (desktop). */}
           <div className="flex items-center gap-4">
+            {/* Brand: routes to role home when authenticated, otherwise routes to landing page. */}
             <Link to={user ? getRoleHome(user.role) : '/'} className="inline-flex items-center gap-2">
               <span className="rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 px-2 py-0.5 text-xs font-semibold text-white">B2B</span>
               <span className="text-lg font-bold text-slate-900 dark:text-white">GarTexHub</span>
             </Link>
 
+            {/* Desktop-only nav list (hidden on mobile). */}
             <div className="hidden items-center gap-4 md:flex">
               {!user ? (
                 // Public Links (Text)
@@ -363,6 +426,7 @@ export default function NavBar() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.35, delay: idx * 0.05, ease: easePremium }}
                   >
+                    {/* IconNavLink = icon button + tooltip + animated active pill + unread ping for notifications. */}
                     <IconNavLink to={to} label={label} Icon={Icon} active={location.pathname === to} badgeCount={to === '/notifications' ? unreadCount : 0} />
                   </motion.div>
                 ))
@@ -370,12 +434,19 @@ export default function NavBar() {
             </div>
           </div>
 
+          {/* Right cluster: desktop search + theme/auth actions + mobile menu button. */}
           <div className="flex w-full items-center gap-3 md:w-auto">
+            {/* Desktop search:
+                - Expands width on focus (`transition-[width]` + `focus-within:w-[420px]`)
+                - Shows shortcut hint chip (Ctrl/⌘ + K)
+                - Shows suggestion dropdown for authenticated users
+            */}
             <div className="relative hidden items-center md:flex md:flex-none w-[320px] focus-within:w-[420px] transition-[width] duration-300">
               <input
                 ref={searchInputRef}
                 value={searchQuery}
                 onChange={(e) => {
+                  // Controlled input: update query state; dropdown opens as user types.
                   setSearchQuery(e.target.value)
                   setSearchOpen(true)
                 }}
@@ -383,6 +454,7 @@ export default function NavBar() {
                 placeholder="Search users..."
                 className="w-full rounded-full border border-slate-200/70 bg-white/70 px-4 py-2 pr-16 text-sm text-slate-700 shadow-inner outline-none ring-sky-300/30 transition focus:ring-2 dark:border-slate-800/60 dark:bg-slate-900/60 dark:text-slate-100"
               />
+              {/* Shortcut hint chip shown inside the input (visual only). */}
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full border border-slate-200/70 bg-white/70 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-slate-500 dark:border-slate-700/60 dark:bg-slate-950/50 dark:text-slate-400">
                 {isMac ? '⌘ K' : 'Ctrl K'}
               </span>

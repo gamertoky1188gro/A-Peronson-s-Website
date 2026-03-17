@@ -1,0 +1,542 @@
+    1 | /*
+    2 |   Route: /about
+    3 |   Access: Public
+    4 | 
+    5 |   Public Pages:
+    6 |     /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+    7 |   Protected Pages (login required):
+    8 |     /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+    9 |     /notifications, /chat, /call, /verification, /verification-center
+   10 | 
+   11 |   Primary responsibilities:
+   12 |     - Explain what GarTexHub is and why it exists (mission/vision/how it works).
+   13 |     - Display trust-focused stats + verified documents (dynamic).
+   14 |     - Use bento-grid layout + glass surfaces + subtle weave background (texture reference to textiles).
+   15 | 
+   16 |   Key API endpoints:
+   17 |     - GET /api/system/about  (via `apiRequest('/system/about')`)
+   18 | 
+   19 |   Major UI/UX patterns:
+   20 |     - Bento grid + glassmorphism surfaces.
+   21 |     - Staggered reveal animations (Framer Motion).
+   22 |     - Skeleton -> fade-in "trust load" while documents/stats fetch.
+   23 |     - Verified glow indicators (trust anchors).
+   24 | */
+   25 | import React, { useEffect, useMemo, useState } from 'react'
+   26 | import { Check, FileText, ShieldCheck } from 'lucide-react'
+   27 | import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+   28 | import { apiRequest } from '../lib/auth'
+   29 | import MagneticButton from '../components/ui/MagneticButton'
+   30 | import SpotlightCard from '../components/ui/SpotlightCard'
+   31 | 
+   32 | // Fallback content keeps layout stable and provides "real-ish" numbers if API fails.
+   33 | const fallbackAbout = {
+   34 |   ok: true,
+   35 |   stats: {
+   36 |     verifiedFactories: 64,
+   37 |     countriesCovered: 28,
+   38 |     docsVerified: 18,
+   39 |     avgResponseSla: '2h 14m',
+   40 |   },
+   41 |   documents: [
+   42 |     { name: 'Trade license', status: 'Verified', updatedAt: '2026-03-12' },
+   43 |     { name: 'Factory audit report', status: 'Verified', updatedAt: '2026-03-09' },
+   44 |     { name: 'Compliance certificate', status: 'Pending', updatedAt: '2026-03-08' },
+   45 |     { name: 'Bank reference letter', status: 'Verified', updatedAt: '2026-03-05' },
+   46 |     { name: 'Tax registration', status: 'Expired', updatedAt: '2026-03-01' },
+   47 |     { name: 'Ownership declaration', status: 'Verified', updatedAt: '2026-02-27' },
+   48 |   ],
+   49 | }
+   50 | 
+   51 | function Skeleton({ className = '' }) {
+   52 |   return <div className={['skeleton', className].join(' ')} />
+   53 | }
+   54 | 
+   55 | function MotionItem({ index, className = '', children }) {
+   56 |   const reduceMotion = useReducedMotion()
+   57 |   if (reduceMotion) return <div className={className}>{children}</div>
+   58 |   return (
+   59 |     <motion.div
+   60 |       className={className}
+   61 |       initial={{ opacity: 0, y: 20 }}
+   62 |       animate={{ opacity: 1, y: 0 }}
+   63 |       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: index * 0.05 }}
+   64 |     >
+   65 |       {children}
+   66 |     </motion.div>
+   67 |   )
+   68 | }
+   69 | 
+   70 | function VerifiedBadge({ label = 'Verified' }) {
+   71 |   return (
+   72 |     <span
+   73 |       className={[
+   74 |         'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold',
+   75 |         'bg-emerald-600/10 text-emerald-700 shadow-[0_0_0_1px_rgba(5,150,105,0.20),0_16px_36px_rgba(5,150,105,0.12)]',
+   76 |         'dark:bg-emerald-500/12 dark:text-emerald-200 dark:shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_0_28px_rgba(16,185,129,0.14)]',
+   77 |       ].join(' ')}
+   78 |       title={label}
+   79 |     >
+   80 |       <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 shadow-[0_0_14px_rgba(5,150,105,0.55)] dark:bg-emerald-400 dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]" />
+   81 |       {label}
+   82 |     </span>
+   83 |   )
+   84 | }
+   85 | 
+   86 | function StatusChip({ status }) {
+   87 |   if (status === 'Verified') return <VerifiedBadge label="Verified" />
+   88 |   if (status === 'Pending') {
+   89 |     return (
+   90 |       <span className="inline-flex items-center rounded-full bg-sky-500/10 px-2.5 py-1 text-[11px] font-semibold text-sky-700 shadow-[0_0_0_1px_rgba(56,189,248,0.18)] dark:bg-sky-400/10 dark:text-sky-200">
+   91 |         Pending
+   92 |       </span>
+   93 |     )
+   94 |   }
+   95 |   return (
+   96 |     <span className="inline-flex items-center rounded-full bg-rose-500/10 px-2.5 py-1 text-[11px] font-semibold text-rose-700 shadow-[0_0_0_1px_rgba(244,63,94,0.18)] dark:bg-rose-400/10 dark:text-rose-200">
+   97 |       Expired
+   98 |     </span>
+   99 |   )
+  100 | }
+  101 | 
+  102 | export default function About() {
+  103 |   const [about, setAbout] = useState(fallbackAbout)
+  104 |   const [loading, setLoading] = useState(true)
+  105 |   const [loadError, setLoadError] = useState('')
+  106 | 
+  107 |   useEffect(() => {
+  108 |     let alive = true
+  109 |     const controller = new AbortController()
+  110 | 
+  111 |     apiRequest('/system/about', { signal: controller.signal })
+  112 |       .then((data) => {
+  113 |         if (!alive) return
+  114 |         if (data?.ok && data?.stats && Array.isArray(data?.documents)) setAbout(data)
+  115 |       })
+  116 |       .catch((err) => {
+  117 |         if (!alive) return
+  118 |         if (err?.name === 'AbortError') return
+  119 |         setLoadError(String(err?.message || 'Failed to load'))
+  120 |       })
+  121 |       .finally(() => {
+  122 |         if (!alive) return
+  123 |         setLoading(false)
+  124 |       })
+  125 | 
+  126 |     return () => {
+  127 |       alive = false
+  128 |       controller.abort()
+  129 |     }
+  130 |   }, [])
+  131 | 
+  132 |   const howItWorks = useMemo(
+  133 |     () => [
+  134 |       'Buyers can post structured requests with detailed specifications.',
+  135 |       'Factories and Buying Houses can showcase products and capabilities.',
+  136 |       'Verified accounts increase trust through document-based validation.',
+  137 |       'Built-in communication tools enable secure discussions.',
+  138 |       'Digital contracts and document storage ensure record integrity.',
+  139 |     ],
+  140 |     [],
+  141 |   )
+  142 | 
+  143 |   function handleNeedleMove(event) {
+  144 |     const rect = event.currentTarget.getBoundingClientRect()
+  145 |     event.currentTarget.style.setProperty('--needle-x', `${event.clientX - rect.left}px`)
+  146 |     event.currentTarget.style.setProperty('--needle-y', `${event.clientY - rect.top}px`)
+  147 |   }
+  148 | 
+  149 |   return (
+  150 |     <div className="weave-bg relative min-h-screen overflow-x-hidden bg-[#F8FAFC] text-[#1E293B] dark:bg-[#0F172A] dark:text-[#F1F5F9]">
+  151 |       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+  152 |         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+  153 |           <MotionItem index={0} className="lg:col-span-8">
+  154 |             <SpotlightCard
+  155 |               className={[
+  156 |                 'rounded-xl p-8',
+  157 |                 'bg-white/60 backdrop-blur-[10px]',
+  158 |                 'shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
+  159 |                 'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+  160 |                 'transition duration-300 ease-out',
+  161 |                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
+  162 |                 'dark:hover:translate-y-0 dark:hover:shadow-none',
+  163 |               ].join(' ')}
+  164 |             >
+  165 |               <h1 className="text-4xl font-extrabold tracking-tight text-[#1E293B] dark:text-[#F1F5F9] sm:text-5xl">
+  166 |                 About GarTexHub
+  167 |               </h1>
+  168 |               <p className="mt-3 text-lg italic text-[#475569] dark:text-slate-300">
+  169 |                 A professional B2B platform built exclusively for the Garments and Textile industry.
+  170 |               </p>
+  171 |               <p className="mt-5 max-w-3xl text-[15px] leading-relaxed text-[#475569] dark:text-slate-300">
+  172 |                 GarTexHub is a professional B2B platform built exclusively for the Garments and Textile industry. Our goal is
+  173 |                 to create a structured, transparent, and trust-driven environment where international buyers, factories, and
+  174 |                 buying houses can connect with confidence.
+  175 |               </p>
+  176 | 
+  177 |               <div className="mt-7 flex flex-wrap gap-3">
+  178 |                 <MagneticButton
+  179 |                   to="/verification"
+  180 |                   className="liquid-btn inline-flex items-center justify-center rounded-md bg-[#0F172A] px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(15,23,42,0.20)] transition hover:brightness-105 dark:bg-sky-500/15 dark:text-sky-100 dark:shadow-none"
+  181 |                 >
+  182 |                   View verification standards
+  183 |                 </MagneticButton>
+  184 |                 <MagneticButton
+  185 |                   to="/help"
+  186 |                   className="liquid-btn inline-flex items-center justify-center rounded-md bg-white/70 px-5 py-3 text-sm font-semibold text-[#1E293B] shadow-[0_10px_26px_rgba(15,23,42,0.10)] transition hover:bg-white dark:bg-white/10 dark:text-white dark:shadow-none"
+  187 |                 >
+  188 |                   Contact sales
+  189 |                 </MagneticButton>
+  190 |               </div>
+  191 |             </SpotlightCard>
+  192 |           </MotionItem>
+  193 | 
+  194 |           <MotionItem index={1} className="lg:col-span-4">
+  195 |             <SpotlightCard
+  196 |               className={[
+  197 |                 'rounded-xl p-7',
+  198 |                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
+  199 |                 'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+  200 |                 'transition duration-300 ease-out',
+  201 |                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
+  202 |                 'dark:hover:translate-y-0 dark:hover:shadow-none',
+  203 |               ].join(' ')}
+  204 |             >
+  205 |               <div className="flex items-center justify-between">
+  206 |                 <p className="text-sm font-semibold text-[#1E293B] dark:text-[#F1F5F9]">Trust indicators</p>
+  207 |                 <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+  208 |               </div>
+  209 | 
+  210 |               {loadError ? (
+  211 |                 <p className="mt-3 text-xs text-[#64748B] dark:text-slate-300">Live data unavailable — showing defaults.</p>
+  212 |               ) : null}
+  213 | 
+  214 |               <div className="mt-5 grid gap-3">
+  215 |                 {loading ? (
+  216 |                   <>
+  217 |                     <Skeleton className="h-14 rounded-lg" />
+  218 |                     <Skeleton className="h-14 rounded-lg" />
+  219 |                     <Skeleton className="h-14 rounded-lg" />
+  220 |                     <Skeleton className="h-14 rounded-lg" />
+  221 |                   </>
+  222 |                 ) : (
+  223 |                   <AnimatePresence mode="wait" initial={false}>
+  224 |                     <motion.div
+  225 |                       key="stats"
+  226 |                       initial={{ opacity: 0 }}
+  227 |                       animate={{ opacity: 1 }}
+  228 |                       exit={{ opacity: 0 }}
+  229 |                       transition={{ duration: 0.3 }}
+  230 |                       className="grid gap-3"
+  231 |                     >
+  232 |                       {[
+  233 |                         { label: 'Verified factories', value: String(about.stats.verifiedFactories) },
+  234 |                         { label: 'Countries covered', value: String(about.stats.countriesCovered) },
+  235 |                         { label: 'Docs verified', value: String(about.stats.docsVerified) },
+  236 |                         { label: 'Avg. response SLA', value: about.stats.avgResponseSla },
+  237 |                       ].map((item) => (
+  238 |                         <div key={item.label} className="flex items-center justify-between rounded-lg bg-slate-900/4 px-4 py-3 dark:bg-white/5">
+  239 |                           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#64748B] dark:text-slate-300">{item.label}</p>
+  240 |                           <p className="text-lg font-extrabold tracking-tight text-[#1E293B] dark:text-white">{item.value}</p>
+  241 |                         </div>
+  242 |                       ))}
+  243 |                     </motion.div>
+  244 |                   </AnimatePresence>
+  245 |                 )}
+  246 |               </div>
+  247 |             </SpotlightCard>
+  248 |           </MotionItem>
+  249 | 
+  250 |           <MotionItem index={2} className="lg:col-span-12">
+  251 |             <SpotlightCard
+  252 |               className={[
+  253 |                 'rounded-xl p-7',
+  254 |                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
+  255 |                 'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+  256 |                 'transition duration-300 ease-out',
+  257 |                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
+  258 |                 'dark:hover:translate-y-0 dark:hover:shadow-none',
+  259 |               ].join(' ')}
+  260 |             >
+  261 |               <h2 className="text-xl font-bold tracking-tight text-[#1E293B] dark:text-white">Why GarTexHub Exists</h2>
+  262 |               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
+  263 |                 Cross-border textile trade often depends on informal communication, scattered documents, and manual
+  264 |                 verification processes. This creates inefficiencies, misunderstandings, and trust barriers.
+  265 |               </p>
+  266 |               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
+  267 |                 GarTexHub was created to solve this problem by combining structured communication, verified business
+  268 |                 identities, and secure documentation within one unified system.
+  269 |               </p>
+  270 |             </SpotlightCard>
+  271 |           </MotionItem>
+  272 | 
+  273 |           <MotionItem index={3} className="lg:col-span-4">
+  274 |             <SpotlightCard
+  275 |               className={[
+  276 |                 'rounded-xl p-7',
+  277 |                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
+  278 |                 'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+  279 |                 'transition duration-300 ease-out',
+  280 |                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
+  281 |                 'dark:hover:translate-y-0 dark:hover:shadow-none',
+  282 |               ].join(' ')}
+  283 |             >
+  284 |               <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Mission</h2>
+  285 |               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
+  286 |                 To simplify international garment sourcing by building a secure digital infrastructure that prioritizes
+  287 |                 credibility, transparency, and efficiency.
+  288 |               </p>
+  289 |             </SpotlightCard>
+  290 |           </MotionItem>
+  291 | 
+  292 |           <MotionItem index={4} className="lg:col-span-4">
+  293 |             <SpotlightCard
+  294 |               className={[
+  295 |                 'rounded-xl p-7',
+  296 |                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
+  297 |                 'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+  298 |                 'transition duration-300 ease-out',
+  299 |                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
+  300 |                 'dark:hover:translate-y-0 dark:hover:shadow-none',
+  301 |               ].join(' ')}
+  302 |             >
+  303 |               <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Vision</h2>
+  304 |               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
+  305 |                 To become a trusted digital bridge between global buyers and garment manufacturers, reducing negotiation
+  306 |                 friction and strengthening international trade relationships.
+  307 |               </p>
+  308 |             </SpotlightCard>
+  309 |           </MotionItem>
+  310 | 
+  311 |           <MotionItem index={5} className="lg:col-span-4 lg:row-span-2">
+  312 |             <SpotlightCard
+  313 |               className={[
+  314 |                 'rounded-xl p-7',
+  315 |                 'bg-white/60 backdrop-blur-[10px]',
+  316 |                 'shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
+  317 |                 'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+  318 |                 'transition duration-300 ease-out',
+  319 |                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
+  320 |                 'dark:hover:translate-y-0 dark:hover:shadow-none',
+  321 |               ].join(' ')}
+  322 |             >
+  323 |               <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">How the Platform Works</h2>
+  324 | 
+  325 |               <ul className="mt-6 space-y-4">
+  326 |                 {howItWorks.map((step, idx) => (
+  327 |                   <motion.li
+  328 |                     // eslint-disable-next-line react/no-array-index-key
+  329 |                     key={`${step}-${idx}`}
+  330 |                     initial={{ opacity: 0, y: 10 }}
+  331 |                     animate={{ opacity: 1, y: 0 }}
+  332 |                     transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: 0.15 + idx * 0.08 }}
+  333 |                     className="flex gap-3"
+  334 |                   >
+  335 |                     <span className="mt-1 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600/10 text-emerald-700 shadow-[0_0_0_1px_rgba(5,150,105,0.18)] dark:bg-emerald-500/12 dark:text-emerald-200">
+  336 |                       <Check className="h-4 w-4" />
+  337 |                     </span>
+  338 |                     <div>
+  339 |                       <p className="text-sm leading-relaxed text-[#475569] dark:text-slate-300">{step}</p>
+  340 |                     </div>
+  341 |                   </motion.li>
+  342 |                 ))}
+  343 |               </ul>
+  344 |             </SpotlightCard>
+  345 |           </MotionItem>
+  346 | 
+  347 |           <MotionItem index={6} className="lg:col-span-8">
+  348 |             <SpotlightCard
+  349 |               className={[
+  350 |                 'rounded-xl p-7',
+  351 |                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
+  352 |                 'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+  353 |                 'transition duration-300 ease-out',
+  354 |                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
+  355 |                 'dark:hover:translate-y-0 dark:hover:shadow-none',
+  356 |               ].join(' ')}
+  357 |             >
+  358 |               <div className="flex flex-wrap items-center justify-between gap-4">
+  359 |                 <div>
+  360 |                   <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Verification & Trust</h2>
+  361 |                 </div>
+  362 |                 <VerifiedBadge label="Verification green" />
+  363 |               </div>
+  364 | 
+  365 |               <p className="mt-4 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
+  366 |                 GarTexHub uses a document-based verification system. Companies must submit legal and operational documents,
+  367 |                 which are manually reviewed before verification status is granted.
+  368 |               </p>
+  369 |               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
+  370 |                 Verification is subscription-based and must be maintained to ensure ongoing compliance.
+  371 |               </p>
+  372 |               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
+  373 |                 The more verified documentation a company provides, the stronger its credibility and international acceptance.
+  374 |               </p>
+  375 |             </SpotlightCard>
+  376 |           </MotionItem>
+  377 | 
+  378 |           <MotionItem index={7} className="lg:col-span-7">
+  379 |             <SpotlightCard
+  380 |               className={[
+  381 |                 'needle-area rounded-xl p-7',
+  382 |                 'bg-white/60 backdrop-blur-[10px]',
+  383 |                 'shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
+  384 |                 'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+  385 |                 'transition duration-300 ease-out',
+  386 |                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
+  387 |                 'dark:hover:translate-y-0 dark:hover:shadow-none',
+  388 |               ].join(' ')}
+  389 |               onMouseMove={handleNeedleMove}
+  390 |             >
+  391 |               <span className="needle-cursor" />
+  392 |               <div className="flex items-center justify-between gap-3">
+  393 |                 <div className="min-w-0">
+  394 |                   <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Verified documents</h2>
+  395 |                   <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
+  396 |                     Skeleton loads into audit-ready details — verified signals stay prominent.
+  397 |                   </p>
+  398 |                 </div>
+  399 |                 <FileText className="h-5 w-5 text-[#0F172A]/70 dark:text-slate-200" />
+  400 |               </div>
+  401 | 
+  402 |               <div className="mt-6 grid gap-3">
+  403 |                 {loading ? (
+  404 |                   <>
+  405 |                     <Skeleton className="h-12 rounded-xl" />
+  406 |                     <Skeleton className="h-12 rounded-xl" />
+  407 |                     <Skeleton className="h-12 rounded-xl" />
+  408 |                     <Skeleton className="h-12 rounded-xl" />
+  409 |                   </>
+  410 |                 ) : (
+  411 |                   <AnimatePresence mode="wait" initial={false}>
+  412 |                     <motion.div
+  413 |                       key="docs"
+  414 |                       initial={{ opacity: 0 }}
+  415 |                       animate={{ opacity: 1 }}
+  416 |                       exit={{ opacity: 0 }}
+  417 |                       transition={{ duration: 0.3 }}
+  418 |                       className="grid gap-3"
+  419 |                     >
+  420 |                       {(about.documents || []).map((doc) => (
+  421 |                         <div
+  422 |                           key={doc.name}
+  423 |                           className={[
+  424 |                             'group flex flex-wrap items-center justify-between gap-3 rounded-xl px-4 py-3',
+  425 |                             'bg-[#FFFFFF] shadow-[0_10px_26px_rgba(15,23,42,0.08)]',
+  426 |                             'transition duration-300 ease-out',
+  427 |                             'hover:-translate-y-0.5 hover:shadow-[0_18px_44px_rgba(15,23,42,0.12)]',
+  428 |                             'dark:bg-white/5 dark:shadow-none dark:hover:translate-y-0 dark:hover:bg-white/7',
+  429 |                           ].join(' ')}
+  430 |                         >
+  431 |                           <div className="min-w-0">
+  432 |                             <p className="truncate text-sm font-semibold text-[#1E293B] dark:text-white">{doc.name}</p>
+  433 |                             <p className="mt-1 text-xs text-[#64748B] dark:text-slate-300">Updated {doc.updatedAt}</p>
+  434 |                           </div>
+  435 |                           <div className="flex items-center gap-2">
+  436 |                             <StatusChip status={doc.status} />
+  437 |                           </div>
+  438 |                         </div>
+  439 |                       ))}
+  440 |                     </motion.div>
+  441 |                   </AnimatePresence>
+  442 |                 )}
+  443 |               </div>
+  444 |             </SpotlightCard>
+  445 |           </MotionItem>
+  446 | 
+  447 |           <MotionItem index={8} className="lg:col-span-5">
+  448 |             <SpotlightCard
+  449 |               className={[
+  450 |                 'rounded-xl p-7',
+  451 |                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
+  452 |                 'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+  453 |                 'transition duration-300 ease-out',
+  454 |                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
+  455 |                 'dark:hover:translate-y-0 dark:hover:shadow-none',
+  456 |               ].join(' ')}
+  457 |             >
+  458 |               <div className="flex items-center justify-between gap-3">
+  459 |                 <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Digital Bridge</h2>
+  460 |                 <span className="rounded-full bg-[#0F172A]/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#475569] dark:bg-white/8 dark:text-slate-300">
+  461 |                   Coming soon
+  462 |                 </span>
+  463 |               </div>
+  464 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
+  465 |                 A global map view that visualizes verified connections between buyers and manufacturers.
+  466 |               </p>
+  467 |               <div className="mt-6 overflow-hidden rounded-xl bg-gradient-to-br from-sky-500/10 via-emerald-500/6 to-indigo-500/10 p-5 dark:from-sky-500/12 dark:via-emerald-500/8 dark:to-indigo-500/12">
+  468 |                 <div className="h-32 rounded-lg bg-white/55 backdrop-blur-md dark:bg-white/5" />
+  469 |                 <div className="mt-4 grid grid-cols-3 gap-2">
+  470 |                   <div className="h-8 rounded-lg bg-white/55 backdrop-blur-md dark:bg-white/5" />
+  471 |                   <div className="h-8 rounded-lg bg-white/55 backdrop-blur-md dark:bg-white/5" />
+  472 |                   <div className="h-8 rounded-lg bg-white/55 backdrop-blur-md dark:bg-white/5" />
+  473 |                 </div>
+  474 |               </div>
+  475 |             </SpotlightCard>
+  476 |           </MotionItem>
+  477 | 
+  478 |           <MotionItem index={9} className="lg:col-span-6">
+  479 |             <SpotlightCard
+  480 |               className={[
+  481 |                 'rounded-xl p-7',
+  482 |                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
+  483 |                 'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+  484 |                 'transition duration-300 ease-out',
+  485 |                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
+  486 |                 'dark:hover:translate-y-0 dark:hover:shadow-none',
+  487 |               ].join(' ')}
+  488 |             >
+  489 |               <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Industry Focus</h2>
+  490 |               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
+  491 |                 GarTexHub is strictly dedicated to the Garments and Textile sector. By focusing on a single industry, we
+  492 |                 provide smarter categorization, clearer communication, and more relevant matching between buyers and
+  493 |                 manufacturers.
+  494 |               </p>
+  495 |             </SpotlightCard>
+  496 |           </MotionItem>
+  497 | 
+  498 |           <MotionItem index={10} className="lg:col-span-6">
+  499 |             <SpotlightCard
+  500 |               className={[
+  501 |                 'rounded-xl p-7',
+  502 |                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
+  503 |                 'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+  504 |                 'transition duration-300 ease-out',
+  505 |                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
+  506 |                 'dark:hover:translate-y-0 dark:hover:shadow-none',
+  507 |               ].join(' ')}
+  508 |             >
+  509 |               <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Professional Commitment</h2>
+  510 |               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
+  511 |                 We do not process direct financial transactions. Our platform is designed to facilitate secure communication,
+  512 |                 structured agreements, and verified business interactions.
+  513 |               </p>
+  514 |               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
+  515 |                 GarTexHub operates with the principle that trust is earned through transparency, documentation, and
+  516 |                 professional conduct.
+  517 |               </p>
+  518 |             </SpotlightCard>
+  519 |           </MotionItem>
+  520 | 
+  521 |           <MotionItem index={11} className="lg:col-span-12">
+  522 |             <SpotlightCard
+  523 |               className={[
+  524 |                 'rounded-xl p-8',
+  525 |                 'bg-white/60 backdrop-blur-[10px]',
+  526 |                 'shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
+  527 |                 'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+  528 |               ].join(' ')}
+  529 |             >
+  530 |               <h2 className="text-xl font-bold tracking-tight text-[#1E293B] dark:text-white">Contact & Legal Information</h2>
+  531 |               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
+  532 |                 For partnership inquiries, support, or compliance-related questions, please contact us through our official
+  533 |                 communication channels listed on the platform.
+  534 |               </p>
+  535 |             </SpotlightCard>
+  536 |           </MotionItem>
+  537 |         </div>
+  538 |       </div>
+  539 |     </div>
+  540 |   )
+  541 | }
+  542 | 

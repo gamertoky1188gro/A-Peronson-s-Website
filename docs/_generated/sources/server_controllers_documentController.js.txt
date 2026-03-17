@@ -1,0 +1,65 @@
+    1 | import {
+    2 |   createDraftContract,
+    3 |   deleteDocument,
+    4 |   listContracts,
+    5 |   listDocuments,
+    6 |   saveDocumentMetadata,
+    7 |   updateContractArtifact,
+    8 |   updateContractSignatures,
+    9 | } from '../services/documentService.js'
+   10 | import { deny, handleControllerError } from '../utils/permissions.js'
+   11 | 
+   12 | export async function uploadDocument(req, res) {
+   13 |   if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
+   14 |   try {
+   15 |     const entityType = req.body?.entity_type || 'verification'
+   16 |     const entityId = req.body?.entity_id || req.user.id
+   17 |     const doc = await saveDocumentMetadata(req.user.id, entityType, entityId, req.body?.type || 'other', req.file)
+   18 |     return res.status(201).json(doc)
+   19 |   } catch (error) {
+   20 |     return handleControllerError(res, error)
+   21 |   }
+   22 | }
+   23 | 
+   24 | export async function getDocuments(req, res) {
+   25 |   const entityType = req.query.entity_type || 'verification'
+   26 |   const entityId = req.query.entity_id || req.user.id
+   27 |   const docs = await listDocuments(entityType, entityId)
+   28 |   return res.json(docs)
+   29 | }
+   30 | 
+   31 | export async function removeDocument(req, res) {
+   32 |   const result = await deleteDocument(req.params.documentId, req.user)
+   33 |   if (result === 'forbidden') return deny(res)
+   34 |   if (!result) return res.status(404).json({ error: 'Document not found' })
+   35 |   return res.json({ ok: true })
+   36 | }
+   37 | 
+   38 | export async function createContractDraft(req, res) {
+   39 |   try {
+   40 |     const contract = await createDraftContract(req.user, req.body || {})
+   41 |     return res.status(201).json(contract)
+   42 |   } catch (error) {
+   43 |     return handleControllerError(res, error)
+   44 |   }
+   45 | }
+   46 | 
+   47 | export async function getContracts(req, res) {
+   48 |   const contracts = await listContracts(req.user)
+   49 |   return res.json(contracts)
+   50 | }
+   51 | 
+   52 | export async function patchContractSignatures(req, res) {
+   53 |   const result = await updateContractSignatures(req.params.contractId, req.body || {}, req.user)
+   54 |   if (result === 'forbidden') return deny(res)
+   55 |   if (!result) return res.status(404).json({ error: 'Contract not found' })
+   56 |   return res.json(result)
+   57 | }
+   58 | 
+   59 | export async function patchContractArtifact(req, res) {
+   60 |   const result = await updateContractArtifact(req.params.contractId, req.body || {}, req.user)
+   61 |   if (result === 'forbidden') return deny(res)
+   62 |   if (!result) return res.status(404).json({ error: 'Contract not found' })
+   63 |   return res.json(result)
+   64 | }
+   65 | 

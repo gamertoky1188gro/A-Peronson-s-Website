@@ -1,0 +1,378 @@
+    1 | /*
+    2 |   Routes: /verification and /verification-center
+    3 |   Access: Protected (login required)
+    4 |   Allowed roles: buyer, buying_house, factory, owner, admin, agent
+    5 | 
+    6 |   Public Pages:
+    7 |     /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
+    8 |   Protected Pages (login required):
+    9 |     /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
+   10 |     /notifications, /chat, /call, /verification, /verification-center
+   11 | 
+   12 |   Primary responsibilities:
+   13 |     - Let users upload required verification documents based on role + buyer region.
+   14 |     - Show verification status per document (submitted, missing, etc.).
+   15 |     - Enforce subscription rules (verification is subscription-based and renewed).
+   16 | 
+   17 |   Key API endpoints:
+   18 |     - GET /api/verification/me
+   19 |     - POST /api/verification/me  (update documents + upload references)
+   20 |     - GET /api/subscriptions/me
+   21 | 
+   22 |   Notes:
+   23 |     - Buyer required documents vary by region (EU/USA/OTHER), derived from country.
+   24 | */
+   25 | import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+   26 | import { API_BASE, apiRequest, getCurrentUser, getToken } from '../lib/auth'
+   27 | import { BUYER_COUNTRY_OPTIONS, isEuCountry } from '../../shared/config/geo.js'
+   28 | 
+   29 | const LABELS = {
+   30 |   // Human-readable labels for backend document keys.
+   31 |   company_registration: 'Company Registration',
+   32 |   trade_license: 'Trade License',
+   33 |   tin: 'TIN (Tax Identification Number)',
+   34 |   authorized_person_nid: 'Authorized Person NID',
+   35 |   bank_proof: 'Company Bank Proof',
+   36 |   erc: 'ERC (Export Registration Certificate)',
+   37 | 
+   38 |   vat: 'VAT Number',
+   39 |   eori: 'EORI (Economic Operators Registration and Identification)',
+   40 |   ein: 'EIN (Employer Identification Number)',
+   41 |   ior: 'IOR (Importer of Record)',
+   42 | }
+   43 | 
+   44 | const REQUIRED_BY_ROLE = {
+   45 |   // Required document keys per role (non-buyers).
+   46 |   factory: ['company_registration', 'trade_license', 'tin', 'authorized_person_nid', 'bank_proof', 'erc'],
+   47 |   buying_house: ['company_registration', 'trade_license', 'tin', 'authorized_person_nid', 'bank_proof'],
+   48 | }
+   49 | 
+   50 | const REQUIRED_BUYER_BY_REGION = {
+   51 |   // Buyers have region-specific requirements (derived from their selected country).
+   52 |   EU: ['company_registration', 'vat', 'eori', 'bank_proof'],
+   53 |   USA: ['company_registration', 'ein', 'ior', 'bank_proof'],
+   54 |   OTHER: ['company_registration', 'bank_proof'],
+   55 | }
+   56 | 
+   57 | function normalizeBuyerRegionFromCountry(country) {
+   58 |   // Convert a free-form country value into a normalized region bucket.
+   59 |   // Used to pick the buyer verification checklist.
+   60 |   const value = String(country || '').trim()
+   61 |   if (!value) return 'OTHER'
+   62 |   if (isEuCountry(value)) return 'EU'
+   63 |   const upper = value.toUpperCase()
+   64 |   if (upper === 'USA' || upper === 'US' || upper === 'UNITED STATES' || upper === 'UNITED STATES OF AMERICA') return 'USA'
+   65 |   return 'OTHER'
+   66 | }
+   67 | 
+   68 | function statusChipClass(status) {
+   69 |   // Visual chip class for the per-document status.
+   70 |   if (status === 'submitted') return 'bg-emerald-50 text-emerald-800 border-emerald-200'
+   71 |   return 'bg-rose-50 text-rose-800 border-rose-200'
+   72 | }
+   73 | 
+   74 | export default function VerificationPage() {
+   75 |   const user = getCurrentUser()
+   76 |   const token = getToken()
+   77 |   const role = user?.role || 'buyer'
+   78 | 
+   79 |   const [verification, setVerification] = useState(null)
+   80 |   const [subscription, setSubscription] = useState(null)
+   81 |   const [buyerCountry, setBuyerCountry] = useState('')
+   82 |   const [busyDoc, setBusyDoc] = useState('')
+   83 |   const [savingCountry, setSavingCountry] = useState(false)
+   84 |   const [error, setError] = useState('')
+   85 |   const [feedback, setFeedback] = useState('')
+   86 |   const [optionalLicenseInput, setOptionalLicenseInput] = useState('')
+   87 | 
+   88 |   const fileInputRef = useRef(null)
+   89 |   const pendingDocRef = useRef('')
+   90 | 
+   91 |   const buyerRegion = useMemo(() => {
+   92 |     if (role !== 'buyer') return ''
+   93 |     return normalizeBuyerRegionFromCountry(buyerCountry)
+   94 |   }, [buyerCountry, role])
+   95 | 
+   96 |   const requiredDocs = useMemo(() => {
+   97 |     if (role === 'buyer') return REQUIRED_BUYER_BY_REGION[buyerRegion] || REQUIRED_BUYER_BY_REGION.OTHER
+   98 |     return REQUIRED_BY_ROLE[role] || []
+   99 |   }, [buyerRegion, role])
+  100 | 
+  101 |   const documents = verification?.documents || {}
+  102 |   const optionalLicenses = Array.isArray(documents.optional_licenses) ? documents.optional_licenses.filter(Boolean) : []
+  103 | 
+  104 |   const loadStatus = useCallback(async () => {
+  105 |     if (!token) return
+  106 |     setError('')
+  107 |     setFeedback('')
+  108 |     try {
+  109 |       const [verificationData, subscriptionData] = await Promise.all([
+  110 |         apiRequest('/verification/me', { token }),
+  111 |         apiRequest('/subscriptions/me', { token }),
+  112 |       ])
+  113 |       setVerification(verificationData)
+  114 |       setSubscription(subscriptionData)
+  115 |       setBuyerCountry(String(verificationData?.documents?.buyer_country || ''))
+  116 |     } catch (err) {
+  117 |       setError(err.message || 'Could not load verification center data')
+  118 |     }
+  119 |   }, [token])
+  120 | 
+  121 |   useEffect(() => {
+  122 |     loadStatus()
+  123 |   }, [loadStatus])
+  124 | 
+  125 |   useEffect(() => {
+  126 |     if (!token || role !== 'buyer') return
+  127 |     if (!buyerCountry) return
+  128 | 
+  129 |     const currentCountry = String(verification?.documents?.buyer_country || '')
+  130 |     const currentRegion = String(verification?.documents?.buyer_region || '')
+  131 |     const nextRegion = normalizeBuyerRegionFromCountry(buyerCountry)
+  132 |     if (currentCountry === buyerCountry && currentRegion === nextRegion) return
+  133 | 
+  134 |     const timeoutId = setTimeout(async () => {
+  135 |       try {
+  136 |         setSavingCountry(true)
+  137 |         const updatedDocs = {
+  138 |           ...(verification?.documents || {}),
+  139 |           buyer_country: buyerCountry,
+  140 |           buyer_region: nextRegion,
+  141 |         }
+  142 |         await apiRequest('/verification/me', { method: 'POST', token, body: { documents: updatedDocs } })
+  143 |         setVerification((prev) => ({ ...(prev || {}), documents: updatedDocs }))
+  144 |       } catch {
+  145 |         setError('Could not save buyer country. Please try again.')
+  146 |       } finally {
+  147 |         setSavingCountry(false)
+  148 |       }
+  149 |     }, 350)
+  150 | 
+  151 |     return () => clearTimeout(timeoutId)
+  152 |   }, [buyerCountry, role, token, verification])
+  153 | 
+  154 |   async function requestUpload(documentKey, file) {
+  155 |     if (!file || !token) return
+  156 |     setBusyDoc(documentKey)
+  157 |     setFeedback('')
+  158 |     setError('')
+  159 | 
+  160 |     try {
+  161 |       const form = new FormData()
+  162 |       form.append('file', file)
+  163 |       form.append('type', documentKey)
+  164 |       form.append('entity_type', 'verification')
+  165 | 
+  166 |       const uploadRes = await fetch(`${API_BASE}/documents`, {
+  167 |         method: 'POST',
+  168 |         headers: { Authorization: `Bearer ${token}` },
+  169 |         body: form,
+  170 |       })
+  171 | 
+  172 |       const uploadData = await uploadRes.json().catch(() => ({}))
+  173 |       if (!uploadRes.ok) throw new Error(uploadData.error || 'Document upload failed')
+  174 | 
+  175 |       const updatedDocs = {
+  176 |         ...(verification?.documents || {}),
+  177 |         [documentKey]: 'uploaded',
+  178 |         ...(role === 'buyer' ? { buyer_country: buyerCountry, buyer_region: normalizeBuyerRegionFromCountry(buyerCountry) } : {}),
+  179 |       }
+  180 | 
+  181 |       await apiRequest('/verification/me', { method: 'POST', token, body: { documents: updatedDocs } })
+  182 |       setVerification((prev) => ({ ...(prev || {}), documents: updatedDocs }))
+  183 |       setFeedback(`${LABELS[documentKey] || documentKey} uploaded and verification state updated.`)
+  184 |     } catch (err) {
+  185 |       setError(err.message || 'Upload failed')
+  186 |     } finally {
+  187 |       setBusyDoc('')
+  188 |     }
+  189 |   }
+  190 | 
+  191 |   function openPicker(documentKey) {
+  192 |     pendingDocRef.current = documentKey
+  193 |     fileInputRef.current?.click()
+  194 |   }
+  195 | 
+  196 |   async function onFileSelected(event) {
+  197 |     const file = event.target.files?.[0]
+  198 |     const documentKey = pendingDocRef.current
+  199 |     event.target.value = ''
+  200 |     if (!file || !documentKey) return
+  201 |     await requestUpload(documentKey, file)
+  202 |   }
+  203 | 
+  204 |   async function addOptionalLicense() {
+  205 |     const nextValue = optionalLicenseInput.trim()
+  206 |     if (!nextValue || !token) return
+  207 |     setOptionalLicenseInput('')
+  208 |     setFeedback('')
+  209 |     setError('')
+  210 |     try {
+  211 |       const updatedDocs = {
+  212 |         ...(verification?.documents || {}),
+  213 |         optional_licenses: [...optionalLicenses, nextValue],
+  214 |         ...(role === 'buyer' ? { buyer_country: buyerCountry, buyer_region: normalizeBuyerRegionFromCountry(buyerCountry) } : {}),
+  215 |       }
+  216 |       const updated = await apiRequest('/verification/me', { method: 'POST', token, body: { documents: updatedDocs } })
+  217 |       setVerification(updated)
+  218 |       setFeedback('Optional license saved.')
+  219 |     } catch (err) {
+  220 |       setError(err.message || 'Could not save optional license')
+  221 |     }
+  222 |   }
+  223 | 
+  224 |   async function removeOptionalLicense(value) {
+  225 |     if (!token) return
+  226 |     setFeedback('')
+  227 |     setError('')
+  228 |     try {
+  229 |       const updatedDocs = {
+  230 |         ...(verification?.documents || {}),
+  231 |         optional_licenses: optionalLicenses.filter((x) => x !== value),
+  232 |         ...(role === 'buyer' ? { buyer_country: buyerCountry, buyer_region: normalizeBuyerRegionFromCountry(buyerCountry) } : {}),
+  233 |       }
+  234 |       const updated = await apiRequest('/verification/me', { method: 'POST', token, body: { documents: updatedDocs } })
+  235 |       setVerification(updated)
+  236 |       setFeedback('Optional license removed.')
+  237 |     } catch (err) {
+  238 |       setError(err.message || 'Could not remove optional license')
+  239 |     }
+  240 |   }
+  241 | 
+  242 |   const credibilityScore = verification?.credibility?.score ?? 0
+  243 |   const credibilityBadge = verification?.credibility?.badge || 'Basic credibility'
+  244 |   const verified = Boolean(verification?.verified)
+  245 | 
+  246 |   return (
+  247 |     <div className="mx-auto max-w-6xl px-4 py-6 space-y-6">
+  248 |       <header className="rounded-2xl border border-slate-200 bg-white p-5">
+  249 |         <h1 className="text-2xl font-bold">Verification Center</h1>
+  250 |         <p className="text-sm text-slate-600 mt-1">Verification is subscription-based and renews monthly.</p>
+  251 |         <p className="text-xs text-slate-500 mt-2">Need help? Visit the <a href="/help" className="underline text-slate-700">Help Center</a>.</p>
+  252 |       </header>
+  253 | 
+  254 |       <section className="grid gap-4 md:grid-cols-3">
+  255 |         <div className="rounded-2xl border border-slate-200 bg-white p-5 md:col-span-2 space-y-4">
+  256 |           <div className="flex items-start justify-between gap-3">
+  257 |             <div>
+  258 |               <p className="text-sm font-bold text-slate-900">Your requirements</p>
+  259 |               <p className="text-[11px] text-slate-500">Role-based checklist. Uploading more proof increases credibility.</p>
+  260 |             </div>
+  261 |             <div className={`rounded-full border px-3 py-1 text-xs font-bold ${verified ? 'bg-[#0A66C2]/10 text-[#0A66C2] border-[#0A66C2]/20' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>
+  262 |               {verified ? 'Verified' : 'Not verified'}
+  263 |             </div>
+  264 |           </div>
+  265 | 
+  266 |           {role === 'buyer' ? (
+  267 |             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+  268 |               <div className="flex flex-wrap items-center gap-2">
+  269 |                 <label className="text-sm font-semibold text-slate-700" htmlFor="buyer-country">Buyer Country</label>
+  270 |                 <select
+  271 |                   id="buyer-country"
+  272 |                   value={buyerCountry}
+  273 |                   onChange={(e) => setBuyerCountry(e.target.value)}
+  274 |                   className="text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white"
+  275 |                 >
+  276 |                   <option value="">Select country</option>
+  277 |                   {BUYER_COUNTRY_OPTIONS.map((country) => <option key={country} value={country}>{country}</option>)}
+  278 |                 </select>
+  279 |                 {savingCountry ? <span className="text-xs text-slate-500">Saving…</span> : null}
+  280 |                 <span className="text-xs text-slate-600">Region: <span className="font-semibold">{buyerRegion}</span></span>
+  281 |               </div>
+  282 |               {!buyerCountry ? <p className="mt-2 text-xs text-rose-700">Buyer country is required before completing buyer verification.</p> : null}
+  283 |             </div>
+  284 |           ) : null}
+  285 | 
+  286 |           <div className="grid gap-3 md:grid-cols-2">
+  287 |             {requiredDocs.map((documentKey) => {
+  288 |               const submitted = Boolean(documents?.[documentKey])
+  289 |               const status = submitted ? 'submitted' : 'missing'
+  290 |               return (
+  291 |                 <div key={documentKey} className="rounded-2xl border border-slate-200 bg-white p-4 flex items-center justify-between gap-3">
+  292 |                   <div className="min-w-0">
+  293 |                     <p className="text-sm font-semibold text-slate-900 truncate">{LABELS[documentKey] || documentKey}</p>
+  294 |                     <p className="text-[11px] text-slate-500 truncate">{submitted ? 'Submitted' : 'Missing'}</p>
+  295 |                   </div>
+  296 |                   <div className="flex items-center gap-2">
+  297 |                     <span className={`rounded-full border px-3 py-1 text-xs font-bold ${statusChipClass(status)}`}>{status}</span>
+  298 |                     <button
+  299 |                       type="button"
+  300 |                       onClick={() => openPicker(documentKey)}
+  301 |                       disabled={busyDoc === documentKey || (role === 'buyer' && !buyerCountry)}
+  302 |                       className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 disabled:cursor-not-allowed"
+  303 |                     >
+  304 |                       {busyDoc === documentKey ? 'Uploading…' : 'Upload'}
+  305 |                     </button>
+  306 |                   </div>
+  307 |                 </div>
+  308 |               )
+  309 |             })}
+  310 |           </div>
+  311 | 
+  312 |           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+  313 |             <p className="text-sm font-bold text-slate-900">Optional licenses</p>
+  314 |             <p className="mt-1 text-[11px] text-slate-500">Optional proofs can be added anytime. More proof = more trust.</p>
+  315 |             <div className="mt-3 flex flex-col sm:flex-row gap-2">
+  316 |               <input
+  317 |                 value={optionalLicenseInput}
+  318 |                 onChange={(e) => setOptionalLicenseInput(e.target.value)}
+  319 |                 placeholder="e.g. OEKO-TEX, BSCI, WRAP…"
+  320 |                 className="flex-1 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm"
+  321 |               />
+  322 |               <button
+  323 |                 type="button"
+  324 |                 onClick={addOptionalLicense}
+  325 |                 className="rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182]"
+  326 |               >
+  327 |                 Add
+  328 |               </button>
+  329 |             </div>
+  330 |             <div className="mt-3 flex flex-wrap gap-2">
+  331 |               {optionalLicenses.map((lic) => (
+  332 |                 <button
+  333 |                   key={lic}
+  334 |                   type="button"
+  335 |                   onClick={() => removeOptionalLicense(lic)}
+  336 |                   className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-rose-50"
+  337 |                   title="Remove"
+  338 |                 >
+  339 |                   {lic} ✕
+  340 |                 </button>
+  341 |               ))}
+  342 |               {!optionalLicenses.length ? <p className="text-xs text-slate-500">No optional licenses yet.</p> : null}
+  343 |             </div>
+  344 |           </div>
+  345 | 
+  346 |           {feedback ? <div className="text-sm text-emerald-700">{feedback}</div> : null}
+  347 |           {error ? <div className="text-sm text-rose-700">{error}</div> : null}
+  348 |         </div>
+  349 | 
+  350 |         <aside className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3">
+  351 |           <p className="text-sm font-bold text-slate-900">Credibility</p>
+  352 |           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+  353 |             <p className="text-3xl font-extrabold text-slate-900">{credibilityScore}/100</p>
+  354 |             <p className="mt-1 text-sm font-semibold text-slate-800">{credibilityBadge}</p>
+  355 |             <p className="mt-2 text-xs text-slate-600">More licensing proof increases credibility and international trust.</p>
+  356 |           </div>
+  357 | 
+  358 |           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+  359 |             <p className="text-xs text-slate-500">Subscription</p>
+  360 |             <p className="mt-1 text-sm font-semibold text-slate-900">{subscription?.plan || subscription?.status || '—'}</p>
+  361 |             <p className="mt-1 text-[11px] text-slate-600">Verification approval requires an active subscription.</p>
+  362 |           </div>
+  363 | 
+  364 |           <button
+  365 |             type="button"
+  366 |             onClick={loadStatus}
+  367 |             className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+  368 |           >
+  369 |             Refresh status
+  370 |           </button>
+  371 |         </aside>
+  372 |       </section>
+  373 | 
+  374 |       <input ref={fileInputRef} type="file" className="hidden" onChange={onFileSelected} />
+  375 |     </div>
+  376 |   )
+  377 | }
+  378 | 

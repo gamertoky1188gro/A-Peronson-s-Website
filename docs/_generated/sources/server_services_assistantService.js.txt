@@ -1,0 +1,572 @@
+    1 | import crypto from 'crypto'
+    2 | import fs from 'fs/promises'
+    3 | import path from 'path'
+    4 | import { readJson, updateJson } from '../utils/jsonStore.js'
+    5 | import { sanitizeString } from '../utils/validators.js'
+    6 | import { logError, logInfo } from '../utils/logger.js'
+    7 | 
+    8 | const FILE = 'assistant_knowledge.json'
+    9 | const KNOWLEDGE_TYPES = {
+   10 |   FAQ: 'faq',
+   11 |   FACT: 'fact',
+   12 | }
+   13 | 
+   14 | const globalRules = [
+   15 |   {
+   16 |     source: 'global_rule:onboarding',
+   17 |     keywords: ['setup', 'onboarding', 'profile'],
+   18 |     response: 'Start with onboarding: profile image, organization name, and category selection.',
+   19 |   },
+   20 |   {
+   21 |     source: 'global_rule:verification',
+   22 |     keywords: ['verification', 'badge', 'verified'],
+   23 |     response: 'Submit required verification documents, keep premium active, then request admin approval.',
+   24 |   },
+   25 |   {
+   26 |     source: 'global_rule:subscription',
+   27 |     keywords: ['subscription', 'premium', 'plan'],
+   28 |     response: 'Premium unlocks higher visibility and advanced analytics for your account type.',
+   29 |   },
+   30 |   {
+   31 |     source: 'global_rule:help',
+   32 |     keywords: ['help', 'support'],
+   33 |     response: 'I can route you to Help Center and suggest next dashboard actions.',
+   34 |   },
+   35 | ]
+   36 | 
+   37 | const smallTalkRules = [
+   38 |   {
+   39 |     source: 'smalltalk:greeting',
+   40 |     keywords: ['hi', 'hello', 'hey', 'goodmorning', 'goodafternoon', 'goodevening'],
+   41 |     response: 'Greet the user briefly and offer textile business help.',
+   42 |   },
+   43 |   {
+   44 |     source: 'smalltalk:identity',
+   45 |     keywords: ['name', 'whoareyou', 'whatsyourname', 'whatisyourname'],
+   46 |     response: 'Introduce yourself as GarTex Assistant in one short sentence.',
+   47 |   },
+   48 | ]
+   49 | 
+   50 | const CODE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx', '.json', '.md', '.css', '.html'])
+   51 | const SKIP_DIRECTORIES = new Set(['.git', 'node_modules', 'dist', 'build', 'coverage', '.vite'])
+   52 | const MAX_FILES_TO_SCAN = 400
+   53 | const MAX_FILE_BYTES = 80_000
+   54 | const MAX_MATCHED_SNIPPETS = 4
+   55 | const MAX_SNIPPET_LENGTH = 320
+   56 | const MAX_CONTEXT_CHARS = 1_600
+   57 | const MAX_KNOWLEDGE_CONTEXT_CHARS = 1_200
+   58 | const LOCAL_LLM_ENDPOINT = process.env.LOCAL_LLM_ENDPOINT || 'http://127.0.0.1:8080/v1/chat/completions'
+   59 | const LOCAL_LLM_FALLBACK_ENDPOINT = process.env.LOCAL_LLM_FALLBACK_ENDPOINT || 'http://127.0.0.1:8080/completion'
+   60 | const LOCAL_LLM_MODEL = process.env.LOCAL_LLM_MODEL || 'Qwen2.5-0.5B-Instruct-Q4_K_M.gguf'
+   61 | const LOCAL_LLM_TIMEOUT_MS = Number(process.env.LOCAL_LLM_TIMEOUT_MS || 25000)
+   62 | const MAX_AI_ANSWER_CHARS = 700
+   63 | const CODE_CONTEXT_HINTS = new Set(['api', 'route', 'server', 'controller', 'service', 'code', 'bug', 'error', 'endpoint', 'json', 'database', 'model', 'function'])
+   64 | 
+   65 | let codeFileCache = {
+   66 |   expiresAt: 0,
+   67 |   files: [],
+   68 | }
+   69 | 
+   70 | function normalize(text = '') {
+   71 |   return sanitizeString(String(text || '').toLowerCase(), 500)
+   72 | }
+   73 | 
+   74 | function tokenize(text = '') {
+   75 |   return normalize(text).split(/[^a-z0-9]+/).filter((word) => word.length > 2)
+   76 | }
+   77 | 
+   78 | function compactTokenKey(token = '') {
+   79 |   return String(token || '').toLowerCase().replace(/[^a-z0-9]+/g, '')
+   80 | }
+   81 | 
+   82 | function scoreMatch(questionText, candidateQuestion, candidateKeywords = []) {
+   83 |   const normalizedQuestion = normalize(questionText)
+   84 |   const normalizedCandidate = normalize(candidateQuestion)
+   85 |   const questionTokens = tokenize(normalizedQuestion)
+   86 | 
+   87 |   let score = 0
+   88 |   if (normalizedCandidate && (normalizedQuestion.includes(normalizedCandidate) || normalizedCandidate.includes(normalizedQuestion))) {
+   89 |     score += 2
+   90 |   }
+   91 | 
+   92 |   const keywordSet = new Set(candidateKeywords.map((keyword) => normalize(keyword)).filter(Boolean))
+   93 |   for (const token of questionTokens) {
+   94 |     if (keywordSet.has(token)) score += 1
+   95 |   }
+   96 |   return score
+   97 | }
+   98 | 
+   99 | function normalizeType(type) {
+  100 |   const normalized = sanitizeString(type, 30).toLowerCase()
+  101 |   return normalized === KNOWLEDGE_TYPES.FACT ? KNOWLEDGE_TYPES.FACT : KNOWLEDGE_TYPES.FAQ
+  102 | }
+  103 | 
+  104 | function mapKnowledgeRow(row) {
+  105 |   return {
+  106 |     id: row.id,
+  107 |     org_id: row.org_id,
+  108 |     type: normalizeType(row.type),
+  109 |     question: row.question,
+  110 |     answer: row.answer,
+  111 |     keywords: Array.isArray(row.keywords) ? row.keywords : [],
+  112 |     updated_at: row.updated_at,
+  113 |     created_at: row.created_at,
+  114 |   }
+  115 | }
+  116 | 
+  117 | async function collectCodeFiles(dirPath, collector, limit = MAX_FILES_TO_SCAN) {
+  118 |   if (collector.length >= limit) return
+  119 | 
+  120 |   const entries = await fs.readdir(dirPath, { withFileTypes: true })
+  121 |   for (const entry of entries) {
+  122 |     if (collector.length >= limit) return
+  123 | 
+  124 |     const resolvedPath = path.join(dirPath, entry.name)
+  125 |     if (entry.isDirectory()) {
+  126 |       if (SKIP_DIRECTORIES.has(entry.name)) continue
+  127 |       await collectCodeFiles(resolvedPath, collector, limit)
+  128 |       continue
+  129 |     }
+  130 | 
+  131 |     if (!entry.isFile()) continue
+  132 |     const extension = path.extname(entry.name).toLowerCase()
+  133 |     if (!CODE_EXTENSIONS.has(extension)) continue
+  134 |     collector.push(resolvedPath)
+  135 |   }
+  136 | }
+  137 | 
+  138 | async function getCodeFiles() {
+  139 |   const now = Date.now()
+  140 |   if (codeFileCache.expiresAt > now && codeFileCache.files.length > 0) {
+  141 |     return codeFileCache.files
+  142 |   }
+  143 | 
+  144 |   const files = []
+  145 |   await collectCodeFiles(process.cwd(), files)
+  146 |   codeFileCache = {
+  147 |     files,
+  148 |     expiresAt: now + 60_000,
+  149 |   }
+  150 |   return files
+  151 | }
+  152 | 
+  153 | function findBestSnippet(content, tokens) {
+  154 |   const lines = content.split('\n')
+  155 |   let best = { score: 0, line: '', lineNumber: 1 }
+  156 | 
+  157 |   for (let index = 0; index < lines.length; index += 1) {
+  158 |     const rawLine = lines[index]
+  159 |     const normalizedLine = normalize(rawLine)
+  160 |     if (!normalizedLine) continue
+  161 | 
+  162 |     let score = 0
+  163 |     for (const token of tokens) {
+  164 |       if (normalizedLine.includes(token)) score += 1
+  165 |     }
+  166 | 
+  167 |     if (score > best.score) {
+  168 |       best = {
+  169 |         score,
+  170 |         line: sanitizeString(rawLine.trim(), MAX_SNIPPET_LENGTH),
+  171 |         lineNumber: index + 1,
+  172 |       }
+  173 |     }
+  174 |   }
+  175 | 
+  176 |   return best.score > 0 ? best : null
+  177 | }
+  178 | 
+  179 | async function searchCodeContext(questionText) {
+  180 |   const tokens = tokenize(questionText)
+  181 |   if (tokens.length === 0) {
+  182 |     return {
+  183 |       summary: '',
+  184 |       snippets: [],
+  185 |       prompt_context: '',
+  186 |     }
+  187 |   }
+  188 | 
+  189 |   const files = await getCodeFiles()
+  190 |   const matches = []
+  191 | 
+  192 |   for (const filePath of files) {
+  193 |     let stat
+  194 |     try {
+  195 |       stat = await fs.stat(filePath)
+  196 |     } catch {
+  197 |       continue
+  198 |     }
+  199 |     if (!stat.isFile() || stat.size > MAX_FILE_BYTES) continue
+  200 | 
+  201 |     let content = ''
+  202 |     try {
+  203 |       content = await fs.readFile(filePath, 'utf8')
+  204 |     } catch {
+  205 |       continue
+  206 |     }
+  207 | 
+  208 |     const relativePath = path.relative(process.cwd(), filePath)
+  209 |     const fileTokens = tokenize(relativePath)
+  210 | 
+  211 |     let score = 0
+  212 |     for (const token of tokens) {
+  213 |       if (fileTokens.includes(token)) score += 2
+  214 |       if (normalize(content).includes(token)) score += 1
+  215 |     }
+  216 | 
+  217 |     if (score === 0) continue
+  218 | 
+  219 |     const bestSnippet = findBestSnippet(content, tokens)
+  220 |     matches.push({
+  221 |       path: relativePath,
+  222 |       score: score + (bestSnippet?.score || 0),
+  223 |       snippet: bestSnippet,
+  224 |     })
+  225 |   }
+  226 | 
+  227 |   const topMatches = matches
+  228 |     .sort((a, b) => b.score - a.score)
+  229 |     .slice(0, MAX_MATCHED_SNIPPETS)
+  230 | 
+  231 |   const snippets = topMatches.map((match) => ({
+  232 |     file: match.path,
+  233 |     score: match.score,
+  234 |     line: match.snippet?.lineNumber || null,
+  235 |     snippet: match.snippet?.line || '',
+  236 |   }))
+  237 | 
+  238 |   const summary = snippets
+  239 |     .map((item) => `${item.file}${item.line ? `:${item.line}` : ''}`)
+  240 |     .join(', ')
+  241 | 
+  242 |   let promptContext = snippets
+  243 |     .map((item) => `[${item.file}${item.line ? `:${item.line}` : ''}] ${item.snippet}`)
+  244 |     .join('\n')
+  245 |   promptContext = sanitizeString(promptContext, MAX_CONTEXT_CHARS)
+  246 | 
+  247 |   return {
+  248 |     summary,
+  249 |     snippets,
+  250 |     prompt_context: promptContext,
+  251 |   }
+  252 | }
+  253 | 
+  254 | function findBestKeywordRule(questionText, rules = []) {
+  255 |   const normalizedQuestion = normalize(questionText)
+  256 |   const compactQuestion = compactTokenKey(normalizedQuestion)
+  257 |   const rawQuestionTokens = normalizedQuestion.split(/[^a-z0-9]+/).filter(Boolean)
+  258 |   const compactQuestionTokens = new Set(rawQuestionTokens.map((token) => compactTokenKey(token)).filter(Boolean))
+  259 | 
+  260 |   let bestRule = null
+  261 |   let bestRuleScore = 0
+  262 | 
+  263 |   for (const rule of rules) {
+  264 |     const normalizedKeywords = rule.keywords.map((keyword) => compactTokenKey(keyword)).filter(Boolean)
+  265 |     let score = 0
+  266 |     for (const keyword of normalizedKeywords) {
+  267 |       if (!keyword) continue
+  268 |       if (compactQuestionTokens.has(keyword)) {
+  269 |         score += 1
+  270 |         continue
+  271 |       }
+  272 |       if (keyword.length > 3 && compactQuestion.includes(keyword)) score += 1
+  273 |     }
+  274 | 
+  275 |     if (score > bestRuleScore) {
+  276 |       bestRule = rule
+  277 |       bestRuleScore = score
+  278 |     }
+  279 |   }
+  280 | 
+  281 |   return { bestRule, bestRuleScore }
+  282 | }
+  283 | 
+  284 | function shouldSearchCodeContext(questionText) {
+  285 |   const tokens = tokenize(questionText)
+  286 |   if (tokens.length < 3) return false
+  287 |   return tokens.some((token) => CODE_CONTEXT_HINTS.has(token))
+  288 | }
+  289 | 
+  290 | function buildKnowledgeContext(questionText, entries) {
+  291 |   const rankedEntries = entries
+  292 |     .map((entry) => ({
+  293 |       entry,
+  294 |       score: scoreMatch(questionText, entry.question, entry.keywords),
+  295 |     }))
+  296 |     .filter((item) => item.score > 0)
+  297 |     .sort((a, b) => b.score - a.score)
+  298 |     .slice(0, 3)
+  299 | 
+  300 |   const lines = rankedEntries.map((item, index) => {
+  301 |     const entry = item.entry
+  302 |     const keywords = Array.isArray(entry.keywords) ? entry.keywords.join(', ') : ''
+  303 |     return `${index + 1}. (${entry.type}) Q: ${entry.question}\nA: ${entry.answer}${keywords ? `\nK: ${keywords}` : ''}`
+  304 |   })
+  305 | 
+  306 |   const { bestRule: bestGlobalRule, bestRuleScore: bestGlobalRuleScore } = findBestKeywordRule(questionText, globalRules)
+  307 |   if (bestGlobalRule && bestGlobalRuleScore > 0) {
+  308 |     lines.push(`Global guidance: ${bestGlobalRule.response}`)
+  309 |   }
+  310 | 
+  311 |   const { bestRule: bestSmallTalkRule, bestRuleScore: bestSmallTalkScore } = findBestKeywordRule(questionText, smallTalkRules)
+  312 |   if (bestSmallTalkRule && bestSmallTalkScore > 0) {
+  313 |     lines.push(`Tone guidance: ${bestSmallTalkRule.response}`)
+  314 |   }
+  315 | 
+  316 |   return sanitizeString(lines.join('\n\n'), MAX_KNOWLEDGE_CONTEXT_CHARS)
+  317 | }
+  318 | 
+  319 | function buildAgentPrompt(questionText, codeContext, knowledgeContext) {
+  320 |   const sections = [
+  321 |     'You are GarTex Assistant for textile business workflows.',
+  322 |     'Always answer the user directly. Keep responses practical and concise.',
+  323 |     'Do not use generic fallback text like "I am sorry, I could not find an answer".',
+  324 |     'Do not introduce yourself unless user asks who you are.',
+  325 |     'If code context is present, use it as supporting evidence. If absent, still answer based on general textile/business knowledge.',
+  326 |   ]
+  327 | 
+  328 |   if (knowledgeContext) {
+  329 |     sections.push(`Knowledge context:\n${knowledgeContext}`)
+  330 |   }
+  331 | 
+  332 |   if (codeContext?.summary || codeContext?.prompt_context) {
+  333 |     const codeBlock = [
+  334 |       codeContext.summary ? `Relevant files: ${codeContext.summary}` : '',
+  335 |       codeContext.prompt_context ? `Code snippets:\n${codeContext.prompt_context}` : '',
+  336 |     ].filter(Boolean).join('\n\n')
+  337 |     sections.push(codeBlock)
+  338 |   }
+  339 | 
+  340 |   sections.push(`User question: ${questionText}`)
+  341 |   return sections.join('\n\n')
+  342 | }
+  343 | 
+  344 | async function callChatCompletions(prompt, signal) {
+  345 |   const response = await fetch(LOCAL_LLM_ENDPOINT, {
+  346 |     method: 'POST',
+  347 |     headers: { 'content-type': 'application/json' },
+  348 |     body: JSON.stringify({
+  349 |       model: LOCAL_LLM_MODEL,
+  350 |       messages: [
+  351 |         { role: 'system', content: 'You are a helpful GarTex assistant.' },
+  352 |         { role: 'user', content: prompt },
+  353 |       ],
+  354 |       temperature: 0.2,
+  355 |       max_tokens: 220,
+  356 |     }),
+  357 |     signal,
+  358 |   })
+  359 | 
+  360 |   if (!response.ok) return null
+  361 |   const payload = await response.json()
+  362 |   return sanitizeString(payload?.choices?.[0]?.message?.content || '', MAX_AI_ANSWER_CHARS) || null
+  363 | }
+  364 | 
+  365 | async function callLegacyCompletion(prompt, signal) {
+  366 |   const response = await fetch(LOCAL_LLM_FALLBACK_ENDPOINT, {
+  367 |     method: 'POST',
+  368 |     headers: { 'content-type': 'application/json' },
+  369 |     body: JSON.stringify({
+  370 |       model: LOCAL_LLM_MODEL,
+  371 |       prompt,
+  372 |       temperature: 0.2,
+  373 |       n_predict: 220,
+  374 |     }),
+  375 |     signal,
+  376 |   })
+  377 | 
+  378 |   if (!response.ok) return null
+  379 |   const payload = await response.json()
+  380 |   return sanitizeString(payload?.content || payload?.response || '', MAX_AI_ANSWER_CHARS) || null
+  381 | }
+  382 | 
+  383 | async function runWithTimeout(callback) {
+  384 |   const controller = new AbortController()
+  385 |   const timeout = setTimeout(() => controller.abort(), LOCAL_LLM_TIMEOUT_MS)
+  386 |   try {
+  387 |     return await callback(controller.signal)
+  388 |   } finally {
+  389 |     clearTimeout(timeout)
+  390 |   }
+  391 | }
+  392 | 
+  393 | async function generateDynamicAnswer(questionText, codeContext, knowledgeContext) {
+  394 |   try {
+  395 |     const prompt = buildAgentPrompt(questionText, codeContext, knowledgeContext)
+  396 |     logInfo('Assistant sending request to local LLM', {
+  397 |       endpoint: LOCAL_LLM_ENDPOINT,
+  398 |       model: LOCAL_LLM_MODEL,
+  399 |       prompt_chars: prompt.length,
+  400 |       timeout_ms: LOCAL_LLM_TIMEOUT_MS,
+  401 |     })
+  402 | 
+  403 |     const chatResult = await runWithTimeout((signal) => callChatCompletions(prompt, signal))
+  404 |     if (chatResult) {
+  405 |       logInfo('Assistant received response from local LLM chat endpoint')
+  406 |       return chatResult
+  407 |     }
+  408 | 
+  409 |     logInfo('Assistant chat endpoint returned no response, trying completion endpoint', {
+  410 |       endpoint: LOCAL_LLM_FALLBACK_ENDPOINT,
+  411 |     })
+  412 | 
+  413 |     const completionResult = await runWithTimeout((signal) => callLegacyCompletion(prompt, signal))
+  414 |     if (completionResult) {
+  415 |       logInfo('Assistant received response from local LLM completion endpoint')
+  416 |       return completionResult
+  417 |     }
+  418 | 
+  419 |     return null
+  420 |   } catch (error) {
+  421 |     logError('Assistant local LLM request failed', error)
+  422 |     return null
+  423 |   }
+  424 | }
+  425 | 
+  426 | export async function listKnowledge(orgId) {
+  427 |   const rows = await readJson(FILE)
+  428 |   return rows
+  429 |     .filter((row) => row.org_id === orgId)
+  430 |     .sort((a, b) => String(b.updated_at || '').localeCompare(String(a.updated_at || '')))
+  431 |     .map(mapKnowledgeRow)
+  432 | }
+  433 | 
+  434 | export async function createKnowledgeEntry(orgId, payload) {
+  435 |   const type = normalizeType(payload?.type)
+  436 |   const question = sanitizeString(payload?.question, 280)
+  437 |   const answer = sanitizeString(payload?.answer, 1200)
+  438 |   const keywords = Array.isArray(payload?.keywords)
+  439 |     ? payload.keywords.map((k) => sanitizeString(k, 80).toLowerCase()).filter(Boolean)
+  440 |     : []
+  441 | 
+  442 |   if (!question || !answer) {
+  443 |     const error = new Error('question and answer are required')
+  444 |     error.status = 400
+  445 |     throw error
+  446 |   }
+  447 | 
+  448 |   const now = new Date().toISOString()
+  449 |   const entry = {
+  450 |     id: crypto.randomUUID(),
+  451 |     org_id: orgId,
+  452 |     type,
+  453 |     question,
+  454 |     answer,
+  455 |     keywords,
+  456 |     created_at: now,
+  457 |     updated_at: now,
+  458 |   }
+  459 | 
+  460 |   await updateJson(FILE, (rows) => {
+  461 |     rows.push(entry)
+  462 |     return rows
+  463 |   })
+  464 |   return mapKnowledgeRow(entry)
+  465 | }
+  466 | 
+  467 | export async function updateKnowledgeEntry(orgId, entryId, payload) {
+  468 |   let updated = null
+  469 |   await updateJson(FILE, (rows) => {
+  470 |     const index = rows.findIndex((row) => row.id === entryId && row.org_id === orgId)
+  471 |     if (index < 0) {
+  472 |       const error = new Error('Knowledge entry not found')
+  473 |       error.status = 404
+  474 |       throw error
+  475 |     }
+  476 | 
+  477 |     const current = rows[index]
+  478 |     const type = payload?.type === undefined ? normalizeType(current.type) : normalizeType(payload.type)
+  479 |     const question = payload?.question === undefined ? current.question : sanitizeString(payload.question, 280)
+  480 |     const answer = payload?.answer === undefined ? current.answer : sanitizeString(payload.answer, 1200)
+  481 |     const keywords = payload?.keywords === undefined
+  482 |       ? current.keywords
+  483 |       : (Array.isArray(payload.keywords) ? payload.keywords.map((k) => sanitizeString(k, 80).toLowerCase()).filter(Boolean) : [])
+  484 | 
+  485 |     if (!question || !answer) {
+  486 |       const error = new Error('question and answer are required')
+  487 |       error.status = 400
+  488 |       throw error
+  489 |     }
+  490 | 
+  491 |     updated = {
+  492 |       ...current,
+  493 |       type,
+  494 |       question,
+  495 |       answer,
+  496 |       keywords,
+  497 |       updated_at: new Date().toISOString(),
+  498 |     }
+  499 |     rows[index] = updated
+  500 |     return rows
+  501 |   })
+  502 | 
+  503 |   return mapKnowledgeRow(updated)
+  504 | }
+  505 | 
+  506 | export async function deleteKnowledgeEntry(orgId, entryId) {
+  507 |   let deleted = false
+  508 |   await updateJson(FILE, (rows) => {
+  509 |     const next = rows.filter((row) => !(row.id === entryId && row.org_id === orgId))
+  510 |     deleted = next.length !== rows.length
+  511 |     return next
+  512 |   })
+  513 |   return deleted
+  514 | }
+  515 | 
+  516 | function buildMatchedResponse({ matchedAnswer, source, score, fallbackReason = null, matchedType = null, codeContext = null, knowledgeContext = '' }) {
+  517 |   return {
+  518 |     matched_answer: matchedAnswer,
+  519 |     source,
+  520 |     confidence: Number(Math.min(0.95, 0.45 + score * 0.1).toFixed(2)),
+  521 |     metadata: {
+  522 |       matched_source: source,
+  523 |       matched_type: matchedType,
+  524 |       confidence: Number(Math.min(0.95, 0.45 + score * 0.1).toFixed(2)),
+  525 |       fallback_reason: fallbackReason,
+  526 |       code_context: codeContext,
+  527 |       knowledge_context: knowledgeContext,
+  528 |     },
+  529 |   }
+  530 | }
+  531 | 
+  532 | export async function assistantReply(orgId, question = '') {
+  533 |   const questionText = sanitizeString(question, 800)
+  534 |   const codeContext = shouldSearchCodeContext(questionText)
+  535 |     ? await searchCodeContext(questionText)
+  536 |     : { summary: '', snippets: [], prompt_context: '' }
+  537 |   const entries = await listKnowledge(orgId)
+  538 |   const knowledgeContext = buildKnowledgeContext(questionText, entries)
+  539 | 
+  540 |   const dynamicAnswer = await generateDynamicAnswer(questionText, codeContext, knowledgeContext)
+  541 |   if (dynamicAnswer) {
+  542 |     return buildMatchedResponse({
+  543 |       matchedAnswer: dynamicAnswer,
+  544 |       source: 'dynamic_ai:local_llm',
+  545 |       score: 2,
+  546 |       fallbackReason: 'ai_generated_response',
+  547 |       matchedType: 'dynamic_ai',
+  548 |       codeContext,
+  549 |       knowledgeContext,
+  550 |     })
+  551 |   }
+  552 | 
+  553 |   return {
+  554 |     forward_to_agent: true,
+  555 |     agent_prompt_context: {
+  556 |       question: questionText,
+  557 |       code_summary: codeContext.summary,
+  558 |       compact_code_context: codeContext.prompt_context,
+  559 |       compact_knowledge_context: knowledgeContext,
+  560 |       max_context_chars: MAX_CONTEXT_CHARS,
+  561 |     },
+  562 |     metadata: {
+  563 |       matched_source: null,
+  564 |       matched_type: null,
+  565 |       confidence: 0,
+  566 |       fallback_reason: 'local_llm_unavailable',
+  567 |       code_context: codeContext,
+  568 |       knowledge_context: knowledgeContext,
+  569 |     },
+  570 |   }
+  571 | }
+  572 | 
