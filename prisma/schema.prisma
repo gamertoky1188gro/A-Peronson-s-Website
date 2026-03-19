@@ -1,0 +1,541 @@
+// Prisma schema for GarTexHub (MySQL)
+// Source of truth: MySQL (JSON files migrated into structured tables).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                         String   @id
+  name                       String
+  email                      String   @unique
+  password_hash              String
+  role                       String
+  status                     String
+  verified                   Boolean  @default(false)
+  subscription_status        String   @default("free")
+  wallet_balance_usd         Float    @default(0)
+  policy_strikes             Int      @default(0)
+  messaging_restricted_until DateTime?
+  profile                    Json?
+  org_owner_id               String?
+  member_id                  String?
+  username                   String?
+  permissions                Json?
+  permission_matrix          Json?
+  assigned_requests          Int?
+  performance_score          Int?
+  chatbot_enabled            Boolean  @default(false)
+  handoff_mode               String?
+  created_at                 DateTime @default(now())
+  updated_at                 DateTime?
+  password_reset_at          DateTime?
+
+  @@map("users")
+}
+
+model Subscription {
+  id         String   @id
+  user_id    String
+  plan       String
+  start_date DateTime
+  end_date   DateTime
+  auto_renew Boolean  @default(true)
+
+  @@map("subscriptions")
+}
+
+model Verification {
+  user_id                    String   @id
+  role                       String
+  buyer_region               String?
+  documents                  Json
+  verified                   Boolean  @default(false)
+  verified_at                DateTime?
+  subscription_valid_until   DateTime?
+  missing_required           Json?
+  credibility                Json?
+  subscription_remaining_days Int?
+  expiring_soon               Boolean?
+  verification_status         String?
+  review_status               String?
+  review_reason               String?
+  reviewed_at                 DateTime?
+  updated_at                 DateTime?
+
+  @@map("verification")
+}
+
+model Requirement {
+  id                     String   @id
+  buyer_id               String
+  title                  String
+  product                String?
+  industry               String?
+  category               String?
+  target_market          String?
+  quantity               String?
+  moq                    String?
+  price_range            String?
+  material               String?
+  fabric_gsm             String?
+  timeline_days          String?
+  delivery_timeline      String?
+  certifications_required Json?
+  shipping_terms         String?
+  incoterms              String?
+  payment_terms          String?
+  document_ready         String?
+  audit_date             String?
+  language_support       String?
+  capacity_min           String?
+  trims_wash             String?
+  sample_timeline        String?
+  sample_available       String?
+  packaging              String?
+  compliance_notes       String?
+  custom_description     String?
+  size_range             String?
+  color_pantone          String?
+  customization_capabilities String?
+  techpack_accepted      Boolean?
+  sample_lead_time_days  String?
+  compliance_details     String?
+  ai_summary             String?
+  assigned_agent_id      String?
+  assigned_at            DateTime?
+  assigned_by            String?
+  status                 String
+  moderated              Boolean?
+  moderation_reason      String?
+  created_at             DateTime @default(now())
+  updated_at             DateTime?
+
+  @@map("requirements")
+}
+
+model Product {
+  id                     String   @id
+  company_id             String
+  company_role           String
+  title                  String
+  industry               String?
+  category               String?
+  material               String?
+  moq                    String?
+  price_range            String?
+  lead_time_days         String?
+  fabric_gsm             String?
+  size_range             String?
+  color_pantone          String?
+  customization_capabilities String?
+  sample_available       String?
+  sample_lead_time_days  String?
+  description            String?
+  image_urls             Json?
+  cover_image_url        String?
+  status                 String?
+  video_url              String?
+  video_review_status    String?
+  video_restricted       Boolean?
+  video_moderation_flags Json?
+  video_reviewed_at      DateTime?
+  video_review_reason    String?
+  moderated              Boolean?
+  moderation_reason      String?
+  created_at             DateTime @default(now())
+  updated_at             DateTime?
+
+  @@map("company_products")
+}
+
+model Message {
+  id                String   @id
+  match_id          String
+  sender_id         String
+  message           String?
+  timestamp         DateTime @default(now())
+  type              String?
+  attachment        Json?
+  moderated         Boolean?
+  moderation_reason String?
+
+  @@map("messages")
+}
+
+model MessageRequest {
+  thread_id String @id
+  status    String
+  acted_by  String?
+  acted_at  DateTime?
+
+  @@map("message_requests")
+}
+
+model Notification {
+  id         String   @id
+  user_id    String
+  type       String
+  entity_type String?
+  entity_id  String?
+  message    String
+  meta       Json?
+  read       Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  @@map("notifications")
+}
+
+model SearchAlert {
+  id         String   @id
+  user_id    String
+  query      String
+  filters    Json?
+  created_at DateTime @default(now())
+  updated_at DateTime?
+
+  @@map("search_alerts")
+}
+
+model SearchUsageCounter {
+  user_id    String
+  action     String
+  date       String
+  count      Int
+  updated_at DateTime?
+  reset_at   DateTime?
+
+  @@id([user_id, action], name: "user_id_action")
+  @@map("search_usage_counters")
+}
+
+model ConversationLock {
+  request_id     String @id
+  locked_by      String
+  allowed_agents Json?
+  created_at     DateTime @default(now())
+
+  @@map("conversation_locks")
+}
+
+model PartnerRequest {
+  id             String   @id
+  requester_id   String
+  requester_role String
+  target_id      String
+  target_role    String
+  status         String
+  created_at     DateTime @default(now())
+  updated_at     DateTime?
+
+  @@map("partner_requests")
+}
+
+model CallSession {
+  id               String   @id
+  created_by       String
+  match_id         String?
+  title            String?
+  scheduled_for    DateTime?
+  duration_minutes Int?
+  participant_ids  Json?
+  status           String?
+  recording_url    String?
+  recording_status String?
+  contract_id      String?
+  security_audit_id String?
+  context          Json?
+  created_at       DateTime @default(now())
+  started_at       DateTime?
+  ended_at         DateTime?
+  audit_trail      Json?
+
+  @@map("call_sessions")
+}
+
+model CallRecordingView {
+  id        String   @id
+  call_id   String
+  viewer_id String
+  viewed_at DateTime @default(now())
+
+  @@map("call_recording_views")
+}
+
+model Document {
+  id                    String   @id
+  uploaded_by           String
+  entity_type           String
+  entity_id             String
+  file_path             String?
+  type                  String?
+  created_at            DateTime @default(now())
+  updated_at            DateTime?
+
+  contract_number       String?
+  title                 String?
+  buyer_name            String?
+  factory_name          String?
+  buyer_id              String?
+  factory_id            String?
+  bank_name             String?
+  beneficiary_name      String?
+  transaction_reference String?
+  is_draft              Boolean?
+  buyer_signature_state String?
+  factory_signature_state String?
+  buyer_signed_at        DateTime?
+  factory_signed_at      DateTime?
+  artifact               Json?
+  lifecycle_status       String?
+  archived_at            DateTime?
+
+  moderation_flags       Json?
+  moderation_status      String?
+
+  @@map("documents")
+}
+
+model Lead {
+  id                   String   @id
+  org_owner_id         String
+  match_id             String
+  counterparty_id      String?
+  source               String?
+  status               String?
+  assigned_agent_id    String?
+  created_at           DateTime @default(now())
+  updated_at           DateTime?
+  last_interaction_at  DateTime?
+
+  @@map("leads")
+}
+
+model LeadNote {
+  id           String   @id
+  lead_id      String
+  org_owner_id String
+  author_id    String
+  note         String?
+  created_at   DateTime @default(now())
+
+  @@map("lead_notes")
+}
+
+model LeadReminder {
+  id           String   @id
+  lead_id      String
+  org_owner_id String
+  created_by   String
+  remind_at    DateTime
+  message      String?
+  done         Boolean? @default(false)
+  created_at   DateTime @default(now())
+
+  @@map("lead_reminders")
+}
+
+model AnalyticsEvent {
+  id         String   @id
+  type       String
+  actor_id   String?
+  entity_id  String?
+  metadata   Json?
+  created_at DateTime @default(now())
+
+  @@map("analytics")
+}
+
+model Boost {
+  id         String   @id
+  user_id    String
+  scope      String
+  multiplier Float
+  status     String
+  starts_at  DateTime
+  ends_at    DateTime
+  price_usd  Float
+  created_at DateTime @default(now())
+  cancelled_at DateTime?
+
+  @@map("boosts")
+}
+
+model ProductView {
+  id         String   @id
+  user_id    String
+  product_id String
+  viewed_at  DateTime @default(now())
+  created_at DateTime @default(now())
+  updated_at DateTime?
+
+  @@map("product_views")
+}
+
+model Report {
+  id                String   @id
+  status            String
+  entity_type       String
+  entity_id         String
+  reason            String?
+  actor_id          String?
+  actor_name        String?
+  created_at        DateTime @default(now())
+  resolved_at       DateTime?
+  resolved_by       String?
+  resolution_action String?
+  resolution_note   String?
+
+  @@map("reports")
+}
+
+model PolicyViolation {
+  id                       String   @id
+  actor_id                 String
+  kind                     String?
+  reason                   String?
+  entity_type              String?
+  entity_id                String?
+  snippet                  String?
+  strikes                  Int?
+  action                   String?
+  restrict_hours           Int?
+  messaging_restricted_until DateTime?
+  meta                     Json?
+  created_at               DateTime @default(now())
+
+  @@map("violations")
+}
+
+model SocialInteraction {
+  id               String   @id
+  interaction_type String
+  entity_type      String
+  entity_id        String
+  actor_id         String
+  actor_name       String?
+  actor_verified   Boolean?
+  text             String?
+  created_at       DateTime @default(now())
+
+  @@map("social_interactions")
+}
+
+model UserConnection {
+  id           String   @id
+  type         String
+  requester_id String
+  receiver_id  String
+  status       String
+  created_at   DateTime @default(now())
+  updated_at   DateTime?
+
+  @@map("user_connections")
+}
+
+model Match {
+  requirement_id String
+  factory_id     String
+  score          Int?
+  status         String?
+  created_at     DateTime @default(now())
+
+  @@id([requirement_id, factory_id], name: "requirement_id_factory_id")
+  @@map("matches")
+}
+
+model MetricTransition {
+  id             String   @id
+  requirement_id String?
+  from_status    String?
+  to_status      String?
+  context        Json?
+  created_at     DateTime @default(now())
+
+  @@map("metrics")
+}
+
+model AssistantKnowledge {
+  id         String   @id
+  question   String
+  answer     String
+  tags       Json?
+  source     String?
+  created_at DateTime @default(now())
+  updated_at DateTime?
+
+  @@map("assistant_knowledge")
+}
+
+model Rating {
+  id                String   @id
+  profile_key       String
+  from_user_id      String
+  interaction_type  String?
+  score             Int?
+  comment           String?
+  reliability_flags Json?
+  created_at        DateTime @default(now())
+
+  @@map("ratings")
+}
+
+model RatingMilestone {
+  id               String   @id
+  profile_key      String
+  counterparty_id  String
+  interaction_type String?
+  milestone        String
+  status           String?
+  completed_at     DateTime?
+  created_at       DateTime @default(now())
+  updated_at       DateTime?
+  updated_by       String?
+
+  @@map("rating_milestones")
+}
+
+model RatingFeedbackRequest {
+  id                 String   @id
+  profile_key        String
+  counterparty_id    String
+  interaction_type   String?
+  qualification_rules Json?
+  status             String?
+  triggered_by       String?
+  created_at         DateTime @default(now())
+  fulfilled_at       DateTime?
+
+  @@map("rating_feedback_requests")
+}
+
+model RatingFeedbackEvent {
+  id               String   @id
+  profile_key      String
+  counterparty_id  String
+  interaction_type String?
+  event            String?
+  milestone        String?
+  created_at       DateTime @default(now())
+
+  @@map("rating_feedback_events")
+}
+
+model WalletHistory {
+  id               String   @id
+  user_id          String
+  kind             String?
+  amount_usd       Float?
+  balance_after_usd Float?
+  reason           String?
+  ref              String?
+  meta             Json?
+  created_at       DateTime @default(now())
+
+  @@map("wallet_history")
+}

@@ -10,9 +10,79 @@ import {
 } from '../services/searchAccessService.js'
 import { readJson } from '../utils/jsonStore.js'
 
+function redactRequirementForBuyer(requirement) {
+  return {
+    id: requirement.id,
+    buyer_id: requirement.buyer_id,
+    title: requirement.title || requirement.category || 'Buyer Request',
+    product: requirement.product || requirement.category || '',
+    category: requirement.category || '',
+    quantity: requirement.quantity || '',
+    moq: requirement.moq || '',
+    price_range: requirement.price_range || '',
+    material: requirement.material || '',
+    fabric_gsm: requirement.fabric_gsm || '',
+    target_market: requirement.target_market || '',
+    delivery_timeline: requirement.delivery_timeline || '',
+    certifications_required: Array.isArray(requirement.certifications_required) ? requirement.certifications_required : [],
+    shipping_terms: requirement.shipping_terms || '',
+    ai_summary: requirement.ai_summary || '',
+    status: requirement.status || 'open',
+    created_at: requirement.created_at,
+    redacted: true,
+  }
+}
+
 function parseNumber(value) {
   const n = Number(String(value || '').replace(/[^\d.]/g, ''))
   return Number.isFinite(n) ? n : null
+}
+
+function parseList(value) {
+  return String(value || '')
+    .split(',')
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean)
+}
+
+function parseBoolean(value) {
+  if (typeof value === 'boolean') return value
+  return String(value || '').toLowerCase() === 'true'
+}
+
+function parseCoordinate(value) {
+  const n = Number(String(value || '').trim())
+  return Number.isFinite(n) ? n : null
+}
+
+function parseRange(value) {
+  const raw = String(value || '').trim()
+  if (!raw) return { min: null, max: null }
+  const parts = raw.split('-').map((part) => parseNumber(part))
+  const min = Number.isFinite(parts[0]) ? parts[0] : null
+  const max = Number.isFinite(parts[1]) ? parts[1] : null
+  if (min === null && max === null) {
+    const single = parseNumber(raw)
+    return { min: single, max: single }
+  }
+  return { min, max }
+}
+
+function rangesOverlap(filterRange, valueRange) {
+  if (!filterRange) return true
+  const filter = parseRange(filterRange)
+  const value = parseRange(valueRange)
+  if (filter.min === null && filter.max === null) return true
+  if (value.min === null && value.max === null) return false
+
+  const fMin = filter.min ?? filter.max
+  const fMax = filter.max ?? filter.min
+  const vMin = value.min ?? value.max
+  const vMax = value.max ?? value.min
+
+  if (fMin !== null && vMax !== null && vMax < fMin) return false
+  if (fMax !== null && vMin !== null && vMin > fMax) return false
+  return true
 }
 
 function matchesMoqRange(rawRange, moqValue) {
@@ -30,6 +100,122 @@ function matchesMoqRange(rawRange, moqValue) {
   return true
 }
 
+function buildOrgMemberIndex(users = []) {
+  const ownerByMember = new Map()
+  const membersByOwner = new Map()
+
+  for (const user of users) {
+    const userId = String(user?.id || '')
+    if (!userId) continue
+    const role = String(user?.role || '').toLowerCase()
+    const ownerId = role === 'agent' && user?.org_owner_id ? String(user.org_owner_id) : userId
+    ownerByMember.set(userId, ownerId)
+    if (!membersByOwner.has(ownerId)) membersByOwner.set(ownerId, new Set([ownerId]))
+    membersByOwner.get(ownerId).add(userId)
+  }
+
+  return { ownerByMember, membersByOwner }
+}
+
+function buildResponseTimeByOwner(messages = [], users = []) {
+  const { ownerByMember } = buildOrgMemberIndex(users)
+  const messagesByMatch = new Map()
+
+  for (const msg of messages) {
+    const matchId = String(msg?.match_id || '')
+    if (!matchId || matchId.startsWith('friend:')) continue
+    if (!messagesByMatch.has(matchId)) messagesByMatch.set(matchId, [])
+    messagesByMatch.get(matchId).push(msg)
+  }
+
+  const responseTimes = new Map()
+
+  for (const msgs of messagesByMatch.values()) {
+    const sorted = msgs.slice().sort((a, b) => String(a.timestamp || '').localeCompare(String(b.timestamp || '')))
+    const ownersInMatch = new Set(sorted.map((m) => ownerByMember.get(String(m.sender_id || '')) || String(m.sender_id || '')).filter(Boolean))
+
+    for (const ownerId of ownersInMatch) {
+      let inboundAt = null
+      for (const message of sorted) {
+        const senderOwner = ownerByMember.get(String(message.sender_id || '')) || String(message.sender_id || '')
+        if (!senderOwner || senderOwner === ownerId) continue
+        const ts = new Date(message.timestamp || '').getTime()
+        if (!Number.isFinite(ts)) continue
+        inboundAt = ts
+        break
+      }
+      if (!inboundAt) continue
+
+      let outboundAt = null
+      for (const message of sorted) {
+        const senderOwner = ownerByMember.get(String(message.sender_id || '')) || String(message.sender_id || '')
+        if (!senderOwner || senderOwner !== ownerId) continue
+        const ts = new Date(message.timestamp || '').getTime()
+        if (!Number.isFinite(ts) || ts < inboundAt) continue
+        outboundAt = ts
+        break
+      }
+      if (!outboundAt) continue
+
+      const hours = (outboundAt - inboundAt) / (1000 * 60 * 60)
+      if (!responseTimes.has(ownerId)) responseTimes.set(ownerId, [])
+      responseTimes.get(ownerId).push(hours)
+    }
+  }
+
+  const averages = new Map()
+  for (const [ownerId, times] of responseTimes.entries()) {
+    const avg = times.length ? (times.reduce((a, b) => a + b, 0) / times.length) : 0
+    averages.set(ownerId, Math.round(avg * 10) / 10)
+  }
+
+  return averages
+}
+
+function haversineDistanceKm(lat1, lng1, lat2, lng2) {
+  const toRad = (deg) => (deg * Math.PI) / 180
+  const r = 6371
+  const dLat = toRad(lat2 - lat1)
+  const dLng = toRad(lng2 - lng1)
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return r * c
+}
+
+function bucketResponseTime(avgHours) {
+  if (!Number.isFinite(avgHours) || avgHours <= 0) return 'unknown'
+  if (avgHours <= 4) return '0-4h'
+  if (avgHours <= 12) return '4-12h'
+  if (avgHours <= 24) return '12-24h'
+  return '24h+'
+}
+
+function bucketYearsInBusiness(value) {
+  const years = Number(value)
+  if (!Number.isFinite(years) || years <= 0) return 'unknown'
+  if (years <= 2) return '0-2y'
+  if (years <= 5) return '3-5y'
+  if (years <= 10) return '6-10y'
+  return '10y+'
+}
+
+function bucketTeamSeats(value) {
+  const seats = Number(value)
+  if (!Number.isFinite(seats) || seats <= 0) return 'unknown'
+  if (seats <= 5) return '1-5'
+  if (seats <= 10) return '6-10'
+  if (seats <= 20) return '11-20'
+  return '20+'
+}
+
+function topFacetEntries(counts = {}, limit = 8) {
+  return Object.fromEntries(
+    Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, limit),
+  )
+}
+
 export async function createBuyerRequirement(req, res) {
   const requirement = await createRequirement(req.user.id, req.body)
   return res.status(201).json(requirement)
@@ -41,9 +227,18 @@ export async function getRequirements(req, res) {
   return res.json(await listRequirements(filters))
 }
 
+export async function browseRequirements(req, res) {
+  const all = await listRequirements({})
+  const out = all.map((r) => (r.buyer_id === req.user.id ? r : redactRequirementForBuyer(r)))
+  return res.json(out)
+}
+
 export async function getRequirement(req, res) {
   const requirement = await getRequirementById(req.params.requirementId)
   if (!requirement) return res.status(404).json({ error: 'Requirement not found' })
+  if (req.user.role === 'buyer' && requirement.buyer_id !== req.user.id) {
+    return res.status(403).json({ error: 'Forbidden' })
+  }
   return res.json(requirement)
 }
 
@@ -64,7 +259,9 @@ export async function deleteRequirement(req, res) {
 export async function searchRequirements(req, res) {
   const plan = await getUserPlan(req.user.id)
   const advancedFilters = extractUsedAdvancedFilters(req.query)
-  const quotaPreview = await getQuotaSnapshot(req.user.id, 'requirements_search', plan)
+  const quotaPreview = advancedFilters.length > 0
+    ? await getQuotaSnapshot(req.user.id, 'requirements_search', plan)
+    : null
 
   if (advancedFilters.length > 0 && !canUseAdvancedFilters(plan)) {
     return res.status(403).json(buildLimitError({
@@ -76,8 +273,10 @@ export async function searchRequirements(req, res) {
     }))
   }
 
-  const quotaUse = await consumeQuota(req.user.id, 'requirements_search', plan)
-  if (!quotaUse.allowed) {
+  const quotaUse = advancedFilters.length > 0
+    ? await consumeQuota(req.user.id, 'requirements_search', plan)
+    : { allowed: true, quota: { action: 'requirements_search', plan, unlimited: true } }
+  if (advancedFilters.length > 0 && !quotaUse.allowed) {
     return res.status(429).json(buildLimitError({
       code: 'limit_reached',
       message: 'Daily requirement search limit reached',
@@ -86,19 +285,57 @@ export async function searchRequirements(req, res) {
   }
 
   const all = await listRequirements({})
-  const users = await readJson('users.json')
+  const [users, messages] = await Promise.all([
+    readJson('users.json'),
+    readJson('messages.json'),
+  ])
   const usersById = new Map(users.map((u) => [u.id, u]))
+  const responseTimeByOwner = buildResponseTimeByOwner(messages, users)
 
   const q = String(req.query.q || '').toLowerCase().trim()
+  const wantedIndustry = String(req.query.industry || '').trim().toLowerCase()
   const wantedCountry = String(req.query.country || '').trim().toLowerCase()
   const wantedOrgType = String(req.query.orgType || '').trim().toLowerCase()
   const verifiedOnly = req.query.verifiedOnly === 'true'
   const moqRange = String(req.query.moqRange || '').trim()
+  const priceRange = String(req.query.priceRange || '').trim()
+  const wantedIncoterms = String(req.query.incoterms || '').trim().toLowerCase()
+  const wantedPaymentTerms = String(req.query.paymentTerms || '').trim().toLowerCase()
+  const wantedDocumentReady = String(req.query.documentReady || '').trim().toLowerCase()
+  const wantedAuditDate = String(req.query.auditDate || '').trim().toLowerCase()
+  const wantedLanguage = String(req.query.languageSupport || '').trim().toLowerCase()
+  const wantedFabricType = String(req.query.fabricType || '').trim().toLowerCase()
+  const wantedSizeRange = String(req.query.sizeRange || '').trim().toLowerCase()
+  const wantedColorPantone = String(req.query.colorPantone || '').trim().toLowerCase()
+  const wantedCustomization = String(req.query.customization || '').trim().toLowerCase()
+  const sampleAvailable = req.query.sampleAvailable === 'true'
+  const sampleLeadTimeMax = parseNumber(req.query.sampleLeadTime)
+  const wantedCertificationsRaw = String(req.query.certifications || '').trim()
+  const wantedCertifications = wantedCertificationsRaw
+    ? wantedCertificationsRaw.split(',').map((c) => c.trim().toLowerCase()).filter(Boolean)
+    : []
+  const leadTimeMax = parseNumber(req.query.leadTimeMax)
+  const gsmMin = parseNumber(req.query.gsmMin)
+  const gsmMax = parseNumber(req.query.gsmMax)
+  const capacityMin = parseNumber(req.query.capacityMin)
+  const processes = parseList(req.query.processes)
+  const yearsInBusinessMin = parseNumber(req.query.yearsInBusinessMin)
+  const responseTimeMax = parseNumber(req.query.responseTimeMax)
+  const teamSeatsMin = parseNumber(req.query.teamSeatsMin)
+  const handlesMultipleFactoriesFilter = req.query.handlesMultipleFactories !== undefined
+    ? parseBoolean(req.query.handlesMultipleFactories)
+    : null
+  const exportPorts = parseList(req.query.exportPort)
+  const distanceKm = parseNumber(req.query.distanceKm)
+  const locationLat = parseCoordinate(req.query.locationLat)
+  const locationLng = parseCoordinate(req.query.locationLng)
+  const distanceFilterActive = distanceKm !== null && locationLat !== null && locationLng !== null
 
   const results = all
     .map((r) => {
       const buyer = usersById.get(r.buyer_id) || null
       const authorCountry = String(buyer?.profile?.country || '').trim()
+      const profile = buyer?.profile || {}
       return {
         ...r,
         author: buyer ? {
@@ -107,22 +344,163 @@ export async function searchRequirements(req, res) {
           role: buyer.role,
           verified: Boolean(buyer.verified),
           country: authorCountry,
+          industry: String(profile?.industry || ''),
+          main_processes: Array.isArray(profile?.main_processes) ? profile.main_processes : [],
+          years_in_business: profile?.years_in_business || '',
+          handles_multiple_factories: Boolean(profile?.handles_multiple_factories),
+          team_seats: profile?.team_seats || '',
+          export_ports: Array.isArray(profile?.export_ports) ? profile.export_ports : [],
+          location_lat: profile?.location_lat ?? '',
+          location_lng: profile?.location_lng ?? '',
+          avg_response_hours: responseTimeByOwner.get(String(buyer.id)) ?? null,
         } : { id: r.buyer_id, name: 'Unknown buyer', role: 'buyer', verified: false, country: '' },
         profile_key: `user:${r.buyer_id}`,
       }
     })
     .filter((r) => {
-      if (q && !`${r.category} ${r.material} ${r.custom_description}`.toLowerCase().includes(q)) return false
+      if (q && !`${r.category} ${r.product} ${r.material} ${r.custom_description} ${r.title} ${r.color_pantone || ''} ${r.size_range || ''}`.toLowerCase().includes(q)) return false
       if (req.query.category && String(r.category).toLowerCase() !== String(req.query.category).toLowerCase()) return false
+      if (wantedIndustry) {
+        const reqIndustry = String(r.industry || '').toLowerCase()
+        const buyerIndustry = String(r.author?.industry || '').toLowerCase()
+        if (reqIndustry !== wantedIndustry && buyerIndustry !== wantedIndustry) return false
+      }
       if (wantedOrgType && String(r.author?.role || '').toLowerCase() !== wantedOrgType) return false
       if (wantedCountry && String(r.author?.country || '').toLowerCase() !== wantedCountry) return false
       if (verifiedOnly && !r.author?.verified) return false
-      if (moqRange && !matchesMoqRange(moqRange, r.quantity)) return false
+      if (moqRange && !matchesMoqRange(moqRange, r.moq || r.quantity)) return false
+      if (priceRange && !rangesOverlap(priceRange, r.price_range || '')) return false
+      if (wantedIncoterms && String(r.incoterms || '').toLowerCase() !== wantedIncoterms) return false
+      if (wantedCertifications.length > 0) {
+        const required = Array.isArray(r.certifications_required) ? r.certifications_required.map((c) => String(c).toLowerCase()) : []
+        const hit = wantedCertifications.some((c) => required.includes(c))
+        if (!hit) return false
+      }
+      if (leadTimeMax !== null) {
+        const timeline = parseNumber(r.timeline_days || r.delivery_timeline || '')
+        if (timeline === null || timeline > leadTimeMax) return false
+      }
+      if (gsmMin !== null || gsmMax !== null) {
+        const gsm = parseNumber(r.fabric_gsm || '')
+        if (gsm === null) return false
+        if (gsmMin !== null && gsm < gsmMin) return false
+        if (gsmMax !== null && gsm > gsmMax) return false
+      }
+      if (capacityMin !== null) {
+        const cap = parseNumber(r.capacity_min || '')
+        if (cap === null || cap < capacityMin) return false
+      }
+      if (wantedPaymentTerms && String(r.payment_terms || '').toLowerCase() !== wantedPaymentTerms) return false
+      if (wantedDocumentReady && String(r.document_ready || '').toLowerCase() !== wantedDocumentReady) return false
+      if (wantedAuditDate && String(r.audit_date || '').toLowerCase() !== wantedAuditDate) return false
+      if (wantedLanguage && String(r.language_support || '').toLowerCase() !== wantedLanguage) return false
+      if (wantedFabricType && !String(r.material || '').toLowerCase().includes(wantedFabricType)) return false
+      if (wantedSizeRange && !String(r.size_range || '').toLowerCase().includes(wantedSizeRange)) return false
+      if (wantedColorPantone && !String(r.color_pantone || '').toLowerCase().includes(wantedColorPantone)) return false
+      if (wantedCustomization && !String(r.customization_capabilities || '').toLowerCase().includes(wantedCustomization)) return false
+      if (sampleAvailable) {
+        const available = String(r.sample_available || '').toLowerCase()
+        if (!(available === 'true' || available === 'yes' || r.sample_lead_time_days || r.sample_timeline)) return false
+      }
+      if (sampleLeadTimeMax !== null) {
+        const sampleLead = parseNumber(r.sample_lead_time_days || r.sample_timeline || '')
+        if (sampleLead === null || sampleLead > sampleLeadTimeMax) return false
+      }
+      if (processes.length > 0) {
+        const authorProcesses = Array.isArray(r.author?.main_processes)
+          ? r.author.main_processes.map((p) => String(p).toLowerCase())
+          : []
+        const hit = processes.some((p) => authorProcesses.includes(p))
+        if (!hit) return false
+      }
+      if (yearsInBusinessMin !== null) {
+        const years = parseNumber(r.author?.years_in_business || '')
+        if (years === null || years < yearsInBusinessMin) return false
+      }
+      if (teamSeatsMin !== null) {
+        const seats = parseNumber(r.author?.team_seats || '')
+        if (seats === null || seats < teamSeatsMin) return false
+      }
+      if (handlesMultipleFactoriesFilter !== null) {
+        if (Boolean(r.author?.handles_multiple_factories) !== handlesMultipleFactoriesFilter) return false
+      }
+      if (exportPorts.length > 0) {
+        const authorPorts = Array.isArray(r.author?.export_ports)
+          ? r.author.export_ports.map((p) => String(p).toLowerCase())
+          : []
+        const hit = exportPorts.some((p) => authorPorts.includes(p))
+        if (!hit) return false
+      }
+      if (responseTimeMax !== null) {
+        const avg = Number(r.author?.avg_response_hours)
+        if (!Number.isFinite(avg) || avg > responseTimeMax) return false
+      }
+      if (distanceFilterActive) {
+        const authorLat = parseCoordinate(r.author?.location_lat)
+        const authorLng = parseCoordinate(r.author?.location_lng)
+        if (authorLat !== null && authorLng !== null) {
+          const distance = haversineDistanceKm(locationLat, locationLng, authorLat, authorLng)
+          if (!Number.isFinite(distance) || distance > distanceKm) return false
+        } else if (!wantedCountry) {
+          return false
+        }
+      }
       return true
     })
 
+  const items = results.map((row) => {
+    if (req.user.role === 'buyer' && row.buyer_id !== req.user.id) {
+      return { ...redactRequirementForBuyer(row), author: row.author, profile_key: row.profile_key }
+    }
+    return row
+  })
+
+  const facets = results.reduce((acc, row) => {
+    const category = String(row.category || 'Other')
+    const country = String(row.author?.country || 'Unknown')
+    acc.categories[category] = (acc.categories[category] || 0) + 1
+    acc.countries[country] = (acc.countries[country] || 0) + 1
+    acc.verified[row.author?.verified ? 'verified' : 'unverified'] += 1
+    const processesList = Array.isArray(row.author?.main_processes) ? row.author.main_processes : []
+    processesList.forEach((proc) => {
+      const key = String(proc || 'Other')
+      acc.processes[key] = (acc.processes[key] || 0) + 1
+    })
+    const exportPortsList = Array.isArray(row.author?.export_ports) ? row.author.export_ports : []
+    exportPortsList.forEach((port) => {
+      const key = String(port || 'Other')
+      acc.export_ports[key] = (acc.export_ports[key] || 0) + 1
+    })
+    const responseBucket = bucketResponseTime(Number(row.author?.avg_response_hours))
+    acc.response_time[responseBucket] = (acc.response_time[responseBucket] || 0) + 1
+    const yearsBucket = bucketYearsInBusiness(row.author?.years_in_business)
+    acc.years_in_business[yearsBucket] = (acc.years_in_business[yearsBucket] || 0) + 1
+    const seatsBucket = bucketTeamSeats(row.author?.team_seats)
+    acc.team_seats[seatsBucket] = (acc.team_seats[seatsBucket] || 0) + 1
+    const handlesKey = row.author?.handles_multiple_factories ? 'true' : 'false'
+    acc.handles_multiple_factories[handlesKey] = (acc.handles_multiple_factories[handlesKey] || 0) + 1
+    return acc
+  }, {
+    categories: {},
+    countries: {},
+    verified: { verified: 0, unverified: 0 },
+    processes: {},
+    export_ports: {},
+    response_time: {},
+    years_in_business: {},
+    team_seats: {},
+    handles_multiple_factories: {},
+  })
+
+  const cappedFacets = {
+    ...facets,
+    processes: topFacetEntries(facets.processes, 8),
+    export_ports: topFacetEntries(facets.export_ports, 8),
+  }
+
   return res.json({
-    items: results,
+    items,
+    facets: cappedFacets,
     ...buildSearchAccessPayload({
       action: 'requirements_search',
       plan,

@@ -11,7 +11,10 @@
     "price_range": "Target: EU",
     "material": "Denim 12oz",
     "timeline_days": "45",
-    "certifications_required": ["BSCI", "OEKO-TEX"],
+    "certifications_required": [
+      "BSCI",
+      "OEKO-TEX"
+    ],
     "shipping_terms": "FOB Chittagong",
     "custom_description": "Denim jacket with enzyme wash. Include trims: metal buttons + branded labels. Please share capacity, wash facility details, and sample timeline.",
     "status": "open",
@@ -29,7 +32,9 @@
     "price_range": "Target: USA",
     "material": "Cotton 200gsm",
     "timeline_days": "60",
-    "certifications_required": ["OEKO-TEX"],
+    "certifications_required": [
+      "OEKO-TEX"
+    ],
     "shipping_terms": "CIF Los Angeles",
     "custom_description": "Solid-color polo with embroidery on chest. Provide MOQ, lead time, and fabric sourcing options.",
     "status": "open",
@@ -47,7 +52,9 @@
     "price_range": "Target: UK",
     "material": "Cotton jersey",
     "timeline_days": "50",
-    "certifications_required": ["OEKO-TEX"],
+    "certifications_required": [
+      "OEKO-TEX"
+    ],
     "shipping_terms": "FOB Chittagong",
     "custom_description": "2-piece kids set (tee + shorts). Focus on soft finish and colorfast prints. Share printing method and QC process.",
     "status": "open",
@@ -65,7 +72,9 @@
     "price_range": "Target: DE",
     "material": "Brushed fleece 320gsm",
     "timeline_days": "55",
-    "certifications_required": ["BSCI"],
+    "certifications_required": [
+      "BSCI"
+    ],
     "shipping_terms": "FOB Chittagong",
     "custom_description": "Pullover hoodie with kangaroo pocket. Provide size range capability and trimming details (drawcord, metal tips).",
     "status": "open",
@@ -83,7 +92,9 @@
     "price_range": "Target: FR",
     "material": "Viscose woven",
     "timeline_days": "48",
-    "certifications_required": ["SEDEX"],
+    "certifications_required": [
+      "SEDEX"
+    ],
     "shipping_terms": "CIF Le Havre",
     "custom_description": "V-neck blouse with shell buttons. Please share line efficiency, inline inspection approach, and sample lead time.",
     "status": "open",
@@ -106,5 +117,21 @@
     "custom_description": "Straight-leg workwear pant with reinforced seams. Provide sewing line capacity and packing specs support.",
     "status": "open",
     "created_at": "2026-03-12T08:30:00.000Z"
+  },
+  {
+    "id": "a4a9b265-61a1-4762-b8f9-73c62721a6e0",
+    "buyer_id": "6a258ab9-9b56-4192-aa90-6e1ebb81afa8",
+    "category": "meow",
+    "quantity": "20",
+    "price_range": "1000",
+    "material": "wkj df",
+    "timeline_days": "",
+    "certifications_required": [
+      "awkm efc"
+    ],
+    "shipping_terms": "wakem fc",
+    "custom_description": "Subcategory: ow\nGSM: wkef c\nlaew d",
+    "status": "open",
+    "created_at": "2026-03-17T09:56:31.424Z"
   }
 ]

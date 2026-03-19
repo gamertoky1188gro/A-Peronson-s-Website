@@ -22,7 +22,10 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
+import { trackClientEvent } from '../lib/events'
 import VerificationPanel from '../components/profile/VerificationPanel'
+
+const Motion = motion
 
 function roleToRoute(role, id) {
   // Safety redirect helper: ensures we land on the correct profile route for a given role.
@@ -30,6 +33,16 @@ function roleToRoute(role, id) {
   if (role === 'buyer') return `/buyer/${encodeURIComponent(id)}`
   if (role === 'buying_house') return `/buying-house/${encodeURIComponent(id)}`
   return `/factory/${encodeURIComponent(id)}`
+}
+
+function isBoostActive(boost) {
+  if (!boost) return false
+  if (String(boost.status || '').toLowerCase() !== 'active') return false
+  const now = Date.now()
+  const startsAt = new Date(boost.starts_at).getTime()
+  const endsAt = new Date(boost.ends_at).getTime()
+  if (!Number.isFinite(startsAt) || !Number.isFinite(endsAt)) return false
+  return now >= startsAt && now <= endsAt
 }
 
 export default function BuyingHouseProfile() {
@@ -49,6 +62,7 @@ export default function BuyingHouseProfile() {
   const [productsCursor, setProductsCursor] = useState(0)
   const [productsNext, setProductsNext] = useState(null)
   const [loadingProducts, setLoadingProducts] = useState(false)
+  const [profileBoost, setProfileBoost] = useState(null)
 
   const [partnerNetwork, setPartnerNetwork] = useState(null)
   const [loadingNetwork, setLoadingNetwork] = useState(false)
@@ -58,6 +72,7 @@ export default function BuyingHouseProfile() {
   const verification = profile?.verification_summary || null
   const relationship = profile?.relationship || { following: false, friend_status: 'none' }
   const viewerPerms = profile?.viewer_permissions || { is_self: false, is_admin: false }
+  const isBoosted = Boolean(profileBoost)
 
   const loadProfile = useCallback(async () => {
     if (!id) return
@@ -124,6 +139,27 @@ export default function BuyingHouseProfile() {
   }, [loadProfile, loadRatings])
 
   useEffect(() => {
+    if (!user?.id) return
+    trackClientEvent('profile_view', {
+      entityType: 'profile',
+      entityId: user.id,
+      metadata: { role: user.role || 'buying_house' },
+    })
+  }, [user?.id, user?.role])
+
+  useEffect(() => {
+    if (!viewerPerms.is_self) return
+    const tokenValue = getToken()
+    if (!tokenValue) return
+    apiRequest('/boosts/me', { token: tokenValue })
+      .then((data) => {
+        const active = (data?.items || []).find((boost) => boost.scope === 'profile' && isBoostActive(boost))
+        setProfileBoost(active || null)
+      })
+      .catch(() => setProfileBoost(null))
+  }, [viewerPerms.is_self])
+
+  useEffect(() => {
     if (activeTab !== 'products') return
     if (products.length) return
     loadProducts({ reset: true })
@@ -170,7 +206,7 @@ export default function BuyingHouseProfile() {
     }
   }
 
-  if (loading) return <div className="min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out">Loading profile…</div>
+  if (loading) return <div className="min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out">Loading profile...</div>
   if (error) return <div className="min-h-screen bg-slate-50 p-6 text-rose-700 dark:bg-[#020617] dark:text-rose-200 transition-colors duration-500 ease-in-out">{error}</div>
   if (!user) return <div className="min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out">Profile not found.</div>
 
@@ -192,8 +228,9 @@ export default function BuyingHouseProfile() {
                 <p className="text-lg font-bold text-slate-900 truncate">{user.name}</p>
                 <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
                   <span className="uppercase">Buying House</span>
-                  {user.profile?.country ? <span>• {user.profile.country}</span> : null}
+                  {user.profile?.country ? <span>- {user.profile.country}</span> : null}
                   {user.verified ? <span className="font-bold text-[#0A66C2]">Verified</span> : null}
+                  {isBoosted ? <span className="font-bold text-emerald-600">Boosted</span> : null}
                 </div>
               </div>
             </div>
@@ -224,7 +261,7 @@ export default function BuyingHouseProfile() {
             <div className="mt-4 grid grid-cols-2 gap-3">
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
                 <p className="text-[11px] text-slate-500">Partner factories</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">{profile?.counts?.connected_factories ?? '—'}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{profile?.counts?.connected_factories ?? '--'}</p>
               </div>
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
                 <p className="text-[11px] text-slate-500">Rating</p>
@@ -272,25 +309,53 @@ export default function BuyingHouseProfile() {
               {activeTab === 'overview' ? (
                 <div className="space-y-4">
                   <div>
-                    <p className="text-sm font-bold text-slate-900">About</p>
-                    <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">{user.profile?.about || 'No description added yet.'}</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">About</p>
+                    <p className="mt-2 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{user.profile?.about || 'No description added yet.'}</p>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                      <p className="text-[11px] text-slate-500">Country</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.country || '—'}</p>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Industry</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.industry || 'Garments & Textile'}</p>
                     </div>
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                      <p className="text-[11px] text-slate-500">Certifications (declared)</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900">{(user.profile?.certifications || []).join(', ') || '—'}</p>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Country</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.country || '--'}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Certifications</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{(user.profile?.certifications || []).join(', ') || '--'}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Capacity</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.sourcing_capacity || '--'}</p>
                     </div>
                   </div>
+                  {(user.profile?.companies_worked_with || []).length > 0 && (
+                    <div>
+                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-3">Companies Worked With</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {(user.profile?.companies_worked_with || []).map((company, idx) => (
+                          <div key={idx} className="flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                            {company.logo ? (
+                              <img src={company.logo} alt={company.name} className="h-10 w-10 rounded-lg object-cover" />
+                            ) : (
+                              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500" />
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{company.name}</p>
+                              {company.location && <p className="text-xs text-slate-500 dark:text-slate-400">{company.location}</p>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : null}
 
               {activeTab === 'partner' ? (
                 <div className="space-y-3">
-                  {loadingNetwork ? <div className="text-sm text-slate-600">Loading partner network…</div> : null}
+                  {loadingNetwork ? <div className="text-sm text-slate-600">Loading partner network...</div> : null}
                   {!loadingNetwork && partnerNetwork ? (
                     <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                       <p className="text-sm font-bold text-slate-900">Connected factories</p>
@@ -300,7 +365,7 @@ export default function BuyingHouseProfile() {
                           {partnerNetwork.factories.map((f) => (
                             <div key={f.id} className="rounded-xl border border-slate-200 bg-white px-3 py-2 flex items-center justify-between">
                               <span className="text-xs font-semibold text-slate-800">{f.name}</span>
-                              {f.verified ? <span className="text-xs font-bold text-[#0A66C2]">Verified</span> : <span className="text-xs text-slate-500">—</span>}
+                              {f.verified ? <span className="text-xs font-bold text-[#0A66C2]">Verified</span> : <span className="text-xs text-slate-500">--</span>}
                             </div>
                           ))}
                         </div>
@@ -317,13 +382,17 @@ export default function BuyingHouseProfile() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {products.map((p) => (
                       <div key={p.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                        {p.cover_image_public_url ? (
+                          <img src={p.cover_image_public_url} alt={p.title || 'Product'} className="h-32 w-full rounded-xl object-cover mb-3" />
+                        ) : null}
                         <p className="text-sm font-bold text-slate-900">{p.title || 'Product'}</p>
-                        <p className="mt-1 text-xs text-slate-600">{p.category || '—'} • MOQ {p.moq || '—'} • Lead time {p.lead_time_days || '—'}</p>
+                        <p className="mt-1 text-xs text-slate-600">{p.category || '--'} - MOQ {p.moq || '--'} - Lead time {p.lead_time_days || '--'}</p>
                         <p className="mt-2 text-sm text-slate-700 line-clamp-3">{p.description || ''}</p>
+                        <p className="mt-2 text-[11px] text-slate-500">Status: {String(p.status || 'published')}</p>
                       </div>
                     ))}
                   </div>
-                  {loadingProducts ? <div className="text-sm text-slate-600">Loading…</div> : null}
+                  {loadingProducts ? <div className="text-sm text-slate-600">Loading...</div> : null}
                   {productsNext !== null && !loadingProducts ? (
                     <button
                       type="button"
@@ -342,12 +411,12 @@ export default function BuyingHouseProfile() {
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
                     <p className="text-sm font-bold text-slate-900">Rating summary</p>
                     <p className="mt-1 text-sm text-slate-700">
-                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 • {ratingSummary?.aggregate?.total_count ?? 0} reviews • {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
+                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 - {ratingSummary?.aggregate?.total_count ?? 0} reviews - {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
                     </p>
                   </div>
                   {(ratingSummary?.recent_reviews || []).map((r) => (
                     <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4">
-                      <p className="text-sm font-semibold text-slate-900">{r.score}★</p>
+                      <p className="text-sm font-semibold text-slate-900">{r.score}*</p>
                       <p className="mt-1 text-sm text-slate-700">{r.comment || 'No comment provided.'}</p>
                     </div>
                   ))}
@@ -361,3 +430,4 @@ export default function BuyingHouseProfile() {
     </div>
   )
 }
+

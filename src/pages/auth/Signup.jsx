@@ -21,7 +21,7 @@
 */
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { apiRequest, getRoleHome, saveSession } from '../../lib/auth'
+import { apiRequest, saveSession } from '../../lib/auth'
 
 export default function Signup() {
   // Router navigation after successful account creation.
@@ -62,8 +62,8 @@ export default function Signup() {
       const data = await apiRequest('/auth/register', { method: 'POST', body: payload })
       // Persist session immediately so user can access protected routes right away.
       saveSession(data.user, data.token)
-      // Route user to role-specific landing (feed/dashboard/etc).
-      navigate(getRoleHome(data.user.role), { replace: true })
+      // project.md: onboarding wizard runs right after signup to reduce complexity.
+      navigate('/onboarding', { replace: true })
     } catch (err) {
       setError(err.message)
     } finally {
@@ -115,13 +115,13 @@ export default function Signup() {
           <div className="md:col-span-2 bg-gray-50 neo-panel cyberpunk-card border rounded-lg p-3 text-sm text-gray-700">
             <p><strong>Verification happens after signup.</strong> Create your account first, then upload role and region-specific documents in Verification Center.</p>
             <p className="mt-2">
-              Need the full checklist?
+              Need the full checklist*
               {' '}
-              <Link to="/verification" className="text-indigo-700 underline">Go to Verification Center</Link>
+              <Link to="/verification" className="text-[var(--gt-blue)] underline">Go to Verification Center</Link>
               {' '}
               or
               {' '}
-              <Link to="/help" className="text-indigo-700 underline">read Help Center guidance</Link>.
+              <Link to="/help" className="text-[var(--gt-blue)] underline">read Help Center guidance</Link>.
             </p>
           </div>
 
@@ -130,10 +130,10 @@ export default function Signup() {
 
           {/* Footer actions: primary submit + link to login. */}
           <div className="md:col-span-2 flex gap-3">
-            <button disabled={loading} className="px-5 py-3 rounded-lg bg-indigo-600 text-white disabled:opacity-70">
+            <button disabled={loading} className="px-5 py-3 rounded-lg bg-[var(--gt-blue)] hover:bg-[var(--gt-blue-hover)] text-white disabled:opacity-70">
               {loading ? 'Creating account...' : 'Create account'}
             </button>
-            <Link to="/login" className="px-5 py-3 rounded-lg border">Have an account? Login</Link>
+            <Link to="/login" className="px-5 py-3 rounded-lg border">Have an account* Login</Link>
           </div>
         </form>
       </div>

@@ -2,9 +2,11 @@ import crypto from 'crypto'
 import { readJson, updateJson } from '../utils/jsonStore.js'
 import { findUserById, listUsers } from './userService.js'
 import { recordMilestone } from './ratingsService.js'
+import { createNotification } from './notificationService.js'
 import {
   canManagePartnerNetwork,
   canViewPartnerNetwork,
+  canRespondToPartnerRequest,
   isAgent,
   isOwnerOrAdmin,
   scopeRecordsForUser,
@@ -112,11 +114,31 @@ export async function sendPartnerRequest(user, targetAccountId) {
     return rows
   })
 
-  return created.find((r) => r.id === id)
+  const row = created.find((r) => r.id === id)
+  if (row) {
+    // Notify the target factory so they can accept/reject from /notifications.
+    await createNotification(target.id, {
+      type: 'partner_request',
+      entity_type: 'partner_request',
+      entity_id: row.id,
+      message: `New partner request from ${user.name}`,
+      meta: {
+        request_id: row.id,
+        requester_id: user.id,
+        requester_role: user.role,
+      },
+    })
+  }
+
+  return row
 }
 
 export async function updatePartnerRequestStatus(user, requestId, action) {
-  if (!canManagePartnerNetwork(user)) {
+  // Accept/reject is allowed for factories (targets) and owner/admin. Cancel is allowed for buying house requester and owner/admin.
+  const isAdmin = isOwnerOrAdmin(user)
+  const isFactory = canRespondToPartnerRequest(user) && !isAdmin && String(user?.role || '').toLowerCase() === 'factory'
+  const canCancel = isAdmin || String(user?.role || '').toLowerCase() === 'buying_house'
+  if (!isAdmin && !isFactory && !canCancel) {
     const err = new Error('Forbidden')
     err.status = 403
     throw err
@@ -146,7 +168,6 @@ export async function updatePartnerRequestStatus(user, requestId, action) {
       throw err
     }
 
-    const isAdmin = isOwnerOrAdmin(user)
     if (!isAdmin) {
       if (action === 'cancel' && current.requester_id !== user.id) {
         const err = new Error('Only requester can cancel this request')
@@ -168,6 +189,17 @@ export async function updatePartnerRequestStatus(user, requestId, action) {
   })
 
   if (updatedRow && nextStatus === 'connected') {
+    // Notify the requester that the factory accepted the connection.
+    await createNotification(updatedRow.requester_id, {
+      type: 'partner_request',
+      entity_type: 'partner_request',
+      entity_id: updatedRow.id,
+      message: 'Partner request accepted',
+      meta: {
+        request_id: updatedRow.id,
+        target_id: updatedRow.target_id,
+      },
+    })
     await Promise.all([
       recordMilestone({
         profileKey: `user:${updatedRow.requester_id}`,

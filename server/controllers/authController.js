@@ -1,4 +1,4 @@
-import { findUserByEmail, findUserById, registerUser, verifyPassword } from '../services/userService.js'
+import { findUserByEmail, findUserById, findUserByMemberId, registerUser, verifyPassword } from '../services/userService.js'
 import { signToken } from '../middleware/auth.js'
 import { requireFields, validateEmail, validateRole } from '../utils/validators.js'
 
@@ -17,10 +17,16 @@ export async function register(req, res) {
 }
 
 export async function login(req, res) {
-  const missing = requireFields(req.body, ['email', 'password'])
+  // UX: login uses a single field on the client ("Email or Agent ID").
+  // For backwards compatibility we still accept `email`, but the preferred field is `identifier`.
+  const missing = requireFields(req.body, ['password'])
   if (missing.length) return res.status(400).json({ error: `Missing fields: ${missing.join(', ')}` })
 
-  const user = await findUserByEmail(req.body.email)
+  const identifierRaw = String(req.body?.identifier || req.body?.email || '').trim()
+  if (!identifierRaw) return res.status(400).json({ error: 'Missing fields: identifier' })
+
+  // If identifier looks like an email -> normal user login. Otherwise -> agent login by `member_id`.
+  const user = identifierRaw.includes('@') ? await findUserByEmail(identifierRaw) : await findUserByMemberId(identifierRaw)
   if (!user) return res.status(401).json({ error: 'Invalid credentials' })
 
   const ok = await verifyPassword(user, req.body.password)

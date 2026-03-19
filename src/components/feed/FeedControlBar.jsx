@@ -31,7 +31,7 @@ export default function FeedControlBar({
                   onClick={() => onTypeChange(opt.id)}
                   className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ring-1 active:scale-95 ${
                     active
-                      ? 'bg-white text-[#2563eb] ring-[#93c5fd] shadow-sm dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
+                      ? 'bg-white text-[var(--gt-blue)] ring-[rgba(10,102,194,0.35)] shadow-sm dark:bg-white/5 dark:text-[var(--gt-blue)] dark:ring-[rgba(10,102,194,0.35)]'
                       : 'bg-white text-slate-700 ring-slate-200/70 hover:bg-slate-50 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
                   }`}
                   aria-pressed={active}
@@ -67,7 +67,7 @@ export default function FeedControlBar({
               onClick={() => onCategoryChange('')}
               className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ring-1 active:scale-95 ${
                 !activeCategory
-                  ? 'bg-white text-[#2563eb] ring-[#93c5fd] dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
+                  ? 'bg-white text-[var(--gt-blue)] ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-[var(--gt-blue)] dark:ring-[rgba(10,102,194,0.35)]'
                   : 'bg-white text-slate-700 ring-slate-200/70 hover:bg-slate-50 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
               }`}
             >
@@ -80,7 +80,7 @@ export default function FeedControlBar({
                 onClick={() => onCategoryChange(String(c))}
                 className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ring-1 active:scale-95 ${
                   activeCategory === c
-                    ? 'bg-white text-[#2563eb] ring-[#93c5fd] dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
+                    ? 'bg-white text-[var(--gt-blue)] ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-[var(--gt-blue)] dark:ring-[rgba(10,102,194,0.35)]'
                     : 'bg-white text-slate-700 ring-slate-200/70 hover:bg-slate-50 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
                 }`}
               >

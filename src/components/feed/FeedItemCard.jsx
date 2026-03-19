@@ -1,5 +1,5 @@
 import React from 'react'
-import { BadgeCheck, MessageCircle, MoreHorizontal, Share2, Flag, MessageSquareText, ArrowUpRight } from 'lucide-react'
+import { BadgeCheck, MessageCircle, MoreHorizontal, Share2, Flag, MessageSquareText, ArrowUpRight, Zap } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 function compactText(value) {
@@ -61,6 +61,15 @@ export default function FeedItemCard({
                   >
                     <BadgeCheck size={14} />
                     <span className="hidden sm:inline">Verified</span>
+                  </span>
+                ) : null}
+                {item.feedMetadata?.paid_boost_active ? (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-1 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200 dark:ring-amber-300/25"
+                    title="Boosted visibility"
+                  >
+                    <Zap size={13} />
+                    <span className="hidden sm:inline">Boosted</span>
                   </span>
                 ) : null}
               </div>
@@ -129,10 +138,10 @@ export default function FeedItemCard({
 
       <footer className="relative px-4 py-3 bg-white/70 dark:bg-slate-950/30 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 text-xs">
-          <button type="button" onClick={onOpenComments} className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-[#2563eb] dark:hover:text-[#38bdf8]">
+          <button type="button" onClick={onOpenComments} className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-[var(--gt-blue)] dark:hover:text-[var(--gt-blue)]">
             <MessageSquareText size={16} /> Comment
           </button>
-          <button type="button" onClick={onShare} className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-[#2563eb] dark:hover:text-[#38bdf8]">
+          <button type="button" onClick={onShare} className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-[var(--gt-blue)] dark:hover:text-[var(--gt-blue)]">
             <Share2 size={16} /> Share
           </button>
           <button type="button" onClick={onReport} className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400">
@@ -146,15 +155,15 @@ export default function FeedItemCard({
               type="button"
               onClick={onExpressInterest}
               disabled={Boolean(expressInterestDisabled)}
-              className="rounded-full bg-[#2563eb] px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-[#1d4ed8] active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="rounded-full bg-[var(--gt-blue)] px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-[var(--gt-blue-hover)] active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {expressInterestDisabled ? 'Claiming…' : 'Express Interest'}
+              {expressInterestDisabled ? 'Claiming...' : 'Express Interest'}
             </button>
           ) : (
             <button
               type="button"
               onClick={onMessage}
-              className="rounded-full bg-[#2563eb] px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-[#1d4ed8] active:scale-95 inline-flex items-center gap-2"
+              className="rounded-full bg-[var(--gt-blue)] px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-[var(--gt-blue-hover)] active:scale-95 inline-flex items-center gap-2"
             >
               <MessageCircle size={16} /> Message
             </button>
@@ -173,3 +182,4 @@ export default function FeedItemCard({
     </article>
   )
 }
+

@@ -31,7 +31,7 @@ export default function Login() {
   const location = useLocation()
 
   // Form fields (controlled inputs).
-  const [email, setEmail] = useState('')
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   // Whether to persist session in longer-lived storage (implementation handled by `saveSession`).
   const [rememberMe, setRememberMe] = useState(true)
@@ -49,15 +49,17 @@ export default function Login() {
     setLoading(true)
     try {
       // Authenticate (server returns { user, token } on success).
+      // Backend will accept either email or Agent ID (member_id)
       const data = await apiRequest('/auth/login', {
         method: 'POST',
-        body: { email, password },
+        body: { identifier, password },
       })
 
       // Persist user + token (optionally "remember me") so protected routes can use them.
       saveSession(data.user, data.token, { remember: rememberMe })
-      // Go back to the original route, or to the default role home screen.
-      navigate(redirectTo || getRoleHome(data.user.role), { replace: true })
+      // project.md: if onboarding is not completed, route user into the 3-step wizard first.
+      const onboardingCompleted = data?.user?.profile?.onboarding_completed === true || String(data?.user?.profile?.onboarding_completed || '').toLowerCase() === 'true'
+      navigate(onboardingCompleted ? (redirectTo || getRoleHome(data.user.role)) : '/onboarding', { replace: true })
     } catch (err) {
       // Surface backend message for incorrect credentials or other auth failures.
       setError(err.message)
@@ -77,9 +79,16 @@ export default function Login() {
         {/* Controlled form: React state is the single source of truth for inputs. */}
         <form onSubmit={handleLogin} className="mt-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
-            {/* Email is required; browser validates type=email too. */}
-            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required className="w-full px-4 py-3 border rounded-lg" />
+            <label className="block text-sm font-medium mb-1">Email or Agent ID</label>
+            <input
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              type="text"
+              required
+              placeholder="Enter your email or Agent ID"
+              className="w-full px-4 py-3 border rounded-lg"
+            />
+            <p className="mt-1 text-xs text-slate-500">Agents: Use your assigned Agent ID to login</p>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Password</label>
@@ -96,15 +105,15 @@ export default function Login() {
           {/* Inline error (only renders when there is an error string). */}
           {error ? <p className="text-sm text-red-500">{error}</p> : null}
 
-          {/* Primary CTA: disabled while API request is in flight. */}
-          <button disabled={loading} className="w-full px-4 py-3 rounded-lg bg-indigo-600 text-white disabled:opacity-70">
+          {/* Primary CTA: uses brand blue color */}
+          <button disabled={loading} className="w-full px-4 py-3 rounded-lg bg-[var(--gt-blue)] hover:bg-[var(--gt-blue-hover)] text-white disabled:opacity-70 transition">
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
 
         {/* Secondary nav: send user to signup if they do not have an account yet. */}
         <p className="mt-6 text-sm text-gray-600">
-          New here? <Link className="text-indigo-500" to="/signup">Create account</Link>
+          New here* <Link className="text-[var(--gt-blue)] hover:underline" to="/signup">Create account</Link>
         </p>
       </div>
     </div>

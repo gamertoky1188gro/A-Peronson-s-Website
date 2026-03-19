@@ -21,14 +21,20 @@ import onboardingRoutes from './routes/onboardingRoutes.js'
 import assistantRoutes from './routes/assistantRoutes.js'
 import conversationRoutes from './routes/conversationRoutes.js'
 import analyticsRoutes from './routes/analyticsRoutes.js'
+import eventRoutes from './routes/eventRoutes.js'
 import messageRoutes from './routes/messageRoutes.js'
 import partnerNetworkRoutes from './routes/partnerNetworkRoutes.js'
 import callSessionRoutes from './routes/callSessionRoutes.js'
+import leadRoutes from './routes/leadRoutes.js'
 import memberRoutes from './routes/memberRoutes.js'
 import orgRoutes from './routes/orgRoutes.js'
 import ratingsRoutes from './routes/ratingsRoutes.js'
 import presenceRoutes from './routes/presenceRoutes.js'
 import profileRoutes from './routes/profileRoutes.js'
+import chatbotRoutes from './routes/chatbotRoutes.js'
+import walletRoutes from './routes/walletRoutes.js'
+import boostRoutes from './routes/boostRoutes.js'
+import industryRoutes from './routes/industryRoutes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { logInfo, logError } from './utils/logger.js'
 import { assistantReply } from './services/assistantService.js'
@@ -38,6 +44,8 @@ import { getCallSession } from './services/callSessionService.js'
 import { setUserOnline, setUserOffline, touchUser } from './services/presenceService.js'
 import { readJson } from './utils/jsonStore.js'
 import { consumePendingInvites, enqueuePendingInvites } from './utils/pendingInvites.js'
+import { ensureDatabaseConnection, closeDatabaseConnection } from './utils/db.js'
+import { revokeExpiredVerifications } from './services/verificationService.js'
 
 const app = express()
 const PORT = process.env.PORT || 4000
@@ -70,6 +78,8 @@ app.use('/api/assistant', assistantRoutes)
 app.use('/api/conversations', conversationRoutes)
 app.use('/api/messages', messageRoutes)
 app.use('/api/analytics', analyticsRoutes)
+app.use('/api/events', eventRoutes)
+app.use('/api/leads', leadRoutes)
 app.use('/api/system', systemRoutes)
 app.use('/api/notifications', notificationRoutes)
 app.use('/api/social', socialRoutes)
@@ -81,6 +91,10 @@ app.use('/api/members', memberRoutes)
 app.use('/api/ratings', ratingsRoutes)
 app.use('/api/presence', presenceRoutes)
 app.use('/api/profiles', profileRoutes)
+app.use('/api/chatbot', chatbotRoutes)
+app.use('/api/wallet', walletRoutes)
+app.use('/api/boosts', boostRoutes)
+app.use('/api/industry', industryRoutes)
 app.use(errorHandler)
 
 const server = http.createServer(app)
@@ -524,6 +538,27 @@ wsServer.on('connection', (socket, req) => {
   })
 })
 
-server.listen(PORT, () => {
-  logInfo(`Verification MVP API running on http://localhost:${PORT}`)
+async function start() {
+  await ensureDatabaseConnection()
+  // Verification renewals: keep badges in sync with subscription validity.
+  revokeExpiredVerifications().catch((error) => logError('verification_expiry_check_failed', error))
+  setInterval(() => {
+    revokeExpiredVerifications().catch((error) => logError('verification_expiry_check_failed', error))
+  }, 6 * 60 * 60 * 1000)
+  server.listen(PORT, () => {
+    logInfo(`Verification MVP API running on http://localhost:${PORT}`)
+  })
+}
+
+start().catch((error) => {
+  logError('Failed to start server', error)
+  process.exit(1)
+})
+
+process.on('SIGINT', async () => {
+  try {
+    await closeDatabaseConnection()
+  } finally {
+    process.exit(0)
+  }
 })

@@ -28,11 +28,14 @@
     - Optional premium-locked overlays for advanced filters.
 */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Briefcase, Building2, Filter, LayoutGrid, Bell, Search as SearchIcon } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 import ProductQuickViewModal from '../components/products/ProductQuickViewModal'
+import { trackClientEvent } from '../lib/events'
+
+const Motion = motion
 
 const TAB_OPTIONS = [
   { id: 'all', label: 'All', icon: LayoutGrid },
@@ -50,18 +53,76 @@ function roleToProfileRoute(role, id) {
   return `/factory/${encodeURIComponent(id)}`
 }
 
-function buildQueryString({ q, category, filters, allowAdvanced }) {
+const CORE_FILTER_KEYS = ['industry', 'moqRange', 'priceRange', 'country', 'verifiedOnly', 'orgType', 'leadTimeMax']
+const ADVANCED_FILTER_KEYS = [
+  'fabricType',
+  'gsmMin',
+  'gsmMax',
+  'sizeRange',
+  'colorPantone',
+  'customization',
+  'sampleAvailable',
+  'sampleLeadTime',
+  'certifications',
+  'incoterms',
+  'paymentTerms',
+  'documentReady',
+  'auditDate',
+  'languageSupport',
+  'capacityMin',
+  'processes',
+  'yearsInBusinessMin',
+  'responseTimeMax',
+  'teamSeatsMin',
+  'handlesMultipleFactories',
+  'exportPort',
+  'distanceKm',
+  'locationLat',
+  'locationLng',
+]
+
+function buildQueryString({ q, category, filters, includeAdvanced }) {
   // Build URLSearchParams from UI state.
-  // `allowAdvanced` gates premium-only filters so we don't send params the backend will ignore/reject.
+  // Core filters are always free; advanced filters require premium.
   const params = new URLSearchParams()
   if (q) params.set('q', q)
   if (category) params.set('category', category)
+  if (filters.industry) params.set('industry', filters.industry)
 
-  if (allowAdvanced) {
-    if (filters.moqRange) params.set('moqRange', filters.moqRange)
-    if (filters.country) params.set('country', filters.country)
-    if (filters.verifiedOnly) params.set('verifiedOnly', 'true')
-    if (filters.orgType) params.set('orgType', filters.orgType)
+  // Core filters (always included if set)
+  if (filters.moqRange) params.set('moqRange', filters.moqRange)
+  if (filters.priceRange) params.set('priceRange', filters.priceRange)
+  if (filters.country) params.set('country', filters.country)
+  if (filters.verifiedOnly) params.set('verifiedOnly', 'true')
+  if (filters.orgType) params.set('orgType', filters.orgType)
+  if (filters.leadTimeMax) params.set('leadTimeMax', filters.leadTimeMax)
+
+  // Advanced filters (premium only)
+  if (includeAdvanced) {
+    if (filters.fabricType) params.set('fabricType', filters.fabricType)
+    if (filters.gsmMin) params.set('gsmMin', filters.gsmMin)
+    if (filters.gsmMax) params.set('gsmMax', filters.gsmMax)
+    if (filters.sizeRange) params.set('sizeRange', filters.sizeRange)
+    if (filters.colorPantone) params.set('colorPantone', filters.colorPantone)
+    if (filters.customization) params.set('customization', filters.customization)
+    if (filters.sampleAvailable) params.set('sampleAvailable', 'true')
+    if (filters.sampleLeadTime) params.set('sampleLeadTime', filters.sampleLeadTime)
+    if (filters.certifications) params.set('certifications', filters.certifications)
+    if (filters.incoterms) params.set('incoterms', filters.incoterms)
+    if (filters.paymentTerms) params.set('paymentTerms', filters.paymentTerms)
+    if (filters.documentReady) params.set('documentReady', filters.documentReady)
+    if (filters.auditDate) params.set('auditDate', filters.auditDate)
+    if (filters.languageSupport) params.set('languageSupport', filters.languageSupport)
+    if (filters.capacityMin) params.set('capacityMin', filters.capacityMin)
+    if (filters.processes) params.set('processes', filters.processes)
+    if (filters.yearsInBusinessMin) params.set('yearsInBusinessMin', filters.yearsInBusinessMin)
+    if (filters.responseTimeMax) params.set('responseTimeMax', filters.responseTimeMax)
+    if (filters.teamSeatsMin) params.set('teamSeatsMin', filters.teamSeatsMin)
+    if (filters.handlesMultipleFactories) params.set('handlesMultipleFactories', 'true')
+    if (filters.exportPort) params.set('exportPort', filters.exportPort)
+    if (filters.distanceKm) params.set('distanceKm', filters.distanceKm)
+    if (filters.locationLat) params.set('locationLat', filters.locationLat)
+    if (filters.locationLng) params.set('locationLng', filters.locationLng)
   }
 
   return params.toString()
@@ -99,30 +160,62 @@ function ResultSkeletonCard({ index }) {
 
 export default function SearchResults() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const token = useMemo(() => getToken(), [])
   const sessionUser = getCurrentUser()
   const reduceMotion = useReducedMotion()
   const queryInputRef = useRef(null)
   const isMac = useMemo(() => (typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)), [])
 
-  const [query, setQuery] = useState('')
-  const [activeTab, setActiveTab] = useState('all')
-  const [category, setCategory] = useState('')
+  // URL-serializable search state (project.md): allows sharing/saving searches.
+  const [query, setQuery] = useState(() => searchParams.get('q') || '')
+  const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'all')
+  const [category, setCategory] = useState(() => searchParams.get('category') || '')
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [upgradePrompt, setUpgradePrompt] = useState('')
   const [alertFeedback, setAlertFeedback] = useState('')
+  const [autoSaveCandidate, setAutoSaveCandidate] = useState(null)
 
-  const [filters, setFilters] = useState({
-    moqRange: '',
-    country: '',
-    verifiedOnly: false,
-    orgType: '',
-  })
+  const [filters, setFilters] = useState(() => ({
+    industry: searchParams.get('industry') || '',
+    moqRange: searchParams.get('moqRange') || '',
+    priceRange: searchParams.get('priceRange') || '',
+    country: searchParams.get('country') || '',
+    verifiedOnly: searchParams.get('verifiedOnly') === 'true',
+    orgType: searchParams.get('orgType') || '',
+    // Expanded filters (project.md)
+    leadTimeMax: searchParams.get('leadTimeMax') || '',
+    fabricType: searchParams.get('fabricType') || '',
+    gsmMin: searchParams.get('gsmMin') || '',
+    gsmMax: searchParams.get('gsmMax') || '',
+    sizeRange: searchParams.get('sizeRange') || '',
+    colorPantone: searchParams.get('colorPantone') || '',
+    customization: searchParams.get('customization') || '',
+    sampleAvailable: searchParams.get('sampleAvailable') === 'true',
+    sampleLeadTime: searchParams.get('sampleLeadTime') || '',
+    certifications: searchParams.get('certifications') || '',
+    incoterms: searchParams.get('incoterms') || '',
+    paymentTerms: searchParams.get('paymentTerms') || '',
+    documentReady: searchParams.get('documentReady') || '',
+    auditDate: searchParams.get('auditDate') || '',
+    languageSupport: searchParams.get('languageSupport') || '',
+    capacityMin: searchParams.get('capacityMin') || '',
+    processes: searchParams.get('processes') || '',
+    yearsInBusinessMin: searchParams.get('yearsInBusinessMin') || '',
+    responseTimeMax: searchParams.get('responseTimeMax') || '',
+    teamSeatsMin: searchParams.get('teamSeatsMin') || '',
+    handlesMultipleFactories: searchParams.get('handlesMultipleFactories') === 'true',
+    exportPort: searchParams.get('exportPort') || '',
+    distanceKm: searchParams.get('distanceKm') || '',
+    locationLat: searchParams.get('locationLat') || '',
+    locationLng: searchParams.get('locationLng') || '',
+  }))
 
   const [capabilities, setCapabilities] = useState(() => ({
     filters: { advanced: sessionUser?.subscription_status === 'premium' },
   }))
-  const premiumLocked = !capabilities?.filters?.advanced
+  const hasAdvancedAccess = Boolean(capabilities?.filters?.advanced)
+  const premiumLocked = !hasAdvancedAccess
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -136,7 +229,8 @@ export default function SearchResults() {
 
   const totalResults = requests.length + companies.length
 
-  const allowAdvanced = !premiumLocked
+  const autoSearchRef = useRef(false)
+  const filterTrackRef = useRef({ key: '', initialized: false })
 
   useEffect(() => {
     const handler = (e) => {
@@ -150,6 +244,45 @@ export default function SearchResults() {
     return () => window.removeEventListener('keydown', handler)
   }, [])
 
+  useEffect(() => {
+    // Auto-run when landing on /search with URL params (shared/bookmarked search).
+    if (autoSearchRef.current) return
+    autoSearchRef.current = true
+
+    const hasUrlQuery = Boolean(
+      (query && query.trim()) ||
+      (category && category.trim()) ||
+      Object.values(filters || {}).some((v) => (typeof v === 'boolean' ? v : String(v || '').trim())),
+    )
+
+    if (hasUrlQuery) {
+      runSearch()
+    }
+  }, [category, filters, query, runSearch])
+
+  useEffect(() => {
+    const payload = {
+      query: query.trim(),
+      category: category.trim(),
+      filters: { ...filters, advanced: hasAdvancedAccess },
+    }
+    const key = JSON.stringify(payload)
+    if (!filterTrackRef.current.initialized) {
+      filterTrackRef.current = { key, initialized: true }
+      return
+    }
+    if (filterTrackRef.current.key === key) return
+    filterTrackRef.current.key = key
+    const timer = window.setTimeout(() => {
+      trackClientEvent('search_filters_changed', {
+        entityType: 'search',
+        entityId: activeTab,
+        metadata: payload,
+      })
+    }, 600)
+    return () => window.clearTimeout(timer)
+  }, [activeTab, category, filters, hasAdvancedAccess, query])
+
   const runSearch = useCallback(async () => {
     const q = query.trim()
     setLoading(true)
@@ -159,10 +292,21 @@ export default function SearchResults() {
     setAlertFeedback('')
 
     try {
-      const qs = buildQueryString({ q, category: category.trim(), filters, allowAdvanced })
+      const qs = buildQueryString({
+        q,
+        category: category.trim(),
+        filters,
+        includeAdvanced: hasAdvancedAccess,
+      })
+
+      // Keep URL in sync so searches are shareable/bookmarkable (project.md).
+      const nextParams = new URLSearchParams(qs)
+      if (activeTab) nextParams.set('tab', activeTab)
+      setSearchParams(nextParams, { replace: true })
+
       const [reqRes, prodRes] = await Promise.all([
-        apiRequest(`/requirements/search?${qs}`, { token }),
-        apiRequest(`/products/search?${qs}`, { token }),
+        apiRequest(`/requirements/search*${qs}`, { token }),
+        apiRequest(`/products/search*${qs}`, { token }),
       ])
 
       const reqItems = Array.isArray(reqRes?.items) ? reqRes.items : []
@@ -174,20 +318,40 @@ export default function SearchResults() {
       const mergedCapabilities = reqRes?.capabilities || prodRes?.capabilities || { filters: { advanced: false } }
       setCapabilities(mergedCapabilities)
 
+      const hasActiveFilters = Boolean(q) || Boolean(category.trim()) || Object.values(filters || {}).some((v) => (typeof v === 'boolean' ? v : String(v || '').trim()))
+      setAutoSaveCandidate(hasActiveFilters ? { query: q, category: category.trim(), filters } : null)
+
       if (reqRes?.quota) {
-        setQuotaMessage(`Search quota remaining today: ${reqRes.quota.remaining}`)
+        if (reqRes.quota.unlimited) {
+          setQuotaMessage('Core searches are unlimited on your plan.')
+        } else if (reqRes.quota.remaining !== undefined) {
+          setQuotaMessage(`Search quota remaining today: ${reqRes.quota.remaining}`)
+        }
       }
+
+      trackClientEvent('search_run', {
+        entityType: 'search',
+        entityId: activeTab,
+        metadata: {
+          query: q,
+          category: category.trim(),
+          filters: { ...filters, advanced: hasAdvancedAccess },
+          total_results: reqItems.length + prodItems.length,
+        },
+      })
     } catch (err) {
       setError(err.message || 'Search failed')
       setRequests([])
       setCompanies([])
-      if (err?.quota?.remaining !== undefined) {
+      if (err?.quota?.unlimited) {
+        setQuotaMessage('Core searches are unlimited on your plan.')
+      } else if (err?.quota?.remaining !== undefined) {
         setQuotaMessage(`Remaining today: ${err.quota.remaining}`)
       }
     } finally {
       setLoading(false)
     }
-  }, [allowAdvanced, category, filters, query, token])
+  }, [activeTab, category, filters, hasAdvancedAccess, query, setSearchParams, token])
 
   const loadRecentViews = useCallback(async () => {
     try {
@@ -215,30 +379,69 @@ export default function SearchResults() {
   }, [loadRecentViews])
 
   function updateAdvancedFilter(key, value) {
-    if (premiumLocked) {
-      setUpgradePrompt('Upgrade to Premium to use advanced filters.')
+    if (!hasAdvancedAccess) {
+      setUpgradePrompt('Advanced filters require a Premium plan. Upgrade to unlock these filters.')
       return
     }
     setFilters((prev) => ({ ...prev, [key]: value }))
   }
 
-  async function saveAlert() {
+  function updateCoreFilter(key, value) {
+    setFilters((prev) => ({ ...prev, [key]: value }))
+  }
+
+  async function saveAlert(presetLabel = '') {
     setAlertFeedback('')
     const q = query.trim()
-    if (!q) {
-      setAlertFeedback('Enter a search query first.')
+    const hasFilters = Object.values(filters || {}).some((v) => (typeof v === 'boolean' ? v : String(v || '').trim()))
+    if (!q && !category && !hasFilters) {
+      setAlertFeedback('Enter a query or select filters before saving.')
       return
     }
     try {
       const result = await apiRequest('/search/alerts', {
         method: 'POST',
         token,
-        body: { query: q, filters: { category, ...filters } },
+        body: { query: q || 'saved-search', filters: { category, ...filters, preset: presetLabel } },
       })
-      setAlertFeedback(`Alert saved. Remaining alert quota today: ${result?.quota?.remaining ?? '-'}`)
+      setAlertFeedback(`Search saved. Remaining alert quota today: ${result?.quota?.remaining ?? '-'}`)
     } catch (err) {
       setAlertFeedback(err.message || 'Failed to save alert.')
     }
+  }
+
+  function savePresetLocal(presetKey) {
+    try {
+      const payload = { query, category, filters }
+      localStorage.setItem(`gt_search_preset_${presetKey}`, JSON.stringify(payload))
+    } catch {
+      // ignore storage failures
+    }
+  }
+
+  function applyPreset(presetKey) {
+    try {
+      const raw = localStorage.getItem(`gt_search_preset_${presetKey}`)
+      if (!raw) {
+        setAlertFeedback('No saved preset found yet.')
+        return
+      }
+      const preset = JSON.parse(raw)
+      setQuery(preset?.query || '')
+      setCategory(preset?.category || '')
+      if (preset?.filters) {
+        setFilters((prev) => ({ ...prev, ...preset.filters }))
+      }
+      setAlertFeedback(`Loaded ${presetKey.replace('_', ' ')} preset.`)
+    } catch {
+      setAlertFeedback('Unable to load preset.')
+    }
+  }
+
+  async function savePreset(presetKey) {
+    await saveAlert(presetKey)
+    savePresetLocal(presetKey)
+    setAutoSaveCandidate(null)
   }
 
   function openChatNotice(name) {
@@ -272,10 +475,10 @@ export default function SearchResults() {
               <button
                 type="button"
                 onClick={saveAlert}
-                className="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:text-slate-950"
+                className="inline-flex items-center gap-2 rounded-full bg-[var(--gt-blue)] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95"
               >
                 <Bell size={16} />
-                Save alert
+                Save search
               </button>
               <Link
                 to="/notifications"
@@ -292,8 +495,8 @@ export default function SearchResults() {
                 ref={queryInputRef}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search requests, factories, products…"
-                className="w-full rounded-full bg-slate-100/70 px-4 py-3 pr-16 text-sm text-slate-800 shadow-inner ring-1 ring-slate-200/70 transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                placeholder="Search requests, factories, products..."
+                className="w-full rounded-full bg-slate-100/70 px-4 py-3 pr-16 text-sm text-slate-800 shadow-inner ring-1 ring-slate-200/70 transition focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
               />
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-semibold tracking-widest text-slate-500 ring-1 ring-slate-200/70 dark:bg-slate-950/40 dark:text-slate-400 dark:ring-white/10">
                 {isMac ? '⌘ K' : 'Ctrl K'}
@@ -302,7 +505,7 @@ export default function SearchResults() {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="rounded-full bg-white px-4 py-3 text-sm text-slate-800 ring-1 ring-slate-200/70 transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+              className="rounded-full bg-white px-4 py-3 text-sm text-slate-800 ring-1 ring-slate-200/70 transition focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
             >
               <option value="">All categories</option>
               <option value="Shirts">Shirts</option>
@@ -314,24 +517,29 @@ export default function SearchResults() {
             <button
               type="button"
               onClick={runSearch}
-              className="rounded-full bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95 disabled:opacity-60 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:text-slate-950"
+              className="rounded-full bg-[var(--gt-blue)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95 disabled:opacity-60"
               disabled={loading}
             >
-              {loading ? 'Searching…' : 'Search'}
+              {loading ? 'Searching...' : 'Search'}
             </button>
           </div>
 
           {filtersOpen ? (
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className={`rounded-2xl p-4 ring-1 shadow-sm ${premiumLocked ? 'bg-amber-50 ring-amber-200 dark:bg-amber-500/10 dark:ring-amber-500/30' : 'bg-[#ffffff] ring-slate-200/70 dark:bg-slate-900/40 dark:ring-white/10'}`}>
-                <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Advanced filters</p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">{premiumLocked ? 'Locked on Free plan' : 'Available'}</p>
-
+            <div className="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-3">
+              <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/70 dark:bg-slate-900/40 dark:ring-white/10">
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Core filters</p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Always free</p>
                 <div className="mt-3 grid grid-cols-1 gap-2">
+                  <input
+                    value={filters.industry}
+                    onChange={(e) => updateCoreFilter('industry', e.target.value)}
+                    placeholder="Industry (e.g. Garments)"
+                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  />
                   <select
                     value={filters.moqRange}
-                    onChange={(e) => updateAdvancedFilter('moqRange', e.target.value)}
-                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                    onChange={(e) => updateCoreFilter('moqRange', e.target.value)}
+                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
                   >
                     <option value="">{`MOQ: ${formatMoqRangeLabel('Any')}`}</option>
                     <option value="0-100">MOQ: 0 - 100</option>
@@ -339,44 +547,286 @@ export default function SearchResults() {
                     <option value="301-1000">MOQ: 301 - 1000</option>
                     <option value="1001-999999">MOQ: 1000+</option>
                   </select>
-
+                  <input
+                    value={filters.priceRange}
+                    onChange={(e) => updateCoreFilter('priceRange', e.target.value)}
+                    placeholder="Price range (e.g. 5-10 USD)"
+                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  />
                   <input
                     value={filters.country}
-                    onChange={(e) => updateAdvancedFilter('country', e.target.value)}
+                    onChange={(e) => updateCoreFilter('country', e.target.value)}
                     placeholder="Country (e.g. Bangladesh)"
-                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
                   />
-
                   <select
                     value={filters.orgType}
-                    onChange={(e) => updateAdvancedFilter('orgType', e.target.value)}
-                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                    onChange={(e) => updateCoreFilter('orgType', e.target.value)}
+                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
                   >
-                    <option value="">Organization type (Any)</option>
+                    <option value="">Account type (Any)</option>
                     <option value="buyer">Buyer</option>
                     <option value="factory">Factory</option>
                     <option value="buying_house">Buying House</option>
                   </select>
-
                   <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
                     <input
                       type="checkbox"
                       checked={filters.verifiedOnly}
-                      onChange={(e) => updateAdvancedFilter('verifiedOnly', e.target.checked)}
+                      onChange={(e) => updateCoreFilter('verifiedOnly', e.target.checked)}
                       className="h-4 w-4"
                     />
                     Verified only
                   </label>
+                  <select
+                    value={filters.leadTimeMax}
+                    onChange={(e) => updateCoreFilter('leadTimeMax', e.target.value)}
+                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  >
+                    <option value="">Lead time (Any)</option>
+                    <option value="7">Lead time &lt;= 7 days</option>
+                    <option value="14">Lead time &lt;= 14 days</option>
+                    <option value="30">Lead time &lt;= 30 days</option>
+                    <option value="60">Lead time &lt;= 60 days</option>
+                    <option value="90">Lead time &lt;= 90 days</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className={`rounded-2xl p-4 ring-1 shadow-sm ${premiumLocked ? 'bg-amber-50 ring-amber-200 dark:bg-amber-500/10 dark:ring-amber-500/30' : 'bg-[#ffffff] ring-slate-200/70 dark:bg-slate-900/40 dark:ring-white/10'}`}>
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Advanced filters</p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">{premiumLocked ? 'Premium required to unlock' : 'Premium unlocked'}</p>
+
+                <div className="mt-3 grid grid-cols-1 gap-2">
+                  <input
+                    value={filters.fabricType}
+                    onChange={(e) => updateAdvancedFilter('fabricType', e.target.value)}
+                    placeholder="Fabric type (e.g. Cotton)"
+                    disabled={premiumLocked}
+                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      value={filters.gsmMin}
+                      onChange={(e) => updateAdvancedFilter('gsmMin', e.target.value)}
+                      placeholder="GSM min"
+                      disabled={premiumLocked}
+                      className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                    />
+                    <input
+                      value={filters.gsmMax}
+                      onChange={(e) => updateAdvancedFilter('gsmMax', e.target.value)}
+                      placeholder="GSM max"
+                      disabled={premiumLocked}
+                      className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                    />
+                  </div>
+                  <input
+                    value={filters.sizeRange}
+                    onChange={(e) => updateAdvancedFilter('sizeRange', e.target.value)}
+                    placeholder="Size range"
+                    disabled={premiumLocked}
+                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  />
+                  <input
+                    value={filters.colorPantone}
+                    onChange={(e) => updateAdvancedFilter('colorPantone', e.target.value)}
+                    placeholder="Color / Pantone"
+                    disabled={premiumLocked}
+                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  />
+                  <input
+                    value={filters.customization}
+                    onChange={(e) => updateAdvancedFilter('customization', e.target.value)}
+                    placeholder="Customization capability"
+                    disabled={premiumLocked}
+                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  />
+                  <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
+                    <input
+                      type="checkbox"
+                      checked={filters.sampleAvailable}
+                      onChange={(e) => updateAdvancedFilter('sampleAvailable', e.target.checked)}
+                      disabled={premiumLocked}
+                      className="h-4 w-4"
+                    />
+                    Sample available
+                  </label>
+                  <input
+                    value={filters.sampleLeadTime}
+                    onChange={(e) => updateAdvancedFilter('sampleLeadTime', e.target.value)}
+                    placeholder="Sample lead time (days)"
+                    disabled={premiumLocked}
+                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  />
+                  <input
+                    value={filters.certifications}
+                    onChange={(e) => updateAdvancedFilter('certifications', e.target.value)}
+                    placeholder="Certifications (e.g. GOTS,BSCI)"
+                    disabled={premiumLocked}
+                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  />
+                  <select
+                    value={filters.incoterms}
+                    onChange={(e) => updateAdvancedFilter('incoterms', e.target.value)}
+                    disabled={premiumLocked}
+                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  >
+                    <option value="">Incoterms (Any)</option>
+                    <option value="FOB">FOB</option>
+                    <option value="CIF">CIF</option>
+                    <option value="EXW">EXW</option>
+                    <option value="DDP">DDP</option>
+                  </select>
+                  <input
+                    value={filters.paymentTerms}
+                    onChange={(e) => updateAdvancedFilter('paymentTerms', e.target.value)}
+                    placeholder="Payment terms"
+                    disabled={premiumLocked}
+                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  />
+                  <input
+                    value={filters.documentReady}
+                    onChange={(e) => updateAdvancedFilter('documentReady', e.target.value)}
+                    placeholder="Document readiness"
+                    disabled={premiumLocked}
+                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  />
+                  <input
+                    value={filters.auditDate}
+                    onChange={(e) => updateAdvancedFilter('auditDate', e.target.value)}
+                    placeholder="Audit date"
+                    disabled={premiumLocked}
+                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  />
+                  <input
+                    value={filters.languageSupport}
+                    onChange={(e) => updateAdvancedFilter('languageSupport', e.target.value)}
+                    placeholder="Language support"
+                    disabled={premiumLocked}
+                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  />
+                  <input
+                    value={filters.capacityMin}
+                    onChange={(e) => updateAdvancedFilter('capacityMin', e.target.value)}
+                    placeholder="Min capacity / month"
+                    disabled={premiumLocked}
+                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  />
+
+                  <div className="pt-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400">Supplier & account</div>
+                  <input
+                    value={filters.processes}
+                    onChange={(e) => updateAdvancedFilter('processes', e.target.value)}
+                    placeholder="Main processes (e.g. knit, woven)"
+                    disabled={premiumLocked}
+                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      value={filters.yearsInBusinessMin}
+                      onChange={(e) => updateAdvancedFilter('yearsInBusinessMin', e.target.value)}
+                      placeholder="Years in business (min)"
+                      disabled={premiumLocked}
+                      className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                    />
+                    <input
+                      value={filters.responseTimeMax}
+                      onChange={(e) => updateAdvancedFilter('responseTimeMax', e.target.value)}
+                      placeholder="Response time max (hours)"
+                      disabled={premiumLocked}
+                      className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      value={filters.teamSeatsMin}
+                      onChange={(e) => updateAdvancedFilter('teamSeatsMin', e.target.value)}
+                      placeholder="Team seats (min)"
+                      disabled={premiumLocked}
+                      className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                    />
+                    <input
+                      value={filters.exportPort}
+                      onChange={(e) => updateAdvancedFilter('exportPort', e.target.value)}
+                      placeholder="Export ports (comma-separated)"
+                      disabled={premiumLocked}
+                      className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                    />
+                  </div>
+                  <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
+                    <input
+                      type="checkbox"
+                      checked={filters.handlesMultipleFactories}
+                      onChange={(e) => updateAdvancedFilter('handlesMultipleFactories', e.target.checked)}
+                      disabled={premiumLocked}
+                      className="h-4 w-4"
+                    />
+                    Handles multiple factories
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      value={filters.locationLat}
+                      onChange={(e) => updateAdvancedFilter('locationLat', e.target.value)}
+                      placeholder="Location latitude"
+                      disabled={premiumLocked}
+                      className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                    />
+                    <input
+                      value={filters.locationLng}
+                      onChange={(e) => updateAdvancedFilter('locationLng', e.target.value)}
+                      placeholder="Location longitude"
+                      disabled={premiumLocked}
+                      className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                    />
+                  </div>
+                  <input
+                    value={filters.distanceKm}
+                    onChange={(e) => updateAdvancedFilter('distanceKm', e.target.value)}
+                    placeholder="Distance radius (km)"
+                    disabled={premiumLocked}
+                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                  />
                 </div>
               </div>
 
               <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/70 dark:bg-slate-900/40 dark:ring-white/10">
-                <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Status</p>
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Filter guidance</p>
+                <div className="mt-2 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
+                  <p>Supplier filters use profile data such as main processes, export ports, and years in business.</p>
+                  <p>Distance radius requires latitude/longitude from both sides. If a supplier has no coordinates, we fall back to country matching.</p>
+                  <p>Premium filters are optional. Core filters always remain free and unlimited.</p>
+                </div>
+              </div>
+
+              <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/70 dark:bg-slate-900/40 dark:ring-white/10">
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Status & presets</p>
                 <div className="mt-2 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                   {quotaMessage ? <p>{quotaMessage}</p> : <p>Run a search to see quota status.</p>}
                   {upgradePrompt ? <p className="text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-2">{upgradePrompt}</p> : null}
                   {alertFeedback ? <p className="text-sky-800 bg-sky-50 border border-sky-200 rounded-xl p-2">{alertFeedback}</p> : null}
                 </div>
+
+                <div className="mt-4">
+                  <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Apply preset</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <button type="button" onClick={() => applyPreset('buyer')} className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">Buyer</button>
+                    <button type="button" onClick={() => applyPreset('buying_house')} className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">Buying house</button>
+                    <button type="button" onClick={() => applyPreset('factory')} className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">Factory</button>
+                  </div>
+                </div>
+
+                {autoSaveCandidate ? (
+                  <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-[11px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
+                    <p className="font-semibold text-slate-700 dark:text-slate-100">Save this search as a preset</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <button type="button" onClick={() => savePreset('buyer')} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Buyer</button>
+                      <button type="button" onClick={() => savePreset('buying_house')} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Buying house</button>
+                      <button type="button" onClick={() => savePreset('factory')} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Factory</button>
+                      <button type="button" onClick={() => setAutoSaveCandidate(null)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200/70 dark:text-slate-200 dark:ring-white/10">Dismiss</button>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </div>
           ) : null}
@@ -384,41 +834,41 @@ export default function SearchResults() {
 
         <div className="mt-5 grid grid-cols-12 gap-4">
           <div className="col-span-12 xl:col-span-9 rounded-2xl bg-white/70 shadow-sm ring-1 ring-slate-200/60 backdrop-blur-md overflow-hidden dark:bg-slate-950/30 dark:ring-white/10">
-          <div className="relative flex items-center gap-2 px-4 py-3 bg-white/40 dark:bg-slate-950/20 border-b border-slate-200/60 dark:border-transparent dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
-            {TAB_OPTIONS.map((t) => {
-              const Icon = t.icon
-              const active = activeTab === t.id
-              const count = t.id === 'requests' ? requests.length : t.id === 'companies' ? companies.length : totalResults
-              return (
-                <motion.button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setActiveTab(t.id)}
-                  whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                  className={`relative inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ring-1 ${
-                    active
-                      ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
-                      : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
-                  }`}
-                >
-                  {active ? (
-                    <motion.span
-                      layoutId="search-tab"
-                      className="absolute inset-0 rounded-full bg-indigo-500/10 dark:bg-white/10"
-                      transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-                    />
-                  ) : null}
-                  <span className="relative inline-flex items-center gap-2">
-                    <Icon size={16} />
-                    <span>{t.label}</span>
-                    <span className="text-[11px] opacity-70">({count})</span>
-                  </span>
-                </motion.button>
-              )
-            })}
-          </div>
+            <div className="relative flex items-center gap-2 px-4 py-3 bg-white/40 dark:bg-slate-950/20 border-b border-slate-200/60 dark:border-transparent dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
+              {TAB_OPTIONS.map((t) => {
+                const Icon = t.icon
+                const active = activeTab === t.id
+                const count = t.id === 'requests' ? requests.length : t.id === 'companies' ? companies.length : totalResults
+                return (
+                  <motion.button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setActiveTab(t.id)}
+                    whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+                    className={`relative inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ring-1 ${
+                      active
+                        ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
+                        : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
+                    }`}
+                  >
+                    {active ? (
+                      <motion.span
+                        layoutId="search-tab"
+                        className="absolute inset-0 rounded-full bg-indigo-500/10 dark:bg-white/10"
+                        transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                      />
+                    ) : null}
+                    <span className="relative inline-flex items-center gap-2">
+                      <Icon size={16} />
+                      <span>{t.label}</span>
+                      <span className="text-[11px] opacity-70">({count})</span>
+                    </span>
+                  </motion.button>
+                )
+              })}
+            </div>
 
-          <div className="p-4">
+            <div className="p-4">
             {loading ? (
               <div className="space-y-3">
                 {Array.from({ length: 6 }).map((_, i) => (
@@ -465,7 +915,7 @@ export default function SearchResults() {
                                     Verified
                                   </span>
                                 ) : null}
-                                {author.country ? <span className="text-[11px] text-slate-500 dark:text-slate-400">• {author.country}</span> : null}
+                                {author.country ? <span className="text-[11px] text-slate-500 dark:text-slate-400">- {author.country}</span> : null}
                               </div>
                               <p className="mt-2 text-sm text-slate-800 dark:text-slate-200 whitespace-pre-wrap">{r.custom_description || ''}</p>
                               <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-300">
@@ -482,7 +932,7 @@ export default function SearchResults() {
                               <button
                                 type="button"
                                 onClick={() => openChatNotice(author.name || 'buyer')}
-                                className="rounded-full bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:text-slate-950"
+                                className="rounded-full bg-[var(--gt-blue)] px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95"
                               >
                                 Contact
                               </button>
@@ -519,8 +969,8 @@ export default function SearchResults() {
                                     Verified
                                   </span>
                                 ) : null}
-                                {author.country ? <span className="text-[11px] text-slate-500 dark:text-slate-400">• {author.country}</span> : null}
-                                {author.role ? <span className="text-[11px] text-slate-500 dark:text-slate-400 uppercase">• {String(author.role).replaceAll('_', ' ')}</span> : null}
+                                {author.country ? <span className="text-[11px] text-slate-500 dark:text-slate-400">- {author.country}</span> : null}
+                                {author.role ? <span className="text-[11px] text-slate-500 dark:text-slate-400 uppercase">- {String(author.role).replaceAll('_', ' ')}</span> : null}
                               </div>
                               <p className="mt-2 text-sm text-slate-800 dark:text-slate-100 font-semibold">{p.title || 'Product'}</p>
                               <p className="mt-1 text-sm text-slate-700 dark:text-slate-300 line-clamp-2">{p.description || ''}</p>
@@ -532,7 +982,7 @@ export default function SearchResults() {
                               </div>
 
                               <div className="mt-3 text-xs text-slate-600 dark:text-slate-300">
-                                Rating: <span className="font-semibold text-slate-800 dark:text-slate-100">{rating?.average_score ?? '0.0'}</span> ({rating?.total_count ?? 0}) • Confidence {Math.round((rating?.score_confidence ?? 0) * 100)}%
+                                Rating: <span className="font-semibold text-slate-800 dark:text-slate-100">{rating?.average_score ?? '0.0'}</span> ({rating?.total_count ?? 0}) - Confidence {Math.round((rating?.score_confidence ?? 0) * 100)}%
                               </div>
                               {p.hasVideo ? <div className="mt-2 text-xs font-semibold text-indigo-700 dark:text-indigo-200">Video available</div> : null}
                             </div>
@@ -550,7 +1000,7 @@ export default function SearchResults() {
                               <button
                                 type="button"
                                 onClick={() => openChatNotice(author.name || 'company')}
-                                className="rounded-full bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:text-slate-950"
+                                className="rounded-full bg-[var(--gt-blue)] px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95"
                               >
                                 Contact
                               </button>
@@ -563,13 +1013,13 @@ export default function SearchResults() {
                 ) : null}
               </div>
             ) : null}
-          </div>
+            </div>
           </div>
 
           <aside className="col-span-12 xl:col-span-3 space-y-4">
             <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
               <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Recently viewed</p>
-              <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Private to you • Recorded on Quick View</p>
+              <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Private to you - Recorded on Quick View</p>
               <div className="mt-3 space-y-2">
                 {recentViews.length ? recentViews.map((row) => (
                   <button
@@ -580,21 +1030,23 @@ export default function SearchResults() {
                     title="Open Quick View"
                   >
                     <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{row.product?.title || 'Product'}</p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{row.author?.name || 'Company'} • {new Date(row.viewed_at).toLocaleString()}</p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{row.author?.name || 'Company'} - {new Date(row.viewed_at).toLocaleString()}</p>
                   </button>
                 )) : (
                   <div className="text-xs text-slate-500 dark:text-slate-400">No views yet. Use “Quick view” on a product.</div>
                 )}
               </div>
               <div className="mt-3">
-                <Link to="/notifications" className="text-xs font-semibold text-indigo-600 hover:underline dark:text-indigo-300">Open full history</Link>
+                <Link to="/notifications" className="text-xs font-semibold text-[var(--gt-blue)] hover:underline">Open full history</Link>
               </div>
             </div>
 
             {premiumLocked ? (
               <div className="rounded-2xl p-4 ring-1 ring-amber-200 bg-amber-50 dark:bg-amber-500/10 dark:ring-amber-500/30">
-                <p className="text-sm font-bold text-amber-900 dark:text-amber-200">Premium filters</p>
-                <p className="mt-1 text-xs text-amber-800 dark:text-amber-200/90">Upgrade to use advanced filters like country, MOQ range, verified-only, and org type.</p>
+                <p className="text-sm font-bold text-amber-900 dark:text-amber-200">Advanced filters locked</p>
+                <p className="mt-1 text-xs text-amber-800 dark:text-amber-200/90">
+                  Upgrade to Premium to unlock advanced filters. Core filters remain unlimited on the free plan.
+                </p>
               </div>
             ) : null}
           </aside>
@@ -610,3 +1062,4 @@ export default function SearchResults() {
     </div>
   )
 }
+

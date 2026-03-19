@@ -1,4 +1,4 @@
-import { claimConversation, grantConversationAccess } from '../services/conversationLockService.js'
+import { claimConversation, grantConversationAccess, requestConversationAccess } from '../services/conversationLockService.js'
 
 export async function claim(req, res) {
   const result = await claimConversation(req.params.requestId, req.user)
@@ -11,5 +11,11 @@ export async function grant(req, res) {
   if (result === 'invalid_target') return res.status(400).json({ error: 'target_agent_id is required' })
   if (result === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
   if (!result) return res.status(404).json({ error: 'Lock not found' })
+  return res.json(result)
+}
+
+export async function requestAccess(req, res) {
+  const result = await requestConversationAccess(req.params.requestId, req.user)
+  if (!result) return res.status(404).json({ error: 'Conversation not found' })
   return res.json(result)
 }

@@ -79,7 +79,7 @@ export default function FloatingAssistant() {
     // - Otherwise, use current origin and `/ws`.
     const wsUrl = (() => {
       if (API_BASE.startsWith('http://') || API_BASE.startsWith('https://')) {
-        return API_BASE.replace(/^http/, 'ws').replace(/\/api\/?$/, '/ws')
+        return API_BASE.replace(/^http/, 'ws').replace(/\/api\/*$/, '/ws')
       }
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
       return `${protocol}//${window.location.host}/ws`
@@ -183,7 +183,7 @@ export default function FloatingAssistant() {
           ].join(' ')}
           aria-label="Toggle assistant"
         >
-          {open ? '✕' : '🤖'}
+          {open ? 'X' : 'BOT'}
         </button>
       </div>
 
@@ -208,7 +208,7 @@ export default function FloatingAssistant() {
             </div>
           </div>
           <button onClick={() => setOpen(false)} className="hover:bg-white/10 p-1 rounded-full transition-colors w-8 h-8 flex items-center justify-center">
-            ✕
+            X
           </button>
         </div>
 
@@ -285,10 +285,11 @@ export default function FloatingAssistant() {
             </button>
           </div>
           <p className="text-[10px] text-gray-400 text-center mt-3 font-medium">
-            GarTex Hub Intelligence • WebSocket Powered
+            GarTex Hub Intelligence - WebSocket Powered
           </p>
         </div>
       </div>
     </>
   )
 }
+

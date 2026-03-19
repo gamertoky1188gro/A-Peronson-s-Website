@@ -36,7 +36,7 @@ const TEXT_EXTS = new Set([
 function safeExt(value = '') {
   const raw = String(value || '').trim()
   if (!raw) return ''
-  const cleaned = raw.split('?')[0].split('#')[0]
+  const cleaned = raw.split('*')[0].split('#')[0]
   const tail = cleaned.split('/').pop() || cleaned
   const match = tail.match(/\.([a-z0-9]+)$/i)
   return match ? match[1].toLowerCase() : ''
@@ -68,7 +68,7 @@ function classifyAttachment(file) {
 function safeDownloadName(name = '') {
   const cleaned = String(name || '').trim()
   if (!cleaned) return undefined
-  return cleaned.replace(/[\\/:*?"<>|]+/g, '_')
+  return cleaned.replace(/[\\/:??"<>|]+/g, '_')
 }
 
 function asAbsoluteUrl(url = '') {
@@ -103,7 +103,7 @@ function isPrivateHostname(hostname = '') {
 function officeViewerEmbedUrl(fileUrl = '') {
   const absolute = asAbsoluteUrl(fileUrl)
   if (!absolute) return ''
-  return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(absolute)}`
+  return `https://view.officeapps.live.com/op/embed.aspx*src=${encodeURIComponent(absolute)}`
 }
 
 function prismLanguageForExt(ext = '') {
@@ -231,7 +231,7 @@ function escapeHtml(value = '') {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/\"/g, '&quot;')
+    .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;')
 }
 
@@ -247,16 +247,16 @@ function formatXml(xmlText = '') {
     const serializer = new XMLSerializer()
     const serialized = serializer.serializeToString(xmlDoc)
 
-    const withLines = serialized.replace(/(>)(<)(\/?)/g, '$1\n$2$3')
+    const withLines = serialized.replace(/(>)(<)(\/*)/g, '$1\n$2$3')
     const lines = withLines.split('\n').map((line) => line.trim()).filter(Boolean)
 
     let indent = 0
     const formatted = lines.map((line) => {
       const isClosing = /^<\//.test(line)
-      const isSelfClosing = /\/>$/.test(line) || /^<\?xml/.test(line) || /^<!/.test(line)
+      const isSelfClosing = /\/>$/.test(line) || /^<\*xml/.test(line) || /^<!/.test(line)
       if (isClosing) indent = Math.max(indent - 1, 0)
       const pad = '  '.repeat(indent)
-      if (!isClosing && !isSelfClosing && /^<[^!?/][^>]*>$/.test(line)) indent += 1
+      if (!isClosing && !isSelfClosing && /^<[^!*/][^>]*>$/.test(line)) indent += 1
       return `${pad}${line}`
     }).join('\n')
 

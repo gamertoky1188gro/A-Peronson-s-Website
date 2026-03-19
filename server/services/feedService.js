@@ -169,6 +169,30 @@ function roundNumber(value) {
   return Number(value.toFixed(4))
 }
 
+function isActivePaidBoost(boost) {
+  if (!boost) return false
+  if (String(boost.status || '').toLowerCase() !== 'active') return false
+  const now = Date.now()
+  const startsAt = new Date(boost.starts_at).getTime()
+  const endsAt = new Date(boost.ends_at).getTime()
+  if (!Number.isFinite(startsAt) || !Number.isFinite(endsAt)) return false
+  return now >= startsAt && now <= endsAt
+}
+
+function buildPaidBoostMap(boosts = []) {
+  const byUser = new Map()
+  boosts.forEach((boost) => {
+    if (!isActivePaidBoost(boost)) return
+    if (String(boost.scope || '').toLowerCase() !== 'feed') return
+    const userId = String(boost.user_id || '')
+    const multiplier = Number(boost.multiplier || 1)
+    if (!userId || !Number.isFinite(multiplier) || multiplier <= 1) return
+    const current = byUser.get(userId) || 1
+    if (multiplier > current) byUser.set(userId, multiplier)
+  })
+  return byUser
+}
+
 function normalizeCategoryValue(item = {}) {
   const value = String(item.category || '').toLowerCase().trim()
   return value || 'unknown'
@@ -272,6 +296,8 @@ export async function getCombinedFeed({ unique = false, type = 'all', category =
   const products = type === 'requests' ? [] : await listProducts({ category })
   const users = await readJson('users.json')
   const socialInteractions = await readJson('social_interactions.json')
+  const boosts = await readJson('boosts.json')
+  const paidBoostByUser = buildPaidBoostMap(Array.isArray(boosts) ? boosts : [])
 
   const combined = [
     ...requests.map((r) => ({ ...r, feed_type: 'buyer_request', icon: '💼' })),
@@ -304,10 +330,12 @@ export async function getCombinedFeed({ unique = false, type = 'all', category =
       && accountAgeEligible
       && antiAbuseSignals.antiAbusePassed
 
-    const boostMultiplier = antiAbuseEligible ? getAgeBoostMultiplier(accountAgeDays) : 1
-    const boostActive = boostMultiplier > 1
+    const ageBoostMultiplier = antiAbuseEligible ? getAgeBoostMultiplier(accountAgeDays) : 1
+    const paidBoostMultiplier = paidBoostByUser.get(String(authorId || '')) || 1
+    const combinedMultiplier = Math.max(1, ageBoostMultiplier * paidBoostMultiplier)
+    const boostActive = combinedMultiplier > 1
     const recencyScore = calculateRecencyScore(item.created_at)
-    const rankingScore = recencyScore * boostMultiplier
+    const rankingScore = recencyScore * combinedMultiplier
 
     return {
       ...item,
@@ -316,10 +344,13 @@ export async function getCombinedFeed({ unique = false, type = 'all', category =
       },
       feed_metadata: {
         boost_active: boostActive,
+        paid_boost_active: paidBoostMultiplier > 1,
         ranking_components: {
           recency_score: roundNumber(recencyScore),
           account_age_days: roundNumber(accountAgeDays),
-          boost_multiplier: roundNumber(boostMultiplier),
+          boost_multiplier: roundNumber(combinedMultiplier),
+          paid_boost_multiplier: roundNumber(paidBoostMultiplier),
+          age_boost_multiplier: roundNumber(ageBoostMultiplier),
           profile_completeness: roundNumber(clamp01(profileCompleteness)),
           verified_contact: verifiedContact,
           activity_quality_score: roundNumber(clamp01(activityQuality)),

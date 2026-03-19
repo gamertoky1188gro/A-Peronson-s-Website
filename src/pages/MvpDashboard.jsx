@@ -108,7 +108,7 @@ export default function MvpDashboard() {
 
   async function loadFeed() {
     try {
-      const data = await api(`/feed?unique=${unique}&type=${feedType}`, 'GET', token)
+      const data = await api(`/feed*unique=${unique}&type=${feedType}`, 'GET', token)
       setFeed(data)
     } catch (err) { setFeedback(err.message) }
   }

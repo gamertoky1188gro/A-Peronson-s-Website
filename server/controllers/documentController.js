@@ -3,6 +3,7 @@ import {
   deleteDocument,
   listContracts,
   listDocuments,
+  registerExternalDocument,
   saveDocumentMetadata,
   updateContractArtifact,
   updateContractSignatures,
@@ -15,6 +16,18 @@ export async function uploadDocument(req, res) {
     const entityType = req.body?.entity_type || 'verification'
     const entityId = req.body?.entity_id || req.user.id
     const doc = await saveDocumentMetadata(req.user.id, entityType, entityId, req.body?.type || 'other', req.file)
+    return res.status(201).json(doc)
+  } catch (error) {
+    return handleControllerError(res, error)
+  }
+}
+
+export async function registerDocumentUrl(req, res) {
+  try {
+    const entityType = req.body?.entity_type || 'verification'
+    const entityId = req.body?.entity_id || req.user.id
+    const url = req.body?.url || req.body?.file_path || ''
+    const doc = await registerExternalDocument(req.user.id, entityType, entityId, req.body?.type || 'image', url)
     return res.status(201).json(doc)
   } catch (error) {
     return handleControllerError(res, error)

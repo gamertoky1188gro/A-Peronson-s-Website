@@ -4,6 +4,7 @@ import { sanitizeString } from '../utils/validators.js'
 import { recordMilestone } from './ratingsService.js'
 
 const FILE = 'call_sessions.json'
+const RECORDING_VIEWS_FILE = 'call_recording_views.json'
 const MESSAGE_FILE = 'messages.json'
 const REQUIREMENT_FILE = 'requirements.json'
 const CALL_STATUS = {
@@ -281,4 +282,49 @@ export async function findOrCreateCallSession(userId, payload = {}) {
     participant_ids: participantIds,
   })
   return { call: createdCall, created: true }
+}
+
+export async function listCallsByContract(contractId, userId) {
+  const id = sanitizeString(String(contractId || ''), 120)
+  if (!id) return []
+  const calls = await readJson(FILE)
+  return (Array.isArray(calls) ? calls : [])
+    .filter((call) => ensureParticipant(call, userId) && String(call.contract_id || '') === id)
+    .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')))
+}
+
+export async function getRecordingMetadata(callId, userId) {
+  const call = await getCallSession(callId, userId)
+  if (!call) return null
+  if (call === 'forbidden') return 'forbidden'
+
+  const views = await readJson(RECORDING_VIEWS_FILE)
+  const rows = Array.isArray(views) ? views : []
+  const viewCount = rows.filter((v) => String(v.call_id || '') === String(callId || '')).length
+  return {
+    call_id: call.id,
+    match_id: call.match_id || '',
+    contract_id: call.contract_id || '',
+    recording_status: call.recording_status || 'pending',
+    recording_url: call.recording_url || '',
+    recording_updated_at: call.recording_updated_at || call.updated_at || '',
+    views: viewCount,
+  }
+}
+
+export async function markRecordingViewed(callId, userId) {
+  const call = await getCallSession(callId, userId)
+  if (!call) return null
+  if (call === 'forbidden') return 'forbidden'
+
+  const views = await readJson(RECORDING_VIEWS_FILE)
+  const rows = Array.isArray(views) ? views : []
+  rows.push({
+    id: crypto.randomUUID(),
+    call_id: String(callId || ''),
+    viewer_id: String(userId || ''),
+    viewed_at: new Date().toISOString(),
+  })
+  await writeJson(RECORDING_VIEWS_FILE, rows)
+  return { ok: true }
 }

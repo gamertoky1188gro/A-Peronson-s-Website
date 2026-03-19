@@ -35,7 +35,7 @@ export default function AccessDenied() {
         </p>
         {/* Primary actions: re-auth or return to a safe default page. */}
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link to="/login" className="px-4 py-2 rounded-lg bg-indigo-600 text-white">Login with another account</Link>
+          <Link to="/login" className="px-4 py-2 rounded-lg bg-[var(--gt-blue)] hover:bg-[var(--gt-blue-hover)] text-white">Login with another account</Link>
           <Link to="/feed" className="px-4 py-2 rounded-lg border">Go to Feed</Link>
         </div>
       </div>

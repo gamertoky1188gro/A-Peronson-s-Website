@@ -14,7 +14,7 @@ export default defineConfig({
     }),
   ],
   server: {
-    allowedHosts: ['reviewing-advertisement-aside-prospects.trycloudflare.com'],
+    allowedHosts: ['newest-guild-folder-term.trycloudflare.com'],
     proxy: {
       '/api': {
         target: process.env.VITE_API_PROXY || 'http://localhost:4000',

@@ -47,6 +47,7 @@ import {
   VolumeX,
 } from 'lucide-react'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
+import { trackClientEvent } from '../lib/events'
 import AttachmentPreviewModal from '../components/chat/AttachmentPreviewModal'
 import MarkdownMessage from '../components/chat/MarkdownMessage'
 import FileAttachmentCard from '../components/chat/FileAttachmentCard'
@@ -180,7 +181,7 @@ function safeAttachmentExt(attachment) {
   if (candidates.length === 0) return ''
 
   const raw = candidates[0]
-  const cleaned = raw.split('?')[0].split('#')[0]
+  const cleaned = raw.split('*')[0].split('#')[0]
   const tail = cleaned.split('/').pop() || cleaned
   const match = tail.match(/\.([a-z0-9]+)$/i)
   return match ? match[1].toLowerCase() : ''
@@ -208,7 +209,7 @@ function toAbsoluteAssetUrl(url = '') {
   if (!url) return ''
   if (url.startsWith('http://') || url.startsWith('https://')) return url
   const apiUrl = import.meta.env.VITE_API_URL || '/api'
-  const base = apiUrl.replace(/\/api\/?$/, '')
+  const base = apiUrl.replace(/\/api\/*$/, '')
   return `${base}${url.startsWith('/') ? '' : '/'}${url}`
 }
 
@@ -241,7 +242,7 @@ function formatTime(iso) {
 }
 
 function extractFirstUrl(text = '') {
-  const match = String(text).match(/https?:\/\/[^\s]+/i)
+  const match = String(text).match(/https*:\/\/[^\s]+/i)
   return match ? match[0] : ''
 }
 
@@ -316,7 +317,7 @@ export default function ChatInterface() {
   const [callHistoryByThread, setCallHistoryByThread] = useState({})
   const [messagesByThread, setMessagesByThread] = useState({})
   const [draftMessage, setDraftMessage] = useState('')
-  const [isLiveMessagingEnabled, setIsLiveMessagingEnabled] = useState(true)
+  const [isLiveMessagingEnabled] = useState(true)
   const [, setChatConnectionStatus] = useState('offline')
   const [uploading, setUploading] = useState(false)
   const [uploadStatus, setUploadStatus] = useState('')
@@ -329,6 +330,8 @@ export default function ChatInterface() {
   })
   const [presenceMap, setPresenceMap] = useState({})
   const [notice, setNotice] = useState(null)
+  const [aiSuggesting, setAiSuggesting] = useState(false)
+  const [aiError, setAiError] = useState('')
 
   const wsRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -442,7 +445,7 @@ export default function ChatInterface() {
       })
 
       if (allMatchIds.length > 0) {
-        const callHistoryResponse = await apiRequest(`/calls/history?match_ids=${allMatchIds.join(',')}`, { token })
+        const callHistoryResponse = await apiRequest(`/calls/history*match_ids=${allMatchIds.join(',')}`, { token })
         const grouped = (callHistoryResponse?.items || []).reduce((acc, item) => {
           const key = item.match_id || item.context?.chat_thread_id
           if (!key) return acc
@@ -504,10 +507,28 @@ export default function ChatInterface() {
     if (!activeThread?.matchId) return []
     return callHistoryByThread[activeThread.matchId] || []
   }, [activeThread, callHistoryByThread])
+  const hasRecordedCall = useMemo(() => {
+    return activeCallHistory.some((call) => String(call.recording_status || '').toLowerCase() === 'available' && call.recording_url)
+  }, [activeCallHistory])
   const activeMessages = useMemo(() => {
     if (!activeThread?.matchId) return []
     return messagesByThread[activeThread.matchId] || []
   }, [activeThread, messagesByThread])
+
+  useEffect(() => {
+    if (!activeThread?.matchId || hasRecordedCall) return
+    trackClientEvent('call_warning_shown', {
+      entityType: 'chat_thread',
+      entityId: activeThread.matchId,
+    })
+  }, [activeThread?.matchId, hasRecordedCall])
+
+  const lockMeta = activeThread?.lock || null
+  const lockStatus = lockMeta?.status || 'unclaimed'
+  const isAgentUser = String(currentUser?.role || '').toLowerCase() === 'agent'
+  const isLockRestricted = isAgentUser && lockStatus === 'request_access'
+  const isLockOwner = isAgentUser && lockStatus === 'claimed' && lockMeta?.claimed_by === currentUser?.id
+  const canSendMessage = !isLockRestricted
 
   const sharedMedia = useMemo(() => {
     return activeMessages
@@ -722,71 +743,6 @@ export default function ChatInterface() {
     return () => window.clearInterval(interval)
   }, [callPromptThread])
 
-  async function updateRequestState(thread, decision) {
-    const token = getToken()
-    if (!token || !thread?.id) {
-      setError('Please sign in to update message requests.')
-      return
-    }
-
-    try {
-      if (thread.isFriendThread) {
-        if (decision === 'accept') {
-          await apiRequest(`/users/${thread.senderId}/friend-request`, {
-            method: 'POST',
-            token,
-          })
-          setError('')
-        }
-      } else {
-        await apiRequest(`/messages/requests/${thread.id}/${decision}`, {
-          method: 'POST',
-          token,
-        })
-      }
-
-      await loadInbox()
-    } catch (err) {
-      setError(err.message || `Failed to ${decision} request`)
-    }
-  }
-
-  async function scheduleCall(thread) {
-    const token = getToken()
-    if (!token || !thread?.matchId) {
-      setScheduleStatus('Please sign in and select a valid thread before scheduling.')
-      return
-    }
-
-    const scheduledForInput = window.prompt('Schedule date/time (ISO or YYYY-MM-DD HH:mm)', new Date().toISOString())
-    if (!scheduledForInput) return
-
-    const contractId = window.prompt('Contract ID to link (optional)', '') || ''
-    const securityAuditId = window.prompt('Security audit ID to link (optional)', '') || ''
-    const parsedScheduledFor = new Date(scheduledForInput)
-    const scheduledFor = Number.isNaN(parsedScheduledFor.getTime()) ? new Date().toISOString() : parsedScheduledFor.toISOString()
-
-    setScheduleStatus('Scheduling call...')
-    try {
-      const created = await apiRequest('/calls/scheduled', {
-        method: 'POST',
-        token,
-        body: {
-          match_id: thread.matchId,
-          title: `Call with ${thread.name}`,
-          chat_thread_id: thread.id,
-          scheduled_for: scheduledFor,
-          contract_id: contractId,
-          security_audit_id: securityAuditId,
-        },
-      })
-      setScheduleStatus(`Scheduled call for ${new Date(created.scheduled_for).toLocaleString()}.`)
-      await loadInbox()
-    } catch (err) {
-      setScheduleStatus(err.message || 'Failed to schedule call')
-    }
-  }
-
   async function startInstantCall(thread) {
     const token = getToken()
     if (!token || !thread?.matchId) {
@@ -825,7 +781,12 @@ export default function ChatInterface() {
       const callId = result?.call?.id
       if (!callId) throw new Error('Unable to open call room')
       setScheduleStatus('Call room ready. Redirecting...')
-      navigate(`/call?callId=${encodeURIComponent(callId)}&matchId=${encodeURIComponent(thread.matchId)}`)
+      trackClientEvent('call_start', {
+        entityType: 'call_session',
+        entityId: callId,
+        metadata: { match_id: thread.matchId },
+      })
+      navigate(`/call*callId=${encodeURIComponent(callId)}&matchId=${encodeURIComponent(thread.matchId)}`)
     } catch (err) {
       setScheduleStatus(err.message || 'Failed to start call')
     }
@@ -840,7 +801,7 @@ export default function ChatInterface() {
     const thread = callPromptThread
     setCallPromptThread(null)
     if (thread.callId) {
-      navigate(`/call?callId=${encodeURIComponent(thread.callId)}&matchId=${encodeURIComponent(thread.matchId || '')}`)
+      navigate(`/call*callId=${encodeURIComponent(thread.callId)}&matchId=${encodeURIComponent(thread.matchId || '')}`)
       return
     }
   }
@@ -848,6 +809,14 @@ export default function ChatInterface() {
   async function sendAttachment(file) {
     const token = getToken()
     if (!token || !activeThread?.matchId || !file) return
+    if (!canSendMessage) {
+      setNotice({
+        title: 'Access required',
+        message: 'This conversation is locked. Request access before sharing files.',
+        type: 'error',
+      })
+      return
+    }
 
     setUploading(true)
     setUploadStatus('Uploading file...')
@@ -986,14 +955,62 @@ export default function ChatInterface() {
     return <MarkdownMessage text={message.message} />
   }
 
+  function buildAiReplyPrompt() {
+    const threadName = activeThreadDisplayName || 'this contact'
+    const recent = activeMessages.slice(-6).map((msg) => {
+      const sender = msg.sender_id === currentUser?.id ? 'Me' : (msg.sender_name || 'Contact')
+      const text = String(msg.message || '').trim()
+      return text ? `${sender}: ${text}` : `${sender}: [attachment]`
+    }).join('\n')
+
+    return [
+      'Draft a concise, professional reply for a B2B textile sourcing conversation.',
+      `Thread with: ${threadName}`,
+      'Recent messages:',
+      recent || '(no recent messages)',
+      'Reply guidelines: short, polite, confirm requirements, ask missing info if needed.',
+    ].join('\n')
+  }
+
+  async function requestAiSuggestion() {
+    const token = getToken()
+    if (!token || !activeThread?.matchId) return
+    setAiSuggesting(true)
+    setAiError('')
+    try {
+      const prompt = buildAiReplyPrompt()
+      const res = await apiRequest('/assistant/ask', { method: 'POST', token, body: { question: prompt } })
+      const suggestion = res?.matched_answer || res?.answer || res?.reply || ''
+      if (!suggestion) {
+        setAiError('AI could not generate a suggestion yet.')
+      } else {
+        setDraftMessage(String(suggestion).trim())
+      }
+    } catch (err) {
+      setAiError(err.message || 'Unable to generate AI suggestion')
+    } finally {
+      setAiSuggesting(false)
+    }
+  }
+
   async function sendMessage() {
     const token = getToken()
     if (!token || !activeThread?.matchId) return
 
     const content = draftMessage.trim()
     if (!content) return
+    if (!canSendMessage) {
+      setNotice({
+        title: 'Access required',
+        message: 'This conversation is locked by another agent. Request access to continue.',
+        type: 'error',
+      })
+      return
+    }
 
     try {
+      // Optimistic local append of the user's message so UI feels instant.
+      // The server will still be the source of truth after `loadInbox()`.
       if (isLiveMessagingEnabled && wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.send(JSON.stringify({
           type: 'chat_message',
@@ -1017,10 +1034,67 @@ export default function ChatInterface() {
         }))
       }
 
+      trackClientEvent('message_sent', {
+        entityType: 'chat_thread',
+        entityId: activeThread.matchId,
+        metadata: {
+          length: content.length,
+          role: currentUser?.role || '',
+        },
+      })
+
+      // Chatbot (project.md): optionally generate an immediate "first response" from the company side.
+      // This does NOT replace the human reply; it just handles common questions and can hand off to an agent.
+      try {
+        const botRes = await apiRequest('/chatbot/reply', {
+          method: 'POST',
+          token,
+          body: { match_id: activeThread.matchId, message: content },
+        })
+        if (botRes?.reply) {
+          setMessagesByThread((previous) => ({
+            ...previous,
+            [activeThread.matchId]: [...(previous[activeThread.matchId] || []), botRes.reply].sort(sortByOldest),
+          }))
+        }
+      } catch {
+        // Silent: chatbot is best-effort and should never block messaging.
+      }
+
       setDraftMessage('')
       await loadInbox()
     } catch (err) {
       setError(err.message || 'Unable to send message')
+    }
+  }
+
+  async function requestAccess() {
+    const token = getToken()
+    if (!token || !activeThread?.requestId) return
+    try {
+      await apiRequest(`/conversations/${encodeURIComponent(activeThread.requestId)}/request-access`, { method: 'POST', token })
+      setNotice({ title: 'Access requested', message: 'The lock owner has been notified.', type: 'info' })
+      await loadInbox()
+    } catch (err) {
+      setNotice({ title: 'Request failed', message: err.message || 'Unable to request access', type: 'error' })
+    }
+  }
+
+  async function grantAccess() {
+    const token = getToken()
+    if (!token || !activeThread?.requestId) return
+    const targetAgentId = window.prompt('Grant access to agent user ID', '') || ''
+    if (!targetAgentId.trim()) return
+    try {
+      await apiRequest(`/conversations/${encodeURIComponent(activeThread.requestId)}/grant`, {
+        method: 'POST',
+        token,
+        body: { target_agent_id: targetAgentId.trim() },
+      })
+      setNotice({ title: 'Access granted', message: `Agent ${targetAgentId} can now join this conversation.`, type: 'info' })
+      await loadInbox()
+    } catch (err) {
+      setNotice({ title: 'Grant failed', message: err.message || 'Unable to grant access', type: 'error' })
     }
   }
 
@@ -1114,7 +1188,7 @@ export default function ChatInterface() {
           font-weight: 700;
         }
         .chat-markdown input[type="checkbox"] {
-          accent-color: #6366f1;
+          accent-color: var(--gt-blue);
         }
         .chat-markdown hr {
           border: none;
@@ -1157,7 +1231,7 @@ export default function ChatInterface() {
               <div>
                 <p className="text-sm text-slate-300">{callPromptThread.direction === 'incoming' ? 'Incoming call' : 'Calling'}</p>
                 <p className="text-lg font-semibold">{formatDisplayName(callPromptThread.name, callPromptThread.senderId)}</p>
-                <p className="text-xs text-slate-400">{callPromptThread.direction === 'incoming' ? 'Accept to join the call.' : 'Ready to start the call?'}</p>
+                <p className="text-xs text-slate-400">{callPromptThread.direction === 'incoming' ? 'Accept to join the call.' : 'Ready to start the call*'}</p>
               </div>
             </div>
             <div className="mt-6 flex items-center justify-between gap-3">
@@ -1198,8 +1272,8 @@ export default function ChatInterface() {
                   to={item.to}
                   className={`relative flex h-10 w-10 items-center justify-center rounded-[12px] transition-all ${
                     isActive
-                      ? (isLight ? 'bg-[#6366f1] text-white' : 'bg-[#6e4ff6]/20 text-[#D4FF59]')
-                      : (isLight ? 'text-slate-400 hover:bg-white hover:text-[#6366f1]' : 'bg-[#171031] text-[#8f95bb] hover:text-white')
+                      ? (isLight ? 'bg-[var(--gt-blue)] text-white' : 'bg-[rgba(10,102,194,0.18)] text-[#D4FF59]')
+                      : (isLight ? 'text-slate-400 hover:bg-white hover:text-[var(--gt-blue)]' : 'bg-[#171031] text-[#8f95bb] hover:text-white')
                   }`}
                   title={item.label}
                 >
@@ -1227,7 +1301,7 @@ export default function ChatInterface() {
           <div className="relative mb-6">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
-              className="h-11 w-full appearance-none rounded-[14px] border border-transparent pl-10 pr-11 text-[13px] outline-none transition-all focus:border-[#6366f1]/50"
+              className="h-11 w-full appearance-none rounded-[14px] border border-transparent pl-10 pr-11 text-[13px] outline-none transition-all focus:border-[rgba(10,102,194,0.5)]"
               style={{ background: theme.inputBg, color: theme.textPrimary }}
               placeholder="Search conversations..."
               value={query}
@@ -1237,7 +1311,7 @@ export default function ChatInterface() {
 
           <div className="mb-3 flex items-center justify-between px-1">
             <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: theme.textMuted }}>Direct Messages</h3>
-            <span className="text-[10px] font-bold text-[#6366f1]">{allVisibleThreads.length}</span>
+            <span className="text-[10px] font-bold text-[var(--gt-blue)]">{allVisibleThreads.length}</span>
           </div>
 
           <div className="h-[calc(100vh-250px)] space-y-1 overflow-auto pr-1 custom-scrollbar">
@@ -1260,7 +1334,7 @@ export default function ChatInterface() {
                         {thread.avatar ? (
                           <img src={avatarUrl(thread.avatar)} alt={threadName} className="h-11 w-11 rounded-full object-cover shadow-sm" />
                         ) : (
-                          <div className={`flex h-11 w-11 items-center justify-center rounded-full text-xs font-bold shadow-sm ${isActive ? 'bg-[#6366f1] text-white' : 'bg-slate-100 text-slate-500'}`}>{getInitials(threadName)}</div>
+                          <div className={`flex h-11 w-11 items-center justify-center rounded-full text-xs font-bold shadow-sm ${isActive ? 'bg-[var(--gt-blue)] text-white' : 'bg-slate-100 text-slate-500'}`}>{getInitials(threadName)}</div>
                         )}
                         <span
                           className="absolute bottom-0 right-0 h-3 w-3 rounded-full"
@@ -1269,7 +1343,7 @@ export default function ChatInterface() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-1">
-                          <p className={`truncate text-[14px] font-semibold ${isActive ? 'text-[#6366f1]' : ''}`}>{threadName}</p>
+                          <p className={`truncate text-[14px] font-semibold ${isActive ? 'text-[var(--gt-blue)]' : ''}`}>{threadName}</p>
                           <span className="flex-shrink-0 text-[10px] font-medium text-slate-400">{formatTime(thread.timestamp)}</span>
                         </div>
                         <p className={`truncate text-xs ${isActive ? 'text-slate-600' : 'text-slate-400'}`}>{thread.last || 'No messages'}</p>
@@ -1304,9 +1378,23 @@ export default function ChatInterface() {
                         ? 'Online'
                         : formatPresence(presenceLastSeen(activeThread?.senderId))}
                     </p>
+                    {lockMeta && !activeThread?.isFriendThread ? (
+                      <span className="mt-1 inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-300">
+                        {lockStatusLabel(lockMeta, activeThread)}
+                      </span>
+                    ) : null}
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
+                  {isLockOwner ? (
+                    <button
+                      onClick={grantAccess}
+                      className="rounded-full border border-slate-200 px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800/60"
+                      title="Grant access to another agent"
+                    >
+                      Grant access
+                    </button>
+                  ) : null}
                   <button
                     onClick={() => startInstantCall(activeThread)}
                     className="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50"
@@ -1323,6 +1411,23 @@ export default function ChatInterface() {
                 </div>
               </div>
 
+              {!hasRecordedCall ? (
+                <div className="mx-6 mt-4 rounded-xl border border-amber-200/70 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900 dark:border-amber-400/20 dark:bg-amber-500/10 dark:text-amber-200">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <span>
+                      Video calls are recommended for trust. No recorded call exists yet for this conversation.
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => startInstantCall(activeThread)}
+                      className="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white hover:bg-amber-500"
+                    >
+                      Start call
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+
               <div className="flex-1 space-y-4 overflow-auto p-6 custom-scrollbar" style={{ background: isLight ? '#f8fafc' : 'transparent' }}>
                 <div className="flex justify-center mb-6">
                   <span className="rounded-full bg-transparent border border-slate-200/60 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:border-slate-800 dark:text-slate-600">{todayLabel}</span>
@@ -1330,13 +1435,21 @@ export default function ChatInterface() {
                 {activeMessages.length > 0 ? (
                   activeMessages.map((message) => {
                     const isOwn = message.sender_id === currentUser?.id
+                    const isBot = message?.type === 'bot' || Boolean(message?.meta?.bot)
                     return (
                       <div key={message.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
                         <div className={`group relative max-w-[80%] sm:max-w-[70%] rounded-[20px] px-4 py-3 text-[13.5px] shadow-sm transition-all ${
                           isOwn 
-                            ? 'bg-[#6366f1] text-white rounded-br-none' 
-                            : `${isLight ? 'bg-white border border-slate-100' : 'bg-[#2a2744]'} rounded-bl-none`
+                            ? 'bg-[var(--gt-blue)] text-white rounded-br-none' 
+                            : isBot
+                              ? `${isLight ? 'bg-[#EFF6FF] border border-[#BFDBFE]' : 'bg-[#0B1224] ring-1 ring-white/5'} rounded-bl-none`
+                              : `${isLight ? 'bg-white border border-slate-100' : 'bg-[#2a2744]'} rounded-bl-none`
                         }`} style={!isOwn ? { color: theme.textPrimary } : undefined}>
+                          {isBot ? (
+                            <div className="mb-1 text-[10px] font-extrabold uppercase tracking-widest text-[var(--gt-blue)]">
+                              AI Assistant
+                            </div>
+                          ) : null}
                           {renderMessageBody(message, isOwn)}
                           <div className={`mt-1 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-60 ${isOwn ? 'text-white' : 'text-slate-400'}`}>
                             {formatTime(message.timestamp)}
@@ -1351,15 +1464,40 @@ export default function ChatInterface() {
               </div>
 
               <div className="p-4 border-t border-slate-100 dark:border-slate-800/50">
+                {isLockRestricted ? (
+                  <div className="mb-3 flex items-center justify-between gap-3 rounded-xl bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+                    <span>Conversation locked by {lockMeta?.claimed_by_name || 'another agent'}.</span>
+                    <button
+                      type="button"
+                      onClick={requestAccess}
+                      className="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white"
+                    >
+                      Request access
+                    </button>
+                  </div>
+                ) : null}
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-[11px] font-semibold text-slate-500">
+                  <span>AI Suggested Reply</span>
+                  <button
+                    type="button"
+                    onClick={requestAiSuggestion}
+                    disabled={aiSuggesting || !activeThread?.matchId}
+                    className="rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold text-white hover:bg-slate-700 disabled:opacity-60 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/20"
+                  >
+                    {aiSuggesting ? 'Thinking...' : 'Generate'}
+                  </button>
+                </div>
+                {aiError ? <div className="mb-2 text-[11px] font-semibold text-rose-600">{aiError}</div> : null}
                 <div className="relative flex items-center gap-2 rounded-[18px] p-1.5" style={{ background: theme.inputBg }}>
-                  <button className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-200/50 dark:hover:bg-slate-700/50" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                  <button className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-200/50 dark:hover:bg-slate-700/50" onClick={() => fileInputRef.current?.click()} disabled={uploading || !canSendMessage}>
                     <Plus size={20} />
                   </button>
                   <textarea
                     rows={1}
                     className="flex-1 resize-none bg-transparent px-2 py-2 text-[14px] leading-5 outline-none placeholder:text-slate-400"
                     style={{ color: theme.textPrimary, maxHeight: 140 }}
-                    placeholder="Write a message..."
+                    placeholder={canSendMessage ? 'Write a message...' : 'Conversation locked. Request access to reply.'}
+                    disabled={!canSendMessage}
                     value={draftMessage}
                     onChange={(event) => setDraftMessage(event.target.value)}
                     onKeyDown={(event) => {
@@ -1369,13 +1507,13 @@ export default function ChatInterface() {
                       }
                     }}
                   />
-                  <input ref={fileInputRef} type="file" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) sendAttachment(file) }} />
-                  <button className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#6366f1] text-white shadow-md transition-transform hover:scale-105 active:scale-95" onClick={sendMessage}>
+                  <input ref={fileInputRef} type="file" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) sendAttachment(file) }} disabled={!canSendMessage} />
+                  <button className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[var(--gt-blue)] text-white shadow-md transition-transform hover:scale-105 active:scale-95 disabled:opacity-60" onClick={sendMessage} disabled={!canSendMessage}>
                     <SendHorizontal size={18} />
                   </button>
                 </div>
                 {uploadStatus || scheduleStatus ? (
-                  <p className="mt-2 px-4 text-[11px] font-medium text-[#6366f1]">{uploadStatus || scheduleStatus}</p>
+                  <p className="mt-2 px-4 text-[11px] font-medium text-[var(--gt-blue)]">{uploadStatus || scheduleStatus}</p>
                 ) : null}
               </div>
             </>
@@ -1446,7 +1584,7 @@ export default function ChatInterface() {
                                   key={item.id}
                                   type="button"
                                   onClick={() => openAttachmentPreview(item.attachment, url)}
-                                  className="flex w-full items-center gap-2 rounded-xl border border-slate-50 bg-slate-50/50 p-2.5 text-left text-[11px] font-medium transition-colors hover:border-[#6366f1]/20 dark:border-slate-800 dark:bg-slate-800/30"
+                                  className="flex w-full items-center gap-2 rounded-xl border border-slate-50 bg-slate-50/50 p-2.5 text-left text-[11px] font-medium transition-colors hover:border-[rgba(10,102,194,0.2)] dark:border-slate-800 dark:bg-slate-800/30"
                                   title="Preview"
                                 >
                                   <div className="h-6 w-6 rounded bg-white flex items-center justify-center shadow-xs dark:bg-slate-700"><Plus size={12} className="opacity-30" /></div>

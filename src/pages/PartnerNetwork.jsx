@@ -23,7 +23,7 @@ export default function PartnerNetwork() {
     setLoading(true)
     setError('')
     try {
-      const data = await apiRequest(`/partners?status=${status}`, { token })
+      const data = await apiRequest(`/partners*status=${status}`, { token })
       setRows(data.requests || [])
       setPermissions(data.permissions || { can_manage: false, view_only: false })
     } catch (err) {

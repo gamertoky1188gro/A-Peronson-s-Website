@@ -8,6 +8,8 @@ import {
   isFriendConnected,
   listFriendConnectionsForUser,
 } from './friendService.js'
+import { upsertLeadFromMessage } from './leadService.js'
+import { assertMessagingAllowed, moderateTextOrRedactWithContext } from './policyService.js'
 
 const FILE = 'messages.json'
 const USERS_FILE = 'users.json'
@@ -108,6 +110,38 @@ function requestIdFromMatchId(matchId = '') {
   return String(matchId).split(':')[0] || ''
 }
 
+async function enforceConversationLock(matchId, sender) {
+  if (!sender || String(sender.role || '').toLowerCase() !== 'agent') return null
+  if (String(matchId || '').startsWith('friend:')) return null
+
+  const requestId = requestIdFromMatchId(matchId)
+  if (!requestId) return null
+
+  const locks = await readJson(CONVERSATION_LOCKS_FILE)
+  const existing = locks.find((lock) => lock.request_id === requestId)
+  if (!existing) {
+    const row = {
+      request_id: requestId,
+      locked_by: sender.id,
+      allowed_agents: [sender.id],
+      created_at: new Date().toISOString(),
+    }
+    locks.push(row)
+    await writeJson(CONVERSATION_LOCKS_FILE, locks)
+    return row
+  }
+
+  if (existing.locked_by === sender.id || (Array.isArray(existing.allowed_agents) && existing.allowed_agents.includes(sender.id))) {
+    return existing
+  }
+
+  const err = new Error('Conversation locked by another agent. Request access to proceed.')
+  err.status = 403
+  err.code = 'CONVERSATION_LOCKED'
+  err.lock = existing
+  throw err
+}
+
 function buildLockMeta(lock, usersById, currentUserId) {
   if (!lock) {
     return {
@@ -183,20 +217,50 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
     id: crypto.randomUUID(),
     match_id: matchId,
     sender_id: senderId,
-    message: sanitizeString(message, 2000),
+    message: '',
     timestamp: new Date().toISOString(),
     type,
     attachment: safeAttachment && safeAttachment.url ? safeAttachment : null,
   }
-  messages.push(entry)
 
   const sender = users.find((u) => u.id === senderId)
+  assertMessagingAllowed(sender)
+
+  await enforceConversationLock(matchId, sender)
+
+  const recentContext = messages
+    .filter((m) => String(m.match_id || '') === String(matchId || ''))
+    .slice(-5)
+    .map((m) => m?.message || '')
+
+  const moderation = await moderateTextOrRedactWithContext({
+    actor: sender,
+    text: sanitizeString(message, 2000),
+    context_texts: recentContext,
+    entity_type: 'message',
+    entity_id: matchId,
+  })
+
+  entry.message = moderation.text
+  entry.moderated = Boolean(moderation.moderated)
+  entry.moderation_reason = moderation.reason || ''
+  messages.push(entry)
+
   if (!sender?.verified) {
     upsertRequestState(messageRequests, matchId, { status: 'pending', acted_by: null, acted_at: null })
   }
 
   await writeJson(FILE, messages)
   await writeJson(MESSAGE_REQUESTS_FILE, messageRequests)
+
+  // CRM (project.md): Every inquiry/message becomes a lead for Buying House / Factory org accounts.
+  // Best-effort: never block the message if lead upsert fails.
+  try {
+    await upsertLeadFromMessage({ match_id: matchId, sender_id: senderId, timestamp: entry.timestamp })
+  } catch {
+    // silent
+  }
+
   await trackTransition(matchId, 'matched', 'first_message_sent', { sender_id: senderId })
   return enrichMessage(entry, usersById)
 }

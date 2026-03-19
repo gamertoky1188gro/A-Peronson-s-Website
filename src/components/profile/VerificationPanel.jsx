@@ -51,7 +51,7 @@ export default function VerificationPanel({ summary }) {
 
         <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
           <p className="text-[11px] text-slate-500 dark:text-slate-400">Buyer region</p>
-          <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{summary?.buyer_region || '—'}</p>
+          <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{summary?.buyer_region || '--'}</p>
           <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-300">Optional licenses: {summary?.optional_licenses_count ?? 0}</p>
         </div>
       </div>
@@ -75,3 +75,4 @@ export default function VerificationPanel({ summary }) {
     </section>
   )
 }
+

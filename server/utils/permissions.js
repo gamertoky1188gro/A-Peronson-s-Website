@@ -32,11 +32,16 @@ export function isAgent(user) {
 }
 
 export function canManagePartnerNetwork(user) {
-  return isOwnerOrAdmin(user) || hasRole(user, 'buying_house', 'factory')
+  // Partner Network UI is buying-house owned; factories participate by responding (accept/reject) via notifications.
+  return isOwnerOrAdmin(user) || hasRole(user, 'buying_house')
 }
 
 export function canViewPartnerNetwork(user) {
   return canManagePartnerNetwork(user) || isAgent(user)
+}
+
+export function canRespondToPartnerRequest(user) {
+  return isOwnerOrAdmin(user) || hasRole(user, 'factory')
 }
 
 export function canManageMembers(user) {
@@ -49,6 +54,13 @@ export function canViewAnalytics(user) {
 
 export function canViewAnalyticsAdmin(user) {
   return isOwnerOrAdmin(user)
+}
+
+export function canViewAnalyticsDashboard(user) {
+  if (isOwnerOrAdmin(user)) return true
+  if (hasRole(user, 'buying_house', 'factory')) return true
+  if (isAgent(user)) return Boolean(user?.permission_matrix?.analytics?.view)
+  return false
 }
 
 function includesUserId(record, userId, idFields = []) {

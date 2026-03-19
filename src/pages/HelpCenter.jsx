@@ -33,6 +33,8 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 import SpotlightCard from '../components/ui/SpotlightCard'
 
+const Motion = motion
+
 const HELP_SECTIONS = [
   {
     id: 'quick-start',
@@ -122,7 +124,7 @@ const HELP_SECTIONS = [
     title: '4. Messaging & Conversation Rules',
     sections: [
       { title: 'Verified Users', text: 'Messages go directly to inbox.' },
-      { title: 'Unverified Users', text: 'Messages appear in \"Message Requests.\"' },
+      { title: 'Unverified Users', text: 'Messages appear in "Message Requests."' },
       {
         title: 'Buying House Conversation Lock',
         points: [
@@ -255,15 +257,15 @@ export default function HelpCenter() {
 
   const staticFaqs = [
     {
-      q: 'Can I buy verification without documents?',
+      q: 'Can I buy verification without documents*',
       a: 'No. Verification requires mandatory document submission and approval.',
     },
     {
-      q: 'Can I create multiple sub-accounts?',
+      q: 'Can I create multiple sub-accounts*',
       a: 'Yes. Buying Houses and Factories can create limited sub-accounts under Free plans.',
     },
-    { q: 'Does GarTexHub handle payments?', a: 'No. The platform facilitates communication and contracts only.' },
-    { q: 'Can I increase my visibility?', a: 'Premium plans may provide improved reach.' },
+    { q: 'Does GarTexHub handle payments*', a: 'No. The platform facilitates communication and contracts only.' },
+    { q: 'Can I increase my visibility*', a: 'Premium plans may provide improved reach.' },
   ]
 
   const loadFaqs = useCallback(async () => {
@@ -419,7 +421,7 @@ export default function HelpCenter() {
                       <ul className="mt-4 space-y-2 text-sm text-slate-500 dark:text-slate-400">
                         {section.content.map((item) => (
                           <li key={item} className="flex gap-2">
-                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">•</span>
+                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
                             <span>{item}</span>
                           </li>
                         ))}
@@ -445,7 +447,7 @@ export default function HelpCenter() {
                             <ul className="mt-3 space-y-2 text-sm text-slate-500 dark:text-slate-400">
                               {sub.points.map((p) => (
                                 <li key={p} className="flex gap-2">
-                                  <span className="mt-0.5 text-blue-600/90 dark:text-blue-400">•</span>
+                                  <span className="mt-0.5 text-blue-600/90 dark:text-blue-400">-</span>
                                   <span>{p}</span>
                                 </li>
                               ))}
@@ -463,7 +465,7 @@ export default function HelpCenter() {
                             <ul className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 text-sm text-slate-500 md:grid-cols-2 dark:text-slate-400">
                               {roleBlock.docs.map((d) => (
                                 <li key={d} className="flex gap-2">
-                                  <span className="mt-0.5 text-emerald-600 dark:text-emerald-400">•</span>
+                                  <span className="mt-0.5 text-emerald-600 dark:text-emerald-400">-</span>
                                   <span>{d}</span>
                                 </li>
                               ))}
@@ -486,7 +488,7 @@ export default function HelpCenter() {
                               <ul className="mt-3 space-y-2 text-sm text-slate-500 dark:text-slate-400">
                                 {s.points.map((p) => (
                                   <li key={p} className="flex gap-2">
-                                    <span className="mt-0.5 text-blue-600 dark:text-blue-400">•</span>
+                                    <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
                                     <span>{p}</span>
                                   </li>
                                 ))}
@@ -524,7 +526,7 @@ export default function HelpCenter() {
                                   <div>
                                     <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Lock demo</p>
                                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                                      {lockGranted ? 'Permission granted — teammates can message.' : 'Locked — teammates need permission.'}
+                                      {lockGranted ? 'Permission granted -- teammates can message.' : 'Locked -- teammates need permission.'}
                                     </p>
                                   </div>
                                 </div>
@@ -546,7 +548,7 @@ export default function HelpCenter() {
                       <ul className="mt-4 space-y-2 text-sm text-slate-500 dark:text-slate-400">
                         {section.points.map((p) => (
                           <li key={p} className="flex gap-2">
-                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">•</span>
+                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
                             <span>{p}</span>
                           </li>
                         ))}
@@ -799,7 +801,7 @@ export default function HelpCenter() {
                 <div className="mt-4 rounded-xl bg-slate-900/2 p-4 dark:bg-white/5">
                   <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">What it can do</p>
                   <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                    Setup, navigation, support articles — it does not negotiate.
+                    Setup, navigation, support articles -- it does not negotiate.
                   </p>
                 </div>
               </SpotlightCard>
@@ -810,3 +812,4 @@ export default function HelpCenter() {
     </div>
   )
 }
+

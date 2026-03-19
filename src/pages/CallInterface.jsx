@@ -40,7 +40,8 @@ import {
   Smile,
   MoreHorizontal,
 } from 'lucide-react'
-import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
+import { API_BASE, apiRequest, getCurrentUser, getToken } from '../lib/auth'
+import { trackClientEvent } from '../lib/events'
 import MarkdownMessage from '../components/chat/MarkdownMessage'
 
 const WS_BASE = (() => {
@@ -99,6 +100,7 @@ export default function CallInterface() {
   const [hasLocalStream, setHasLocalStream] = useState(false)
   const [isRequestingMedia, setIsRequestingMedia] = useState(false)
   const [mediaGate, setMediaGate] = useState(null)
+  const [recordingState, setRecordingState] = useState('idle') // idle | recording | uploading | available | failed
 
   const localVideoRef = useRef(null)
   const remoteVideoRef = useRef(null)
@@ -130,6 +132,12 @@ export default function CallInterface() {
   const chatInitializedRef = useRef(false)
   const mountedRef = useRef(true)
   const redirectedRef = useRef(false)
+
+  // Call recording (project.md requirement): record the call room locally and upload after ending.
+  // MVP approach: canvas-composited video (remote + local PIP) + mixed audio (local + remote).
+  const recorderRef = useRef(null)
+  const recordingChunksRef = useRef([])
+  const recordingCleanupRef = useRef(null)
 
   const callId = useMemo(() => searchParams.get('callId') || '', [searchParams])
   const matchId = useMemo(() => searchParams.get('matchId') || '', [searchParams])
@@ -1224,6 +1232,207 @@ export default function CallInterface() {
     }
   }
 
+  const startCallRecording = useCallback(async () => {
+    if (recordingState !== 'idle') return
+    if (!callId) return
+    if (!hasLocalStreamRef.current) return
+    if (!remoteStreamRef.current) return
+    if (typeof MediaRecorder === 'undefined') {
+      setRecordingState('failed')
+      return
+    }
+
+    const localStream = localStreamRef.current
+    const remoteStream = remoteStreamRef.current
+    if (!localStream || !remoteStream) return
+
+    try {
+      // --- Build a composited video track via canvas (remote full + local PIP) ---
+      const canvas = document.createElement('canvas')
+      canvas.width = 1280
+      canvas.height = 720
+      const ctx = canvas.getContext('2d', { alpha: false })
+      if (!ctx) throw new Error('Canvas recording context not available')
+
+      const drawFrame = () => {
+        // Background.
+        ctx.fillStyle = '#000'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+        const remoteVideo = remoteVideoRef.current
+        const localVideo = localVideoRef.current
+
+        // Draw remote full-screen when available; otherwise draw local.
+        const canDrawRemote = remoteVideo && remoteVideo.readyState >= 2
+        const canDrawLocal = localVideo && localVideo.readyState >= 2
+
+        if (canDrawRemote) {
+          ctx.drawImage(remoteVideo, 0, 0, canvas.width, canvas.height)
+        } else if (canDrawLocal) {
+          ctx.drawImage(localVideo, 0, 0, canvas.width, canvas.height)
+        }
+
+        // Local picture-in-picture overlay (bottom-right).
+        if (canDrawLocal && canDrawRemote) {
+          const pad = 22
+          const pipW = Math.round(canvas.width * 0.28)
+          const pipH = Math.round(canvas.height * 0.28)
+          const x = canvas.width - pipW - pad
+          const y = canvas.height - pipH - pad
+          ctx.save()
+          ctx.globalAlpha = 0.98
+          ctx.fillStyle = 'rgba(0,0,0,0.25)'
+          ctx.fillRect(x - 6, y - 6, pipW + 12, pipH + 12)
+          ctx.drawImage(localVideo, x, y, pipW, pipH)
+          ctx.strokeStyle = 'rgba(255,255,255,0.18)'
+          ctx.lineWidth = 2
+          ctx.strokeRect(x, y, pipW, pipH)
+          ctx.restore()
+        }
+
+        recordingCleanupRef.current.raf = window.requestAnimationFrame(drawFrame)
+      }
+
+      // --- Mix audio tracks into a single track ---
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+      const dest = audioCtx.createMediaStreamDestination()
+
+      const connectStreamAudio = (stream) => {
+        const hasAudio = stream.getAudioTracks().length > 0
+        if (!hasAudio) return
+        const source = audioCtx.createMediaStreamSource(stream)
+        source.connect(dest)
+      }
+
+      connectStreamAudio(localStream)
+      connectStreamAudio(remoteStream)
+
+      const canvasStream = canvas.captureStream(30)
+      const mixedStream = new MediaStream([
+        ...canvasStream.getVideoTracks(),
+        ...dest.stream.getAudioTracks(),
+      ])
+
+      const supported = [
+        'video/webm;codecs=vp8,opus',
+        'video/webm;codecs=vp9,opus',
+        'video/webm',
+      ].find((mime) => {
+        try {
+          return MediaRecorder.isTypeSupported(mime)
+        } catch {
+          return false
+        }
+      })
+
+      const recorder = new MediaRecorder(mixedStream, supported ? { mimeType: supported } : undefined)
+      recordingChunksRef.current = []
+
+      recorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) recordingChunksRef.current.push(event.data)
+      }
+
+      recorder.onerror = () => {
+        setRecordingState('failed')
+      }
+
+      // Store a cleanup object so we can stop raf + close audio context later.
+      recordingCleanupRef.current = {
+        raf: null,
+        stop: () => {
+          try {
+            if (recordingCleanupRef.current?.raf) window.cancelAnimationFrame(recordingCleanupRef.current.raf)
+          } catch {
+            // ignore
+          }
+          try {
+            audioCtx.close?.()
+          } catch {
+            // ignore
+          }
+          try {
+            mixedStream.getTracks().forEach((t) => t.stop())
+          } catch {
+            // ignore
+          }
+        },
+      }
+
+      drawFrame()
+      recorder.start(1000)
+      recorderRef.current = recorder
+      setRecordingState('recording')
+    } catch (err) {
+      setRecordingState('failed')
+      setToast({ tone: 'error', message: err?.message || 'Recording could not be started.' })
+    }
+  }, [callId, recordingState])
+
+  const stopRecordingAndUpload = useCallback(async () => {
+    const token = getToken()
+    if (!token || !callId) return
+    const recorder = recorderRef.current
+    if (!recorder || recorder.state === 'inactive') return
+
+    setRecordingState('uploading')
+
+    const stopped = new Promise((resolve) => {
+      recorder.onstop = () => resolve(true)
+    })
+
+    try {
+      recorder.stop()
+    } catch {
+      // ignore
+    }
+
+    await stopped
+
+    try {
+      recordingCleanupRef.current?.stop?.()
+    } catch {
+      // ignore
+    }
+
+    const chunks = recordingChunksRef.current || []
+    const mimeType = recorder.mimeType || 'video/webm'
+    const blob = new Blob(chunks, { type: mimeType })
+
+    // Reset refs before upload so UI is not stuck if upload fails.
+    recorderRef.current = null
+    recordingChunksRef.current = []
+
+    try {
+      const form = new FormData()
+      form.append('file', blob, `call-${callId}.webm`)
+
+      const res = await fetch(`${API_BASE}/calls/${encodeURIComponent(callId)}/recording/upload`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: form,
+      })
+
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Recording upload failed')
+
+      setRecordingState('available')
+      setToast({ tone: 'success', message: 'Call recording saved securely.' })
+    } catch (err) {
+      setRecordingState('failed')
+      setToast({ tone: 'error', message: err?.message || 'Recording upload failed.' })
+    }
+  }, [callId])
+
+  useEffect(() => {
+    // Auto-start call recording when the call is connected (mandatory call recording requirement).
+    if (recordingState !== 'idle') return
+    if (rtcConnectionState !== 'connected') return
+    if (!hasLocalStream || !hasRemoteStream) return
+    startCallRecording()
+  }, [hasLocalStream, hasRemoteStream, recordingState, rtcConnectionState, startCallRecording])
+
   const endCall = async () => {
     const token = getToken()
     if (token && callId) {
@@ -1232,6 +1441,21 @@ export default function CallInterface() {
       } catch {
         // ignore
       }
+    }
+
+    if (callId) {
+      trackClientEvent('call_end', {
+        entityType: 'call_session',
+        entityId: callId,
+        metadata: { match_id: effectiveMatchId || '' },
+      })
+    }
+
+    // Stop recording and upload before leaving the call room.
+    try {
+      await stopRecordingAndUpload()
+    } catch {
+      // ignore
     }
     navigate('/chat')
   }
@@ -1295,7 +1519,7 @@ export default function CallInterface() {
               Call with <span className="text-slate-600 dark:text-slate-300">“{remoteName}”</span>
             </div>
             <div className="hidden truncate text-xs text-slate-500 dark:text-slate-300/80 sm:block">
-              {statusMessage || 'Preparing call…'}
+              {statusMessage || 'Preparing call...'}
             </div>
           </div>
         </div>
@@ -1305,6 +1529,18 @@ export default function CallInterface() {
             <span className={`h-2 w-2 rounded-full ${connectionBadge.dotClass}`} />
             {connectionBadge.label}
           </span>
+          {recordingState !== 'idle' ? (
+            <span className="hidden items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/60 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 sm:inline-flex">
+              <span className={`h-2 w-2 rounded-full ${recordingState === 'recording' ? 'bg-rose-500 animate-pulse' : recordingState === 'available' ? 'bg-emerald-500' : recordingState === 'uploading' ? 'bg-amber-500 animate-pulse' : 'bg-rose-500'}`} />
+              {recordingState === 'recording'
+                ? 'REC'
+                : recordingState === 'uploading'
+                  ? 'Uploading'
+                  : recordingState === 'available'
+                    ? 'Saved'
+                    : 'Failed'}
+            </span>
+          ) : null}
           <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-bold tabular-nums text-slate-700 ring-1 ring-slate-200/60 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
             {timer}
           </span>
@@ -1342,7 +1578,7 @@ export default function CallInterface() {
                 </div>
                 <div className="text-base font-semibold">{remoteName}</div>
                 <div className="max-w-xs text-center text-xs text-white/60">
-                  {statusMessage || 'Waiting to connect…'}
+                  {statusMessage || 'Waiting to connect...'}
                 </div>
               </div>
             )}
@@ -1360,7 +1596,7 @@ export default function CallInterface() {
                         disabled={isRequestingMedia}
                         className="rounded-xl bg-blue-500 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600 disabled:opacity-60"
                       >
-                        {isRequestingMedia ? 'Requesting…' : mediaGate.actionLabel}
+                        {isRequestingMedia ? 'Requesting...' : mediaGate.actionLabel}
                       </button>
                     ) : null}
                     <button
@@ -1642,4 +1878,5 @@ export default function CallInterface() {
     </div>
   )
 }
+
 

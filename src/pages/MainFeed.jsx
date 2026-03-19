@@ -33,6 +33,9 @@ import CommentsDrawer from '../components/feed/CommentsDrawer'
 import ReportModal from '../components/feed/ReportModal'
 import useLocalStorageState from '../hooks/useLocalStorageState'
 import { apiRequest, fetchCurrentUser, getCurrentUser, getToken } from '../lib/auth'
+import { trackClientEvent } from '../lib/events'
+
+const Motion = motion
 
 function formatRelativeTime(value) {
   // Convert an ISO timestamp into a short "Just now / 5m ago / 2h ago" label for feed cards.
@@ -81,6 +84,7 @@ function normalizeFeedItem(raw) {
     moq: raw.moq || '',
     leadTimeDays: raw.lead_time_days || '',
     hasVideo: Boolean(raw.hasVideo || (!raw.video_restricted && raw.video_review_status === 'approved' && raw.video_url)),
+    feedMetadata: raw.feed_metadata || {},
   }
 }
 
@@ -209,8 +213,23 @@ export default function MainFeed() {
     }
 
     try {
+      // Role-based feed filtering:
+      // - Buyer: sees products + only their own requests
+      // - Factory/Buying House: sees all buyer requests
+      const role = user?.role || ''
+      let feedType = activeType
+
+      // Override feed type based on role if 'all' is selected
+      if (activeType === 'all') {
+        if (role === 'buyer') {
+          feedType = 'products' // Buyers see products by default, not all buyer requests
+        } else if (role === 'factory' || role === 'buying_house') {
+          feedType = 'requests' // Factory/Buying House see buyer requests by default
+        }
+      }
+
       const data = await apiRequest(
-        `/feed?unique=${unique ? 'true' : 'false'}&type=${encodeURIComponent(activeType)}&category=${encodeURIComponent(activeCategory)}&cursor=${cursor}&limit=${limit}`,
+        `/feed*unique=${unique ? 'true' : 'false'}&type=${encodeURIComponent(feedType)}&category=${encodeURIComponent(activeCategory)}&cursor=${cursor}&limit=${limit}&role_filter=true`,
         { token },
       )
       const rows = Array.isArray(data?.items) ? data.items : []
@@ -221,6 +240,15 @@ export default function MainFeed() {
 
       const serverNext = data?.next_cursor
       setNextCursor(serverNext === null || serverNext === undefined ? null : serverNext)
+
+      if (reset) {
+        normalized.slice(0, 6).forEach((item) => {
+          trackClientEvent('feed_item_viewed', {
+            entityType: item.entityType,
+            entityId: item.id,
+          })
+        })
+      }
     } catch (err) {
       setError(err.message || 'Failed to load feed')
       if (reset) setItems([])
@@ -229,7 +257,7 @@ export default function MainFeed() {
       setLoading(false)
       setLoadingMore(false)
     }
-  }, [activeCategory, activeType, nextCursor, token, unique])
+  }, [activeCategory, activeType, nextCursor, token, unique, user?.role])
 
   useEffect(() => {
     loadUser()
@@ -268,7 +296,7 @@ export default function MainFeed() {
     setNotice({ type: '', message: '' })
     try {
       await apiRequest(`/social/${encodeURIComponent(item.entityType)}/${encodeURIComponent(item.id)}/share`, { method: 'POST', token })
-      const url = `${window.location.origin}/feed?item=${encodeURIComponent(`${item.entityType}:${item.id}`)}`
+      const url = `${window.location.origin}/feed*item=${encodeURIComponent(`${item.entityType}:${item.id}`)}`
       await copyToClipboard(url)
       setNotice({ type: 'success', message: 'Share link copied to clipboard.' })
     } catch (err) {

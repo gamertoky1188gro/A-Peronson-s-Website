@@ -4,10 +4,23 @@ import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { getSubscription } from './subscriptionService.js'
 
-const FILE = 'members.json'
+/**
+ * Member/Team system (Phase 2)
+ * - "Members" are stored as real user rows in `users.json` with `role: "agent"`.
+ * - This enables single-field Agent login: Email OR Agent ID (member_id).
+ * - Legacy support: if `members.json` exists with old rows, we migrate them into users.json on demand.
+ */
+
+const USERS_FILE = 'users.json'
+const LEGACY_MEMBERS_FILE = 'members.json'
+
 const FREE_MEMBER_LIMIT = 10
+
+// Legacy permissions are still supported for UI compatibility (checkbox list).
 const VALID_PERMISSIONS = new Set(['view_requests', 'assign_requests', 'manage_members', 'reports_only'])
 const PERMISSION_CONFLICTS = [['manage_members', 'reports_only']]
+
+// Permission matrix is the longer-term, role-safe permission model.
 const MATRIX_SECTIONS = ['requests', 'products', 'analytics', 'members', 'documents']
 
 function sanitizePermissions(permissions) {
@@ -27,6 +40,9 @@ function sanitizePermissionMatrix(rawMatrix) {
     }
   }
 
+  // Hard rule: agents can never manage members from the UI/API.
+  matrix.members = { view: false, edit: false }
+
   return matrix
 }
 
@@ -34,49 +50,136 @@ function hasPermissionConflict(permissions) {
   return PERMISSION_CONFLICTS.find(([a, b]) => permissions.includes(a) && permissions.includes(b)) || null
 }
 
-function cleanMember(member) {
-  const { password_hash: _passwordHash, ...safe } = member
+function cleanAgent(user) {
+  const { password_hash: _passwordHash, ...safe } = user
   return safe
 }
 
-function normalizeMember(member) {
-  const username = sanitizeString(member.username || member.account_id, 64)
-  const memberId = sanitizeString(member.member_id || member.account_id, 64)
-  const orgOwnerId = sanitizeString(member.org_owner_id || member.organization_id, 120)
+function normalizeAgent(orgOwnerId, payload = {}, current = null) {
+  const name = sanitizeString(payload.name ?? current?.name, 120)
+  const username = sanitizeString(payload.username ?? current?.username, 64)
+  const memberId = sanitizeString(payload.member_id ?? payload.account_id ?? current?.member_id, 64)
+
+  // Force role to agent (this endpoint is "member management", i.e. sub-accounts).
+  const role = 'agent'
+  const status = sanitizeString(payload.status ?? current?.status ?? 'active', 32) || 'active'
+
+  const permissions = payload.permissions === undefined
+    ? (Array.isArray(current?.permissions) ? current.permissions : [])
+    : sanitizePermissions(payload.permissions)
+
+  const permissionMatrix = payload.permission_matrix === undefined
+    ? sanitizePermissionMatrix(current?.permission_matrix || {})
+    : sanitizePermissionMatrix(payload.permission_matrix)
+
+  // Use a synthetic email so agents remain valid "users" but are not discoverable via search suggestions.
+  const email = sanitizeString(payload.email ?? current?.email, 160) || `agent-${memberId}@gartexhub.local`
 
   return {
-    ...member,
+    id: current?.id || crypto.randomUUID(),
     org_owner_id: orgOwnerId,
-    organization_id: orgOwnerId,
+    name,
     username,
     member_id: memberId,
-    account_id: member.account_id || memberId,
-    permission_matrix: sanitizePermissionMatrix(member.permission_matrix),
+    account_id: memberId,
+    email: email.toLowerCase(),
+    role,
+    status,
+    // Agents are internal sub-accounts; they do not receive the public $5 wallet credit.
+    wallet_balance_usd: Number(current?.wallet_balance_usd ?? 0),
+    policy_strikes: Number(current?.policy_strikes ?? 0),
+    messaging_restricted_until: sanitizeString(payload.messaging_restricted_until ?? current?.messaging_restricted_until ?? '', 64),
+    permissions,
+    permission_matrix: permissionMatrix,
+    assigned_requests: Number(payload.assigned_requests ?? current?.assigned_requests ?? 0),
+    performance_score: Number(payload.performance_score ?? current?.performance_score ?? 0),
+    created_at: current?.created_at || new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   }
 }
 
-async function getOrgMembers(orgOwnerId) {
-  const members = await readJson(FILE)
-  return members.filter((m) => String(m.org_owner_id) === String(orgOwnerId)).map(normalizeMember)
+async function readAllUsersRaw() {
+  const users = await readJson(USERS_FILE)
+  return Array.isArray(users) ? users : []
 }
 
-async function readAllMembers() {
-  const members = await readJson(FILE)
-  return members.map(normalizeMember)
+async function writeAllUsersRaw(users) {
+  await writeJson(USERS_FILE, users)
+}
+
+async function migrateLegacyMembersIfNeeded() {
+  // If no legacy file exists or it is empty, skip.
+  let legacy = []
+  try {
+    legacy = await readJson(LEGACY_MEMBERS_FILE)
+  } catch {
+    legacy = []
+  }
+  if (!Array.isArray(legacy) || legacy.length === 0) return
+
+  const users = await readAllUsersRaw()
+  const existingByMemberId = new Map(
+    users
+      .filter((u) => String(u.member_id || '').trim())
+      .map((u) => [String(u.member_id || '').toLowerCase(), u]),
+  )
+
+  let mutated = false
+  for (const row of legacy) {
+    const memberId = sanitizeString(row.member_id || row.account_id, 64)
+    if (!memberId) continue
+    const key = memberId.toLowerCase()
+    if (existingByMemberId.has(key)) continue
+
+    const orgOwnerId = sanitizeString(row.org_owner_id || row.organization_id, 120) || ''
+    if (!orgOwnerId) continue
+
+    const agent = normalizeAgent(orgOwnerId, row, {
+      id: crypto.randomUUID(),
+      name: row.name || memberId,
+      username: row.username || memberId,
+      member_id: memberId,
+      email: row.email || `agent-${memberId}@gartexhub.local`,
+      role: 'agent',
+      status: row.status || 'active',
+      permissions: Array.isArray(row.permissions) ? row.permissions : [],
+      permission_matrix: row.permission_matrix || {},
+      created_at: row.created_at || new Date().toISOString(),
+      updated_at: row.updated_at || new Date().toISOString(),
+    })
+
+    // Preserve legacy password hash if present; otherwise create a random one (agent must reset).
+    agent.password_hash = row.password_hash || (await bcrypt.hash(crypto.randomBytes(12).toString('base64url'), 10))
+
+    users.push(agent)
+    existingByMemberId.set(key, agent)
+    mutated = true
+  }
+
+  if (mutated) {
+    await writeAllUsersRaw(users)
+  }
+}
+
+async function listAgentsForOrg(orgOwnerId) {
+  await migrateLegacyMembersIfNeeded()
+  const users = await readAllUsersRaw()
+  return users
+    .filter((u) => String(u.role || '').toLowerCase() === 'agent')
+    .filter((u) => String(u.org_owner_id) === String(orgOwnerId))
 }
 
 export async function listMembers(orgOwnerId) {
-  const members = await getOrgMembers(orgOwnerId)
-  return members.map(cleanMember)
+  const agents = await listAgentsForOrg(orgOwnerId)
+  return agents.map(cleanAgent)
 }
 
-async function assertFreePlanMemberLimit(orgOwnerId, allMembers, currentMember = null, nextStatus = 'active') {
+async function assertFreePlanMemberLimit(orgOwnerId, allAgents, currentAgent = null, nextStatus = 'active') {
   const subscription = await getSubscription(orgOwnerId)
   const plan = subscription?.plan === 'premium' ? 'premium' : 'free'
   if (plan !== 'free') return
 
-  const orgMembers = allMembers.filter((m) => String(m.org_owner_id) === String(orgOwnerId))
-  const activeCount = orgMembers.filter((m) => m.status === 'active' && String(m.id) !== String(currentMember?.id)).length
+  const activeCount = allAgents.filter((m) => m.status === 'active' && String(m.id) !== String(currentAgent?.id)).length
   if (nextStatus === 'active' && activeCount >= FREE_MEMBER_LIMIT) {
     const error = new Error('Free plan allows up to 10 active sub-accounts')
     error.status = 403
@@ -84,26 +187,27 @@ async function assertFreePlanMemberLimit(orgOwnerId, allMembers, currentMember =
   }
 }
 
-function ensureUniqueIdentity({ members, orgOwnerId, username, memberId, currentMemberId = null }) {
-  const duplicateUsername = members.find(
-    (m) =>
-      String(m.org_owner_id) === String(orgOwnerId) &&
-      String(m.id) !== String(currentMemberId) &&
-      m.username.toLowerCase() === username.toLowerCase(),
+function ensureUniqueIdentity({ users, orgOwnerId, username, memberId, currentUserId = null }) {
+  const dupeUsername = users.find(
+    (u) =>
+      String(u.role || '').toLowerCase() === 'agent' &&
+      String(u.org_owner_id) === String(orgOwnerId) &&
+      String(u.id) !== String(currentUserId) &&
+      String(u.username || '').toLowerCase() === String(username || '').toLowerCase(),
   )
-  if (duplicateUsername) {
+  if (dupeUsername) {
     const error = new Error('Duplicate username in this organization')
     error.status = 409
     throw error
   }
 
-  const duplicateMemberId = members.find(
-    (m) =>
-      String(m.org_owner_id) === String(orgOwnerId) &&
-      String(m.id) !== String(currentMemberId) &&
-      String(m.member_id || '').toLowerCase() === memberId.toLowerCase(),
+  // Agent ID must be globally unique so the agent can login using only that ID.
+  const dupeMemberId = users.find(
+    (u) =>
+      String(u.id) !== String(currentUserId) &&
+      String(u.member_id || '').toLowerCase() === String(memberId || '').toLowerCase(),
   )
-  if (duplicateMemberId) {
+  if (dupeMemberId) {
     const error = new Error('Member ID already exists')
     error.status = 409
     throw error
@@ -111,181 +215,124 @@ function ensureUniqueIdentity({ members, orgOwnerId, username, memberId, current
 }
 
 export async function createMember(orgOwnerId, payload) {
-  const members = await readAllMembers()
+  await migrateLegacyMembersIfNeeded()
+  const users = await readAllUsersRaw()
 
-  const name = sanitizeString(payload.name, 120)
-  const username = sanitizeString(payload.username, 64)
-  const memberId = sanitizeString(payload.member_id || payload.account_id, 64)
-  const role = sanitizeString(payload.role, 64)
-  const permissions = sanitizePermissions(payload.permissions)
-  const permissionMatrix = sanitizePermissionMatrix(payload.permission_matrix)
-
-  if (!name || !username || !memberId || !role || !payload.password) {
-    const error = new Error('name, username, member_id, role and password are required')
-    error.status = 400
-    throw error
-  }
-
-  ensureUniqueIdentity({ members, orgOwnerId, username, memberId })
-
-  const conflict = hasPermissionConflict(permissions)
+  const agent = normalizeAgent(orgOwnerId, payload)
+  const conflict = hasPermissionConflict(agent.permissions)
   if (conflict) {
     const error = new Error(`Permission conflict: ${conflict[0]} cannot be combined with ${conflict[1]}`)
     error.status = 400
     throw error
   }
 
-  await assertFreePlanMemberLimit(orgOwnerId, members)
-
-  const hash = await bcrypt.hash(String(payload.password), 10)
-  const member = {
-    id: crypto.randomUUID(),
-    org_owner_id: orgOwnerId,
-    organization_id: orgOwnerId,
-    name,
-    username,
-    member_id: memberId,
-    account_id: memberId,
-    role,
-    permissions,
-    permission_matrix: permissionMatrix,
-    password_hash: hash,
-    status: 'active',
-    assigned_requests: Number(payload.assigned_requests || 0),
-    performance_score: Number(payload.performance_score || 0),
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  }
-
-  members.push(member)
-  await writeJson(FILE, members)
-  return cleanMember(member)
-}
-
-export async function updateMember(orgOwnerId, memberId, payload) {
-  const members = await readAllMembers()
-  const idx = members.findIndex((m) => String(m.id) === String(memberId) && String(m.org_owner_id) === String(orgOwnerId))
-  if (idx < 0) return null
-
-  const current = members[idx]
-  const name = payload.name === undefined ? current.name : sanitizeString(payload.name, 120)
-  const username = payload.username === undefined ? current.username : sanitizeString(payload.username, 64)
-  const normalizedMemberId =
-    payload.member_id === undefined && payload.account_id === undefined
-      ? current.member_id
-      : sanitizeString(payload.member_id || payload.account_id, 64)
-  const role = payload.role === undefined ? current.role : sanitizeString(payload.role, 64)
-  const status = payload.status === undefined ? current.status : sanitizeString(payload.status, 32)
-  const permissions = payload.permissions === undefined ? current.permissions : sanitizePermissions(payload.permissions)
-  const permissionMatrix =
-    payload.permission_matrix === undefined
-      ? sanitizePermissionMatrix(current.permission_matrix)
-      : sanitizePermissionMatrix(payload.permission_matrix)
-
-  if (!name || !username || !normalizedMemberId || !role) {
-    const error = new Error('name, username, member_id and role are required')
+  if (!agent.name || !agent.username || !agent.member_id) {
+    const error = new Error('name, username and member_id are required')
     error.status = 400
     throw error
   }
 
-  if (!['active', 'inactive'].includes(status)) {
+  ensureUniqueIdentity({ users, orgOwnerId, username: agent.username, memberId: agent.member_id })
+
+  const orgAgents = users
+    .filter((u) => String(u.role || '').toLowerCase() === 'agent')
+    .filter((u) => String(u.org_owner_id) === String(orgOwnerId))
+
+  await assertFreePlanMemberLimit(orgOwnerId, orgAgents)
+
+  const rawPassword = String(payload.password || '').trim() || crypto.randomBytes(8).toString('base64url')
+  agent.password_hash = await bcrypt.hash(rawPassword, 10)
+
+  users.push(agent)
+  await writeAllUsersRaw(users)
+
+  // Surface the generated password when client didn't provide one (helps onboarding).
+  const safe = cleanAgent(agent)
+  if (!payload.password) return { ...safe, temporary_password: rawPassword }
+  return safe
+}
+
+export async function updateMember(orgOwnerId, memberId, payload) {
+  await migrateLegacyMembersIfNeeded()
+  const users = await readAllUsersRaw()
+  const idx = users.findIndex((u) => String(u.id) === String(memberId) && String(u.org_owner_id) === String(orgOwnerId) && String(u.role || '').toLowerCase() === 'agent')
+  if (idx < 0) return null
+
+  const current = users[idx]
+  const next = normalizeAgent(orgOwnerId, payload, current)
+
+  if (!['active', 'inactive'].includes(next.status)) {
     const error = new Error('status must be active or inactive')
     error.status = 400
     throw error
   }
 
-  ensureUniqueIdentity({
-    members,
-    orgOwnerId,
-    username,
-    memberId: normalizedMemberId,
-    currentMemberId: current.id,
-  })
+  ensureUniqueIdentity({ users, orgOwnerId, username: next.username, memberId: next.member_id, currentUserId: current.id })
 
-  const conflict = hasPermissionConflict(permissions)
+  const conflict = hasPermissionConflict(next.permissions)
   if (conflict) {
     const error = new Error(`Permission conflict: ${conflict[0]} cannot be combined with ${conflict[1]}`)
     error.status = 400
     throw error
   }
 
-  await assertFreePlanMemberLimit(orgOwnerId, members, current, status)
+  const orgAgents = users
+    .filter((u) => String(u.role || '').toLowerCase() === 'agent')
+    .filter((u) => String(u.org_owner_id) === String(orgOwnerId))
 
-  members[idx] = {
+  await assertFreePlanMemberLimit(orgOwnerId, orgAgents, current, next.status)
+
+  users[idx] = {
     ...current,
-    name,
-    username,
-    member_id: normalizedMemberId,
-    account_id: normalizedMemberId,
-    role,
-    status,
-    permissions,
-    permission_matrix: permissionMatrix,
-    updated_at: new Date().toISOString(),
+    ...next,
+    password_hash: current.password_hash,
   }
 
-  await writeJson(FILE, members)
-  return cleanMember(members[idx])
+  await writeAllUsersRaw(users)
+  return cleanAgent(users[idx])
 }
 
 export async function updateMemberPermissions(orgOwnerId, memberId, permissionsPayload, permissionMatrixPayload) {
-  const members = await readAllMembers()
-  const idx = members.findIndex((m) => String(m.id) === String(memberId) && String(m.org_owner_id) === String(orgOwnerId))
-  if (idx < 0) return null
-
-  const permissions = sanitizePermissions(permissionsPayload)
-  const conflict = hasPermissionConflict(permissions)
-  if (conflict) {
-    const error = new Error(`Permission conflict: ${conflict[0]} cannot be combined with ${conflict[1]}`)
-    error.status = 400
-    throw error
-  }
-
-  members[idx] = {
-    ...members[idx],
-    permissions,
-    permission_matrix: sanitizePermissionMatrix(permissionMatrixPayload),
-    updated_at: new Date().toISOString(),
-  }
-  await writeJson(FILE, members)
-  return cleanMember(members[idx])
+  return updateMember(orgOwnerId, memberId, { permissions: permissionsPayload, permission_matrix: permissionMatrixPayload })
 }
 
 export async function resetMemberPassword(orgOwnerId, memberId) {
-  const members = await readAllMembers()
-  const idx = members.findIndex((m) => String(m.id) === String(memberId) && String(m.org_owner_id) === String(orgOwnerId))
+  await migrateLegacyMembersIfNeeded()
+  const users = await readAllUsersRaw()
+  const idx = users.findIndex((u) => String(u.id) === String(memberId) && String(u.org_owner_id) === String(orgOwnerId) && String(u.role || '').toLowerCase() === 'agent')
   if (idx < 0) return null
 
   const tempPassword = crypto.randomBytes(6).toString('base64url')
-  members[idx] = {
-    ...members[idx],
+  users[idx] = {
+    ...users[idx],
     password_hash: await bcrypt.hash(tempPassword, 10),
     password_reset_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   }
 
-  await writeJson(FILE, members)
-  return { member: cleanMember(members[idx]), temporary_password: tempPassword }
+  await writeAllUsersRaw(users)
+  return { member: cleanAgent(users[idx]), temporary_password: tempPassword }
 }
 
 export async function deactivateOrRemoveMember(orgOwnerId, memberId, mode = 'deactivate') {
-  const members = await readAllMembers()
-  const idx = members.findIndex((m) => String(m.id) === String(memberId) && String(m.org_owner_id) === String(orgOwnerId))
+  await migrateLegacyMembersIfNeeded()
+  const users = await readAllUsersRaw()
+  const idx = users.findIndex((u) => String(u.id) === String(memberId) && String(u.org_owner_id) === String(orgOwnerId) && String(u.role || '').toLowerCase() === 'agent')
   if (idx < 0) return null
 
   if (mode === 'remove') {
-    const [removed] = members.splice(idx, 1)
-    await writeJson(FILE, members)
-    return { removed: cleanMember(removed), mode: 'remove' }
+    const [removed] = users.splice(idx, 1)
+    await writeAllUsersRaw(users)
+    return { removed: cleanAgent(removed), mode: 'remove' }
   }
 
-  members[idx] = {
-    ...members[idx],
+  users[idx] = {
+    ...users[idx],
     status: 'inactive',
     updated_at: new Date().toISOString(),
   }
-  await writeJson(FILE, members)
-  return { member: cleanMember(members[idx]), mode: 'deactivate' }
+  await writeAllUsersRaw(users)
+  return { member: cleanAgent(users[idx]), mode: 'deactivate' }
 }
 
 export function getMemberConstraints() {

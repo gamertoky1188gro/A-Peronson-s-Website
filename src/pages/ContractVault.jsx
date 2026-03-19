@@ -29,6 +29,9 @@ import { Link } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import AccessDeniedState from '../components/AccessDeniedState'
 import { API_BASE, apiRequest, getCurrentUser, getToken } from '../lib/auth'
+import { trackClientEvent } from '../lib/events'
+
+const Motion = motion
 
 function toLabel(status) {
   // Map backend status -> readable label for UI chips.
@@ -58,7 +61,7 @@ function resolveDownloadUrl(pdfPath) {
   // Normalize relative file paths returned by the backend into an absolute URL.
   if (!pdfPath) return ''
   if (pdfPath.startsWith('http://') || pdfPath.startsWith('https://')) return pdfPath
-  const baseOrigin = API_BASE.replace(/\/api\/?$/, '')
+  const baseOrigin = API_BASE.replace(/\/api\/*$/, '')
   return `${baseOrigin}${pdfPath.startsWith('/') ? '' : '/'}${pdfPath}`
 }
 
@@ -201,7 +204,7 @@ function ContractRow({ contract, active, onSelect }) {
           </div>
           <div className="mt-1 truncate text-xs text-slate-600">{safeDash(contract.title)}</div>
           <div className="mt-2 text-xs text-slate-600">
-            <span className="font-semibold text-slate-700">Buyer:</span> {safeDash(contract.buyer_name)} <span className="mx-1">•</span>
+            <span className="font-semibold text-slate-700">Buyer:</span> {safeDash(contract.buyer_name)} <span className="mx-1">-</span>
             <span className="font-semibold text-slate-700">Factory:</span> {safeDash(contract.factory_name)}
           </div>
         </div>
@@ -324,10 +327,40 @@ export default function ContractVault() {
     return contracts.find((c) => String(c.id) === String(selectedId)) || null
   }, [contracts, selectedId])
 
+  // project.md: call recordings should be stored and retrievable for disputes.
+  // We show recordings linked to the selected contract via `contract_id` on call sessions.
+  const [callItems, setCallItems] = useState([])
+  const [callsLoading, setCallsLoading] = useState(false)
+  const hasRecordedCall = useMemo(() => {
+    return callItems.some((call) => String(call.recording_status || '').toLowerCase() === 'available' && call.recording_url)
+  }, [callItems])
+
   const selectedFlow = computeFlow(selected)
   const selectedActionBlockers = actionBlockers(currentUser, selected)
   const downloadUrl = resolveDownloadUrl(selected?.artifact?.pdf_path)
   const canDownload = Boolean(selectedFlow?.hasPdf && downloadUrl)
+
+  useEffect(() => {
+    const token = getToken()
+    if (!token || !selected?.id) {
+      setCallItems([])
+      return
+    }
+
+    setCallsLoading(true)
+    apiRequest(`/calls/by-contract/${encodeURIComponent(selected.id)}`, { token })
+      .then((data) => setCallItems(Array.isArray(data?.items) ? data.items : []))
+      .catch(() => setCallItems([]))
+      .finally(() => setCallsLoading(false))
+  }, [selected?.id])
+
+  useEffect(() => {
+    if (!selected?.id || hasRecordedCall) return
+    trackClientEvent('contract_call_warning', {
+      entityType: 'contract',
+      entityId: selected.id,
+    })
+  }, [hasRecordedCall, selected?.id])
 
   const upsertContract = (nextContract) => {
     if (!nextContract?.id) return
@@ -341,13 +374,20 @@ export default function ContractVault() {
     setSelectedId(String(nextContract.id))
   }
 
-  const runStepAction = async (runner) => {
+  const runStepAction = async (runner, eventPayload = null) => {
     setSaving(true)
     setActionError('')
     try {
       const token = getToken()
       const updated = await runner(token)
       upsertContract(updated)
+      if (eventPayload?.type && updated?.id) {
+        trackClientEvent(eventPayload.type, {
+          entityType: 'contract',
+          entityId: updated.id,
+          metadata: eventPayload.metadata || {},
+        })
+      }
     } catch (err) {
       setActionError(err.message || 'Action failed')
     } finally {
@@ -369,7 +409,7 @@ export default function ContractVault() {
         beneficiary_name: draftForm.beneficiary_name,
         transaction_reference: draftForm.transaction_reference,
       },
-    }))
+    }), { type: 'contract_draft_created' })
     setDraftOpen(false)
     setDraftForm({
       title: '',
@@ -401,7 +441,7 @@ export default function ContractVault() {
           </div>
           <div className="mt-1 text-sm text-slate-600">{safeDash(selected.title)}</div>
           <div className="mt-3 text-sm text-slate-700">
-            <span className="font-semibold">Buyer:</span> {safeDash(selected.buyer_name)} <span className="mx-1">•</span>
+            <span className="font-semibold">Buyer:</span> {safeDash(selected.buyer_name)} <span className="mx-1">-</span>
             <span className="font-semibold">Factory:</span> {safeDash(selected.factory_name)}
           </div>
         </div>
@@ -409,6 +449,16 @@ export default function ContractVault() {
       </div>
 
       {actionError ? <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-semibold text-rose-700">{actionError}</div> : null}
+      {!hasRecordedCall ? (
+        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-900">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span>Video calls are recommended before finalizing contracts. No recorded call is linked to this contract yet.</span>
+            <Link to="/chat" className="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white hover:bg-amber-500">
+              Open chat
+            </Link>
+          </div>
+        </div>
+      ) : null}
 
       <div className="mt-5 flex flex-wrap items-center gap-2">
         <StepPill done={selectedFlow.stepState.draft_creation} label="Draft" />
@@ -431,7 +481,7 @@ export default function ContractVault() {
                 method: 'PATCH',
                 token,
                 body: { buyer_signature_state: 'signed', is_draft: false },
-              }))}
+              }), { type: 'contract_buyer_sign' })}
               className="rounded-xl bg-[#0A66C2] px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-200 disabled:text-slate-500"
             >
               Buyer sign
@@ -445,7 +495,7 @@ export default function ContractVault() {
                 method: 'PATCH',
                 token,
                 body: { factory_signature_state: 'signed', is_draft: false },
-              }))}
+              }), { type: 'contract_factory_sign' })}
               className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-[#0A66C2] ring-1 ring-[#BBD8FF] hover:bg-[#F6FAFF] disabled:bg-slate-50 disabled:text-slate-400 disabled:ring-slate-200"
             >
               Factory sign
@@ -467,7 +517,7 @@ export default function ContractVault() {
                 method: 'PATCH',
                 token,
                 body: { status: 'locked' },
-              }))}
+              }), { type: 'contract_locked' })}
               className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50 disabled:bg-slate-50 disabled:text-slate-400"
             >
               Lock PDF
@@ -481,7 +531,7 @@ export default function ContractVault() {
                 method: 'PATCH',
                 token,
                 body: { status: 'archived' },
-              }))}
+              }), { type: 'contract_archived' })}
               className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-200 disabled:text-slate-500"
             >
               Archive
@@ -495,7 +545,7 @@ export default function ContractVault() {
         </div>
       </div>
 
-      <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
+      <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900/50">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="text-sm font-semibold text-slate-900">Banking references (optional)</div>
@@ -514,6 +564,64 @@ export default function ContractVault() {
       </div>
 
       <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Call recordings</div>
+            <div className="mt-1 text-xs text-slate-500 dark:text-slate-300">Recorded calls are stored for dispute resolution and security (project.md).</div>
+          </div>
+          <div className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 dark:bg-white/5 dark:text-slate-200">
+            {callsLoading ? 'Loading...' : `${callItems.filter((c) => c.recording_url).length} available`}
+          </div>
+        </div>
+
+        <div className="mt-3 space-y-3">
+          {callItems.map((call) => {
+            const url = resolveDownloadUrl(call.recording_url)
+            const canPlay = Boolean(call.recording_status === 'available' && url)
+            return (
+              <div key={call.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-black/20">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{safeDash(call.title) || 'Call session'}</div>
+                    <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">
+                      {safeDash(call.status)} - {call.created_at ? new Date(call.created_at).toLocaleString() : '\u2014'}
+                    </div>
+                  </div>
+                  <div className="shrink-0 text-xs font-semibold text-slate-600 dark:text-slate-200">
+                    {String(call.recording_status || 'pending')}
+                  </div>
+                </div>
+
+                {canPlay ? (
+                  <div className="mt-3">
+                    <video
+                      src={url}
+                      controls
+                      className="w-full rounded-lg bg-black/5 dark:bg-black/30"
+                      onPlay={async () => {
+                        try {
+                          const token = getToken()
+                          if (!token) return
+                          await apiRequest(`/calls/${encodeURIComponent(call.id)}/recording/viewed`, { method: 'POST', token })
+                        } catch {
+                          // silent
+                        }
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="mt-3 text-xs text-slate-600 dark:text-slate-300">Recording not available yet.</div>
+                )}
+              </div>
+            )
+          })}
+          {!callsLoading && callItems.length === 0 ? (
+            <div className="text-sm text-slate-600 dark:text-slate-300">No calls linked to this contract yet.</div>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
         <div className="text-sm font-semibold text-slate-900">Artifact audit</div>
         <div className="mt-3 grid grid-cols-1 gap-2 text-sm text-slate-700">
           <div>Status: {safeDash(selected.artifact?.status)}</div>
@@ -521,10 +629,10 @@ export default function ContractVault() {
           <div>Version: {selected.artifact?.version ?? 0}</div>
           <div className="break-all text-xs text-slate-600">Hash: {safeDash(selected.artifact?.pdf_hash)}</div>
           <div className="text-xs text-slate-600">
-            Signer IDs: Buyer {safeDash(selected.artifact?.signer_ids?.buyer_id)} <span className="mx-1">•</span> Factory {safeDash(selected.artifact?.signer_ids?.factory_id)}
+            Signer IDs: Buyer {safeDash(selected.artifact?.signer_ids?.buyer_id)} <span className="mx-1">-</span> Factory {safeDash(selected.artifact?.signer_ids?.factory_id)}
           </div>
           <div className="text-xs text-slate-600">
-            Signature timestamps: Buyer {safeDash(selected.artifact?.signature_timestamps?.buyer_signed_at)} <span className="mx-1">•</span> Factory {safeDash(selected.artifact?.signature_timestamps?.factory_signed_at)}
+            Signature timestamps: Buyer {safeDash(selected.artifact?.signature_timestamps?.buyer_signed_at)} <span className="mx-1">-</span> Factory {safeDash(selected.artifact?.signature_timestamps?.factory_signed_at)}
           </div>
         </div>
       </div>
@@ -540,7 +648,7 @@ export default function ContractVault() {
       <div className="mx-auto max-w-7xl p-4 sm:p-6">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-300">Vault</div>
+            <div className="text-xs font-semibold text-[var(--gt-blue)]">Vault</div>
             <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">Contract Vault</h1>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Draft → Sign → PDF artifact → Lock → Archive</p>
           </div>
@@ -551,7 +659,7 @@ export default function ContractVault() {
               type="button"
               disabled={!canCreateDraft(currentUser)}
               onClick={() => setDraftOpen(true)}
-              className="rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95 disabled:bg-slate-200 disabled:text-slate-500 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:text-slate-950"
+              className="rounded-full bg-[var(--gt-blue)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95 disabled:bg-slate-200 disabled:text-slate-500"
             >
               New draft
             </button>
@@ -576,7 +684,7 @@ export default function ContractVault() {
                       ref={searchRef}
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
-                      placeholder="Search by number, buyer, factory, title…"
+                      placeholder="Search by number, buyer, factory, title..."
                       className="w-full rounded-xl bg-white px-3 py-2 pr-16 text-sm text-slate-800 shadow-inner ring-1 ring-slate-200/70 transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
                     />
                     <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-semibold tracking-widest text-slate-500 ring-1 ring-slate-200/70 dark:bg-slate-950/40 dark:text-slate-400 dark:ring-white/10">
@@ -727,3 +835,4 @@ export default function ContractVault() {
     </div>
   )
 }
+

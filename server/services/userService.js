@@ -83,6 +83,8 @@ export async function searchUsers(viewerId, query) {
   const search = sanitizeString(query || '', 120).trim().toLowerCase()
 
   const matches = users
+    // Agents are internal sub-accounts and should not appear in global user search suggestions.
+    .filter((user) => String(user.role || '').toLowerCase() !== 'agent')
     .filter((user) => {
       if (!search) return true
       return user.name.toLowerCase().includes(search) || user.email.toLowerCase().includes(search) || String(user.role || '').toLowerCase().includes(search)
@@ -180,6 +182,13 @@ export async function findUserByEmail(email) {
   return users.find((u) => u.email.toLowerCase() === email.toLowerCase())
 }
 
+export async function findUserByMemberId(memberId) {
+  const id = sanitizeString(String(memberId || ''), 64).trim()
+  if (!id) return null
+  const users = await readJson(FILE)
+  return users.find((u) => String(u.member_id || '').toLowerCase() === id.toLowerCase())
+}
+
 export async function findUserById(id) {
   const users = await readJson(FILE)
   return users.find((u) => u.id === id)
@@ -188,6 +197,7 @@ export async function findUserById(id) {
 export async function registerUser(payload) {
   const users = await readJson(FILE)
   const hash = await bcrypt.hash(payload.password, 10)
+  const nowIso = new Date().toISOString()
 
   const user = {
     id: crypto.randomUUID(),
@@ -195,9 +205,16 @@ export async function registerUser(payload) {
     email: payload.email.toLowerCase(),
     password_hash: hash,
     role: payload.role,
+    status: 'active',
     verified: payload.role === 'admin',
     subscription_status: payload.subscription_status === 'premium' ? 'premium' : 'free',
-    created_at: new Date().toISOString(),
+    created_at: nowIso,
+    // Marketing/monetization requirement (project.md):
+    // Every brand-new account starts with $5 credit to use on platform services (verification/premium later).
+    wallet_balance_usd: 5,
+    // Trust & moderation state (project.md): warnings/restrictions for policy violations.
+    policy_strikes: 0,
+    messaging_restricted_until: '',
     profile: {
       country: sanitizeString(payload.profile?.country || '', 120),
       certifications: Array.isArray(payload.profile?.certifications) ? payload.profile.certifications.map((c) => sanitizeString(c, 80)) : [],

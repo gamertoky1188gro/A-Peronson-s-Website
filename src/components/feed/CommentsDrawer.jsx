@@ -80,7 +80,7 @@ export default function CommentsDrawer({ open, onClose, item }) {
         </header>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/60">
-          {loading ? <div className="text-sm text-slate-500">Loading comments…</div> : null}
+          {loading ? <div className="text-sm text-slate-500">Loading comments...</div> : null}
           {!loading && error ? <div className="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-lg p-3">{error}</div> : null}
           {!loading && !error && comments.length === 0 ? <div className="text-sm text-slate-500">No comments yet.</div> : null}
 
@@ -106,7 +106,7 @@ export default function CommentsDrawer({ open, onClose, item }) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && submitComment()}
-              placeholder="Write a comment…"
+              placeholder="Write a comment..."
               className="flex-1 rounded-full bg-slate-100 border border-slate-200 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
             />
             <button
@@ -115,7 +115,7 @@ export default function CommentsDrawer({ open, onClose, item }) {
               disabled={submitting || !input.trim()}
               className="rounded-full bg-[#0A66C2] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"
             >
-              {submitting ? 'Posting…' : 'Post'}
+              {submitting ? 'Posting...' : 'Post'}
             </button>
           </div>
           <p className="mt-2 text-[10px] text-slate-500">Unverified senders may appear as message requests elsewhere.</p>
@@ -124,4 +124,5 @@ export default function CommentsDrawer({ open, onClose, item }) {
     </div>
   )
 }
+
 

@@ -4,11 +4,14 @@ import fs from 'fs/promises'
 import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { canManagePartnerNetwork, canModifyContract, isAgent, isOwnerOrAdmin, scopeRecordsForUser } from '../utils/permissions.js'
+import { trackEvent } from './analyticsService.js'
 
 const FILE = 'documents.json'
 
 const SIGNATURE_STATES = new Set(['pending', 'signed'])
 const ARTIFACT_STATES = new Set(['draft', 'generated', 'locked', 'archived'])
+const MEDIA_REVIEW_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg'])
+const PROHIBITED_MEDIA_KEYWORDS = ['porn', 'explicit', 'nudity', 'violence', 'weapon', 'drugs', 'hate']
 
 function toIsoNow() {
   return new Date().toISOString()
@@ -88,6 +91,68 @@ function ensureAllowed(file) {
   const ext = path.extname(file.originalname || '').toLowerCase()
   const allowed = ['.pdf', '.png', '.jpg', '.jpeg']
   if (!allowed.includes(ext)) throw new Error('Invalid file type')
+}
+
+function getMediaModerationResult(file) {
+  const name = String(file?.originalname || '').toLowerCase()
+  const ext = path.extname(file?.originalname || '').toLowerCase()
+  const flags = []
+
+  if (MEDIA_REVIEW_EXTENSIONS.has(ext)) {
+    flags.push(`media_type:${ext.replace('.', '')}`)
+  }
+
+  for (const keyword of PROHIBITED_MEDIA_KEYWORDS) {
+    if (name.includes(keyword)) flags.push(`prohibited_keyword:${keyword}`)
+  }
+
+  const requiresReview = flags.length > 0
+  return {
+    flags,
+    moderation_status: requiresReview ? 'pending_review' : 'approved',
+  }
+}
+
+function getMediaModerationResultFromUrl(url) {
+  const flags = []
+  let parsed = null
+  try {
+    parsed = new URL(url)
+  } catch {
+    flags.push('invalid_url')
+  }
+
+  if (parsed && !['http:', 'https:'].includes(parsed.protocol)) {
+    flags.push('invalid_url_protocol')
+  }
+
+  const ext = parsed ? path.extname(parsed.pathname || '').toLowerCase() : ''
+  if (ext && MEDIA_REVIEW_EXTENSIONS.has(ext)) {
+    flags.push(`media_type:${ext.replace('.', '')}`)
+  }
+
+  const searchable = String(url || '').toLowerCase()
+  for (const keyword of PROHIBITED_MEDIA_KEYWORDS) {
+    if (searchable.includes(keyword)) flags.push(`prohibited_keyword:${keyword}`)
+  }
+
+  const requiresReview = flags.length > 0
+  return {
+    flags,
+    moderation_status: requiresReview ? 'pending_review' : 'approved',
+  }
+}
+
+function ensureAllowedUrl(url) {
+  let parsed = null
+  try {
+    parsed = new URL(url)
+  } catch {
+    throw new Error('Invalid media URL')
+  }
+  if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('Invalid media URL protocol')
+  const ext = path.extname(parsed.pathname || '').toLowerCase()
+  if (!MEDIA_REVIEW_EXTENSIONS.has(ext)) throw new Error('Only .png, .jpg, .jpeg images are supported')
 }
 
 function escapePdfText(value = '') {
@@ -175,6 +240,7 @@ async function generateContractArtifact(contract) {
 export async function saveDocumentMetadata(ownerId, entityType, entityId, type, file) {
   const docs = await readJson(FILE)
   ensureAllowed(file)
+  const moderation = getMediaModerationResult(file)
   const safeName = `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`
   const targetPath = path.join(process.cwd(), 'server', 'uploads', safeName)
   await fs.writeFile(targetPath, file.buffer)
@@ -186,11 +252,53 @@ export async function saveDocumentMetadata(ownerId, entityType, entityId, type, 
     entity_id: sanitizeString(entityId, 100),
     file_path: path.relative(process.cwd(), targetPath),
     type: sanitizeString(type || 'other', 60),
+    moderation_status: moderation.moderation_status,
+    moderation_flags: moderation.flags,
     created_at: new Date().toISOString(),
   }
 
   docs.push(doc)
   await writeJson(FILE, docs)
+  if (doc.entity_type === 'company_product' && String(doc.type || '').toLowerCase().includes('image')) {
+    await trackEvent({
+      type: 'product_image_uploaded',
+      actor_id: ownerId,
+      entity_id: doc.entity_id,
+      metadata: { document_id: doc.id },
+    })
+  }
+  return doc
+}
+
+export async function registerExternalDocument(ownerId, entityType, entityId, type, url) {
+  const docs = await readJson(FILE)
+  const safeUrl = sanitizeString(String(url || ''), 600)
+  if (!safeUrl) throw new Error('Media URL is required')
+  ensureAllowedUrl(safeUrl)
+  const moderation = getMediaModerationResultFromUrl(safeUrl)
+
+  const doc = {
+    id: crypto.randomUUID(),
+    uploaded_by: ownerId,
+    entity_type: sanitizeString(entityType, 60),
+    entity_id: sanitizeString(entityId, 100),
+    file_path: safeUrl,
+    type: sanitizeString(type || 'image', 60),
+    moderation_status: moderation.moderation_status,
+    moderation_flags: moderation.flags,
+    created_at: new Date().toISOString(),
+  }
+
+  docs.push(doc)
+  await writeJson(FILE, docs)
+  if (doc.entity_type === 'company_product' && String(doc.type || '').toLowerCase().includes('image')) {
+    await trackEvent({
+      type: 'product_image_registered',
+      actor_id: ownerId,
+      entity_id: doc.entity_id,
+      metadata: { document_id: doc.id },
+    })
+  }
   return doc
 }
 
@@ -258,6 +366,7 @@ export async function createDraftContract(actor, payload = {}) {
   contract.lifecycle_status = normalizeContractLifecycle(contract)
   docs.push(contract)
   await writeJson(FILE, docs)
+  await trackEvent({ type: 'contract_created', actor_id: actor.id, entity_id: contract.id })
   return contract
 }
 
@@ -280,6 +389,9 @@ export async function updateContractSignatures(contractId, patch = {}, actor) {
   if (idx < 0) return null
   const existing = docs[idx]
   if (!canModifyContract(actor, existing)) return 'forbidden'
+
+  const previousBuyerState = existing.buyer_signature_state
+  const previousFactoryState = existing.factory_signature_state
 
   const nextBuyerState = patch.buyer_signature_state !== undefined
     ? sanitizeSignatureState(patch.buyer_signature_state, existing.buyer_signature_state)
@@ -311,6 +423,16 @@ export async function updateContractSignatures(contractId, patch = {}, actor) {
   next.lifecycle_status = normalizeContractLifecycle(next)
   docs[idx] = next
   await writeJson(FILE, docs)
+
+  if (previousBuyerState !== nextBuyerState && nextBuyerState === 'signed') {
+    await trackEvent({ type: 'contract_buyer_signed', actor_id: actor.id, entity_id: next.id })
+  }
+  if (previousFactoryState !== nextFactoryState && nextFactoryState === 'signed') {
+    await trackEvent({ type: 'contract_factory_signed', actor_id: actor.id, entity_id: next.id })
+  }
+  if (next.lifecycle_status === 'signed') {
+    await trackEvent({ type: 'contract_signed', actor_id: actor.id, entity_id: next.id })
+  }
   return presentContractForActor(next, actor)
 }
 
@@ -321,6 +443,7 @@ export async function updateContractArtifact(contractId, patch = {}, actor) {
   const existing = docs[idx]
   if (!canModifyContract(actor, existing)) return 'forbidden'
 
+  const previousStatus = existing.artifact?.status || 'draft'
   const artifactStatus = patch.status !== undefined
     ? sanitizeArtifactState(patch.status, existing.artifact?.status || 'draft')
     : (existing.artifact?.status || 'draft')
@@ -358,5 +481,12 @@ export async function updateContractArtifact(contractId, patch = {}, actor) {
   next.lifecycle_status = normalizeContractLifecycle(next)
   docs[idx] = next
   await writeJson(FILE, docs)
+
+  if (previousStatus !== artifactStatus && artifactStatus === 'locked') {
+    await trackEvent({ type: 'contract_locked', actor_id: actor.id, entity_id: next.id })
+  }
+  if (previousStatus !== artifactStatus && artifactStatus === 'archived') {
+    await trackEvent({ type: 'contract_archived', actor_id: actor.id, entity_id: next.id })
+  }
   return presentContractForActor(next, actor)
 }

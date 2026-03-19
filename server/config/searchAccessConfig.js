@@ -1,6 +1,43 @@
 export const FILTER_TIERS = {
-  basic: ['q', 'category'],
-  advanced: ['primary', 'moqRange', 'country', 'verifiedOnly', 'orgType'],
+  // Core filters (project.md): always free.
+  basic: [
+    'q',
+    'industry',
+    'category',
+    'moqRange',
+    'priceRange',
+    'verifiedOnly',
+    'country',
+    'leadTimeMax',
+    'orgType',
+  ],
+  // Advanced filters (project.md): premium gating applies here.
+  advanced: [
+    'fabricType',
+    'gsmMin',
+    'gsmMax',
+    'sizeRange',
+    'colorPantone',
+    'customization',
+    'sampleAvailable',
+    'sampleLeadTime',
+    'certifications',
+    'incoterms',
+    'paymentTerms',
+    'documentReady',
+    'auditDate',
+    'languageSupport',
+    'capacityMin',
+    'processes',
+    'yearsInBusinessMin',
+    'responseTimeMax',
+    'teamSeatsMin',
+    'handlesMultipleFactories',
+    'exportPort',
+    'distanceKm',
+    'locationLat',
+    'locationLng',
+  ],
 }
 
 export const PLAN_DAILY_LIMITS = {

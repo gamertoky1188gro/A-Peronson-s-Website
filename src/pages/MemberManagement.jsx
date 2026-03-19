@@ -8,7 +8,8 @@ const DEFAULT_CREATE_FORM = {
   name: '',
   username: '',
   member_id: '',
-  role: '',
+  // Phase 2: "members" are enterprise sub-accounts (agents). Role is fixed server-side.
+  role: 'agent',
   password: '',
   permissions: [],
   permission_matrix: {},
@@ -103,8 +104,11 @@ export default function MemberManagement() {
     }
 
     try {
-      await apiRequest(MEMBER_API_BASE, { method: 'POST', token, body: createForm })
-      setSuccess('Member created.')
+      const data = await apiRequest(MEMBER_API_BASE, { method: 'POST', token, body: createForm })
+      const created = data?.member || null
+      // If the UI didn't provide a password, server may return a generated temp password to share with the agent.
+      const temp = created?.temporary_password ? ` Temporary password: ${created.temporary_password}` : ''
+      setSuccess(`Member created.${temp}`)
       setCreateForm({
         ...DEFAULT_CREATE_FORM,
         permission_matrix: createBlankMatrix(constraints.permission_matrix_sections),
@@ -131,7 +135,7 @@ export default function MemberManagement() {
     setError('')
     setSuccess('')
     try {
-      await apiRequest(`${MEMBER_API_BASE}/${memberId}?remove=${remove ? 'true' : 'false'}`, { method: 'DELETE', token })
+      await apiRequest(`${MEMBER_API_BASE}/${memberId}*remove=${remove ? 'true' : 'false'}`, { method: 'DELETE', token })
       setSuccess(remove ? 'Member removed.' : 'Member deactivated.')
       await loadMembers()
     } catch (err) {
@@ -228,8 +232,10 @@ export default function MemberManagement() {
             <input className="w-full border rounded px-3 py-2" placeholder="Member name" value={createForm.name} onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })} />
             <input className="w-full border rounded px-3 py-2" placeholder="Unique username" value={createForm.username} onChange={(e) => setCreateForm({ ...createForm, username: e.target.value })} />
             <input className="w-full border rounded px-3 py-2" placeholder="Unique member ID" value={createForm.member_id} onChange={(e) => setCreateForm({ ...createForm, member_id: e.target.value })} />
-            <input className="w-full border rounded px-3 py-2" placeholder="Role" value={createForm.role} onChange={(e) => setCreateForm({ ...createForm, role: e.target.value })} />
-            <input className="w-full border rounded px-3 py-2" placeholder="Initial password" value={createForm.password} onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })} />
+            <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
+              Role is fixed to <span className="font-semibold">Agent</span>. Agents login using their <span className="font-semibold">Member ID</span>.
+            </div>
+            <input className="w-full border rounded px-3 py-2" placeholder="Initial password (optional -- auto-generate if empty)" value={createForm.password} onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })} />
 
             <PermissionMatrixEditor
               matrix={createForm.permission_matrix}
@@ -336,7 +342,8 @@ function MemberEditor({ member, constraints, getConflictMessage, onSave }) {
     name: member.name || '',
     username: member.username || '',
     member_id: member.member_id || member.account_id || '',
-    role: member.role || '',
+    // Role is fixed to agent; keep in payload for backwards compatibility but prevent editing.
+    role: 'agent',
     status: member.status || 'active',
     permissions: member.permissions || [],
     permission_matrix: member.permission_matrix || createBlankMatrix(constraints.permission_matrix_sections),
@@ -349,7 +356,9 @@ function MemberEditor({ member, constraints, getConflictMessage, onSave }) {
       <input className="w-full border rounded px-3 py-2" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Member name" />
       <input className="w-full border rounded px-3 py-2" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} placeholder="Username" />
       <input className="w-full border rounded px-3 py-2" value={form.member_id} onChange={(e) => setForm({ ...form, member_id: e.target.value })} placeholder="Member ID" />
-      <input className="w-full border rounded px-3 py-2" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} placeholder="Role" />
+      <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
+        Role: <span className="font-semibold">Agent</span> (fixed)
+      </div>
 
       <select className="w-full border rounded px-3 py-2" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
         <option value="active">active</option>
@@ -373,3 +382,4 @@ function MemberEditor({ member, constraints, getConflictMessage, onSave }) {
     </div>
   )
 }
+

@@ -17,8 +17,16 @@ export async function sendMessage(req, res) {
   const allowed = await canAccessMatch(req.params.matchId, req.user.id)
   if (!allowed) return res.status(403).json({ error: 'Only connected friends can message in this thread' })
 
-  const msg = await postMessage(req.params.matchId, req.user.id, req.body?.message || '', req.body?.type || 'text')
-  return res.status(201).json(msg)
+  try {
+    const msg = await postMessage(req.params.matchId, req.user.id, req.body?.message || '', req.body?.type || 'text')
+    return res.status(201).json(msg)
+  } catch (error) {
+    return res.status(error.status || 400).json({
+      error: error.message || 'Unable to send message',
+      code: error.code || undefined,
+      lock: error.lock || undefined,
+    })
+  }
 }
 
 export async function getMessages(req, res) {
@@ -68,14 +76,18 @@ export async function uploadMessageAttachment(req, res) {
   const messageType = mime.startsWith('image/') ? 'image' : (mime.startsWith('video/') ? 'video' : 'file')
   const fallbackText = messageType === 'image' ? 'Shared an image' : (messageType === 'video' ? 'Shared a video' : 'Shared a file')
 
-  const created = await postMessage(matchId, req.user.id, req.body?.message || fallbackText, messageType, {
-    name: file.originalname,
-    url: publicUrl,
-    mime_type: mime,
-    size: file.size,
-  })
+  try {
+    const created = await postMessage(matchId, req.user.id, req.body?.message || fallbackText, messageType, {
+      name: file.originalname,
+      url: publicUrl,
+      mime_type: mime,
+      size: file.size,
+    })
 
-  return res.status(201).json(created)
+    return res.status(201).json(created)
+  } catch (error) {
+    return res.status(error.status || 400).json({ error: error.message || 'Unable to send message attachment' })
+  }
 }
 
 export async function inbox(req, res) {

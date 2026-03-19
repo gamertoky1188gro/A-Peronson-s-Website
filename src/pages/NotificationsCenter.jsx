@@ -23,15 +23,18 @@
 */
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Bell, History, ShieldAlert, Sparkles, Trash2 } from 'lucide-react'
+import { Bell, Factory, History, ShieldAlert, Sparkles, Trash2 } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { apiRequest, getToken } from '../lib/auth'
+import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 import ProductQuickViewModal from '../components/products/ProductQuickViewModal'
+
+const Motion = motion
 
 const TABS = [
   // Notification types supported by backend; used to filter the list on the client.
   { id: 'all', label: 'All', icon: Bell },
   { id: 'smart_search_match', label: 'Search Matches', icon: Sparkles },
+  { id: 'partner_request', label: 'Partner Requests', icon: Factory },
   { id: 'conversation_lock', label: 'Conversation Locks', icon: ShieldAlert },
   { id: 'rating_feedback_request', label: 'Rating Requests', icon: ShieldAlert },
   { id: 'system', label: 'System', icon: Bell },
@@ -41,11 +44,12 @@ const TABS = [
 function feedLinkForEntity(entityType, entityId) {
   // Build a deep-link to the feed filtered to a specific entity.
   if (!entityType || !entityId) return '/feed'
-  return `/feed?item=${encodeURIComponent(`${entityType}:${entityId}`)}`
+  return `/feed*item=${encodeURIComponent(`${entityType}:${entityId}`)}`
 }
 
 export default function NotificationsCenter() {
   const token = useMemo(() => getToken(), [])
+  const user = useMemo(() => getCurrentUser(), [])
   const reduceMotion = useReducedMotion()
   const [tab, setTab] = useState('all')
   const [unreadOnly, setUnreadOnly] = useState(false)
@@ -118,6 +122,15 @@ export default function NotificationsCenter() {
   async function markRead(id) {
     if (!token || !id) return
     await apiRequest(`/notifications/${encodeURIComponent(id)}/read`, { method: 'PATCH', token })
+    await loadNotifications()
+  }
+
+  async function respondPartnerRequest(requestId, action, notificationId) {
+    if (!token || !requestId) return
+    await apiRequest(`/partners/requests/${encodeURIComponent(requestId)}/${action}`, { method: 'POST', token })
+    if (notificationId) {
+      await apiRequest(`/notifications/${encodeURIComponent(notificationId)}/read`, { method: 'PATCH', token })
+    }
     await loadNotifications()
   }
 
@@ -216,14 +229,45 @@ export default function NotificationsCenter() {
                       <p className="text-sm font-semibold text-slate-900">{i.message || i.title || 'Notification'}</p>
                       <p className="mt-1 text-[11px] text-slate-500">{new Date(i.created_at).toLocaleString()}</p>
                       <p className="mt-1 text-[11px] text-slate-500">Type: {i.type}</p>
+                      {i.type === 'partner_request' ? (
+                        <p className="mt-1 text-[11px] text-slate-500">
+                          Request ID: {i?.meta?.request_id || i.entity_id}
+                        </p>
+                      ) : null}
                     </div>
                     <div className="flex flex-col gap-2 shrink-0">
-                      <Link
-                        to={feedLinkForEntity(i.entity_type, i.entity_id)}
-                        className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center"
-                      >
-                        View
-                      </Link>
+                      {i.type === 'partner_request' && (user?.role === 'factory' || user?.role === 'admin' || user?.role === 'owner') ? (
+                        <div className="flex flex-col gap-2">
+                          <button
+                            type="button"
+                            onClick={() => respondPartnerRequest(i?.meta?.request_id || i.entity_id, 'accept', i.id)}
+                            className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => respondPartnerRequest(i?.meta?.request_id || i.entity_id, 'reject', i.id)}
+                            className="rounded-full border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 text-center"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      ) : i.type === 'rating_feedback_request' ? (
+                        <Link
+                          to={`/ratings/feedback?profile_key=${encodeURIComponent(i?.entity_id || i?.meta?.profile_key || '')}`}
+                          className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center"
+                        >
+                          Rate now
+                        </Link>
+                      ) : (
+                        <Link
+                          to={feedLinkForEntity(i.entity_type, i.entity_id)}
+                          className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center"
+                        >
+                          View
+                        </Link>
+                      )}
                       {!i.read ? (
                         <button onClick={() => markRead(i.id)} className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
                           Mark read
@@ -239,7 +283,7 @@ export default function NotificationsCenter() {
               <div className="flex items-center justify-between gap-3 mb-3">
                 <div>
                   <p className="text-sm font-bold text-slate-900">Viewed Products</p>
-                  <p className="text-[11px] text-slate-500">Private to you • Recorded on Quick View</p>
+                  <p className="text-[11px] text-slate-500">Private to you - Recorded on Quick View</p>
                 </div>
                 <button
                   type="button"
@@ -255,9 +299,9 @@ export default function NotificationsCenter() {
                   <div key={row.id} className="rounded-2xl bg-[#ffffff] p-4 ring-1 ring-slate-200/60 shadow-sm transition hover:bg-slate-50/70 dark:bg-slate-950/30 dark:ring-white/10 dark:hover:bg-white/5 flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-slate-900 truncate">{row.product?.title || 'Product'}</p>
-                      <p className="mt-1 text-[11px] text-slate-500 truncate">{row.author?.name || 'Company'} • {new Date(row.viewed_at).toLocaleString()}</p>
+                      <p className="mt-1 text-[11px] text-slate-500 truncate">{row.author?.name || 'Company'} - {new Date(row.viewed_at).toLocaleString()}</p>
                       <p className="mt-2 text-xs text-slate-600">
-                        {row.product?.category || '—'} • MOQ {row.product?.moq || '—'} • Lead time {row.product?.lead_time_days || '—'}
+                        {row.product?.category || '--'} - MOQ {row.product?.moq || '--'} - Lead time {row.product?.lead_time_days || '--'}
                       </p>
                     </div>
                     <div className="flex flex-col gap-2 shrink-0">
@@ -280,7 +324,7 @@ export default function NotificationsCenter() {
                   </div>
                 ))}
 
-                {loadingViews ? <div className="text-sm text-slate-600">Loading…</div> : null}
+                {loadingViews ? <div className="text-sm text-slate-600">Loading...</div> : null}
                 {!views.length && !loadingViews ? <div className="text-sm text-slate-600">No viewed products yet.</div> : null}
               </div>
 
@@ -344,3 +388,4 @@ export default function NotificationsCenter() {
     </div>
   )
 }
+

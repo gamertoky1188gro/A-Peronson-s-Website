@@ -2,6 +2,7 @@ import { findUserById } from './userService.js'
 import { getVerification, getVerificationPublicSummary } from './verificationService.js'
 import { sanitizeString } from '../utils/validators.js'
 import { readJson } from '../utils/jsonStore.js'
+import { listProducts } from './productService.js'
 
 const CONNECTION_FILE = 'user_connections.json'
 const REQUIREMENTS_FILE = 'requirements.json'
@@ -124,8 +125,17 @@ export async function getProfileProductsPage(_viewerId, profileUserId, { cursor 
   if (!user) return 'not_found'
   if (!['factory', 'buying_house'].includes(user.role)) return 'invalid_role'
 
-  const products = await readJson(PRODUCTS_FILE)
-  const all = products.filter((p) => p.company_id === profileUserId).sort(sortNewest)
+  const viewer = _viewerId ? await findUserById(_viewerId) : null
+  const isAdmin = viewer && ['admin', 'owner'].includes(viewer.role)
+  const includeDrafts = _viewerId === profileUserId || isAdmin
+
+  const products = await listProducts({
+    companyId: profileUserId,
+    includeDrafts,
+    viewerId: viewer?.id || '',
+    viewerRole: viewer?.role || '',
+  })
+  const all = products.sort(sortNewest)
   const pageItems = all.slice(cursor, cursor + limit)
   const nextCursor = cursor + limit < all.length ? cursor + limit : null
 

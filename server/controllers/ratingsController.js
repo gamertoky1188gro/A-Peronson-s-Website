@@ -4,6 +4,7 @@ import {
   getProfileRatingsSummary,
   getRatingsForProfiles,
   getSearchRatingCards,
+  listPendingFeedbackRequestsForUser,
   recordMilestone,
 } from '../services/ratingsService.js'
 
@@ -42,6 +43,11 @@ export async function submitRating(req, res) {
     reliabilityFlags: req.body?.reliability_flags || {},
   })
   return res.status(201).json(row)
+}
+
+export async function getFeedbackRequests(req, res) {
+  const rows = await listPendingFeedbackRequestsForUser(req.user?.id)
+  return res.json({ items: rows })
 }
 
 export async function completeMilestone(req, res) {

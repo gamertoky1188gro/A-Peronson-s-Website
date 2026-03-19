@@ -242,13 +242,18 @@ export default function VerificationPage() {
   const credibilityScore = verification?.credibility?.score ?? 0
   const credibilityBadge = verification?.credibility?.badge || 'Basic credibility'
   const verified = Boolean(verification?.verified)
+  const reviewStatus = verification?.review_status || (verified ? 'approved' : 'pending')
+  const reviewReason = verification?.review_reason || ''
+  const remainingDays = Number(verification?.subscription_remaining_days || 0)
+  const expiringSoon = Boolean(verification?.expiring_soon)
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 space-y-6">
       <header className="rounded-2xl border border-slate-200 bg-white p-5">
         <h1 className="text-2xl font-bold">Verification Center</h1>
         <p className="text-sm text-slate-600 mt-1">Verification is subscription-based and renews monthly.</p>
-        <p className="text-xs text-slate-500 mt-2">Need help? Visit the <a href="/help" className="underline text-slate-700">Help Center</a>.</p>
+        <p className="text-xs text-slate-500 mt-2">Review status: <span className="font-semibold">{reviewStatus}</span>{reviewReason ? ` â€¢ ${reviewReason}` : ''}</p>
+        <p className="text-xs text-slate-500 mt-2">Need help* Visit the <a href="/help" className="underline text-slate-700">Help Center</a>.</p>
       </header>
 
       <section className="grid gap-4 md:grid-cols-3">
@@ -276,7 +281,7 @@ export default function VerificationPage() {
                   <option value="">Select country</option>
                   {BUYER_COUNTRY_OPTIONS.map((country) => <option key={country} value={country}>{country}</option>)}
                 </select>
-                {savingCountry ? <span className="text-xs text-slate-500">Saving…</span> : null}
+                {savingCountry ? <span className="text-xs text-slate-500">Saving...</span> : null}
                 <span className="text-xs text-slate-600">Region: <span className="font-semibold">{buyerRegion}</span></span>
               </div>
               {!buyerCountry ? <p className="mt-2 text-xs text-rose-700">Buyer country is required before completing buyer verification.</p> : null}
@@ -301,7 +306,7 @@ export default function VerificationPage() {
                       disabled={busyDoc === documentKey || (role === 'buyer' && !buyerCountry)}
                       className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      {busyDoc === documentKey ? 'Uploading…' : 'Upload'}
+                      {busyDoc === documentKey ? 'Uploading...' : 'Upload'}
                     </button>
                   </div>
                 </div>
@@ -316,7 +321,7 @@ export default function VerificationPage() {
               <input
                 value={optionalLicenseInput}
                 onChange={(e) => setOptionalLicenseInput(e.target.value)}
-                placeholder="e.g. OEKO-TEX, BSCI, WRAP…"
+                placeholder="e.g. OEKO-TEX, BSCI, WRAP..."
                 className="flex-1 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm"
               />
               <button
@@ -357,8 +362,13 @@ export default function VerificationPage() {
 
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <p className="text-xs text-slate-500">Subscription</p>
-            <p className="mt-1 text-sm font-semibold text-slate-900">{subscription?.plan || subscription?.status || '—'}</p>
+            <p className="mt-1 text-sm font-semibold text-slate-900">{subscription?.plan || subscription?.status || '--'}</p>
             <p className="mt-1 text-[11px] text-slate-600">Verification approval requires an active subscription.</p>
+            {remainingDays ? (
+              <p className={`mt-2 text-[11px] ${expiringSoon ? 'text-amber-700' : 'text-slate-600'}`}>
+                Remaining: {remainingDays} day{remainingDays === 1 ? '' : 's'} {expiringSoon ? '(expiring soon)' : ''}
+              </p>
+            ) : null}
           </div>
 
           <button
@@ -375,3 +385,4 @@ export default function VerificationPage() {
     </div>
   )
 }
+

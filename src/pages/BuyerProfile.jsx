@@ -28,7 +28,10 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import { apiRequest, getToken } from '../lib/auth'
+import { trackClientEvent } from '../lib/events'
 import VerificationPanel from '../components/profile/VerificationPanel'
+
+const Motion = motion
 
 function roleToRoute(role, id) {
   // Safety: if a user opens a profile id that is not a buyer, redirect to the correct role route.
@@ -36,6 +39,16 @@ function roleToRoute(role, id) {
   if (role === 'buyer') return `/buyer/${encodeURIComponent(id)}`
   if (role === 'buying_house') return `/buying-house/${encodeURIComponent(id)}`
   return `/factory/${encodeURIComponent(id)}`
+}
+
+function isBoostActive(boost) {
+  if (!boost) return false
+  if (String(boost.status || '').toLowerCase() !== 'active') return false
+  const now = Date.now()
+  const startsAt = new Date(boost.starts_at).getTime()
+  const endsAt = new Date(boost.ends_at).getTime()
+  if (!Number.isFinite(startsAt) || !Number.isFinite(endsAt)) return false
+  return now >= startsAt && now <= endsAt
 }
 
 export default function BuyerProfile() {
@@ -53,11 +66,14 @@ export default function BuyerProfile() {
   const [requestsCursor, setRequestsCursor] = useState(0)
   const [requestsNext, setRequestsNext] = useState(null)
   const [loadingRequests, setLoadingRequests] = useState(false)
+  const [profileBoost, setProfileBoost] = useState(null)
   const reduceMotion = useReducedMotion()
 
   const user = profile?.user || null
   const verification = profile?.verification_summary || null
   const relationship = profile?.relationship || { following: false, friend_status: 'none' }
+  const viewerPerms = profile?.viewer_permissions || { is_self: false, is_admin: false }
+  const isBoosted = Boolean(profileBoost)
 
   const loadProfile = useCallback(async () => {
     if (!id) return
@@ -86,7 +102,7 @@ export default function BuyerProfile() {
     } catch {
       setRatingSummary(null)
     }
-  }, [id, token])
+  }, [id])
 
   const loadRequests = useCallback(async ({ reset }) => {
     if (!id) return
@@ -109,6 +125,27 @@ export default function BuyerProfile() {
     loadProfile()
     loadRatings()
   }, [loadProfile, loadRatings])
+
+  useEffect(() => {
+    if (!user?.id) return
+    trackClientEvent('profile_view', {
+      entityType: 'profile',
+      entityId: user.id,
+      metadata: { role: user.role || 'buyer' },
+    })
+  }, [user?.id, user?.role])
+
+  useEffect(() => {
+    if (!viewerPerms.is_self) return
+    const tokenValue = getToken()
+    if (!tokenValue) return
+    apiRequest('/boosts/me', { token: tokenValue })
+      .then((data) => {
+        const active = (data?.items || []).find((boost) => boost.scope === 'profile' && isBoostActive(boost))
+        setProfileBoost(active || null)
+      })
+      .catch(() => setProfileBoost(null))
+  }, [viewerPerms.is_self])
 
   useEffect(() => {
     if (activeTab !== 'requests') return
@@ -141,7 +178,7 @@ export default function BuyerProfile() {
   }
 
   if (loading) {
-    return <div className="min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out">Loading profile…</div>
+    return <div className="min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out">Loading profile...</div>
   }
   if (error) {
     return <div className="min-h-screen bg-slate-50 p-6 text-rose-700 dark:bg-[#020617] dark:text-rose-200 transition-colors duration-500 ease-in-out">{error}</div>
@@ -166,10 +203,15 @@ export default function BuyerProfile() {
                 <p className="text-lg font-bold text-slate-900 dark:text-slate-100 truncate">{user.name}</p>
                 <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
                   <span className="uppercase">Buyer</span>
-                  {user.profile?.country ? <span>• {user.profile.country}</span> : null}
+                  {user.profile?.country ? <span>- {user.profile.country}</span> : null}
                   {user.verified ? (
                     <span className="verified-shimmer inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:from-emerald-500/12 dark:to-teal-400/10 dark:text-emerald-200 dark:ring-emerald-400/25">
                       Verified
+                    </span>
+                  ) : null}
+                  {isBoosted ? (
+                    <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:text-emerald-200">
+                      Boosted
                     </span>
                   ) : null}
                 </div>
@@ -177,7 +219,7 @@ export default function BuyerProfile() {
             </div>
 
             <div className="mt-4 flex gap-2">
-              <button onClick={contact} className="flex-1 rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:text-slate-950">Contact</button>
+              <button onClick={contact} className="flex-1 rounded-full bg-[var(--gt-blue)] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95">Contact</button>
               <button onClick={follow} className="flex-1 rounded-full px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">
                 {relationship.following ? 'Following' : 'Follow'}
               </button>
@@ -244,50 +286,88 @@ export default function BuyerProfile() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">Country</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.country || '—'}</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Industry</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.industry || 'Garments & Textile'}</p>
                     </div>
                     <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">Certifications (declared)</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{(user.profile?.certifications || []).join(', ') || '—'}</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Country</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.country || '--'}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Certifications</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{(user.profile?.certifications || []).join(', ') || '--'}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Active Since</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.active_since || new Date().getFullYear()}</p>
                     </div>
                   </div>
+
+                  {(user.profile?.companies_worked_with || []).length > 0 && (
+                    <div>
+                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-3">Companies Worked With</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {(user.profile?.companies_worked_with || []).map((company, idx) => (
+                          <div key={idx} className="flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                            {company.logo ? (
+                              <img src={company.logo} alt={company.name} className="h-10 w-10 rounded-lg object-cover" />
+                            ) : (
+                              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500" />
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{company.name}</p>
+                              {company.location && <p className="text-xs text-slate-500 dark:text-slate-400">{company.location}</p>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : null}
 
               {activeTab === 'requests' ? (
                 <div className="space-y-3">
-                  {requests.map((r) => (
-                    <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-bold text-slate-900">{r.category || 'Request'}</p>
-                          <p className="mt-1 text-sm text-slate-700 whitespace-pre-wrap">{r.custom_description || ''}</p>
-                          <div className="mt-2 text-xs text-slate-600 grid grid-cols-2 gap-2">
-                            <div>Quantity: <span className="font-semibold text-slate-800">{r.quantity || '-'}</span></div>
-                            <div>Timeline: <span className="font-semibold text-slate-800">{r.timeline_days || '-'}</span></div>
-                            <div>Material: <span className="font-semibold text-slate-800">{r.material || '-'}</span></div>
-                            <div>Status: <span className="font-semibold text-slate-800">{r.status || '-'}</span></div>
+                  {viewerPerms.is_self || viewerPerms.is_admin ? (
+                    <>
+                      {requests.map((r) => (
+                        <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4 dark:bg-slate-900/50 dark:border-slate-800">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1">
+                              <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{r.category || 'Request'}</p>
+                              <p className="mt-1 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{r.custom_description || ''}</p>
+                              <div className="mt-2 text-xs text-slate-600 dark:text-slate-400 grid grid-cols-2 gap-2">
+                                <div>Quantity: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.quantity || '-'}</span></div>
+                                <div>Timeline: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.timeline_days || '-'} days</span></div>
+                                <div>Material: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.material || '-'}</span></div>
+                                <div>Status: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.status || '-'}</span></div>
+                              </div>
+                            </div>
+                            <div className="shrink-0">
+                              <button onClick={contact} className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] transition">Contact</button>
+                            </div>
                           </div>
                         </div>
-                        <div className="shrink-0">
-                          <button onClick={contact} className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182]">Contact</button>
-                        </div>
-                      </div>
+                      ))}
+                      {loadingRequests ? <div className="text-sm text-slate-600 dark:text-slate-300">Loading...</div> : null}
+                      {requestsNext !== null && !loadingRequests ? (
+                        <button
+                          type="button"
+                          onClick={() => loadRequests({ reset: false })}
+                          className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
+                        >
+                          Load more
+                        </button>
+                      ) : null}
+                      {!requests.length && !loadingRequests ? <div className="text-sm text-slate-600 dark:text-slate-300">No requests found.</div> : null}
+                    </>
+                  ) : (
+                    <div className="rounded-xl bg-amber-50 p-4 text-sm text-amber-800 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
+                      <p className="font-semibold">Request details are private</p>
+                      <p className="mt-2">Only the buyer can view detailed request information to protect business privacy.</p>
+                      <p className="mt-3 text-xs">Total requests posted: <span className="font-bold">{profile?.counts?.requests || 0}</span></p>
                     </div>
-                  ))}
-
-                  {loadingRequests ? <div className="text-sm text-slate-600 dark:text-slate-300">Loading…</div> : null}
-                  {requestsNext !== null && !loadingRequests ? (
-                    <button
-                      type="button"
-                      onClick={() => loadRequests({ reset: false })}
-                      className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
-                    >
-                      Load more
-                    </button>
-                  ) : null}
-                  {!requests.length && !loadingRequests ? <div className="text-sm text-slate-600 dark:text-slate-300">No requests found.</div> : null}
+                  )}
                 </div>
               ) : null}
 
@@ -296,13 +376,22 @@ export default function BuyerProfile() {
                   <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Rating summary</p>
                     <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
-                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 • {ratingSummary?.aggregate?.total_count ?? 0} reviews • {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
+                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 - {ratingSummary?.aggregate?.total_count ?? 0} reviews - {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
                     </p>
+                  </div>
+                  <div className="rounded-xl bg-indigo-50 p-3 text-xs text-indigo-800 ring-1 ring-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/30">
+                    <p className="font-semibold">Review Policy</p>
+                    <p className="mt-1">Reviews can only be edited or deleted by the person who wrote them. Profile owners cannot delete reviews to maintain transparency and trust.</p>
                   </div>
                   {(ratingSummary?.recent_reviews || []).map((r) => (
                     <div key={r.id} className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-950/30 dark:ring-white/10">
-                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{r.score}★</p>
-                      <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{r.comment || 'No comment provided.'}</p>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{r.score}* -- {r.reviewer_name || 'Anonymous'}</p>
+                          <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{r.comment || 'No comment provided.'}</p>
+                          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{r.created_at ? new Date(r.created_at).toLocaleDateString() : ''}</p>
+                        </div>
+                      </div>
                     </div>
                   ))}
                   {!ratingSummary?.recent_reviews?.length ? <div className="text-sm text-slate-600 dark:text-slate-300">No reviews yet.</div> : null}
@@ -315,3 +404,4 @@ export default function BuyerProfile() {
     </div>
   )
 }
+

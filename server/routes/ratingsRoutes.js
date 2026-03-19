@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { requireAuth } from '../middleware/auth.js'
 import {
   completeMilestone,
+  getFeedbackRequests,
   getProfileRatings,
   getProfileRatingsAggregate,
   getProfileRatingsBatch,
@@ -15,6 +16,7 @@ router.get('/profiles/:profileKey', getProfileRatings)
 router.get('/profiles/:profileKey/aggregate', getProfileRatingsAggregate)
 router.get('/profiles', getProfileRatingsBatch)
 router.get('/search', getSearchRatings)
+router.get('/feedback-requests', requireAuth, getFeedbackRequests)
 router.post('/profiles/:profileKey', requireAuth, submitRating)
 router.post('/milestones', requireAuth, completeMilestone)
 

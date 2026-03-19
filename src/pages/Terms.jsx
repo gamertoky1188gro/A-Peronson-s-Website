@@ -20,6 +20,7 @@ import React from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 
 const easePremium = [0.16, 1, 0.3, 1]
+const Motion = motion
 
 function SignatureMark({ className = '' }) {
   return (

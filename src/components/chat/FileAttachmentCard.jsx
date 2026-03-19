@@ -21,7 +21,7 @@ function safeExt(value = '') {
 function safeDownloadName(name = '') {
   const cleaned = String(name || '').trim()
   if (!cleaned) return undefined
-  return cleaned.replace(/[\\/:*?"<>|]+/g, '_')
+  return cleaned.replace(/[\\/:??"<>|]+/g, '_')
 }
 
 function formatBytes(bytes) {
@@ -196,7 +196,7 @@ export default function FileAttachmentCard({
         const normalized = content.replace(/\r\n/g, '\n')
         const lines = normalized.split('\n')
         const clippedLines = lines.slice(0, 12).join('\n')
-        const suffix = lines.length > 12 || normalized.length > clippedLines.length ? '\n…' : ''
+        const suffix = lines.length > 12 || normalized.length > clippedLines.length ? '\n...' : ''
         const snippet = `${clippedLines}${suffix}`.trim()
 
         if (!alive) return
@@ -270,7 +270,7 @@ export default function FileAttachmentCard({
               />
             ) : (
               <div className="px-3 text-[11px] font-semibold opacity-70">
-                {pdfPreview.loading ? 'Generating preview…' : (pdfPreview.error || 'Preview unavailable')}
+                {pdfPreview.loading ? 'Generating preview...' : (pdfPreview.error || 'Preview unavailable')}
               </div>
             )}
           </div>
@@ -286,7 +286,7 @@ export default function FileAttachmentCard({
         >
           <div className="max-h-28 overflow-hidden p-3 text-left">
             {textPreview.loading ? (
-              <div className="text-[11px] font-semibold opacity-70">Loading preview…</div>
+              <div className="text-[11px] font-semibold opacity-70">Loading preview...</div>
             ) : textPreview.error ? (
               <div className="text-[11px] font-semibold opacity-70">{textPreview.error}</div>
             ) : (
@@ -330,3 +330,4 @@ export default function FileAttachmentCard({
     </div>
   )
 }
+

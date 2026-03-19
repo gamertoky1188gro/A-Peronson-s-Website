@@ -5,6 +5,8 @@ const ENTERPRISE_PLANS = new Set(['premium', 'enterprise'])
 
 export default function useAnalyticsDashboard() {
   const [dashboard, setDashboard] = useState(null)
+  const [companyAnalytics, setCompanyAnalytics] = useState(null)
+  const [platformAnalytics, setPlatformAnalytics] = useState(null)
   const [subscription, setSubscription] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -27,6 +29,26 @@ export default function useAnalyticsDashboard() {
         if (!alive) return
         setDashboard(dashboardData)
         setSubscription(subscriptionData)
+
+        apiRequest('/analytics/company', { token })
+          .then((data) => {
+            if (!alive) return
+            setCompanyAnalytics(data)
+          })
+          .catch(() => {
+            if (!alive) return
+            setCompanyAnalytics(null)
+          })
+
+        apiRequest('/analytics/platform', { token })
+          .then((data) => {
+            if (!alive) return
+            setPlatformAnalytics(data)
+          })
+          .catch(() => {
+            if (!alive) return
+            setPlatformAnalytics(null)
+          })
       } catch (err) {
         if (!alive) return
         setForbidden(err.status === 403)
@@ -45,5 +67,5 @@ export default function useAnalyticsDashboard() {
 
   const isEnterprise = useMemo(() => ENTERPRISE_PLANS.has(subscription?.plan), [subscription?.plan])
 
-  return { dashboard, subscription, isEnterprise, loading, error, forbidden }
+  return { dashboard, companyAnalytics, platformAnalytics, subscription, isEnterprise, loading, error, forbidden }
 }

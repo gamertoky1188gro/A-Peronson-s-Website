@@ -2,6 +2,8 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { motion, useMotionValue, useReducedMotion, useSpring } from 'framer-motion'
 
+const MotionLink = motion.create(Link)
+
 export default function MagneticButton({ to, onClick, className = '', children, ...rest }) {
   const reduceMotion = useReducedMotion()
   const x = useMotionValue(0)
@@ -33,7 +35,6 @@ export default function MagneticButton({ to, onClick, className = '', children, 
   }
 
   if (to) {
-    const MotionLink = motion.create(Link)
     return (
       <MotionLink to={to} {...commonProps}>
         {children}

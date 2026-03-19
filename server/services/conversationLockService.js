@@ -4,7 +4,7 @@ import { readJson, writeJson } from '../utils/jsonStore.js'
 const FILE = 'conversation_locks.json'
 const NOTIFICATIONS_FILE = 'notifications.json'
 
-async function createLockNotification(userId, message, requestId, actorId) {
+async function createLockNotification(userId, message, requestId, actorId, meta = {}) {
   if (!userId) return
   const notifications = await readJson(NOTIFICATIONS_FILE)
   notifications.push({
@@ -15,6 +15,7 @@ async function createLockNotification(userId, message, requestId, actorId) {
     entity_id: requestId,
     message,
     actor_id: actorId,
+    meta,
     read: false,
     created_at: new Date().toISOString(),
   })
@@ -57,6 +58,37 @@ export async function grantConversationAccess(requestId, ownerId, targetAgentId)
     `Access granted for buyer request ${requestId}. You can now join this conversation.`,
     requestId,
     ownerId,
+    { request_id: requestId, granted_by: ownerId },
   )
   return all[idx]
+}
+
+export async function requestConversationAccess(requestId, requester) {
+  const all = await readJson(FILE)
+  const lock = all.find((x) => x.request_id === requestId)
+  if (!lock) {
+    return { status: 'unclaimed', request_id: requestId }
+  }
+
+  if (lock.locked_by === requester.id || lock.allowed_agents.includes(requester.id)) {
+    return { status: 'granted', ...lock }
+  }
+
+  await createLockNotification(
+    lock.locked_by,
+    `${requester.name || 'An agent'} requested access to buyer request ${requestId}.`,
+    requestId,
+    requester.id,
+    { request_id: requestId, requester_id: requester.id },
+  )
+
+  await createLockNotification(
+    requester.id,
+    `Access request sent for buyer request ${requestId}.`,
+    requestId,
+    requester.id,
+    { request_id: requestId, requester_id: requester.id },
+  )
+
+  return { status: 'requested', request_id: requestId, locked_by: lock.locked_by }
 }

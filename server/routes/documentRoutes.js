@@ -7,6 +7,7 @@ import {
   getDocuments,
   patchContractArtifact,
   patchContractSignatures,
+  registerDocumentUrl,
   removeDocument,
   uploadDocument,
 } from '../controllers/documentController.js'
@@ -15,6 +16,7 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 8 *
 const router = Router()
 
 router.post('/', requireAuth, upload.single('file'), uploadDocument)
+router.post('/url', requireAuth, registerDocumentUrl)
 
 router.post('/contracts/draft', requireAuth, createContractDraft)
 router.get('/contracts', requireAuth, getContracts)

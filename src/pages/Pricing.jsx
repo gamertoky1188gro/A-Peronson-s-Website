@@ -26,9 +26,26 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Check, Minus } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { apiRequest } from '../lib/auth'
+import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 import MagneticButton from '../components/ui/MagneticButton'
 import SpotlightCard from '../components/ui/SpotlightCard'
+
+const Motion = motion
+
+const PLAN_OPTIONS = [
+  { key: 'buyer', label: 'Buyer' },
+  { key: 'factory', label: 'Factory' },
+  { key: 'buying_house', label: 'Buying House' },
+]
+
+function planKeyForUserRole(role) {
+  const normalized = String(role || '').toLowerCase()
+  if (normalized === 'buyer') return 'buyer'
+  if (normalized === 'factory') return 'factory'
+  if (normalized === 'buying_house') return 'buying_house'
+  // Owner/Admin/Agent: default to enterprise/buying-house view.
+  return 'buying_house'
+}
 
 // Static fallback values (used when API is loading or errors).
 const defaultPricing = {
@@ -69,18 +86,22 @@ function MotionItem({ index, className = '', children }) {
 function accentClasses(accent) {
   if (accent === 'teal') return 'text-[#2dd4bf]'
   if (accent === 'gold') return 'text-[#f59e0b]'
-  return 'text-[#3b82f6]'
+  return 'text-[var(--gt-blue)]'
 }
 
 export default function Pricing() {
-  const showDevControls = import.meta.env.DEV
   const [pricing, setPricing] = useState(defaultPricing)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [accountType, setAccountType] = useState('General')
-  const [remainingDays, setRemainingDays] = useState(12)
+  // Logged-out visitors can preview pricing for each account type.
+  // Logged-in users see only the plan for their current role.
+  const [previewRole, setPreviewRole] = useState('buyer')
+
+  const sessionUser = getCurrentUser()
+  const token = getToken()
+  const isLoggedIn = Boolean(token && sessionUser)
+  const activePlanKey = isLoggedIn ? planKeyForUserRole(sessionUser?.role) : previewRole
 
   useEffect(() => {
     let alive = true
@@ -107,78 +128,71 @@ export default function Pricing() {
     }
   }, [])
 
-  const features = useMemo(() => ({
-    notLoggedIn: {
+  const plansByRole = useMemo(() => ({
+    buyer: {
       Free: [
-        'Basic dashboard access',
-        'Partner network access',
-        'Claim buyer requests',
+        'Post structured buyer requests',
+        'Search factories & suppliers (basic)',
         'Chat & call access',
         'Contract Vault (basic)',
-        'Limited sub-accounts',
+        'Saved searches (limited)',
       ],
       Premium: [
-        'Dedicated analytics',
-        'Exportable reports',
-        'Advanced insights',
-        'Priority messaging',
+        'Verified supplier priority',
+        'Advanced filters + smarter matching',
+        'Priority inbox placement',
         'Extended Contract Vault',
-        'Unlimited sub-accounts',
-        'Increased account reach',
+        'Dedicated support',
       ],
     },
-    loggedIn: {
-      General: {
-        Free: [
-          'Basic dashboard access',
-          'Partner network access',
-          'Claim buyer requests',
-          'Chat & call access',
-          'Contract Vault (basic)',
-          'Sub-accounts: limit 10',
-        ],
-        Premium: [
-          'Dedicated analytics',
-          'Exportable reports',
-          'Advanced insights',
-          'Priority messaging inbox',
-          'Extended Contract Vault',
-          'Unlimited sub-accounts',
-          'Increased account reach',
-        ],
-      },
-      Factory: {
-        Free: [
-          'Product management',
-          'Video gallery',
-          'Partner network requests',
-          'Chat & call access',
-          'Contract Vault (basic)',
-          'Multiple account IDs: supported',
-          'Sub-accounts: limit 10',
-        ],
-        Premium: [
-          'Full product & order management',
-          'Video & media showcase',
-          'AI assistance for requests',
-          'Exportable reports',
-          'Extended Contract Vault',
-          'Multiple account IDs: unlimited',
-          'Unlimited sub-accounts',
-          'Increased account reach',
-        ],
-      },
+    factory: {
+      Free: [
+        'Product management',
+        'Video gallery (approved media)',
+        'Receive buyer requests',
+        'Chat & call access',
+        'Contract Vault (basic)',
+        'Agent IDs / sub-accounts (limit 10)',
+      ],
+      Premium: [
+        'Verified badge subscription',
+        'Advanced visibility + account reach boost',
+        'Exportable reporting',
+        'Extended Contract Vault',
+        'Agent IDs / sub-accounts (unlimited)',
+        'Dedicated support',
+      ],
+    },
+    buying_house: {
+      Free: [
+        'Lead workflow basics',
+        'Buyer request queue access',
+        'Partner Network (Buying House only)',
+        'Chat & call access',
+        'Contract Vault (basic)',
+        'Agent IDs / sub-accounts (limit 10)',
+      ],
+      Premium: [
+        'Enterprise analytics page',
+        'Conversation lock + team control',
+        'Partner Network management',
+        'Exportable reporting',
+        'Extended Contract Vault',
+        'Agent IDs / sub-accounts (unlimited)',
+        'Dedicated support',
+      ],
     },
   }), [])
 
-  const effectiveLoggedIn = showDevControls ? isLoggedIn : false
-  const accountTypes = effectiveLoggedIn ? ['General', 'Factory'] : []
-  const freeFeatures = effectiveLoggedIn ? features.loggedIn[accountType].Free : features.notLoggedIn.Free
-  const premiumFeatures = effectiveLoggedIn ? features.loggedIn[accountType].Premium : features.notLoggedIn.Premium
+  const activePlan = plansByRole[activePlanKey] || plansByRole.buyer
+  const freeFeatures = activePlan.Free
+  const premiumFeatures = activePlan.Premium
 
-  const verificationStatus = showDevControls
-    ? (remainingDays <= 0 ? 'expired' : remainingDays <= 7 ? 'expiring_soon' : 'verified_active')
-    : 'verified_active'
+  const boostCtaHref = isLoggedIn ? '/org-settings?tab=boosts' : '/login'
+  const boostCtaLabel = isLoggedIn ? 'Manage boosts' : 'Login to purchase'
+
+  // Marketing badge on Premium (not a live account status indicator).
+  const verificationStatus = 'verified_active'
 
   const statusLabel = {
     verified_active: 'Verified active',
@@ -195,16 +209,24 @@ export default function Pricing() {
       'bg-[rgba(244,63,94,0.16)] text-[#fb7185] shadow-[0_0_0_1px_rgba(244,63,94,0.20)] dark:bg-[rgba(244,63,94,0.12)]',
   }
 
-  const tableRows = [
-    { label: 'Dedicated analytics page', free: false, premium: true },
-    { label: 'Exportable reports', free: false, premium: true },
-    { label: 'Priority inbox', free: false, premium: true },
-    { label: 'Unlimited sub-accounts', free: false, premium: true },
-    { label: 'Contract Vault storage', free: 'Basic', premium: 'Extended' },
-    { label: 'Order completion certification', free: false, premium: true },
-    { label: 'Search filtering priority', free: 'Standard', premium: 'Advanced' },
-    { label: 'Support level', free: 'Standard', premium: 'Dedicated' },
-  ]
+  const tableRows = useMemo(() => {
+    const roleSpecificFirstRow = (() => {
+      if (activePlanKey === 'buyer') return { label: 'Structured buyer requests', free: true, premium: true }
+      if (activePlanKey === 'factory') return { label: 'Product management', free: true, premium: true }
+      return { label: 'Partner Network', free: true, premium: true }
+    })()
+
+    return [
+      roleSpecificFirstRow,
+      { label: 'Agent IDs / sub-accounts', free: 'Up to 10', premium: 'Unlimited' },
+      { label: 'Contract Vault storage', free: 'Basic', premium: 'Extended' },
+      { label: 'Exportable reports', free: false, premium: true },
+      { label: 'Priority inbox', free: false, premium: true },
+      { label: 'Analytics page', free: activePlanKey === 'buying_house' ? 'Limited' : 'Basic', premium: true },
+      { label: 'Search filtering priority', free: 'Standard', premium: 'Advanced' },
+      { label: 'Support level', free: 'Standard', premium: 'Dedicated' },
+    ]
+  }, [activePlanKey])
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#fafafa] text-[#09090b] dark:bg-[#09090b] dark:text-[#fafafa]">
@@ -218,13 +240,13 @@ export default function Pricing() {
               Clear plans for serious sourcing teams
             </h1>
             <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-[#52525b] dark:text-[#a1a1aa]">
-              Borderless surfaces, verified signals, and export-ready reporting — built for buying houses and factories.
+              Borderless surfaces, verified signals, and export-ready reporting -- built for buying houses and factories.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
               <MagneticButton
                 to="/signup"
-                className="shimmer-btn inline-flex items-center justify-center rounded-md bg-[#3b82f6] px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(59,130,246,0.25)] transition hover:brightness-105 dark:shadow-none"
+                className="shimmer-btn inline-flex items-center justify-center rounded-md bg-[var(--gt-blue)] px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(10,102,194,0.25)] transition hover:brightness-105 dark:shadow-none"
               >
                 Create your organization
               </MagneticButton>
@@ -255,7 +277,7 @@ export default function Pricing() {
                 </span>
               </div>
               {loadError ? (
-                <p className="mt-3 text-xs text-[#a1a1aa]">Analytics unavailable — showing defaults.</p>
+                <p className="mt-3 text-xs text-[#a1a1aa]">Analytics unavailable -- showing defaults.</p>
               ) : null}
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {(pricing?.analytics?.tiles || []).slice(0, 4).map((tile) => (
@@ -289,73 +311,37 @@ export default function Pricing() {
           <div className="text-center">
             <h2 className="text-3xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">Simple, transparent pricing</h2>
             <p className="mt-3 text-sm leading-relaxed text-[#52525b] dark:text-[#a1a1aa]">
-              Choose the surface you need today — upgrade when your team scales.
+              Choose the surface you need today -- upgrade when your team scales.
             </p>
           </div>
 
-          {showDevControls ? (
+          {!isLoggedIn && (
             <div className="mx-auto mt-8 max-w-3xl rounded-xl bg-[rgba(9,9,11,0.04)] p-4 dark:bg-[rgba(250,250,250,0.04)]">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-[#52525b] dark:text-[#a1a1aa]">Preview:</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsLoggedIn((v) => !v)
-                      setAccountType('General')
-                    }}
-                    className="rounded-md bg-[#ffffff] px-3 py-2 text-xs font-semibold text-[#09090b] shadow-[0_4px_16px_rgba(0,0,0,0.06)] transition hover:-translate-y-0.5 dark:bg-[#18181b] dark:text-[#fafafa] dark:shadow-none"
-                  >
-                    {effectiveLoggedIn ? 'Sign out' : 'Mock sign in'}
-                  </button>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <span className="text-xs font-semibold text-[#52525b] dark:text-[#a1a1aa]">Preview pricing for:</span>
+                <div className="flex flex-wrap gap-2">
+                  {PLAN_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      onClick={() => setPreviewRole(opt.key)}
+                      className={[
+                        'rounded-full px-4 py-2 text-xs font-semibold transition',
+                        previewRole === opt.key
+                          ? 'bg-[var(--gt-blue)] text-white shadow-[0_10px_24px_rgba(10,102,194,0.24)]'
+                          : 'bg-[#ffffff] text-[#09090b] shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:bg-slate-50 dark:bg-[#18181b] dark:text-[#fafafa] dark:shadow-none dark:hover:bg-slate-700',
+                      ].join(' ')}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
                 </div>
-
-                {effectiveLoggedIn && accountTypes.length ? (
-                  <div className="flex flex-wrap gap-2">
-                    {accountTypes.map((t) => (
-                      <button
-                        key={t}
-                        type="button"
-                        onClick={() => setAccountType(t)}
-                        className={[
-                          'rounded-md px-3 py-2 text-xs font-semibold transition',
-                          accountType === t
-                            ? 'bg-[#3b82f6] text-white shadow-[0_10px_24px_rgba(59,130,246,0.24)]'
-                            : 'bg-[#ffffff] text-[#09090b] shadow-[0_4px_16px_rgba(0,0,0,0.06)] dark:bg-[#18181b] dark:text-[#fafafa] dark:shadow-none',
-                        ].join(' ')}
-                      >
-                        {t}
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <span className={['inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold', statusChip[verificationStatus]].join(' ')}>
-                  {statusLabel[verificationStatus]}
-                </span>
-                <span className="text-xs text-[#52525b] dark:text-[#a1a1aa]">Remaining: {Math.max(0, remainingDays)} day(s)</span>
-                <button
-                  type="button"
-                  onClick={() => setRemainingDays((d) => d - 1)}
-                  className="rounded-md bg-[rgba(9,9,11,0.06)] px-3 py-2 text-xs font-semibold text-[#09090b] transition hover:bg-[rgba(9,9,11,0.08)] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#fafafa] dark:hover:bg-[rgba(250,250,250,0.08)]"
-                >
-                  -1 day
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRemainingDays((d) => d + 1)}
-                  className="rounded-md bg-[rgba(9,9,11,0.06)] px-3 py-2 text-xs font-semibold text-[#09090b] transition hover:bg-[rgba(9,9,11,0.08)] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#fafafa] dark:hover:bg-[rgba(250,250,250,0.08)]"
-                >
-                  +1 day
-                </button>
               </div>
             </div>
-          ) : null}
+          )}
 
-          <div className="mt-10 grid gap-6 lg:grid-cols-2">
-            <MotionItem index={1}>
+        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          <MotionItem index={1}>
               <SpotlightCard
                 className={[
                   'rounded-xl p-7',
@@ -449,6 +435,52 @@ export default function Pricing() {
               </SpotlightCard>
             </MotionItem>
           </div>
+
+          <div className="mt-8">
+            <MotionItem index={3}>
+              <SpotlightCard
+                className={[
+                  'rounded-xl p-7',
+                  'bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
+                  'dark:bg-[#18181b] dark:border dark:border-[#27272a] dark:shadow-none',
+                  'transition duration-300 ease-out',
+                  'hover:-translate-y-0.5 hover:shadow-[0_12px_34px_-8px_rgba(0,0,0,0.18)]',
+                  'dark:hover:translate-y-0 dark:hover:shadow-none',
+                ].join(' ')}
+              >
+                <div className="flex items-start justify-between gap-6">
+                  <div>
+                    <h3 className="text-lg font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">Boost add-on</h3>
+                    <p className="mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">
+                      Optional paid boosts increase visibility for profiles and feed posts without changing your plan.
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">$9.99</p>
+                    <p className="text-xs text-[#52525b] dark:text-[#a1a1aa]">per 7 days</p>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex flex-wrap items-center gap-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">
+                  <span className="inline-flex items-center rounded-full bg-[rgba(9,9,11,0.06)] px-3 py-1 text-xs font-semibold text-[#52525b] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#a1a1aa]">
+                    Feed + Profile
+                  </span>
+                  <span className="inline-flex items-center rounded-full bg-[rgba(9,9,11,0.06)] px-3 py-1 text-xs font-semibold text-[#52525b] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#a1a1aa]">
+                    Wallet debit
+                  </span>
+                </div>
+
+                <div className="mt-6">
+                  <MagneticButton
+                    to={boostCtaHref}
+                    className="inline-flex w-full items-center justify-center rounded-md bg-[#0A66C2] px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(10,102,194,0.25)] transition hover:brightness-105 dark:shadow-none"
+                  >
+                    {boostCtaLabel}
+                  </MagneticButton>
+                </div>
+              </SpotlightCard>
+            </MotionItem>
+          </div>
         </div>
 
         <div className="mt-16">
@@ -471,7 +503,7 @@ export default function Pricing() {
                 <ul className="mt-5 space-y-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">
                   {['Team scale without limits', 'Decision-ready visibility', 'Secure contract trail', 'Verified trust signals'].map((item) => (
                     <li key={item} className="flex items-start gap-2">
-                      <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[rgba(59,130,246,0.14)] text-[#3b82f6]">
+                      <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[rgba(10,102,194,0.14)] text-[var(--gt-blue)]">
                         <Check className="h-3 w-3" />
                       </span>
                       <span>{item}</span>
@@ -577,10 +609,10 @@ export default function Pricing() {
 
           <div className="mx-auto mt-6 grid max-w-3xl gap-4">
             {[
-              { q: 'Can I upgrade anytime?', a: 'Yes — your data stays intact.' },
-              { q: 'Can I downgrade?', a: 'Yes — plan limits apply immediately.' },
-              { q: 'Does GarTexHub handle payments?', a: 'Not yet. The platform focuses on workflow + coordination.' },
-              { q: 'Are calls recorded?', a: 'Yes — for documentation and compliance.' },
+              { q: 'Can I upgrade anytime*', a: 'Yes -- your data stays intact.' },
+              { q: 'Can I downgrade*', a: 'Yes -- plan limits apply immediately.' },
+              { q: 'Does GarTexHub handle payments*', a: 'Not yet. The platform focuses on workflow + coordination.' },
+              { q: 'Are calls recorded*', a: 'Yes -- for documentation and compliance.' },
             ].map((item, idx) => (
               <MotionItem key={item.q} index={5 + idx}>
                 <SpotlightCard
@@ -618,7 +650,7 @@ export default function Pricing() {
             <div className="mt-7 flex flex-wrap justify-center gap-3">
               <MagneticButton
                 to="/signup"
-                className="shimmer-btn inline-flex items-center justify-center rounded-md bg-[#3b82f6] px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(59,130,246,0.25)] transition hover:brightness-105 dark:shadow-none"
+                className="shimmer-btn inline-flex items-center justify-center rounded-md bg-[var(--gt-blue)] px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(10,102,194,0.25)] transition hover:brightness-105 dark:shadow-none"
               >
                 Create your organization
               </MagneticButton>
@@ -635,3 +667,4 @@ export default function Pricing() {
     </div>
   )
 }
+

@@ -21,6 +21,7 @@ import React from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 
 const easePremium = [0.16, 1, 0.3, 1]
+const Motion = motion
 
 function LegalCard({ children, className = '', index = 0, id }) {
   const reduceMotion = useReducedMotion()
@@ -86,7 +87,7 @@ export default function Privacy() {
                 </p>
               </div>
               <div className="max-w-xl text-sm md:text-base leading-relaxed text-slate-600 dark:text-slate-300">
-                This Privacy Policy explains how our B2B Garments and Textile Marketplace platform collects, uses, protects, and manages your information. Our platform connects international Buyers, Factories, and Buying Houses in a secure and professional environment. By creating an account or using our services, you agree to the practices described in this policy.
+                This Privacy Policy explains how our B2B Garments and Textile Marketplace platform <span className="font-bold text-indigo-700 dark:text-indigo-300">collects, uses, protects, and manages your information</span>. Our platform connects international Buyers, Factories, and Buying Houses in a secure and professional environment. <span className="font-semibold text-rose-700 dark:text-rose-300">By creating an account or using our services, you agree to the practices described in this policy.</span>
               </div>
             </div>
           </div>
@@ -202,6 +203,9 @@ export default function Privacy() {
             id="fraud"
           >
             <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-4 text-[#0f172a] dark:text-white">3. Fraud Prevention Measures</h2>
+            <p className="text-sm md:text-base leading-relaxed text-slate-700 dark:text-white/85 mb-4">
+              <span className="font-bold text-rose-700 dark:text-rose-300">We take fraud prevention seriously.</span> <span className="text-indigo-700 dark:text-indigo-300 font-semibold">All calls are recorded</span> and <span className="text-indigo-700 dark:text-indigo-300 font-semibold">contracts are digitally signed</span> for your security.
+            </p>
             <ul className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-white/85 text-sm md:text-base leading-relaxed list-none p-0 m-0">
               {[
                 'Identity verification process',

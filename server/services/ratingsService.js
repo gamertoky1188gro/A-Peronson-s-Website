@@ -4,6 +4,9 @@ import { sanitizeString } from '../utils/validators.js'
 
 const FILE = 'ratings.json'
 const NOTIFICATIONS_FILE = 'notifications.json'
+const CALLS_FILE = 'call_sessions.json'
+const DOCUMENTS_FILE = 'documents.json'
+const MESSAGES_FILE = 'messages.json'
 const QUALIFICATION_RULES = [
   ['contract_signed', 'communication_completed'],
   ['deal_completed'],
@@ -13,6 +16,13 @@ const RECENT_LIMIT = 10
 function normalizeProfileKey(profileKey) {
   const value = sanitizeString(profileKey, 160)
   return value || ''
+}
+
+function parseUserIdFromProfileKey(profileKey) {
+  const normalized = normalizeProfileKey(profileKey)
+  if (!normalized) return ''
+  if (normalized.startsWith('user:')) return normalized.slice('user:'.length)
+  return ''
 }
 
 function safeNumber(value, fallback = 0) {
@@ -48,6 +58,10 @@ async function createFeedbackRequestNotification(counterpartyId, profileKey) {
     entity_type: 'profile',
     entity_id: profileKey,
     message: 'A completed interaction qualifies for feedback. Please submit a rating.',
+    meta: {
+      profile_key: profileKey,
+      counterparty_id: counterpartyId,
+    },
     read: false,
     created_at: new Date().toISOString(),
   })
@@ -128,6 +142,91 @@ function computeConfidenceMetadata(ratings, averageScore) {
 
 function profileQualifiesForFeedback(completedMilestones = []) {
   return QUALIFICATION_RULES.some((rule) => rule.every((milestone) => completedMilestones.includes(milestone)))
+}
+
+function hasRecordedCall(calls, firstId, secondId) {
+  if (!firstId || !secondId) return false
+  return (Array.isArray(calls) ? calls : []).some((call) => {
+    const participants = Array.isArray(call?.participant_ids) ? call.participant_ids.map(String) : []
+    if (!participants.includes(String(firstId)) || !participants.includes(String(secondId))) return false
+    return String(call?.recording_status || '').toLowerCase() === 'available' && call?.recording_url
+  })
+}
+
+function hasSignedContract(contracts, firstId, secondId) {
+  if (!firstId || !secondId) return false
+  return (Array.isArray(contracts) ? contracts : []).some((contract) => {
+    if (String(contract?.entity_type || '') !== 'contract') return false
+    const buyerId = String(contract?.buyer_id || '')
+    const factoryId = String(contract?.factory_id || '')
+    const matches = (buyerId === String(firstId) && factoryId === String(secondId))
+      || (buyerId === String(secondId) && factoryId === String(firstId))
+    if (!matches) return false
+    const buyerSigned = String(contract?.buyer_signature_state || '').toLowerCase() === 'signed'
+    const factorySigned = String(contract?.factory_signature_state || '').toLowerCase() === 'signed'
+    return buyerSigned && factorySigned
+  })
+}
+
+function averageResponseHours(messages, responderId, requesterId) {
+  if (!responderId || !requesterId) return null
+  const threads = new Map()
+  ;(Array.isArray(messages) ? messages : []).forEach((msg) => {
+    const matchId = String(msg?.match_id || '')
+    if (!matchId) return
+    const senderId = String(msg?.sender_id || '')
+    if (![responderId, requesterId].includes(senderId)) return
+    if (!threads.has(matchId)) threads.set(matchId, [])
+    threads.get(matchId).push(msg)
+  })
+
+  const responseTimes = []
+  for (const msgs of threads.values()) {
+    const sorted = msgs.slice().sort((a, b) => String(a.timestamp || '').localeCompare(String(b.timestamp || '')))
+    const firstRequest = sorted.find((m) => String(m.sender_id || '') === String(requesterId))
+    if (!firstRequest?.timestamp) continue
+    const start = new Date(firstRequest.timestamp).getTime()
+    if (!Number.isFinite(start)) continue
+    const response = sorted.find((m) => String(m.sender_id || '') === String(responderId) && new Date(m.timestamp).getTime() >= start)
+    if (!response?.timestamp) continue
+    const end = new Date(response.timestamp).getTime()
+    if (!Number.isFinite(end)) continue
+    responseTimes.push((end - start) / (1000 * 60 * 60))
+  }
+
+  if (!responseTimes.length) return null
+  return responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
+}
+
+function buildSuggestedScore({ contractSigned, recordedCall, avgResponseHours }) {
+  let score = 3.5
+  const reasons = []
+
+  if (contractSigned) {
+    score += 0.6
+    reasons.push('Contract signed')
+  }
+  if (recordedCall) {
+    score += 0.4
+    reasons.push('Recorded call completed')
+  }
+
+  if (avgResponseHours !== null) {
+    if (avgResponseHours <= 4) {
+      score += 0.3
+      reasons.push('Fast responses')
+    } else if (avgResponseHours <= 24) {
+      score += 0.1
+      reasons.push('Responsive follow-up')
+    } else if (avgResponseHours > 48) {
+      score -= 0.2
+      reasons.push('Slow response time')
+    }
+  }
+
+  score = Math.max(1, Math.min(5, score))
+  const rounded = Math.round(score * 10) / 10
+  return { score: rounded, reasons }
 }
 
 export async function recordMilestone({ profileKey, counterpartyId, interactionType, milestone, actorId }) {
@@ -306,4 +405,41 @@ export async function getSearchRatingCards(profileKeys = []) {
     score_confidence: summary.aggregate.confidence_metadata.score_confidence,
     breakdown: summary.breakdown,
   }]))
+}
+
+export async function listPendingFeedbackRequestsForUser(userId) {
+  const normalizedUser = sanitizeString(userId, 120)
+  if (!normalizedUser) return []
+
+  const store = await readStore()
+  const pending = store.feedback_requests
+    .filter((row) => row.status === 'pending' && String(row.counterparty_id || '') === normalizedUser)
+    .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')))
+
+  if (!pending.length) return []
+
+  const [calls, documents, messages] = await Promise.all([
+    readJson(CALLS_FILE),
+    readJson(DOCUMENTS_FILE),
+    readJson(MESSAGES_FILE),
+  ])
+
+  return pending.map((row) => {
+    const targetUserId = parseUserIdFromProfileKey(row.profile_key)
+    const contractSigned = hasSignedContract(documents, targetUserId, normalizedUser)
+    const recordedCall = hasRecordedCall(calls, targetUserId, normalizedUser)
+    const avgResponseHours = averageResponseHours(messages, targetUserId, normalizedUser)
+    const suggestion = buildSuggestedScore({ contractSigned, recordedCall, avgResponseHours })
+
+    return {
+      ...row,
+      suggested_score: suggestion.score,
+      suggested_reasons: suggestion.reasons,
+      signals: {
+        contract_signed: contractSigned,
+        recorded_call: recordedCall,
+        avg_response_hours: avgResponseHours !== null ? Math.round(avgResponseHours * 10) / 10 : null,
+      },
+    }
+  })
 }

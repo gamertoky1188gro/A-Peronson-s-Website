@@ -34,7 +34,7 @@ export default function MarkdownMessage({ text = '' }) {
         rehypePlugins={[rehypeRaw, [rehypeSanitize, schema]]}
         components={{
           a({ href = '', className = '', ...props }) {
-            const external = /^https?:\/\//i.test(String(href || ''))
+            const external = /^https*:\/\//i.test(String(href || ''))
             return (
               <a
                 {...props}

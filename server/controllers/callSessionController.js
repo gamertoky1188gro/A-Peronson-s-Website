@@ -3,10 +3,14 @@ import {
   endCallSession,
   findOrCreateCallSession,
   getCallSession,
+  getRecordingMetadata,
   listCallHistory,
+  listCallsByContract,
   markRecording,
+  markRecordingViewed,
   startCallSession,
 } from '../services/callSessionService.js'
+import path from 'path'
 import { buildIceServers } from '../services/webrtcService.js'
 import { buildFriendMatchId, isFriendConnected } from '../services/friendService.js'
 import { findUserById } from '../services/userService.js'
@@ -83,6 +87,42 @@ export async function getCall(req, res) {
   return res.json(result)
 }
 
+export async function uploadRecordingFile(req, res) {
+  const file = req.file
+  if (!file) return res.status(400).json({ error: 'File is required' })
+
+  const allowedMimes = new Set(['video/webm', 'video/mp4', 'audio/webm', 'audio/ogg', 'video/ogg'])
+  const mime = String(file.mimetype || '').toLowerCase()
+  if (mime && !allowedMimes.has(mime)) {
+    return res.status(400).json({ error: 'Unsupported recording file type' })
+  }
+
+  const callId = req.params.callId
+  const call = await getCallSession(callId, req.user.id)
+  if (!call) return res.status(404).json({ error: 'Call session not found' })
+  if (call === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+
+  const fileName = path.basename(String(file.path || '')).replace(/\\/g, '/')
+  const publicUrl = fileName ? `/uploads/calls/${fileName}` : ''
+  if (!publicUrl) return res.status(500).json({ error: 'Recording upload failed' })
+
+  // If the call never transitioned to processing, do it now so we can mark it available.
+  if (String(call.recording_status || 'pending') === 'pending') {
+    await markRecording(callId, req.user.id, { recording_status: 'processing' })
+  }
+
+  const updated = await markRecording(callId, req.user.id, {
+    recording_status: 'available',
+    recording_url: publicUrl,
+  })
+
+  if (updated === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+  if (updated === 'invalid_transition') return res.status(409).json({ error: 'Invalid recording status transition for this call' })
+  if (updated === 'missing_metadata') return res.status(400).json({ error: 'recording_url is required when recording_status is available' })
+
+  return res.status(201).json(updated)
+}
+
 export async function getCallIceServers(req, res) {
   const result = await getCallSession(req.params.callId, req.user.id)
   if (!result) return res.status(404).json({ error: 'Call session not found' })
@@ -102,6 +142,25 @@ export async function getCallHistory(req, res) {
 
   const history = await listCallHistory(matchIds, req.user.id)
   return res.json({ items: history })
+}
+
+export async function getCallsByContract(req, res) {
+  const items = await listCallsByContract(req.params.contractId, req.user.id)
+  return res.json({ items })
+}
+
+export async function getRecording(req, res) {
+  const meta = await getRecordingMetadata(req.params.callId, req.user.id)
+  if (!meta) return res.status(404).json({ error: 'Call session not found' })
+  if (meta === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+  return res.json(meta)
+}
+
+export async function markRecordingViewedController(req, res) {
+  const result = await markRecordingViewed(req.params.callId, req.user.id)
+  if (!result) return res.status(404).json({ error: 'Call session not found' })
+  if (result === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+  return res.json(result)
 }
 
 export async function getPendingInvites(req, res) {

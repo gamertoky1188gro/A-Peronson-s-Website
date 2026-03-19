@@ -584,7 +584,6 @@ async function main() {
   for (const page of PAGE_CONFIG) {
     const indexedPage = frontendByPath.get(page.src)
     if (!indexedPage) {
-      // eslint-disable-next-line no-console
       console.warn(`Missing index for ${page.src}`)
       continue
     }
@@ -679,7 +678,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  // eslint-disable-next-line no-console
   console.error(err)
   process.exit(1)
 })

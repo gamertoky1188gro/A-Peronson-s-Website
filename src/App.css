@@ -11,6 +11,9 @@
     --muted: #475569;
     --border: #cbd5e1;
     --accent: #10b981;
+    /* GarTex brand primary (locked): LinkedIn-style professional blue */
+    --gt-blue: #0a66c2;
+    --gt-blue-hover: #004182;
   }
 
   :root.dark {
@@ -20,6 +23,9 @@
     --muted: #9ca3af;
     --border: #374151;
     --accent: #10b981;
+    /* Keep the same primary blue in dark mode for brand consistency */
+    --gt-blue: #0a66c2;
+    --gt-blue-hover: #004182;
   }
 
   body {
@@ -80,8 +86,9 @@
   select:focus,
   textarea:focus {
     outline: none;
-    border-color: #8b5cf6;
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.16), 0 10px 28px rgba(14, 165, 233, 0.16);
+    /* Brand-consistent focus ring (blue) */
+    border-color: var(--gt-blue);
+    box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.18), 0 10px 28px rgba(10, 102, 194, 0.14);
   }
 
   img,

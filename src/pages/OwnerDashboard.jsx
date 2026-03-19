@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import useAnalyticsDashboard from '../hooks/useAnalyticsDashboard'
+import LeadManager from '../components/leads/LeadManager'
 
 function SeriesList({ title, items }) {
   return (
@@ -29,7 +30,7 @@ export default function OwnerDashboard() {
   const totals = dashboard?.totals || {}
 
   return (
-    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
+    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-500 dark:bg-[#020617] dark:text-slate-100">
       <div className="max-w-full px-6 py-6 grid grid-cols-1 lg:grid-cols-6 gap-6">
         <aside className="lg:col-span-1">
           <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-4 space-y-2 sticky top-20">
@@ -37,6 +38,7 @@ export default function OwnerDashboard() {
             <Link to="/owner?tab=requests" className={`block p-3 rounded-md cursor-pointer font-medium ${active === 'requests' ? 'bg-[#F4F9FF] text-[#0A66C2]' : 'hover:bg-gray-50 neo-panel cyberpunk-card'}`} onClick={() => setActive('requests')}>📋 Buyer Requests</Link>
             <Link to="/owner?tab=chats" className={`block p-3 rounded-md cursor-pointer font-medium ${active === 'chats' ? 'bg-[#F4F9FF] text-[#0A66C2]' : 'hover:bg-gray-50 neo-panel cyberpunk-card'}`} onClick={() => setActive('chats')}>💬 Chats</Link>
             <Link to="/owner?tab=network" className={`block p-3 rounded-md cursor-pointer font-medium ${active === 'network' ? 'bg-[#F4F9FF] text-[#0A66C2]' : 'hover:bg-gray-50 neo-panel cyberpunk-card'}`} onClick={() => setActive('network')}>🏭 Partner Network</Link>
+            <Link to="/owner?tab=leads" className={`block p-3 rounded-md cursor-pointer font-medium ${active === 'leads' ? 'bg-[#F4F9FF] text-[#0A66C2]' : 'hover:bg-gray-50 neo-panel cyberpunk-card'}`} onClick={() => setActive('leads')}>📌 Leads (CRM)</Link>
             <Link to="/owner?tab=members" className={`block p-3 rounded-md cursor-pointer font-medium ${active === 'members' ? 'bg-[#F4F9FF] text-[#0A66C2]' : 'hover:bg-gray-50 neo-panel cyberpunk-card'}`} onClick={() => setActive('members')}>👥 Member Management</Link>
             <Link to="/owner?tab=contracts" className={`block p-3 rounded-md cursor-pointer font-medium ${active === 'contracts' ? 'bg-[#F4F9FF] text-[#0A66C2]' : 'hover:bg-gray-50 neo-panel cyberpunk-card'}`} onClick={() => setActive('contracts')}>📄 Contracts Vault</Link>
             <Link to="/owner?tab=insights" className={`block p-3 rounded-md cursor-pointer font-medium ${active === 'insights' ? 'bg-[#F4F9FF] text-[#0A66C2]' : 'hover:bg-gray-50 neo-panel cyberpunk-card'}`} onClick={() => setActive('insights')}>📈 Insights & Analytics</Link>
@@ -46,7 +48,7 @@ export default function OwnerDashboard() {
         </aside>
 
         <main className="lg:col-span-5 space-y-6">
-          {loading ? <div className="bg-white rounded-xl p-4">Loading dashboard metrics…</div> : null}
+          {loading ? <div className="bg-white rounded-xl p-4">Loading dashboard metrics...</div> : null}
           {error ? <div className="bg-red-50 text-red-600 rounded-xl p-4">{error}</div> : null}
 
           {active === 'home' && (
@@ -69,6 +71,7 @@ export default function OwnerDashboard() {
           {active === 'requests' && <div className="bg-white rounded-xl shadow-md p-4"><h3 className="font-semibold mb-2">Buyer Requests</h3><p className="text-sm text-[#5A5A5A]">Total: {totals.buyer_requests ?? 0} | Open: {totals.open_buyer_requests ?? 0}</p></div>}
           {active === 'chats' && <div className="bg-white rounded-xl shadow-md p-4"><h3 className="font-semibold mb-2">Chats</h3><p className="text-sm text-[#5A5A5A]">Active chat threads: {totals.chats ?? 0}. Messages sent: {totals.messages ?? 0}.</p></div>}
           {active === 'network' && <div className="bg-white rounded-xl shadow-md p-4"><h3 className="font-semibold mb-2">Partner Network</h3><p className="text-sm text-[#5A5A5A]">Connected factory partners: {totals.partner_network ?? 0}. Total factory profiles: {totals.factories ?? 0}.</p></div>}
+          {active === 'leads' && <LeadManager title="Leads (CRM)" allowAssign />}
           {active === 'contracts' && <div className="bg-white rounded-xl shadow-md p-4"><h3 className="font-semibold mb-2">Contracts Vault</h3><p className="text-sm text-[#5A5A5A]">Contracts uploaded: {totals.contracts ?? 0}. Total documents: {totals.documents ?? 0}.</p></div>}
 
           {active === 'insights' && (
@@ -88,3 +91,4 @@ export default function OwnerDashboard() {
     </div>
   )
 }
+

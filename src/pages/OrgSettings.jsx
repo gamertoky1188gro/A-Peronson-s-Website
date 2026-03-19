@@ -1,25 +1,123 @@
-import React, { useCallback, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import AccessDeniedState from '../components/AccessDeniedState'
-import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
+import { apiRequest, getCurrentUser, getToken, saveSession } from '../lib/auth'
 
 const emptyKnowledge = { type: 'faq', question: '', answer: '', keywords: '' }
+const TAB_KEYS = [
+  'general',
+  'verification',
+  'branding',
+  'security',
+  'members',
+  'subscription',
+  'boosts',
+  'assistant_knowledge',
+]
 
-export default function OrgSettings(){
-  const [tab, setTab] = useState('general')
+const HELP_COPY = {
+  general: {
+    title: 'Automation & Handoff',
+    description: 'Control chatbot coverage and when human agents get notified. Use this to keep early conversations fast.',
+  },
+  verification: {
+    title: 'Verification Health',
+    description: 'Verification is subscription-based. Keep documents current to preserve the badge and trust signals.',
+  },
+  branding: {
+    title: 'Brand Touchpoints',
+    description: 'Add consistent contact info so buyers know who to reach and trust.',
+  },
+  security: {
+    title: 'Security Checks',
+    description: 'Enable 2FA and monitor active sessions to keep the org secure.',
+  },
+  members: {
+    title: 'Team Access',
+    description: 'Invite agents and manage assignments for shared sourcing workflows.',
+  },
+  subscription: {
+    title: 'Plan & Billing',
+    description: 'Track verification renewal timing and wallet balance for premium access.',
+  },
+  boosts: {
+    title: 'Boost Add-On',
+    description: 'Boosted profiles and feed posts appear higher in search and discovery surfaces.',
+  },
+  assistant_knowledge: {
+    title: 'Assistant Knowledge',
+    description: 'Train the assistant with organization-specific FAQs so the AI responses stay aligned.',
+  },
+}
+
+export default function OrgSettings() {
+  const [searchParams] = useSearchParams()
+  const initialTab = useMemo(() => {
+    const candidate = searchParams.get('tab') || 'general'
+    return TAB_KEYS.includes(candidate) ? candidate : 'general'
+  }, [searchParams])
+  const [tab, setTab] = useState(initialTab)
   const currentUser = useMemo(() => getCurrentUser(), [])
-  const isOwnerAdmin = currentUser?.role === 'owner' || currentUser?.role === 'admin'
-  const [remainingDays, setRemainingDays] = useState(4)
+  const isOrgManager = ['owner', 'admin', 'buying_house', 'factory'].includes(String(currentUser?.role || '').toLowerCase())
+  const [remainingDays, setRemainingDays] = useState(0)
+  const [subscriptionPlan, setSubscriptionPlan] = useState('free')
+  const [walletBalance, setWalletBalance] = useState(0)
+  const [verification, setVerification] = useState(null)
+  const [billingFeedback, setBillingFeedback] = useState('')
+  const [chatbotEnabled, setChatbotEnabled] = useState(() => Boolean(currentUser?.chatbot_enabled || currentUser?.profile?.chatbot_enabled))
+  const [handoffMode, setHandoffMode] = useState(() => String(currentUser?.handoff_mode || currentUser?.profile?.handoff_mode || 'notify_agent'))
+  const [mainProcesses, setMainProcesses] = useState(() => (currentUser?.profile?.main_processes || []).join(', '))
+  const [yearsInBusiness, setYearsInBusiness] = useState(() => String(currentUser?.profile?.years_in_business || ''))
+  const [handlesMultipleFactories, setHandlesMultipleFactories] = useState(() => Boolean(currentUser?.profile?.handles_multiple_factories))
+  const [teamSeats, setTeamSeats] = useState(() => String(currentUser?.profile?.team_seats || ''))
+  const [exportPorts, setExportPorts] = useState(() => (currentUser?.profile?.export_ports || []).join(', '))
+  const [locationLat, setLocationLat] = useState(() => String(currentUser?.profile?.location_lat || ''))
+  const [locationLng, setLocationLng] = useState(() => String(currentUser?.profile?.location_lng || ''))
   const [entries, setEntries] = useState([])
   const [knowledgeForm, setKnowledgeForm] = useState(emptyKnowledge)
   const [editingId, setEditingId] = useState('')
   const [faqFeedback, setFaqFeedback] = useState('')
+  const [boosts, setBoosts] = useState([])
+  const [boostScope, setBoostScope] = useState('feed')
+  const [boostDuration, setBoostDuration] = useState('7')
+  const [boostMultiplier, setBoostMultiplier] = useState('1.5')
+  const [boostPrice, setBoostPrice] = useState('9.99')
+  const [boostFeedback, setBoostFeedback] = useState('')
+  const [loadingBoosts, setLoadingBoosts] = useState(false)
 
   const verificationStatus = useMemo(() => {
     if (remainingDays <= 0) return 'expired'
     if (remainingDays <= 7) return 'expiring_soon'
     return 'verified_active'
   }, [remainingDays])
+
+  const loadBilling = useCallback(async () => {
+    const token = getToken()
+    if (!token) return
+    try {
+      const [sub, remaining, wallet, v] = await Promise.all([
+        apiRequest('/subscriptions/me', { token }),
+        apiRequest('/subscriptions/me/remaining-days', { token }),
+        apiRequest('/wallet/me', { token }),
+        apiRequest('/verification/me', { token }),
+      ])
+      setSubscriptionPlan(sub?.plan || 'free')
+      setRemainingDays(Number(remaining?.remaining_days || 0))
+      setWalletBalance(Number(wallet?.balance_usd || 0))
+      setVerification(v || null)
+    } catch (err) {
+      setBillingFeedback(err.message || 'Unable to load subscription status')
+    }
+  }, [])
+
+  useEffect(() => {
+    loadBilling()
+  }, [loadBilling])
+
+  useEffect(() => {
+    if (!TAB_KEYS.includes(initialTab)) return
+    setTab(initialTab)
+  }, [initialTab])
 
   const loadFaqs = useCallback(async () => {
     try {
@@ -103,6 +201,111 @@ export default function OrgSettings(){
     expired: 'Expired (renew to restore badge)',
   }
 
+  async function saveGeneralSettings() {
+    const token = getToken()
+    if (!token) return
+    setBillingFeedback('')
+    try {
+      const updated = await apiRequest('/users/me/profile', {
+        method: 'PATCH',
+        token,
+        body: {
+          chatbot_enabled: Boolean(chatbotEnabled),
+          handoff_mode: handoffMode,
+          main_processes: mainProcesses.split(',').map((p) => p.trim()).filter(Boolean),
+          years_in_business: yearsInBusiness,
+          handles_multiple_factories: Boolean(handlesMultipleFactories),
+          team_seats: teamSeats,
+          export_ports: exportPorts.split(',').map((p) => p.trim()).filter(Boolean),
+          location_lat: locationLat,
+          location_lng: locationLng,
+        },
+      })
+      // Keep local session user aligned with server profile changes.
+      saveSession(updated, token)
+      setBillingFeedback('Settings updated')
+    } catch (err) {
+      setBillingFeedback(err.message || 'Unable to save settings')
+    }
+  }
+
+  async function renewVerification() {
+    const token = getToken()
+    if (!token) return
+    setBillingFeedback('Renewing verification subscription...')
+    try {
+      await apiRequest('/verification/renew', { method: 'POST', token })
+      setBillingFeedback('Renewed successfully.')
+      await loadBilling()
+    } catch (err) {
+      setBillingFeedback(err.message || 'Renew failed')
+    }
+  }
+
+  const loadBoosts = useCallback(async () => {
+    const token = getToken()
+    if (!token) return
+    setLoadingBoosts(true)
+    setBoostFeedback('')
+    try {
+      const data = await apiRequest('/boosts/me', { token })
+      setBoosts(Array.isArray(data?.items) ? data.items : [])
+    } catch (err) {
+      setBoosts([])
+      setBoostFeedback(err.message || 'Unable to load boosts')
+    } finally {
+      setLoadingBoosts(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (tab === 'boosts') {
+      loadBoosts()
+    }
+  }, [loadBoosts, tab])
+
+  async function purchaseBoost() {
+    const token = getToken()
+    if (!token) return
+    setBoostFeedback('Processing boost purchase...')
+    try {
+      const payload = {
+        scope: boostScope,
+        duration_days: Number(boostDuration || 7),
+        multiplier: Number(boostMultiplier || 1.5),
+        price_usd: Number(boostPrice || 9.99),
+      }
+      await apiRequest('/boosts', { method: 'POST', token, body: payload })
+      setBoostFeedback('Boost activated.')
+      await loadBoosts()
+      await loadBilling()
+    } catch (err) {
+      setBoostFeedback(err.message || 'Boost purchase failed')
+    }
+  }
+
+  async function cancelBoost(boostId) {
+    const token = getToken()
+    if (!token || !boostId) return
+    setBoostFeedback('Cancelling boost...')
+    try {
+      await apiRequest(`/boosts/${encodeURIComponent(boostId)}/cancel`, { method: 'POST', token })
+      setBoostFeedback('Boost cancelled.')
+      await loadBoosts()
+    } catch (err) {
+      setBoostFeedback(err.message || 'Unable to cancel boost')
+    }
+  }
+
+  function remainingLabel(endsAt) {
+    if (!endsAt) return '--'
+    const diff = new Date(endsAt).getTime() - Date.now()
+    if (!Number.isFinite(diff)) return '--'
+    if (diff <= 0) return 'Expired'
+    const days = Math.ceil(diff / (24 * 60 * 60 * 1000))
+    return `${days} day(s)`
+  }
+
   return (
     <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
       <div className="max-w-7xl mx-auto p-6">
@@ -113,36 +316,107 @@ export default function OrgSettings(){
           </div>
         </div>
 
-        {!isOwnerAdmin ? <AccessDeniedState message="Only owners and admins can manage organization settings." /> : null}
+        {!isOrgManager ? <AccessDeniedState message="Only organization managers (Owner/Admin/Buying House/Factory) can manage organization settings." /> : null}
 
-        {isOwnerAdmin ? (
+        {isOrgManager ? (
 
         <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow p-4">
           <div className="flex gap-4 border-b mb-4 flex-wrap">
-            <button onClick={()=>setTab('general')} className={`px-3 py-2 ${tab==='general'?'border-b-2 border-[#0A66C2]':''}`}>General Info</button>
-            <button onClick={()=>setTab('verification')} className={`px-3 py-2 ${tab==='verification'?'border-b-2 border-[#0A66C2]':''}`}>Verification</button>
-            <button onClick={()=>setTab('branding')} className={`px-3 py-2 ${tab==='branding'?'border-b-2 border-[#0A66C2]':''}`}>Branding</button>
-            <button onClick={()=>setTab('security')} className={`px-3 py-2 ${tab==='security'?'border-b-2 border-[#0A66C2]':''}`}>Security</button>
-            <button onClick={()=>setTab('members')} className={`px-3 py-2 ${tab==='members'?'border-b-2 border-[#0A66C2]':''}`}>Members</button>
-            <button onClick={()=>setTab('subscription')} className={`px-3 py-2 ${tab==='subscription'?'border-b-2 border-[#0A66C2]':''}`}>Subscription</button>
-            <button onClick={()=> { setTab('assistant_knowledge'); loadFaqs() }} className={`px-3 py-2 ${tab==='assistant_knowledge'?'border-b-2 border-[#0A66C2]':''}`}>Assistant Knowledge</button>
+            <button onClick={() => setTab('general')} className={`px-3 py-2 ${tab === 'general' ? 'border-b-2 border-[#0A66C2]' : ''}`}>General Info</button>
+            <button onClick={() => setTab('verification')} className={`px-3 py-2 ${tab === 'verification' ? 'border-b-2 border-[#0A66C2]' : ''}`}>Verification</button>
+            <button onClick={() => setTab('branding')} className={`px-3 py-2 ${tab === 'branding' ? 'border-b-2 border-[#0A66C2]' : ''}`}>Branding</button>
+            <button onClick={() => setTab('security')} className={`px-3 py-2 ${tab === 'security' ? 'border-b-2 border-[#0A66C2]' : ''}`}>Security</button>
+            <button onClick={() => setTab('members')} className={`px-3 py-2 ${tab === 'members' ? 'border-b-2 border-[#0A66C2]' : ''}`}>Members</button>
+            <button onClick={() => setTab('subscription')} className={`px-3 py-2 ${tab === 'subscription' ? 'border-b-2 border-[#0A66C2]' : ''}`}>Subscription</button>
+            <button onClick={() => setTab('boosts')} className={`px-3 py-2 ${tab === 'boosts' ? 'border-b-2 border-[#0A66C2]' : ''}`}>Boosts</button>
+            <button onClick={() => { setTab('assistant_knowledge'); loadFaqs() }} className={`px-3 py-2 ${tab === 'assistant_knowledge' ? 'border-b-2 border-[#0A66C2]' : ''}`}>Assistant Knowledge</button>
           </div>
 
-          <div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
             {tab === 'general' && (
               <div>
-                <label className="block text-sm">Organization Name</label>
-                <input className="w-full border px-3 py-2 rounded mb-3" />
-                <label className="block text-sm">Industry Category</label>
-                <input className="w-full border px-3 py-2 rounded mb-3" />
-                <label className="block text-sm">Registration Number</label>
-                <input className="w-full border px-3 py-2 rounded mb-3" />
+                <div className="mb-3 text-sm text-[#5A5A5A]">
+                  Configure automation and trust settings for your organization.
+                </div>
+                <label className="flex items-center gap-3 text-sm font-medium">
+                  <input type="checkbox" checked={chatbotEnabled} onChange={(e) => setChatbotEnabled(e.target.checked)} />
+                  Enable AI Chatbot for initial conversations (project.md)
+                </label>
+                <div className="mt-2 text-xs text-[#5A5A5A]">
+                  The bot answers common questions (MOQ, lead time, certifications). If it can't answer, it hands off to your team.
+                </div>
+                <div className="mt-4">
+                  <label className="block text-sm font-medium mb-1">Handoff mode</label>
+                  <select className="w-full border px-3 py-2 rounded" value={handoffMode} onChange={(e) => setHandoffMode(e.target.value)}>
+                    <option value="notify_agent">Notify agent / owner</option>
+                    <option value="notify_owner">Notify owner only</option>
+                  </select>
+                </div>
+
+                <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-sm font-semibold text-slate-800">Supplier profile (factory / buying house)</p>
+                  <p className="mt-1 text-xs text-slate-500">These fields power advanced supplier filters (processes, response speed, distance, and team capacity).</p>
+                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input
+                      className="w-full border px-3 py-2 rounded"
+                      placeholder="Main processes (comma-separated)"
+                      value={mainProcesses}
+                      onChange={(e) => setMainProcesses(e.target.value)}
+                    />
+                    <input
+                      className="w-full border px-3 py-2 rounded"
+                      placeholder="Years in business"
+                      value={yearsInBusiness}
+                      onChange={(e) => setYearsInBusiness(e.target.value)}
+                    />
+                    <input
+                      className="w-full border px-3 py-2 rounded"
+                      placeholder="Team seats"
+                      value={teamSeats}
+                      onChange={(e) => setTeamSeats(e.target.value)}
+                    />
+                    <input
+                      className="w-full border px-3 py-2 rounded"
+                      placeholder="Export ports (comma-separated)"
+                      value={exportPorts}
+                      onChange={(e) => setExportPorts(e.target.value)}
+                    />
+                    <div className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={handlesMultipleFactories}
+                        onChange={(e) => setHandlesMultipleFactories(e.target.checked)}
+                      />
+                      Handles multiple factories
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        className="w-full border px-3 py-2 rounded"
+                        placeholder="Location lat"
+                        value={locationLat}
+                        onChange={(e) => setLocationLat(e.target.value)}
+                      />
+                      <input
+                        className="w-full border px-3 py-2 rounded"
+                        placeholder="Location lng"
+                        value={locationLng}
+                        onChange={(e) => setLocationLng(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <button onClick={saveGeneralSettings} className="px-3 py-2 bg-[#0A66C2] text-white rounded">Save settings</button>
+                </div>
               </div>
             )}
 
             {tab === 'verification' && (
               <div>
-                <p className="text-sm text-[#5A5A5A]">Upload trade license and certifications</p>
+                <p className="text-sm text-[#5A5A5A]">
+                  Verification is subscription-based and renewed monthly (project.md). Upload the required documents in Verification Center.
+                </p>
                 <div className="mt-3 flex items-center gap-2">
                   <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusChipClasses[verificationStatus]}`}>
                     {statusLabel[verificationStatus]}
@@ -150,15 +424,21 @@ export default function OrgSettings(){
                   <span className="text-xs text-[#5A5A5A]">{Math.max(0, remainingDays)} day(s) remaining</span>
                 </div>
                 <p className="mt-2 text-xs text-[#5A5A5A]">Verification is subscription-based, not permanent. Keep premium active to keep the badge visible.</p>
-                <div className="mt-3">
-                  <button className="px-3 py-2 border rounded">Upload Trade License</button>
-                  <button className="px-3 py-2 border rounded ml-2">Upload ISO / WRAP</button>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <Link to="/verification" className="px-3 py-2 bg-[#0A66C2] text-white rounded">Open Verification Center</Link>
+                  <button onClick={renewVerification} className="px-3 py-2 border rounded">Renew verification ($6.99)</button>
+                  <span className="text-xs text-[#5A5A5A]">Wallet balance: ${Number(walletBalance || 0).toFixed(2)}</span>
                 </div>
+                {verification?.missing_required?.length ? (
+                  <div className="mt-4 rounded-lg border bg-amber-50 p-3 text-sm text-amber-900">
+                    Missing required docs: {(verification.missing_required || []).slice(0, 6).join(', ')}
+                  </div>
+                ) : null}
               </div>
             )}
 
-            {tab !== 'general' && !isOwnerAdmin && (
-              <div className="p-4 bg-yellow-50 border rounded mt-4">You do not have permission to view this section. Owner/Admin access required.</div>
+            {tab !== 'general' && !isOrgManager && (
+              <div className="p-4 bg-yellow-50 border rounded mt-4">You do not have permission to view this section.</div>
             )}
 
             {tab === 'branding' && (
@@ -185,7 +465,7 @@ export default function OrgSettings(){
 
             {tab === 'subscription' && (
               <div>
-                <div className="text-sm">Current Plan: Premium Monthly</div>
+                <div className="text-sm">Current Plan: {String(subscriptionPlan || 'free').toUpperCase()}</div>
                 <div className="mt-2 flex items-center gap-2">
                   <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusChipClasses[verificationStatus]}`}>
                     {statusLabel[verificationStatus]}
@@ -193,9 +473,76 @@ export default function OrgSettings(){
                   <span className="text-xs text-[#5A5A5A]">Verification is subscription-based, not permanent.</span>
                 </div>
                 <div className="mt-3 flex items-center gap-2">
-                  <button onClick={() => setRemainingDays((d) => d + 30)} className="px-3 py-2 bg-[#0A66C2] text-white rounded">Renew premium monthly</button>
+                  <button onClick={renewVerification} className="px-3 py-2 bg-[#0A66C2] text-white rounded">Renew premium monthly</button>
                   <span className="text-xs text-[#5A5A5A]">Remaining: {Math.max(0, remainingDays)} day(s)</span>
                 </div>
+              </div>
+            )}
+
+            {tab === 'boosts' && (
+              <div className="space-y-4">
+                <div className="text-sm text-[#5A5A5A]">
+                  Purchase temporary boosts to increase visibility in feed or profile discovery.
+                </div>
+                <div className="rounded-lg border border-slate-200 p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Boost scope</label>
+                      <select value={boostScope} onChange={(e) => setBoostScope(e.target.value)} className="w-full border px-3 py-2 rounded">
+                        <option value="feed">Feed visibility</option>
+                        <option value="profile">Profile visibility</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Duration (days)</label>
+                      <input value={boostDuration} onChange={(e) => setBoostDuration(e.target.value)} className="w-full border px-3 py-2 rounded" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Multiplier</label>
+                      <input value={boostMultiplier} onChange={(e) => setBoostMultiplier(e.target.value)} className="w-full border px-3 py-2 rounded" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Price (USD)</label>
+                      <input value={boostPrice} onChange={(e) => setBoostPrice(e.target.value)} className="w-full border px-3 py-2 rounded" />
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button onClick={purchaseBoost} className="px-3 py-2 bg-[#0A66C2] text-white rounded">Purchase boost</button>
+                    <span className="text-xs text-[#5A5A5A]">Wallet balance: ${Number(walletBalance || 0).toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-slate-200 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold">Active boosts</h3>
+                    <button onClick={loadBoosts} className="text-sm text-[#0A66C2] hover:underline">Refresh</button>
+                  </div>
+                  {loadingBoosts ? <div className="text-sm text-[#5A5A5A]">Loading boosts...</div> : null}
+                  {!loadingBoosts && boosts.length === 0 ? <div className="text-sm text-[#5A5A5A]">No boosts yet.</div> : null}
+                  <div className="space-y-3">
+                    {boosts.map((boost) => (
+                      <div key={boost.id} className="rounded-lg border border-slate-200 p-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div>
+                            <p className="text-sm font-semibold">{boost.scope} boost</p>
+                            <p className="text-xs text-[#5A5A5A]">Multiplier {boost.multiplier} - Status {boost.status}</p>
+                          </div>
+                          <div className="text-xs text-[#5A5A5A]">Remaining: {remainingLabel(boost.ends_at)}</div>
+                        </div>
+                        {boost.status === 'active' ? (
+                          <button
+                            type="button"
+                            onClick={() => cancelBoost(boost.id)}
+                            className="mt-2 text-xs font-semibold text-rose-600 hover:underline"
+                          >
+                            Cancel boost
+                          </button>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {boostFeedback ? <div className="text-sm text-[#5A5A5A]">{boostFeedback}</div> : null}
               </div>
             )}
 
@@ -241,9 +588,17 @@ export default function OrgSettings(){
                 </div>
               </div>
             )}
+            </div>
+            <aside className="lg:col-span-1">
+              <div className="rounded-xl border border-slate-200 bg-[#F8FAFF] p-4 text-sm text-slate-700">
+                <p className="font-semibold">{HELP_COPY[tab]?.title || 'Settings help'}</p>
+                <p className="mt-2 text-xs text-slate-600">{HELP_COPY[tab]?.description || 'Choose a tab to see guidance for that section.'}</p>
+              </div>
+            </aside>
           </div>
         </div>
         ) : null}
+        {billingFeedback ? <div className="mt-4 text-sm text-[#5A5A5A]">{billingFeedback}</div> : null}
       </div>
 
     </div>

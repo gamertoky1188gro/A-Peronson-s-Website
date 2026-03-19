@@ -29,6 +29,8 @@ const fieldAliases = {
   eori: ['eori', 'erc_or_eori'],
 }
 
+const REVIEW_STATUSES = new Set(['pending', 'approved', 'rejected', 'incomplete', 'expired'])
+
 export const VERIFICATION_FIELD_LABELS = {
   company_registration: 'Company Registration',
   trade_license: 'Trade License',
@@ -40,6 +42,11 @@ export const VERIFICATION_FIELD_LABELS = {
   authorized_person_nid: 'Authorized Person NID',
   bank_proof: 'Company Bank Proof',
   erc: 'ERC (Export Registration)',
+}
+
+function normalizeReviewStatus(value, fallback = 'pending') {
+  const status = sanitizeString(String(value || ''), 20).toLowerCase()
+  return REVIEW_STATUSES.has(status) ? status : fallback
 }
 
 function emptyDocs() {
@@ -143,6 +150,26 @@ function buildCredibility(required, docs) {
   }
 }
 
+function hasAnyDocument(docs) {
+  if (!docs) return false
+  const keys = Object.keys(docs)
+  return keys.some((key) => {
+    if (key === 'optional_licenses') {
+      return Array.isArray(docs.optional_licenses) && docs.optional_licenses.some(Boolean)
+    }
+    return Boolean(String(docs[key] || '').trim())
+  })
+}
+
+function toPublicFileUrl(filePath = '') {
+  if (!filePath) return ''
+  const normalized = String(filePath).replace(/\\/g, '/')
+  if (normalized.startsWith('/uploads/')) return normalized
+  const idx = normalized.indexOf('server/uploads/')
+  if (idx >= 0) return `/uploads/${normalized.slice(idx + 'server/uploads/'.length)}`
+  return normalized.startsWith('uploads/') ? `/${normalized}` : normalized
+}
+
 export async function getVerification(userId) {
   const all = await readJson(FILE)
   return all.find((v) => v.user_id === userId) || null
@@ -208,16 +235,24 @@ export async function upsertVerification(user, documentsPatch) {
   const missing_required = required.filter((key) => !hasDocument(docs, key))
   const credibility = buildCredibility(required, docs)
 
+  const shouldKeepApproved = Boolean(existing?.verified) && missing_required.length === 0
+  const nextReviewStatus = shouldKeepApproved
+    ? 'approved'
+    : (missing_required.length > 0 ? 'incomplete' : 'pending')
+
   const record = {
     user_id: user.id,
     role: user.role,
     buyer_region: buyerRegion,
     documents: docs,
-    verified: false,
-    verified_at: existing?.verified_at || '',
+    verified: shouldKeepApproved,
+    verified_at: shouldKeepApproved ? (existing?.verified_at || '') : '',
     subscription_valid_until: existing?.subscription_valid_until || '',
     missing_required,
     credibility,
+    review_status: nextReviewStatus,
+    review_reason: nextReviewStatus === 'rejected' ? sanitizeString(String(existing?.review_reason || ''), 240) : '',
+    reviewed_at: shouldKeepApproved ? (existing?.reviewed_at || '') : '',
     updated_at: new Date().toISOString(),
   }
 
@@ -249,15 +284,36 @@ export async function adminApproveVerification(userId) {
 
   if ((all[idx].missing_required || []).length > 0) {
     all[idx].verified = false
+    all[idx].review_status = 'incomplete'
+    all[idx].review_reason = 'missing_required_documents'
+    all[idx].reviewed_at = new Date().toISOString()
     await writeJson(FILE, all)
     return all[idx]
   }
 
   all[idx].verified = true
   all[idx].verified_at = new Date().toISOString()
+  all[idx].review_status = 'approved'
+  all[idx].review_reason = ''
+  all[idx].reviewed_at = new Date().toISOString()
   all[idx].subscription_valid_until = (await readJson('subscriptions.json')).find((s) => s.user_id === userId)?.end_date || ''
   await writeJson(FILE, all)
   logInfo('Verification approved', { user_id: userId })
+  return all[idx]
+}
+
+export async function adminRejectVerification(userId, reason = '') {
+  const all = await readJson(FILE)
+  const idx = all.findIndex((v) => v.user_id === userId)
+  if (idx < 0) return null
+
+  all[idx].verified = false
+  all[idx].verified_at = ''
+  all[idx].review_status = 'rejected'
+  all[idx].review_reason = sanitizeString(String(reason || 'rejected_by_admin'), 240)
+  all[idx].reviewed_at = new Date().toISOString()
+  await writeJson(FILE, all)
+  logInfo('Verification rejected', { user_id: userId, reason })
   return all[idx]
 }
 
@@ -269,15 +325,91 @@ export async function revokeExpiredVerifications() {
   for (const rec of all) {
     const sub = subs.find((s) => s.user_id === rec.user_id)
     const active = sub && new Date(sub.end_date).getTime() > Date.now()
+    const remainingDays = sub ? Math.max(0, Math.ceil((new Date(sub.end_date).getTime() - Date.now()) / (24 * 60 * 60 * 1000))) : 0
+    const expiringSoon = rec.verified && remainingDays > 0 && remainingDays <= 7
     if (!active && rec.verified) {
       rec.verified = false
       rec.subscription_valid_until = sub?.end_date || ''
+      rec.review_status = 'expired'
+      rec.review_reason = 'subscription_expired'
+      rec.reviewed_at = new Date().toISOString()
+      changed = true
+    }
+    if (rec.subscription_remaining_days !== remainingDays) {
+      rec.subscription_remaining_days = remainingDays
+      changed = true
+    }
+    if (rec.expiring_soon !== expiringSoon) {
+      rec.expiring_soon = expiringSoon
+      changed = true
+    }
+    const nextStatus = rec.verified
+      ? (expiringSoon ? 'expiring_soon' : 'verified_active')
+      : (remainingDays > 0 ? 'pending_review' : 'expired')
+    if (rec.verification_status !== nextStatus) {
+      rec.verification_status = nextStatus
       changed = true
     }
   }
 
   if (changed) await writeJson(FILE, all)
   return all
+}
+
+export async function listVerificationQueue({ status } = {}) {
+  const [all, users, documents] = await Promise.all([
+    readJson(FILE),
+    readJson('users.json'),
+    readJson('documents.json'),
+  ])
+
+  const usersById = new Map(users.map((u) => [String(u.id), u]))
+  const docsByUser = new Map()
+
+  const verificationDocs = Array.isArray(documents)
+    ? documents.filter((doc) => String(doc.entity_type || '') === 'verification')
+    : []
+
+  for (const doc of verificationDocs) {
+    const ownerId = String(doc.entity_id || doc.uploaded_by || '')
+    if (!ownerId) continue
+    if (!docsByUser.has(ownerId)) docsByUser.set(ownerId, [])
+    docsByUser.get(ownerId).push({
+      ...doc,
+      public_url: toPublicFileUrl(doc.file_path || doc.url || ''),
+    })
+  }
+
+  const rows = Array.isArray(all) ? all : []
+  const filtered = rows.filter((rec) => {
+    const reviewStatus = normalizeReviewStatus(rec.review_status, rec.verified ? 'approved' : 'pending')
+    if (status) return reviewStatus === status
+    if (!hasAnyDocument(rec.documents)) return false
+    return reviewStatus !== 'approved'
+  })
+
+  return filtered
+    .map((rec) => {
+      const user = usersById.get(String(rec.user_id || '')) || null
+      const summary = getVerificationPublicSummary(user || {}, rec)
+      return {
+        ...rec,
+        review_status: normalizeReviewStatus(rec.review_status, rec.verified ? 'approved' : 'pending'),
+        user: user ? {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          verified: Boolean(user.verified),
+          subscription_status: user.subscription_status,
+          country: user.profile?.country || '',
+        } : null,
+        required_checklist: summary.required_checklist,
+        credibility: summary.credibility,
+        uploaded_documents: docsByUser.get(String(rec.user_id || '')) || [],
+      }
+    })
+    .sort((a, b) => String(b.updated_at || '').localeCompare(String(a.updated_at || '')))
 }
 
 export async function markVerificationExpiringSoon(userId, remainingDays, thresholdDays = 7) {

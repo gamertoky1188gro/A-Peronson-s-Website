@@ -29,6 +29,8 @@ import { Link } from 'react-router-dom'
 import { apiRequest } from '../lib/auth'
 import { AnimatePresence, motion, useMotionValue, useReducedMotion, useSpring } from 'framer-motion'
 
+const Motion = motion
+
 function VerifiedBadge({ label = 'Verified' }) {
   return (
     // "Trust anchor" badge:
@@ -139,13 +141,11 @@ function AnimatedHeroHeading({ text, className = '' }) {
         {words.map((word, wordIndex) => {
           const chars = Array.from(word)
           return (
-            // eslint-disable-next-line react/no-array-index-key
             <React.Fragment key={`${word}-${wordIndex}`}>
               <span className="inline-block whitespace-nowrap">
                 {chars.map((ch, idx) => {
                   const charIndex = globalIndex++
                   return (
-                    // eslint-disable-next-line react/no-array-index-key
                     <motion.span
                       key={`${ch}-${idx}`}
                       className="inline-block"
@@ -222,7 +222,7 @@ export default function TexHub() {
       hero: {
         buyerRequest: {
           label: 'Buyer Request',
-          title: 'Denim jacket — 10k pcs, wash + trims',
+          title: 'Denim jacket -- 10k pcs, wash + trims',
           badge: 'Priority',
           fields: [
             { label: 'Target', value: 'EU' },
@@ -268,7 +268,7 @@ export default function TexHub() {
         },
         enterpriseAnalytics: {
           title: 'Enterprise analytics',
-          description: 'Decision-ready reporting for buying houses — without turning the UI into a spreadsheet.',
+          description: 'Decision-ready reporting for buying houses -- without turning the UI into a spreadsheet.',
           stats: [
             { label: 'Active leads', value: '128' },
             { label: 'Verified matches', value: '64' },
@@ -280,7 +280,7 @@ export default function TexHub() {
           description: 'Subtle, conflict-free lead ownership across multi-agent buying house teams.',
           requestLabel: 'Request #BR-1842',
           status: 'Locked',
-          note: 'Claimed by Agent A — teammates can collaborate without overwriting.',
+          note: 'Claimed by Agent A -- teammates can collaborate without overwriting.',
         },
       },
     }),
@@ -340,7 +340,7 @@ export default function TexHub() {
       professionalFeed: {
         ...bento.professionalFeed,
         title: 'Diverse feed',
-        description: 'A broader surface for discovery — still structured and readable.',
+        description: 'A broader surface for discovery -- still structured and readable.',
         lanes: [
           { label: 'Market Updates', meta: 'Auto-sorted' },
           { label: 'New Suppliers', meta: 'Auto-sorted' },
@@ -394,13 +394,13 @@ export default function TexHub() {
             </h1>
             <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#475569] dark:text-slate-400">
               A structured, low-noise B2B platform for buyer requests, verified factories, partner networks, and secure
-              contracts — built for real teams.
+              contracts -- built for real teams.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <MagneticLinkButton
                 to="/signup"
-                className="shimmer-btn border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[#162132] hover:shadow-[0_22px_50px_rgba(15,23,42,0.25)] dark:bg-gradient-to-r dark:from-emerald-500/85 dark:via-sky-500/70 dark:to-indigo-500/70 dark:hover:from-emerald-500/92 dark:hover:via-sky-500/80 dark:hover:to-indigo-500/80 dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
+                className="shimmer-btn border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
               >
                 Create Buyer Account
               </MagneticLinkButton>
@@ -530,7 +530,7 @@ export default function TexHub() {
               <div className="relative z-10">
               <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Problem</h3>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                Typical marketplaces are loud and unstructured — teams lose time, trust, and context.
+                Typical marketplaces are loud and unstructured -- teams lose time, trust, and context.
               </p>
               <ul className="mt-5 space-y-2 text-sm text-[#334155] dark:text-slate-300">
                 <li>Noise from random listings</li>
@@ -545,7 +545,7 @@ export default function TexHub() {
               <div className="relative z-10">
               <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Solution</h3>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                Clear surfaces, verified signals, and structured workflows — designed to stay calm at scale.
+                Clear surfaces, verified signals, and structured workflows -- designed to stay calm at scale.
               </p>
               <ul className="mt-5 space-y-2 text-sm text-[#334155] dark:text-slate-300">
                 <li>Structured Buyer Requests</li>
@@ -756,7 +756,7 @@ export default function TexHub() {
             >
               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Unique toggle</h4>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                A tactile switch for diverse content modes — recessed track, raised handle.
+                A tactile switch for diverse content modes -- recessed track, raised handle.
               </p>
               <div className="mt-5 inline-flex items-center gap-3">
                 <button
@@ -794,7 +794,6 @@ export default function TexHub() {
                 <div className="grid grid-cols-3">
                   {Array.from({ length: 6 }).map((_, i) => (
                     <div
-                      // eslint-disable-next-line react/no-array-index-key
                       key={i}
                       className={[
                         'aspect-video',
@@ -812,10 +811,10 @@ export default function TexHub() {
             <Surface className="p-7">
               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">AI assistant</h4>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                A floating assistant that feels premium — glassy, calm, and helpful.
+                A floating assistant that feels premium -- glassy, calm, and helpful.
               </p>
               <div className="mt-5 rounded-2xl bg-white/55 backdrop-blur-md p-4 shadow-[0_18px_50px_rgba(15,23,42,0.10)] ring-1 ring-white/50 dark:bg-white/[0.03] dark:ring-white/10">
-                <p className="text-sm font-semibold text-[#1E293B] dark:text-white">“Need help posting a request?”</p>
+                <p className="text-sm font-semibold text-[#1E293B] dark:text-white">“Need help posting a request*”</p>
                 <p className="mt-1 text-xs leading-relaxed text-[#475569] dark:text-slate-400">I can generate a structured template in seconds.</p>
               </div>
             </Surface>
@@ -868,13 +867,13 @@ export default function TexHub() {
               <div className="lg:col-span-7">
                 <h2 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Start connecting with the right partners</h2>
                 <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                  Clear CTAs and clean surfaces — your first step into a structured marketplace.
+                  Clear CTAs and clean surfaces -- your first step into a structured marketplace.
                 </p>
               </div>
               <div className="flex flex-wrap gap-3 lg:col-span-5 lg:justify-end">
                 <MagneticLinkButton
                   to="/signup"
-                  className="shimmer-btn border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[#162132] hover:shadow-[0_22px_50px_rgba(15,23,42,0.25)] dark:bg-gradient-to-r dark:from-emerald-500/85 dark:via-sky-500/70 dark:to-indigo-500/70 dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
+                  className="shimmer-btn border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
                 >
                   Create account
                 </MagneticLinkButton>

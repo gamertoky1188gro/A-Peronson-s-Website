@@ -3,10 +3,27 @@ import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { trackEvent } from './analyticsService.js'
 import { emitNotificationsForEntity } from './notificationService.js'
+import { moderateTextOrRedact } from './policyService.js'
+import { isAgent, isOwnerOrAdmin } from '../utils/permissions.js'
 
 const FILE = 'company_products.json'
 const PROHIBITED_MEDIA_KEYWORDS = ['porn', 'explicit', 'nudity', 'violence', 'weapon', 'drugs', 'hate']
+const MUSIC_INSTRUMENT_KEYWORDS = [
+  'music',
+  'song',
+  'lyrics',
+  'guitar',
+  'drum',
+  'violin',
+  'piano',
+  'flute',
+  'sitar',
+  'tabla',
+  'instrument',
+]
 const TRUSTED_VIDEO_HOSTS = ['youtube.com', 'youtu.be', 'vimeo.com', 'loom.com', 'drive.google.com']
+const PRODUCT_STATUSES = new Set(['draft', 'published'])
+const IMAGE_URL_LIMIT = 12
 
 function normalizeVideoReview(row) {
   const reviewStatus = row.video_review_status || 'approved'
@@ -21,110 +38,361 @@ function normalizeVideoReview(row) {
   }
 }
 
+function normalizeProductStatus(value, fallback = 'published') {
+  const status = sanitizeString(String(value || fallback), 20).toLowerCase()
+  return PRODUCT_STATUSES.has(status) ? status : fallback
+}
+
+function sanitizeImageUrl(value) {
+  return sanitizeString(String(value || ''), 600)
+}
+
+function normalizeImageUrls(value) {
+  const raw = Array.isArray(value)
+    ? value
+    : (typeof value === 'string' ? value.split(',') : [])
+  const cleaned = raw.map((entry) => {
+    if (typeof entry === 'string') return sanitizeImageUrl(entry)
+    if (entry && typeof entry === 'object') {
+      return sanitizeImageUrl(entry.url || entry.source_path || entry.file_path || '')
+    }
+    return ''
+  }).filter(Boolean)
+  return [...new Set(cleaned)].slice(0, IMAGE_URL_LIMIT)
+}
+
+function syncCoverImage(imageUrls, coverImage) {
+  const cover = sanitizeImageUrl(coverImage)
+  const urls = [...imageUrls]
+  if (cover) {
+    if (!urls.includes(cover)) urls.unshift(cover)
+    return { cover_image_url: cover, image_urls: urls }
+  }
+  if (!urls.length) return { cover_image_url: '', image_urls: urls }
+  return { cover_image_url: urls[0], image_urls: urls }
+}
+
+function toPublicFileUrl(filePath = '') {
+  if (!filePath) return ''
+  const normalized = String(filePath).replace(/\\/g, '/')
+  if (normalized.startsWith('/uploads/')) return normalized
+  const idx = normalized.indexOf('server/uploads/')
+  if (idx >= 0) return `/uploads/${normalized.slice(idx + 'server/uploads/'.length)}`
+  return normalized.startsWith('uploads/') ? `/${normalized}` : normalized
+}
+
+function buildImageGallery(product, documents = []) {
+  const docRows = Array.isArray(documents) ? documents : []
+  const relevantDocs = docRows.filter((doc) => {
+    if (String(doc.entity_type || '') !== 'company_product') return false
+    if (String(doc.entity_id || '') !== String(product.id || '')) return false
+    const type = String(doc.type || '').toLowerCase()
+    return !type || type.includes('image')
+  })
+
+  const docByPath = new Map()
+  const docByPublic = new Map()
+  relevantDocs.forEach((doc) => {
+    const source = String(doc.file_path || doc.url || '')
+    if (!source) return
+    const publicUrl = toPublicFileUrl(source)
+    docByPath.set(source, doc)
+    docByPublic.set(publicUrl, doc)
+  })
+
+  const storedUrls = normalizeImageUrls(product.image_urls)
+  const fallbackUrls = relevantDocs
+    .map((doc) => String(doc.file_path || doc.url || ''))
+    .filter(Boolean)
+  const sources = storedUrls.length ? storedUrls : [...new Set(fallbackUrls)]
+
+  const gallery = sources.map((source) => {
+    const doc = docByPath.get(source) || docByPublic.get(source) || null
+    const statusRaw = String(doc?.moderation_status || '').toLowerCase()
+    const status = statusRaw || (doc ? 'approved' : 'pending_review')
+    return {
+      url: toPublicFileUrl(source),
+      source_path: source,
+      document_id: doc?.id || '',
+      status,
+      flags: Array.isArray(doc?.moderation_flags) ? doc.moderation_flags : [],
+    }
+  })
+
+  return gallery
+}
+
+function presentProduct(product, documents = [], viewer = {}) {
+  const normalized = {
+    ...product,
+    status: normalizeProductStatus(product.status),
+    image_urls: normalizeImageUrls(product.image_urls),
+    cover_image_url: sanitizeImageUrl(product.cover_image_url),
+  }
+  const gallery = buildImageGallery(normalized, documents)
+  const isOwner = viewer?.id && String(viewer.id) === String(normalized.company_id)
+  const canSeePending = isOwner || isOwnerOrAdmin(viewer)
+  const visibleGallery = canSeePending ? gallery : gallery.filter((entry) => entry.status === 'approved')
+
+  const coverSource = sanitizedCover(normalized.cover_image_url)
+  const findCover = (items) => items.find((entry) => entry.source_path === coverSource || entry.url === coverSource)
+  const coverEntry = findCover(canSeePending ? gallery : visibleGallery)
+    || (canSeePending ? gallery[0] : visibleGallery[0])
+    || null
+  const coverPublicUrl = coverEntry ? coverEntry.url : ''
+  const coverSourcePath = coverEntry ? coverEntry.source_path : ''
+
+  return normalizeVideoReview({
+    ...normalized,
+    status: normalized.status,
+    image_urls: canSeePending ? gallery.map((entry) => entry.source_path) : visibleGallery.map((entry) => entry.url),
+    cover_image_url: canSeePending ? (coverSource || coverSourcePath) : coverPublicUrl,
+    cover_image_public_url: coverPublicUrl,
+    image_gallery: canSeePending ? gallery : visibleGallery,
+  })
+}
+
+function sanitizedCover(value) {
+  return sanitizeImageUrl(value)
+}
+
+function ensureAgentProductAccess(actor) {
+  if (!actor || !isAgent(actor)) return
+  if (!actor.permission_matrix?.products?.edit) {
+    const err = new Error('Forbidden')
+    err.status = 403
+    throw err
+  }
+}
+
+function resolveProductOwner(actor, users = []) {
+  if (!actor) return { ownerId: '', ownerRole: '' }
+  if (!isAgent(actor)) {
+    return { ownerId: actor.id, ownerRole: actor.role }
+  }
+
+  ensureAgentProductAccess(actor)
+  const ownerId = String(actor.org_owner_id || '')
+  if (!ownerId) {
+    const err = new Error('Forbidden')
+    err.status = 403
+    throw err
+  }
+
+  const owner = users.find((u) => String(u.id) === ownerId)
+  if (!owner) {
+    const err = new Error('Organization owner not found')
+    err.status = 403
+    throw err
+  }
+
+  return { ownerId, ownerRole: owner.role || 'buying_house' }
+}
+
 function getVideoModerationResult({ title = '', description = '', videoUrl = '' }) {
-  const flags = []
+  const hardFlags = []
+  const softFlags = []
   if (!videoUrl) {
-    return { flags, videoReviewStatus: 'approved', videoRestricted: false }
+    return { flags: [], videoReviewStatus: 'approved', videoRestricted: false }
   }
 
   let parsed = null
   try {
     parsed = new URL(videoUrl)
   } catch {
-    flags.push('invalid_video_url')
+    hardFlags.push('invalid_video_url')
   }
 
   if (parsed && !['http:', 'https:'].includes(parsed.protocol)) {
-    flags.push('invalid_video_protocol')
+    hardFlags.push('invalid_video_protocol')
   }
 
   if (parsed) {
     const host = parsed.hostname.toLowerCase()
     if (!TRUSTED_VIDEO_HOSTS.some((allowed) => host === allowed || host.endsWith(`.${allowed}`))) {
-      flags.push('untrusted_video_host')
+      hardFlags.push('untrusted_video_host')
     }
   }
 
   const searchableText = `${title} ${description} ${videoUrl}`.toLowerCase()
   for (const keyword of PROHIBITED_MEDIA_KEYWORDS) {
     if (searchableText.includes(keyword)) {
-      flags.push(`prohibited_media_keyword:${keyword}`)
+      hardFlags.push(`prohibited_media_keyword:${keyword}`)
     }
   }
 
+  for (const keyword of MUSIC_INSTRUMENT_KEYWORDS) {
+    if (searchableText.includes(keyword)) {
+      softFlags.push(`music_or_instrument:${keyword}`)
+    }
+  }
+
+  const flags = [...hardFlags, ...softFlags]
   const videoRestricted = flags.length > 0
+  const videoReviewStatus = hardFlags.length > 0
+    ? 'restricted'
+    : (softFlags.length > 0 ? 'pending_review' : 'approved')
   return {
     flags,
-    videoReviewStatus: videoRestricted ? 'restricted' : 'pending_review',
+    videoReviewStatus,
     videoRestricted,
   }
 }
 
 export async function createProduct(user, payload) {
-  const all = await readJson(FILE)
+  const [all, users] = await Promise.all([
+    readJson(FILE),
+    readJson('users.json'),
+  ])
+  const { ownerId, ownerRole } = resolveProductOwner(user, users)
   const title = sanitizeString(payload.title, 120)
-  const description = sanitizeString(payload.description || '', 1200)
+  let description = sanitizeString(payload.description || '', 1200)
   const videoUrl = sanitizeString(payload.video_url || '', 260)
+  const status = normalizeProductStatus(payload.status || 'published')
+  const imageUrls = normalizeImageUrls(payload.image_urls || payload.imageUrls)
+  const coverSeed = sanitizeImageUrl(payload.cover_image_url || payload.coverImageUrl || '')
+  const { cover_image_url, image_urls } = syncCoverImage(imageUrls, coverSeed)
   const moderation = getVideoModerationResult({ title, description, videoUrl })
   const row = {
     id: crypto.randomUUID(),
-    company_id: user.id,
-    company_role: user.role,
+    company_id: ownerId,
+    company_role: ownerRole,
     title,
+    industry: sanitizeString(payload.industry || '', 80),
     category: sanitizeString(payload.category, 80),
     material: sanitizeString(payload.material, 80),
     moq: sanitizeString(payload.moq || '', 40),
+    price_range: sanitizeString(payload.price_range || payload.priceRange || '', 80),
     lead_time_days: sanitizeString(payload.lead_time_days || '', 40),
-    description,
+    fabric_gsm: sanitizeString(payload.fabric_gsm || '', 40),
+    size_range: sanitizeString(payload.size_range || '', 120),
+    color_pantone: sanitizeString(payload.color_pantone || '', 120),
+    customization_capabilities: sanitizeString(payload.customization_capabilities || payload.customization || '', 240),
+    sample_available: sanitizeString(payload.sample_available || '', 40),
+    sample_lead_time_days: sanitizeString(payload.sample_lead_time_days || '', 40),
+    description: '',
+    image_urls,
+    cover_image_url,
+    status,
     video_url: videoUrl,
     video_review_status: moderation.videoReviewStatus,
     video_restricted: moderation.videoRestricted,
     video_moderation_flags: moderation.flags,
     created_at: new Date().toISOString(),
   }
+
+  // Trust & safety (project.md): strip outside-contact sharing / obscene content from descriptions.
+  try {
+    const moderated = await moderateTextOrRedact({
+      actor: user,
+      text: description,
+      entity_type: 'company_product',
+      entity_id: row.id,
+    })
+    description = moderated.text
+    row.moderated = Boolean(moderated.moderated)
+    row.moderation_reason = moderated.reason || ''
+  } catch {
+    // silent
+  }
+
+  row.description = description
   all.push(row)
   await writeJson(FILE, all)
   await trackEvent({ type: 'product_created', actor_id: user.id, entity_id: row.id })
-  await emitNotificationsForEntity('company_product', row)
-  return normalizeVideoReview(row)
+  if (status === 'published') {
+    await trackEvent({ type: 'product_published', actor_id: user.id, entity_id: row.id })
+    await emitNotificationsForEntity('company_product', row)
+  }
+
+  const viewer = isAgent(user) ? { id: ownerId, role: ownerRole } : user
+  return presentProduct(row, [], viewer)
 }
 
 export async function listProducts(filters = {}) {
-  const all = await readJson(FILE)
+  const [all, documents] = await Promise.all([
+    readJson(FILE),
+    readJson('documents.json'),
+  ])
+  const includeDrafts = Boolean(filters.includeDrafts)
+  const viewerId = filters.viewerId || ''
+  const viewerRole = filters.viewerRole || ''
+  const viewer = viewerId ? { id: viewerId, role: viewerRole } : {}
   return all
-    .filter((p) => !filters.category || p.category.toLowerCase() === String(filters.category).toLowerCase())
+    .filter((p) => !filters.category || String(p.category || '').toLowerCase() === String(filters.category).toLowerCase())
     .filter((p) => !filters.companyId || String(p.company_id) === String(filters.companyId))
-    .map((p) => normalizeVideoReview(p))
+    .filter((p) => (includeDrafts ? true : normalizeProductStatus(p.status) === 'published'))
+    .map((p) => presentProduct(p, documents, viewer))
 }
 
 function canMutateProduct(actor, product) {
   if (!actor || !product) return false
-  if (actor.role === 'admin' || actor.role === 'owner') return true
+  if (isOwnerOrAdmin(actor)) return true
+  if (isAgent(actor)) {
+    if (!actor.permission_matrix?.products?.edit) return false
+    return String(product.company_id) === String(actor.org_owner_id || '')
+  }
   return String(product.company_id) === String(actor.id)
 }
 
 export async function updateProductById(actor, productId, patch = {}) {
   const id = sanitizeString(String(productId || ''), 120)
   if (!id) return null
-  const all = await readJson(FILE)
+  const [all, documents] = await Promise.all([
+    readJson(FILE),
+    readJson('documents.json'),
+  ])
   const idx = all.findIndex((p) => String(p.id) === id)
   if (idx < 0) return null
   const existing = all[idx]
   if (!canMutateProduct(actor, existing)) return 'forbidden'
 
   const nextTitle = patch.title !== undefined ? sanitizeString(patch.title, 120) : existing.title
-  const nextDescription = patch.description !== undefined ? sanitizeString(patch.description || '', 1200) : existing.description
+  let nextDescription = patch.description !== undefined ? sanitizeString(patch.description || '', 1200) : existing.description
   const nextVideoUrl = patch.video_url !== undefined ? sanitizeString(patch.video_url || '', 260) : existing.video_url
   const moderation = getVideoModerationResult({ title: nextTitle, description: nextDescription, videoUrl: nextVideoUrl })
+  const status = patch.status !== undefined ? normalizeProductStatus(patch.status, existing.status || 'published') : normalizeProductStatus(existing.status)
+  const imageUrls = patch.image_urls !== undefined || patch.imageUrls !== undefined
+    ? normalizeImageUrls(patch.image_urls || patch.imageUrls || [])
+    : normalizeImageUrls(existing.image_urls)
+  const coverSeed = patch.cover_image_url !== undefined || patch.coverImageUrl !== undefined
+    ? sanitizeImageUrl(patch.cover_image_url || patch.coverImageUrl || '')
+    : sanitizeImageUrl(existing.cover_image_url)
+  const syncedCover = syncCoverImage(imageUrls, coverSeed)
+
+  try {
+    if (patch.description !== undefined) {
+      const moderated = await moderateTextOrRedact({
+        actor,
+        text: nextDescription,
+        entity_type: 'company_product',
+        entity_id: existing.id,
+      })
+      nextDescription = moderated.text
+    }
+  } catch {
+    // silent
+  }
 
   const next = {
     ...existing,
     title: nextTitle,
+    industry: patch.industry !== undefined ? sanitizeString(patch.industry, 80) : existing.industry,
     category: patch.category !== undefined ? sanitizeString(patch.category, 80) : existing.category,
     material: patch.material !== undefined ? sanitizeString(patch.material, 80) : existing.material,
     moq: patch.moq !== undefined ? sanitizeString(patch.moq || '', 40) : existing.moq,
+    price_range: patch.price_range !== undefined ? sanitizeString(patch.price_range || '', 80) : existing.price_range,
     lead_time_days: patch.lead_time_days !== undefined ? sanitizeString(patch.lead_time_days || '', 40) : existing.lead_time_days,
+    fabric_gsm: patch.fabric_gsm !== undefined ? sanitizeString(patch.fabric_gsm || '', 40) : existing.fabric_gsm,
+    size_range: patch.size_range !== undefined ? sanitizeString(patch.size_range || '', 120) : existing.size_range,
+    color_pantone: patch.color_pantone !== undefined ? sanitizeString(patch.color_pantone || '', 120) : existing.color_pantone,
+    customization_capabilities: patch.customization_capabilities !== undefined ? sanitizeString(patch.customization_capabilities || '', 240) : existing.customization_capabilities,
+    sample_available: patch.sample_available !== undefined ? sanitizeString(patch.sample_available || '', 40) : existing.sample_available,
+    sample_lead_time_days: patch.sample_lead_time_days !== undefined ? sanitizeString(patch.sample_lead_time_days || '', 40) : existing.sample_lead_time_days,
     description: nextDescription,
+    image_urls: syncedCover.image_urls,
+    cover_image_url: syncedCover.cover_image_url,
+    status,
     video_url: nextVideoUrl,
     video_review_status: moderation.videoReviewStatus,
     video_restricted: moderation.videoRestricted,
@@ -135,7 +403,20 @@ export async function updateProductById(actor, productId, patch = {}) {
   all[idx] = next
   await writeJson(FILE, all)
   await trackEvent({ type: 'product_updated', actor_id: actor.id, entity_id: next.id })
-  return normalizeVideoReview(next)
+  if ((patch.image_urls !== undefined || patch.imageUrls !== undefined || patch.cover_image_url !== undefined || patch.coverImageUrl !== undefined) && syncedCover.image_urls.length) {
+    await trackEvent({ type: 'product_media_updated', actor_id: actor.id, entity_id: next.id })
+  }
+  if (existing.status !== status && status === 'published') {
+    await trackEvent({ type: 'product_published', actor_id: actor.id, entity_id: next.id })
+  }
+  if (existing.status !== status && status === 'draft') {
+    await trackEvent({ type: 'product_unpublished', actor_id: actor.id, entity_id: next.id })
+  }
+  if (status === 'published') {
+    // project.md: smart notifications trigger when new matching posts appear.
+    await emitNotificationsForEntity('company_product', next)
+  }
+  return presentProduct(next, documents, actor)
 }
 
 export async function removeProduct(actor, productId) {

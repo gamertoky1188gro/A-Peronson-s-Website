@@ -1,0 +1,2 @@
+﻿# This file is automatically created by Prisma and should not be manually edited.
+provider = "mysql"

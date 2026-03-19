@@ -15,8 +15,8 @@ export default function Footer() {
               <span className="text-lg font-bold text-slate-900 dark:text-white">GarTexHub</span>
             </div>
             <div className="flex gap-6 text-sm text-slate-600 dark:text-slate-400">
-              <Link to="/terms" className="hover:text-sky-600">Terms & Conditions</Link>
-              <Link to="/privacy" className="hover:text-sky-600">Privacy Policy</Link>
+              <Link to="/terms" className="hover:text-[var(--gt-blue)]">Terms & Conditions</Link>
+              <Link to="/privacy" className="hover:text-[var(--gt-blue)]">Privacy Policy</Link>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               © 2026 GarTexHub. All Rights Reserved.
@@ -41,9 +41,9 @@ export default function Footer() {
               Trusted B2B Marketplace for Garments & Textile Industry. Connecting International Buyers, Buying Houses, and Verified Factories through structured communication and professional digital workflows.
             </p>
             <div className="mt-6 flex gap-4">
-              <a href="#" className="text-slate-400 hover:text-sky-600 transition-colors">LinkedIn</a>
-              <a href="#" className="text-slate-400 hover:text-sky-600 transition-colors">Facebook</a>
-              <a href="#" className="text-slate-400 hover:text-sky-600 transition-colors">YouTube</a>
+              <a href="#" className="text-slate-400 hover:text-[var(--gt-blue)] transition-colors">LinkedIn</a>
+              <a href="#" className="text-slate-400 hover:text-[var(--gt-blue)] transition-colors">Facebook</a>
+              <a href="#" className="text-slate-400 hover:text-[var(--gt-blue)] transition-colors">YouTube</a>
             </div>
           </div>
 
@@ -51,12 +51,12 @@ export default function Footer() {
           <div>
             <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">Quick Navigation</h3>
             <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-              <li><Link to="/" className="hover:text-sky-600">Home</Link></li>
-              <li><Link to="/search" className="hover:text-sky-600">Search</Link></li>
-              <li><Link to="/buyer-requests" className="hover:text-sky-600">Buyer Requests</Link></li>
-              <li><Link to="/product-management" className="hover:text-sky-600">Company Products</Link></li>
-              <li><Link to="/pricing" className="hover:text-sky-600">Subscription Plans</Link></li>
-              <li><Link to="/help" className="hover:text-sky-600">Help Center</Link></li>
+              <li><Link to="/" className="hover:text-[var(--gt-blue)]">Home</Link></li>
+              <li><Link to="/search" className="hover:text-[var(--gt-blue)]">Search</Link></li>
+              <li><Link to="/buyer-requests" className="hover:text-[var(--gt-blue)]">Buyer Requests</Link></li>
+              <li><Link to="/product-management" className="hover:text-[var(--gt-blue)]">Company Products</Link></li>
+              <li><Link to="/pricing" className="hover:text-[var(--gt-blue)]">Subscription Plans</Link></li>
+              <li><Link to="/help" className="hover:text-[var(--gt-blue)]">Help Center</Link></li>
             </ul>
           </div>
 
@@ -64,11 +64,11 @@ export default function Footer() {
           <div>
             <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">Verification & Legal</h3>
             <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-              <li><Link to="/verification" className="hover:text-sky-600">Document Verification</Link></li>
-              <li><Link to="/contracts" className="hover:text-sky-600">Digital Contract System</Link></li>
-              <li><Link to="/privacy" className="hover:text-sky-600">Privacy Policy</Link></li>
-              <li><Link to="/terms" className="hover:text-sky-600">Terms & Conditions</Link></li>
-              <li><Link to="/privacy" className="hover:text-sky-600">Cookie Policy</Link></li>
+              <li><Link to="/verification" className="hover:text-[var(--gt-blue)]">Document Verification</Link></li>
+              <li><Link to="/contracts" className="hover:text-[var(--gt-blue)]">Digital Contract System</Link></li>
+              <li><Link to="/privacy" className="hover:text-[var(--gt-blue)]">Privacy Policy</Link></li>
+              <li><Link to="/terms" className="hover:text-[var(--gt-blue)]">Terms & Conditions</Link></li>
+              <li><Link to="/privacy" className="hover:text-[var(--gt-blue)]">Cookie Policy</Link></li>
             </ul>
           </div>
 

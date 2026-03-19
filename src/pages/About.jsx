@@ -29,6 +29,8 @@ import { apiRequest } from '../lib/auth'
 import MagneticButton from '../components/ui/MagneticButton'
 import SpotlightCard from '../components/ui/SpotlightCard'
 
+const Motion = motion
+
 // Fallback content keeps layout stable and provides "real-ish" numbers if API fails.
 const fallbackAbout = {
   ok: true,
@@ -208,7 +210,7 @@ export default function About() {
               </div>
 
               {loadError ? (
-                <p className="mt-3 text-xs text-[#64748B] dark:text-slate-300">Live data unavailable — showing defaults.</p>
+                <p className="mt-3 text-xs text-[#64748B] dark:text-slate-300">Live data unavailable -- showing defaults.</p>
               ) : null}
 
               <div className="mt-5 grid gap-3">
@@ -325,7 +327,6 @@ export default function About() {
               <ul className="mt-6 space-y-4">
                 {howItWorks.map((step, idx) => (
                   <motion.li
-                    // eslint-disable-next-line react/no-array-index-key
                     key={`${step}-${idx}`}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -393,7 +394,7 @@ export default function About() {
                 <div className="min-w-0">
                   <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Verified documents</h2>
                   <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
-                    Skeleton loads into audit-ready details — verified signals stay prominent.
+                    Skeleton loads into audit-ready details -- verified signals stay prominent.
                   </p>
                 </div>
                 <FileText className="h-5 w-5 text-[#0F172A]/70 dark:text-slate-200" />
