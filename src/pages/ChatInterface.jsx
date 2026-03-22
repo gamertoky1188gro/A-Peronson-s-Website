@@ -112,7 +112,8 @@ function normalizeThreads(messages = [], currentUserId = '') {
         senderId: message.sender_id,
         verified: Boolean(message.sender_verified),
         last: String(message.message || '').trim(),
-        unread: 0,
+        unread: Number(message.unread_count || 0),
+        lastReadAt: message.last_read_at || null,
         timestamp: message.timestamp,
         lock,
         isFriendThread: String(message.match_id || '').startsWith('friend:'),
@@ -134,6 +135,8 @@ function normalizeThreads(messages = [], currentUserId = '') {
         isFriendThread: existing.isFriendThread || String(message.match_id || '').startsWith('friend:'),
         friendRequestStatus: message.friend_request_status || existing.friendRequestStatus || null,
         friendRequestDirection: message.friend_request_direction || existing.friendRequestDirection || null,
+        unread: Number(message.unread_count || existing.unread || 0),
+        lastReadAt: message.last_read_at || existing.lastReadAt || null,
       })
     }
 
@@ -168,9 +171,12 @@ function lockStatusLabel(lock, thread = null) {
   }
 
   if (!lock || lock.status === 'unclaimed') return 'Unclaimed'
+  if (lock.lock_type === 'verified_first' && lock.status !== 'granted') {
+    return `Verified first message by ${lock.claimed_by_name || 'supplier'}`
+  }
   if (lock.status === 'claimed') return `Claimed by ${lock.claimed_by_name || 'you'}`
   if (lock.status === 'granted') return 'Access granted'
-  return `Claimed by ${lock.claimed_by_name || 'another agent'}`
+  return `Claimed by ${lock.claimed_by_name || (lock.lock_type === 'verified_first' ? 'another supplier' : 'another agent')}`
 }
 
 const IMAGE_ATTACHMENT_EXTS = new Set(['jpg', 'jpeg', 'png', 'gif', 'apng', 'webp', 'avif', 'svg', 'ico'])
@@ -332,15 +338,22 @@ export default function ChatInterface() {
   const [notice, setNotice] = useState(null)
   const [aiSuggesting, setAiSuggesting] = useState(false)
   const [aiError, setAiError] = useState('')
+  const [leadSummary, setLeadSummary] = useState(null)
+  const [leadLoading, setLeadLoading] = useState(false)
+  const [prequalOverride, setPrequalOverride] = useState(false)
 
   const wsRef = useRef(null)
   const fileInputRef = useRef(null)
   const reconnectTimerRef = useRef(null)
   const activeThreadMatchIdRef = useRef('')
+  const pendingMatchIdRef = useRef('')
   const [currentUser, setCurrentUser] = useState(() => getCurrentUser())
   const navigate = useNavigate()
   const location = useLocation()
   const isLight = themeMode === 'light'
+  const userRole = String(currentUser?.role || '').toLowerCase()
+  const isBuyerUser = userRole === 'buyer'
+  const isAdminUser = ['owner', 'admin'].includes(userRole)
 
   const presenceStatus = useCallback((userId) => presenceMap?.[userId]?.status || 'offline', [presenceMap])
   const presenceLastSeen = useCallback((userId) => presenceMap?.[userId]?.last_seen || null, [presenceMap])
@@ -371,6 +384,10 @@ export default function ChatInterface() {
   useEffect(() => {
     if (location.state?.notice) {
       setNotice(location.state.notice)
+      navigate(location.pathname, { replace: true, state: {} })
+    }
+    if (location.state?.matchId) {
+      pendingMatchIdRef.current = String(location.state.matchId)
       navigate(location.pathname, { replace: true, state: {} })
     }
   }, [location.state, location.pathname, navigate])
@@ -437,6 +454,12 @@ export default function ChatInterface() {
       setPriorityInbox(applyFriendDisplay(priority))
       setMessageRequests(applyFriendDisplay(requests))
       setActiveThreadId((currentThreadId) => {
+        const pendingMatchId = pendingMatchIdRef.current
+        if (pendingMatchId) {
+          const matchThread = [...priority, ...requests].find((thread) => thread.matchId === pendingMatchId)
+          pendingMatchIdRef.current = ''
+          if (matchThread) return matchThread.id
+        }
         const threadStillVisible = [...priority, ...requests].some((thread) => thread.id === currentThreadId)
         if (threadStillVisible) return currentThreadId
         if (priority.length > 0) return priority[0].id
@@ -445,7 +468,7 @@ export default function ChatInterface() {
       })
 
       if (allMatchIds.length > 0) {
-        const callHistoryResponse = await apiRequest(`/calls/history*match_ids=${allMatchIds.join(',')}`, { token })
+      const callHistoryResponse = await apiRequest(`/calls/history?match_ids=${allMatchIds.join(',')}`, { token })
         const grouped = (callHistoryResponse?.items || []).reduce((acc, item) => {
           const key = item.match_id || item.context?.chat_thread_id
           if (!key) return acc
@@ -488,6 +511,21 @@ export default function ChatInterface() {
     loadInbox()
   }, [loadInbox])
 
+  useEffect(() => {
+    const token = getToken()
+    if (!token || !activeThread?.matchId || activeThread?.isFriendThread) {
+      setLeadSummary(null)
+      setPrequalOverride(false)
+      return
+    }
+
+    setLeadLoading(true)
+    apiRequest(`/leads/by-match/${encodeURIComponent(activeThread.matchId)}`, { token })
+      .then((data) => setLeadSummary(data || null))
+      .catch(() => setLeadSummary(null))
+      .finally(() => setLeadLoading(false))
+  }, [activeThread?.matchId, activeThread?.isFriendThread])
+
   const filteredPriorityInbox = useMemo(() => {
     if (!query.trim()) return priorityInbox
     const search = query.toLowerCase()
@@ -515,6 +553,26 @@ export default function ChatInterface() {
     return messagesByThread[activeThread.matchId] || []
   }, [activeThread, messagesByThread])
 
+  function parsePrequal(notes = []) {
+    const rows = Array.isArray(notes) ? notes : []
+    const match = rows.find((n) => String(n.note || '').startsWith('AI Pre-Qual Summary')) || null
+    if (!match) return null
+    const text = String(match.note || '')
+    const scoreMatch = text.match(/Score\s+([0-9.]+)/i)
+    const missingMatch = text.match(/Missing:\s*([^|]+)/i)
+    return {
+      raw: text,
+      score: scoreMatch ? Number(scoreMatch[1]) : null,
+      missing: missingMatch ? missingMatch[1].trim() : '',
+    }
+  }
+
+  const prequal = useMemo(() => parsePrequal(leadSummary?.notes || []), [leadSummary])
+  const prequalNeedsInfo = Number.isFinite(prequal?.score) ? prequal.score < 0.6 : false
+  const prequalCanOverride = Boolean(currentUser?.verified || isAdminUser)
+  const prequalBlocked = prequalNeedsInfo && !isBuyerUser && !prequalOverride && prequalCanOverride
+  const prequalHardBlocked = prequalNeedsInfo && !isBuyerUser && !prequalCanOverride
+
   useEffect(() => {
     if (!activeThread?.matchId || hasRecordedCall) return
     trackClientEvent('call_warning_shown', {
@@ -525,10 +583,16 @@ export default function ChatInterface() {
 
   const lockMeta = activeThread?.lock || null
   const lockStatus = lockMeta?.status || 'unclaimed'
-  const isAgentUser = String(currentUser?.role || '').toLowerCase() === 'agent'
-  const isLockRestricted = isAgentUser && lockStatus === 'request_access'
-  const isLockOwner = isAgentUser && lockStatus === 'claimed' && lockMeta?.claimed_by === currentUser?.id
-  const canSendMessage = !isLockRestricted
+  const lockType = lockMeta?.lock_type || null
+  const isAgentUser = userRole === 'agent'
+  const shouldRespectLock = lockType === 'verified_first'
+    ? !isBuyerUser && !isAdminUser
+    : lockType === 'agent_claim'
+      ? isAgentUser
+      : isAgentUser
+  const isLockRestricted = shouldRespectLock && lockStatus === 'request_access'
+  const isLockOwner = Boolean(lockMeta && lockMeta?.claimed_by === currentUser?.id && !activeThread?.isFriendThread)
+  const canSendMessage = !isLockRestricted && !prequalBlocked && !prequalHardBlocked
 
   const sharedMedia = useMemo(() => {
     return activeMessages
@@ -562,6 +626,24 @@ export default function ChatInterface() {
     if (!activeThread?.matchId) return
     loadThreadMessages(activeThread.matchId)
   }, [activeThread, loadThreadMessages])
+
+  useEffect(() => {
+    const token = getToken()
+    if (!token || !activeThread?.matchId) return
+    apiRequest(`/messages/${encodeURIComponent(activeThread.matchId)}/read`, { method: 'POST', token })
+      .then((data) => {
+        const lastReadAt = data?.last_read_at || new Date().toISOString()
+        const updateThread = (thread) => {
+          if (thread.id !== activeThread.id) return thread
+          return { ...thread, unread: 0, lastReadAt }
+        }
+        setPriorityInbox((prev) => prev.map(updateThread))
+        setMessageRequests((prev) => prev.map(updateThread))
+      })
+      .catch(() => {
+        // ignore read errors
+      })
+  }, [activeThread?.matchId, activeThread?.id])
 
   const refreshPresence = useCallback(async (ids) => {
     const token = getToken()
@@ -786,7 +868,7 @@ export default function ChatInterface() {
         entityId: callId,
         metadata: { match_id: thread.matchId },
       })
-      navigate(`/call*callId=${encodeURIComponent(callId)}&matchId=${encodeURIComponent(thread.matchId)}`)
+      navigate(`/call?callId=${encodeURIComponent(callId)}&matchId=${encodeURIComponent(thread.matchId)}`)
     } catch (err) {
       setScheduleStatus(err.message || 'Failed to start call')
     }
@@ -801,7 +883,7 @@ export default function ChatInterface() {
     const thread = callPromptThread
     setCallPromptThread(null)
     if (thread.callId) {
-      navigate(`/call*callId=${encodeURIComponent(thread.callId)}&matchId=${encodeURIComponent(thread.matchId || '')}`)
+      navigate(`/call?callId=${encodeURIComponent(thread.callId)}&matchId=${encodeURIComponent(thread.matchId || '')}`)
       return
     }
   }
@@ -810,11 +892,14 @@ export default function ChatInterface() {
     const token = getToken()
     if (!token || !activeThread?.matchId || !file) return
     if (!canSendMessage) {
-      setNotice({
-        title: 'Access required',
-        message: 'This conversation is locked. Request access before sharing files.',
-        type: 'error',
-      })
+      const message = prequalHardBlocked
+        ? 'AI pre-qualification requires more buyer info. Only verified suppliers can override.'
+        : prequalBlocked
+          ? 'AI pre-qualification flagged missing fields. Ask the buyer for details or override to send.'
+          : (lockMeta?.lock_type === 'verified_first'
+              ? 'This buyer request is locked by a verified supplier. Request access before sharing files.'
+              : 'This conversation is locked. Request access before sharing files.')
+      setNotice({ title: 'Access required', message, type: 'error' })
       return
     }
 
@@ -1000,11 +1085,14 @@ export default function ChatInterface() {
     const content = draftMessage.trim()
     if (!content) return
     if (!canSendMessage) {
-      setNotice({
-        title: 'Access required',
-        message: 'This conversation is locked by another agent. Request access to continue.',
-        type: 'error',
-      })
+      const message = prequalHardBlocked
+        ? 'AI pre-qualification requires more buyer info. Only verified suppliers can override.'
+        : prequalBlocked
+          ? 'AI pre-qualification flagged missing fields. Ask the buyer for details or override to send.'
+          : (lockMeta?.lock_type === 'verified_first'
+              ? 'This buyer request is locked by a verified supplier. Request access to continue.'
+              : 'This conversation is locked by another agent. Request access to continue.')
+      setNotice({ title: 'Access required', message, type: 'error' })
       return
     }
 
@@ -1083,15 +1171,15 @@ export default function ChatInterface() {
   async function grantAccess() {
     const token = getToken()
     if (!token || !activeThread?.requestId) return
-    const targetAgentId = window.prompt('Grant access to agent user ID', '') || ''
-    if (!targetAgentId.trim()) return
+    const targetUserId = window.prompt('Grant access to user ID', '') || ''
+    if (!targetUserId.trim()) return
     try {
       await apiRequest(`/conversations/${encodeURIComponent(activeThread.requestId)}/grant`, {
         method: 'POST',
         token,
-        body: { target_agent_id: targetAgentId.trim() },
+        body: { target_user_id: targetUserId.trim() },
       })
-      setNotice({ title: 'Access granted', message: `Agent ${targetAgentId} can now join this conversation.`, type: 'info' })
+      setNotice({ title: 'Access granted', message: `User ${targetUserId} can now join this conversation.`, type: 'info' })
       await loadInbox()
     } catch (err) {
       setNotice({ title: 'Grant failed', message: err.message || 'Unable to grant access', type: 'error' })
@@ -1322,11 +1410,12 @@ export default function ChatInterface() {
               [...filteredPriorityInbox, ...filteredRequests].map((thread) => {
                 const threadName = formatDisplayName(thread.name, thread.senderId || thread.id)
                 const isActive = activeThreadId === thread.id
+                const hasUnread = Number(thread.unread || 0) > 0
                 return (
                   <button
                     key={thread.id}
-                    className="group w-full rounded-[16px] px-3 py-3 text-left transition-all"
-                    style={{ background: isActive ? theme.threadActiveBg : 'transparent' }}
+                    className={`group w-full rounded-[16px] px-3 py-3 text-left transition-all ${hasUnread && !isActive ? 'ring-1 ring-[var(--gt-blue)]/20' : ''}`}
+                    style={{ background: isActive ? theme.threadActiveBg : (hasUnread ? (isLight ? '#eef6ff' : '#1b1f3b') : 'transparent') }}
                     onClick={() => setActiveThreadId(thread.id)}
                   >
                     <div className="flex items-center gap-3">
@@ -1346,7 +1435,14 @@ export default function ChatInterface() {
                           <p className={`truncate text-[14px] font-semibold ${isActive ? 'text-[var(--gt-blue)]' : ''}`}>{threadName}</p>
                           <span className="flex-shrink-0 text-[10px] font-medium text-slate-400">{formatTime(thread.timestamp)}</span>
                         </div>
-                        <p className={`truncate text-xs ${isActive ? 'text-slate-600' : 'text-slate-400'}`}>{thread.last || 'No messages'}</p>
+                        <div className="flex items-center justify-between gap-2">
+                          <p className={`truncate text-xs ${isActive ? 'text-slate-600' : hasUnread ? 'text-slate-700' : 'text-slate-400'}`}>{thread.last || 'No messages'}</p>
+                          {hasUnread ? (
+                            <span className="min-w-[18px] rounded-full bg-[var(--gt-blue)] px-2 py-0.5 text-[10px] font-bold text-white">
+                              {thread.unread}
+                            </span>
+                          ) : null}
+                        </div>
                       </div>
                     </div>
                   </button>
@@ -1390,7 +1486,7 @@ export default function ChatInterface() {
                     <button
                       onClick={grantAccess}
                       className="rounded-full border border-slate-200 px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800/60"
-                      title="Grant access to another agent"
+                      title="Grant access to another member"
                     >
                       Grant access
                     </button>
@@ -1436,6 +1532,10 @@ export default function ChatInterface() {
                   activeMessages.map((message) => {
                     const isOwn = message.sender_id === currentUser?.id
                     const isBot = message?.type === 'bot' || Boolean(message?.meta?.bot)
+                    const readCutoff = activeThread?.lastReadAt ? new Date(activeThread.lastReadAt).getTime() : 0
+                    const messageTs = new Date(message.timestamp || 0).getTime()
+                    const isRead = Number.isFinite(readCutoff) && Number.isFinite(messageTs) && messageTs <= readCutoff
+                    const showReadTick = !isOwn && isRead
                     return (
                       <div key={message.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
                         <div className={`group relative max-w-[80%] sm:max-w-[70%] rounded-[20px] px-4 py-3 text-[13.5px] shadow-sm transition-all ${
@@ -1451,8 +1551,13 @@ export default function ChatInterface() {
                             </div>
                           ) : null}
                           {renderMessageBody(message, isOwn)}
-                          <div className={`mt-1 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-60 ${isOwn ? 'text-white' : 'text-slate-400'}`}>
-                            {formatTime(message.timestamp)}
+                          <div className={`mt-1 flex items-center gap-2 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-60 ${isOwn ? 'text-white' : 'text-slate-400'}`}>
+                            <span>{formatTime(message.timestamp)}</span>
+                            {showReadTick ? (
+                              <span className="inline-flex items-center rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-600">
+                                ✓ Read
+                              </span>
+                            ) : null}
                           </div>
                         </div>
                       </div>
@@ -1466,7 +1571,9 @@ export default function ChatInterface() {
               <div className="p-4 border-t border-slate-100 dark:border-slate-800/50">
                 {isLockRestricted ? (
                   <div className="mb-3 flex items-center justify-between gap-3 rounded-xl bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
-                    <span>Conversation locked by {lockMeta?.claimed_by_name || 'another agent'}.</span>
+                    <span>
+                      Conversation locked by {lockMeta?.claimed_by_name || (lockMeta?.lock_type === 'verified_first' ? 'verified supplier' : 'another agent')}.
+                    </span>
                     <button
                       type="button"
                       onClick={requestAccess}
@@ -1474,6 +1581,29 @@ export default function ChatInterface() {
                     >
                       Request access
                     </button>
+                  </div>
+                ) : null}
+                {prequalNeedsInfo ? (
+                  <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-900 dark:border-amber-400/30 dark:bg-amber-500/10 dark:text-amber-200">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span>
+                        AI pre-qual flagged missing info. {prequal?.missing ? `Missing: ${prequal.missing}.` : 'Request more details before negotiating.'}
+                      </span>
+                      {prequalCanOverride ? (
+                        <button
+                          type="button"
+                          onClick={() => setPrequalOverride(true)}
+                          className="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white"
+                        >
+                          Allow send anyway
+                        </button>
+                      ) : null}
+                    </div>
+                    {prequalHardBlocked ? (
+                      <div className="mt-1 text-[10px] text-amber-800">
+                        Only verified suppliers can override this pre-qualification gate.
+                      </div>
+                    ) : null}
                   </div>
                 ) : null}
                 <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-[11px] font-semibold text-slate-500">
@@ -1539,6 +1669,18 @@ export default function ChatInterface() {
                 <h3 className="text-lg font-bold tracking-tight">{activeThreadDisplayName}</h3>
                 <p className="text-xs font-medium text-slate-400 tracking-wide">@{truncateId(activeThread.senderId || activeThread.matchId, 16)}</p>
               </div>
+
+              {leadLoading ? (
+                <div className="mb-6 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-[11px] text-slate-500 dark:border-slate-800 dark:bg-slate-800/30">
+                  Loading AI pre-qualification summary...
+                </div>
+              ) : prequal ? (
+                <div className="mb-6 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-[11px] text-slate-600 dark:border-slate-800 dark:bg-slate-800/30">
+                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">AI Pre-Qual Summary</p>
+                  <p className="mt-1">Score: <span className="font-semibold">{prequal.score ?? '--'}</span></p>
+                  <p className="mt-1">Missing: {prequal.missing || 'None'}</p>
+                </div>
+              ) : null}
 
               <div className="mb-8 grid grid-cols-4 gap-3">
                 {[

@@ -1,6 +1,7 @@
 import { listRequirements } from './requirementService.js'
 import { listProducts } from './productService.js'
 import { readJson } from '../utils/jsonStore.js'
+import { trackEvent } from './analyticsService.js'
 import { logInfo } from '../utils/logger.js'
 
 const CATEGORIES = ['Shirts', 'Knitwear', 'Denim', 'Women', 'Kids']
@@ -20,6 +21,9 @@ const FEED_BOOST_CONFIG = {
 }
 
 const SPAM_KEYWORDS = ['whatsapp', 'telegram', 'dm', 'discount', 'cheap', 'guarantee', 'click', 'urgent', '100%']
+const DISCUSSION_BOOST_HOURS = 48
+const DISCUSSION_BOOST_MULTIPLIER = 1.12
+const PREMIUM_FEED_BOOST_MULTIPLIER = 1.08
 
 function clamp01(value) {
   return Math.min(1, Math.max(0, value))
@@ -169,6 +173,33 @@ function roundNumber(value) {
   return Number(value.toFixed(4))
 }
 
+function buildRatingMap(store) {
+  const rows = Array.isArray(store?.ratings)
+    ? store.ratings
+    : Array.isArray(store)
+      ? store
+      : []
+  const sums = new Map()
+  const counts = new Map()
+  for (const row of rows) {
+    const key = String(row?.profile_key || '')
+    if (!key.startsWith('user:')) continue
+    const userId = key.slice('user:'.length)
+    if (!userId) continue
+    const value = Number(row?.score || 0)
+    if (!Number.isFinite(value) || value <= 0) continue
+    sums.set(userId, (sums.get(userId) || 0) + value)
+    counts.set(userId, (counts.get(userId) || 0) + 1)
+  }
+  const averages = new Map()
+  for (const [userId, total] of sums.entries()) {
+    const count = counts.get(userId) || 0
+    if (!count) continue
+    averages.set(userId, total / count)
+  }
+  return averages
+}
+
 function isActivePaidBoost(boost) {
   if (!boost) return false
   if (String(boost.status || '').toLowerCase() !== 'active') return false
@@ -291,13 +322,30 @@ function diversifyFeedItems(items = [], { explorationRate = 0.2, maxSameAuthorRu
   return output.length ? output : items
 }
 
-export async function getCombinedFeed({ unique = false, type = 'all', category = '', cursor = 0, limit = 12 }) {
+export async function getCombinedFeed({ unique = false, type = 'all', category = '', cursor = 0, limit = 12, viewer = null }) {
   const requests = type === 'products' ? [] : await listRequirements({ status: 'open' })
   const products = type === 'requests' ? [] : await listProducts({ category })
   const users = await readJson('users.json')
   const socialInteractions = await readJson('social_interactions.json')
   const boosts = await readJson('boosts.json')
+  const ratingsStore = await readJson('ratings.json')
   const paidBoostByUser = buildPaidBoostMap(Array.isArray(boosts) ? boosts : [])
+  const ratingByUser = buildRatingMap(ratingsStore)
+  const viewerVerified = Boolean(viewer?.verified)
+
+  const discussionByRequest = new Map()
+  if (Array.isArray(socialInteractions)) {
+    for (const row of socialInteractions) {
+      if (row.interaction_type !== 'comment') continue
+      if (String(row.entity_type || '') !== 'buyer_request') continue
+      const requestId = String(row.entity_id || '')
+      if (!requestId) continue
+      const ts = new Date(row.created_at || '').getTime()
+      if (!Number.isFinite(ts)) continue
+      const prev = discussionByRequest.get(requestId) || 0
+      if (ts > prev) discussionByRequest.set(requestId, ts)
+    }
+  }
 
   const combined = [
     ...requests.map((r) => ({ ...r, feed_type: 'buyer_request', icon: '💼' })),
@@ -320,9 +368,20 @@ export async function getCombinedFeed({ unique = false, type = 'all', category =
     const activityQuality = computeActivityQuality(authorItems.map((authorItem) => authorItem.id), socialInteractions)
     const antiAbuseSignals = evaluateAntiAbuseSignals(item, authorItems)
     const verifiedContact = Boolean(author?.verified)
+    const avgRating = ratingByUser.get(String(authorId || '')) || null
+    const trustedSeller = verifiedContact || (Number.isFinite(avgRating) && avgRating >= 4.3)
     const accountAgeDays = getAccountAgeDays(author)
     const minAccountAgeDays = FEED_BOOST_CONFIG.minimumAccountAgeHours / 24
     const accountAgeEligible = accountAgeDays >= minAccountAgeDays
+
+    const discussionTs = discussionByRequest.get(String(item.id || '')) || 0
+    const discussionActive = item.feed_type === 'buyer_request'
+      && discussionTs
+      && (Date.now() - discussionTs) <= (DISCUSSION_BOOST_HOURS * 60 * 60 * 1000)
+    const discussionBoost = viewerVerified && discussionActive ? DISCUSSION_BOOST_MULTIPLIER : 1
+    const premiumBoostMultiplier = String(author?.subscription_status || '').toLowerCase() === 'premium'
+      ? PREMIUM_FEED_BOOST_MULTIPLIER
+      : 1
 
     const antiAbuseEligible = profileCompleteness >= FEED_BOOST_CONFIG.minProfileCompleteness
       && verifiedContact
@@ -331,26 +390,34 @@ export async function getCombinedFeed({ unique = false, type = 'all', category =
       && antiAbuseSignals.antiAbusePassed
 
     const ageBoostMultiplier = antiAbuseEligible ? getAgeBoostMultiplier(accountAgeDays) : 1
+    const guardedAgeBoost = !trustedSeller && ageBoostMultiplier > 1.2 ? 1.2 : ageBoostMultiplier
     const paidBoostMultiplier = paidBoostByUser.get(String(authorId || '')) || 1
-    const combinedMultiplier = Math.max(1, ageBoostMultiplier * paidBoostMultiplier)
+    const trustMultiplier = trustedSeller ? 1.06 : 1
+    const combinedMultiplier = Math.max(1, guardedAgeBoost * paidBoostMultiplier * trustMultiplier * discussionBoost * premiumBoostMultiplier)
     const boostActive = combinedMultiplier > 1
     const recencyScore = calculateRecencyScore(item.created_at)
     const rankingScore = recencyScore * combinedMultiplier
 
     return {
       ...item,
+      discussion_active: discussionActive && viewerVerified,
       _ranking: {
         ranking_score: rankingScore,
       },
       feed_metadata: {
         boost_active: boostActive,
         paid_boost_active: paidBoostMultiplier > 1,
+        premium_boost_active: premiumBoostMultiplier > 1,
         ranking_components: {
           recency_score: roundNumber(recencyScore),
           account_age_days: roundNumber(accountAgeDays),
           boost_multiplier: roundNumber(combinedMultiplier),
           paid_boost_multiplier: roundNumber(paidBoostMultiplier),
-          age_boost_multiplier: roundNumber(ageBoostMultiplier),
+          premium_boost_multiplier: roundNumber(premiumBoostMultiplier),
+          age_boost_multiplier: roundNumber(guardedAgeBoost),
+          discussion_boost_multiplier: roundNumber(discussionBoost),
+          trust_multiplier: roundNumber(trustMultiplier),
+          avg_rating: avgRating !== null ? roundNumber(avgRating) : null,
           profile_completeness: roundNumber(clamp01(profileCompleteness)),
           verified_contact: verifiedContact,
           activity_quality_score: roundNumber(clamp01(activityQuality)),
@@ -385,6 +452,10 @@ export async function getCombinedFeed({ unique = false, type = 'all', category =
 
   const boostActiveCount = sortedItems.filter((item) => item.feed_metadata?.boost_active).length
   const totalItemCount = sortedItems.length
+  const newProfileBoostedCount = sortedItems.filter((item) => {
+    const multiplier = item.feed_metadata?.ranking_components?.age_boost_multiplier || 1
+    return Number(multiplier) > 1
+  }).length
   const safeCursor = Math.max(0, Math.floor(Number(cursor || 0)))
   const safeLimit = Math.min(50, Math.max(1, Math.floor(Number(limit || 12))))
   const pageItems = sortedItems.slice(safeCursor, safeCursor + safeLimit)
@@ -403,6 +474,15 @@ export async function getCombinedFeed({ unique = false, type = 'all', category =
       ...item.feed_metadata?.ranking_components,
     })),
   })
+
+  if (newProfileBoostedCount > 0) {
+    await trackEvent({
+      type: 'new_profile_boost_impressions',
+      actor_id: null,
+      entity_id: null,
+      metadata: { count: newProfileBoostedCount, total: totalItemCount },
+    })
+  }
 
   return {
     tags: CATEGORIES,

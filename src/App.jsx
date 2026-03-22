@@ -107,6 +107,7 @@ function AppLayout() {
   const location = useLocation()
   const isImmersiveRoute = location.pathname === '/chat' || location.pathname === '/call'
   const navigationRef = useRef({ path: '', startedAt: 0 })
+  const sessionRef = useRef({ startedAt: 0, ended: false })
 
   useEffect(() => {
     // Global event tracking (project.md): page views + time-on-page.
@@ -130,6 +131,51 @@ function AppLayout() {
     trackClientEvent('page_view', { entityType: 'route', entityId: currentPath })
     navigationRef.current = { path: currentPath, startedAt: now }
   }, [location.pathname, location.search])
+
+  useEffect(() => {
+    function handleClick(event) {
+      const target = event.target?.closest?.('button, a, [data-track-click]')
+      if (!target) return
+      const label = String(target.getAttribute('aria-label') || target.textContent || '').trim().slice(0, 120)
+      const tag = String(target.tagName || '').toLowerCase()
+      trackClientEvent('click', {
+        entityType: 'route',
+        entityId: `${location.pathname}${location.search || ''}`,
+        metadata: { tag, label },
+      })
+    }
+
+    document.addEventListener('click', handleClick)
+    return () => {
+      document.removeEventListener('click', handleClick)
+    }
+  }, [location.pathname, location.search])
+
+  useEffect(() => {
+    function finalizeSession() {
+      if (sessionRef.current.ended) return
+      sessionRef.current.ended = true
+      const durationSeconds = Math.max(1, Math.round((Date.now() - (sessionRef.current.startedAt || Date.now())) / 1000))
+      trackClientEvent('session_end', {
+        entityType: 'route',
+        entityId: navigationRef.current?.path || 'session',
+        metadata: { duration_seconds: durationSeconds },
+      })
+    }
+
+    function handleVisibility() {
+      if (document.visibilityState === 'hidden') finalizeSession()
+    }
+
+    sessionRef.current.startedAt = Date.now()
+    sessionRef.current.ended = false
+    window.addEventListener('beforeunload', finalizeSession)
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => {
+      window.removeEventListener('beforeunload', finalizeSession)
+      document.removeEventListener('visibilitychange', handleVisibility)
+    }
+  }, [])
 
   return (
     <div className="app-shell min-h-screen">

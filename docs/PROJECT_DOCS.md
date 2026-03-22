@@ -1,0 +1,116 @@
+# GarTexHub Project Documentation (MVP)
+
+## 1) Overview
+GarTexHub is a B2B marketplace focused on garments and textiles. It connects Buyers, Factories, and Buying Houses in a structured workflow with verified profiles, secure communication, and contract storage.
+
+Goals:
+- Reduce fraud with verification, payment proofs, and contact-sharing restrictions.
+- Keep workflow simple for business users.
+- Provide clear analytics for owners and enterprise buyers.
+
+## 2) Account Types
+- Buyer: posts buyer requests, manages contracts, reviews suppliers.
+- Factory: posts products, receives buyer requests, manages contracts.
+- Buying House: manages multiple agents, handles buyer requests, coordinates partner factories.
+- Admin/Owner: system oversight, moderation, verification approvals.
+
+## 3) Core Modules
+### 3.1 Buyer Request System
+- Garments vs Textile request types (different fields).
+- Full structured specs + commercial + compliance fields.
+- Optional custom fields + custom description.
+- Verified-only toggle per request (strict).
+- Attachments (tech pack, sketches, compliance).
+
+### 3.2 Product Posting
+- Factory + Buying House can post products.
+- Image uploads + internal video uploads.
+- Video moderation workflow (pending ? approved).
+- Product views tracked for analytics and “viewed history”.
+
+### 3.3 Messaging & Contact Control
+- Verified suppliers: direct inbox.
+- Unverified: message requests.
+- Buying House internal agent lock (prevents team clash).
+- Strict contact-sharing block (auto delete + warnings + restrictions).
+
+### 3.4 Verification
+Verification is subscription-based and requires documents per role:
+- Factory: Company Registration, Trade License, TIN, Authorized NID, Bank Proof, ERC.
+- Buying House: Company Registration, Trade License, TIN, Authorized NID, Bank Proof.
+- Buyer (EU): Company Registration, VAT, EORI, Bank Proof.
+- Buyer (USA): Company Registration, EIN, IOR, Bank Proof.
+
+Optional licenses can be added to increase credibility.
+
+Pricing:
+- First month: $1.99
+- Renewal: $6.99/month
+
+Verification expires if renewal fails.
+
+### 3.5 Contracts & Payment Proofs
+- Digital contracts stored in Contract Vault (PDF stored for both parties).
+- Bank/LC proof workflow tied to contracts.
+- Seller review + internal dispute resolution.
+- Contract signing requires accepted payment proof.
+
+### 3.6 Analytics (Enterprise)
+Owner/Marketplace metrics:
+- Buyer?Supplier Match Rate
+- Active Buyer vs Supplier Ratio
+- Request?Contract Conversion
+- Time to First Qualified Response
+- Repeat Buyer Rate
+
+Buying House/Factory metrics:
+- Buyer Request Match Rate
+- Lead?Deal Conversion
+- Response Speed
+- Buyer Demand Trend
+- Trusted Deal Score
+
+### 3.7 Tracking (MVP)
+Backend tracking logs:
+- page_view
+- click
+- page_duration / session_end
+
+Insights summary shows:
+- Total views
+- Total clicks
+- Avg session duration
+- Top pages
+
+## 4) Wallet & Credits
+- New accounts automatically receive $5 restricted credit.
+- Restricted credit can be used only for verification/subscription.
+
+## 5) Moderation & Safety
+- Contact sharing blocked (email/phone/social handles) with warnings and escalating restrictions.
+- Comment/report flows for feed items.
+- Admin review for verification + payment disputes.
+
+## 6) UI / UX Principles
+- LinkedIn-style professional layout.
+- Simplified garment/textile categories.
+- Floating AI assistant to guide settings.
+- Minimal clutter, clear hierarchy, strong verified cues.
+
+## 7) Data Storage (MVP)
+JSON files used for rapid MVP:
+- users.json
+- requirements.json
+- company_products.json
+- messages.json
+- verification.json
+- documents.json
+- analytics.json
+
+## 8) Known Next Steps
+- Dedicated full analytics report pages.
+- External payment gateway integration.
+- Expanded enterprise automation + advanced reporting.
+
+---
+This document summarizes current MVP scope and workflow as implemented.

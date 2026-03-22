@@ -1,4 +1,5 @@
 import { findUserByEmail, findUserById, findUserByMemberId, registerUser, verifyPassword } from '../services/userService.js'
+import { assertCouponRedeemable } from '../services/walletService.js'
 import { signToken } from '../middleware/auth.js'
 import { requireFields, validateEmail, validateRole } from '../utils/validators.js'
 
@@ -10,6 +11,14 @@ export async function register(req, res) {
 
   const existing = await findUserByEmail(req.body.email)
   if (existing) return res.status(409).json({ error: 'Email already used' })
+
+  if (req.body?.coupon_code) {
+    try {
+      await assertCouponRedeemable(req.body.coupon_code)
+    } catch (error) {
+      return res.status(error.status || 400).json({ error: error.message || 'Invalid coupon code' })
+    }
+  }
 
   const user = await registerUser(req.body)
   const token = signToken(user)

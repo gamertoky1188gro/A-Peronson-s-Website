@@ -35,6 +35,7 @@ import chatbotRoutes from './routes/chatbotRoutes.js'
 import walletRoutes from './routes/walletRoutes.js'
 import boostRoutes from './routes/boostRoutes.js'
 import industryRoutes from './routes/industryRoutes.js'
+import paymentProofRoutes from './routes/paymentProofRoutes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { logInfo, logError } from './utils/logger.js'
 import { assistantReply } from './services/assistantService.js'
@@ -95,6 +96,7 @@ app.use('/api/chatbot', chatbotRoutes)
 app.use('/api/wallet', walletRoutes)
 app.use('/api/boosts', boostRoutes)
 app.use('/api/industry', industryRoutes)
+app.use('/api/payment-proofs', paymentProofRoutes)
 app.use(errorHandler)
 
 const server = http.createServer(app)

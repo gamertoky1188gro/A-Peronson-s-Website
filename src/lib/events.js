@@ -1,6 +1,7 @@
 import { apiRequest, getToken } from './auth'
 
 const CLIENT_ID_KEY = 'gt_client_id'
+const SESSION_ID_KEY = 'gt_session_id'
 
 function randomId() {
   // Prefer crypto UUID when available; fall back to a simple random string.
@@ -25,9 +26,22 @@ export function getClientId() {
   }
 }
 
+export function getSessionId() {
+  try {
+    const existing = sessionStorage.getItem(SESSION_ID_KEY)
+    if (existing) return existing
+    const created = randomId()
+    sessionStorage.setItem(SESSION_ID_KEY, created)
+    return created
+  } catch {
+    return randomId()
+  }
+}
+
 export async function trackClientEvent(type, { entityType = '', entityId = '', metadata = {} } = {}) {
   // Best-effort event logging: failures should never break UI flows.
   try {
+    const sessionId = getSessionId()
     await apiRequest('/events', {
       method: 'POST',
       token: getToken(),
@@ -36,11 +50,10 @@ export async function trackClientEvent(type, { entityType = '', entityId = '', m
         entity_type: entityType,
         entity_id: entityId,
         client_id: getClientId(),
-        metadata,
+        metadata: { ...metadata, session_id: sessionId },
       },
     })
   } catch {
     // silent
   }
 }
-

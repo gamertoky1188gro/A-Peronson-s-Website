@@ -72,6 +72,11 @@ export default function FeedItemCard({
                     <span className="hidden sm:inline">Boosted</span>
                   </span>
                 ) : null}
+                {item.discussionActive ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-400/25">
+                    Active discussion
+                  </span>
+                ) : null}
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
                 {item.author?.accountType || (isBuyerRequest ? 'Buyer' : 'Company')}

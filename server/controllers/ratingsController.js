@@ -6,6 +6,8 @@ import {
   getSearchRatingCards,
   listPendingFeedbackRequestsForUser,
   recordMilestone,
+  updateRating,
+  deleteRating,
 } from '../services/ratingsService.js'
 
 export async function getProfileRatings(req, res) {
@@ -43,6 +45,31 @@ export async function submitRating(req, res) {
     reliabilityFlags: req.body?.reliability_flags || {},
   })
   return res.status(201).json(row)
+}
+
+export async function editRating(req, res) {
+  try {
+    const row = await updateRating({
+      ratingId: req.params.id,
+      actorId: req.user.id,
+      score: req.body?.score,
+      comment: req.body?.comment,
+    })
+    if (!row) return res.status(404).json({ error: 'Rating not found' })
+    return res.json(row)
+  } catch (error) {
+    return res.status(error.status || 400).json({ error: error.message || 'Unable to edit rating' })
+  }
+}
+
+export async function removeRating(req, res) {
+  try {
+    const row = await deleteRating({ ratingId: req.params.id, actorId: req.user.id })
+    if (!row) return res.status(404).json({ error: 'Rating not found' })
+    return res.json({ ok: true })
+  } catch (error) {
+    return res.status(error.status || 400).json({ error: error.message || 'Unable to delete rating' })
+  }
 }
 
 export async function getFeedbackRequests(req, res) {

@@ -75,6 +75,8 @@ function normalizeAgent(orgOwnerId, payload = {}, current = null) {
   // Use a synthetic email so agents remain valid "users" but are not discoverable via search suggestions.
   const email = sanitizeString(payload.email ?? current?.email, 160) || `agent-${memberId}@gartexhub.local`
 
+  const messagingRestricted = sanitizeString(payload.messaging_restricted_until ?? current?.messaging_restricted_until ?? '', 64).trim()
+
   return {
     id: current?.id || crypto.randomUUID(),
     org_owner_id: orgOwnerId,
@@ -88,7 +90,7 @@ function normalizeAgent(orgOwnerId, payload = {}, current = null) {
     // Agents are internal sub-accounts; they do not receive the public $5 wallet credit.
     wallet_balance_usd: Number(current?.wallet_balance_usd ?? 0),
     policy_strikes: Number(current?.policy_strikes ?? 0),
-    messaging_restricted_until: sanitizeString(payload.messaging_restricted_until ?? current?.messaging_restricted_until ?? '', 64),
+    messaging_restricted_until: messagingRestricted || null,
     permissions,
     permission_matrix: permissionMatrix,
     assigned_requests: Number(payload.assigned_requests ?? current?.assigned_requests ?? 0),

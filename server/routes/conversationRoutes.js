@@ -4,6 +4,6 @@ import { claim, grant, requestAccess } from '../controllers/conversationControll
 
 const router = Router()
 router.post('/:requestId/claim', requireAuth, allowRoles('buying_house', 'admin', 'agent'), claim)
-router.post('/:requestId/grant', requireAuth, allowRoles('buying_house', 'admin', 'agent'), grant)
-router.post('/:requestId/request-access', requireAuth, allowRoles('buying_house', 'admin', 'agent'), requestAccess)
+router.post('/:requestId/grant', requireAuth, allowRoles('buying_house', 'factory', 'admin', 'owner', 'agent'), grant)
+router.post('/:requestId/request-access', requireAuth, allowRoles('buying_house', 'factory', 'admin', 'owner', 'agent'), requestAccess)
 export default router

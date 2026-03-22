@@ -1,4 +1,4 @@
-import { getWallet, listWalletHistory } from '../services/walletService.js'
+import { getWallet, listWalletHistory, redeemCouponForUser } from '../services/walletService.js'
 
 export async function getMyWallet(req, res) {
   const wallet = await getWallet(req.user.id)
@@ -12,3 +12,13 @@ export async function getMyWalletHistory(req, res) {
   return res.json({ items })
 }
 
+export async function redeemCoupon(req, res) {
+  const code = String(req.body?.code || '').trim()
+  if (!code) return res.status(400).json({ error: 'Coupon code is required' })
+  try {
+    const result = await redeemCouponForUser({ userId: req.user.id, code })
+    return res.json(result)
+  } catch (error) {
+    return res.status(error.status || 400).json({ error: error.message || 'Unable to redeem coupon' })
+  }
+}

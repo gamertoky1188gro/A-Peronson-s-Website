@@ -10,11 +10,13 @@ import {
 } from './friendService.js'
 import { upsertLeadFromMessage } from './leadService.js'
 import { assertMessagingAllowed, moderateTextOrRedactWithContext } from './policyService.js'
+import { getRequirementById } from './requirementService.js'
 
 const FILE = 'messages.json'
 const USERS_FILE = 'users.json'
 const MESSAGE_REQUESTS_FILE = 'message_requests.json'
 const CONVERSATION_LOCKS_FILE = 'conversation_locks.json'
+const MESSAGE_READS_FILE = 'message_reads.json'
 
 function buildUsersById(users = []) {
   return new Map((Array.isArray(users) ? users : []).map((user) => [user.id, user]))
@@ -111,27 +113,44 @@ function requestIdFromMatchId(matchId = '') {
 }
 
 async function enforceConversationLock(matchId, sender) {
-  if (!sender || String(sender.role || '').toLowerCase() !== 'agent') return null
   if (String(matchId || '').startsWith('friend:')) return null
+  if (!sender) return null
 
   const requestId = requestIdFromMatchId(matchId)
   if (!requestId) return null
 
+  const role = String(sender.role || '').toLowerCase()
+  if (['owner', 'admin'].includes(role)) return null
+  if (role !== 'agent') return null
+
+  const requirement = await getRequirementById(requestId)
+  if (requirement && String(requirement.buyer_id || '') === String(sender.id || '')) return null
+
   const locks = await readJson(CONVERSATION_LOCKS_FILE)
   const existing = locks.find((lock) => lock.request_id === requestId)
+  const allowed = existing
+    ? [...new Set([...(Array.isArray(existing.allowed_users) ? existing.allowed_users : []), ...(Array.isArray(existing.allowed_agents) ? existing.allowed_agents : [])])]
+    : []
+
   if (!existing) {
     const row = {
       request_id: requestId,
       locked_by: sender.id,
       allowed_agents: [sender.id],
+      allowed_users: [sender.id],
+      lock_type: 'agent_claim',
+      lock_status: 'claimed',
+      lock_reason: 'agent_claim',
       created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     }
     locks.push(row)
     await writeJson(CONVERSATION_LOCKS_FILE, locks)
     return row
   }
 
-  if (existing.locked_by === sender.id || (Array.isArray(existing.allowed_agents) && existing.allowed_agents.includes(sender.id))) {
+  if (existing.lock_type !== 'agent_claim') return existing
+  if (existing.locked_by === sender.id || allowed.includes(sender.id)) {
     return existing
   }
 
@@ -149,19 +168,29 @@ function buildLockMeta(lock, usersById, currentUserId) {
       can_request_access: true,
       claimed_by: null,
       claimed_by_name: '',
+      lock_type: null,
+      lock_reason: null,
     }
   }
 
   const claimedByName = usersById.get(lock.locked_by)?.name || lock.locked_by
   const isOwner = lock.locked_by === currentUserId
-  const isGranted = Array.isArray(lock.allowed_agents) && lock.allowed_agents.includes(currentUserId)
+  const allowed = [
+    ...(Array.isArray(lock.allowed_users) ? lock.allowed_users : []),
+    ...(Array.isArray(lock.allowed_agents) ? lock.allowed_agents : []),
+  ].map(String)
+  const isGranted = allowed.includes(currentUserId)
+  const lockType = lock.lock_type || null
+  const lockReason = lock.lock_reason || null
 
   if (isOwner) {
     return {
-      status: 'claimed',
+      status: lock.lock_status || 'claimed',
       can_request_access: false,
       claimed_by: lock.locked_by,
       claimed_by_name: claimedByName,
+      lock_type: lockType,
+      lock_reason: lockReason,
     }
   }
 
@@ -171,14 +200,18 @@ function buildLockMeta(lock, usersById, currentUserId) {
       can_request_access: false,
       claimed_by: lock.locked_by,
       claimed_by_name: claimedByName,
+      lock_type: lockType,
+      lock_reason: lockReason,
     }
   }
 
   return {
-    status: 'request_access',
+    status: lock.lock_status === 'locked' ? 'request_access' : 'request_access',
     can_request_access: true,
     claimed_by: lock.locked_by,
     claimed_by_name: claimedByName,
+    lock_type: lockType,
+    lock_reason: lockReason,
   }
 }
 
@@ -188,6 +221,30 @@ function withConversationMeta(message, usersById, lock, currentUserId) {
     request_id: requestIdFromMatchId(message.match_id),
     conversation_lock: buildLockMeta(lock, usersById, currentUserId),
   }
+}
+
+function buildReadMap(reads = [], userId = '') {
+  const normalized = String(userId || '')
+  const map = new Map()
+  ;(Array.isArray(reads) ? reads : []).forEach((row) => {
+    if (String(row.user_id) !== normalized) return
+    const matchId = String(row.match_id || '')
+    if (!matchId) return
+    map.set(matchId, row)
+  })
+  return map
+}
+
+function countUnread(messages = [], userId = '', lastReadAt = null) {
+  const cutoff = lastReadAt ? new Date(lastReadAt).getTime() : 0
+  let count = 0
+  for (const msg of messages) {
+    if (String(msg.sender_id || '') === String(userId || '')) continue
+    const ts = new Date(msg.timestamp || 0).getTime()
+    if (!Number.isFinite(ts)) continue
+    if (!cutoff || ts > cutoff) count += 1
+  }
+  return count
 }
 
 function applyFriendThreadMeta(message, fallbackFriend, currentUserId) {
@@ -225,6 +282,29 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
 
   const sender = users.find((u) => u.id === senderId)
   assertMessagingAllowed(sender)
+
+  if (!String(matchId || '').startsWith('friend:')) {
+    const requestId = requestIdFromMatchId(matchId)
+    if (requestId) {
+      const requirement = await getRequirementById(requestId)
+      if (requirement?.verified_only) {
+        const role = String(sender?.role || '').toLowerCase()
+        const isBuyer = String(requirement?.buyer_id || '') === String(sender?.id || '')
+        const isAdmin = ['owner', 'admin'].includes(role)
+        let isVerifiedSupplier = Boolean(sender?.verified)
+        if (!isVerifiedSupplier && role === 'agent' && sender?.org_owner_id) {
+          const owner = usersById.get(String(sender.org_owner_id)) || null
+          isVerifiedSupplier = Boolean(owner?.verified)
+        }
+        if (!isBuyer && !isAdmin && !isVerifiedSupplier) {
+          const err = new Error('Only verified suppliers can message this buyer request.')
+          err.status = 403
+          err.code = 'VERIFIED_ONLY'
+          throw err
+        }
+      }
+    }
+  }
 
   await enforceConversationLock(matchId, sender)
 
@@ -280,12 +360,19 @@ export async function tieredInbox(matchIds, currentUserId) {
   const messages = await readJson(FILE)
   const messageRequests = await readJson(MESSAGE_REQUESTS_FILE)
   const conversationLocks = await readJson(CONVERSATION_LOCKS_FILE)
+  const messageReads = await readJson(MESSAGE_READS_FILE)
   const lockByRequestId = new Map(conversationLocks.map((lock) => [lock.request_id, lock]))
+  const readByMatch = buildReadMap(messageReads, currentUserId)
 
   const filtered = messages
     .filter((m) => matchIds.includes(m.match_id))
     .map((message) => enrichMessage(message, usersById))
   const requestMap = new Map(messageRequests.map((request) => [request.thread_id, request]))
+  const messagesByMatchId = new Map()
+  for (const message of filtered) {
+    if (!messagesByMatchId.has(message.match_id)) messagesByMatchId.set(message.match_id, [])
+    messagesByMatchId.get(message.match_id).push(message)
+  }
   const latestByThread = new Map()
   const friendConnections = await listFriendConnectionsForUser(currentUserId)
   const friendConnectionByMatchId = new Map(friendConnections.map((row) => [row.match_id, row]))
@@ -320,7 +407,14 @@ export async function tieredInbox(matchIds, currentUserId) {
     const sender = usersById.get(m.sender_id)
     const requestId = requestIdFromMatchId(m.match_id)
     const lock = lockByRequestId.get(requestId)
-    const withMeta = applyFriendThreadMeta(withConversationMeta(m, usersById, lock, currentUserId), fallbackFriend, currentUserId)
+    const readRow = readByMatch.get(m.match_id)
+    const lastReadAt = readRow?.last_read_at || null
+    const unreadCount = countUnread(messagesByMatchId.get(m.match_id) || [], currentUserId, lastReadAt)
+    const withMeta = applyFriendThreadMeta({
+      ...withConversationMeta(m, usersById, lock, currentUserId),
+      unread_count: unreadCount,
+      last_read_at: lastReadAt,
+    }, fallbackFriend, currentUserId)
 
     const isPendingFriend = fallbackFriend?.type === 'friend_request' && fallbackFriend?.status === 'pending'
 
@@ -333,6 +427,35 @@ export async function tieredInbox(matchIds, currentUserId) {
     else requestPool.push(withMeta)
   }
   return { priority, request_pool: requestPool }
+}
+
+export async function markThreadRead(matchId, userId) {
+  const safeMatchId = sanitizeString(String(matchId || ''), 200)
+  if (!safeMatchId) {
+    const err = new Error('matchId is required')
+    err.status = 400
+    throw err
+  }
+
+  const rows = await readJson(MESSAGE_READS_FILE)
+  const nextRows = Array.isArray(rows) ? rows : []
+  const now = new Date().toISOString()
+  const idx = nextRows.findIndex((row) => String(row.match_id) === safeMatchId && String(row.user_id) === String(userId))
+
+  if (idx >= 0) {
+    nextRows[idx] = { ...nextRows[idx], last_read_at: now, updated_at: now }
+  } else {
+    nextRows.push({
+      id: crypto.randomUUID(),
+      match_id: safeMatchId,
+      user_id: String(userId),
+      last_read_at: now,
+      updated_at: now,
+    })
+  }
+
+  await writeJson(MESSAGE_READS_FILE, nextRows)
+  return { match_id: safeMatchId, user_id: String(userId), last_read_at: now }
 }
 
 async function updateRequestStatus(threadId, status, actedBy) {

@@ -9,7 +9,7 @@
     /notifications, /chat, /call, /verification, /verification-center
 
   Primary responsibilities:
-    - Present pricing tiers (Free vs Premium).
+    - Present pricing tiers for Buyer, Factory, Buying House (Free vs Premium).
     - Present enterprise-style analytics preview tiles (dynamic, public).
     - Feature comparison table (icons, row hover, no vertical lines).
 
@@ -32,12 +32,6 @@ import SpotlightCard from '../components/ui/SpotlightCard'
 
 const Motion = motion
 
-const PLAN_OPTIONS = [
-  { key: 'buyer', label: 'Buyer' },
-  { key: 'factory', label: 'Factory' },
-  { key: 'buying_house', label: 'Buying House' },
-]
-
 function planKeyForUserRole(role) {
   const normalized = String(role || '').toLowerCase()
   if (normalized === 'buyer') return 'buyer'
@@ -53,7 +47,7 @@ const defaultPricing = {
   analytics: {
     tiles: [
       { label: 'Order completion', value: '84%', sublabel: 'last 30 days', accent: 'teal' },
-      { label: 'Avg. cycle', value: '12d', sublabel: 'request → contract', accent: 'blue' },
+      { label: 'Avg. cycle', value: '12d', sublabel: 'request -> contract', accent: 'blue' },
       { label: 'Active orgs', value: '32', sublabel: 'buyers + factories', accent: 'gold' },
       { label: 'Response SLA', value: '1h 22m', sublabel: 'median', accent: 'blue' },
     ],
@@ -94,14 +88,10 @@ export default function Pricing() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
 
-  // Logged-out visitors can preview pricing for each account type.
-  // Logged-in users see only the plan for their current role.
-  const [previewRole, setPreviewRole] = useState('buyer')
-
   const sessionUser = getCurrentUser()
   const token = getToken()
   const isLoggedIn = Boolean(token && sessionUser)
-  const activePlanKey = isLoggedIn ? planKeyForUserRole(sessionUser?.role) : previewRole
+  const activePlanKey = isLoggedIn ? planKeyForUserRole(sessionUser?.role) : 'neutral'
 
   useEffect(() => {
     let alive = true
@@ -142,6 +132,9 @@ export default function Pricing() {
         'Advanced filters + smarter matching',
         'Priority inbox placement',
         'Extended Contract Vault',
+        'Buying pattern analysis',
+        'Order Completion Certification',
+        'Premium increases reach',
         'Dedicated support',
       ],
     },
@@ -156,10 +149,13 @@ export default function Pricing() {
       ],
       Premium: [
         'Verified badge subscription',
-        'Advanced visibility + account reach boost',
+        'Advanced visibility',
         'Exportable reporting',
         'Extended Contract Vault',
+        'Buying pattern analysis',
+        'Order Completion Certification',
         'Agent IDs / sub-accounts (unlimited)',
+        'Premium increases reach',
         'Dedicated support',
       ],
     },
@@ -179,17 +175,30 @@ export default function Pricing() {
         'Exportable reporting',
         'Extended Contract Vault',
         'Agent IDs / sub-accounts (unlimited)',
+        'Buying pattern analysis',
+        'Order Completion Certification',
+        'Premium increases reach',
+        'Dedicated support',
+      ],
+    },
+    neutral: {
+      Free: [
+        'Structured buyer requests or product posts',
+        'Basic search and messaging access',
+        'Contract Vault (basic)',
+        'Saved searches (limited)',
+      ],
+      Premium: [
+        'Verified priority and advanced filters',
+        'Enterprise analytics preview',
+        'Extended Contract Vault',
+        'Buying pattern analysis',
+        'Order Completion Certification',
+        'Premium increases reach',
         'Dedicated support',
       ],
     },
   }), [])
-
-  const activePlan = plansByRole[activePlanKey] || plansByRole.buyer
-  const freeFeatures = activePlan.Free
-  const premiumFeatures = activePlan.Premium
-
-  const boostCtaHref = isLoggedIn ? '/org-settings?tab=boosts' : '/login'
-  const boostCtaLabel = isLoggedIn ? 'Manage boosts' : 'Login to purchase'
 
   // Marketing badge on Premium (not a live account status indicator).
   const verificationStatus = 'verified_active'
@@ -213,7 +222,8 @@ export default function Pricing() {
     const roleSpecificFirstRow = (() => {
       if (activePlanKey === 'buyer') return { label: 'Structured buyer requests', free: true, premium: true }
       if (activePlanKey === 'factory') return { label: 'Product management', free: true, premium: true }
-      return { label: 'Partner Network', free: true, premium: true }
+      if (activePlanKey === 'buying_house') return { label: 'Partner Network', free: true, premium: true }
+      return { label: 'Buyer requests or product posts', free: true, premium: true }
     })()
 
     return [
@@ -225,8 +235,21 @@ export default function Pricing() {
       { label: 'Analytics page', free: activePlanKey === 'buying_house' ? 'Limited' : 'Basic', premium: true },
       { label: 'Search filtering priority', free: 'Standard', premium: 'Advanced' },
       { label: 'Support level', free: 'Standard', premium: 'Dedicated' },
+      { label: 'Buying pattern analysis', free: false, premium: true },
+      { label: 'Order Completion Certification', free: false, premium: true },
+      { label: 'Premium increases reach', free: false, premium: true },
     ]
   }, [activePlanKey])
+
+  const roleSections = [
+    { key: 'buyer', title: 'Buyer', subtitle: 'For direct buyers sourcing verified factories.' },
+    { key: 'factory', title: 'Factory', subtitle: 'For factories managing products and inbound buyer requests.' },
+    { key: 'buying_house', title: 'Buying House', subtitle: 'For buying houses coordinating teams and partners.' },
+  ]
+
+  const visibleSections = isLoggedIn
+    ? roleSections.filter((section) => section.key === activePlanKey)
+    : roleSections
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#fafafa] text-[#09090b] dark:bg-[#09090b] dark:text-[#fafafa]">
@@ -315,43 +338,35 @@ export default function Pricing() {
             </p>
           </div>
 
-          {!isLoggedIn && (
-            <div className="mx-auto mt-8 max-w-3xl rounded-xl bg-[rgba(9,9,11,0.04)] p-4 dark:bg-[rgba(250,250,250,0.04)]">
-              <div className="flex flex-wrap items-center justify-center gap-3">
-                <span className="text-xs font-semibold text-[#52525b] dark:text-[#a1a1aa]">Preview pricing for:</span>
-                <div className="flex flex-wrap gap-2">
-                  {PLAN_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.key}
-                      type="button"
-                      onClick={() => setPreviewRole(opt.key)}
-                      className={[
-                        'rounded-full px-4 py-2 text-xs font-semibold transition',
-                        previewRole === opt.key
-                          ? 'bg-[var(--gt-blue)] text-white shadow-[0_10px_24px_rgba(10,102,194,0.24)]'
-                          : 'bg-[#ffffff] text-[#09090b] shadow-[0_4px_16px_rgba(0,0,0,0.06)] hover:bg-slate-50 dark:bg-[#18181b] dark:text-[#fafafa] dark:shadow-none dark:hover:bg-slate-700',
-                      ].join(' ')}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
+        <div className="mt-10 space-y-10">
+          {visibleSections.map((section, sectionIndex) => {
+            const rolePlan = plansByRole[section.key]
+            return (
+              <div key={section.key} className="rounded-3xl border border-slate-200 bg-white/70 p-6 shadow-[0_10px_30px_rgba(2,6,23,0.06)] dark:bg-[#0f172a]/70 dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/10">
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{section.title}</p>
+                    <h3 className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{section.subtitle}</h3>
+                  </div>
+                  {isLoggedIn && activePlanKey === section.key ? (
+                    <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700">
+                      Your current role
+                    </span>
+                  ) : null}
                 </div>
-              </div>
-            </div>
-          )}
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-2">
-          <MotionItem index={1}>
-              <SpotlightCard
-                className={[
-                  'rounded-xl p-7',
-                  'bg-[rgba(9,9,11,0.02)] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
-                  'transition duration-300 ease-out',
-                  'hover:-translate-y-0.5 hover:shadow-[0_14px_44px_-18px_rgba(0,0,0,0.22)]',
-                  'dark:bg-[#18181b] dark:border dark:border-[#27272a] dark:shadow-none',
-                  'dark:hover:translate-y-0 dark:hover:shadow-none',
-                ].join(' ')}
-              >
+                <div className="mt-6 grid gap-6 lg:grid-cols-2">
+                  <MotionItem index={sectionIndex * 2 + 1}>
+            <SpotlightCard
+              className={[
+                'rounded-xl p-7',
+                'bg-[rgba(9,9,11,0.02)] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
+                'transition duration-300 ease-out',
+                'hover:-translate-y-0.5 hover:shadow-[0_14px_44px_-18px_rgba(0,0,0,0.22)]',
+                'dark:bg-[#18181b] dark:border dark:border-[#27272a] dark:shadow-none',
+                'dark:hover:translate-y-0 dark:hover:shadow-none',
+              ].join(' ')}
+            >
                 <div className="flex items-start justify-between gap-6">
                   <div>
                     <h3 className="text-lg font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">Free</h3>
@@ -364,7 +379,7 @@ export default function Pricing() {
                 </div>
 
                 <ul className="mt-6 space-y-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">
-                  {freeFeatures.map((f) => (
+                  {rolePlan.Free.map((f) => (
                     <li key={f} className="flex items-start gap-2">
                       <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[rgba(9,9,11,0.06)] text-[#52525b] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#a1a1aa]">
                         <Minus className="h-3 w-3" />
@@ -385,7 +400,7 @@ export default function Pricing() {
               </SpotlightCard>
             </MotionItem>
 
-            <MotionItem index={2}>
+                  <MotionItem index={sectionIndex * 2 + 2}>
               <SpotlightCard
                 className={[
                   'conic-beam rounded-xl p-7',
@@ -414,7 +429,7 @@ export default function Pricing() {
                 </div>
 
                 <ul className="mt-6 space-y-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">
-                  {premiumFeatures.map((f) => (
+                  {rolePlan.Premium.map((f) => (
                     <li key={f} className="flex items-start gap-2">
                       <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[rgba(45,212,191,0.14)] text-[#2dd4bf]">
                         <Check className="h-3 w-3" />
@@ -433,54 +448,13 @@ export default function Pricing() {
                   </MagneticButton>
                 </div>
               </SpotlightCard>
-            </MotionItem>
-          </div>
-
-          <div className="mt-8">
-            <MotionItem index={3}>
-              <SpotlightCard
-                className={[
-                  'rounded-xl p-7',
-                  'bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
-                  'dark:bg-[#18181b] dark:border dark:border-[#27272a] dark:shadow-none',
-                  'transition duration-300 ease-out',
-                  'hover:-translate-y-0.5 hover:shadow-[0_12px_34px_-8px_rgba(0,0,0,0.18)]',
-                  'dark:hover:translate-y-0 dark:hover:shadow-none',
-                ].join(' ')}
-              >
-                <div className="flex items-start justify-between gap-6">
-                  <div>
-                    <h3 className="text-lg font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">Boost add-on</h3>
-                    <p className="mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">
-                      Optional paid boosts increase visibility for profiles and feed posts without changing your plan.
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">$9.99</p>
-                    <p className="text-xs text-[#52525b] dark:text-[#a1a1aa]">per 7 days</p>
-                  </div>
+                  </MotionItem>
                 </div>
+              </div>
+            )
+          })}
+        </div>
 
-                <div className="mt-6 flex flex-wrap items-center gap-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">
-                  <span className="inline-flex items-center rounded-full bg-[rgba(9,9,11,0.06)] px-3 py-1 text-xs font-semibold text-[#52525b] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#a1a1aa]">
-                    Feed + Profile
-                  </span>
-                  <span className="inline-flex items-center rounded-full bg-[rgba(9,9,11,0.06)] px-3 py-1 text-xs font-semibold text-[#52525b] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#a1a1aa]">
-                    Wallet debit
-                  </span>
-                </div>
-
-                <div className="mt-6">
-                  <MagneticButton
-                    to={boostCtaHref}
-                    className="inline-flex w-full items-center justify-center rounded-md bg-[#0A66C2] px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(10,102,194,0.25)] transition hover:brightness-105 dark:shadow-none"
-                  >
-                    {boostCtaLabel}
-                  </MagneticButton>
-                </div>
-              </SpotlightCard>
-            </MotionItem>
-          </div>
         </div>
 
         <div className="mt-16">

@@ -12,6 +12,37 @@ A trust-first B2B textile marketplace engine with social-style feed UX.
 - Verification + subscription-backed badge logic
 - Analytics summary tracking for key engagement events
 
+## Project status (Mar 2026)
+**Tech stack**
+- Backend: Node.js + Express
+- Frontend: React + Vite
+- Database: MySQL (Prisma used for schema/migrations)
+- Storage: JSON stores for MVP data (server/database/*.json)
+
+**Completed**
+- Garments/Textile buyer request flow (split + specs)
+- Verified-first + message-request inbox tiers
+- Contact-sharing block (policy + enforcement)
+- Rating/review system with reviewer-only edit/delete
+- Buyer request notifications + verified surfacing
+- Auto-search alerts and feed boosts
+- Verification document checklist by role/region
+- Basic analytics dashboard + top metrics
+
+**Pending / evolving**
+- Expanded analytics instrumentation (more dashboards as traffic grows)
+- Full payment gateway for subscriptions/verification
+- Advanced admin moderation workflows
+
+**Verification + auto-credit rules**
+- New accounts receive **$5 restricted credit** (usable for verification/subscription only).
+- Verification is subscription-based: **$1.99 first month**, then **$6.99/month**.
+- Verification expires if renewal payment fails or lapses.
+
+**Analytics events tracked (MVP)**
+- page_view, click, page_duration/session_end
+- Summary: total views, total clicks, avg session duration, top pages
+
 ## Backend architecture
 
 ```

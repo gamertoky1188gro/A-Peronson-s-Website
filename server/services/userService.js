@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { upsertSubscription } from './subscriptionService.js'
+import { redeemCouponForUser } from './walletService.js'
 
 const FILE = 'users.json'
 const CONNECTION_FILE = 'user_connections.json'
@@ -209,12 +210,11 @@ export async function registerUser(payload) {
     verified: payload.role === 'admin',
     subscription_status: payload.subscription_status === 'premium' ? 'premium' : 'free',
     created_at: nowIso,
-    // Marketing/monetization requirement (project.md):
-    // Every brand-new account starts with $5 credit to use on platform services (verification/premium later).
-    wallet_balance_usd: 5,
+    wallet_balance_usd: 0,
+    wallet_restricted_usd: 5,
     // Trust & moderation state (project.md): warnings/restrictions for policy violations.
     policy_strikes: 0,
-    messaging_restricted_until: '',
+    messaging_restricted_until: null,
     profile: {
       country: sanitizeString(payload.profile?.country || '', 120),
       certifications: Array.isArray(payload.profile?.certifications) ? payload.profile.certifications.map((c) => sanitizeString(c, 80)) : [],
@@ -229,6 +229,9 @@ export async function registerUser(payload) {
   users.push(user)
   await writeJson(FILE, users)
   await upsertSubscription(user.id, user.subscription_status, true)
+  if (payload?.coupon_code) {
+    await redeemCouponForUser({ userId: user.id, code: payload.coupon_code })
+  }
   return cleanUser(user)
 }
 

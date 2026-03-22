@@ -30,6 +30,15 @@ function stripUndefined(row = {}) {
   return Object.fromEntries(Object.entries(row).filter(([, v]) => v !== undefined))
 }
 
+function normalizeUserRow(row = {}) {
+  const next = { ...row }
+  if (next.messaging_restricted_until === '') next.messaging_restricted_until = null
+  if (next.password_reset_at === '') next.password_reset_at = null
+  if (next.created_at === '') delete next.created_at
+  if (next.updated_at === '') next.updated_at = null
+  return next
+}
+
 function keyForRow(row, keyFields) {
   return keyFields.map((field) => String(row?.[field] ?? '')).join('::')
 }
@@ -91,7 +100,14 @@ function tableHandler(model, keyFields = ['id'], uniqueKeyName = null) {
 }
 
 const FILE_HANDLERS = {
-  'users.json': tableHandler('user', ['id']),
+  'users.json': {
+    read: async () => normalizeRows(await prisma.user.findMany()),
+    write: async (rows) => syncTable({
+      model: 'user',
+      rows: Array.isArray(rows) ? rows.map(normalizeUserRow) : rows,
+      keyFields: ['id'],
+    }),
+  },
   'subscriptions.json': tableHandler('subscription', ['id']),
   'verification.json': tableHandler('verification', ['user_id']),
   'requirements.json': tableHandler('requirement', ['id']),
@@ -119,7 +135,11 @@ const FILE_HANDLERS = {
   'matches.json': tableHandler('match', ['requirement_id', 'factory_id'], 'requirement_id_factory_id'),
   'metrics.json': tableHandler('metricTransition', ['id']),
   'assistant_knowledge.json': tableHandler('assistantKnowledge', ['id']),
+  'payment_proofs.json': tableHandler('paymentProof', ['id']),
   'wallet_history.json': tableHandler('walletHistory', ['id']),
+  'coupon_codes.json': tableHandler('couponCode', ['id']),
+  'coupon_redemptions.json': tableHandler('couponRedemption', ['id']),
+  'message_reads.json': tableHandler('messageRead', ['match_id', 'user_id'], 'match_id_user_id'),
 }
 
 const ratingsHandler = {

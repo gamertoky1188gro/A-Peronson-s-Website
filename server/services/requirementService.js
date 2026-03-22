@@ -2,7 +2,7 @@ import crypto from 'crypto'
 import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { logInfo } from '../utils/logger.js'
-import { emitNotificationsForEntity } from './notificationService.js'
+import { createNotification, emitNotificationsForEntity } from './notificationService.js'
 import { recordMilestone } from './ratingsService.js'
 import { moderateTextOrRedact } from './policyService.js'
 
@@ -18,6 +18,7 @@ function buildRequirementSummary(requirement) {
   }
 
   push('', requirement.title || requirement.category)
+  push('Type', requirement.request_type)
   push('Category', requirement.category)
   push('Quantity', requirement.quantity)
   push('MOQ', requirement.moq)
@@ -31,6 +32,14 @@ function buildRequirementSummary(requirement) {
   push('Sample lead time', requirement.sample_lead_time_days || requirement.sample_timeline)
   push('Lead time', requirement.delivery_timeline || requirement.timeline_days)
   push('Incoterms', requirement.incoterms)
+  if (requirement.specs && typeof requirement.specs === 'object') {
+    const specs = requirement.specs
+    push('Gender', specs.gender_target)
+    push('Season', specs.season)
+    push('Style', specs.style_description)
+    push('Material type', specs.material_type)
+    push('Unit', specs.unit)
+  }
   if (Array.isArray(requirement.certifications_required) && requirement.certifications_required.length > 0) {
     push('Certifications', requirement.certifications_required.join(', '))
   }
@@ -38,12 +47,127 @@ function buildRequirementSummary(requirement) {
   return parts.filter(Boolean).slice(0, 12).join(' | ')
 }
 
+function normalizeCustomFields(raw = []) {
+  if (!Array.isArray(raw)) return []
+  return raw
+    .map((row) => ({
+      label: sanitizeString(row?.label || '', 120),
+      value: sanitizeString(row?.value || '', 240),
+    }))
+    .filter((row) => row.label || row.value)
+}
+
+function normalizeDate(value) {
+  if (!value) return null
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+  return date.toISOString()
+}
+
+function normalizeSpecs(payload = {}, requestType) {
+  const type = String(requestType || '').toLowerCase()
+  if (type === 'textile') {
+    return {
+      material_type: sanitizeString(payload.material_type || '', 120),
+      sub_category: sanitizeString(payload.sub_category || '', 120),
+      unit: sanitizeString(payload.unit || '', 40),
+      fiber_composition: sanitizeString(payload.fiber_composition || '', 160),
+      fabric_weight_gsm: sanitizeString(payload.fabric_weight_gsm || payload.fabric_weight || '', 40),
+      fabric_width: sanitizeString(payload.fabric_width || '', 80),
+      yarn_count: sanitizeString(payload.yarn_count || '', 80),
+      thread_count: sanitizeString(payload.thread_count || '', 80),
+      finish_required: sanitizeString(payload.finish_required || '', 160),
+      stretch_required: sanitizeString(payload.stretch_required || '', 80),
+      color: sanitizeString(payload.color || '', 120),
+      pattern: sanitizeString(payload.pattern || '', 120),
+      price_unit: sanitizeString(payload.price_unit || '', 80),
+      delivery_port: sanitizeString(payload.delivery_port || '', 120),
+      lead_time_required: sanitizeString(payload.lead_time_required || '', 80),
+      lab_test_required: sanitizeString(payload.lab_test_required || '', 160),
+      swatch_first: sanitizeString(payload.swatch_first || '', 40),
+      lab_cert_notes: sanitizeString(payload.lab_cert_notes || '', 240),
+    }
+  }
+  return {
+    gender_target: sanitizeString(payload.gender_target || '', 80),
+    season: sanitizeString(payload.season || '', 80),
+    number_of_styles: sanitizeString(payload.number_of_styles || '', 40),
+    fabric_composition: sanitizeString(payload.fabric_composition || '', 160),
+    fabric_weight_gsm: sanitizeString(payload.fabric_weight_gsm || payload.fabric_weight || '', 40),
+    weave_or_knit: sanitizeString(payload.weave_or_knit || '', 80),
+    size_range: sanitizeString(payload.size_range || payload.size_chart || '', 120),
+    color_requirement: sanitizeString(payload.color_requirement || '', 160),
+    style_description: sanitizeString(payload.style_description || '', 300),
+    tech_pack_required: sanitizeString(payload.tech_pack_required || '', 40),
+    destination_port: sanitizeString(payload.destination_port || '', 120),
+    ex_factory_date: sanitizeString(payload.ex_factory_date || '', 80),
+    sample_required: sanitizeString(payload.sample_required || '', 40),
+    sample_type: sanitizeString(payload.sample_type || '', 80),
+    payment_terms: sanitizeString(payload.payment_terms || '', 120),
+    compliance_certs: Array.isArray(payload.compliance_certs) ? payload.compliance_certs.map((c) => sanitizeString(c, 80)) : [],
+    sustainability_certs: Array.isArray(payload.sustainability_certs) ? payload.sustainability_certs.map((c) => sanitizeString(c, 80)) : [],
+    compliance_notes: sanitizeString(payload.compliance_notes || '', 240),
+  }
+}
+
+function assertRequiredFields(payload = {}, requestType) {
+  const missing = []
+  const type = String(requestType || '').toLowerCase()
+  const get = (value) => sanitizeString(value || '', 160)
+
+  if (type === 'textile') {
+    if (!get(payload.title)) missing.push('title')
+    if (!get(payload.material_type)) missing.push('material_type')
+    if (!get(payload.sub_category)) missing.push('sub_category')
+    if (!get(payload.quantity)) missing.push('quantity')
+    if (!get(payload.unit)) missing.push('unit')
+    if (!get(payload.fiber_composition)) missing.push('fiber_composition')
+    if (!get(payload.fabric_weight_gsm || payload.fabric_weight)) missing.push('fabric_weight_gsm')
+    if (!get(payload.price_range || payload.target_price)) missing.push('target_price')
+    if (!get(payload.price_unit)) missing.push('price_unit')
+    if (!get(payload.incoterms)) missing.push('incoterm')
+    if (!get(payload.delivery_port)) missing.push('delivery_port')
+    if (!get(payload.lead_time_required)) missing.push('lead_time_required')
+  } else {
+    if (!get(payload.title)) missing.push('title')
+    if (!get(payload.category)) missing.push('category')
+    if (!get(payload.gender_target)) missing.push('gender_target')
+    if (!get(payload.season)) missing.push('season')
+    if (!get(payload.quantity)) missing.push('total_quantity')
+    if (!get(payload.price_range || payload.target_fob_price)) missing.push('target_fob_price')
+    if (!get(payload.incoterms)) missing.push('incoterm')
+    if (!get(payload.ex_factory_date)) missing.push('ex_factory_date')
+    if (!get(payload.payment_terms)) missing.push('payment_terms')
+  }
+
+  if (missing.length) {
+    const error = new Error(`Missing required fields: ${missing.join(', ')}`)
+    error.status = 400
+    throw error
+  }
+}
+
 function normalizeRequirement(buyerId, payload) {
+  const requestType = sanitizeString(payload.request_type || payload.requestType || 'garments', 40).toLowerCase() === 'textile'
+    ? 'textile'
+    : 'garments'
+  assertRequiredFields(payload, requestType)
   const title = sanitizeString(payload.title || payload.request_title || payload.category, 160)
+  const specs = normalizeSpecs(payload, requestType)
+  const customFields = normalizeCustomFields(payload.custom_fields || payload.customFields || [])
   const normalized = {
     id: crypto.randomUUID(),
     buyer_id: buyerId,
     title,
+    request_type: requestType,
+    verified_only: Boolean(payload.verified_only),
+    specs,
+    custom_fields: customFields,
+    quote_deadline: normalizeDate(payload.quote_deadline),
+    expires_at: normalizeDate(payload.expires_at),
+    max_suppliers: payload.max_suppliers !== undefined && payload.max_suppliers !== null && payload.max_suppliers !== ''
+      ? Number(payload.max_suppliers)
+      : null,
     // Structured fields (Phase 2). Older UI will continue to use category/material/quantity/etc.
     product: sanitizeString(payload.product || payload.category, 120),
     industry: sanitizeString(payload.industry || payload.industry_type || '', 80),
@@ -51,15 +175,15 @@ function normalizeRequirement(buyerId, payload) {
     target_market: sanitizeString(payload.target_market || payload.target || '', 80),
     quantity: sanitizeString(payload.quantity, 40),
     moq: sanitizeString(payload.moq || payload.moq_qty || '', 40),
-    price_range: sanitizeString(payload.price_range || payload.target_price, 80),
+    price_range: sanitizeString(payload.price_range || payload.target_price || payload.target_fob_price, 80),
     material: sanitizeString(payload.material || payload.fabric_type, 120),
     fabric_gsm: sanitizeString(payload.fabric_gsm || payload.gsm || '', 40),
     timeline_days: sanitizeString(payload.timeline_days, 40),
     delivery_timeline: sanitizeString(payload.delivery_timeline || payload.delivery || payload.deadline || '', 80),
     certifications_required: Array.isArray(payload.certifications_required) ? payload.certifications_required.map((c) => sanitizeString(c, 80)) : [],
-    shipping_terms: sanitizeString(payload.shipping_terms || payload.shipping_port, 120),
-    incoterms: sanitizeString(payload.incoterms || '', 80),
-    payment_terms: sanitizeString(payload.payment_terms || '', 120),
+    shipping_terms: sanitizeString(payload.shipping_terms || payload.shipping_port || payload.delivery_port || '', 120),
+    incoterms: sanitizeString(payload.incoterms || payload.incoterm || '', 80),
+    payment_terms: sanitizeString(payload.payment_terms || payload.payment || '', 120),
     document_ready: sanitizeString(payload.document_ready || '', 80),
     audit_date: sanitizeString(payload.audit_date || '', 80),
     language_support: sanitizeString(payload.language_support || '', 120),
@@ -114,6 +238,26 @@ export async function createRequirement(buyerId, payload) {
   requirements.push(requirement)
   await writeJson(FILE, requirements)
   await emitNotificationsForEntity('buyer_request', requirement)
+  try {
+    const users = await readJson('users.json')
+    const targets = users.filter((u) => {
+      const role = String(u.role || '').toLowerCase()
+      return Boolean(u.verified) && (role === 'factory' || role === 'buying_house')
+    })
+    await Promise.all(targets.map((target) => createNotification(target.id, {
+      type: 'buyer_request_verified',
+      entity_type: 'buyer_request',
+      entity_id: requirement.id,
+      message: `New buyer request available (${requirement.request_type || 'garments'}).`,
+      meta: {
+        request_type: requirement.request_type || 'garments',
+        title: requirement.title || '',
+        category: requirement.category || '',
+      },
+    })))
+  } catch {
+    // non-blocking notifications
+  }
   logInfo('Buyer request created', { requirement_id: requirement.id, buyer_id: buyerId, at: requirement.created_at })
   return requirement
 }
@@ -146,9 +290,32 @@ export async function updateRequirement(requirementId, patch, actor) {
   const assignmentChanged = requestedAssignedAgentId !== undefined && requestedAssignedAgentId !== String(previous.assigned_agent_id || '')
   if (assignmentChanged && !canAssign) return 'forbidden'
 
+  const nextRequestType = patch.request_type !== undefined || patch.requestType !== undefined
+    ? (sanitizeString(patch.request_type || patch.requestType || previous.request_type || 'garments', 40).toLowerCase() === 'textile' ? 'textile' : 'garments')
+    : (sanitizeString(previous.request_type || 'garments', 40).toLowerCase() === 'textile' ? 'textile' : 'garments')
+  const mergedSpecs = patch.specs !== undefined
+    ? normalizeSpecs(patch.specs, nextRequestType)
+    : normalizeSpecs({ ...previous.specs, ...patch }, nextRequestType)
+  const mergedCustomFields = patch.custom_fields !== undefined || patch.customFields !== undefined
+    ? normalizeCustomFields(patch.custom_fields || patch.customFields || [])
+    : normalizeCustomFields(previous.custom_fields || [])
+
   const next = {
     ...previous,
     title: patch.title !== undefined ? sanitizeString(patch.title, 160) : (previous.title || ''),
+    request_type: nextRequestType,
+    verified_only: patch.verified_only !== undefined ? Boolean(patch.verified_only) : Boolean(previous.verified_only),
+    specs: mergedSpecs,
+    custom_fields: mergedCustomFields,
+    quote_deadline: patch.quote_deadline !== undefined
+      ? normalizeDate(patch.quote_deadline)
+      : previous.quote_deadline ?? null,
+    expires_at: patch.expires_at !== undefined
+      ? normalizeDate(patch.expires_at)
+      : previous.expires_at ?? null,
+    max_suppliers: patch.max_suppliers !== undefined
+      ? (patch.max_suppliers === null || patch.max_suppliers === '' ? null : Number(patch.max_suppliers))
+      : (previous.max_suppliers ?? null),
     product: patch.product !== undefined ? sanitizeString(patch.product, 120) : (previous.product || ''),
     category: patch.category !== undefined ? sanitizeString(patch.category, 120) : requirements[idx].category,
     industry: patch.industry !== undefined ? sanitizeString(patch.industry, 80) : (previous.industry || ''),
@@ -187,6 +354,12 @@ export async function updateRequirement(requirementId, patch, actor) {
     assigned_at: assignmentChanged ? new Date().toISOString() : sanitizeString(previous.assigned_at || '', 40),
     assigned_by: assignmentChanged ? sanitizeString(actor.id || '', 120) : sanitizeString(previous.assigned_by || '', 120),
   }
+
+  assertRequiredFields({
+    ...next,
+    ...next.specs,
+    request_type: next.request_type,
+  }, next.request_type)
 
   next.ai_summary = buildRequirementSummary(next)
 

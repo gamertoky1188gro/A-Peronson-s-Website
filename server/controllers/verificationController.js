@@ -2,13 +2,13 @@ import { findUserById, setUserVerification } from '../services/userService.js'
 import {
   adminApproveVerification,
   adminRejectVerification,
+  extendVerificationSubscription,
   getVerification,
   listVerificationQueue,
   revokeExpiredVerifications,
   upsertVerification,
 } from '../services/verificationService.js'
 import { debitWallet } from '../services/walletService.js'
-import { renewPremiumMonthly } from '../services/subscriptionService.js'
 import { createNotification } from '../services/notificationService.js'
 
 export async function getMyVerification(req, res) {
@@ -74,21 +74,27 @@ export async function adminRevokeExpired(req, res) {
 export async function renewMyVerification(req, res) {
   // project.md: verification is subscription-based and renewed monthly.
   // MVP: wallet-only renewal (no payment gateway yet).
-  const VERIFICATION_MONTHLY_PRICE_USD = 6.99
+  const FIRST_MONTH_PRICE_USD = 1.99
+  const RENEWAL_PRICE_USD = 6.99
+
+  const existing = await getVerification(req.user.id)
+  const isFirstTime = !existing?.subscription_valid_until
+  const priceUsd = isFirstTime ? FIRST_MONTH_PRICE_USD : RENEWAL_PRICE_USD
 
   const charge = await debitWallet({
     userId: req.user.id,
-    amountUsd: VERIFICATION_MONTHLY_PRICE_USD,
+    amountUsd: priceUsd,
     reason: 'verification_renewal',
     ref: `verification:${req.user.id}`,
+    allowRestricted: true,
   })
 
-  const subscription = await renewPremiumMonthly(req.user.id, true)
+  const verification = await extendVerificationSubscription(req.user.id, 30)
   return res.json({
     ok: true,
-    price_usd: VERIFICATION_MONTHLY_PRICE_USD,
+    price_usd: priceUsd,
     wallet: charge.wallet,
     wallet_entry: charge.entry,
-    subscription,
+    verification,
   })
 }

@@ -6,6 +6,7 @@ import {
   acceptRequest,
   getMessages,
   inbox,
+  markRead,
   rejectRequest,
   sendFriendDirectMessage,
   sendMessage,
@@ -32,6 +33,7 @@ router.get('/inbox', requireAuth, inbox)
 router.post('/requests/:threadId/accept', requireAuth, acceptRequest)
 router.post('/requests/:threadId/reject', requireAuth, rejectRequest)
 router.post('/friend/:userId', requireAuth, sendFriendDirectMessage)
+router.post('/:matchId/read', requireAuth, markRead)
 router.post('/:matchId/upload', requireAuth, upload.single('file'), uploadMessageAttachment)
 router.post('/:matchId', requireAuth, sendMessage)
 router.get('/:matchId', requireAuth, getMessages)

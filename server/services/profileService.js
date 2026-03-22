@@ -22,6 +22,9 @@ function cleanUserPublic(user) {
     created_at: user.created_at || '',
     profile: {
       country: profile.country || '',
+      industry: profile.industry || '',
+      organization_name: profile.organization_name || profile.organization || '',
+      profile_image: profile.profile_image || '',
       certifications: Array.isArray(profile.certifications) ? profile.certifications : [],
       monthly_capacity: profile.monthly_capacity || '',
       moq: profile.moq || '',

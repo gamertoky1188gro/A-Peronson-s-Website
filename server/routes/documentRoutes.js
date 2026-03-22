@@ -12,7 +12,7 @@ import {
   uploadDocument,
 } from '../controllers/documentController.js'
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 8 * 1024 * 1024 } })
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } })
 const router = Router()
 
 router.post('/', requireAuth, upload.single('file'), uploadDocument)

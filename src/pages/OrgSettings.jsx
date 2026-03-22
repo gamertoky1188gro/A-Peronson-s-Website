@@ -62,10 +62,17 @@ export default function OrgSettings() {
   const [remainingDays, setRemainingDays] = useState(0)
   const [subscriptionPlan, setSubscriptionPlan] = useState('free')
   const [walletBalance, setWalletBalance] = useState(0)
+  const [walletRestricted, setWalletRestricted] = useState(0)
   const [verification, setVerification] = useState(null)
   const [billingFeedback, setBillingFeedback] = useState('')
+  const [couponCode, setCouponCode] = useState('')
   const [chatbotEnabled, setChatbotEnabled] = useState(() => Boolean(currentUser?.chatbot_enabled || currentUser?.profile?.chatbot_enabled))
   const [handoffMode, setHandoffMode] = useState(() => String(currentUser?.handoff_mode || currentUser?.profile?.handoff_mode || 'notify_agent'))
+  const [autoSaveSearchAlerts, setAutoSaveSearchAlerts] = useState(() => {
+    const raw = currentUser?.profile?.auto_save_search_alerts
+    if (raw === undefined || raw === null || raw === '') return true
+    return raw === true || String(raw).toLowerCase() === 'true'
+  })
   const [mainProcesses, setMainProcesses] = useState(() => (currentUser?.profile?.main_processes || []).join(', '))
   const [yearsInBusiness, setYearsInBusiness] = useState(() => String(currentUser?.profile?.years_in_business || ''))
   const [handlesMultipleFactories, setHandlesMultipleFactories] = useState(() => Boolean(currentUser?.profile?.handles_multiple_factories))
@@ -104,6 +111,7 @@ export default function OrgSettings() {
       setSubscriptionPlan(sub?.plan || 'free')
       setRemainingDays(Number(remaining?.remaining_days || 0))
       setWalletBalance(Number(wallet?.balance_usd || 0))
+      setWalletRestricted(Number(wallet?.restricted_balance_usd || 0))
       setVerification(v || null)
     } catch (err) {
       setBillingFeedback(err.message || 'Unable to load subscription status')
@@ -206,12 +214,13 @@ export default function OrgSettings() {
     if (!token) return
     setBillingFeedback('')
     try {
-      const updated = await apiRequest('/users/me/profile', {
+          const updated = await apiRequest('/users/me/profile', {
         method: 'PATCH',
         token,
         body: {
           chatbot_enabled: Boolean(chatbotEnabled),
           handoff_mode: handoffMode,
+          auto_save_search_alerts: Boolean(autoSaveSearchAlerts),
           main_processes: mainProcesses.split(',').map((p) => p.trim()).filter(Boolean),
           years_in_business: yearsInBusiness,
           handles_multiple_factories: Boolean(handlesMultipleFactories),
@@ -239,6 +248,25 @@ export default function OrgSettings() {
       await loadBilling()
     } catch (err) {
       setBillingFeedback(err.message || 'Renew failed')
+    }
+  }
+
+  async function redeemCoupon() {
+    const token = getToken()
+    if (!token) return
+    const code = couponCode.trim()
+    if (!code) {
+      setBillingFeedback('Enter a coupon code first.')
+      return
+    }
+    setBillingFeedback('Redeeming coupon...')
+    try {
+      await apiRequest('/wallet/redeem', { method: 'POST', token, body: { code } })
+      setCouponCode('')
+      setBillingFeedback('Coupon applied successfully.')
+      await loadBilling()
+    } catch (err) {
+      setBillingFeedback(err.message || 'Coupon redemption failed')
     }
   }
 
@@ -346,6 +374,13 @@ export default function OrgSettings() {
                 <div className="mt-2 text-xs text-[#5A5A5A]">
                   The bot answers common questions (MOQ, lead time, certifications). If it can't answer, it hands off to your team.
                 </div>
+                <label className="mt-4 flex items-center gap-3 text-sm font-medium">
+                  <input type="checkbox" checked={autoSaveSearchAlerts} onChange={(e) => setAutoSaveSearchAlerts(e.target.checked)} />
+                  Auto-save search alerts after every search
+                </label>
+                <div className="mt-2 text-xs text-[#5A5A5A]">
+                  When enabled, every search automatically saves a matching alert. Turn this off if you want manual alerts only.
+                </div>
                 <div className="mt-4">
                   <label className="block text-sm font-medium mb-1">Handoff mode</label>
                   <select className="w-full border px-3 py-2 rounded" value={handoffMode} onChange={(e) => setHandoffMode(e.target.value)}>
@@ -427,7 +462,7 @@ export default function OrgSettings() {
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <Link to="/verification" className="px-3 py-2 bg-[#0A66C2] text-white rounded">Open Verification Center</Link>
                   <button onClick={renewVerification} className="px-3 py-2 border rounded">Renew verification ($6.99)</button>
-                  <span className="text-xs text-[#5A5A5A]">Wallet balance: ${Number(walletBalance || 0).toFixed(2)}</span>
+                  <span className="text-xs text-[#5A5A5A]">Wallet balance: ${Number(walletBalance || 0).toFixed(2)} | Restricted: ${Number(walletRestricted || 0).toFixed(2)}</span>
                 </div>
                 {verification?.missing_required?.length ? (
                   <div className="mt-4 rounded-lg border bg-amber-50 p-3 text-sm text-amber-900">
@@ -476,6 +511,20 @@ export default function OrgSettings() {
                   <button onClick={renewVerification} className="px-3 py-2 bg-[#0A66C2] text-white rounded">Renew premium monthly</button>
                   <span className="text-xs text-[#5A5A5A]">Remaining: {Math.max(0, remainingDays)} day(s)</span>
                 </div>
+                <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-sm font-semibold text-slate-800">Redeem coupon credit</p>
+                  <p className="mt-1 text-xs text-slate-500">Coupon credit can be used for premium subscriptions and verification renewals only.</p>
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <input
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      className="w-full border px-3 py-2 rounded"
+                      placeholder="Enter coupon code"
+                    />
+                    <button onClick={redeemCoupon} className="px-3 py-2 bg-[#0A66C2] text-white rounded">Redeem</button>
+                  </div>
+                  <div className="mt-2 text-xs text-[#5A5A5A]">Wallet balance: ${Number(walletBalance || 0).toFixed(2)} | Restricted: ${Number(walletRestricted || 0).toFixed(2)}</div>
+                </div>
               </div>
             )}
 
@@ -508,7 +557,7 @@ export default function OrgSettings() {
                   </div>
                   <div className="flex flex-wrap items-center gap-3">
                     <button onClick={purchaseBoost} className="px-3 py-2 bg-[#0A66C2] text-white rounded">Purchase boost</button>
-                    <span className="text-xs text-[#5A5A5A]">Wallet balance: ${Number(walletBalance || 0).toFixed(2)}</span>
+                    <span className="text-xs text-[#5A5A5A]">Wallet balance: ${Number(walletBalance || 0).toFixed(2)} | Restricted: ${Number(walletRestricted || 0).toFixed(2)}</span>
                   </div>
                 </div>
 

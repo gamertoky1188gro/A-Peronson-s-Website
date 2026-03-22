@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+﻿import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiRequest, getCurrentUser, getToken, API_BASE } from '../lib/auth'
 
@@ -7,111 +7,173 @@ import { apiRequest, getCurrentUser, getToken, API_BASE } from '../lib/auth'
 // - buying_house/admin: manage lead queue + assign requests to agents
 
 const EMPTY_FORM = {
+  requestType: '',
   title: '',
-  product: '',
   industry: '',
   category: '',
-  quantity: '',
-  moq: '',
-  priceRange: '',
-  fabric: '',
-  gsm: '',
+  genderTarget: '',
+  season: '',
+  totalQuantity: '',
+  numberOfStyles: '',
+  fabricComposition: '',
+  fabricWeightGsm: '',
+  weaveOrKnit: '',
   sizeRange: '',
-  colorPantone: '',
-  customization: '',
-  techpackAccepted: false,
-  sampleAvailable: '',
-  sampleLeadTime: '',
-  targetMarket: '',
-  deliveryTimeline: '',
+  colorRequirement: '',
+  styleDescription: '',
+  techPackRequired: '',
+  targetFobPrice: '',
   incoterms: '',
+  destinationPort: '',
+  exFactoryDate: '',
+  sampleRequired: '',
+  sampleType: '',
   paymentTerms: '',
-  documentReady: '',
-  auditDate: '',
-  languageSupport: '',
-  shippingTerms: '',
-  certifications: '',
-  trimsWash: '',
-  sampleTimeline: '',
-  packaging: '',
+  complianceCerts: [],
+  sustainabilityCerts: [],
   complianceNotes: '',
-  complianceDetails: '',
+  materialType: '',
+  subCategory: '',
+  quantity: '',
+  unit: '',
+  fiberComposition: '',
+  fabricWidth: '',
+  yarnCount: '',
+  threadCount: '',
+  finishRequired: '',
+  stretchRequired: '',
+  color: '',
+  pattern: '',
+  targetPrice: '',
+  priceUnit: '',
+  deliveryPort: '',
+  leadTimeRequired: '',
+  labTestRequired: '',
+  swatchFirst: '',
+  labCertNotes: '',
+  quoteDeadline: '',
+  expiresAt: '',
+  maxSuppliers: '',
+  verifiedOnly: false,
+  customFields: [],
   customDescription: '',
 }
 
-function splitCsv(value) {
-  return String(value || '')
-    .split(',')
-    .map((x) => x.trim())
-    .filter(Boolean)
-}
-
 function formToPayload(form) {
+  const isTextile = form.requestType === 'textile'
+  const category = isTextile ? form.subCategory : form.category
+  const priceRange = isTextile ? form.targetPrice : form.targetFobPrice
+  const quantity = isTextile ? form.quantity : form.totalQuantity
+
   return {
+    request_type: form.requestType || 'garments',
     title: form.title,
-    product: form.product || form.category,
     industry: form.industry,
-    category: form.category || form.product,
-    quantity: form.quantity,
-    moq: form.moq,
-    price_range: form.priceRange,
-    material: form.fabric,
-    fabric_gsm: form.gsm,
-    size_range: form.sizeRange,
-    color_pantone: form.colorPantone,
-    customization_capabilities: form.customization,
-    techpack_accepted: Boolean(form.techpackAccepted),
-    sample_available: form.sampleAvailable,
-    sample_lead_time_days: form.sampleLeadTime,
-    target_market: form.targetMarket,
-    delivery_timeline: form.deliveryTimeline,
+    category,
+    product: isTextile ? form.materialType : form.category,
+    quantity,
+    price_range: priceRange,
     incoterms: form.incoterms,
     payment_terms: form.paymentTerms,
-    document_ready: form.documentReady,
-    audit_date: form.auditDate,
-    language_support: form.languageSupport,
-    shipping_terms: form.shippingTerms,
-    certifications_required: splitCsv(form.certifications),
-    trims_wash: form.trimsWash,
-    sample_timeline: form.sampleTimeline,
-    packaging: form.packaging,
-    compliance_notes: form.complianceNotes,
-    compliance_details: form.complianceDetails,
+    material: isTextile ? form.fiberComposition : form.fabricComposition,
+    fabric_gsm: form.fabricWeightGsm,
+    size_range: form.sizeRange,
+    color_pantone: form.colorRequirement,
     custom_description: form.customDescription,
+    quote_deadline: form.quoteDeadline || null,
+    expires_at: form.expiresAt || null,
+    max_suppliers: form.maxSuppliers || null,
+    verified_only: Boolean(form.verifiedOnly),
+    custom_fields: Array.isArray(form.customFields) ? form.customFields : [],
+    gender_target: form.genderTarget,
+    season: form.season,
+    number_of_styles: form.numberOfStyles,
+    fabric_composition: form.fabricComposition,
+    weave_or_knit: form.weaveOrKnit,
+    color_requirement: form.colorRequirement,
+    style_description: form.styleDescription,
+    tech_pack_required: form.techPackRequired,
+    destination_port: form.destinationPort,
+    ex_factory_date: form.exFactoryDate,
+    sample_required: form.sampleRequired,
+    sample_type: form.sampleType,
+    compliance_certs: Array.isArray(form.complianceCerts) ? form.complianceCerts : [],
+    sustainability_certs: Array.isArray(form.sustainabilityCerts) ? form.sustainabilityCerts : [],
+    compliance_notes: form.complianceNotes,
+    material_type: form.materialType,
+    sub_category: form.subCategory,
+    unit: form.unit,
+    fiber_composition: form.fiberComposition,
+    fabric_width: form.fabricWidth,
+    yarn_count: form.yarnCount,
+    thread_count: form.threadCount,
+    finish_required: form.finishRequired,
+    stretch_required: form.stretchRequired,
+    color: form.color,
+    pattern: form.pattern,
+    target_price: form.targetPrice,
+    price_unit: form.priceUnit,
+    delivery_port: form.deliveryPort,
+    lead_time_required: form.leadTimeRequired,
+    lab_test_required: form.labTestRequired,
+    swatch_first: form.swatchFirst,
+    lab_cert_notes: form.labCertNotes,
   }
 }
 
 function requirementToForm(req) {
+  const specs = req?.specs && typeof req.specs === 'object' ? req.specs : {}
   return {
+    ...EMPTY_FORM,
+    requestType: req.request_type || 'garments',
     title: req.title || '',
-    product: req.product || '',
     industry: req.industry || '',
     category: req.category || '',
-    quantity: req.quantity || '',
-    moq: req.moq || '',
-    priceRange: req.price_range || '',
-    fabric: req.material || '',
-    gsm: req.fabric_gsm || '',
-    sizeRange: req.size_range || '',
-    colorPantone: req.color_pantone || '',
-    customization: req.customization_capabilities || '',
-    techpackAccepted: Boolean(req.techpack_accepted),
-    sampleAvailable: req.sample_available || '',
-    sampleLeadTime: req.sample_lead_time_days || '',
-    targetMarket: req.target_market || '',
-    deliveryTimeline: req.delivery_timeline || req.timeline_days || '',
+    genderTarget: specs.gender_target || '',
+    season: specs.season || '',
+    totalQuantity: req.quantity || '',
+    numberOfStyles: specs.number_of_styles || '',
+    fabricComposition: specs.fabric_composition || req.material || '',
+    fabricWeightGsm: specs.fabric_weight_gsm || req.fabric_gsm || '',
+    weaveOrKnit: specs.weave_or_knit || '',
+    sizeRange: specs.size_range || req.size_range || '',
+    colorRequirement: specs.color_requirement || req.color_pantone || '',
+    styleDescription: specs.style_description || '',
+    techPackRequired: specs.tech_pack_required || '',
+    targetFobPrice: req.price_range || '',
     incoterms: req.incoterms || '',
-    paymentTerms: req.payment_terms || '',
-    documentReady: req.document_ready || '',
-    auditDate: req.audit_date || '',
-    languageSupport: req.language_support || '',
-    shippingTerms: req.shipping_terms || '',
-    certifications: Array.isArray(req.certifications_required) ? req.certifications_required.join(', ') : '',
-    trimsWash: req.trims_wash || '',
-    sampleTimeline: req.sample_timeline || '',
-    packaging: req.packaging || '',
-    complianceNotes: req.compliance_notes || '',
-    complianceDetails: req.compliance_details || '',
+    destinationPort: specs.destination_port || '',
+    exFactoryDate: specs.ex_factory_date || '',
+    sampleRequired: specs.sample_required || '',
+    sampleType: specs.sample_type || '',
+    paymentTerms: specs.payment_terms || req.payment_terms || '',
+    complianceCerts: Array.isArray(specs.compliance_certs) ? specs.compliance_certs : [],
+    sustainabilityCerts: Array.isArray(specs.sustainability_certs) ? specs.sustainability_certs : [],
+    complianceNotes: specs.compliance_notes || req.compliance_notes || '',
+    materialType: specs.material_type || '',
+    subCategory: specs.sub_category || req.category || '',
+    quantity: req.quantity || '',
+    unit: specs.unit || '',
+    fiberComposition: specs.fiber_composition || '',
+    fabricWidth: specs.fabric_width || '',
+    yarnCount: specs.yarn_count || '',
+    threadCount: specs.thread_count || '',
+    finishRequired: specs.finish_required || '',
+    stretchRequired: specs.stretch_required || '',
+    color: specs.color || '',
+    pattern: specs.pattern || '',
+    targetPrice: req.price_range || '',
+    priceUnit: specs.price_unit || '',
+    deliveryPort: specs.delivery_port || '',
+    leadTimeRequired: specs.lead_time_required || '',
+    labTestRequired: specs.lab_test_required || '',
+    swatchFirst: specs.swatch_first || '',
+    labCertNotes: specs.lab_cert_notes || '',
+    quoteDeadline: req.quote_deadline ? new Date(req.quote_deadline).toISOString().slice(0, 10) : '',
+    expiresAt: req.expires_at ? new Date(req.expires_at).toISOString().slice(0, 10) : '',
+    maxSuppliers: req.max_suppliers ?? '',
+    verifiedOnly: Boolean(req.verified_only),
+    customFields: Array.isArray(req.custom_fields) ? req.custom_fields : [],
     customDescription: req.custom_description || '',
   }
 }
@@ -139,13 +201,15 @@ function Field({ label, children, hint }) {
   )
 }
 
+const GARMENT_COMPLIANCE_CERTS = ['BSCI', 'WRAP', 'SA8000']
+const GARMENT_SUSTAIN_CERTS = ['GOTS', 'OEKO-TEX', 'GRS']
 export default function BuyerRequestManagement() {
   const user = useMemo(() => getCurrentUser(), [])
   const role = String(user?.role || '').toLowerCase()
 
-  const [step, setStep] = useState(1)
   const [moreFieldsOpen, setMoreFieldsOpen] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
+  const [pendingAttachments, setPendingAttachments] = useState([])
 
   const [requests, setRequests] = useState([])
   const [browse, setBrowse] = useState([])
@@ -165,6 +229,31 @@ export default function BuyerRequestManagement() {
   const [editForm, setEditForm] = useState(EMPTY_FORM)
 
   const token = useMemo(() => getToken(), [])
+
+  const isTextile = form.requestType === 'textile'
+
+  function updateCustomField(index, key, value) {
+    setForm((prev) => {
+      const next = Array.isArray(prev.customFields) ? [...prev.customFields] : []
+      const row = next[index] || { label: '', value: '' }
+      next[index] = { ...row, [key]: value }
+      return { ...prev, customFields: next }
+    })
+  }
+
+  function addCustomField() {
+    setForm((prev) => ({
+      ...prev,
+      customFields: [...(Array.isArray(prev.customFields) ? prev.customFields : []), { label: '', value: '' }],
+    }))
+  }
+
+  function removeCustomField(index) {
+    setForm((prev) => ({
+      ...prev,
+      customFields: (Array.isArray(prev.customFields) ? prev.customFields : []).filter((_, i) => i !== index),
+    }))
+  }
 
   const loadRequests = useCallback(async () => {
     if (!token) return
@@ -208,7 +297,7 @@ export default function BuyerRequestManagement() {
   const loadAttachments = useCallback(async (requirementId) => {
     if (!token || !requirementId) return
     try {
-      const data = await apiRequest(`/documents*entity_type=buyer_request&entity_id=${encodeURIComponent(requirementId)}`, { token })
+      const data = await apiRequest(`/documents?entity_type=buyer_request&entity_id=${encodeURIComponent(requirementId)}`, { token })
       setAttachmentsByRequest((prev) => ({ ...prev, [requirementId]: Array.isArray(data) ? data : [] }))
     } catch {
       setAttachmentsByRequest((prev) => ({ ...prev, [requirementId]: [] }))
@@ -269,10 +358,16 @@ export default function BuyerRequestManagement() {
     setError('')
     setSuccess('')
     try {
-      await apiRequest('/requirements', { method: 'POST', token, body: formToPayload(form) })
+      const created = await apiRequest('/requirements', { method: 'POST', token, body: formToPayload(form) })
+      if (created?.id && pendingAttachments.length) {
+        for (const attachment of pendingAttachments) {
+          if (!attachment?.file) continue
+              await uploadAttachment(created.id, attachment.file, attachment.type || 'tech_pack')
+        }
+      }
       setSuccess('Buyer request posted.')
       setForm(EMPTY_FORM)
-      setStep(1)
+      setPendingAttachments([])
       await loadRequests()
       await loadBrowse()
     } catch (err) {
@@ -348,6 +443,49 @@ export default function BuyerRequestManagement() {
     return requests.filter((r) => String(r.status || 'open').toLowerCase() === 'open')
   }, [requests, role])
 
+  const previewRows = useMemo(() => {
+    const rows = [
+      { label: 'Request type', value: form.requestType || 'garments' },
+      { label: 'Title', value: form.title },
+      { label: 'Category', value: isTextile ? form.subCategory : form.category },
+      { label: 'Industry', value: form.industry },
+      { label: 'Gender target', value: form.genderTarget },
+      { label: 'Season', value: form.season },
+      { label: 'Total quantity', value: form.totalQuantity },
+      { label: 'Number of styles', value: form.numberOfStyles },
+      { label: 'Material type', value: form.materialType },
+      { label: 'Quantity', value: form.quantity },
+      { label: 'Unit', value: form.unit },
+      { label: 'Fabric composition', value: form.fabricComposition || form.fiberComposition },
+      { label: 'Fabric weight (GSM)', value: form.fabricWeightGsm },
+      { label: 'Weave/Knit', value: form.weaveOrKnit },
+      { label: 'Size range', value: form.sizeRange },
+      { label: 'Color requirement', value: form.colorRequirement || form.color },
+      { label: 'Style description', value: form.styleDescription },
+      { label: 'Tech pack required', value: form.techPackRequired },
+      { label: 'Target FOB price', value: form.targetFobPrice },
+      { label: 'Target price', value: form.targetPrice },
+      { label: 'Price unit', value: form.priceUnit },
+      { label: 'Incoterm', value: form.incoterms },
+      { label: 'Destination port', value: form.destinationPort || form.deliveryPort },
+      { label: 'Ex-factory date', value: form.exFactoryDate },
+      { label: 'Lead time required', value: form.leadTimeRequired },
+      { label: 'Sample required', value: form.sampleRequired },
+      { label: 'Sample type', value: form.sampleType },
+      { label: 'Payment terms', value: form.paymentTerms },
+      { label: 'Compliance certs', value: Array.isArray(form.complianceCerts) ? form.complianceCerts.join(', ') : '' },
+      { label: 'Sustainability certs', value: Array.isArray(form.sustainabilityCerts) ? form.sustainabilityCerts.join(', ') : '' },
+      { label: 'Lab test required', value: form.labTestRequired },
+      { label: 'Swatch first', value: form.swatchFirst },
+      { label: 'Compliance notes', value: form.complianceNotes || form.labCertNotes },
+      { label: 'Quote deadline', value: form.quoteDeadline },
+      { label: 'Request expiry', value: form.expiresAt },
+      { label: 'Max suppliers', value: form.maxSuppliers },
+      { label: 'Verified only', value: form.verifiedOnly ? 'Yes' : '' },
+    ]
+    return rows.filter((row) => row.value)
+  }, [form, isTextile])
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#020617] p-6">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -380,7 +518,9 @@ export default function BuyerRequestManagement() {
         {role === 'buyer' ? (
           <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
             <div className="flex items-center justify-between mb-4">
-              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Step {step} of 3</div>
+              <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                Buyer request form
+              </div>
               <button
                 type="button"
                 className="text-xs font-semibold text-[var(--gt-blue)]"
@@ -390,126 +530,362 @@ export default function BuyerRequestManagement() {
               </button>
             </div>
 
-            {step === 1 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Request title" hint="Example: Denim jacket -- 10k pcs, wash + trims">
+            <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
+              <p className="text-xs font-semibold text-slate-800">Single form â€” fill all sections</p>
+              <p className="mt-1">Keep the details complete so verified suppliers can quote faster.</p>
+            </div>
+
+            <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-slate-900">Request type</h3>
+                <p className="text-sm text-slate-600">Select the buyer request type so we can show the correct fields.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    className={`rounded-2xl border px-4 py-4 text-left transition ${form.requestType === 'garments' ? 'border-[var(--gt-blue)] ring-2 ring-[var(--gt-blue)]/30' : 'border-slate-200'}`}
+                    onClick={() => setForm({ ...form, requestType: 'garments' })}
+                  >
+                    <p className="text-sm font-semibold">Garments Buyer</p>
+                    <p className="text-xs text-slate-500">Finished garments with design + construction focus.</p>
+                  </button>
+                  <button
+                    type="button"
+                    className={`rounded-2xl border px-4 py-4 text-left transition ${form.requestType === 'textile' ? 'border-[var(--gt-blue)] ring-2 ring-[var(--gt-blue)]/30' : 'border-slate-200'}`}
+                    onClick={() => setForm({ ...form, requestType: 'textile' })}
+                  >
+                    <p className="text-sm font-semibold">Textile Buyer</p>
+                    <p className="text-xs text-slate-500">Fabric/yarn/trim requests with technical specs.</p>
+                  </button>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2 text-sm font-semibold text-slate-900">Basic info</div>
+                <Field label="Request title" hint="Example: Denim Jacket — 10k pcs">
                   <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
                 </Field>
-                <Field label="Product / Category">
-                  <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
-                </Field>
-                <Field label="Industry (optional)">
-                  <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.industry} onChange={(e) => setForm({ ...form, industry: e.target.value })} />
-                </Field>
-                <Field label="Quantity">
-                  <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} />
-                </Field>
-                <Field label="MOQ (optional)">
-                  <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.moq} onChange={(e) => setForm({ ...form, moq: e.target.value })} />
-                </Field>
-                <Field label="Price range (optional)">
-                  <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.priceRange} onChange={(e) => setForm({ ...form, priceRange: e.target.value })} />
-                </Field>
-                <div className="md:col-span-2 flex gap-2">
-                  <button type="button" className="rounded-lg bg-[var(--gt-blue)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--gt-blue-hover)]" onClick={() => setStep(2)}>
-                    Continue
-                  </button>
-                </div>
-              </div>
-            ) : null}
+                {isTextile ? (
+                  <>
+                    <Field label="Material type">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.materialType} onChange={(e) => setForm({ ...form, materialType: e.target.value })} />
+                    </Field>
+                    <Field label="Sub-category">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.subCategory} onChange={(e) => setForm({ ...form, subCategory: e.target.value })} />
+                    </Field>
+                    <Field label="Quantity">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} />
+                    </Field>
+                    <Field label="Unit">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
+                    </Field>
+                  </>
+                ) : (
+                  <>
+                    <Field label="Product category">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+                    </Field>
+                    <Field label="Gender target">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.genderTarget} onChange={(e) => setForm({ ...form, genderTarget: e.target.value })} />
+                    </Field>
+                    <Field label="Season">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.season} onChange={(e) => setForm({ ...form, season: e.target.value })} />
+                    </Field>
+                    <Field label="Total quantity (pcs)">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.totalQuantity} onChange={(e) => setForm({ ...form, totalQuantity: e.target.value })} />
+                    </Field>
+                  </>
+                )}
 
-            {step === 2 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Fabric / Material">
-                  <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.fabric} onChange={(e) => setForm({ ...form, fabric: e.target.value })} />
-                </Field>
-                <Field label="GSM">
-                  <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.gsm} onChange={(e) => setForm({ ...form, gsm: e.target.value })} />
-                </Field>
-                <Field label="Size range (optional)">
-                  <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.sizeRange} onChange={(e) => setForm({ ...form, sizeRange: e.target.value })} />
-                </Field>
-                <Field label="Color / Pantone (optional)">
-                  <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.colorPantone} onChange={(e) => setForm({ ...form, colorPantone: e.target.value })} />
-                </Field>
-                <Field label="Customization capability (optional)">
-                  <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.customization} onChange={(e) => setForm({ ...form, customization: e.target.value })} />
-                </Field>
-                <Field label="Techpack accepted">
-                  <label className="inline-flex items-center gap-2 text-sm text-slate-700">
-                    <input type="checkbox" checked={form.techpackAccepted} onChange={(e) => setForm({ ...form, techpackAccepted: e.target.checked })} />
-                    Accept techpacks
-                  </label>
-                </Field>
-                <Field label="Sample available (optional)">
-                  <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.sampleAvailable} onChange={(e) => setForm({ ...form, sampleAvailable: e.target.value })} placeholder="Yes/No" />
-                </Field>
-                <Field label="Sample lead time (days)">
-                  <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.sampleLeadTime} onChange={(e) => setForm({ ...form, sampleLeadTime: e.target.value })} />
-                </Field>
-                <Field label="Target market">
-                  <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.targetMarket} onChange={(e) => setForm({ ...form, targetMarket: e.target.value })} />
-                </Field>
-                <Field label="Delivery timeline">
-                  <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.deliveryTimeline} onChange={(e) => setForm({ ...form, deliveryTimeline: e.target.value })} />
-                </Field>
-                <Field label="Incoterms (optional)">
-                  <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.incoterms} onChange={(e) => setForm({ ...form, incoterms: e.target.value })} />
-                </Field>
-                <Field label="Payment terms (optional)">
-                  <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.paymentTerms} onChange={(e) => setForm({ ...form, paymentTerms: e.target.value })} />
-                </Field>
-                <Field label="Shipping terms">
-                  <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.shippingTerms} onChange={(e) => setForm({ ...form, shippingTerms: e.target.value })} />
-                </Field>
-                <Field label="Certifications (comma separated)" hint="Example: GOTS, OEKO-TEX, BSCI">
-                  <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.certifications} onChange={(e) => setForm({ ...form, certifications: e.target.value })} />
-                </Field>
-                <div className="md:col-span-2 flex gap-2">
-                  <button type="button" className="rounded-lg bg-[var(--gt-blue)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--gt-blue-hover)]" onClick={() => setStep(3)}>
-                    Continue
-                  </button>
-                  <button type="button" className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold" onClick={() => setStep(1)}>
-                    Back
-                  </button>
-                </div>
-              </div>
-            ) : null}
-
-            {step === 3 ? (
-              <div className="space-y-4">
                 {moreFieldsOpen ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Field label="Trims / Wash (optional)">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.trimsWash} onChange={(e) => setForm({ ...form, trimsWash: e.target.value })} />
+                  <>
+                    <Field label="Industry (optional)">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.industry} onChange={(e) => setForm({ ...form, industry: e.target.value })} />
                     </Field>
-                    <Field label="Sample timeline (optional)">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.sampleTimeline} onChange={(e) => setForm({ ...form, sampleTimeline: e.target.value })} />
+                    {!isTextile ? (
+                      <Field label="Number of styles (optional)">
+                        <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.numberOfStyles} onChange={(e) => setForm({ ...form, numberOfStyles: e.target.value })} />
+                      </Field>
+                    ) : null}
+                  </>
+                ) : null}
+
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2 text-sm font-semibold text-slate-900">Product specifications</div>
+                {isTextile ? (
+                  <>
+                    <Field label="Fiber composition">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.fiberComposition} onChange={(e) => setForm({ ...form, fiberComposition: e.target.value })} />
                     </Field>
-                    <Field label="Packaging (optional)">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.packaging} onChange={(e) => setForm({ ...form, packaging: e.target.value })} />
+                    <Field label="Fabric weight (GSM)">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.fabricWeightGsm} onChange={(e) => setForm({ ...form, fabricWeightGsm: e.target.value })} />
                     </Field>
-                    <Field label="Compliance notes (optional)">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.complianceNotes} onChange={(e) => setForm({ ...form, complianceNotes: e.target.value })} />
+                    <Field label="Fabric width">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.fabricWidth} onChange={(e) => setForm({ ...form, fabricWidth: e.target.value })} />
                     </Field>
-                    <Field label="Compliance details (optional)">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.complianceDetails} onChange={(e) => setForm({ ...form, complianceDetails: e.target.value })} />
+                    <Field label="Yarn count">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.yarnCount} onChange={(e) => setForm({ ...form, yarnCount: e.target.value })} />
                     </Field>
-                    <Field label="Document readiness (optional)">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.documentReady} onChange={(e) => setForm({ ...form, documentReady: e.target.value })} />
+                    <Field label="Thread count">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.threadCount} onChange={(e) => setForm({ ...form, threadCount: e.target.value })} />
                     </Field>
-                    <Field label="Last audit date (optional)">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.auditDate} onChange={(e) => setForm({ ...form, auditDate: e.target.value })} />
+                    <Field label="Finish required">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.finishRequired} onChange={(e) => setForm({ ...form, finishRequired: e.target.value })} />
                     </Field>
-                    <Field label="Language support (optional)">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.languageSupport} onChange={(e) => setForm({ ...form, languageSupport: e.target.value })} />
+                    <Field label="Stretch required">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.stretchRequired} onChange={(e) => setForm({ ...form, stretchRequired: e.target.value })} />
                     </Field>
+                    <Field label="Color">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} />
+                    </Field>
+                    <Field label="Pattern">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.pattern} onChange={(e) => setForm({ ...form, pattern: e.target.value })} />
+                    </Field>
+                  </>
+                ) : (
+                  <>
+                    <Field label="Fabric composition">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.fabricComposition} onChange={(e) => setForm({ ...form, fabricComposition: e.target.value })} />
+                    </Field>
+                    <Field label="Fabric weight (GSM)">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.fabricWeightGsm} onChange={(e) => setForm({ ...form, fabricWeightGsm: e.target.value })} />
+                    </Field>
+                    <Field label="Weave / Knit type">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.weaveOrKnit} onChange={(e) => setForm({ ...form, weaveOrKnit: e.target.value })} />
+                    </Field>
+                    <Field label="Size range">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.sizeRange} onChange={(e) => setForm({ ...form, sizeRange: e.target.value })} />
+                    </Field>
+                    <Field label="Color requirement">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.colorRequirement} onChange={(e) => setForm({ ...form, colorRequirement: e.target.value })} />
+                    </Field>
+                    <Field label="Style description">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.styleDescription} onChange={(e) => setForm({ ...form, styleDescription: e.target.value })} />
+                    </Field>
+                    <Field label="Tech pack required">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.techPackRequired} onChange={(e) => setForm({ ...form, techPackRequired: e.target.value })} placeholder="Yes / No" />
+                    </Field>
+                  </>
+                )}
+
+                <div className="md:col-span-2">
+                  <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200/70">
+                    <p className="text-xs font-semibold text-slate-700">Tech pack upload (optional)</p>
+                    <div className="mt-2 space-y-2">
+                      {pendingAttachments.length ? pendingAttachments.map((fileRow, index) => (
+                        <div key={`${fileRow.file?.name}-${index}`} className="flex items-center justify-between rounded-lg bg-white px-2 py-2 ring-1 ring-slate-200/60">
+                          <span className="text-xs text-slate-600">{fileRow.file?.name || 'File'}</span>
+                          <button type="button" className="text-[11px] font-semibold text-rose-600" onClick={() => setPendingAttachments((prev) => prev.filter((_, i) => i !== index))}>
+                            Remove
+                          </button>
+                        </div>
+                      )) : (
+                        <p className="text-[11px] text-slate-500">You can upload tech packs and sketches after posting too.</p>
+                      )}
+                    </div>
+                    <div className="mt-2 flex items-center gap-2">
+                      <label className="text-[11px] font-semibold text-[var(--gt-blue)] cursor-pointer">
+                        Add file
+                        <input
+                          type="file"
+                          className="hidden"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0]
+                            if (file) {
+                              setPendingAttachments((prev) => [...prev, { file, type: 'tech_pack' }])
+                            }
+                            event.target.value = ''
+                          }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2 text-sm font-semibold text-slate-900">Commercial terms</div>
+                {isTextile ? (
+                  <>
+                    <Field label="Target price">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.targetPrice} onChange={(e) => setForm({ ...form, targetPrice: e.target.value })} />
+                    </Field>
+                    <Field label="Price unit">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.priceUnit} onChange={(e) => setForm({ ...form, priceUnit: e.target.value })} />
+                    </Field>
+                    <Field label="Incoterm">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.incoterms} onChange={(e) => setForm({ ...form, incoterms: e.target.value })} />
+                    </Field>
+                    <Field label="Delivery port">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.deliveryPort} onChange={(e) => setForm({ ...form, deliveryPort: e.target.value })} />
+                    </Field>
+                    <Field label="Lead time required">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.leadTimeRequired} onChange={(e) => setForm({ ...form, leadTimeRequired: e.target.value })} />
+                    </Field>
+                    <Field label="Lab test required">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.labTestRequired} onChange={(e) => setForm({ ...form, labTestRequired: e.target.value })} />
+                    </Field>
+                    <Field label="Swatch/sample first?">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.swatchFirst} onChange={(e) => setForm({ ...form, swatchFirst: e.target.value })} />
+                    </Field>
+                  </>
+                ) : (
+                  <>
+                    <Field label="Target FOB price">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.targetFobPrice} onChange={(e) => setForm({ ...form, targetFobPrice: e.target.value })} />
+                    </Field>
+                    <Field label="Incoterm">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.incoterms} onChange={(e) => setForm({ ...form, incoterms: e.target.value })} />
+                    </Field>
+                    <Field label="Destination port">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.destinationPort} onChange={(e) => setForm({ ...form, destinationPort: e.target.value })} />
+                    </Field>
+                    <Field label="Ex-factory date">
+                      <input type="date" className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.exFactoryDate} onChange={(e) => setForm({ ...form, exFactoryDate: e.target.value })} />
+                    </Field>
+                    <Field label="Sample required">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.sampleRequired} onChange={(e) => setForm({ ...form, sampleRequired: e.target.value })} placeholder="Yes / No" />
+                    </Field>
+                    <Field label="Sample type">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.sampleType} onChange={(e) => setForm({ ...form, sampleType: e.target.value })} />
+                    </Field>
+                    <Field label="Payment terms">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.paymentTerms} onChange={(e) => setForm({ ...form, paymentTerms: e.target.value })} />
+                    </Field>
+                  </>
+                )}
+
+                {moreFieldsOpen ? (
+                  <>
+                    <Field label="Quote deadline">
+                      <input type="date" className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.quoteDeadline} onChange={(e) => setForm({ ...form, quoteDeadline: e.target.value })} />
+                    </Field>
+                    <Field label="Request expiry">
+                      <input type="date" className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.expiresAt} onChange={(e) => setForm({ ...form, expiresAt: e.target.value })} />
+                    </Field>
+                    <Field label="Max suppliers to contact">
+                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.maxSuppliers} onChange={(e) => setForm({ ...form, maxSuppliers: e.target.value })} />
+                    </Field>
+                    <Field
+                      label="Verified-only messaging"
+                      hint="When enabled, only verified suppliers can message this request. Unverified suppliers cannot send or request access."
+                    >
+                      <label className="flex items-center gap-2 text-sm text-slate-700">
+                        <input
+                          type="checkbox"
+                          checked={form.verifiedOnly}
+                          onChange={(e) => setForm({ ...form, verifiedOnly: e.target.checked })}
+                        />
+                        Allow verified suppliers only
+                      </label>
+                    </Field>
+                  </>
+                ) : null}
+
+            </div>
+
+            <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-slate-900">Compliance / Lab</h3>
+                {!isTextile ? (
+                  <>
+                    <Field label="Compliance certifications">
+                      <div className="flex flex-wrap gap-2">
+                        {GARMENT_COMPLIANCE_CERTS.map((cert) => (
+                          <label key={cert} className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs">
+                            <input
+                              type="checkbox"
+                              checked={form.complianceCerts.includes(cert)}
+                              onChange={(e) => {
+                                const next = e.target.checked
+                                  ? [...form.complianceCerts, cert]
+                                  : form.complianceCerts.filter((c) => c !== cert)
+                                setForm({ ...form, complianceCerts: next })
+                              }}
+                            />
+                            {cert}
+                          </label>
+                        ))}
+                      </div>
+                    </Field>
+                    <Field label="Sustainability certifications">
+                      <div className="flex flex-wrap gap-2">
+                        {GARMENT_SUSTAIN_CERTS.map((cert) => (
+                          <label key={cert} className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs">
+                            <input
+                              type="checkbox"
+                              checked={form.sustainabilityCerts.includes(cert)}
+                              onChange={(e) => {
+                                const next = e.target.checked
+                                  ? [...form.sustainabilityCerts, cert]
+                                  : form.sustainabilityCerts.filter((c) => c !== cert)
+                                setForm({ ...form, sustainabilityCerts: next })
+                              }}
+                            />
+                            {cert}
+                          </label>
+                        ))}
+                      </div>
+                    </Field>
+                    <Field label="Compliance notes">
+                      <textarea className="w-full min-h-[100px] rounded-lg border border-slate-200 px-3 py-2" value={form.complianceNotes} onChange={(e) => setForm({ ...form, complianceNotes: e.target.value })} />
+                    </Field>
+                  </>
+                ) : (
+                  <Field label="Lab/Certification notes">
+                    <textarea className="w-full min-h-[100px] rounded-lg border border-slate-200 px-3 py-2" value={form.labCertNotes} onChange={(e) => setForm({ ...form, labCertNotes: e.target.value })} />
+                  </Field>
+                )}
+
+                {moreFieldsOpen ? (
+                  <div className="rounded-xl border border-slate-200 p-3">
+                    <p className="text-xs font-semibold text-slate-700">Custom fields</p>
+                    <div className="mt-2 space-y-2">
+                      {(Array.isArray(form.customFields) ? form.customFields : []).map((row, index) => (
+                        <div key={`custom-${index}`} className="flex flex-wrap gap-2">
+                          <input
+                            className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                            placeholder="Label"
+                            value={row.label}
+                            onChange={(e) => updateCustomField(index, 'label', e.target.value)}
+                          />
+                          <input
+                            className="flex-[2] rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                            placeholder="Value"
+                            value={row.value}
+                            onChange={(e) => updateCustomField(index, 'value', e.target.value)}
+                          />
+                          <button type="button" className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold" onClick={() => removeCustomField(index)}>
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <button type="button" className="mt-2 text-[11px] font-semibold text-[var(--gt-blue)]" onClick={addCustomField}>
+                      Add custom field
+                    </button>
                   </div>
                 ) : null}
 
-                <Field label="Custom description" hint="Add detailed specs, designs, tech packs, trims, washes, and negotiation notes.">
+                <Field label="Custom description" hint="Use this for extra notes, design details, or negotiation context.">
                   <textarea className="w-full min-h-[140px] rounded-lg border border-slate-200 px-3 py-2" value={form.customDescription} onChange={(e) => setForm({ ...form, customDescription: e.target.value })} />
                 </Field>
+
+            </div>
+
+            <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-slate-900">Preview summary</h3>
+                <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200/70">
+                  <p className="text-sm font-semibold text-slate-800">Review all fields before posting</p>
+                  <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-600">
+                    {previewRows.map((row) => (
+                      <div key={row.label} className="rounded-lg bg-white px-3 py-2 ring-1 ring-slate-200/60">
+                        <span className="font-semibold text-slate-700">{row.label}:</span> {row.value}
+                      </div>
+                    ))}
+                    {!previewRows.length ? <div className="text-xs text-slate-500">No fields filled yet.</div> : null}
+                  </div>
+                </div>
 
                 <div className="flex gap-2">
                   <button
@@ -520,15 +896,10 @@ export default function BuyerRequestManagement() {
                   >
                     {saving ? 'Posting...' : 'Post Request'}
                   </button>
-                  <button type="button" className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold" onClick={() => setStep(2)}>
-                    Back
-                  </button>
                 </div>
-              </div>
-            ) : null}
+            </div>
           </div>
         ) : null}
-
         {/* Lead queue for Buying House/Admin */}
         {role === 'buying_house' || role === 'admin' ? (
           <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
@@ -536,7 +907,7 @@ export default function BuyerRequestManagement() {
               <div>
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Open Buyer Requests</h2>
                 <p className="text-xs text-slate-500">
-                  <span className="font-semibold">Assign</span> routes a request to an Agent ID so teammates don’t overlap work.
+                  <span className="font-semibold">Assign</span> routes a request to an Agent ID so teammates donâ€™t overlap work.
                 </p>
               </div>
               <button type="button" onClick={loadRequests} className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold hover:bg-slate-50">
@@ -623,6 +994,19 @@ export default function BuyerRequestManagement() {
                       </Field>
                       <Field label="Custom description">
                         <textarea className="w-full min-h-[120px] rounded-lg border border-slate-200 px-3 py-2" value={editForm.customDescription} onChange={(e) => setEditForm({ ...editForm, customDescription: e.target.value })} />
+                      </Field>
+                      <Field
+                        label="Verified-only messaging"
+                        hint="When enabled, only verified suppliers can message this request."
+                      >
+                        <label className="flex items-center gap-2 text-sm text-slate-700">
+                          <input
+                            type="checkbox"
+                            checked={editForm.verifiedOnly}
+                            onChange={(e) => setEditForm({ ...editForm, verifiedOnly: e.target.checked })}
+                          />
+                          Allow verified suppliers only
+                        </label>
                       </Field>
                       <div className="flex gap-2">
                         <button type="button" disabled={saving} className="rounded-lg bg-[var(--gt-blue)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--gt-blue-hover)] disabled:opacity-70" onClick={saveEdit}>
@@ -759,4 +1143,10 @@ export default function BuyerRequestManagement() {
     </div>
   )
 }
+
+
+
+
+
+
 

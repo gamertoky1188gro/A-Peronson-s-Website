@@ -255,6 +255,29 @@ export default function ContractVault() {
   const [forbidden, setForbidden] = useState(false)
   const [saving, setSaving] = useState(false)
   const [actionError, setActionError] = useState('')
+  const [paymentProofs, setPaymentProofs] = useState([])
+  const [paymentLoading, setPaymentLoading] = useState(false)
+  const [paymentNotice, setPaymentNotice] = useState('')
+  const [paymentForm, setPaymentForm] = useState({
+    type: 'bank_transfer',
+    transaction_reference: '',
+    bank_name: '',
+    sender_account_name: '',
+    receiver_account_name: '',
+    transaction_date: '',
+    amount: '',
+    currency: 'USD',
+    lc_number: '',
+    issuing_bank: '',
+    advising_bank: '',
+    applicant_name: '',
+    beneficiary_name: '',
+    issue_date: '',
+    expiry_date: '',
+    document_id: '',
+    document_url: '',
+    document_file: null,
+  })
 
   const [statusFilter, setStatusFilter] = useState('all')
   const [query, setQuery] = useState('')
@@ -291,6 +314,120 @@ export default function ContractVault() {
       setContracts([])
     } finally {
       setLoadingContracts(false)
+    }
+  }
+
+  const resetPaymentForm = () => {
+    setPaymentForm({
+      type: 'bank_transfer',
+      transaction_reference: '',
+      bank_name: '',
+      sender_account_name: '',
+      receiver_account_name: '',
+      transaction_date: '',
+      amount: '',
+      currency: 'USD',
+      lc_number: '',
+      issuing_bank: '',
+      advising_bank: '',
+      applicant_name: '',
+      beneficiary_name: '',
+      issue_date: '',
+      expiry_date: '',
+      document_id: '',
+      document_url: '',
+      document_file: null,
+    })
+  }
+
+  const loadPaymentProofs = async (contractId) => {
+    const token = getToken()
+    if (!token || !contractId) {
+      setPaymentProofs([])
+      return
+    }
+    setPaymentLoading(true)
+    try {
+      const data = await apiRequest(`/payment-proofs?contract_id=${encodeURIComponent(contractId)}`, { token })
+      setPaymentProofs(Array.isArray(data) ? data : [])
+    } catch {
+      setPaymentProofs([])
+    } finally {
+      setPaymentLoading(false)
+    }
+  }
+
+  const uploadPaymentDocument = async (contractId) => {
+    if (!paymentForm.document_file) return null
+    const token = getToken()
+    if (!token) return null
+    const formData = new FormData()
+    formData.append('file', paymentForm.document_file)
+    formData.append('entity_type', 'payment_proof')
+    formData.append('entity_id', contractId)
+    formData.append('type', `${paymentForm.type}_proof`)
+
+    const res = await fetch(`${API_BASE}/documents`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) throw new Error(data.error || 'Upload failed')
+    return data
+  }
+
+  const submitPaymentProof = async () => {
+    const token = getToken()
+    if (!token || !selected?.id) return
+    setPaymentNotice('')
+    setSaving(true)
+    try {
+      let documentId = paymentForm.document_id
+      let documentUrl = paymentForm.document_url
+      if (paymentForm.document_file) {
+        const uploaded = await uploadPaymentDocument(selected.id)
+        documentId = uploaded?.id || ''
+        documentUrl = uploaded?.file_path || uploaded?.url || ''
+      }
+
+      const payload = {
+        ...paymentForm,
+        contract_id: selected.id,
+        document_id: documentId || undefined,
+        document_url: documentUrl || undefined,
+      }
+
+      const created = await apiRequest('/payment-proofs', { method: 'POST', token, body: payload })
+      setPaymentNotice('Payment proof submitted.')
+      setPaymentProofs((prev) => [created, ...prev])
+      resetPaymentForm()
+      trackClientEvent('payment_proof_submitted', { entityType: 'contract', entityId: selected.id })
+    } catch (err) {
+      setPaymentNotice(err.message || 'Unable to submit payment proof')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const updatePaymentStatus = async (proofId, status) => {
+    const token = getToken()
+    if (!token || !proofId) return
+    setPaymentNotice('')
+    setSaving(true)
+    try {
+      const updated = await apiRequest(`/payment-proofs/${encodeURIComponent(proofId)}`, {
+        method: 'PATCH',
+        token,
+        body: { status },
+      })
+      setPaymentProofs((prev) => prev.map((p) => (p.id === updated.id ? updated : p)))
+      setPaymentNotice('Payment proof status updated.')
+      trackClientEvent('payment_proof_status_updated', { entityType: 'payment_proof', entityId: updated.id, metadata: { status } })
+    } catch (err) {
+      setPaymentNotice(err.message || 'Unable to update status')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -339,6 +476,7 @@ export default function ContractVault() {
   const selectedActionBlockers = actionBlockers(currentUser, selected)
   const downloadUrl = resolveDownloadUrl(selected?.artifact?.pdf_path)
   const canDownload = Boolean(selectedFlow?.hasPdf && downloadUrl)
+  const canReviewPayment = ['factory', 'buying_house', 'owner', 'admin'].includes(String(currentUser?.role || '').toLowerCase())
 
   useEffect(() => {
     const token = getToken()
@@ -352,6 +490,14 @@ export default function ContractVault() {
       .then((data) => setCallItems(Array.isArray(data?.items) ? data.items : []))
       .catch(() => setCallItems([]))
       .finally(() => setCallsLoading(false))
+  }, [selected?.id])
+
+  useEffect(() => {
+    if (!selected?.id) {
+      setPaymentProofs([])
+      return
+    }
+    loadPaymentProofs(selected.id)
   }, [selected?.id])
 
   useEffect(() => {
@@ -560,6 +706,129 @@ export default function ContractVault() {
           <div>Bank name: {canViewBankingReferences(currentUser, selected) ? safeDash(selected.bank_name) : maskValue(selected.bank_name)}</div>
           <div>Beneficiary: {canViewBankingReferences(currentUser, selected) ? safeDash(selected.beneficiary_name) : maskValue(selected.beneficiary_name)}</div>
           <div>Transaction reference: {canViewBankingReferences(currentUser, selected) ? safeDash(selected.transaction_reference) : maskValue(selected.transaction_reference)}</div>
+        </div>
+      </div>
+
+      <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900/50">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-sm font-semibold text-slate-900">Payment proof workflow</div>
+            <div className="mt-1 text-xs text-slate-500">Submit bank transfer or LC documents. Seller review sets status, disputes trigger internal admin review.</div>
+          </div>
+          <button type="button" onClick={() => loadPaymentProofs(selected.id)} className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700">
+            Refresh
+          </button>
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label className="text-xs font-semibold text-slate-600">Proof type</label>
+          <div />
+          <select
+            value={paymentForm.type}
+            onChange={(e) => setPaymentForm((prev) => ({ ...prev, type: e.target.value }))}
+            className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
+          >
+            <option value="bank_transfer">Bank transfer</option>
+            <option value="lc">Letter of credit (LC)</option>
+          </select>
+          <div />
+
+          {paymentForm.type === 'bank_transfer' ? (
+            <>
+              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Transaction reference" value={paymentForm.transaction_reference} onChange={(e) => setPaymentForm((p) => ({ ...p, transaction_reference: e.target.value }))} />
+              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Bank name" value={paymentForm.bank_name} onChange={(e) => setPaymentForm((p) => ({ ...p, bank_name: e.target.value }))} />
+              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Sender account name" value={paymentForm.sender_account_name} onChange={(e) => setPaymentForm((p) => ({ ...p, sender_account_name: e.target.value }))} />
+              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Receiver/company account name" value={paymentForm.receiver_account_name} onChange={(e) => setPaymentForm((p) => ({ ...p, receiver_account_name: e.target.value }))} />
+              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" type="date" value={paymentForm.transaction_date} onChange={(e) => setPaymentForm((p) => ({ ...p, transaction_date: e.target.value }))} />
+              <div className="flex gap-2">
+                <input className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))} />
+                <input className="w-24 rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Currency" value={paymentForm.currency} onChange={(e) => setPaymentForm((p) => ({ ...p, currency: e.target.value }))} />
+              </div>
+            </>
+          ) : (
+            <>
+              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="LC number" value={paymentForm.lc_number} onChange={(e) => setPaymentForm((p) => ({ ...p, lc_number: e.target.value }))} />
+              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Issuing bank" value={paymentForm.issuing_bank} onChange={(e) => setPaymentForm((p) => ({ ...p, issuing_bank: e.target.value }))} />
+              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Advising bank" value={paymentForm.advising_bank} onChange={(e) => setPaymentForm((p) => ({ ...p, advising_bank: e.target.value }))} />
+              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Applicant name" value={paymentForm.applicant_name} onChange={(e) => setPaymentForm((p) => ({ ...p, applicant_name: e.target.value }))} />
+              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Beneficiary name" value={paymentForm.beneficiary_name} onChange={(e) => setPaymentForm((p) => ({ ...p, beneficiary_name: e.target.value }))} />
+              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" type="date" value={paymentForm.issue_date} onChange={(e) => setPaymentForm((p) => ({ ...p, issue_date: e.target.value }))} />
+              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" type="date" value={paymentForm.expiry_date} onChange={(e) => setPaymentForm((p) => ({ ...p, expiry_date: e.target.value }))} />
+              <div className="flex gap-2">
+                <input className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))} />
+                <input className="w-24 rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Currency" value={paymentForm.currency} onChange={(e) => setPaymentForm((p) => ({ ...p, currency: e.target.value }))} />
+              </div>
+            </>
+          )}
+
+          <div className="sm:col-span-2">
+            <label className="text-xs font-semibold text-slate-600">Upload proof document</label>
+            <input
+              type="file"
+              className="mt-2 text-xs"
+              onChange={(e) => setPaymentForm((p) => ({ ...p, document_file: e.target.files?.[0] || null }))}
+            />
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={submitPaymentProof}
+            disabled={saving}
+            className="rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+          >
+            Submit proof
+          </button>
+          {paymentNotice ? <span className="text-xs text-slate-500">{paymentNotice}</span> : null}
+        </div>
+
+        <div className="mt-4 space-y-2">
+          {paymentLoading ? <div className="text-xs text-slate-500">Loading proofs...</div> : null}
+          {!paymentLoading && paymentProofs.length === 0 ? <div className="text-xs text-slate-500">No proofs submitted yet.</div> : null}
+          {paymentProofs.map((proof) => {
+            const proofDocUrl = resolveDownloadUrl(proof.document_url || '')
+            return (
+            <div key={proof.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="font-semibold">{String(proof.type || '').replace('_', ' ').toUpperCase()}</div>
+                <div className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-slate-600 ring-1 ring-slate-200">
+                  {proof.status || 'pending'}
+                </div>
+              </div>
+              <div className="mt-2 grid grid-cols-1 gap-1">
+                {proof.transaction_reference ? <div>Ref: {proof.transaction_reference}</div> : null}
+                {proof.lc_number ? <div>LC: {proof.lc_number}</div> : null}
+                {proof.amount ? <div>Amount: {proof.amount} {proof.currency || ''}</div> : null}
+              </div>
+              {proofDocUrl || proof.document_id ? (
+                <div className="mt-2">
+                  {proofDocUrl ? (
+                    <a href={proofDocUrl} target="_blank" rel="noreferrer" className="text-[10px] font-semibold text-[#0A66C2] hover:underline">Open proof document</a>
+                  ) : (
+                    <span className="text-[10px] text-slate-500">Document linked</span>
+                  )}
+                </div>
+              ) : null}
+              {canReviewPayment ? (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {proof.type === 'bank_transfer' ? (
+                    <>
+                      <button type="button" onClick={() => updatePaymentStatus(proof.id, 'received')} className="rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-semibold text-white">Mark received</button>
+                      <button type="button" onClick={() => updatePaymentStatus(proof.id, 'pending_check')} className="rounded-full bg-amber-600 px-3 py-1 text-[10px] font-semibold text-white">Pending check</button>
+                      <button type="button" onClick={() => updatePaymentStatus(proof.id, 'not_received')} className="rounded-full bg-rose-600 px-3 py-1 text-[10px] font-semibold text-white">Not received</button>
+                    </>
+                  ) : (
+                    <>
+                      <button type="button" onClick={() => updatePaymentStatus(proof.id, 'accepted')} className="rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-semibold text-white">Accept</button>
+                      <button type="button" onClick={() => updatePaymentStatus(proof.id, 'pending_review')} className="rounded-full bg-amber-600 px-3 py-1 text-[10px] font-semibold text-white">Pending review</button>
+                      <button type="button" onClick={() => updatePaymentStatus(proof.id, 'rejected')} className="rounded-full bg-rose-600 px-3 py-1 text-[10px] font-semibold text-white">Reject</button>
+                    </>
+                  )}
+                </div>
+              ) : null}
+            </div>
+          )})}
         </div>
       </div>
 

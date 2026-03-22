@@ -44,7 +44,7 @@ const TABS = [
 function feedLinkForEntity(entityType, entityId) {
   // Build a deep-link to the feed filtered to a specific entity.
   if (!entityType || !entityId) return '/feed'
-  return `/feed*item=${encodeURIComponent(`${entityType}:${entityId}`)}`
+  return `/feed?item=${encodeURIComponent(`${entityType}:${entityId}`)}`
 }
 
 export default function NotificationsCenter() {

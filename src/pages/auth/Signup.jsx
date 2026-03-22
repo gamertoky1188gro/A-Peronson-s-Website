@@ -34,7 +34,8 @@ export default function Signup() {
     name: '',
     email: '',
     password: '',
-    role: 'buyer',
+    primaryRole: 'buyer',
+    factorySubtype: 'factory',
     country: '',
     organization: '',
   })
@@ -49,11 +50,12 @@ export default function Signup() {
     setError('')
     try {
       // Backend expects a slightly different field naming; map UI fields -> API fields here.
+      const resolvedRole = form.primaryRole === 'factory' ? form.factorySubtype : 'buyer'
       const payload = {
         name: form.name,
         email: form.email,
         password: form.password,
-        role: form.role,
+        role: resolvedRole,
         company_name: form.organization,
         profile: { country: form.country },
       }
@@ -73,67 +75,68 @@ export default function Signup() {
 
   return (
     // Page wrapper: centers the signup card and applies legacy base styles.
-    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card flex items-center justify-center p-4">
-      {/* Wider card because signup has more fields than login. */}
-      <div className="w-full max-w-2xl bg-white neo-panel cyberpunk-card rounded-xl p-8">
-        <h1 className="text-3xl font-bold">Create account</h1>
-        <p className="mt-2 text-sm text-gray-600">3-step onboarding starts after signup: profile image, organization name, category selection.</p>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-2xl rounded-2xl bg-white p-8 shadow-[0_18px_60px_rgba(15,23,42,0.08)] ring-1 ring-slate-200/60">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">Create your account</h1>
+            <p className="mt-2 text-sm text-slate-500">A clean, professional start for Garments and Textile sourcing teams.</p>
+          </div>
+          <div className="hidden sm:flex items-center rounded-full bg-blue-50 px-3 py-1 text-[11px] font-semibold text-[#0A66C2]">
+            GarTexHub
+          </div>
+        </div>
 
-        {/* Responsive 2-column form on desktop; stacks on mobile. */}
-        <form className="mt-6 grid md:grid-cols-2 gap-4" onSubmit={handleSubmit}>
+        <form className="mt-8 grid md:grid-cols-2 gap-4" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-sm font-medium mb-1">Full Name</label>
-            <input className="w-full px-4 py-3 border rounded-lg" value={form.name} onChange={(e) => onChange('name', e.target.value)} required />
+            <label className="block text-sm font-medium mb-1 text-slate-700">Full Name</label>
+            <input className="w-full px-4 py-3 border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20" value={form.name} onChange={(e) => onChange('name', e.target.value)} required />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
-            <input type="email" className="w-full px-4 py-3 border rounded-lg" value={form.email} onChange={(e) => onChange('email', e.target.value)} required />
+            <label className="block text-sm font-medium mb-1 text-slate-700">Email</label>
+            <input type="email" className="w-full px-4 py-3 border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20" value={form.email} onChange={(e) => onChange('email', e.target.value)} required />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Password</label>
-            <input type="password" className="w-full px-4 py-3 border rounded-lg" value={form.password} onChange={(e) => onChange('password', e.target.value)} required />
+            <label className="block text-sm font-medium mb-1 text-slate-700">Password</label>
+            <input type="password" className="w-full px-4 py-3 border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20" value={form.password} onChange={(e) => onChange('password', e.target.value)} required />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Account Type</label>
-            {/* Choosing a role affects what documents are required later in Verification Center. */}
-            <select className="w-full px-4 py-3 border rounded-lg" value={form.role} onChange={(e) => onChange('role', e.target.value)}>
+            <label className="block text-sm font-medium mb-1 text-slate-700">Account Type</label>
+            <select className="w-full px-4 py-3 border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20" value={form.primaryRole} onChange={(e) => onChange('primaryRole', e.target.value)}>
               <option value="buyer">Buyer</option>
               <option value="factory">Factory</option>
-              <option value="buying_house">Buying House</option>
             </select>
           </div>
+          {form.primaryRole === 'factory' ? (
+            <div>
+              <label className="block text-sm font-medium mb-1 text-slate-700">Factory Type</label>
+              <select
+                className="w-full px-4 py-3 border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20"
+                value={form.factorySubtype}
+                onChange={(e) => onChange('factorySubtype', e.target.value)}
+              >
+                <option value="factory">Factory</option>
+                <option value="buying_house">Buying House</option>
+              </select>
+            </div>
+          ) : null}
           <div>
-            <label className="block text-sm font-medium mb-1">Country</label>
-            <input className="w-full px-4 py-3 border rounded-lg" value={form.country} onChange={(e) => onChange('country', e.target.value)} required />
+            <label className="block text-sm font-medium mb-1 text-slate-700">Country</label>
+            <input className="w-full px-4 py-3 border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20" value={form.country} onChange={(e) => onChange('country', e.target.value)} required />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Organization Name</label>
-            <input className="w-full px-4 py-3 border rounded-lg" value={form.organization} onChange={(e) => onChange('organization', e.target.value)} />
+            <label className="block text-sm font-medium mb-1 text-slate-700">Organization Name</label>
+            <input className="w-full px-4 py-3 border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20" value={form.organization} onChange={(e) => onChange('organization', e.target.value)} />
           </div>
-
-          {/* Info panel: sets expectations (verification happens post-signup). */}
-          <div className="md:col-span-2 bg-gray-50 neo-panel cyberpunk-card border rounded-lg p-3 text-sm text-gray-700">
-            <p><strong>Verification happens after signup.</strong> Create your account first, then upload role and region-specific documents in Verification Center.</p>
-            <p className="mt-2">
-              Need the full checklist*
-              {' '}
-              <Link to="/verification" className="text-[var(--gt-blue)] underline">Go to Verification Center</Link>
-              {' '}
-              or
-              {' '}
-              <Link to="/help" className="text-[var(--gt-blue)] underline">read Help Center guidance</Link>.
-            </p>
-          </div>
-
           {/* API error state (e.g. email already used). */}
           {error ? <p className="md:col-span-2 text-sm text-red-500">{error}</p> : null}
 
           {/* Footer actions: primary submit + link to login. */}
-          <div className="md:col-span-2 flex gap-3">
-            <button disabled={loading} className="px-5 py-3 rounded-lg bg-[var(--gt-blue)] hover:bg-[var(--gt-blue-hover)] text-white disabled:opacity-70">
+          <div className="md:col-span-2 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <button disabled={loading} className="px-5 py-3 rounded-lg bg-[#0A66C2] hover:bg-[#004182] text-white disabled:opacity-70">
               {loading ? 'Creating account...' : 'Create account'}
             </button>
-            <Link to="/login" className="px-5 py-3 rounded-lg border">Have an account* Login</Link>
+            <Link to="/login" className="px-5 py-3 rounded-lg border border-slate-200 text-slate-700">Already have an account? Login</Link>
           </div>
         </form>
       </div>

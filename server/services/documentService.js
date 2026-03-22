@@ -7,10 +7,12 @@ import { canManagePartnerNetwork, canModifyContract, isAgent, isOwnerOrAdmin, sc
 import { trackEvent } from './analyticsService.js'
 
 const FILE = 'documents.json'
+const PAYMENT_PROOFS_FILE = 'payment_proofs.json'
 
 const SIGNATURE_STATES = new Set(['pending', 'signed'])
 const ARTIFACT_STATES = new Set(['draft', 'generated', 'locked', 'archived'])
 const MEDIA_REVIEW_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg'])
+const VIDEO_EXTENSIONS = new Set(['.mp4', '.webm'])
 const PROHIBITED_MEDIA_KEYWORDS = ['porn', 'explicit', 'nudity', 'violence', 'weapon', 'drugs', 'hate']
 
 function toIsoNow() {
@@ -89,7 +91,7 @@ function sanitizeArtifactState(value, fallback = 'draft') {
 
 function ensureAllowed(file) {
   const ext = path.extname(file.originalname || '').toLowerCase()
-  const allowed = ['.pdf', '.png', '.jpg', '.jpeg']
+  const allowed = ['.pdf', '.png', '.jpg', '.jpeg', '.mp4', '.webm']
   if (!allowed.includes(ext)) throw new Error('Invalid file type')
 }
 
@@ -101,12 +103,15 @@ function getMediaModerationResult(file) {
   if (MEDIA_REVIEW_EXTENSIONS.has(ext)) {
     flags.push(`media_type:${ext.replace('.', '')}`)
   }
+  if (VIDEO_EXTENSIONS.has(ext)) {
+    flags.push(`media_type:${ext.replace('.', '')}`)
+  }
 
   for (const keyword of PROHIBITED_MEDIA_KEYWORDS) {
     if (name.includes(keyword)) flags.push(`prohibited_keyword:${keyword}`)
   }
 
-  const requiresReview = flags.length > 0
+  const requiresReview = flags.length > 0 || VIDEO_EXTENSIONS.has(ext)
   return {
     flags,
     moderation_status: requiresReview ? 'pending_review' : 'approved',
@@ -115,18 +120,26 @@ function getMediaModerationResult(file) {
 
 function getMediaModerationResultFromUrl(url) {
   const flags = []
-  let parsed = null
-  try {
-    parsed = new URL(url)
-  } catch {
-    flags.push('invalid_url')
-  }
+  const raw = String(url || '').trim()
+  const internal = raw.startsWith('/uploads/') || raw.startsWith('uploads/') || raw.includes('server/uploads/')
+  let ext = ''
 
-  if (parsed && !['http:', 'https:'].includes(parsed.protocol)) {
-    flags.push('invalid_url_protocol')
-  }
+  if (internal) {
+    ext = path.extname(raw).toLowerCase()
+  } else {
+    let parsed = null
+    try {
+      parsed = new URL(url)
+    } catch {
+      flags.push('invalid_url')
+    }
 
-  const ext = parsed ? path.extname(parsed.pathname || '').toLowerCase() : ''
+    if (parsed && !['http:', 'https:'].includes(parsed.protocol)) {
+      flags.push('invalid_url_protocol')
+    }
+
+    ext = parsed ? path.extname(parsed.pathname || '').toLowerCase() : ''
+  }
   if (ext && MEDIA_REVIEW_EXTENSIONS.has(ext)) {
     flags.push(`media_type:${ext.replace('.', '')}`)
   }
@@ -144,14 +157,10 @@ function getMediaModerationResultFromUrl(url) {
 }
 
 function ensureAllowedUrl(url) {
-  let parsed = null
-  try {
-    parsed = new URL(url)
-  } catch {
-    throw new Error('Invalid media URL')
-  }
-  if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('Invalid media URL protocol')
-  const ext = path.extname(parsed.pathname || '').toLowerCase()
+  const raw = String(url || '').trim()
+  const internal = raw.startsWith('/uploads/') || raw.startsWith('uploads/') || raw.includes('server/uploads/')
+  if (!internal) throw new Error('Only internal media URLs are allowed')
+  const ext = path.extname(raw).toLowerCase()
   if (!MEDIA_REVIEW_EXTENSIONS.has(ext)) throw new Error('Only .png, .jpg, .jpeg images are supported')
 }
 
@@ -267,7 +276,36 @@ export async function saveDocumentMetadata(ownerId, entityType, entityId, type, 
       metadata: { document_id: doc.id },
     })
   }
+  if (doc.entity_type === 'company_product' && String(doc.type || '').toLowerCase().includes('video')) {
+    await trackEvent({
+      type: 'product_video_uploaded',
+      actor_id: ownerId,
+      entity_id: doc.entity_id,
+      metadata: { document_id: doc.id },
+    })
+  }
   return doc
+}
+
+async function hasAcceptedPaymentProof(contractId) {
+  const proofs = await readJson(PAYMENT_PROOFS_FILE)
+  return (Array.isArray(proofs) ? proofs : []).some((proof) => {
+    if (String(proof.contract_id || '') !== String(contractId || '')) return false
+    const type = String(proof.type || '').toLowerCase()
+    const status = String(proof.status || '').toLowerCase()
+    if (type === 'bank_transfer') return status === 'received'
+    if (type === 'lc') return status === 'accepted'
+    return false
+  })
+}
+
+async function assertPaymentProof(contractId) {
+  const ok = await hasAcceptedPaymentProof(contractId)
+  if (ok) return
+  const err = new Error('Payment proof required before signing or locking this contract.')
+  err.status = 403
+  err.code = 'PAYMENT_PROOF_REQUIRED'
+  throw err
 }
 
 export async function registerExternalDocument(ownerId, entityType, entityId, type, url) {
@@ -400,6 +438,12 @@ export async function updateContractSignatures(contractId, patch = {}, actor) {
     ? sanitizeSignatureState(patch.factory_signature_state, existing.factory_signature_state)
     : existing.factory_signature_state
 
+  const buyerSigning = previousBuyerState !== 'signed' && nextBuyerState === 'signed'
+  const factorySigning = previousFactoryState !== 'signed' && nextFactoryState === 'signed'
+  if (buyerSigning || factorySigning) {
+    await assertPaymentProof(existing.id)
+  }
+
   const next = {
     ...existing,
     is_draft: patch.is_draft !== undefined ? Boolean(patch.is_draft) : existing.is_draft,
@@ -447,6 +491,10 @@ export async function updateContractArtifact(contractId, patch = {}, actor) {
   const artifactStatus = patch.status !== undefined
     ? sanitizeArtifactState(patch.status, existing.artifact?.status || 'draft')
     : (existing.artifact?.status || 'draft')
+
+  if (artifactStatus === 'locked' && existing.artifact?.status !== 'locked') {
+    await assertPaymentProof(existing.id)
+  }
 
   const hasGeneratedArtifact = Boolean(existing.artifact?.generated_at && existing.artifact?.pdf_hash && existing.artifact?.pdf_path)
   if (['locked', 'archived'].includes(artifactStatus) && !hasGeneratedArtifact) {

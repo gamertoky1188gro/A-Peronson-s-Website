@@ -9,12 +9,19 @@ import {
   getUserPlan,
 } from '../services/searchAccessService.js'
 import { readJson } from '../utils/jsonStore.js'
+import { handleControllerError } from '../utils/permissions.js'
 
 function redactRequirementForBuyer(requirement) {
   return {
     id: requirement.id,
     buyer_id: requirement.buyer_id,
     title: requirement.title || requirement.category || 'Buyer Request',
+    request_type: requirement.request_type || 'garments',
+    verified_only: Boolean(requirement.verified_only),
+    specs: requirement.specs || {},
+    quote_deadline: requirement.quote_deadline || null,
+    expires_at: requirement.expires_at || null,
+    max_suppliers: requirement.max_suppliers ?? null,
     product: requirement.product || requirement.category || '',
     category: requirement.category || '',
     quantity: requirement.quantity || '',
@@ -34,7 +41,10 @@ function redactRequirementForBuyer(requirement) {
 }
 
 function parseNumber(value) {
-  const n = Number(String(value || '').replace(/[^\d.]/g, ''))
+  if (value === undefined || value === null) return null
+  const raw = String(value).trim()
+  if (!raw) return null
+  const n = Number(raw.replace(/[^\d.]/g, ''))
   return Number.isFinite(n) ? n : null
 }
 
@@ -66,6 +76,25 @@ function parseRange(value) {
     return { min: single, max: single }
   }
   return { min, max }
+}
+
+function normalizeSearchText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+}
+
+function buildSearchTokens(raw) {
+  const base = normalizeSearchText(raw)
+  if (!base) return []
+  const tokens = base
+    .split(/\s+/)
+    .map((token) => (token === 'woman' ? 'women' : token))
+    .filter(Boolean)
+  return [...new Set(tokens)]
 }
 
 function rangesOverlap(filterRange, valueRange) {
@@ -217,8 +246,12 @@ function topFacetEntries(counts = {}, limit = 8) {
 }
 
 export async function createBuyerRequirement(req, res) {
-  const requirement = await createRequirement(req.user.id, req.body)
-  return res.status(201).json(requirement)
+  try {
+    const requirement = await createRequirement(req.user.id, req.body)
+    return res.status(201).json(requirement)
+  } catch (error) {
+    return handleControllerError(res, error)
+  }
 }
 
 export async function getRequirements(req, res) {
@@ -243,10 +276,14 @@ export async function getRequirement(req, res) {
 }
 
 export async function patchRequirement(req, res) {
-  const updated = await updateRequirement(req.params.requirementId, req.body || {}, req.user)
-  if (updated === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
-  if (!updated) return res.status(404).json({ error: 'Requirement not found' })
-  return res.json(updated)
+  try {
+    const updated = await updateRequirement(req.params.requirementId, req.body || {}, req.user)
+    if (updated === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
+    if (!updated) return res.status(404).json({ error: 'Requirement not found' })
+    return res.json(updated)
+  } catch (error) {
+    return handleControllerError(res, error)
+  }
 }
 
 export async function deleteRequirement(req, res) {
@@ -292,7 +329,8 @@ export async function searchRequirements(req, res) {
   const usersById = new Map(users.map((u) => [u.id, u]))
   const responseTimeByOwner = buildResponseTimeByOwner(messages, users)
 
-  const q = String(req.query.q || '').toLowerCase().trim()
+  const q = String(req.query.q || '').trim()
+  const searchTokens = buildSearchTokens(q)
   const wantedIndustry = String(req.query.industry || '').trim().toLowerCase()
   const wantedCountry = String(req.query.country || '').trim().toLowerCase()
   const wantedOrgType = String(req.query.orgType || '').trim().toLowerCase()
@@ -358,7 +396,11 @@ export async function searchRequirements(req, res) {
       }
     })
     .filter((r) => {
-      if (q && !`${r.category} ${r.product} ${r.material} ${r.custom_description} ${r.title} ${r.color_pantone || ''} ${r.size_range || ''}`.toLowerCase().includes(q)) return false
+      if (searchTokens.length) {
+        const searchText = normalizeSearchText(`${r.category} ${r.product} ${r.material} ${r.custom_description} ${r.title} ${r.color_pantone || ''} ${r.size_range || ''}`)
+        const hit = searchTokens.every((token) => searchText.includes(token))
+        if (!hit) return false
+      }
       if (req.query.category && String(r.category).toLowerCase() !== String(req.query.category).toLowerCase()) return false
       if (wantedIndustry) {
         const reqIndustry = String(r.industry || '').toLowerCase()

@@ -270,25 +270,9 @@ export default function Privacy() {
 
           <LegalCard index={8} className="col-span-12 dark:bg-[#0b1220] dark:text-white" id="contact">
             <h2 className="text-xl font-bold mb-4 text-[#0f172a] dark:text-white">13. Contact Information</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-1">
-                <p className="text-slate-500 dark:text-white/60 text-sm">Direct Support</p>
-                <p className="font-bold underline decoration-sky-500 underline-offset-4">support@gartexhub.com</p>
-              </div>
-              <div className="flex gap-4 items-center">
-                <a
-                  href="#"
-                  className="p-2 rounded-lg bg-black/5 hover:bg-black/10 text-slate-800 dark:bg-white/10 dark:hover:bg-white/20 dark:text-white transition-colors"
-                >
-                  LinkedIn
-                </a>
-                <a
-                  href="#"
-                  className="p-2 rounded-lg bg-black/5 hover:bg-black/10 text-slate-800 dark:bg-white/10 dark:hover:bg-white/20 dark:text-white transition-colors"
-                >
-                  Facebook
-                </a>
-              </div>
+            <div className="space-y-1">
+              <p className="text-slate-500 dark:text-white/60 text-sm">Direct Support</p>
+              <p className="font-bold underline decoration-sky-500 underline-offset-4">gartexhub@gmail.com</p>
             </div>
           </LegalCard>
 

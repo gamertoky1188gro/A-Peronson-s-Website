@@ -5,6 +5,7 @@ import { moderateTextOrRedact } from './policyService.js'
 import { createNotification } from './notificationService.js'
 import { addLeadNoteForMatch } from './leadService.js'
 import { getRequirementById, updateRequirement } from './requirementService.js'
+import { listKnowledge } from './assistantService.js'
 
 const USERS_FILE = 'users.json'
 const MESSAGES_FILE = 'messages.json'
@@ -59,6 +60,32 @@ function buildCompanyFacts(user) {
 function keywordIncludes(text, keywords = []) {
   const lower = String(text || '').toLowerCase()
   return keywords.some((k) => lower.includes(String(k || '').toLowerCase()))
+}
+
+function scoreKnowledgeMatch(questionText, entry) {
+  const q = String(questionText || '').toLowerCase()
+  const question = String(entry?.question || '').toLowerCase()
+  const keywords = Array.isArray(entry?.keywords) ? entry.keywords : []
+  let score = 0
+  if (question && (q.includes(question) || question.includes(q))) score += 3
+  for (const keyword of keywords) {
+    if (keyword && q.includes(String(keyword).toLowerCase())) score += 1
+  }
+  return score
+}
+
+function findKnowledgeAnswer(questionText, entries = []) {
+  let best = null
+  let bestScore = 0
+  for (const entry of entries) {
+    const score = scoreKnowledgeMatch(questionText, entry)
+    if (score > bestScore) {
+      best = entry
+      bestScore = score
+    }
+  }
+  if (!best || bestScore <= 0) return null
+  return { answer: best.answer, entry: best, score: bestScore }
 }
 
 function botMatchResponse({ question = '', companyUser }) {
@@ -128,6 +155,23 @@ function computeMissingFields(requirement) {
     if (typeof value === 'boolean') return false
     return !String(value || '').trim()
   })
+}
+
+function computeQualificationScore(requirement, companyUser) {
+  const missing = computeMissingFields(requirement)
+  const completeness = 1 - (missing.length / Math.max(1, QUALIFICATION_FIELDS.length))
+
+  const facts = buildCompanyFacts(companyUser)
+  const reqCategory = String(requirement?.category || requirement?.industry || requirement?.product || '').toLowerCase().trim()
+  const companyCategories = facts.categories.map((c) => String(c || '').toLowerCase().trim()).filter(Boolean)
+
+  let fitScore = 0.5
+  if (reqCategory && companyCategories.length) {
+    fitScore = companyCategories.some((c) => c.includes(reqCategory) || reqCategory.includes(c)) ? 0.85 : 0.35
+  }
+
+  const score = (0.7 * completeness) + (0.3 * fitScore)
+  return { score: Math.max(0, Math.min(1, Math.round(score * 100) / 100)), missing, fitScore }
 }
 
 function buildQualificationQuestion(missing) {
@@ -276,6 +320,15 @@ export async function maybeGenerateBotReply({ match_id, sender_id, message }) {
   const requirement = await getRequirementById(marketplace.requirementId)
   const isBuyerSender = String(requirement?.buyer_id || '') === String(senderId || '')
 
+  let knowledgeAnswer = null
+  try {
+    const orgOwnerId = resolveOrgOwnerForCompany(companyUser)
+    const entries = await listKnowledge(orgOwnerId)
+    knowledgeAnswer = findKnowledgeAnswer(question, entries)
+  } catch {
+    knowledgeAnswer = null
+  }
+
   let qualificationQuestion = ''
   if (isBuyerSender && requirement) {
     const { patch, notes } = extractRequirementPatch(question, requirement)
@@ -306,9 +359,25 @@ export async function maybeGenerateBotReply({ match_id, sender_id, message }) {
         authorId: 'system',
       })
     }
+
+    const { score, missing, fitScore } = computeQualificationScore(updatedRequirement, companyUser)
+    const summaryLine = [
+      `AI Pre-Qual Summary: Score ${score}`,
+      missing.length ? `Missing: ${missing.map((m) => m.label).join(', ')}` : 'Missing: none',
+      `Fit: ${fitScore >= 0.7 ? 'high' : fitScore >= 0.45 ? 'medium' : 'low'}`,
+    ].join(' | ')
+    await addLeadNoteForMatch({
+      matchId,
+      orgOwnerId: companyUser.id,
+      note: summaryLine,
+      authorId: 'system',
+    })
   }
 
-  let rawReply = botMatchResponse({ question, companyUser })
+  let rawReply = knowledgeAnswer?.answer || ''
+  if (!rawReply) {
+    rawReply = botMatchResponse({ question, companyUser })
+  }
   if (!rawReply && qualificationQuestion) {
     rawReply = qualificationQuestion
   } else if (rawReply && qualificationQuestion) {

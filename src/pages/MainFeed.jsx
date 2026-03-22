@@ -84,6 +84,7 @@ function normalizeFeedItem(raw) {
     moq: raw.moq || '',
     leadTimeDays: raw.lead_time_days || '',
     hasVideo: Boolean(raw.hasVideo || (!raw.video_restricted && raw.video_review_status === 'approved' && raw.video_url)),
+    discussionActive: Boolean(raw.discussion_active),
     feedMetadata: raw.feed_metadata || {},
   }
 }
@@ -228,10 +229,15 @@ export default function MainFeed() {
         }
       }
 
-      const data = await apiRequest(
-        `/feed*unique=${unique ? 'true' : 'false'}&type=${encodeURIComponent(feedType)}&category=${encodeURIComponent(activeCategory)}&cursor=${cursor}&limit=${limit}&role_filter=true`,
-        { token },
-      )
+      const query = new URLSearchParams({
+        unique: unique ? 'true' : 'false',
+        type: feedType,
+        category: activeCategory,
+        cursor: String(cursor),
+        limit: String(limit),
+        role_filter: 'true',
+      }).toString()
+      const data = await apiRequest(`/feed?${query}`, { token })
       const rows = Array.isArray(data?.items) ? data.items : []
       const normalized = rows.map(normalizeFeedItem)
 
@@ -296,7 +302,7 @@ export default function MainFeed() {
     setNotice({ type: '', message: '' })
     try {
       await apiRequest(`/social/${encodeURIComponent(item.entityType)}/${encodeURIComponent(item.id)}/share`, { method: 'POST', token })
-      const url = `${window.location.origin}/feed*item=${encodeURIComponent(`${item.entityType}:${item.id}`)}`
+      const url = `${window.location.origin}/feed?item=${encodeURIComponent(`${item.entityType}:${item.id}`)}`
       await copyToClipboard(url)
       setNotice({ type: 'success', message: 'Share link copied to clipboard.' })
     } catch (err) {

@@ -199,6 +199,14 @@ export default function Terms() {
             <p className="mt-6 text-sm italic text-slate-600 dark:text-white/80">
               All media content must be published in a professional and business-like manner.
             </p>
+            <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900 shadow-[0_8px_30px_rgba(244,63,94,0.12)] dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-100">
+              <p className="font-bold uppercase tracking-wide">Strict policy: No third-party contact sharing</p>
+              <p className="mt-2 leading-relaxed">
+                Sharing any external contact information (phone, email, WhatsApp, Telegram, Facebook, Instagram, or similar)
+                is strictly forbidden on GarTexHub. Violations will result in account restrictions and may lead to permanent
+                termination.
+              </p>
+            </div>
           </LegalCard>
 
           {[

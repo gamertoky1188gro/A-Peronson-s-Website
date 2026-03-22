@@ -16,6 +16,7 @@ export default function Insights() {
   const { dashboard, companyAnalytics, platformAnalytics, subscription, isEnterprise, loading, error, forbidden } = useAnalyticsDashboard()
   const totals = dashboard?.totals || {}
   const byType = dashboard?.analytics_events?.by_type || {}
+  const interactionSummary = dashboard?.interaction_summary || {}
   const topMetrics = Array.isArray(dashboard?.top_metrics) ? dashboard.top_metrics : []
   const companyTotals = companyAnalytics?.totals || {}
   const topProducts = Array.isArray(companyAnalytics?.top_products) ? companyAnalytics.top_products : []
@@ -73,6 +74,27 @@ export default function Insights() {
               <StatCard label="Active Chats" value={totals.chats ?? 0} />
               <StatCard label="Connected Partners" value={totals.partner_network ?? 0} />
               <StatCard label="Contracts / Documents" value={`${totals.contracts ?? 0} / ${totals.documents ?? 0}`} />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-4">
+              <StatCard label="Total Page Views" value={interactionSummary.total_page_views ?? 0} />
+              <StatCard label="Total Clicks" value={interactionSummary.total_clicks ?? 0} />
+              <StatCard label="Avg Session Duration" value={`${interactionSummary.avg_session_duration_seconds ?? 0}s`} />
+              <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="text-sm text-slate-600 dark:text-slate-400">Top Pages</div>
+                <div className="mt-2 space-y-1 text-xs text-slate-700 dark:text-slate-300">
+                  {(interactionSummary.top_pages || []).length ? (
+                    interactionSummary.top_pages.map((row) => (
+                      <div key={row.page} className="flex items-center justify-between">
+                        <span className="truncate">{row.page}</span>
+                        <span className="font-semibold">{row.count}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-slate-500">No page view data yet.</div>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">

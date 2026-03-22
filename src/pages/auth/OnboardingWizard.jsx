@@ -105,7 +105,7 @@ export default function OnboardingWizard() {
               <StepHeader
                 step={1}
                 title="Add your profile image"
-                subtitle="This helps buyers and suppliers recognize your organization quickly. You can paste a URL for now (MVP)."
+                subtitle="Optional. You can paste a URL for now."
               />
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">Profile image URL</label>
               <input
@@ -128,7 +128,7 @@ export default function OnboardingWizard() {
               <StepHeader
                 step={2}
                 title="Confirm your organization"
-                subtitle="Use the official name -- this improves trust and verification readiness."
+                subtitle="Use the official name used in documents."
               />
               <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">Organization name</label>
               <input
@@ -148,7 +148,7 @@ export default function OnboardingWizard() {
               <StepHeader
                 step={3}
                 title="Select categories"
-                subtitle="Pick a few categories you work with. This helps matching and smart notifications."
+                subtitle="Pick a few categories you work with."
               />
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {DEFAULT_CATEGORIES.map((cat) => {

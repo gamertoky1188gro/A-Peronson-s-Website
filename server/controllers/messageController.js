@@ -6,6 +6,7 @@ import {
   canAccessMatch,
   listFriendMatchIdsForUser,
   listMessagesByMatch,
+  markThreadRead,
   postFriendMessage,
   postMessage,
   rejectMessageRequest,
@@ -33,6 +34,17 @@ export async function getMessages(req, res) {
   const allowed = await canAccessMatch(req.params.matchId, req.user.id)
   if (!allowed) return res.status(403).json({ error: 'Forbidden' })
   return res.json(await listMessagesByMatch(req.params.matchId))
+}
+
+export async function markRead(req, res) {
+  const allowed = await canAccessMatch(req.params.matchId, req.user.id)
+  if (!allowed) return res.status(403).json({ error: 'Forbidden' })
+  try {
+    const row = await markThreadRead(req.params.matchId, req.user.id)
+    return res.json(row)
+  } catch (error) {
+    return res.status(error.status || 400).json({ error: error.message || 'Unable to mark as read' })
+  }
 }
 
 export async function sendFriendDirectMessage(req, res) {

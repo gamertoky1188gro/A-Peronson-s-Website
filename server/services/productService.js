@@ -21,7 +21,6 @@ const MUSIC_INSTRUMENT_KEYWORDS = [
   'tabla',
   'instrument',
 ]
-const TRUSTED_VIDEO_HOSTS = ['youtube.com', 'youtu.be', 'vimeo.com', 'loom.com', 'drive.google.com']
 const PRODUCT_STATUSES = new Set(['draft', 'published'])
 const IMAGE_URL_LIMIT = 12
 
@@ -47,7 +46,21 @@ function sanitizeImageUrl(value) {
   return sanitizeString(String(value || ''), 600)
 }
 
+function isInternalMediaUrl(value) {
+  const raw = sanitizeImageUrl(value)
+  if (!raw) return false
+  if (raw.startsWith('/uploads/')) return true
+  if (raw.startsWith('uploads/')) return true
+  if (raw.includes('server/uploads/')) return true
+  return false
+}
+
 function normalizeImageUrls(value) {
+  const cleaned = extractImageUrlCandidates(value)
+  return [...new Set(cleaned.filter((url) => Boolean(url && isInternalMediaUrl(url))))].slice(0, IMAGE_URL_LIMIT)
+}
+
+function extractImageUrlCandidates(value) {
   const raw = Array.isArray(value)
     ? value
     : (typeof value === 'string' ? value.split(',') : [])
@@ -58,7 +71,7 @@ function normalizeImageUrls(value) {
     }
     return ''
   }).filter(Boolean)
-  return [...new Set(cleaned)].slice(0, IMAGE_URL_LIMIT)
+  return cleaned
 }
 
 function syncCoverImage(imageUrls, coverImage) {
@@ -120,6 +133,24 @@ function buildImageGallery(product, documents = []) {
   })
 
   return gallery
+}
+
+function assertInternalMediaUrls(urls = [], fieldName = 'media') {
+  const bad = urls.filter((url) => url && !isInternalMediaUrl(url))
+  if (bad.length) {
+    const err = new Error(`Only internal media URLs are allowed for ${fieldName}.`)
+    err.status = 400
+    throw err
+  }
+}
+
+function assertInternalMediaUrl(value, fieldName = 'media') {
+  if (!value) return
+  if (!isInternalMediaUrl(value)) {
+    const err = new Error(`Only internal media URLs are allowed for ${fieldName}.`)
+    err.status = 400
+    throw err
+  }
 }
 
 function presentProduct(product, documents = [], viewer = {}) {
@@ -196,22 +227,8 @@ function getVideoModerationResult({ title = '', description = '', videoUrl = '' 
     return { flags: [], videoReviewStatus: 'approved', videoRestricted: false }
   }
 
-  let parsed = null
-  try {
-    parsed = new URL(videoUrl)
-  } catch {
-    hardFlags.push('invalid_video_url')
-  }
-
-  if (parsed && !['http:', 'https:'].includes(parsed.protocol)) {
-    hardFlags.push('invalid_video_protocol')
-  }
-
-  if (parsed) {
-    const host = parsed.hostname.toLowerCase()
-    if (!TRUSTED_VIDEO_HOSTS.some((allowed) => host === allowed || host.endsWith(`.${allowed}`))) {
-      hardFlags.push('untrusted_video_host')
-    }
+  if (!isInternalMediaUrl(videoUrl)) {
+    hardFlags.push('external_video_url_blocked')
   }
 
   const searchableText = `${title} ${description} ${videoUrl}`.toLowerCase()
@@ -228,10 +245,11 @@ function getVideoModerationResult({ title = '', description = '', videoUrl = '' 
   }
 
   const flags = [...hardFlags, ...softFlags]
-  const videoRestricted = flags.length > 0
+  const isInternal = isInternalMediaUrl(videoUrl)
+  const videoRestricted = flags.length > 0 || isInternal
   const videoReviewStatus = hardFlags.length > 0
     ? 'restricted'
-    : (softFlags.length > 0 ? 'pending_review' : 'approved')
+    : (isInternal || softFlags.length > 0 ? 'pending_review' : 'approved')
   return {
     flags,
     videoReviewStatus,
@@ -249,8 +267,12 @@ export async function createProduct(user, payload) {
   let description = sanitizeString(payload.description || '', 1200)
   const videoUrl = sanitizeString(payload.video_url || '', 260)
   const status = normalizeProductStatus(payload.status || 'published')
-  const imageUrls = normalizeImageUrls(payload.image_urls || payload.imageUrls)
+  const imageCandidates = extractImageUrlCandidates(payload.image_urls || payload.imageUrls)
+  const imageUrls = normalizeImageUrls(imageCandidates)
   const coverSeed = sanitizeImageUrl(payload.cover_image_url || payload.coverImageUrl || '')
+  assertInternalMediaUrls(imageCandidates, 'product images')
+  assertInternalMediaUrl(coverSeed, 'product cover image')
+  assertInternalMediaUrl(videoUrl, 'product video')
   const { cover_image_url, image_urls } = syncCoverImage(imageUrls, coverSeed)
   const moderation = getVideoModerationResult({ title, description, videoUrl })
   const row = {
@@ -352,12 +374,16 @@ export async function updateProductById(actor, productId, patch = {}) {
   const nextVideoUrl = patch.video_url !== undefined ? sanitizeString(patch.video_url || '', 260) : existing.video_url
   const moderation = getVideoModerationResult({ title: nextTitle, description: nextDescription, videoUrl: nextVideoUrl })
   const status = patch.status !== undefined ? normalizeProductStatus(patch.status, existing.status || 'published') : normalizeProductStatus(existing.status)
-  const imageUrls = patch.image_urls !== undefined || patch.imageUrls !== undefined
-    ? normalizeImageUrls(patch.image_urls || patch.imageUrls || [])
-    : normalizeImageUrls(existing.image_urls)
+  const imageCandidates = patch.image_urls !== undefined || patch.imageUrls !== undefined
+    ? extractImageUrlCandidates(patch.image_urls || patch.imageUrls || [])
+    : extractImageUrlCandidates(existing.image_urls)
+  const imageUrls = normalizeImageUrls(imageCandidates)
   const coverSeed = patch.cover_image_url !== undefined || patch.coverImageUrl !== undefined
     ? sanitizeImageUrl(patch.cover_image_url || patch.coverImageUrl || '')
     : sanitizeImageUrl(existing.cover_image_url)
+  assertInternalMediaUrls(imageCandidates, 'product images')
+  assertInternalMediaUrl(coverSeed, 'product cover image')
+  assertInternalMediaUrl(nextVideoUrl, 'product video')
   const syncedCover = syncCoverImage(imageUrls, coverSeed)
 
   try {

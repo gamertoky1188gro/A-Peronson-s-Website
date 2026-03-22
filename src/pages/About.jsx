@@ -165,7 +165,7 @@ export default function About() {
               ].join(' ')}
             >
               <h1 className="text-4xl font-extrabold tracking-tight text-[#1E293B] dark:text-[#F1F5F9] sm:text-5xl">
-                About GarTexHub
+                About GarTexHub - Show notifications
               </h1>
               <p className="mt-3 text-lg italic text-[#475569] dark:text-slate-300">
                 A professional B2B platform built exclusively for the Garments and Textile industry.

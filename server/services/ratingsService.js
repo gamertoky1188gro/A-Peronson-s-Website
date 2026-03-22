@@ -369,6 +369,7 @@ export async function getProfileRatingsSummary(profileKey) {
     breakdown: computeBreakdown(ratings),
     recent_reviews: recent.slice(0, 5).map((row) => ({
       id: row.id,
+      from_user_id: row.from_user_id,
       score: row.score,
       comment: row.comment,
       interaction_type: row.interaction_type,
@@ -376,6 +377,43 @@ export async function getProfileRatingsSummary(profileKey) {
     })),
     feedback_requests: store.feedback_requests.filter((row) => row.profile_key === normalizedProfile && row.status === 'pending').length,
   }
+}
+
+export async function updateRating({ ratingId, actorId, score, comment }) {
+  const store = await readStore()
+  const idx = store.ratings.findIndex((row) => String(row.id) === String(ratingId || ''))
+  if (idx < 0) return null
+  if (String(store.ratings[idx].from_user_id) !== String(actorId)) {
+    const err = new Error('Only the reviewer can edit this rating')
+    err.status = 403
+    throw err
+  }
+
+  const nextScore = score === undefined ? store.ratings[idx].score : Math.min(5, Math.max(1, Math.round(safeNumber(score, store.ratings[idx].score || 0))))
+  const nextComment = comment === undefined ? store.ratings[idx].comment : sanitizeString(comment, 500)
+
+  store.ratings[idx] = {
+    ...store.ratings[idx],
+    score: nextScore,
+    comment: nextComment,
+  }
+  await saveStore(store)
+  return store.ratings[idx]
+}
+
+export async function deleteRating({ ratingId, actorId }) {
+  const store = await readStore()
+  const idx = store.ratings.findIndex((row) => String(row.id) === String(ratingId || ''))
+  if (idx < 0) return null
+  if (String(store.ratings[idx].from_user_id) !== String(actorId)) {
+    const err = new Error('Only the reviewer can delete this rating')
+    err.status = 403
+    throw err
+  }
+
+  const [removed] = store.ratings.splice(idx, 1)
+  await saveStore(store)
+  return removed
 }
 
 export async function getRatingsForProfiles(profileKeys = []) {

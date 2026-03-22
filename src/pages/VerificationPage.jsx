@@ -77,13 +77,13 @@ export default function VerificationPage() {
   const role = user?.role || 'buyer'
 
   const [verification, setVerification] = useState(null)
-  const [subscription, setSubscription] = useState(null)
   const [buyerCountry, setBuyerCountry] = useState('')
   const [busyDoc, setBusyDoc] = useState('')
   const [savingCountry, setSavingCountry] = useState(false)
   const [error, setError] = useState('')
   const [feedback, setFeedback] = useState('')
   const [optionalLicenseInput, setOptionalLicenseInput] = useState('')
+  const [renewing, setRenewing] = useState(false)
 
   const fileInputRef = useRef(null)
   const pendingDocRef = useRef('')
@@ -106,12 +106,8 @@ export default function VerificationPage() {
     setError('')
     setFeedback('')
     try {
-      const [verificationData, subscriptionData] = await Promise.all([
-        apiRequest('/verification/me', { token }),
-        apiRequest('/subscriptions/me', { token }),
-      ])
+      const verificationData = await apiRequest('/verification/me', { token })
       setVerification(verificationData)
-      setSubscription(subscriptionData)
       setBuyerCountry(String(verificationData?.documents?.buyer_country || ''))
     } catch (err) {
       setError(err.message || 'Could not load verification center data')
@@ -239,6 +235,23 @@ export default function VerificationPage() {
     }
   }
 
+  async function handleRenewVerification() {
+    if (!token) return
+    setError('')
+    setFeedback('')
+    setRenewing(true)
+    try {
+      const res = await apiRequest('/verification/renew', { method: 'POST', token })
+      if (res?.verification) setVerification(res.verification)
+      const price = Number(res?.price_usd || 0)
+      setFeedback(`Verification subscription updated. Charged $${price.toFixed(2)}.`)
+    } catch (err) {
+      setError(err.message || 'Verification payment failed')
+    } finally {
+      setRenewing(false)
+    }
+  }
+
   const credibilityScore = verification?.credibility?.score ?? 0
   const credibilityBadge = verification?.credibility?.badge || 'Basic credibility'
   const verified = Boolean(verification?.verified)
@@ -252,6 +265,7 @@ export default function VerificationPage() {
       <header className="rounded-2xl border border-slate-200 bg-white p-5">
         <h1 className="text-2xl font-bold">Verification Center</h1>
         <p className="text-sm text-slate-600 mt-1">Verification is subscription-based and renews monthly.</p>
+        <p className="text-xs text-slate-500 mt-1">First month: $1.99 â€¢ Renewals: $6.99/month</p>
         <p className="text-xs text-slate-500 mt-2">Review status: <span className="font-semibold">{reviewStatus}</span>{reviewReason ? ` â€¢ ${reviewReason}` : ''}</p>
         <p className="text-xs text-slate-500 mt-2">Need help* Visit the <a href="/help" className="underline text-slate-700">Help Center</a>.</p>
       </header>
@@ -362,14 +376,23 @@ export default function VerificationPage() {
 
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <p className="text-xs text-slate-500">Subscription</p>
-            <p className="mt-1 text-sm font-semibold text-slate-900">{subscription?.plan || subscription?.status || '--'}</p>
-            <p className="mt-1 text-[11px] text-slate-600">Verification approval requires an active subscription.</p>
+            <p className="mt-1 text-sm font-semibold text-slate-900">{remainingDays > 0 ? 'Active' : 'Inactive'}</p>
+            <p className="mt-1 text-[11px] text-slate-600">Verification approval requires an active verification subscription.</p>
             {remainingDays ? (
               <p className={`mt-2 text-[11px] ${expiringSoon ? 'text-amber-700' : 'text-slate-600'}`}>
                 Remaining: {remainingDays} day{remainingDays === 1 ? '' : 's'} {expiringSoon ? '(expiring soon)' : ''}
               </p>
             ) : null}
           </div>
+
+          <button
+            type="button"
+            onClick={handleRenewVerification}
+            disabled={renewing}
+            className="w-full rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182] disabled:opacity-70"
+          >
+            {renewing ? 'Processing...' : 'Pay / Renew Verification'}
+          </button>
 
           <button
             type="button"

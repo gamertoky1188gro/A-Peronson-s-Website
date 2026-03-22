@@ -14,7 +14,7 @@ export default defineConfig({
     }),
   ],
   server: {
-    allowedHosts: ['newest-guild-folder-term.trycloudflare.com'],
+    allowedHosts: ['habits-asia-occur-acute.trycloudflare.com'],
     proxy: {
       '/api': {
         target: process.env.VITE_API_PROXY || 'http://localhost:4000',

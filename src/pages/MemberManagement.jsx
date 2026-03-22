@@ -135,7 +135,7 @@ export default function MemberManagement() {
     setError('')
     setSuccess('')
     try {
-      await apiRequest(`${MEMBER_API_BASE}/${memberId}*remove=${remove ? 'true' : 'false'}`, { method: 'DELETE', token })
+      await apiRequest(`${MEMBER_API_BASE}/${memberId}?remove=${remove ? 'true' : 'false'}`, { method: 'DELETE', token })
       setSuccess(remove ? 'Member removed.' : 'Member deactivated.')
       await loadMembers()
     } catch (err) {

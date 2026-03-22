@@ -1,6 +1,5 @@
 import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
-import { isSubscriptionValid } from './subscriptionService.js'
 import { logInfo } from '../utils/logger.js'
 import { isEuCountry } from '../../shared/config/geo.js'
 
@@ -175,6 +174,72 @@ export async function getVerification(userId) {
   return all.find((v) => v.user_id === userId) || null
 }
 
+function diffDaysFromNow(endDate) {
+  const endTime = new Date(endDate || '').getTime()
+  if (!Number.isFinite(endTime)) return 0
+  const diffMs = endTime - Date.now()
+  if (diffMs <= 0) return 0
+  return Math.ceil(diffMs / (24 * 60 * 60 * 1000))
+}
+
+export async function isVerificationSubscriptionValid(userId) {
+  const rec = await getVerification(userId)
+  if (!rec?.subscription_valid_until) return false
+  return diffDaysFromNow(rec.subscription_valid_until) > 0
+}
+
+export async function setVerificationSubscription(userId, endDate) {
+  const all = await readJson(FILE)
+  const idx = all.findIndex((v) => v.user_id === userId)
+  const nextEnd = endDate || ''
+  const remainingDays = diffDaysFromNow(nextEnd)
+  const expiringSoon = remainingDays > 0 && remainingDays <= 7
+
+  if (idx < 0) {
+    all.push({
+      user_id: userId,
+      role: '',
+      buyer_region: '',
+      documents: emptyDocs(),
+      verified: false,
+      verified_at: '',
+      subscription_valid_until: nextEnd,
+      subscription_remaining_days: remainingDays,
+      expiring_soon: expiringSoon,
+      missing_required: [],
+      credibility: buildCredibility([], emptyDocs()),
+      review_status: 'pending',
+      review_reason: '',
+      reviewed_at: '',
+      updated_at: new Date().toISOString(),
+    })
+  } else {
+    all[idx].subscription_valid_until = nextEnd
+    all[idx].subscription_remaining_days = remainingDays
+    all[idx].expiring_soon = expiringSoon
+    all[idx].verification_status = all[idx].verified
+      ? (expiringSoon ? 'expiring_soon' : 'verified_active')
+      : (remainingDays > 0 ? 'pending_review' : 'expired')
+    all[idx].updated_at = new Date().toISOString()
+  }
+
+  await writeJson(FILE, all)
+  return idx < 0 ? all[all.length - 1] : all[idx]
+}
+
+function addDaysFrom(baseDate, days = 30) {
+  const now = Date.now()
+  const base = new Date(baseDate || '').getTime()
+  const start = Number.isFinite(base) && base > now ? base : now
+  return new Date(start + days * 24 * 60 * 60 * 1000).toISOString()
+}
+
+export async function extendVerificationSubscription(userId, days = 30) {
+  const rec = await getVerification(userId)
+  const nextEnd = addDaysFrom(rec?.subscription_valid_until, days)
+  return setVerificationSubscription(userId, nextEnd)
+}
+
 function normalizeCountryCode(value) {
   return sanitizeString(String(value || ''), 80).trim()
 }
@@ -274,7 +339,7 @@ export async function adminApproveVerification(userId) {
   const idx = all.findIndex((v) => v.user_id === userId)
   if (idx < 0) return null
 
-  const validSub = await isSubscriptionValid(userId)
+  const validSub = await isVerificationSubscriptionValid(userId)
   if (!validSub) {
     all[idx].verified = false
     all[idx].missing_required = [...(all[idx].missing_required || []), 'premium_subscription_required_for_verification']
@@ -296,7 +361,7 @@ export async function adminApproveVerification(userId) {
   all[idx].review_status = 'approved'
   all[idx].review_reason = ''
   all[idx].reviewed_at = new Date().toISOString()
-  all[idx].subscription_valid_until = (await readJson('subscriptions.json')).find((s) => s.user_id === userId)?.end_date || ''
+  all[idx].subscription_valid_until = all[idx].subscription_valid_until || ''
   await writeJson(FILE, all)
   logInfo('Verification approved', { user_id: userId })
   return all[idx]
@@ -319,17 +384,15 @@ export async function adminRejectVerification(userId, reason = '') {
 
 export async function revokeExpiredVerifications() {
   const all = await readJson(FILE)
-  const subs = await readJson('subscriptions.json')
   let changed = false
 
   for (const rec of all) {
-    const sub = subs.find((s) => s.user_id === rec.user_id)
-    const active = sub && new Date(sub.end_date).getTime() > Date.now()
-    const remainingDays = sub ? Math.max(0, Math.ceil((new Date(sub.end_date).getTime() - Date.now()) / (24 * 60 * 60 * 1000))) : 0
+    const active = rec.subscription_valid_until && new Date(rec.subscription_valid_until).getTime() > Date.now()
+    const remainingDays = rec.subscription_valid_until ? Math.max(0, Math.ceil((new Date(rec.subscription_valid_until).getTime() - Date.now()) / (24 * 60 * 60 * 1000))) : 0
     const expiringSoon = rec.verified && remainingDays > 0 && remainingDays <= 7
     if (!active && rec.verified) {
       rec.verified = false
-      rec.subscription_valid_until = sub?.end_date || ''
+      rec.subscription_valid_until = rec.subscription_valid_until || ''
       rec.review_status = 'expired'
       rec.review_reason = 'subscription_expired'
       rec.reviewed_at = new Date().toISOString()

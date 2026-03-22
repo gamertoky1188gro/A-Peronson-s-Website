@@ -1,4 +1,4 @@
-/*
+﻿/*
   Route: /search
   Access: Protected (login required)
   Allowed roles: buyer, buying_house, factory, owner, admin, agent
@@ -22,7 +22,7 @@
     - POST /api/search/alerts (save alerts)
 
   Major UI/UX patterns:
-    - Glass + glow search bar with shortcut hint (Ctrl/⌘ + K).
+    - Glass + glow search bar with shortcut hint (Ctrl/âŒ˜ + K).
     - layoutId animated tabs for "All / Buyer Requests / Companies".
     - Skeleton shimmer while loading.
     - Optional premium-locked overlays for advanced filters.
@@ -42,6 +42,14 @@ const TAB_OPTIONS = [
   { id: 'requests', label: 'Buyer Requests', icon: Briefcase },
   { id: 'companies', label: 'Companies', icon: Building2 },
 ]
+
+const INDUSTRY_OPTIONS = [
+  { value: 'garments', label: 'Garments' },
+  { value: 'textile', label: 'Textile' },
+]
+
+const GARMENT_CATEGORIES = ['Shirts', 'Pants', 'Jackets', 'Knitwear', 'Denim', 'Women', 'Kids']
+const TEXTILE_CATEGORIES = ['Woven', 'Knit', 'Denim', 'Non-woven', 'Yarn', 'Trim', 'Accessories']
 
 function roleToProfileRoute(role, id) {
   // Convert a company role -> correct profile route.
@@ -172,9 +180,15 @@ export default function SearchResults() {
   const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'all')
   const [category, setCategory] = useState(() => searchParams.get('category') || '')
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false)
   const [upgradePrompt, setUpgradePrompt] = useState('')
   const [alertFeedback, setAlertFeedback] = useState('')
   const [autoSaveCandidate, setAutoSaveCandidate] = useState(null)
+  const [autoSaveAlertsEnabled] = useState(() => {
+    const raw = sessionUser?.profile?.auto_save_search_alerts
+    if (raw === undefined || raw === null || raw === '') return true
+    return raw === true || String(raw).toLowerCase() === 'true'
+  })
 
   const [filters, setFilters] = useState(() => ({
     industry: searchParams.get('industry') || '',
@@ -217,6 +231,13 @@ export default function SearchResults() {
   const hasAdvancedAccess = Boolean(capabilities?.filters?.advanced)
   const premiumLocked = !hasAdvancedAccess
 
+  const categoryOptions = useMemo(() => {
+    const industry = String(filters.industry || '').toLowerCase()
+    if (industry === 'textile') return TEXTILE_CATEGORIES
+    if (industry === 'garments') return GARMENT_CATEGORIES
+    return [...new Set([...GARMENT_CATEGORIES, ...TEXTILE_CATEGORIES])]
+  }, [filters.industry])
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [quotaMessage, setQuotaMessage] = useState('')
@@ -231,6 +252,100 @@ export default function SearchResults() {
 
   const autoSearchRef = useRef(false)
   const filterTrackRef = useRef({ key: '', initialized: false })
+  const autoSaveKeyRef = useRef('')
+
+  const autoSaveAlert = useCallback(async (candidate) => {
+    if (!autoSaveAlertsEnabled) return
+    if (!candidate) return
+    const key = JSON.stringify(candidate)
+    if (autoSaveKeyRef.current === key) return
+    autoSaveKeyRef.current = key
+    try {
+      await apiRequest('/search/alerts', {
+        method: 'POST',
+        token,
+        body: { query: candidate.query || 'saved-search', filters: { category: candidate.category, ...candidate.filters, auto: true } },
+      })
+    } catch (err) {
+      if (err?.status === 429) {
+        setAlertFeedback('Daily auto-alert quota reached. Search still ran normally.')
+      } else if (err?.message) {
+        setAlertFeedback(err.message)
+      }
+    }
+  }, [autoSaveAlertsEnabled, token])
+
+  const runSearch = useCallback(async () => {
+    const q = query.trim()
+    setLoading(true)
+    setError('')
+    setQuotaMessage('')
+    setUpgradePrompt('')
+    setAlertFeedback('')
+
+    try {
+      const qs = buildQueryString({
+        q,
+        category: category.trim(),
+        filters,
+        includeAdvanced: hasAdvancedAccess,
+      })
+
+      // Keep URL in sync so searches are shareable/bookmarkable (project.md).
+      const nextParams = new URLSearchParams(qs)
+      if (activeTab) nextParams.set('tab', activeTab)
+      setSearchParams(nextParams, { replace: true })
+
+      const [reqRes, prodRes] = await Promise.all([
+        apiRequest(`/requirements/search?${qs}`, { token }),
+        apiRequest(`/products/search?${qs}`, { token }),
+      ])
+
+      const reqItems = Array.isArray(reqRes?.items) ? reqRes.items : []
+      const prodItems = Array.isArray(prodRes?.items) ? prodRes.items : []
+
+      setRequests(reqItems)
+      setCompanies(prodItems)
+
+      const mergedCapabilities = reqRes?.capabilities || prodRes?.capabilities || { filters: { advanced: false } }
+      setCapabilities(mergedCapabilities)
+
+      const hasActiveFilters = Boolean(q) || Boolean(category.trim()) || Object.values(filters || {}).some((v) => (typeof v === 'boolean' ? v : String(v || '').trim()))
+      const candidate = hasActiveFilters ? { query: q, category: category.trim(), filters } : null
+      setAutoSaveCandidate(candidate)
+      await autoSaveAlert(candidate)
+
+      if (reqRes?.quota) {
+        if (reqRes.quota.unlimited) {
+          setQuotaMessage('Core searches are unlimited on your plan.')
+        } else if (reqRes.quota.remaining !== undefined) {
+          setQuotaMessage(`Search quota remaining today: ${reqRes.quota.remaining}`)
+        }
+      }
+
+      trackClientEvent('search_run', {
+        entityType: 'search',
+        entityId: activeTab,
+        metadata: {
+          query: q,
+          category: category.trim(),
+          filters: { ...filters, advanced: hasAdvancedAccess },
+          total_results: reqItems.length + prodItems.length,
+        },
+      })
+    } catch (err) {
+      setError(err.message || 'Search failed')
+      setRequests([])
+      setCompanies([])
+      if (err?.quota?.unlimited) {
+        setQuotaMessage('Core searches are unlimited on your plan.')
+      } else if (err?.quota?.remaining !== undefined) {
+        setQuotaMessage(`Remaining today: ${err.quota.remaining}`)
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [activeTab, autoSaveAlert, category, filters, hasAdvancedAccess, query, setSearchParams, token])
 
   useEffect(() => {
     const handler = (e) => {
@@ -282,76 +397,6 @@ export default function SearchResults() {
     }, 600)
     return () => window.clearTimeout(timer)
   }, [activeTab, category, filters, hasAdvancedAccess, query])
-
-  const runSearch = useCallback(async () => {
-    const q = query.trim()
-    setLoading(true)
-    setError('')
-    setQuotaMessage('')
-    setUpgradePrompt('')
-    setAlertFeedback('')
-
-    try {
-      const qs = buildQueryString({
-        q,
-        category: category.trim(),
-        filters,
-        includeAdvanced: hasAdvancedAccess,
-      })
-
-      // Keep URL in sync so searches are shareable/bookmarkable (project.md).
-      const nextParams = new URLSearchParams(qs)
-      if (activeTab) nextParams.set('tab', activeTab)
-      setSearchParams(nextParams, { replace: true })
-
-      const [reqRes, prodRes] = await Promise.all([
-        apiRequest(`/requirements/search*${qs}`, { token }),
-        apiRequest(`/products/search*${qs}`, { token }),
-      ])
-
-      const reqItems = Array.isArray(reqRes?.items) ? reqRes.items : []
-      const prodItems = Array.isArray(prodRes?.items) ? prodRes.items : []
-
-      setRequests(reqItems)
-      setCompanies(prodItems)
-
-      const mergedCapabilities = reqRes?.capabilities || prodRes?.capabilities || { filters: { advanced: false } }
-      setCapabilities(mergedCapabilities)
-
-      const hasActiveFilters = Boolean(q) || Boolean(category.trim()) || Object.values(filters || {}).some((v) => (typeof v === 'boolean' ? v : String(v || '').trim()))
-      setAutoSaveCandidate(hasActiveFilters ? { query: q, category: category.trim(), filters } : null)
-
-      if (reqRes?.quota) {
-        if (reqRes.quota.unlimited) {
-          setQuotaMessage('Core searches are unlimited on your plan.')
-        } else if (reqRes.quota.remaining !== undefined) {
-          setQuotaMessage(`Search quota remaining today: ${reqRes.quota.remaining}`)
-        }
-      }
-
-      trackClientEvent('search_run', {
-        entityType: 'search',
-        entityId: activeTab,
-        metadata: {
-          query: q,
-          category: category.trim(),
-          filters: { ...filters, advanced: hasAdvancedAccess },
-          total_results: reqItems.length + prodItems.length,
-        },
-      })
-    } catch (err) {
-      setError(err.message || 'Search failed')
-      setRequests([])
-      setCompanies([])
-      if (err?.quota?.unlimited) {
-        setQuotaMessage('Core searches are unlimited on your plan.')
-      } else if (err?.quota?.remaining !== undefined) {
-        setQuotaMessage(`Remaining today: ${err.quota.remaining}`)
-      }
-    } finally {
-      setLoading(false)
-    }
-  }, [activeTab, category, filters, hasAdvancedAccess, query, setSearchParams, token])
 
   const loadRecentViews = useCallback(async () => {
     try {
@@ -499,21 +544,9 @@ export default function SearchResults() {
                 className="w-full rounded-full bg-slate-100/70 px-4 py-3 pr-16 text-sm text-slate-800 shadow-inner ring-1 ring-slate-200/70 transition focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
               />
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-semibold tracking-widest text-slate-500 ring-1 ring-slate-200/70 dark:bg-slate-950/40 dark:text-slate-400 dark:ring-white/10">
-                {isMac ? '⌘ K' : 'Ctrl K'}
+                {isMac ? 'Cmd K' : 'Ctrl K'}
               </span>
             </div>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="rounded-full bg-white px-4 py-3 text-sm text-slate-800 ring-1 ring-slate-200/70 transition focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-            >
-              <option value="">All categories</option>
-              <option value="Shirts">Shirts</option>
-              <option value="Knitwear">Knitwear</option>
-              <option value="Denim">Denim</option>
-              <option value="Women">Women</option>
-              <option value="Kids">Kids</option>
-            </select>
             <button
               type="button"
               onClick={runSearch}
@@ -524,18 +557,42 @@ export default function SearchResults() {
             </button>
           </div>
 
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setCategory('')}
+              className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition ${category ? 'bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50' : 'bg-[var(--gt-blue)] text-white ring-transparent'}`}
+            >
+              All categories
+            </button>
+            {categoryOptions.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setCategory(option)}
+                className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition ${category === option ? 'bg-[var(--gt-blue)] text-white ring-transparent' : 'bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50'}`}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+
           {filtersOpen ? (
             <div className="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-3">
               <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/70 dark:bg-slate-900/40 dark:ring-white/10">
                 <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Core filters</p>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Always free</p>
                 <div className="mt-3 grid grid-cols-1 gap-2">
-                  <input
+                  <select
                     value={filters.industry}
                     onChange={(e) => updateCoreFilter('industry', e.target.value)}
-                    placeholder="Industry (e.g. Garments)"
                     className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                  />
+                  >
+                    <option value="">Industry (Any)</option>
+                    {INDUSTRY_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
                   <select
                     value={filters.moqRange}
                     onChange={(e) => updateCoreFilter('moqRange', e.target.value)}
@@ -594,10 +651,22 @@ export default function SearchResults() {
               </div>
 
               <div className={`rounded-2xl p-4 ring-1 shadow-sm ${premiumLocked ? 'bg-amber-50 ring-amber-200 dark:bg-amber-500/10 dark:ring-amber-500/30' : 'bg-[#ffffff] ring-slate-200/70 dark:bg-slate-900/40 dark:ring-white/10'}`}>
-                <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Advanced filters</p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">{premiumLocked ? 'Premium required to unlock' : 'Premium unlocked'}</p>
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Advanced filters</p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">{premiumLocked ? 'Premium required to unlock' : 'Premium unlocked'}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAdvancedFiltersOpen((prev) => !prev)}
+                    className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10"
+                  >
+                    {advancedFiltersOpen ? 'Hide filters' : 'More filters'}
+                  </button>
+                </div>
 
-                <div className="mt-3 grid grid-cols-1 gap-2">
+                {advancedFiltersOpen ? (
+                  <div className="mt-3 grid grid-cols-1 gap-2">
                   <input
                     value={filters.fabricType}
                     onChange={(e) => updateAdvancedFilter('fabricType', e.target.value)}
@@ -788,6 +857,9 @@ export default function SearchResults() {
                     className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
                   />
                 </div>
+                ) : (
+                  <p className="mt-3 text-[11px] text-slate-500 dark:text-slate-400">Advanced filters are hidden to keep search simple. Use â€œMore filtersâ€ when needed.</p>
+                )}
               </div>
 
               <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/70 dark:bg-slate-900/40 dark:ring-white/10">
@@ -896,6 +968,15 @@ export default function SearchResults() {
                     {requests.map((r, idx) => {
                       const author = r.author || {}
                       const profileRoute = roleToProfileRoute(author.role, author.id)
+                      const requestType = String(r.request_type || 'garments').toLowerCase()
+                      const specs = r.specs && typeof r.specs === 'object' ? r.specs : {}
+                      const quoteDeadline = r.quote_deadline ? new Date(r.quote_deadline) : null
+                      const expiresAt = r.expires_at ? new Date(r.expires_at) : null
+                      const isExpired = expiresAt && !Number.isNaN(expiresAt.getTime()) && expiresAt.getTime() < Date.now()
+                      const maxSuppliers = Number.isFinite(Number(r.max_suppliers)) ? Number(r.max_suppliers) : null
+                      const specLabel = requestType === 'textile'
+                        ? [specs.material_type || r.category, specs.unit || ''].filter(Boolean).join(' â€¢ ')
+                        : [specs.gender_target || '', specs.season || ''].filter(Boolean).join(' â€¢ ')
                       return (
                         <motion.div
                           key={r.id}
@@ -910,6 +991,19 @@ export default function SearchResults() {
                                 <Link to={profileRoute} className="font-semibold text-slate-900 dark:text-slate-100 hover:underline truncate">
                                   {author.name || 'Buyer'}
                                 </Link>
+                                <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold uppercase text-slate-600 dark:bg-white/10 dark:text-slate-200">
+                                  {requestType}
+                                </span>
+                                {r.verified_only ? (
+                                  <span className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-1 text-[10px] font-semibold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-200">
+                                    Verified only
+                                  </span>
+                                ) : null}
+                                {r.discussion_active ? (
+                                  <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-200">
+                                    Active discussion
+                                  </span>
+                                ) : null}
                                 {author.verified ? (
                                   <span className="verified-shimmer inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 px-2 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:from-emerald-500/12 dark:to-teal-400/10 dark:text-emerald-200 dark:ring-emerald-400/25">
                                     Verified
@@ -917,6 +1011,20 @@ export default function SearchResults() {
                                 ) : null}
                                 {author.country ? <span className="text-[11px] text-slate-500 dark:text-slate-400">- {author.country}</span> : null}
                               </div>
+                              {(specLabel || quoteDeadline || expiresAt) ? (
+                                <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-slate-600 dark:text-slate-300">
+                                  {specLabel ? <span className="rounded-full bg-slate-100 px-2 py-1 dark:bg-white/10">{specLabel}</span> : null}
+                                  {quoteDeadline ? <span className="rounded-full bg-sky-50 px-2 py-1 text-sky-700 dark:bg-sky-500/10 dark:text-sky-200">Quote by {quoteDeadline.toLocaleDateString()}</span> : null}
+                                  {expiresAt ? (
+                                    <span className={`rounded-full px-2 py-1 ${isExpired ? 'bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-200' : 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-200'}`}>
+                                      {isExpired ? 'Expired' : `Expires ${expiresAt.toLocaleDateString()}`}
+                                    </span>
+                                  ) : null}
+                                  {maxSuppliers !== null ? (
+                                    <span className="rounded-full bg-slate-100 px-2 py-1 dark:bg-white/10">Max suppliers: {maxSuppliers}</span>
+                                  ) : null}
+                                </div>
+                              ) : null}
                               <p className="mt-2 text-sm text-slate-800 dark:text-slate-200 whitespace-pre-wrap">{r.custom_description || ''}</p>
                               <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-300">
                                 <div>Category: <span className="font-semibold text-slate-800 dark:text-slate-100">{r.category || '-'}</span></div>
@@ -1033,7 +1141,7 @@ export default function SearchResults() {
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{row.author?.name || 'Company'} - {new Date(row.viewed_at).toLocaleString()}</p>
                   </button>
                 )) : (
-                  <div className="text-xs text-slate-500 dark:text-slate-400">No views yet. Use “Quick view” on a product.</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">No views yet. Use â€œQuick viewâ€ on a product.</div>
                 )}
               </div>
               <div className="mt-3">
@@ -1062,4 +1170,7 @@ export default function SearchResults() {
     </div>
   )
 }
+
+
+
 

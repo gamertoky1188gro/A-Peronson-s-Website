@@ -22,6 +22,13 @@ async function createLockNotification(userId, message, requestId, actorId, meta 
   await writeJson(NOTIFICATIONS_FILE, notifications)
 }
 
+function normalizeAllowed(lock) {
+  if (!lock) return []
+  const allowedUsers = Array.isArray(lock.allowed_users) ? lock.allowed_users : []
+  const allowedAgents = Array.isArray(lock.allowed_agents) ? lock.allowed_agents : []
+  return [...new Set([...allowedUsers, ...allowedAgents].map((id) => String(id)))]
+}
+
 export async function claimConversation(requestId, agent) {
   const all = await readJson(FILE)
   const existing = all.find((x) => x.request_id === requestId)
@@ -30,7 +37,12 @@ export async function claimConversation(requestId, agent) {
       request_id: requestId,
       locked_by: agent.id,
       allowed_agents: [agent.id],
+      allowed_users: [agent.id],
+      lock_type: 'agent_claim',
+      lock_status: 'claimed',
+      lock_reason: 'agent_claim',
       created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     }
     all.push(row)
     await writeJson(FILE, all)
@@ -38,27 +50,35 @@ export async function claimConversation(requestId, agent) {
     return { status: 'claimed', ...row }
   }
 
-  if (existing.locked_by === agent.id || existing.allowed_agents.includes(agent.id)) {
+  const allowed = normalizeAllowed(existing)
+  if (existing.locked_by === agent.id || allowed.includes(agent.id)) {
     return { status: 'granted', ...existing }
   }
 
   return { status: 'locked', notification: 'Conversation is locked by another agent.' }
 }
 
-export async function grantConversationAccess(requestId, ownerId, targetAgentId) {
-  if (!targetAgentId) return 'invalid_target'
+export async function grantConversationAccess(requestId, actor, targetUserId) {
+  if (!targetUserId) return 'invalid_target'
   const all = await readJson(FILE)
   const idx = all.findIndex((x) => x.request_id === requestId)
   if (idx < 0) return null
-  if (all[idx].locked_by !== ownerId) return 'forbidden'
-  if (!all[idx].allowed_agents.includes(targetAgentId)) all[idx].allowed_agents.push(targetAgentId)
+  const isOwner = String(all[idx].locked_by) === String(actor?.id || '')
+  const isAdmin = ['owner', 'admin'].includes(String(actor?.role || '').toLowerCase())
+  if (!isOwner && !isAdmin) return 'forbidden'
+
+  const allowedUsers = normalizeAllowed(all[idx])
+  if (!allowedUsers.includes(targetUserId)) {
+    all[idx].allowed_users = [...allowedUsers, targetUserId]
+  }
+  all[idx].updated_at = new Date().toISOString()
   await writeJson(FILE, all)
   await createLockNotification(
-    targetAgentId,
+    targetUserId,
     `Access granted for buyer request ${requestId}. You can now join this conversation.`,
     requestId,
-    ownerId,
-    { request_id: requestId, granted_by: ownerId },
+    actor?.id,
+    { request_id: requestId, granted_by: actor?.id },
   )
   return all[idx]
 }
@@ -70,7 +90,8 @@ export async function requestConversationAccess(requestId, requester) {
     return { status: 'unclaimed', request_id: requestId }
   }
 
-  if (lock.locked_by === requester.id || lock.allowed_agents.includes(requester.id)) {
+  const allowed = normalizeAllowed(lock)
+  if (lock.locked_by === requester.id || allowed.includes(requester.id)) {
     return { status: 'granted', ...lock }
   }
 

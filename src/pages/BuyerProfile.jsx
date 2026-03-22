@@ -27,7 +27,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
-import { apiRequest, getToken } from '../lib/auth'
+import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 import { trackClientEvent } from '../lib/events'
 import VerificationPanel from '../components/profile/VerificationPanel'
 
@@ -55,6 +55,7 @@ export default function BuyerProfile() {
   const { id } = useParams()
   const navigate = useNavigate()
   const token = useMemo(() => getToken(), [])
+  const currentUser = useMemo(() => getCurrentUser(), [])
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -74,6 +75,7 @@ export default function BuyerProfile() {
   const relationship = profile?.relationship || { following: false, friend_status: 'none' }
   const viewerPerms = profile?.viewer_permissions || { is_self: false, is_admin: false }
   const isBoosted = Boolean(profileBoost)
+  const isPremium = String(user?.subscription_status || '').toLowerCase() === 'premium'
 
   const loadProfile = useCallback(async () => {
     if (!id) return
@@ -198,7 +200,11 @@ export default function BuyerProfile() {
             className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800"
           >
             <div className="flex items-center gap-3">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
+              {user.profile?.profile_image ? (
+                <img src={user.profile.profile_image} alt={user.name} className="h-14 w-14 rounded-2xl object-cover" />
+              ) : (
+                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
+              )}
               <div className="min-w-0">
                 <p className="text-lg font-bold text-slate-900 dark:text-slate-100 truncate">{user.name}</p>
                 <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
@@ -207,6 +213,11 @@ export default function BuyerProfile() {
                   {user.verified ? (
                     <span className="verified-shimmer inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:from-emerald-500/12 dark:to-teal-400/10 dark:text-emerald-200 dark:ring-emerald-400/25">
                       Verified
+                    </span>
+                  ) : null}
+                  {isPremium ? (
+                    <span className="inline-flex items-center rounded-full bg-blue-500/15 px-2 py-0.5 text-[10px] font-semibold text-blue-700 ring-1 ring-blue-500/20 dark:text-blue-200">
+                      Premium Reach
                     </span>
                   ) : null}
                   {isBoosted ? (
@@ -228,16 +239,31 @@ export default function BuyerProfile() {
               </button>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="mt-4 grid grid-cols-1 gap-3">
+              <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                <p className="text-[11px] text-slate-500">Industry</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.industry || 'Garments & Textile'}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                <p className="text-[11px] text-slate-500">Organization</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.organization_name || user.profile?.organization || user.name}</p>
+              </div>
               <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
                 <p className="text-[11px] text-slate-500">Rating</p>
                 <p className="mt-1 text-sm font-semibold text-slate-900">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
                 <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
               </div>
-              <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <div className="rounded-xl bg-white/60 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
                 <p className="text-[11px] text-slate-500">Requests</p>
                 <p className="mt-1 text-sm font-semibold text-slate-900">{profile?.counts?.requests ?? 0}</p>
                 <p className="text-[11px] text-slate-600">Total posted</p>
+              </div>
+              <div className="rounded-xl bg-white/60 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                <p className="text-[11px] text-slate-500">Joined</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.created_at ? new Date(user.created_at).getFullYear() : '--'}</p>
+                <p className="text-[11px] text-slate-600">Year</p>
               </div>
             </div>
           </motion.div>
@@ -286,10 +312,6 @@ export default function BuyerProfile() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Industry</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.industry || 'Garments & Textile'}</p>
-                    </div>
-                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
                       <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Country</p>
                       <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.country || '--'}</p>
                     </div>
@@ -300,6 +322,10 @@ export default function BuyerProfile() {
                     <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
                       <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Active Since</p>
                       <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.active_since || new Date().getFullYear()}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Role</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">Buyer</p>
                     </div>
                   </div>
 
@@ -383,17 +409,56 @@ export default function BuyerProfile() {
                     <p className="font-semibold">Review Policy</p>
                     <p className="mt-1">Reviews can only be edited or deleted by the person who wrote them. Profile owners cannot delete reviews to maintain transparency and trust.</p>
                   </div>
-                  {(ratingSummary?.recent_reviews || []).map((r) => (
-                    <div key={r.id} className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-950/30 dark:ring-white/10">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{r.score}* -- {r.reviewer_name || 'Anonymous'}</p>
-                          <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{r.comment || 'No comment provided.'}</p>
-                          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{r.created_at ? new Date(r.created_at).toLocaleDateString() : ''}</p>
+                  {(ratingSummary?.recent_reviews || []).map((r) => {
+                    const canEdit = currentUser?.id && String(currentUser.id) === String(r.from_user_id || '')
+                    return (
+                      <div key={r.id} className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-950/30 dark:ring-white/10">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{r.score}* -- {r.reviewer_name || 'Anonymous'}</p>
+                            <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{r.comment || 'No comment provided.'}</p>
+                            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{r.created_at ? new Date(r.created_at).toLocaleDateString() : ''}</p>
+                          </div>
+                          {canEdit ? (
+                            <div className="flex flex-col gap-2">
+                              <button
+                                type="button"
+                                className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50"
+                                onClick={async () => {
+                                  const score = window.prompt('Update rating (1-5)', String(r.score || '5'))
+                                  if (!score) return
+                                  const comment = window.prompt('Update review comment', r.comment || '')
+                                  try {
+                                    await apiRequest(`/ratings/${r.id}`, { method: 'PATCH', token, body: { score: Number(score), comment: comment ?? '' } })
+                                    await loadRatings()
+                                  } catch {
+                                    // ignore
+                                  }
+                                }}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                className="rounded-full border border-rose-200 px-3 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-50"
+                                onClick={async () => {
+                                  if (!window.confirm('Delete this review?')) return
+                                  try {
+                                    await apiRequest(`/ratings/${r.id}`, { method: 'DELETE', token })
+                                    await loadRatings()
+                                  } catch {
+                                    // ignore
+                                  }
+                                }}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          ) : null}
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                   {!ratingSummary?.recent_reviews?.length ? <div className="text-sm text-slate-600 dark:text-slate-300">No reviews yet.</div> : null}
                 </div>
               ) : null}

@@ -14,7 +14,10 @@ import { findUserById } from '../services/userService.js'
 import { handleControllerError } from '../utils/permissions.js'
 
 function parseNumber(value) {
-  const n = Number(String(value || '').replace(/[^\d.]/g, ''))
+  if (value === undefined || value === null) return null
+  const raw = String(value).trim()
+  if (!raw) return null
+  const n = Number(raw.replace(/[^\d.]/g, ''))
   return Number.isFinite(n) ? n : null
 }
 
@@ -46,6 +49,25 @@ function parseRange(value) {
     return { min: single, max: single }
   }
   return { min, max }
+}
+
+function normalizeSearchText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+}
+
+function buildSearchTokens(raw) {
+  const base = normalizeSearchText(raw)
+  if (!base) return []
+  const tokens = base
+    .split(/\s+/)
+    .map((token) => (token === 'woman' ? 'women' : token))
+    .filter(Boolean)
+  return [...new Set(tokens)]
 }
 
 function rangesOverlap(filterRange, valueRange) {
@@ -270,7 +292,8 @@ export async function searchProducts(req, res) {
   const usersById = new Map(users.map((u) => [u.id, u]))
   const responseTimeByOwner = buildResponseTimeByOwner(messages, users)
 
-  const q = String(req.query.q || '').toLowerCase().trim()
+  const q = String(req.query.q || '').trim()
+  const searchTokens = buildSearchTokens(q)
   const wantedIndustry = String(req.query.industry || '').trim().toLowerCase()
   const wantedCountry = String(req.query.country || '').trim().toLowerCase()
   const wantedOrgType = String(req.query.orgType || '').trim().toLowerCase()
@@ -344,7 +367,11 @@ export async function searchProducts(req, res) {
       }
     })
     .filter((p) => {
-      if (q && !`${p.title} ${p.category} ${p.material} ${p.description} ${p.color_pantone || ''} ${p.size_range || ''}`.toLowerCase().includes(q)) return false
+      if (searchTokens.length) {
+        const searchText = normalizeSearchText(`${p.title} ${p.category} ${p.material} ${p.description} ${p.color_pantone || ''} ${p.size_range || ''}`)
+        const hit = searchTokens.every((token) => searchText.includes(token))
+        if (!hit) return false
+      }
       if (req.query.category && String(p.category).toLowerCase() !== String(req.query.category).toLowerCase()) return false
       if (wantedIndustry) {
         const productIndustry = String(p.industry || '').toLowerCase()

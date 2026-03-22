@@ -390,7 +390,7 @@ export default function TexHub() {
               Clean Tech sourcing for garments & textiles
             </div>
             <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-[#1E293B] sm:text-5xl dark:text-white">
-              <AnimatedHeroHeading text="Where global buyers meet verified garment & textile suppliers" />
+              <AnimatedHeroHeading text="Where global buyers, factories, and buying houses connect" />
             </h1>
             <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#475569] dark:text-slate-400">
               A structured, low-noise B2B platform for buyer requests, verified factories, partner networks, and secure
@@ -411,10 +411,10 @@ export default function TexHub() {
                 Register Factory
               </MagneticLinkButton>
               <MagneticLinkButton
-                to="/feed"
+                to="/login"
                 className="border-0 px-4 py-2 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B]/5 text-[#1E293B]/80 font-semibold transition duration-300 ease-out hover:bg-[#1E293B]/8 dark:bg-white/[0.03] dark:text-slate-200 dark:hover:bg-white/[0.06]"
               >
-                Explore Platform
+                dont login...just kidding...pls login
               </MagneticLinkButton>
             </div>
 

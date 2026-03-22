@@ -383,7 +383,7 @@ export default function NavBar() {
       const matchId = result?.call?.match_id
       if (!callId) throw new Error('Unable to create call session')
       setSearchOpen(false)
-      navigate(`/call*callId=${encodeURIComponent(callId)}${matchId ? `&matchId=${encodeURIComponent(matchId)}` : ''}`)
+      navigate(`/call?callId=${encodeURIComponent(callId)}${matchId ? `&matchId=${encodeURIComponent(matchId)}` : ''}`)
     } catch (err) {
       setSearchError(err.message || 'Unable to start friend call')
     } finally {

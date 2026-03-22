@@ -1,4 +1,4 @@
-import { addLeadNote, addLeadReminder, getLeadById, listLeads, updateLead } from '../services/leadService.js'
+import { addLeadNote, addLeadReminder, getLeadById, getLeadByMatch, listLeads, updateLead } from '../services/leadService.js'
 
 export async function getLeads(req, res) {
   const items = await listLeads(req.user)
@@ -7,6 +7,12 @@ export async function getLeads(req, res) {
 
 export async function getLead(req, res) {
   const lead = await getLeadById(req.user, req.params.leadId)
+  if (!lead) return res.status(404).json({ error: 'Lead not found' })
+  return res.json(lead)
+}
+
+export async function getLeadForMatch(req, res) {
+  const lead = await getLeadByMatch(req.user, req.params.matchId)
   if (!lead) return res.status(404).json({ error: 'Lead not found' })
   return res.json(lead)
 }
@@ -29,4 +35,3 @@ export async function postLeadReminder(req, res) {
   if (!row) return res.status(404).json({ error: 'Lead not found' })
   return res.status(201).json(row)
 }
-

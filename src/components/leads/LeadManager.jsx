@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { apiRequest, getToken } from '../../lib/auth'
 
 const STATUS_OPTIONS = [
@@ -19,6 +20,7 @@ function formatDate(value) {
 
 export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true }) {
   const token = useMemo(() => getToken(), [])
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [items, setItems] = useState([])
@@ -173,6 +175,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true 
               const counterparty = lead.counterparty_id ? lookup[lead.counterparty_id] : null
               const label = counterparty?.name || lead.counterparty_id || 'Counterparty'
               const isActive = lead.id === selectedId
+              const avatarUrl = counterparty?.profile?.profile_image || counterparty?.avatar_url || counterparty?.avatar || ''
 
               return (
                 <button
@@ -185,7 +188,16 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true 
                   ].join(' ')}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <p className="font-medium truncate">{label}</p>
+                    <div className="flex items-center gap-2 min-w-0">
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt={label} className="h-8 w-8 rounded-full object-cover" />
+                      ) : (
+                        <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-600">
+                          {String(label).slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                      <p className="font-medium truncate">{label}</p>
+                    </div>
                     <span className="text-[11px] uppercase tracking-widest text-slate-500">{(lead.status || 'new').replace(/_/g, ' ')}</span>
                   </div>
                   <p className="mt-1 text-xs text-slate-500">Last: {formatDate(lead.last_interaction_at || lead.updated_at)}</p>
@@ -205,7 +217,19 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true 
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
                   <p className="text-xs uppercase tracking-widest text-slate-500">Counterparty</p>
-                  <p className="font-semibold truncate">{selectedCounterparty?.name || selected?.counterparty_id || '--'}</p>
+                  <div className="mt-2 flex items-center gap-3">
+                    {selectedCounterparty?.profile?.profile_image ? (
+                      <img src={selectedCounterparty.profile.profile_image} alt={selectedCounterparty?.name} className="h-10 w-10 rounded-full object-cover" />
+                    ) : (
+                      <div className="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-600">
+                        {String(selectedCounterparty?.name || selected?.counterparty_id || '--').slice(0, 2).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="font-semibold truncate">{selectedCounterparty?.name || selected?.counterparty_id || '--'}</p>
+                      <p className="text-xs text-slate-500">{selectedCounterparty?.profile?.organization_name || selectedCounterparty?.profile?.organization || ''}</p>
+                    </div>
+                  </div>
                   <p className="text-xs text-slate-500">Match: {selected?.match_id || '--'}</p>
                 </div>
 
@@ -221,6 +245,17 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true 
                       <option key={opt.key} value={opt.key}>{opt.label}</option>
                     ))}
                   </select>
+                  <button
+                    type="button"
+                    className="rounded-md border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                    disabled={!selected?.match_id}
+                    onClick={() => {
+                      if (!selected?.match_id) return
+                      navigate('/chat', { state: { matchId: selected.match_id, notice: 'Opening the lead conversation.' } })
+                    }}
+                  >
+                    Message
+                  </button>
                 </div>
               </div>
 

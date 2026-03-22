@@ -15,11 +15,18 @@ const CONTACT_KEYWORDS = [
   // English
   'whatsapp',
   'wa.me',
+  'wa',
   'telegram',
+  'tg',
   'imo',
   'wechat',
+  'line',
+  'viber',
+  'signal',
   'facebook',
+  'fb',
   'instagram',
+  'ig',
   'messenger',
   'freelancer',
   'fiverr',
@@ -53,6 +60,21 @@ function digitsOnly(value = '') {
   return String(value || '').replace(/\D/g, '')
 }
 
+const NUMBER_WORDS = new Map([
+  ['zero', '0'],
+  ['oh', '0'],
+  ['one', '1'],
+  ['two', '2'],
+  ['three', '3'],
+  ['four', '4'],
+  ['five', '5'],
+  ['six', '6'],
+  ['seven', '7'],
+  ['eight', '8'],
+  ['nine', '9'],
+  ['ten', '10'],
+])
+
 function looksLikePhone(match = '') {
   const digits = digitsOnly(match)
   // Keep it strict-ish to avoid matching quantities: 10+ digits is usually a phone number.
@@ -67,28 +89,48 @@ function lower(text) {
   return normalizeText(text).toLowerCase()
 }
 
+function normalizeNumberWords(text = '') {
+  let output = lower(text)
+  for (const [word, digit] of NUMBER_WORDS.entries()) {
+    const pattern = new RegExp(`\\b${word}\\b`, 'g')
+    output = output.replace(pattern, digit)
+  }
+  return output
+}
+
+function hasSplitEmailTokens(text = '') {
+  const l = normalizeNumberWords(text)
+  const hasAt = /\b(at|\(at\)|@)\b/.test(l)
+  const hasDot = /\b(dot|\(dot\)|\.)\b/.test(l)
+  const hasTld = /\b(com|net|org|io|me|bd|uk|co|in|pk|cn|ru|jp|sg|my|ae|sa|de|fr|it|es|nl|eu|us)\b/.test(l)
+  const hasProvider = /(gmail|yahoo|hotmail|outlook|icloud)/.test(l)
+  return (hasAt && hasDot && hasTld) || (hasProvider && hasAt && hasDot)
+}
+
 function scanOutsideContact(text) {
   const raw = normalizeText(text)
   if (!raw) return null
 
-  if (EMAIL_REGEX.test(raw)) {
+  const normalized = normalizeNumberWords(raw)
+
+  if (EMAIL_REGEX.test(raw) || EMAIL_REGEX.test(normalized)) {
     return { kind: 'outside_contact', reason: 'email_detected', signals: ['email'] }
   }
 
-  if (URL_REGEX.test(raw) || DOMAIN_REGEX.test(raw)) {
+  if (URL_REGEX.test(raw) || DOMAIN_REGEX.test(raw) || URL_REGEX.test(normalized) || DOMAIN_REGEX.test(normalized)) {
     return { kind: 'outside_contact', reason: 'url_detected', signals: ['url'] }
   }
 
-  const phoneMatch = raw.match(PHONE_REGEX)
-  if (phoneMatch && looksLikePhone(phoneMatch[0])) {
+  const phoneMatch = normalized.match(PHONE_REGEX) || raw.match(PHONE_REGEX)
+  if (phoneMatch && looksLikePhone(phoneMatch[0] || '')) {
     return { kind: 'outside_contact', reason: 'phone_detected', signals: ['phone'] }
   }
 
-  const l = lower(raw)
+  const l = normalized
   const keywordHit = CONTACT_KEYWORDS.find((k) => l.includes(k))
   if (keywordHit) {
     // If the user references an outside platform AND includes an identifier-like signal, treat it as sharing.
-    const identifierSignal = /[@.]|\b(id|username|user|handle|contact|call)\b/.test(l) || looksLikePhone(raw)
+    const identifierSignal = /[@.]|\b(id|username|user|handle|contact|call|dm)\b/.test(l) || looksLikePhone(l)
     return {
       kind: 'outside_contact',
       reason: identifierSignal ? `platform_contact:${keywordHit}` : `platform_reference:${keywordHit}`,
@@ -97,11 +139,7 @@ function scanOutsideContact(text) {
   }
 
   // Split email patterns (e.g., "name at gmail dot com").
-  if (
-    (l.includes('gmail') || l.includes('yahoo') || l.includes('hotmail')) &&
-    (l.includes(' dot ') || l.includes('ডট') || l.includes('(dot)')) &&
-    (l.includes(' at ') || l.includes(' @ ') || l.includes('(at)') || l.includes('এট'))
-  ) {
+  if (hasSplitEmailTokens(l)) {
     return { kind: 'outside_contact', reason: 'split_email_pattern', signals: ['split_email'] }
   }
 
@@ -127,27 +165,23 @@ function scanOutsideContactAcrossTexts(texts = []) {
   if (!parts.length) return null
 
   const joined = parts.join(' ')
-  const l = lower(joined)
+  const l = normalizeNumberWords(joined)
 
   // Split phone numbers across multiple messages: joining + digit extraction catches it.
-  const digits = digitsOnly(joined)
+  const digits = digitsOnly(l)
   if (digits.length >= 10) {
     return { kind: 'outside_contact', reason: 'phone_detected_split', signals: ['phone_split'] }
   }
 
   // Split email patterns across messages (best-effort): "name" + "gmail" + "at" + "dot" + "com".
-  const hasMailProvider = (l.includes('gmail') || l.includes('yahoo') || l.includes('hotmail') || l.includes('outlook'))
-  const hasAt = (l.includes(' at ') || l.includes('(at)') || l.includes(' @ ') || l.includes('à¦à¦Ÿ'))
-  const hasDot = (l.includes(' dot ') || l.includes('(dot)') || l.includes('à¦¡à¦Ÿ') || l.includes(' . '))
-  const hasTld = (l.includes(' com') || l.includes(' net') || l.includes(' org') || l.includes('bd') || l.includes('io') || l.includes('co'))
-  if (hasMailProvider && hasAt && hasDot && hasTld) {
+  if (hasSplitEmailTokens(l)) {
     return { kind: 'outside_contact', reason: 'split_email_pattern_across_messages', signals: ['split_email'] }
   }
 
   // Platform keyword split + identifier-like signals.
   const keywordHit = CONTACT_KEYWORDS.find((k) => l.includes(k))
   if (keywordHit) {
-    const identifierSignal = /[@.]|\b(id|username|user|handle|contact|call)\b/.test(l) || digits.length >= 8
+    const identifierSignal = /[@.]|\b(id|username|user|handle|contact|call|dm)\b/.test(l) || digits.length >= 8
     if (identifierSignal) {
       return { kind: 'outside_contact', reason: `platform_contact_split:${keywordHit}`, signals: ['platform'] }
     }
@@ -168,7 +202,7 @@ function penaltyForStrike(strikes) {
 }
 
 function restrictionUntil(hours) {
-  if (!hours || hours <= 0) return ''
+  if (!hours || hours <= 0) return null
   return new Date(Date.now() + hours * 60 * 60 * 1000).toISOString()
 }
 

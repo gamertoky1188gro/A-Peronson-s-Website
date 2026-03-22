@@ -49,6 +49,8 @@ export default function ProductManagement() {
   const [mediaUrl, setMediaUrl] = useState('')
   const [mediaBusy, setMediaBusy] = useState(false)
   const [mediaNotice, setMediaNotice] = useState('')
+  const [videoBusy, setVideoBusy] = useState(false)
+  const [videoNotice, setVideoNotice] = useState('')
   const [complianceChecked, setComplianceChecked] = useState(false)
 
   const loadMine = useCallback(async () => {
@@ -56,7 +58,7 @@ export default function ProductManagement() {
     setLoading(true)
     setError('')
     try {
-      const data = await apiRequest('/products*mine=true', { token })
+      const data = await apiRequest('/products?mine=true', { token })
       setItems(Array.isArray(data) ? data : [])
     } catch (err) {
       setError(err.message || 'Failed to load products')
@@ -78,6 +80,7 @@ export default function ProductManagement() {
     setMediaGallery([])
     setMediaUrl('')
     setComplianceChecked(false)
+    setVideoNotice('')
     setAdvancedOpen(false)
     setModalOpen(true)
   }
@@ -109,6 +112,7 @@ export default function ProductManagement() {
     setMediaGallery(Array.isArray(item?.image_gallery) ? item.image_gallery : [])
     setMediaUrl('')
     setComplianceChecked(false)
+    setVideoNotice('')
     setAdvancedOpen(false)
     setModalOpen(true)
   }
@@ -121,6 +125,10 @@ export default function ProductManagement() {
     }
     if (!complianceChecked) {
       setNotice('Please confirm the media compliance checklist before saving.')
+      return
+    }
+    if (form.video_url && !isInternalMediaUrl(form.video_url)) {
+      setNotice('Video URL must be an internal /uploads/... path.')
       return
     }
 
@@ -177,6 +185,12 @@ export default function ProductManagement() {
     return normalized.startsWith('uploads/') ? `/${normalized}` : normalized
   }
 
+  function isInternalMediaUrl(value) {
+    if (!value) return false
+    const normalized = String(value).replace(/\\/g, '/')
+    return normalized.startsWith('/uploads/') || normalized.startsWith('uploads/') || normalized.includes('server/uploads/')
+  }
+
   async function syncProductMedia(nextForm) {
     if (!editing?.id || !token) return
     setMediaBusy(true)
@@ -204,6 +218,31 @@ export default function ProductManagement() {
       setMediaNotice(err.message || 'Unable to update product media')
     } finally {
       setMediaBusy(false)
+    }
+  }
+
+  async function syncProductVideo(nextVideoUrl) {
+    if (!editing?.id || !token) return
+    setVideoBusy(true)
+    setVideoNotice('')
+    try {
+      const updated = await apiRequest(`/products/${encodeURIComponent(editing.id)}`, {
+        method: 'PATCH',
+        token,
+        body: { video_url: nextVideoUrl || '' },
+      })
+      setItems((prev) => prev.map((p) => (p.id === updated.id ? updated : p)))
+      setEditing(updated)
+      setForm((prev) => ({
+        ...prev,
+        video_url: updated.video_url || '',
+        status: updated.status || prev.status,
+      }))
+      trackClientEvent('product_video_updated', { entityType: 'product', entityId: updated.id })
+    } catch (err) {
+      setVideoNotice(err.message || 'Unable to update product video')
+    } finally {
+      setVideoBusy(false)
     }
   }
 
@@ -258,6 +297,43 @@ export default function ProductManagement() {
     }
   }
 
+  async function handleUploadVideo(file) {
+    if (!editing?.id || !token) {
+      setVideoNotice('Save the product first to upload a video.')
+      return
+    }
+    if (!file) return
+    setVideoBusy(true)
+    setVideoNotice('')
+    try {
+      const body = new FormData()
+      body.append('file', file)
+      body.append('entity_type', 'company_product')
+      body.append('entity_id', editing.id)
+      body.append('type', 'video')
+
+      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/documents`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body,
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Video upload failed')
+
+      const sourcePath = data.file_path || data.url || ''
+      if (!isInternalMediaUrl(sourcePath)) {
+        throw new Error('Only internal uploads are allowed for video.')
+      }
+      await syncProductVideo(sourcePath)
+      setVideoNotice('Video uploaded and pending review.')
+      trackClientEvent('product_video_uploaded', { entityType: 'product', entityId: editing.id, metadata: { document_id: data.id } })
+    } catch (err) {
+      setVideoNotice(err.message || 'Video upload failed')
+    } finally {
+      setVideoBusy(false)
+    }
+  }
+
   async function handleAddMediaUrl() {
     if (!editing?.id || !token) {
       setMediaNotice('Save the product first to add media URLs.')
@@ -265,6 +341,10 @@ export default function ProductManagement() {
     }
     const url = mediaUrl.trim()
     if (!url) return
+    if (!isInternalMediaUrl(url)) {
+      setMediaNotice('Only internal /uploads/... image URLs are allowed.')
+      return
+    }
     setMediaBusy(true)
     setMediaNotice('')
     try {
@@ -361,7 +441,7 @@ export default function ProductManagement() {
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
           <p className="text-sm font-semibold text-slate-800">Media & publishing help</p>
-          <p className="mt-2">Upload product images or add trusted image URLs. Pending or rejected media stays hidden from buyers.</p>
+          <p className="mt-2">Upload product images/videos inside GarTexHub. Only internal /uploads/... URLs are allowed. Pending or rejected media stays hidden from buyers.</p>
           <p className="mt-1">Use Draft to keep items private while preparing your gallery; switch to Published when ready.</p>
         </div>
 
@@ -401,7 +481,7 @@ export default function ProductManagement() {
           <div className="absolute left-1/2 top-1/2 w-[92vw] max-w-2xl -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white border border-slate-200 shadow-2xl overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-200">
               <p className="text-sm font-bold text-slate-900">{editing ? 'Edit product' : 'Create product'}</p>
-              <p className="text-[11px] text-slate-500">No music uploads. Video must be a trusted link (YouTube/Vimeo/etc).</p>
+              <p className="text-[11px] text-slate-500">No music uploads. Videos and images must be uploaded inside GarTexHub (internal /uploads/... only).</p>
             </div>
             <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-3">
               <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Title" value={form.title} onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))} />
@@ -415,7 +495,7 @@ export default function ProductManagement() {
                 <option value="published">Published (visible to buyers)</option>
                 <option value="draft">Draft (private)</option>
               </select>
-              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Video URL (optional)" value={form.video_url} onChange={(e) => setForm((prev) => ({ ...prev, video_url: e.target.value }))} />
+              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Video URL (internal /uploads/...)" value={form.video_url} onChange={(e) => setForm((prev) => ({ ...prev, video_url: e.target.value }))} />
               <textarea className="md:col-span-2 rounded-xl border border-slate-200 px-3 py-2 text-sm min-h-[120px]" placeholder="Description" value={form.description} onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))} />
               <div className="md:col-span-2">
                 <button
@@ -439,8 +519,61 @@ export default function ProductManagement() {
 
               <div className="md:col-span-2 rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
                 <div>
+                  <p className="text-xs font-semibold text-slate-700">Product video</p>
+                  <p className="text-[11px] text-slate-500">Upload MP4/WEBM inside GarTexHub or paste an internal /uploads/... URL. External links are blocked.</p>
+                </div>
+
+                {!editing?.id ? (
+                  <div className="text-[11px] text-slate-500">Save the product first to upload a video.</div>
+                ) : (
+                  <>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                      <input
+                        type="file"
+                        accept="video/mp4,video/webm"
+                        onChange={(e) => handleUploadVideo(e.target.files?.[0])}
+                        disabled={videoBusy}
+                        className="text-xs"
+                      />
+                      <span className="text-[11px] text-slate-500">{videoBusy ? 'Uploading...' : 'MP4/WEBM only'}</span>
+                    </div>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                      <input
+                        value={form.video_url}
+                        onChange={(e) => setForm((prev) => ({ ...prev, video_url: e.target.value }))}
+                        placeholder="/uploads/products/videos/..."
+                        className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                        disabled={videoBusy}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => syncProductVideo(form.video_url)}
+                        disabled={videoBusy || !form.video_url.trim()}
+                        className="rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+                      >
+                        Apply URL
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => syncProductVideo('')}
+                        disabled={videoBusy}
+                        className="rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 disabled:opacity-60"
+                      >
+                        Remove video
+                      </button>
+                    </div>
+                    {videoNotice ? <p className="text-[11px] text-rose-600">{videoNotice}</p> : null}
+                    {editing?.video_review_status ? (
+                      <p className="text-[11px] text-slate-500">Status: {String(editing.video_review_status).replaceAll('_', ' ')}</p>
+                    ) : null}
+                  </>
+                )}
+              </div>
+
+              <div className="md:col-span-2 rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+                <div>
                   <p className="text-xs font-semibold text-slate-700">Product media</p>
-                  <p className="text-[11px] text-slate-500">Upload images or register trusted image URLs. Pending/rejected media stays hidden from buyers.</p>
+                  <p className="text-[11px] text-slate-500">Upload images or register internal /uploads/... URLs. Pending/rejected media stays hidden from buyers.</p>
                 </div>
 
                 {!editing?.id ? (
@@ -463,7 +596,7 @@ export default function ProductManagement() {
                       <input
                         value={mediaUrl}
                         onChange={(e) => setMediaUrl(e.target.value)}
-                        placeholder="Paste image URL"
+                        placeholder="/uploads/products/images/..."
                         className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-xs"
                         disabled={mediaBusy}
                       />

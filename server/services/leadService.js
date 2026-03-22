@@ -229,6 +229,23 @@ export async function getLeadById(actor, leadId) {
   }
 }
 
+export async function getLeadByMatch(actor, matchId) {
+  const id = sanitizeString(String(matchId || ''), 160)
+  if (!id) return null
+
+  const leads = await readJson(LEADS_FILE)
+  const lead = leads.find((row) => String(row.match_id || '') === id) || null
+  if (!lead) return null
+  ensureLeadAccess(actor, lead)
+
+  const [notes, reminders] = await Promise.all([readJson(NOTES_FILE), readJson(REMINDERS_FILE)])
+  return {
+    ...lead,
+    notes: notes.filter((n) => String(n.lead_id || '') === String(lead.id)).sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || ''))),
+    reminders: reminders.filter((r) => String(r.lead_id || '') === String(lead.id)).sort((a, b) => String(a.remind_at || '').localeCompare(String(b.remind_at || ''))),
+  }
+}
+
 export async function updateLead(actor, leadId, patch = {}) {
   const id = sanitizeString(String(leadId || ''), 120)
   const leads = await readJson(LEADS_FILE)

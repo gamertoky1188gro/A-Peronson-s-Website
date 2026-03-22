@@ -3,6 +3,8 @@ import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { moderateTextOrRedact } from './policyService.js'
 import { createReport } from './reportService.js'
+import { createNotification } from './notificationService.js'
+import { getRequirementById } from './requirementService.js'
 
 const FILE = 'social_interactions.json'
 
@@ -35,6 +37,41 @@ export async function addComment(user, entityType, entityId, text) {
   }
   all.push(row)
   await writeJson(FILE, all)
+
+  if (String(entityType || '').toLowerCase() === 'buyer_request') {
+    try {
+      const requirement = await getRequirementById(entityId)
+      const users = await readJson('users.json')
+      const category = String(requirement?.category || '').toLowerCase()
+      const industry = String(requirement?.industry || '').toLowerCase()
+      const targets = users.filter((u) => {
+        const role = String(u?.role || '').toLowerCase()
+        if (!u?.verified) return false
+        if (!(role === 'factory' || role === 'buying_house')) return false
+        if (!category && !industry) return true
+        const profile = u?.profile || {}
+        const categories = Array.isArray(profile?.categories) ? profile.categories.map((c) => String(c || '').toLowerCase()) : []
+        const profileIndustry = String(profile?.industry || '').toLowerCase()
+        return (category && categories.includes(category)) || (industry && profileIndustry === industry)
+      })
+      await Promise.all(targets.map((target) => createNotification(target.id, {
+        type: 'buyer_request_comment',
+        entity_type: 'buyer_request',
+        entity_id: entityId,
+        message: `New comment on buyer request "${requirement?.title || requirement?.category || 'Request'}".`,
+        meta: {
+          request_id: entityId,
+          category: requirement?.category || '',
+          industry: requirement?.industry || '',
+          actor_id: user?.id,
+          comment_id: row.id,
+        },
+      })))
+    } catch {
+      // non-blocking
+    }
+  }
+
   return row
 }
 

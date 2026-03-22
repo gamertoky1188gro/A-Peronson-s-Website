@@ -140,6 +140,42 @@ export async function getDashboardAnalytics(user) {
     return acc
   }, {})
 
+  const interactionSummary = (() => {
+    const pageViews = scopedEvents.filter((e) => e.type === 'page_view')
+    const clicks = scopedEvents.filter((e) => e.type === 'click')
+    const sessionEvents = scopedEvents.filter((e) => e.type === 'session_end' || e.type === 'page_duration')
+    const durations = sessionEvents
+      .map((e) => {
+        const seconds = Number(e?.metadata?.duration_seconds)
+        if (Number.isFinite(seconds) && seconds > 0) return seconds
+        const ms = Number(e?.metadata?.duration_ms)
+        if (Number.isFinite(ms) && ms > 0) return Math.round(ms / 1000)
+        return 0
+      })
+      .filter((v) => v > 0)
+    const avgSessionSeconds = durations.length
+      ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
+      : 0
+
+    const viewsByPage = pageViews.reduce((acc, e) => {
+      const key = String(e.entity_id || e?.metadata?.entity_id || e?.metadata?.entity_type || 'unknown')
+      acc[key] = (acc[key] || 0) + 1
+      return acc
+    }, {})
+
+    const topPages = Object.entries(viewsByPage)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([page, count]) => ({ page, count }))
+
+    return {
+      total_page_views: pageViews.length,
+      total_clicks: clicks.length,
+      avg_session_duration_seconds: avgSessionSeconds,
+      top_pages: topPages,
+    }
+  })()
+
   const usersById = new Map((Array.isArray(users) ? users : []).map((u) => [String(u.id), u]))
 
   function isRecent(iso, days = 30) {
@@ -310,6 +346,7 @@ export async function getDashboardAnalytics(user) {
       total: scopedEvents.length,
       by_type: byType,
     },
+    interaction_summary: interactionSummary,
     series: {
       buyer_requests: toMonthlySeries(scopedRequirements, 'created_at'),
       chats: toMonthlySeries(scopedMessages, 'timestamp'),
