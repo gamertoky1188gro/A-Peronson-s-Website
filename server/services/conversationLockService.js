@@ -113,3 +113,45 @@ export async function requestConversationAccess(requestId, requester) {
 
   return { status: 'requested', request_id: requestId, locked_by: lock.locked_by }
 }
+
+export async function transferConversation(requestId, actor, targetUserId) {
+  if (!targetUserId) return 'invalid_target'
+  const all = await readJson(FILE)
+  const idx = all.findIndex((x) => x.request_id === requestId)
+  if (idx < 0) return null
+
+  const current = all[idx]
+  const isOwner = String(current.locked_by) === String(actor?.id || '')
+  const isAdmin = ['owner', 'admin'].includes(String(actor?.role || '').toLowerCase())
+  if (!isOwner && !isAdmin) return 'forbidden'
+
+  all[idx] = {
+    ...current,
+    locked_by: targetUserId,
+    allowed_agents: [targetUserId],
+    allowed_users: [targetUserId],
+    lock_type: 'agent_claim',
+    lock_status: 'claimed',
+    lock_reason: 'agent_transfer',
+    updated_at: new Date().toISOString(),
+  }
+  await writeJson(FILE, all)
+
+  await createLockNotification(
+    targetUserId,
+    `A conversation was transferred to you for buyer request ${requestId}. You now own this thread.`,
+    requestId,
+    actor?.id,
+    { request_id: requestId, transferred_by: actor?.id },
+  )
+
+  await createLockNotification(
+    current.locked_by,
+    `You transferred buyer request ${requestId}. You no longer have messaging access.`,
+    requestId,
+    actor?.id,
+    { request_id: requestId, transferred_to: targetUserId },
+  )
+
+  return all[idx]
+}

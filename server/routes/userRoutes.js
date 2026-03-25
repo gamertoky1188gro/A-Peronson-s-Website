@@ -1,9 +1,14 @@
 import { Router } from 'express'
 import { allowRoles, requireAuth } from '../middleware/auth.js'
+import { requireAdminSecurity } from '../middleware/adminSecurity.js'
 import {
   adminDeleteUser,
   adminListUsers,
+  adminResetPassword,
+  adminUpdateUser,
   adminVerifyUser,
+  adminForceLogout,
+  adminLockMessaging,
   followUserController,
   friendRequestController,
   lookupUsers,
@@ -21,8 +26,12 @@ router.post('/lookup', requireAuth, lookupUsers)
 router.post('/:userId/follow', requireAuth, followUserController)
 router.post('/:userId/friend-request', requireAuth, friendRequestController)
 
-router.get('/', requireAuth, allowRoles('owner', 'admin'), adminListUsers)
-router.patch('/:userId/verify', requireAuth, allowRoles('owner', 'admin'), adminVerifyUser)
-router.delete('/:userId', requireAuth, allowRoles('owner', 'admin'), adminDeleteUser)
+router.get('/', requireAuth, requireAdminSecurity, adminListUsers)
+router.patch('/:userId', requireAuth, requireAdminSecurity, adminUpdateUser)
+router.patch('/:userId/verify', requireAuth, requireAdminSecurity, adminVerifyUser)
+router.post('/:userId/reset-password', requireAuth, requireAdminSecurity, adminResetPassword)
+router.post('/:userId/force-logout', requireAuth, requireAdminSecurity, adminForceLogout)
+router.post('/:userId/lock-messaging', requireAuth, requireAdminSecurity, adminLockMessaging)
+router.delete('/:userId', requireAuth, requireAdminSecurity, adminDeleteUser)
 
 export default router

@@ -35,7 +35,7 @@ A trust-first B2B textile marketplace engine with social-style feed UX.
 - Advanced admin moderation workflows
 
 **Verification + auto-credit rules**
-- New accounts receive **$5 restricted credit** (usable for verification/subscription only).
+- Valid coupon codes grant **$5 restricted credit** (usable for verification/subscription only).
 - Verification is subscription-based: **$1.99 first month**, then **$6.99/month**.
 - Verification expires if renewal payment fails or lapses.
 

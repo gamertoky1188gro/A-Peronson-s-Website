@@ -1,4 +1,8 @@
 import {
+  adminForceLogout as adminForceLogoutUser,
+  adminLockMessaging as adminLockMessagingUser,
+  adminSetPassword as adminSetPasswordUser,
+  adminUpdateUser as adminUpdateUserRecord,
   deleteUser,
   findUserById,
   followUser,
@@ -76,5 +80,34 @@ export async function adminVerifyUser(req, res) {
 export async function adminDeleteUser(req, res) {
   const deleted = await deleteUser(req.params.userId)
   if (!deleted) return res.status(404).json({ error: 'User not found' })
+  return res.json({ ok: true })
+}
+
+export async function adminUpdateUser(req, res) {
+  const updated = await adminUpdateUserRecord(req.params.userId, req.body || {})
+  if (!updated) return res.status(404).json({ error: 'User not found' })
+  return res.json(updated)
+}
+
+export async function adminResetPassword(req, res) {
+  const newPassword = String(req.body?.new_password || '')
+  if (!newPassword || newPassword.length < 6) {
+    return res.status(400).json({ error: 'new_password must be at least 6 characters' })
+  }
+  const updated = await adminSetPasswordUser(req.params.userId, newPassword)
+  if (!updated) return res.status(404).json({ error: 'User not found' })
+  return res.json({ ok: true })
+}
+
+export async function adminForceLogout(req, res) {
+  const updated = await adminForceLogoutUser(req.params.userId)
+  if (!updated) return res.status(404).json({ error: 'User not found' })
+  return res.json({ ok: true })
+}
+
+export async function adminLockMessaging(req, res) {
+  const hours = Number(req.body?.lock_hours || 0)
+  const updated = await adminLockMessagingUser(req.params.userId, hours)
+  if (!updated) return res.status(404).json({ error: 'User not found' })
   return res.json({ ok: true })
 }

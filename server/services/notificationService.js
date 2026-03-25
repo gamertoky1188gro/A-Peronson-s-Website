@@ -4,6 +4,9 @@ import { sanitizeString } from '../utils/validators.js'
 
 const ALERTS_FILE = 'search_alerts.json'
 const NOTIFICATIONS_FILE = 'notifications.json'
+const REQUIREMENTS_FILE = 'requirements.json'
+const MESSAGES_FILE = 'messages.json'
+const DOCUMENTS_FILE = 'documents.json'
 
 export async function createNotification(userId, payload = {}) {
   const notifications = await readJson(NOTIFICATIONS_FILE)
@@ -126,7 +129,9 @@ export async function emitNotificationsForEntity(entityType, entity) {
 
 export async function listNotifications(userId) {
   const notifications = await readJson(NOTIFICATIONS_FILE)
-  return notifications.filter((n) => n.user_id === userId).sort((a, b) => b.created_at.localeCompare(a.created_at))
+  const list = notifications.filter((n) => n.user_id === userId)
+  const ensured = await ensureMonthlySummary(userId, list, notifications)
+  return ensured.filter((n) => n.user_id === userId).sort((a, b) => b.created_at.localeCompare(a.created_at))
 }
 
 export async function markNotificationRead(userId, id) {
@@ -136,4 +141,54 @@ export async function markNotificationRead(userId, id) {
   notifications[idx].read = true
   await writeJson(NOTIFICATIONS_FILE, notifications)
   return notifications[idx]
+}
+
+function monthKey(date = new Date()) {
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  return `${date.getFullYear()}-${month}`
+}
+
+async function ensureMonthlySummary(userId, userNotifications = [], allNotifications = []) {
+  const key = monthKey()
+  const already = userNotifications.some((n) => n.type === 'monthly_summary' && String(n?.meta?.month || '') === key)
+  if (already) return allNotifications
+
+  const [requirements, messages, documents] = await Promise.all([
+    readJson(REQUIREMENTS_FILE),
+    readJson(MESSAGES_FILE),
+    readJson(DOCUMENTS_FILE),
+  ])
+
+  const monthStart = new Date(`${key}-01T00:00:00.000Z`)
+  const isThisMonth = (iso) => {
+    if (!iso) return false
+    const ts = new Date(iso).getTime()
+    return Number.isFinite(ts) && ts >= monthStart.getTime()
+  }
+
+  const reqCount = (Array.isArray(requirements) ? requirements : [])
+    .filter((r) => r?.buyer_id === userId && isThisMonth(r.created_at))
+    .length
+  const msgCount = (Array.isArray(messages) ? messages : [])
+    .filter((m) => m?.sender_id === userId && isThisMonth(m.timestamp || m.created_at))
+    .length
+  const contractCount = (Array.isArray(documents) ? documents : [])
+    .filter((d) => String(d?.entity_type || '') === 'contract' && isThisMonth(d.created_at))
+    .length
+
+  const summary = {
+    id: crypto.randomUUID(),
+    user_id: sanitizeString(String(userId || ''), 120),
+    type: 'monthly_summary',
+    entity_type: 'summary',
+    entity_id: key,
+    message: `Monthly summary (${key}): ${reqCount} requests, ${msgCount} messages, ${contractCount} contracts.`,
+    meta: { month: key, requests: reqCount, messages: msgCount, contracts: contractCount },
+    read: false,
+    created_at: new Date().toISOString(),
+  }
+
+  allNotifications.push(summary)
+  await writeJson(NOTIFICATIONS_FILE, allNotifications)
+  return allNotifications
 }

@@ -7,6 +7,7 @@ const NOTIFICATIONS_FILE = 'notifications.json'
 const CALLS_FILE = 'call_sessions.json'
 const DOCUMENTS_FILE = 'documents.json'
 const MESSAGES_FILE = 'messages.json'
+const AUTO_RATING_DAYS = Number(process.env.AUTO_RATING_DAYS || 7)
 const QUALIFICATION_RULES = [
   ['contract_signed', 'communication_completed'],
   ['deal_completed'],
@@ -339,13 +340,92 @@ export async function createRating({ profileKey, fromUserId, interactionType, sc
     reliability_flags: {
       verified_counterparty: Boolean(reliabilityFlags.verified_counterparty),
       qualified_milestone_pair: Boolean(reliabilityFlags.qualified_milestone_pair),
+      auto_generated: Boolean(reliabilityFlags.auto_generated),
     },
+    auto_generated: Boolean(reliabilityFlags.auto_generated),
     created_at: new Date().toISOString(),
   }
 
   store.ratings.push(rating)
   await saveStore(store)
   return rating
+}
+
+async function autoGenerateRatingsForOverdueRequests() {
+  const store = await readStore()
+  const pending = store.feedback_requests.filter((row) => row.status === 'pending')
+  if (!pending.length) return store
+
+  const now = Date.now()
+  const cutoffMs = Math.max(1, AUTO_RATING_DAYS) * 24 * 60 * 60 * 1000
+  const overdue = pending.filter((row) => {
+    const ts = new Date(row.created_at || '').getTime()
+    if (!Number.isFinite(ts)) return false
+    return now - ts >= cutoffMs
+  })
+  if (!overdue.length) return store
+
+  const [calls, documents, messages] = await Promise.all([
+    readJson(CALLS_FILE),
+    readJson(DOCUMENTS_FILE),
+    readJson(MESSAGES_FILE),
+  ])
+
+  for (const row of overdue) {
+    const profileKey = normalizeProfileKey(row.profile_key)
+    const counterpartyId = sanitizeString(row.counterparty_id, 120)
+    if (!profileKey || !counterpartyId) continue
+
+    const alreadyRated = store.ratings.some((rating) =>
+      rating.profile_key === profileKey && String(rating.from_user_id || '') === String(counterpartyId))
+    if (alreadyRated) {
+      row.status = 'fulfilled'
+      row.fulfilled_at = row.fulfilled_at || new Date().toISOString()
+      continue
+    }
+
+    const targetUserId = parseUserIdFromProfileKey(profileKey)
+    const contractSigned = hasSignedContract(documents, targetUserId, counterpartyId)
+    const recordedCall = hasRecordedCall(calls, targetUserId, counterpartyId)
+    const avgResponseHours = averageResponseHours(messages, targetUserId, counterpartyId)
+    const suggestion = buildSuggestedScore({ contractSigned, recordedCall, avgResponseHours })
+
+    const score = suggestion.reasons.length
+      ? (Number.isFinite(Number(suggestion.score)) ? suggestion.score : 5)
+      : 5
+    const comment = 'Auto-rating (no user feedback).'
+
+    store.ratings.push({
+      id: crypto.randomUUID(),
+      profile_key: profileKey,
+      from_user_id: counterpartyId,
+      interaction_type: sanitizeString(row.interaction_type || 'deal', 40),
+      score: Math.min(5, Math.max(1, Math.round(score))),
+      comment,
+      reliability_flags: {
+        verified_counterparty: false,
+        qualified_milestone_pair: false,
+        auto_generated: true,
+      },
+      auto_generated: true,
+      created_at: new Date().toISOString(),
+    })
+
+    row.status = 'fulfilled'
+    row.fulfilled_at = new Date().toISOString()
+    store.feedback_events.push({
+      id: crypto.randomUUID(),
+      profile_key: profileKey,
+      counterparty_id: counterpartyId,
+      interaction_type: sanitizeString(row.interaction_type || 'deal', 40),
+      event: 'auto_rating',
+      milestone: 'no_user_feedback',
+      created_at: new Date().toISOString(),
+    })
+  }
+
+  await saveStore(store)
+  return store
 }
 
 export async function getProfileRatingsSummary(profileKey) {
@@ -373,6 +453,7 @@ export async function getProfileRatingsSummary(profileKey) {
       score: row.score,
       comment: row.comment,
       interaction_type: row.interaction_type,
+      auto_generated: Boolean(row.auto_generated),
       created_at: row.created_at,
     })),
     feedback_requests: store.feedback_requests.filter((row) => row.profile_key === normalizedProfile && row.status === 'pending').length,
@@ -449,7 +530,7 @@ export async function listPendingFeedbackRequestsForUser(userId) {
   const normalizedUser = sanitizeString(userId, 120)
   if (!normalizedUser) return []
 
-  const store = await readStore()
+  const store = await autoGenerateRatingsForOverdueRequests()
   const pending = store.feedback_requests
     .filter((row) => row.status === 'pending' && String(row.counterparty_id || '') === normalizedUser)
     .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')))

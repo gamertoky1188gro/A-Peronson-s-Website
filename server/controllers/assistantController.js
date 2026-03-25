@@ -5,8 +5,18 @@ import {
   listKnowledge,
   updateKnowledgeEntry,
 } from '../services/assistantService.js'
+import {
+  autoSummarizeMatch,
+  generateConversationSummary,
+  generateNegotiationHelper,
+  recordNegotiationNote,
+  recordSummaryNote,
+  resolveOrgOwnerFromMatch,
+} from '../services/aiConversationService.js'
+import { canAccessMatch } from '../services/messageService.js'
 import { canManageMembers, deny, handleControllerError } from '../utils/permissions.js'
 import { logInfo } from '../utils/logger.js'
+import { sanitizeString } from '../utils/validators.js'
 
 function orgIdFromUser(user) {
   return user?.org_id || user?.organization_id || user?.id
@@ -70,4 +80,62 @@ export async function removeAssistantKnowledge(req, res) {
   const ok = await deleteKnowledgeEntry(orgId, req.params.entryId)
   if (!ok) return res.status(404).json({ error: 'Knowledge entry not found' })
   return res.json({ ok: true })
+}
+
+export async function getConversationSummary(req, res) {
+  const matchId = sanitizeString(String(req.body?.match_id || ''), 200)
+  if (!matchId) return res.status(400).json({ error: 'match_id is required' })
+
+  const allowed = await canAccessMatch(matchId, req.user.id)
+  if (!allowed) return res.status(403).json({ error: 'Forbidden' })
+
+  const orgOwnerId = await resolveOrgOwnerFromMatch(matchId, req.user.id) || orgIdFromUser(req.user)
+  const force = Boolean(req.body?.force)
+
+  try {
+    let result = null
+    let fromAuto = false
+    if (!force && orgOwnerId) {
+      result = await autoSummarizeMatch({ matchId, orgOwnerId })
+      fromAuto = Boolean(result)
+    }
+    if (!result) {
+      result = await generateConversationSummary(matchId)
+    }
+    if (result && orgOwnerId && !fromAuto) {
+      await recordSummaryNote({ matchId, orgOwnerId, summary: result })
+    }
+
+    if (!result) return res.status(404).json({ error: 'No messages to summarize' })
+    return res.json({ ok: true, summary: result.summary, suggested_reply: result.suggested_reply || '' })
+  } catch (error) {
+    return handleControllerError(res, error)
+  }
+}
+
+export async function getNegotiationHelper(req, res) {
+  const matchId = sanitizeString(String(req.body?.match_id || ''), 200)
+  if (!matchId) return res.status(400).json({ error: 'match_id is required' })
+
+  const allowed = await canAccessMatch(matchId, req.user.id)
+  if (!allowed) return res.status(403).json({ error: 'Forbidden' })
+
+  const orgOwnerId = await resolveOrgOwnerFromMatch(matchId, req.user.id) || orgIdFromUser(req.user)
+
+  try {
+    const helper = await generateNegotiationHelper(matchId)
+    if (!helper) return res.status(404).json({ error: 'No messages to analyze' })
+
+    if (orgOwnerId) {
+      await recordNegotiationNote({ matchId, orgOwnerId, helper })
+    }
+
+    return res.json({
+      ok: true,
+      guidance: helper.guidance || '',
+      suggested_reply: helper.suggested_reply || '',
+    })
+  } catch (error) {
+    return handleControllerError(res, error)
+  }
 }

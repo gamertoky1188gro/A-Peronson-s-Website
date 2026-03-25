@@ -3,6 +3,7 @@ import { readJson, updateJson } from '../utils/jsonStore.js'
 import { findUserById, listUsers } from './userService.js'
 import { recordMilestone } from './ratingsService.js'
 import { createNotification } from './notificationService.js'
+import { getAdminConfig } from './adminConfigService.js'
 import {
   canManagePartnerNetwork,
   canViewPartnerNetwork,
@@ -13,6 +14,11 @@ import {
 } from '../utils/permissions.js'
 
 const FILE = 'partner_requests.json'
+const ACTIVE_STATUSES = new Set(['pending', 'connected'])
+
+function isPremium(user) {
+  return String(user?.subscription_status || '').toLowerCase() === 'premium'
+}
 
 function isAllowedPair(fromRole, toRole) {
   return (fromRole === 'factory' && toRole === 'buying_house') || (fromRole === 'buying_house' && toRole === 'factory')
@@ -89,15 +95,26 @@ export async function sendPartnerRequest(user, targetAccountId) {
 
   const now = new Date().toISOString()
   const id = crypto.randomUUID()
+  const config = await getAdminConfig()
+  const freePartnerLimit = Number(config?.plan_limits?.free?.partner_limit || 5)
 
   const created = await updateJson(FILE, (rows) => {
-    const duplicate = rows.find((r) =>
+  const duplicate = rows.find((r) =>
       ((r.requester_id === user.id && r.target_id === target.id) || (r.requester_id === target.id && r.target_id === user.id))
       && (r.status === 'pending' || r.status === 'connected'))
     if (duplicate) {
       const err = new Error('An active partner relationship/request already exists between these accounts')
       err.status = 409
       throw err
+    }
+
+    if (user.role === 'buying_house' && !isPremium(user)) {
+      const outgoing = rows.filter((r) => r.requester_id === user.id && ACTIVE_STATUSES.has(r.status))
+      if (outgoing.length >= freePartnerLimit) {
+        const err = new Error(`Upgrade to premium to send more than ${freePartnerLimit} partner requests.`)
+        err.status = 403
+        throw err
+      }
     }
 
     const row = {
@@ -145,10 +162,13 @@ export async function updatePartnerRequestStatus(user, requestId, action) {
   }
 
   if (!['accept', 'reject', 'cancel'].includes(action)) {
-    const err = new Error('Invalid action')
-    err.status = 400
-    throw err
-  }
+      const err = new Error('Invalid action')
+      err.status = 400
+      throw err
+    }
+
+  const config = await getAdminConfig()
+  const freePartnerLimit = Number(config?.plan_limits?.free?.partner_limit || 5)
 
   let updatedRow = null
   const nextStatus = action === 'accept' ? 'connected' : action === 'reject' ? 'rejected' : 'cancelled'
@@ -166,6 +186,15 @@ export async function updatePartnerRequestStatus(user, requestId, action) {
       const err = new Error('Only pending requests can be updated')
       err.status = 400
       throw err
+    }
+
+    if (action === 'accept' && String(user.role || '').toLowerCase() === 'factory' && !isPremium(user)) {
+      const existingConnections = rows.filter((r) => r.target_id === user.id && r.status === 'connected').length
+      if (existingConnections >= freePartnerLimit) {
+        const err = new Error(`Subscribe to premium to accept more than ${freePartnerLimit} partner requests.`)
+        err.status = 403
+        throw err
+      }
     }
 
     if (!isAdmin) {
@@ -219,4 +248,47 @@ export async function updatePartnerRequestStatus(user, requestId, action) {
   }
 
   return updatedRow
+}
+
+export async function enforcePartnerFreeTierLimits() {
+  const [requests, users, config] = await Promise.all([readJson(FILE), listUsers(), getAdminConfig()])
+  const rows = Array.isArray(requests) ? requests : []
+  const usersById = new Map(users.map((u) => [String(u.id), u]))
+  const freePartnerLimit = Number(config?.plan_limits?.free?.partner_limit || 5)
+
+  const activeByUser = rows.reduce((acc, row) => {
+    if (row.status !== 'connected') return acc
+    const requester = String(row.requester_id)
+    const target = String(row.target_id)
+    acc[requester] = acc[requester] || []
+    acc[target] = acc[target] || []
+    acc[requester].push(row)
+    acc[target].push(row)
+    return acc
+  }, {})
+
+  let updated = false
+  const now = new Date().toISOString()
+  const next = rows.map((row) => {
+    if (row.status !== 'connected') return row
+    const requester = usersById.get(String(row.requester_id))
+    const target = usersById.get(String(row.target_id))
+    const requesterFree = requester && !isPremium(requester)
+    const targetFree = target && !isPremium(target)
+    const requesterActive = activeByUser[String(row.requester_id)] || []
+    const targetActive = activeByUser[String(row.target_id)] || []
+    const requesterOver = requesterFree && requesterActive.length > freePartnerLimit
+    const targetOver = targetFree && targetActive.length > freePartnerLimit
+    if (requesterOver || targetOver) {
+      updated = true
+      return { ...row, limit_exceeded: true, enforced_at: now }
+    }
+    return row.limit_exceeded ? { ...row, limit_exceeded: false, enforced_at: now } : row
+  })
+
+  if (updated) {
+    await updateJson(FILE, () => next)
+  }
+
+  return { updated, limit: freePartnerLimit }
 }

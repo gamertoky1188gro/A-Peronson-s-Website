@@ -78,23 +78,31 @@ export async function renewMyVerification(req, res) {
   const RENEWAL_PRICE_USD = 6.99
 
   const existing = await getVerification(req.user.id)
+  const user = await findUserById(req.user.id)
+  const freeUntilRaw = user?.profile?.verification_free_until
+  const freeUntil = freeUntilRaw ? new Date(freeUntilRaw) : null
+  const hasFreeWindow = freeUntil && Number.isFinite(freeUntil.getTime()) && freeUntil.getTime() > Date.now()
   const isFirstTime = !existing?.subscription_valid_until
-  const priceUsd = isFirstTime ? FIRST_MONTH_PRICE_USD : RENEWAL_PRICE_USD
+  const priceUsd = hasFreeWindow ? 0 : (isFirstTime ? FIRST_MONTH_PRICE_USD : RENEWAL_PRICE_USD)
 
-  const charge = await debitWallet({
-    userId: req.user.id,
-    amountUsd: priceUsd,
-    reason: 'verification_renewal',
-    ref: `verification:${req.user.id}`,
-    allowRestricted: true,
-  })
+  let charge = null
+  if (priceUsd > 0) {
+    charge = await debitWallet({
+      userId: req.user.id,
+      amountUsd: priceUsd,
+      reason: 'verification_renewal',
+      ref: `verification:${req.user.id}`,
+      allowRestricted: true,
+    })
+  }
 
   const verification = await extendVerificationSubscription(req.user.id, 30)
   return res.json({
     ok: true,
     price_usd: priceUsd,
-    wallet: charge.wallet,
-    wallet_entry: charge.entry,
+    free_until: hasFreeWindow ? freeUntil.toISOString() : null,
+    wallet: charge?.wallet || null,
+    wallet_entry: charge?.entry || null,
     verification,
   })
 }

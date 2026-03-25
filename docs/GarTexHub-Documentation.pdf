@@ -1,0 +1,61 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 2874 >>
+stream
+BT /F1 12 Tf 50 760 Td (GarTexHub Documentation Summary) Tj ET
+BT /F1 12 Tf 50 740 Td (Date: 2026-03-23) Tj ET
+BT /F1 12 Tf 50 720 Td (Overview) Tj ET
+BT /F1 12 Tf 50 700 Td (GarTexHub is a B2B marketplace connecting global buyers with Bangladeshi factories and buying houses. The platform emphasizes verified communication, structured buyer requests, contract-based workflows, and auditable records.) Tj ET
+BT /F1 12 Tf 50 680 Td (Account Types) Tj ET
+BT /F1 12 Tf 50 660 Td (Buyer: Posts requests, receives quotes, verifies suppliers.) Tj ET
+BT /F1 12 Tf 50 640 Td (Factory: Responds to requests, manages products and videos.) Tj ET
+BT /F1 12 Tf 50 620 Td (Buying House: Manages multiple factory connections and staff IDs.) Tj ET
+BT /F1 12 Tf 50 600 Td (Core Workflows) Tj ET
+BT /F1 12 Tf 50 580 Td (Buyer Request Wizard: Garments vs Textile step-by-step form, custom fields, tech-pack upload, and verified-only messaging options.) Tj ET
+BT /F1 12 Tf 50 560 Td (Messaging: Verified users message directly; unverified messages stay as requests.) Tj ET
+BT /F1 12 Tf 50 540 Td (Verification: Subscription-based \(first month $1.99, then $6.99\). Restricted wallet credit applies.) Tj ET
+BT /F1 12 Tf 50 520 Td (Contracts: Digital signatures, PDF contract vault, payment proof submission for Bank Transfer or LC.) Tj ET
+BT /F1 12 Tf 50 500 Td (Calls: In-chat audio/video calls with recording for audit trails.) Tj ET
+BT /F1 12 Tf 50 480 Td (Wallet, Coupons, and Early Adopters) Tj ET
+BT /F1 12 Tf 50 460 Td (New accounts receive $5 restricted credit \(verification/subscription only\).) Tj ET
+BT /F1 12 Tf 50 440 Td (Coupons support marketing attribution and restricted credit.) Tj ET
+BT /F1 12 Tf 50 420 Td (Early-adopter coupons can grant free verification months \(payment method required\).) Tj ET
+BT /F1 12 Tf 50 400 Td (Ratings) Tj ET
+BT /F1 12 Tf 50 380 Td (Ratings are requested after milestones; if no user rating is submitted, the system auto-rates using signals or defaults to 5 stars.) Tj ET
+BT /F1 12 Tf 50 360 Td (Notifications) Tj ET
+BT /F1 12 Tf 50 340 Td (LinkedIn-style notification cards, smart search alerts, and monthly summaries.) Tj ET
+BT /F1 12 Tf 50 320 Td (Analytics) Tj ET
+BT /F1 12 Tf 50 300 Td (Buyer/Buying House metrics and marketplace owner KPIs: match rate, conversion rate, response time, demand trends, trust score.) Tj ET
+BT /F1 12 Tf 50 280 Td (Support & Reports) Tj ET
+BT /F1 12 Tf 50 260 Td (Dedicated Support/Feedback/Report page with category, priority, attachments, and tracking IDs.) Tj ET
+BT /F1 12 Tf 50 240 Td (Moderation & Safety) Tj ET
+BT /F1 12 Tf 50 220 Td (Strict third-party contact ban, spam/irrelevant content filtering, and staged penalties.) Tj ET
+BT /F1 12 Tf 50 200 Td (UI & UX) Tj ET
+BT /F1 12 Tf 50 180 Td (Professional LinkedIn-style layout, role-based pricing views, verified badges, and no fake demo data.) Tj ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000311 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+3236
+%%EOF

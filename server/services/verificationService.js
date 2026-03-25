@@ -29,6 +29,7 @@ const fieldAliases = {
 }
 
 const REVIEW_STATUSES = new Set(['pending', 'approved', 'rejected', 'incomplete', 'expired'])
+const DUPLICATE_FIELDS = ['company_registration', 'vat', 'ein', 'eori', 'bank_proof', 'erc', 'tin', 'trade_license']
 
 export const VERIFICATION_FIELD_LABELS = {
   company_registration: 'Company Registration',
@@ -122,6 +123,10 @@ function getRequiredFields(role, buyerRegion) {
 function hasDocument(docs, field) {
   const possibleFields = fieldAliases[field] || [field]
   return possibleFields.some((name) => !!docs?.[name])
+}
+
+function normalizeDocValue(value) {
+  return sanitizeString(String(value || ''), 240).toLowerCase()
 }
 
 function buildCredibility(required, docs) {
@@ -443,7 +448,26 @@ export async function listVerificationQueue({ status } = {}) {
     })
   }
 
+  const duplicateIndex = {}
+  DUPLICATE_FIELDS.forEach((field) => {
+    duplicateIndex[field] = new Map()
+  })
   const rows = Array.isArray(all) ? all : []
+
+  for (const rec of rows) {
+    const docs = rec?.documents || {}
+    DUPLICATE_FIELDS.forEach((field) => {
+      const aliasFields = fieldAliases[field] || [field]
+      const value = aliasFields.map((key) => docs?.[key]).find(Boolean)
+      if (!value) return
+      const normalized = normalizeDocValue(value)
+      if (!normalized) return
+      const bucket = duplicateIndex[field]
+      if (!bucket.has(normalized)) bucket.set(normalized, new Set())
+      bucket.get(normalized).add(String(rec.user_id || ''))
+    })
+  }
+
   const filtered = rows.filter((rec) => {
     const reviewStatus = normalizeReviewStatus(rec.review_status, rec.verified ? 'approved' : 'pending')
     if (status) return reviewStatus === status
@@ -455,6 +479,23 @@ export async function listVerificationQueue({ status } = {}) {
     .map((rec) => {
       const user = usersById.get(String(rec.user_id || '')) || null
       const summary = getVerificationPublicSummary(user || {}, rec)
+      const duplicate_flags = DUPLICATE_FIELDS.reduce((flags, field) => {
+        const aliasFields = fieldAliases[field] || [field]
+        const value = aliasFields.map((key) => rec?.documents?.[key]).find(Boolean)
+        if (!value) return flags
+        const normalized = normalizeDocValue(value)
+        if (!normalized) return flags
+        const bucket = duplicateIndex[field]
+        const matchedUsers = bucket.get(normalized)
+        if (matchedUsers && matchedUsers.size > 1) {
+          flags.push({
+            field,
+            value,
+            user_ids: Array.from(matchedUsers),
+          })
+        }
+        return flags
+      }, [])
       return {
         ...rec,
         review_status: normalizeReviewStatus(rec.review_status, rec.verified ? 'approved' : 'pending'),
@@ -469,10 +510,20 @@ export async function listVerificationQueue({ status } = {}) {
         } : null,
         required_checklist: summary.required_checklist,
         credibility: summary.credibility,
+        duplicate_flags,
         uploaded_documents: docsByUser.get(String(rec.user_id || '')) || [],
       }
     })
     .sort((a, b) => String(b.updated_at || '').localeCompare(String(a.updated_at || '')))
+}
+
+export async function listExpiringVerifications(thresholdDays = 7) {
+  const all = await readJson(FILE)
+  const rows = Array.isArray(all) ? all : []
+  return rows.filter((rec) => {
+    const remaining = Number(rec.subscription_remaining_days || 0)
+    return rec.verified && remaining > 0 && remaining <= thresholdDays
+  })
 }
 
 export async function markVerificationExpiringSoon(userId, remainingDays, thresholdDays = 7) {

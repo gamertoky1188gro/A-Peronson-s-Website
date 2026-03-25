@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken'
 import { deny, hasRole } from '../utils/permissions.js'
+import { findUserById } from '../services/userService.js'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'mvp-dev-secret'
 const JWT_ISSUER = process.env.JWT_ISSUER || 'gartexhub-api'
@@ -26,7 +27,7 @@ export function signToken(user) {
   })
 }
 
-export function requireAuth(req, res, next) {
+export async function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization || ''
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
   if (!token) return res.status(401).json({ error: 'Unauthorized' })
@@ -36,13 +37,22 @@ export function requireAuth(req, res, next) {
       issuer: JWT_ISSUER,
       audience: JWT_AUDIENCE,
     })
+    const user = await findUserById(req.user.id)
+    if (!user) return res.status(401).json({ error: 'Invalid token' })
+    if (user.password_reset_at) {
+      const tokenIssuedAt = Number(req.user.iat || 0) * 1000
+      const resetAt = new Date(user.password_reset_at).getTime()
+      if (Number.isFinite(resetAt) && tokenIssuedAt && tokenIssuedAt < resetAt) {
+        return res.status(401).json({ error: 'Session expired' })
+      }
+    }
     return next()
   } catch {
     return res.status(401).json({ error: 'Invalid token' })
   }
 }
 
-export function optionalAuth(req, _res, next) {
+export async function optionalAuth(req, _res, next) {
   // Allows endpoints to accept both authenticated and anonymous requests.
   // If a JWT is provided and valid, we populate `req.user`. Otherwise we continue with `req.user = null`.
   const authHeader = req.headers.authorization || ''
@@ -58,6 +68,14 @@ export function optionalAuth(req, _res, next) {
       issuer: JWT_ISSUER,
       audience: JWT_AUDIENCE,
     })
+    const user = await findUserById(req.user.id)
+    if (user?.password_reset_at) {
+      const tokenIssuedAt = Number(req.user.iat || 0) * 1000
+      const resetAt = new Date(user.password_reset_at).getTime()
+      if (Number.isFinite(resetAt) && tokenIssuedAt && tokenIssuedAt < resetAt) {
+        req.user = null
+      }
+    }
   } catch {
     req.user = null
   }

@@ -1,4 +1,5 @@
 import { readJson, writeJson } from '../utils/jsonStore.js'
+import { recordSubscriptionEvent } from './subscriptionHistoryService.js'
 
 const FILE = 'subscriptions.json'
 
@@ -23,9 +24,10 @@ export async function getSubscription(userId) {
   return subs.find((s) => s.user_id === userId) || null
 }
 
-export async function upsertSubscription(userId, plan = 'free', autoRenew = true) {
+export async function upsertSubscription(userId, plan = 'free', autoRenew = true, meta = {}) {
   const subs = await readJson(FILE)
   const idx = subs.findIndex((s) => s.user_id === userId)
+  const previousPlan = idx >= 0 ? subs[idx]?.plan || '' : ''
   const start = nowIso()
   const end = plan === 'premium' ? plusDays(30) : plusDays(3650)
   const next = { user_id: userId, plan, start_date: start, end_date: end, auto_renew: Boolean(autoRenew) }
@@ -34,13 +36,26 @@ export async function upsertSubscription(userId, plan = 'free', autoRenew = true
   else subs.push(next)
 
   await writeJson(FILE, subs)
+  const action = previousPlan && previousPlan !== plan
+    ? (plan === 'premium' ? 'upgrade' : 'downgrade')
+    : 'set'
+  await recordSubscriptionEvent({
+    userId,
+    plan,
+    previousPlan,
+    action,
+    actorId: meta?.actor_id || '',
+    source: meta?.source || 'system',
+    note: meta?.note || '',
+  })
   return next
 }
 
-export async function renewPremiumMonthly(userId, autoRenew = true) {
+export async function renewPremiumMonthly(userId, autoRenew = true, meta = {}) {
   const subs = await readJson(FILE)
   const idx = subs.findIndex((s) => s.user_id === userId)
   const current = idx >= 0 ? subs[idx] : null
+  const previousPlan = current?.plan || ''
 
   const currentEndTime = new Date(current?.end_date || '').getTime()
   const baseTime = Number.isFinite(currentEndTime) && currentEndTime > Date.now() ? currentEndTime : Date.now()
@@ -59,6 +74,15 @@ export async function renewPremiumMonthly(userId, autoRenew = true) {
   else subs.push(next)
 
   await writeJson(FILE, subs)
+  await recordSubscriptionEvent({
+    userId,
+    plan: 'premium',
+    previousPlan,
+    action: 'renew',
+    actorId: meta?.actor_id || '',
+    source: meta?.source || 'system',
+    note: meta?.note || '',
+  })
   return next
 }
 

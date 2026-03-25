@@ -35,7 +35,6 @@ export default function Signup() {
     email: '',
     password: '',
     primaryRole: 'buyer',
-    factorySubtype: 'factory',
     country: '',
     organization: '',
   })
@@ -50,7 +49,7 @@ export default function Signup() {
     setError('')
     try {
       // Backend expects a slightly different field naming; map UI fields -> API fields here.
-      const resolvedRole = form.primaryRole === 'factory' ? form.factorySubtype : 'buyer'
+      const resolvedRole = form.primaryRole
       const payload = {
         name: form.name,
         email: form.email,
@@ -100,26 +99,18 @@ export default function Signup() {
             <label className="block text-sm font-medium mb-1 text-slate-700">Password</label>
             <input type="password" className="w-full px-4 py-3 border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20" value={form.password} onChange={(e) => onChange('password', e.target.value)} required />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-slate-700">Account Type</label>
-            <select className="w-full px-4 py-3 border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20" value={form.primaryRole} onChange={(e) => onChange('primaryRole', e.target.value)}>
-              <option value="buyer">Buyer</option>
-              <option value="factory">Factory</option>
-            </select>
-          </div>
-          {form.primaryRole === 'factory' ? (
             <div>
-              <label className="block text-sm font-medium mb-1 text-slate-700">Factory Type</label>
+              <label className="block text-sm font-medium mb-1 text-slate-700">Account Type</label>
               <select
                 className="w-full px-4 py-3 border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20"
-                value={form.factorySubtype}
-                onChange={(e) => onChange('factorySubtype', e.target.value)}
+                value={form.primaryRole}
+                onChange={(e) => onChange('primaryRole', e.target.value)}
               >
+                <option value="buyer">Buyer</option>
                 <option value="factory">Factory</option>
                 <option value="buying_house">Buying House</option>
               </select>
             </div>
-          ) : null}
           <div>
             <label className="block text-sm font-medium mb-1 text-slate-700">Country</label>
             <input className="w-full px-4 py-3 border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20" value={form.country} onChange={(e) => onChange('country', e.target.value)} required />

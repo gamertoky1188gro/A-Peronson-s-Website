@@ -1,98 +1,126 @@
 import fs from 'fs/promises'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { writeJson } from '../server/utils/jsonStore.js'
-import { logInfo } from '../server/utils/logger.js'
+import { readJson, writeJson } from '../server/utils/jsonStore.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+const databaseDir = path.join(__dirname, '..', 'server', 'database')
+const force = String(process.env.FORCE_MIGRATE || '').toLowerCase() === '1'
 
-async function loadJson(filePath) {
+const FILES = [
+  'users.json',
+  'subscriptions.json',
+  'verification.json',
+  'requirements.json',
+  'company_products.json',
+  'messages.json',
+  'message_requests.json',
+  'notifications.json',
+  'search_alerts.json',
+  'search_usage_counters.json',
+  'conversation_locks.json',
+  'partner_requests.json',
+  'call_sessions.json',
+  'call_recording_views.json',
+  'documents.json',
+  'leads.json',
+  'lead_notes.json',
+  'lead_reminders.json',
+  'analytics.json',
+  'boosts.json',
+  'product_views.json',
+  'reports.json',
+  'violations.json',
+  'social_interactions.json',
+  'user_connections.json',
+  'matches.json',
+  'metrics.json',
+  'assistant_knowledge.json',
+  'payment_proofs.json',
+  'wallet_history.json',
+  'coupon_codes.json',
+  'coupon_redemptions.json',
+  'message_reads.json',
+  'ratings.json',
+]
+
+function hasRows(value) {
+  if (!value) return false
+  if (Array.isArray(value)) return value.length > 0
+  if (typeof value === 'object') {
+    const counts = Object.values(value)
+      .filter((v) => Array.isArray(v))
+      .reduce((sum, arr) => sum + arr.length, 0)
+    return counts > 0
+  }
+  return false
+}
+
+async function fileExists(filePath) {
   try {
-    const raw = await fs.readFile(filePath, 'utf-8')
-    return JSON.parse(raw || '[]')
+    await fs.access(filePath)
+    return true
   } catch {
-    return null
+    return false
   }
 }
 
-function normalizeProductRows(rows = []) {
-  if (!Array.isArray(rows)) return []
-  return rows.map((row) => ({
-    ...row,
-    company_name: undefined,
-    verified: undefined,
-    status: row?.status || 'published',
-    image_urls: Array.isArray(row?.image_urls) ? row.image_urls : [],
-    cover_image_url: row?.cover_image_url || '',
-  }))
+async function readJsonFile(filePath) {
+  const raw = await fs.readFile(filePath, 'utf8')
+  const trimmed = String(raw || '').trim()
+  if (!trimmed) return null
+  return JSON.parse(trimmed)
 }
 
-function normalizeRequirementRows(rows = []) {
-  if (!Array.isArray(rows)) return []
-  return rows.map((row) => ({
-    ...row,
-    organization_name: undefined,
-    verified: undefined,
-    title: row?.title || 'Untitled requirement',
-    request_type: row?.request_type || 'garments',
-    specs: row?.specs && typeof row.specs === 'object' ? row.specs : {},
-    custom_fields: Array.isArray(row?.custom_fields) ? row.custom_fields : [],
-    quote_deadline: row?.quote_deadline || null,
-    expires_at: row?.expires_at || null,
-    max_suppliers: row?.max_suppliers ?? null,
-  }))
-}
-
-function normalizeUserRows(rows = []) {
-  if (!Array.isArray(rows)) return []
-  return rows.map((row) => ({
-    ...row,
-    status: row?.status || 'active',
-    messaging_restricted_until: row?.messaging_restricted_until ? row.messaging_restricted_until : null,
-    password_reset_at: row?.password_reset_at ? row.password_reset_at : null,
-  }))
-}
-
-function normalizeVerificationRows(rows = []) {
-  if (!Array.isArray(rows)) return []
-  return rows.map((row) => ({
-    ...row,
-    verified_at: row?.verified_at || null,
-    subscription_valid_until: row?.subscription_valid_until || null,
-    updated_at: row?.updated_at || null,
-  }))
-}
-
-async function migrate() {
-  const dbDir = path.join(process.cwd(), 'server', 'database')
-  const files = await fs.readdir(dbDir)
-
-  for (const file of files) {
-    if (!file.endsWith('.json')) continue
-    const fullPath = path.join(dbDir, file)
-    const data = await loadJson(fullPath)
-    if (data === null) continue
-    const payload = file === 'company_products.json'
-      ? normalizeProductRows(data)
-      : file === 'requirements.json'
-        ? normalizeRequirementRows(data)
-        : file === 'users.json'
-          ? normalizeUserRows(data)
-          : file === 'verification.json'
-            ? normalizeVerificationRows(data)
-      : data
-    await writeJson(file, payload)
-    logInfo(`Migrated ${file}`)
+async function migrateFile(fileName) {
+  const filePath = path.join(databaseDir, fileName)
+  const exists = await fileExists(filePath)
+  if (!exists) {
+    console.log(`- skip ${fileName} (missing)`)
+    return { file: fileName, status: 'missing' }
   }
+
+  const payload = await readJsonFile(filePath)
+  if (payload === null) {
+    console.log(`- skip ${fileName} (empty)`)
+    return { file: fileName, status: 'empty' }
+  }
+
+  const existing = await readJson(fileName)
+  if (hasRows(existing) && !force) {
+    console.log(`- skip ${fileName} (db already has data, use FORCE_MIGRATE=1 to override)`)
+    return { file: fileName, status: 'skipped' }
+  }
+
+  await writeJson(fileName, payload)
+  console.log(`- migrated ${fileName}`)
+  return { file: fileName, status: 'migrated' }
 }
 
-migrate()
-  .then(() => {
-    logInfo('JSON -> MySQL migration complete')
-    process.exit(0)
-  })
-  .catch((error) => {
-    console.error('Migration failed:', error)
-    process.exit(1)
-  })
+async function main() {
+  console.log(`Starting JSON -> MySQL migration (force=${force})`)
+  const results = []
+
+  for (const file of FILES) {
+    try {
+      results.push(await migrateFile(file))
+    } catch (error) {
+      console.error(`- failed ${file}:`, error?.message || error)
+      results.push({ file, status: 'error', error: error?.message || String(error) })
+    }
+  }
+
+  const migrated = results.filter((r) => r.status === 'migrated').length
+  const skipped = results.filter((r) => r.status === 'skipped').length
+  const missing = results.filter((r) => r.status === 'missing').length
+  const empty = results.filter((r) => r.status === 'empty').length
+  const errors = results.filter((r) => r.status === 'error').length
+
+  console.log('Summary:', { migrated, skipped, missing, empty, errors })
+}
+
+main().catch((error) => {
+  console.error('Migration failed:', error?.message || error)
+  process.exit(1)
+})

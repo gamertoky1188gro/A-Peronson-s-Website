@@ -12,6 +12,7 @@ import {
   rejectMessageRequest,
   tieredInbox,
 } from '../services/messageService.js'
+import { maybeGenerateBotReply } from '../services/chatbotService.js'
 import { readJson } from '../utils/jsonStore.js'
 
 export async function sendMessage(req, res) {
@@ -20,7 +21,14 @@ export async function sendMessage(req, res) {
 
   try {
     const msg = await postMessage(req.params.matchId, req.user.id, req.body?.message || '', req.body?.type || 'text')
-    return res.status(201).json(msg)
+    let botReply = null
+    try {
+      const result = await maybeGenerateBotReply({ match_id: req.params.matchId, sender_id: req.user.id, message: req.body?.message || '' })
+      botReply = result?.reply || null
+    } catch {
+      botReply = null
+    }
+    return res.status(201).json({ ...msg, bot_reply: botReply })
   } catch (error) {
     return res.status(error.status || 400).json({
       error: error.message || 'Unable to send message',
@@ -96,7 +104,15 @@ export async function uploadMessageAttachment(req, res) {
       size: file.size,
     })
 
-    return res.status(201).json(created)
+    let botReply = null
+    try {
+      const result = await maybeGenerateBotReply({ match_id: matchId, sender_id: req.user.id, message: req.body?.message || fallbackText })
+      botReply = result?.reply || null
+    } catch {
+      botReply = null
+    }
+
+    return res.status(201).json({ ...created, bot_reply: botReply })
   } catch (error) {
     return res.status(error.status || 400).json({ error: error.message || 'Unable to send message attachment' })
   }

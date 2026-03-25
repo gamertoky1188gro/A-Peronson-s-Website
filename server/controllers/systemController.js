@@ -1,4 +1,5 @@
 import { readJson } from '../utils/jsonStore.js'
+import { getAdminConfig } from '../services/adminConfigService.js'
 
 export async function systemMeta(req, res) {
   return res.json({
@@ -55,12 +56,8 @@ export async function systemHome(req, res) {
   const verifiedFactories = factories.length
     ? factories
         .slice(0, 3)
-        .map((f, idx) => ({ ...f, verified: f.verified || idx === 0 }))
-    : [
-        { id: null, name: 'GarmentWorks Ltd', verified: true },
-        { id: null, name: 'TexPro Manufacturing', verified: true },
-        { id: null, name: 'Stitch & Seal Co', verified: true },
-      ]
+        .map((f) => ({ ...f, verified: Boolean(f.verified) }))
+    : []
 
   const messageCount = Array.isArray(messages) ? messages.length : 0
   const metricCount = Array.isArray(metrics) ? metrics.length : 0
@@ -72,15 +69,7 @@ export async function systemHome(req, res) {
   return res.json({
     ok: true,
     hero: {
-      buyerRequest: {
-        label: 'Buyer Request',
-        title: 'Denim jacket — 10k pcs, wash + trims',
-        badge: 'Priority',
-        fields: [
-          { label: 'Target', value: 'EU' },
-          { label: 'Delivery', value: 'May' },
-        ],
-      },
+      buyerRequest: null,
       verifiedFactories: {
         title: 'Verified factories',
         subtitle: 'Matched by compliance',
@@ -105,22 +94,17 @@ export async function systemHome(req, res) {
         title: 'Structured buyer requests',
         description: 'Perfectly aligned fields so teams compare requirements instantly.',
         badge: 'Aligned',
-        fields: [
-          { label: 'Product', value: 'Polo shirt' },
-          { label: 'Qty', value: '30,000' },
-          { label: 'Fabric', value: 'Cotton 200gsm' },
-          { label: 'Target', value: 'USA' },
-        ],
+        fields: [],
       },
       contractVault: {
         title: 'Contract Vault',
         description: 'A secure room vibe for agreements, compliance docs, and audit-ready records.',
-        items: ['Draft → Signed', 'Version history', 'Team access control'],
+        items: ['Draft -> Signed', 'Version history', 'Team access control'],
         badge: 'Encrypted storage',
       },
       enterpriseAnalytics: {
         title: 'Enterprise analytics',
-        description: 'Decision-ready reporting for buying houses — without turning the UI into a spreadsheet.',
+        description: 'Decision-ready reporting for buying houses -> without turning the UI into a spreadsheet.',
         stats: [
           { label: 'Active leads', value: String(analyticsBase) },
           { label: 'Verified matches', value: String(verifiedMatches) },
@@ -130,9 +114,9 @@ export async function systemHome(req, res) {
       agentLock: {
         title: 'Internal Agent Lock System',
         description: 'Subtle, conflict-free lead ownership across multi-agent buying house teams.',
-        requestLabel: 'Request #BR-1842',
-        status: 'Locked',
-        note: 'Claimed by Agent A — teammates can collaborate without overwriting.',
+        requestLabel: 'No active request yet',
+        status: 'Idle',
+        note: 'Live request locks will appear here once teams start claiming leads.',
       },
     },
   })
@@ -158,7 +142,7 @@ export async function systemPricing(req, res) {
     analytics: {
       tiles: [
         { label: 'Order completion', value: `${completionRate}%`, sublabel: 'last 30 days', accent: 'teal' },
-        { label: 'Avg. cycle', value: `${avgCycleDays}d`, sublabel: 'request → contract', accent: 'blue' },
+        { label: 'Avg. cycle', value: `${avgCycleDays}d`, sublabel: 'request -> contract', accent: 'blue' },
         { label: 'Active orgs', value: String(activeOrgs), sublabel: 'buyers + factories', accent: 'gold' },
         { label: 'Response SLA', value: responseSla, sublabel: 'median', accent: 'blue' },
       ],
@@ -222,5 +206,14 @@ export async function systemAbout(req, res) {
       avgResponseSla,
     },
     documents,
+  })
+}
+
+export async function systemPolicies(req, res) {
+  const config = await getAdminConfig()
+  return res.json({
+    tos: config?.policies?.tos || '',
+    privacy: config?.policies?.privacy || '',
+    updated_at: new Date().toISOString(),
   })
 }

@@ -222,21 +222,14 @@ export default function TexHub() {
       hero: {
         buyerRequest: {
           label: 'Buyer Request',
-          title: 'Denim jacket -- 10k pcs, wash + trims',
-          badge: 'Priority',
-          fields: [
-            { label: 'Target', value: 'EU' },
-            { label: 'Delivery', value: 'May' },
-          ],
+          title: 'No live buyer requests yet',
+          badge: 'Live',
+          fields: [],
         },
         verifiedFactories: {
           title: 'Verified factories',
           subtitle: 'Matched by compliance',
-          factories: [
-            { id: null, name: 'GarmentWorks Ltd', verified: true },
-            { id: null, name: 'TexPro Manufacturing', verified: true },
-            { id: null, name: 'Stitch & Seal Co', verified: true },
-          ],
+          factories: [],
         },
       },
       bento: {
@@ -253,12 +246,7 @@ export default function TexHub() {
           title: 'Structured buyer requests',
           description: 'Perfectly aligned fields so teams compare requirements instantly.',
           badge: 'Aligned',
-          fields: [
-            { label: 'Product', value: 'Polo shirt' },
-            { label: 'Qty', value: '30,000' },
-            { label: 'Fabric', value: 'Cotton 200gsm' },
-            { label: 'Target', value: 'USA' },
-          ],
+          fields: [],
         },
         contractVault: {
           title: 'Contract Vault',
@@ -269,18 +257,14 @@ export default function TexHub() {
         enterpriseAnalytics: {
           title: 'Enterprise analytics',
           description: 'Decision-ready reporting for buying houses -- without turning the UI into a spreadsheet.',
-          stats: [
-            { label: 'Active leads', value: '128' },
-            { label: 'Verified matches', value: '64' },
-            { label: 'Avg. response', value: '2h 14m' },
-          ],
+          stats: [],
         },
         agentLock: {
           title: 'Internal Agent Lock System',
           description: 'Subtle, conflict-free lead ownership across multi-agent buying house teams.',
-          requestLabel: 'Request #BR-1842',
-          status: 'Locked',
-          note: 'Claimed by Agent A -- teammates can collaborate without overwriting.',
+          requestLabel: 'No active request yet',
+          status: 'Idle',
+          note: 'Live request locks will appear here once teams start claiming leads.',
         },
       },
     }),
@@ -350,12 +334,6 @@ export default function TexHub() {
       structuredBuyerRequests: {
         ...bento.structuredBuyerRequests,
         badge: 'Verified',
-        fields: [
-          { label: 'Product', value: 'Hoodie' },
-          { label: 'Qty', value: '12,500' },
-          { label: 'Fabric', value: 'Fleece 320gsm' },
-          { label: 'Target', value: 'EU' },
-        ],
       },
     }
   }, [bento, mode])

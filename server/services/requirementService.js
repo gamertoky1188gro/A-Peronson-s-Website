@@ -86,6 +86,15 @@ function normalizeSpecs(payload = {}, requestType) {
       lab_test_required: sanitizeString(payload.lab_test_required || '', 160),
       swatch_first: sanitizeString(payload.swatch_first || '', 40),
       lab_cert_notes: sanitizeString(payload.lab_cert_notes || '', 240),
+      preferred_factory_location: sanitizeString(payload.preferred_factory_location || '', 120),
+      factory_size_preference: sanitizeString(payload.factory_size_preference || '', 120),
+      export_experience_preference: sanitizeString(payload.export_experience_preference || '', 120),
+      confidentiality_toggle: Boolean(payload.confidentiality_toggle),
+      packaging_requirement: sanitizeString(payload.packaging_requirement || '', 160),
+      origin_label_required: sanitizeString(payload.origin_label_required || '', 160),
+      hangtag_barcode: sanitizeString(payload.hangtag_barcode || '', 160),
+      partial_shipment_allowed: sanitizeString(payload.partial_shipment_allowed || '', 40),
+      shipment_mode: sanitizeString(payload.shipment_mode || '', 40),
     }
   }
   return {
@@ -107,10 +116,20 @@ function normalizeSpecs(payload = {}, requestType) {
     compliance_certs: Array.isArray(payload.compliance_certs) ? payload.compliance_certs.map((c) => sanitizeString(c, 80)) : [],
     sustainability_certs: Array.isArray(payload.sustainability_certs) ? payload.sustainability_certs.map((c) => sanitizeString(c, 80)) : [],
     compliance_notes: sanitizeString(payload.compliance_notes || '', 240),
+    preferred_factory_location: sanitizeString(payload.preferred_factory_location || '', 120),
+    factory_size_preference: sanitizeString(payload.factory_size_preference || '', 120),
+    export_experience_preference: sanitizeString(payload.export_experience_preference || '', 120),
+    confidentiality_toggle: Boolean(payload.confidentiality_toggle),
+    packaging_requirement: sanitizeString(payload.packaging_requirement || '', 160),
+    origin_label_required: sanitizeString(payload.origin_label_required || '', 160),
+    hangtag_barcode: sanitizeString(payload.hangtag_barcode || '', 160),
+    partial_shipment_allowed: sanitizeString(payload.partial_shipment_allowed || '', 40),
+    shipment_mode: sanitizeString(payload.shipment_mode || '', 40),
   }
 }
 
-function assertRequiredFields(payload = {}, requestType) {
+function assertRequiredFields(payload = {}, requestType, status = 'open') {
+  if (String(status || '').toLowerCase() === 'draft') return
   const missing = []
   const type = String(requestType || '').toLowerCase()
   const get = (value) => sanitizeString(value || '', 160)
@@ -151,7 +170,8 @@ function normalizeRequirement(buyerId, payload) {
   const requestType = sanitizeString(payload.request_type || payload.requestType || 'garments', 40).toLowerCase() === 'textile'
     ? 'textile'
     : 'garments'
-  assertRequiredFields(payload, requestType)
+  const status = sanitizeString(payload.status || 'open', 20).toLowerCase()
+  assertRequiredFields(payload, requestType, status)
   const title = sanitizeString(payload.title || payload.request_title || payload.category, 160)
   const specs = normalizeSpecs(payload, requestType)
   const customFields = normalizeCustomFields(payload.custom_fields || payload.customFields || [])
@@ -204,7 +224,7 @@ function normalizeRequirement(buyerId, payload) {
     assigned_agent_id: sanitizeString(payload.assigned_agent_id || '', 120),
     assigned_at: sanitizeString(payload.assigned_at || '', 40),
     assigned_by: sanitizeString(payload.assigned_by || '', 120),
-    status: 'open',
+    status: status || 'open',
     created_at: new Date().toISOString(),
   }
   normalized.ai_summary = buildRequirementSummary(normalized)
@@ -237,28 +257,31 @@ export async function createRequirement(buyerId, payload) {
 
   requirements.push(requirement)
   await writeJson(FILE, requirements)
-  await emitNotificationsForEntity('buyer_request', requirement)
-  try {
-    const users = await readJson('users.json')
-    const targets = users.filter((u) => {
-      const role = String(u.role || '').toLowerCase()
-      return Boolean(u.verified) && (role === 'factory' || role === 'buying_house')
-    })
-    await Promise.all(targets.map((target) => createNotification(target.id, {
-      type: 'buyer_request_verified',
-      entity_type: 'buyer_request',
-      entity_id: requirement.id,
-      message: `New buyer request available (${requirement.request_type || 'garments'}).`,
-      meta: {
-        request_type: requirement.request_type || 'garments',
-        title: requirement.title || '',
-        category: requirement.category || '',
-      },
-    })))
-  } catch {
-    // non-blocking notifications
+  const isDraft = String(requirement.status || '').toLowerCase() === 'draft'
+  if (!isDraft) {
+    await emitNotificationsForEntity('buyer_request', requirement)
+    try {
+      const users = await readJson('users.json')
+      const targets = users.filter((u) => {
+        const role = String(u.role || '').toLowerCase()
+        return Boolean(u.verified) && (role === 'factory' || role === 'buying_house')
+      })
+      await Promise.all(targets.map((target) => createNotification(target.id, {
+        type: 'buyer_request_verified',
+        entity_type: 'buyer_request',
+        entity_id: requirement.id,
+        message: `New buyer request available (${requirement.request_type || 'garments'}).`,
+        meta: {
+          request_type: requirement.request_type || 'garments',
+          title: requirement.title || '',
+          category: requirement.category || '',
+        },
+      })))
+    } catch {
+      // non-blocking notifications
+    }
   }
-  logInfo('Buyer request created', { requirement_id: requirement.id, buyer_id: buyerId, at: requirement.created_at })
+  logInfo('Buyer request created', { requirement_id: requirement.id, buyer_id: buyerId, status: requirement.status, at: requirement.created_at })
   return requirement
 }
 

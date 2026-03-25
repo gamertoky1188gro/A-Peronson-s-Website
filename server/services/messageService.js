@@ -11,6 +11,7 @@ import {
 import { upsertLeadFromMessage } from './leadService.js'
 import { assertMessagingAllowed, moderateTextOrRedactWithContext } from './policyService.js'
 import { getRequirementById } from './requirementService.js'
+import { autoSummarizeMatch, resolveOrgOwnerFromMatch } from './aiConversationService.js'
 
 const FILE = 'messages.json'
 const USERS_FILE = 'users.json'
@@ -297,7 +298,7 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
           isVerifiedSupplier = Boolean(owner?.verified)
         }
         if (!isBuyer && !isAdmin && !isVerifiedSupplier) {
-          const err = new Error('Only verified suppliers can message this buyer request.')
+          const err = new Error('Verified-only: This buyer accepts messages only from verified suppliers. Verify your account to unlock direct access.')
           err.status = 403
           err.code = 'VERIFIED_ONLY'
           throw err
@@ -342,6 +343,16 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
   }
 
   await trackTransition(matchId, 'matched', 'first_message_sent', { sender_id: senderId })
+
+  try {
+    const orgOwnerId = await resolveOrgOwnerFromMatch(matchId, senderId)
+    if (orgOwnerId) {
+      autoSummarizeMatch({ matchId, orgOwnerId }).catch(() => {})
+    }
+  } catch {
+    // silent
+  }
+
   return enrichMessage(entry, usersById)
 }
 

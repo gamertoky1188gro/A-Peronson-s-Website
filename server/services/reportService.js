@@ -17,8 +17,6 @@ export async function createReport({ actor, entity_type, entity_id, reason = '',
     reason: sanitizeString(String(reason || ''), 400),
     actor_id: sanitizeString(String(actor?.id || ''), 120),
     actor_name: sanitizeString(String(actor?.name || actor?.email || ''), 120),
-    actor_role: sanitizeString(String(actor?.role || ''), 40),
-    meta: metadata && typeof metadata === 'object' ? metadata : {},
     created_at: new Date().toISOString(),
     resolved_at: '',
     resolved_by: '',
@@ -68,4 +66,3 @@ export async function resolveReport(reportId, actor, payload = {}) {
   await writeJson(FILE, rows)
   return rows[idx]
 }
-

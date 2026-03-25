@@ -3,7 +3,8 @@ import bcrypt from 'bcryptjs'
 import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { upsertSubscription } from './subscriptionService.js'
-import { redeemCouponForUser } from './walletService.js'
+import { getAdminConfig } from './adminConfigService.js'
+import { creditWallet, redeemCouponForUser } from './walletService.js'
 
 const FILE = 'users.json'
 const CONNECTION_FILE = 'user_connections.json'
@@ -211,7 +212,7 @@ export async function registerUser(payload) {
     subscription_status: payload.subscription_status === 'premium' ? 'premium' : 'free',
     created_at: nowIso,
     wallet_balance_usd: 0,
-    wallet_restricted_usd: 5,
+    wallet_restricted_usd: 0,
     // Trust & moderation state (project.md): warnings/restrictions for policy violations.
     policy_strikes: 0,
     messaging_restricted_until: null,
@@ -228,7 +229,27 @@ export async function registerUser(payload) {
 
   users.push(user)
   await writeJson(FILE, users)
-  await upsertSubscription(user.id, user.subscription_status, true)
+  await upsertSubscription(user.id, user.subscription_status, true, {
+    actor_id: user.id,
+    source: 'system',
+    note: 'user_created',
+  })
+  // project.md: auto $5 restricted credit for all new accounts (configurable).
+  try {
+    const config = await getAdminConfig()
+    if (config?.feature_flags?.auto_credit !== false) {
+      await creditWallet({
+        userId: user.id,
+        amountUsd: 5,
+        reason: 'auto_credit',
+        ref: `auto-credit:${user.id}`,
+        restricted: true,
+        metadata: { source: 'signup' },
+      })
+    }
+  } catch {
+    // non-blocking: auto-credit failures should not block signup
+  }
   if (payload?.coupon_code) {
     await redeemCouponForUser({ userId: user.id, code: payload.coupon_code })
   }
@@ -269,6 +290,104 @@ export async function setUserSubscriptionStatus(userId, plan) {
   const index = users.findIndex((u) => u.id === userId)
   if (index < 0) return null
   users[index].subscription_status = plan === 'premium' ? 'premium' : 'free'
+  await writeJson(FILE, users)
+  return cleanUser(users[index])
+}
+
+export async function adminUpdateUser(userId, patch = {}) {
+  const users = await readJson(FILE)
+  const index = users.findIndex((u) => u.id === userId)
+  if (index < 0) return null
+
+  const current = users[index]
+  const allowedRoles = new Set(['buyer', 'factory', 'buying_house', 'owner', 'admin', 'agent'])
+  const nextRole = allowedRoles.has(String(patch.role || '').toLowerCase()) ? String(patch.role).toLowerCase() : current.role
+  const nextStatus = patch.status ? sanitizeString(String(patch.status), 40) : current.status
+  const nextVerified = patch.verified === undefined ? current.verified : Boolean(patch.verified)
+  const nextPlan = patch.subscription_status ? (String(patch.subscription_status).toLowerCase() === 'premium' ? 'premium' : 'free') : current.subscription_status
+  const nextStrikes = patch.policy_strikes === undefined ? current.policy_strikes : Math.max(0, Number(patch.policy_strikes || 0))
+  const nextMessagingRestricted = patch.messaging_restricted_until === undefined
+    ? current.messaging_restricted_until
+    : (patch.messaging_restricted_until ? new Date(patch.messaging_restricted_until).toISOString() : null)
+  const nextOrgOwnerId = patch.org_owner_id !== undefined
+    ? (sanitizeString(String(patch.org_owner_id || ''), 120) || null)
+    : current.org_owner_id
+  const nextMemberId = patch.member_id !== undefined
+    ? (sanitizeString(String(patch.member_id || ''), 120) || null)
+    : current.member_id
+  const nextPermissions = patch.permissions !== undefined
+    ? (Array.isArray(patch.permissions) ? patch.permissions.map((p) => sanitizeString(String(p), 64)) : [])
+    : current.permissions
+  let nextPermissionMatrix = current.permission_matrix
+  if (patch.permission_matrix !== undefined) {
+    const rawMatrix = patch.permission_matrix && typeof patch.permission_matrix === 'object' ? patch.permission_matrix : {}
+    const sections = ['requests', 'products', 'analytics', 'members', 'documents']
+    nextPermissionMatrix = Object.fromEntries(sections.map((section) => {
+      const sectionValue = rawMatrix?.[section] && typeof rawMatrix[section] === 'object' ? rawMatrix[section] : {}
+      return [section, { view: Boolean(sectionValue.view), edit: Boolean(sectionValue.edit) }]
+    }))
+  }
+  const nextChatbot = patch.chatbot_enabled === undefined ? current.chatbot_enabled : Boolean(patch.chatbot_enabled)
+
+  const profile = { ...(current.profile || {}) }
+  if (patch.fraud_flags !== undefined) {
+    profile.fraud_flags = Array.isArray(patch.fraud_flags) ? patch.fraud_flags.map((v) => sanitizeString(String(v), 80)) : []
+  }
+  if (patch.admin_notes !== undefined) {
+    profile.admin_notes = sanitizeString(String(patch.admin_notes || ''), 800)
+  }
+
+  const next = {
+    ...current,
+    role: nextRole,
+    status: nextStatus,
+    verified: nextVerified,
+    subscription_status: nextPlan,
+    policy_strikes: nextStrikes,
+    messaging_restricted_until: nextMessagingRestricted,
+    org_owner_id: nextOrgOwnerId,
+    member_id: nextMemberId,
+    permissions: nextPermissions,
+    permission_matrix: nextPermissionMatrix,
+    chatbot_enabled: nextChatbot,
+    profile,
+  }
+
+  users[index] = next
+  await writeJson(FILE, users)
+  return cleanUser(next)
+}
+
+export async function adminSetPassword(userId, newPassword) {
+  const users = await readJson(FILE)
+  const index = users.findIndex((u) => u.id === userId)
+  if (index < 0) return null
+
+  const hash = await bcrypt.hash(String(newPassword), 10)
+  users[index].password_hash = hash
+  users[index].password_reset_at = new Date().toISOString()
+  await writeJson(FILE, users)
+  return cleanUser(users[index])
+}
+
+export async function adminForceLogout(userId) {
+  const users = await readJson(FILE)
+  const index = users.findIndex((u) => u.id === userId)
+  if (index < 0) return null
+  users[index].password_reset_at = new Date().toISOString()
+  await writeJson(FILE, users)
+  return cleanUser(users[index])
+}
+
+export async function adminLockMessaging(userId, lockHours = 0) {
+  const users = await readJson(FILE)
+  const index = users.findIndex((u) => u.id === userId)
+  if (index < 0) return null
+
+  const hours = Math.max(0, Number(lockHours || 0))
+  users[index].messaging_restricted_until = hours
+    ? new Date(Date.now() + hours * 60 * 60 * 1000).toISOString()
+    : null
   await writeJson(FILE, users)
   return cleanUser(users[index])
 }

@@ -1,0 +1,28 @@
+{
+  "devices": [],
+  "alerts": [],
+  "topology": {
+    "nodes": [],
+    "links": []
+  },
+  "vlans": [],
+  "ipam_reservations": [],
+  "dhcp_pools": [],
+  "vpn_tunnels": [],
+  "tunnels": [],
+  "qos_policies": [],
+  "traffic_shapes": [],
+  "config_backups": [],
+  "firmware_jobs": [],
+  "config_audit": [],
+  "clients": [],
+  "ids_alerts": [],
+  "auth_servers": [],
+  "rogue_aps": [],
+  "flow_stats": [],
+  "alert_integrations": [],
+  "firewall_policies": [],
+  "bulk_config_jobs": [],
+  "config_restore_jobs": [],
+  "discovery_jobs": []
+}

@@ -4,6 +4,7 @@ import path from 'path'
 import { readJson, updateJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { logError, logInfo } from '../utils/logger.js'
+import { updateLocalJson } from '../utils/localStore.js'
 
 const FILE = 'assistant_knowledge.json'
 const KNOWLEDGE_TYPES = {
@@ -537,11 +538,22 @@ export async function assistantReply(orgId, question = '') {
   const entries = await listKnowledge(orgId)
   const knowledgeContext = buildKnowledgeContext(questionText, entries)
 
-  const dynamicAnswer = await generateDynamicAnswer(questionText, codeContext, knowledgeContext)
-  if (dynamicAnswer) {
-    return buildMatchedResponse({
-      matchedAnswer: dynamicAnswer,
-      source: 'dynamic_ai:local_llm',
+    const dynamicAnswer = await generateDynamicAnswer(questionText, codeContext, knowledgeContext)
+    if (dynamicAnswer) {
+      await updateLocalJson('ai_response_audit.json', (rows = []) => {
+        const next = Array.isArray(rows) ? rows : []
+        next.push({
+          id: crypto.randomUUID(),
+          question: questionText,
+          answer: dynamicAnswer,
+          source: 'local_llm',
+          created_at: new Date().toISOString(),
+        })
+        return next.slice(-500)
+      }, [])
+      return buildMatchedResponse({
+        matchedAnswer: dynamicAnswer,
+        source: 'dynamic_ai:local_llm',
       score: 2,
       fallbackReason: 'ai_generated_response',
       matchedType: 'dynamic_ai',

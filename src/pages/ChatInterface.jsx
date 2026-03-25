@@ -279,6 +279,21 @@ function formatPresence(iso) {
   return `Last seen ${new Date(iso).toLocaleDateString()}`
 }
 
+function extractLatestNote(notes = [], prefix = '') {
+  const matches = (Array.isArray(notes) ? notes : [])
+    .filter((note) => String(note.note || '').startsWith(prefix))
+    .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')))
+  return matches[0] || null
+}
+
+function splitSuggestedReply(noteText = '') {
+  const raw = String(noteText || '')
+  const marker = 'Suggested reply:'
+  if (!raw.includes(marker)) return { text: raw.trim(), suggested: '' }
+  const parts = raw.split(marker)
+  return { text: parts[0].trim(), suggested: parts.slice(1).join(marker).trim() }
+}
+
 function friendCounterpartyId(matchId = '', currentUserId = '') {
   if (!matchId.startsWith('friend:')) return ''
   const parts = String(matchId).split(':')
@@ -338,6 +353,12 @@ export default function ChatInterface() {
   const [notice, setNotice] = useState(null)
   const [aiSuggesting, setAiSuggesting] = useState(false)
   const [aiError, setAiError] = useState('')
+  const [aiSummary, setAiSummary] = useState(null)
+  const [aiSummaryLoading, setAiSummaryLoading] = useState(false)
+  const [aiSummaryError, setAiSummaryError] = useState('')
+  const [aiNegotiation, setAiNegotiation] = useState(null)
+  const [aiNegotiationLoading, setAiNegotiationLoading] = useState(false)
+  const [aiNegotiationError, setAiNegotiationError] = useState('')
   const [leadSummary, setLeadSummary] = useState(null)
   const [leadLoading, setLeadLoading] = useState(false)
   const [prequalOverride, setPrequalOverride] = useState(false)
@@ -516,6 +537,8 @@ export default function ChatInterface() {
     if (!token || !activeThread?.matchId || activeThread?.isFriendThread) {
       setLeadSummary(null)
       setPrequalOverride(false)
+      setAiSummary(null)
+      setAiNegotiation(null)
       return
     }
 
@@ -525,6 +548,38 @@ export default function ChatInterface() {
       .catch(() => setLeadSummary(null))
       .finally(() => setLeadLoading(false))
   }, [activeThread?.matchId, activeThread?.isFriendThread])
+
+  useEffect(() => {
+    if (!leadSummary?.notes) {
+      setAiSummary(null)
+      setAiNegotiation(null)
+      return
+    }
+
+    const summaryNote = extractLatestNote(leadSummary.notes, 'AI Summary:')
+    if (summaryNote?.note) {
+      const parsed = splitSuggestedReply(String(summaryNote.note).replace(/^AI Summary:\\s*/i, ''))
+      setAiSummary({
+        text: parsed.text,
+        suggestedReply: parsed.suggested,
+        updatedAt: summaryNote.created_at || null,
+      })
+    } else {
+      setAiSummary(null)
+    }
+
+    const negotiationNote = extractLatestNote(leadSummary.notes, 'AI Negotiation:')
+    if (negotiationNote?.note) {
+      const parsed = splitSuggestedReply(String(negotiationNote.note).replace(/^AI Negotiation:\\s*/i, ''))
+      setAiNegotiation({
+        guidance: parsed.text,
+        suggestedReply: parsed.suggested,
+        updatedAt: negotiationNote.created_at || null,
+      })
+    } else {
+      setAiNegotiation(null)
+    }
+  }, [leadSummary])
 
   const filteredPriorityInbox = useMemo(() => {
     if (!query.trim()) return priorityInbox
@@ -592,6 +647,7 @@ export default function ChatInterface() {
       : isAgentUser
   const isLockRestricted = shouldRespectLock && lockStatus === 'request_access'
   const isLockOwner = Boolean(lockMeta && lockMeta?.claimed_by === currentUser?.id && !activeThread?.isFriendThread)
+  const isAdminUser = ['owner', 'admin'].includes(String(currentUser?.role || '').toLowerCase())
   const canSendMessage = !isLockRestricted && !prequalBlocked && !prequalHardBlocked
 
   const sharedMedia = useMemo(() => {
@@ -930,7 +986,16 @@ export default function ChatInterface() {
       setUploadStatus('File sent.')
       await loadInbox()
     } catch (err) {
-      setUploadStatus(err.message || 'Unable to upload file')
+      const msg = err.message || 'Unable to upload file'
+      if (msg.toLowerCase().includes('verified-only')) {
+        setNotice({
+          title: 'Verified suppliers only',
+          message: 'This buyer accepts messages only from verified suppliers. Verify your account to unlock direct access and priority visibility.',
+          type: 'error',
+        })
+      } else {
+        setUploadStatus(msg)
+      }
     } finally {
       setUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
@@ -1078,6 +1143,64 @@ export default function ChatInterface() {
     }
   }
 
+  async function requestAiSummary() {
+    const token = getToken()
+    if (!token || !activeThread?.matchId) return
+    setAiSummaryLoading(true)
+    setAiSummaryError('')
+    try {
+      const res = await apiRequest('/assistant/conversation-summary', {
+        method: 'POST',
+        token,
+        body: { match_id: activeThread.matchId, force: true },
+      })
+      const summaryText = String(res?.summary || '').trim()
+      const suggested = String(res?.suggested_reply || '').trim()
+      if (!summaryText) {
+        setAiSummaryError('AI summary not available yet.')
+      } else {
+        setAiSummary({
+          text: summaryText,
+          suggestedReply: suggested,
+          updatedAt: new Date().toISOString(),
+        })
+      }
+    } catch (err) {
+      setAiSummaryError(err.message || 'Unable to generate AI summary')
+    } finally {
+      setAiSummaryLoading(false)
+    }
+  }
+
+  async function requestNegotiationHelper() {
+    const token = getToken()
+    if (!token || !activeThread?.matchId) return
+    setAiNegotiationLoading(true)
+    setAiNegotiationError('')
+    try {
+      const res = await apiRequest('/assistant/negotiation', {
+        method: 'POST',
+        token,
+        body: { match_id: activeThread.matchId },
+      })
+      const guidance = String(res?.guidance || '').trim()
+      const suggested = String(res?.suggested_reply || '').trim()
+      if (!guidance) {
+        setAiNegotiationError('AI negotiation helper is not ready yet.')
+      } else {
+        setAiNegotiation({
+          guidance,
+          suggestedReply: suggested,
+          updatedAt: new Date().toISOString(),
+        })
+      }
+    } catch (err) {
+      setAiNegotiationError(err.message || 'Unable to generate negotiation help')
+    } finally {
+      setAiNegotiationLoading(false)
+    }
+  }
+
   async function sendMessage() {
     const token = getToken()
     if (!token || !activeThread?.matchId) return
@@ -1152,7 +1275,16 @@ export default function ChatInterface() {
       setDraftMessage('')
       await loadInbox()
     } catch (err) {
-      setError(err.message || 'Unable to send message')
+      const msg = err.message || 'Unable to send message'
+      if (msg.toLowerCase().includes('verified-only')) {
+        setNotice({
+          title: 'Verified suppliers only',
+          message: 'This buyer accepts messages only from verified suppliers. Verify your account to unlock direct access and priority visibility.',
+          type: 'error',
+        })
+      } else {
+        setError(msg)
+      }
     }
   }
 
@@ -1183,6 +1315,28 @@ export default function ChatInterface() {
       await loadInbox()
     } catch (err) {
       setNotice({ title: 'Grant failed', message: err.message || 'Unable to grant access', type: 'error' })
+    }
+  }
+
+  async function transferAccess() {
+    const token = getToken()
+    if (!token || !activeThread?.requestId) return
+    const targetUserId = window.prompt('Transfer to agent/user ID', '') || ''
+    if (!targetUserId.trim()) return
+    try {
+      await apiRequest(`/conversations/${encodeURIComponent(activeThread.requestId)}/transfer`, {
+        method: 'POST',
+        token,
+        body: { target_user_id: targetUserId.trim() },
+      })
+      setNotice({
+        title: 'Conversation transferred',
+        message: `Ownership moved to ${targetUserId}. You no longer have messaging access.`,
+        type: 'info',
+      })
+      await loadInbox()
+    } catch (err) {
+      setNotice({ title: 'Transfer failed', message: err.message || 'Unable to transfer conversation', type: 'error' })
     }
   }
 
@@ -1491,6 +1645,15 @@ export default function ChatInterface() {
                       Grant access
                     </button>
                   ) : null}
+                  {(isLockOwner || isAdminUser) ? (
+                    <button
+                      onClick={transferAccess}
+                      className="rounded-full border border-slate-200 px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800/60"
+                      title="Transfer this conversation to another agent"
+                    >
+                      Transfer
+                    </button>
+                  ) : null}
                   <button
                     onClick={() => startInstantCall(activeThread)}
                     className="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50"
@@ -1681,6 +1844,56 @@ export default function ChatInterface() {
                   <p className="mt-1">Missing: {prequal.missing || 'None'}</p>
                 </div>
               ) : null}
+
+              <div className="mb-6 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-[11px] text-slate-600 dark:border-slate-800 dark:bg-slate-800/30">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">AI Conversation Summary</p>
+                  <button
+                    type="button"
+                    onClick={requestAiSummary}
+                    disabled={aiSummaryLoading || !activeThread?.matchId}
+                    className="rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold text-white hover:bg-slate-700 disabled:opacity-60 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/20"
+                  >
+                    {aiSummaryLoading ? 'Summarizing...' : 'Refresh'}
+                  </button>
+                </div>
+                {aiSummaryError ? <div className="mt-2 text-[10px] font-semibold text-rose-600">{aiSummaryError}</div> : null}
+                {aiSummary?.text ? (
+                  <>
+                    <p className="mt-2 whitespace-pre-wrap text-[11px] text-slate-700 dark:text-slate-200">{aiSummary.text}</p>
+                    {aiSummary.suggestedReply ? (
+                      <p className="mt-2 text-[11px] text-slate-500">Suggested reply: {aiSummary.suggestedReply}</p>
+                    ) : null}
+                  </>
+                ) : (
+                  <p className="mt-2 text-[10px] text-slate-400 italic">No summary yet.</p>
+                )}
+              </div>
+
+              <div className="mb-6 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-[11px] text-slate-600 dark:border-slate-800 dark:bg-slate-800/30">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">AI Negotiation Helper</p>
+                  <button
+                    type="button"
+                    onClick={requestNegotiationHelper}
+                    disabled={aiNegotiationLoading || !activeThread?.matchId}
+                    className="rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold text-white hover:bg-slate-700 disabled:opacity-60 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/20"
+                  >
+                    {aiNegotiationLoading ? 'Thinking...' : 'Generate'}
+                  </button>
+                </div>
+                {aiNegotiationError ? <div className="mt-2 text-[10px] font-semibold text-rose-600">{aiNegotiationError}</div> : null}
+                {aiNegotiation?.guidance ? (
+                  <>
+                    <p className="mt-2 whitespace-pre-wrap text-[11px] text-slate-700 dark:text-slate-200">{aiNegotiation.guidance}</p>
+                    {aiNegotiation.suggestedReply ? (
+                      <p className="mt-2 text-[11px] text-slate-500">Suggested reply: {aiNegotiation.suggestedReply}</p>
+                    ) : null}
+                  </>
+                ) : (
+                  <p className="mt-2 text-[10px] text-slate-400 italic">Generate guidance for this thread.</p>
+                )}
+              </div>
 
               <div className="mb-8 grid grid-cols-4 gap-3">
                 {[

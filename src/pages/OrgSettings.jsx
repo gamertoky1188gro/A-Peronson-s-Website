@@ -637,6 +637,7 @@ export default function OrgSettings() {
                 </div>
               </div>
             )}
+
             </div>
             <aside className="lg:col-span-1">
               <div className="rounded-xl border border-slate-200 bg-[#F8FAFF] p-4 text-sm text-slate-700">

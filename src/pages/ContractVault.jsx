@@ -279,6 +279,16 @@ export default function ContractVault() {
     document_file: null,
   })
 
+  const hasAcceptedProof = useMemo(() => {
+    return (paymentProofs || []).some((proof) => {
+      const type = String(proof?.type || '').toLowerCase()
+      const status = String(proof?.status || '').toLowerCase()
+      if (type === 'bank_transfer') return status === 'received'
+      if (type === 'lc') return status === 'accepted'
+      return false
+    })
+  }, [paymentProofs])
+
   const [statusFilter, setStatusFilter] = useState('all')
   const [query, setQuery] = useState('')
 
@@ -541,6 +551,16 @@ export default function ContractVault() {
     }
   }
 
+  const runStepActionWithProofWarning = async (runner, eventPayload = null) => {
+    if (!hasAcceptedProof) {
+      const proceed = window.confirm(
+        'No accepted payment proof is recorded yet. You can continue, but submitting a bank/LC proof is strongly recommended. Proceed anyway?'
+      )
+      if (!proceed) return
+    }
+    await runStepAction(runner, eventPayload)
+  }
+
   const handleCreateDraft = async () => {
     await runStepAction(async (token) => apiRequest('/documents/contracts/draft', {
       method: 'POST',
@@ -619,33 +639,38 @@ export default function ContractVault() {
           <div className="text-sm font-semibold text-slate-900">Signatures</div>
           <div className="mt-2 text-sm text-slate-700">Buyer: <span className="font-semibold">{selected.buyer_signature_state || 'pending'}</span> {selected.buyer_signed_at ? <span className="text-xs text-slate-500">({selected.buyer_signed_at})</span> : null}</div>
           <div className="mt-1 text-sm text-slate-700">Factory: <span className="font-semibold">{selected.factory_signature_state || 'pending'}</span> {selected.factory_signed_at ? <span className="text-xs text-slate-500">({selected.factory_signed_at})</span> : null}</div>
+          {!hasAcceptedProof ? (
+            <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-900">
+              Warning: No accepted payment proof yet. You may continue, but proof is strongly recommended for safety.
+            </div>
+          ) : null}
           <div className="mt-4 grid grid-cols-1 gap-2">
-            <button
-              type="button"
-              disabled={Boolean(selectedActionBlockers.buyerSign) || saving}
-              onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/signatures`, {
-                method: 'PATCH',
-                token,
-                body: { buyer_signature_state: 'signed', is_draft: false },
-              }), { type: 'contract_buyer_sign' })}
-              className="rounded-xl bg-[#0A66C2] px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-200 disabled:text-slate-500"
-            >
-              Buyer sign
-            </button>
+              <button
+                type="button"
+                disabled={Boolean(selectedActionBlockers.buyerSign) || saving}
+                onClick={() => runStepActionWithProofWarning(async (token) => apiRequest(`/documents/contracts/${selected.id}/signatures`, {
+                  method: 'PATCH',
+                  token,
+                  body: { buyer_signature_state: 'signed', is_draft: false },
+                }), { type: 'contract_buyer_sign' })}
+                className="rounded-xl bg-[#0A66C2] px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-200 disabled:text-slate-500"
+              >
+                Buyer sign
+              </button>
             {selectedActionBlockers.buyerSign ? <div className="text-xs text-amber-700">{selectedActionBlockers.buyerSign}</div> : null}
 
-            <button
-              type="button"
-              disabled={Boolean(selectedActionBlockers.factorySign) || saving}
-              onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/signatures`, {
-                method: 'PATCH',
-                token,
-                body: { factory_signature_state: 'signed', is_draft: false },
-              }), { type: 'contract_factory_sign' })}
-              className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-[#0A66C2] ring-1 ring-[#BBD8FF] hover:bg-[#F6FAFF] disabled:bg-slate-50 disabled:text-slate-400 disabled:ring-slate-200"
-            >
-              Factory sign
-            </button>
+              <button
+                type="button"
+                disabled={Boolean(selectedActionBlockers.factorySign) || saving}
+                onClick={() => runStepActionWithProofWarning(async (token) => apiRequest(`/documents/contracts/${selected.id}/signatures`, {
+                  method: 'PATCH',
+                  token,
+                  body: { factory_signature_state: 'signed', is_draft: false },
+                }), { type: 'contract_factory_sign' })}
+                className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-[#0A66C2] ring-1 ring-[#BBD8FF] hover:bg-[#F6FAFF] disabled:bg-slate-50 disabled:text-slate-400 disabled:ring-slate-200"
+              >
+                Factory sign
+              </button>
             {selectedActionBlockers.factorySign ? <div className="text-xs text-amber-700">{selectedActionBlockers.factorySign}</div> : null}
           </div>
         </div>
@@ -656,18 +681,18 @@ export default function ContractVault() {
           <div className="mt-1 text-xs text-slate-500">PDF generates automatically after both signatures.</div>
 
           <div className="mt-4 grid grid-cols-1 gap-2">
-            <button
-              type="button"
-              disabled={Boolean(selectedActionBlockers.lock) || saving}
-              onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/artifact`, {
-                method: 'PATCH',
-                token,
-                body: { status: 'locked' },
-              }), { type: 'contract_locked' })}
-              className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50 disabled:bg-slate-50 disabled:text-slate-400"
-            >
-              Lock PDF
-            </button>
+              <button
+                type="button"
+                disabled={Boolean(selectedActionBlockers.lock) || saving}
+                onClick={() => runStepActionWithProofWarning(async (token) => apiRequest(`/documents/contracts/${selected.id}/artifact`, {
+                  method: 'PATCH',
+                  token,
+                  body: { status: 'locked' },
+                }), { type: 'contract_locked' })}
+                className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50 disabled:bg-slate-50 disabled:text-slate-400"
+              >
+                Lock PDF
+              </button>
             {selectedActionBlockers.lock ? <div className="text-xs text-amber-700">{selectedActionBlockers.lock}</div> : null}
 
             <button

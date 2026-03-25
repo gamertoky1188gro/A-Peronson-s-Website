@@ -1,3 +1,4 @@
+import './utils/dotenv.js'
 import express from 'express'
 import cors from 'cors'
 import path from 'path'
@@ -36,9 +37,14 @@ import walletRoutes from './routes/walletRoutes.js'
 import boostRoutes from './routes/boostRoutes.js'
 import industryRoutes from './routes/industryRoutes.js'
 import paymentProofRoutes from './routes/paymentProofRoutes.js'
+import couponRoutes from './routes/couponRoutes.js'
+import supportRoutes from './routes/supportRoutes.js'
+import infraRoutes from './routes/infraRoutes.js'
+import networkRoutes from './routes/networkRoutes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { logInfo, logError } from './utils/logger.js'
 import { assistantReply } from './services/assistantService.js'
+import { maybeGenerateBotReply } from './services/chatbotService.js'
 import jwt from 'jsonwebtoken'
 import { canAccessMatch, listMessagesByMatch, postMessage } from './services/messageService.js'
 import { getCallSession } from './services/callSessionService.js'
@@ -47,6 +53,7 @@ import { readJson } from './utils/jsonStore.js'
 import { consumePendingInvites, enqueuePendingInvites } from './utils/pendingInvites.js'
 import { ensureDatabaseConnection, closeDatabaseConnection } from './utils/db.js'
 import { revokeExpiredVerifications } from './services/verificationService.js'
+import { enforcePartnerFreeTierLimits } from './services/partnerNetworkService.js'
 
 const app = express()
 const PORT = process.env.PORT || 4000
@@ -97,6 +104,10 @@ app.use('/api/wallet', walletRoutes)
 app.use('/api/boosts', boostRoutes)
 app.use('/api/industry', industryRoutes)
 app.use('/api/payment-proofs', paymentProofRoutes)
+app.use('/api/coupons', couponRoutes)
+app.use('/api/support', supportRoutes)
+app.use('/api/infra', infraRoutes)
+app.use('/api/network', networkRoutes)
 app.use(errorHandler)
 
 const server = http.createServer(app)
@@ -291,6 +302,21 @@ async function relayChatMessage(socket, payload) {
         match_id: matchId,
         message: created,
       })
+    }
+
+    try {
+      const botResult = await maybeGenerateBotReply({ match_id: matchId, sender_id: socket.userId, message: messageText })
+      if (botResult?.reply) {
+        for (const peer of room) {
+          sendWs(peer, {
+            type: 'chat_message',
+            match_id: matchId,
+            message: botResult.reply,
+          })
+        }
+      }
+    } catch {
+      // silent
     }
   } catch (error) {
     logError('chat_message_failed', error)
@@ -544,8 +570,10 @@ async function start() {
   await ensureDatabaseConnection()
   // Verification renewals: keep badges in sync with subscription validity.
   revokeExpiredVerifications().catch((error) => logError('verification_expiry_check_failed', error))
+  enforcePartnerFreeTierLimits().catch((error) => logError('partner_limit_check_failed', error))
   setInterval(() => {
     revokeExpiredVerifications().catch((error) => logError('verification_expiry_check_failed', error))
+    enforcePartnerFreeTierLimits().catch((error) => logError('partner_limit_check_failed', error))
   }, 6 * 60 * 60 * 1000)
   server.listen(PORT, () => {
     logInfo(`Verification MVP API running on http://localhost:${PORT}`)

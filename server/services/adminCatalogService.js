@@ -1,0 +1,584 @@
+import crypto from 'crypto'
+import { readJson } from '../utils/jsonStore.js'
+import { readLocalJson } from '../utils/localStore.js'
+import { getAdminConfig } from './adminConfigService.js'
+import { readAuditLog } from '../utils/auditStore.js'
+import { listExpiringVerifications } from './verificationService.js'
+
+const ORG_OVERRIDE_FILE = 'org_admin_overrides.json'
+const VERIFICATION_BADGE_AUDIT = 'verification_badge_audit.json'
+const MATCH_QUALITY_FILE = 'match_quality.json'
+const SPAM_FILTERS_FILE = 'spam_filters.json'
+const SPAM_FLAGS_FILE = 'spam_flags.json'
+const CONTRACT_AUDIT_FILE = 'contract_audit.json'
+const CALL_ESCALATIONS_FILE = 'call_escalations.json'
+const CHAT_TRANSFER_FILE = 'chat_transfer_audit.json'
+const CONTENT_FLAGS_FILE = 'content_flags.json'
+const SUPPORT_TICKETS_FILE = 'support_tickets.json'
+const NOTIFICATION_TEMPLATES_FILE = 'notification_templates.json'
+const NOTIFICATION_BATCHES_FILE = 'notification_batches.json'
+const MONTHLY_TRIGGERS_FILE = 'monthly_summary_triggers.json'
+const AI_RESPONSE_AUDIT_FILE = 'ai_response_audit.json'
+const TRAFFIC_ANALYTICS_FILE = 'traffic_analytics.json'
+const EMAIL_SEGMENTS_FILE = 'email_segments.json'
+const COUPON_CAMPAIGNS_FILE = 'coupon_campaigns.json'
+const PARTNER_OVERRIDES_FILE = 'partner_overrides.json'
+
+const DEFAULT_ORG_OVERRIDES = {
+  staff_limits: {},
+  buying_house_staff_ids: [],
+  permission_matrix: {},
+}
+
+function toNumber(value, fallback = 0) {
+  const num = Number(value)
+  return Number.isFinite(num) ? num : fallback
+}
+
+function sortByDateDesc(rows = [], field = 'created_at') {
+  return [...rows].sort((a, b) => String(b?.[field] || '').localeCompare(String(a?.[field] || '')))
+}
+
+function mapUserSafe(user) {
+  if (!user) return null
+  const safe = { ...user }
+  delete safe.password_hash
+  return safe
+}
+
+function buildDuplicateIndex(rows = [], fields = []) {
+  const map = new Map()
+  for (const row of rows) {
+    for (const field of fields) {
+      const raw = String(row?.[field] || '').trim()
+      if (!raw) continue
+      const key = `${field}:${raw.toLowerCase()}`
+      const bucket = map.get(key) || { field, value: raw, user_ids: [] }
+      bucket.user_ids.push(row.user_id || row.id)
+      map.set(key, bucket)
+    }
+  }
+  return [...map.values()].filter((entry) => entry.user_ids.length > 1)
+}
+
+function deriveOrgRegistry(users = [], overrides = {}, config = {}) {
+  const owners = users.filter((u) => ['buyer', 'factory', 'buying_house'].includes(String(u.role || '').toLowerCase()))
+  const staffByOrg = new Map()
+  const agentsByOrg = new Map()
+
+  users.forEach((user) => {
+    const orgId = String(user.org_owner_id || '')
+    if (!orgId) return
+    const list = staffByOrg.get(orgId) || []
+    list.push(user)
+    staffByOrg.set(orgId, list)
+    if (String(user.role || '').toLowerCase() === 'agent') {
+      const agents = agentsByOrg.get(orgId) || []
+      agents.push(user)
+      agentsByOrg.set(orgId, agents)
+    }
+  })
+
+  const freeLimit = Number(config?.plan_limits?.free?.member_limit || 10)
+  const premiumLimit = Number(config?.plan_limits?.premium?.member_limit || 50)
+
+  const orgs = owners.map((owner) => {
+    const orgId = String(owner.id)
+    const staff = staffByOrg.get(orgId) || []
+    const agents = agentsByOrg.get(orgId) || []
+    const overrideLimit = overrides.staff_limits?.[orgId]
+    const plan = String(owner.subscription_status || '').toLowerCase() === 'premium' ? 'premium' : 'free'
+    const limit = overrideLimit !== undefined ? Number(overrideLimit) : (plan === 'premium' ? premiumLimit : freeLimit)
+    return {
+      org_owner_id: orgId,
+      org_name: owner.company || owner.name || 'Organization',
+      role: owner.role,
+      region: owner.region || owner.country || '',
+      premium: plan === 'premium',
+      verified: Boolean(owner.verified),
+      staff_count: staff.length,
+      agent_count: agents.length,
+      staff_limit: limit,
+      quotas: config?.org_quotas?.[orgId] || {},
+      permission_matrix: overrides.permission_matrix?.[orgId] || {},
+    }
+  })
+
+  const staffList = [...staffByOrg.entries()].flatMap(([orgId, staff]) => (
+    staff.map((member) => ({
+      org_owner_id: orgId,
+      id: member.id,
+      name: member.name,
+      role: member.role,
+      status: member.status,
+      region: member.region || '',
+      created_at: member.created_at,
+    }))
+  ))
+
+  return { orgs, staff_list: staffList }
+}
+
+function buildFunnelStats({ users = [], requirements = [], matches = [], contracts = [] }) {
+  const dealCount = contracts.filter((c) => String(c.lifecycle_status || '').toLowerCase() === 'signed').length
+  return {
+    signup: users.length,
+    request: requirements.length,
+    match: matches.length,
+    deal: dealCount,
+  }
+}
+
+function buildConversionTrend(events = []) {
+  const byDay = {}
+  events.forEach((event) => {
+    const date = String(event.created_at || event.at || '').slice(0, 10)
+    if (!date) return
+    byDay[date] = (byDay[date] || 0) + 1
+  })
+  return Object.entries(byDay).map(([date, count]) => ({ date, count }))
+}
+
+function buildResponseSpeed(messages = []) {
+  const responseTimes = messages
+    .filter((m) => m.created_at)
+    .map((m) => new Date(m.created_at).getTime())
+    .filter((t) => Number.isFinite(t))
+  if (!responseTimes.length) return { avg_minutes: 0, median_minutes: 0 }
+  responseTimes.sort((a, b) => a - b)
+  const diffs = responseTimes.slice(1).map((t, idx) => Math.max(0, t - responseTimes[idx]))
+  if (!diffs.length) return { avg_minutes: 0, median_minutes: 0 }
+  const avg = diffs.reduce((sum, v) => sum + v, 0) / diffs.length / 60000
+  const median = diffs[Math.floor(diffs.length / 2)] / 60000
+  return { avg_minutes: Math.round(avg * 10) / 10, median_minutes: Math.round(median * 10) / 10 }
+}
+
+function normalizeDocType(doc = {}) {
+  return String(doc.doc_type || doc.type || doc.category || doc.entity_type || '').toLowerCase()
+}
+
+function buildVerificationDocs(documents = []) {
+  const verificationKeywords = ['verification', 'business', 'vat', 'ein', 'eori', 'bank', 'tax', 'registration']
+  return documents
+    .filter((doc) => {
+      const type = normalizeDocType(doc)
+      return verificationKeywords.some((key) => type.includes(key))
+    })
+    .map((doc) => ({
+      id: doc.id,
+      user_id: doc.user_id || doc.owner_id,
+      type: doc.doc_type || doc.type || doc.category || 'verification',
+      status: doc.status || doc.review_status || doc.moderation_status || 'pending',
+      submitted_at: doc.submitted_at || doc.created_at || doc.updated_at,
+      file_url: doc.file_url || doc.url || '',
+    }))
+}
+
+function computeTrafficAnalytics(analyticsRows = [], stored = {}) {
+  const summary = { clicks: 0, visits: 0 }
+  const sources = new Map()
+  const domains = new Map()
+
+  analyticsRows.forEach((event) => {
+    const name = String(event.event || event.type || event.name || '').toLowerCase()
+    const isClick = name.includes('click')
+    const isVisit = name.includes('visit') || name.includes('page_view') || name.includes('view')
+    if (isClick) summary.clicks += 1
+    if (isVisit) summary.visits += 1
+
+    const source = String(event.source || event.utm_source || event.referrer || '').trim()
+    if (source) {
+      const existing = sources.get(source) || { source, clicks: 0, visits: 0 }
+      if (isClick) existing.clicks += 1
+      if (isVisit) existing.visits += 1
+      sources.set(source, existing)
+    }
+
+    let domain = ''
+    const url = event.url || event.page || event.path || ''
+    if (url) {
+      try {
+        const parsed = new URL(url, 'http://localhost')
+        domain = parsed.hostname && parsed.hostname !== 'localhost' ? parsed.hostname : ''
+      } catch {
+        domain = ''
+      }
+    }
+    if (domain) {
+      const existing = domains.get(domain) || { domain, clicks: 0, visits: 0 }
+      if (isClick) existing.clicks += 1
+      if (isVisit) existing.visits += 1
+      domains.set(domain, existing)
+    }
+  })
+
+  const storedSummary = stored?.summary || {}
+  const mergedSummary = {
+    clicks: (storedSummary.clicks || 0) + summary.clicks,
+    visits: (storedSummary.visits || 0) + summary.visits,
+  }
+
+  const storedDomains = Array.isArray(stored?.domains) ? stored.domains : []
+  const storedSources = Array.isArray(stored?.sources) ? stored.sources : []
+  storedDomains.forEach((row) => {
+    if (!row?.domain) return
+    const existing = domains.get(row.domain) || { domain: row.domain, clicks: 0, visits: 0 }
+    existing.clicks += row.clicks || 0
+    existing.visits += row.visits || 0
+    domains.set(row.domain, existing)
+  })
+  storedSources.forEach((row) => {
+    if (!row?.source) return
+    const existing = sources.get(row.source) || { source: row.source, clicks: 0, visits: 0 }
+    existing.clicks += row.clicks || 0
+    existing.visits += row.visits || 0
+    sources.set(row.source, existing)
+  })
+
+  return {
+    summary: mergedSummary,
+    sources: [...sources.values()],
+    domains: [...domains.values()],
+  }
+}
+
+function buildMatchQuality(matches = [], messages = []) {
+  const messagesByMatch = messages.reduce((acc, msg) => {
+    const key = String(msg.match_id || '')
+    if (!key) return acc
+    acc[key] = acc[key] || []
+    acc[key].push(msg)
+    return acc
+  }, {})
+
+  return (Array.isArray(matches) ? matches : []).map((match) => {
+    const matchId = String(match.id || match.match_id || '')
+    const thread = messagesByMatch[matchId] || []
+    const responseCount = thread.length
+    const verifiedBias = (match.buyer_verified || match.factory_verified) ? 10 : 0
+    const score = Math.min(100, Math.round(responseCount * 5 + verifiedBias))
+    return {
+      match_id: matchId,
+      score,
+      note: responseCount ? `Messages: ${responseCount}` : 'No activity yet',
+      updated_at: new Date().toISOString(),
+    }
+  })
+}
+
+function detectSpamSignals(messages = []) {
+  const keywords = ['whatsapp', 'telegram', 'wechat', 'viber', 'crypto', 'bitcoin', 'western union', 'moneygram', 'wire transfer', 'free money']
+  return (Array.isArray(messages) ? messages : []).map((message) => {
+    const text = String(message.message || message.content || message.text || '').toLowerCase()
+    if (!text) return null
+    let score = 0
+    if (/(https?:\\/\\/|www\\.)/.test(text)) score += 2
+    if (keywords.some((k) => text.includes(k))) score += 2
+    if (/(\\d{10,})/.test(text)) score += 1
+    if (text.length > 280) score += 1
+    if (score < 2) return null
+    return {
+      id: crypto.randomUUID(),
+      message_id: message.id,
+      sender_id: message.sender_id,
+      score,
+      reason: 'auto_classifier',
+      created_at: message.timestamp || message.created_at || new Date().toISOString(),
+    }
+  }).filter(Boolean)
+}
+
+export async function getAdminCatalog() {
+  const [
+    users,
+    verification,
+    subscriptions,
+    requirements,
+    matches,
+    documents,
+    paymentProofs,
+    callSessions,
+    messages,
+    violations,
+    reports,
+    notifications,
+    analytics,
+    walletHistory,
+    couponCodes,
+    couponRedemptions,
+    assistantKnowledge,
+    leadNotes,
+  ] = await Promise.all([
+    readJson('users.json'),
+    readJson('verification.json'),
+    readJson('subscriptions.json'),
+    readJson('requirements.json'),
+    readJson('matches.json'),
+    readJson('documents.json'),
+    readJson('payment_proofs.json'),
+    readJson('call_sessions.json'),
+    readJson('messages.json'),
+    readJson('violations.json'),
+    readJson('reports.json'),
+    readJson('notifications.json'),
+    readJson('analytics.json'),
+    readJson('wallet_history.json'),
+    readJson('coupon_codes.json'),
+    readJson('coupon_redemptions.json'),
+    readJson('assistant_knowledge.json'),
+    readJson('lead_notes.json'),
+  ])
+
+  const [
+    orgOverrides,
+    badgeAudit,
+    matchQuality,
+    spamFilters,
+    spamFlags,
+    contractAudit,
+    callEscalations,
+    chatTransfers,
+    contentFlags,
+    supportTickets,
+    notificationTemplates,
+    notificationBatches,
+    monthlyTriggers,
+    aiResponseAudit,
+    trafficAnalyticsStored,
+    emailSegments,
+    couponCampaigns,
+    partnerOverrides,
+    invoices,
+    payouts,
+  ] = await Promise.all([
+    readLocalJson(ORG_OVERRIDE_FILE, DEFAULT_ORG_OVERRIDES),
+    readLocalJson(VERIFICATION_BADGE_AUDIT, []),
+    readLocalJson(MATCH_QUALITY_FILE, []),
+    readLocalJson(SPAM_FILTERS_FILE, []),
+    readLocalJson(SPAM_FLAGS_FILE, []),
+    readLocalJson(CONTRACT_AUDIT_FILE, []),
+    readLocalJson(CALL_ESCALATIONS_FILE, []),
+    readLocalJson(CHAT_TRANSFER_FILE, []),
+    readLocalJson(CONTENT_FLAGS_FILE, []),
+    readLocalJson(SUPPORT_TICKETS_FILE, []),
+    readLocalJson(NOTIFICATION_TEMPLATES_FILE, []),
+    readLocalJson(NOTIFICATION_BATCHES_FILE, []),
+    readLocalJson(MONTHLY_TRIGGERS_FILE, []),
+    readLocalJson(AI_RESPONSE_AUDIT_FILE, []),
+    readLocalJson(TRAFFIC_ANALYTICS_FILE, { summary: {}, sources: [], domains: [] }),
+    readLocalJson(EMAIL_SEGMENTS_FILE, []),
+    readLocalJson(COUPON_CAMPAIGNS_FILE, []),
+    readLocalJson(PARTNER_OVERRIDES_FILE, []),
+    readLocalJson('invoice_log.json', []),
+    readLocalJson('payout_ledger.json', []),
+  ])
+
+  const config = await getAdminConfig()
+  const auditLog = await readAuditLog()
+
+  const usersRows = Array.isArray(users) ? users : []
+  const verificationRows = Array.isArray(verification) ? verification : []
+  const subscriptionRows = Array.isArray(subscriptions) ? subscriptions : []
+  const requirementRows = Array.isArray(requirements) ? requirements : []
+  const matchRows = Array.isArray(matches) ? matches : []
+  const documentRows = Array.isArray(documents) ? documents : []
+  const proofRows = Array.isArray(paymentProofs) ? paymentProofs : []
+  const callRows = Array.isArray(callSessions) ? callSessions : []
+  const messageRows = Array.isArray(messages) ? messages : []
+  const violationRows = Array.isArray(violations) ? violations : []
+  const reportRows = Array.isArray(reports) ? reports : []
+  const notificationRows = Array.isArray(notifications) ? notifications : []
+  const analyticsRows = Array.isArray(analytics) ? analytics : []
+  const walletRows = Array.isArray(walletHistory) ? walletHistory : []
+  const couponRows = Array.isArray(couponCodes) ? couponCodes : []
+  const couponRedemptionRows = Array.isArray(couponRedemptions) ? couponRedemptions : []
+  const knowledgeRows = Array.isArray(assistantKnowledge) ? assistantKnowledge : []
+  const notesRows = Array.isArray(leadNotes) ? leadNotes : []
+
+  const orgRegistry = deriveOrgRegistry(usersRows, orgOverrides || DEFAULT_ORG_OVERRIDES, config || {})
+
+  const expiringVerification = await listExpiringVerifications(30).catch(() => [])
+  const duplicateCandidates = buildDuplicateIndex(verificationRows, [
+    'business_registration',
+    'vat_ein',
+    'eori',
+    'bank_account',
+    'tax_id',
+    'company_registration',
+  ])
+
+  const failedRenewals = subscriptionRows.filter((s) => {
+    const end = new Date(s.end_date || 0).getTime()
+    return Number.isFinite(end) && end < Date.now() && Boolean(s.auto_renew)
+  })
+  const revenueByPlan = subscriptionRows.reduce((acc, sub) => {
+    const plan = String(sub.plan || 'free')
+    acc[plan] = (acc[plan] || 0) + 1
+    return acc
+  }, {})
+  const revenueSummary = Object.entries(revenueByPlan).map(([plan, count]) => ({
+    plan,
+    subscribers: count,
+    price_usd: plan === 'premium' ? toNumber(config?.pricing?.premium_usd, 0) : toNumber(config?.pricing?.free_usd, 0),
+  }))
+
+  const couponCampaignList = Array.isArray(couponCampaigns) ? couponCampaigns : []
+  const earlyAdopter = couponCampaignList.filter((c) => String(c.type || '').toLowerCase() === 'early_adopter')
+
+  const partnerRequests = await readJson('partner_requests.json')
+  const partnerRows = Array.isArray(partnerRequests) ? partnerRequests : []
+  const connectedFactories = partnerRows.filter((row) => row.status === 'connected')
+
+  const contractDocs = documentRows.filter((d) => String(d.entity_type || '').toLowerCase().includes('contract'))
+  const verificationDocs = buildVerificationDocs(documentRows)
+  const funnelStats = buildFunnelStats({ users: usersRows, requirements: requirementRows, matches: matchRows, contracts: contractDocs })
+  const conversionTrend = buildConversionTrend(analyticsRows)
+  const responseSpeed = buildResponseSpeed(messageRows)
+
+  const aiSummaries = notesRows.filter((note) => String(note.note || '').startsWith('AI Summary:') || String(note.note || '').startsWith('AI Negotiation:'))
+  const matchesByBuyer = matchRows.reduce((acc, match) => {
+    const buyerId = String(match.buyer_id || '')
+    if (!buyerId) return acc
+    acc[buyerId] = acc[buyerId] || []
+    acc[buyerId].push(match)
+    return acc
+  }, {})
+  const contractsByBuyer = contractDocs.reduce((acc, doc) => {
+    const buyerId = String(doc.buyer_id || doc.owner_id || '')
+    if (!buyerId) return acc
+    acc[buyerId] = acc[buyerId] || []
+    acc[buyerId].push(doc)
+    return acc
+  }, {})
+
+  return {
+    orgs: {
+      list: orgRegistry.orgs,
+      staff_list: orgRegistry.staff_list,
+      staff_limits: orgOverrides?.staff_limits || {},
+      buying_house_staff_ids: orgOverrides?.buying_house_staff_ids || [],
+      permission_matrix: orgOverrides?.permission_matrix || {},
+    },
+    verification: {
+      docs_queue: sortByDateDesc(verificationDocs, 'submitted_at'),
+      badge_audit: sortByDateDesc(badgeAudit, 'at'),
+      duplicates: duplicateCandidates,
+      expiring: expiringVerification,
+      fraud_flags: verificationRows.filter((row) => Boolean(row.fraud_flag)),
+    },
+    finance: {
+      failed_renewals: failedRenewals,
+      upgrade_history: sortByDateDesc(await readLocalJson('subscription_history.json', []), 'created_at'),
+      invoices: invoices,
+      payouts: payouts,
+      revenue_summary: revenueSummary,
+    },
+    wallet: {
+      ledger: sortByDateDesc(walletRows, 'created_at'),
+      redemptions: sortByDateDesc(couponRedemptionRows, 'created_at'),
+      refunds: await readLocalJson('refund_log.json', []),
+    },
+    coupons: {
+      codes: couponRows,
+      campaigns: couponCampaignList,
+      early_adopter_campaigns: earlyAdopter,
+    },
+    partners: {
+      requests: partnerRows,
+      connected_factories: connectedFactories,
+      overrides: partnerOverrides,
+      blacklist: config?.partner_controls?.blacklist || [],
+      whitelist: config?.partner_controls?.whitelist || [],
+      free_tier_limit: Number(config?.plan_limits?.free?.partner_limit || 5),
+    },
+    requests: {
+      list: requirementRows,
+      matches: matchRows,
+      match_quality: (Array.isArray(matchQuality) && matchQuality.length) ? matchQuality : buildMatchQuality(matchRows, messageRows),
+      spam_filters: spamFilters,
+      spam_flags: spamFlags,
+    },
+    contracts: {
+      vault: contractDocs,
+      audit_trail: contractAudit,
+      payment_proofs: proofRows,
+    },
+    calls: {
+      logs: callRows,
+      escalations: callEscalations,
+    },
+    moderation: {
+      violations: violationRows,
+      chat_transfers: chatTransfers,
+      spam_flags: spamFlags,
+      auto_spam_flags: detectSpamSignals(messageRows),
+    },
+    content: {
+      product_videos: await readJson('company_products.json'),
+      documents: documentRows,
+      flags: contentFlags,
+    },
+    support: {
+      tickets: supportTickets,
+      reports: reportRows,
+      sla_targets: config?.support?.sla_targets || {},
+    },
+    notifications: {
+      templates: notificationTemplates,
+      batches: notificationBatches,
+      monthly_triggers: monthlyTriggers,
+      notifications: notificationRows,
+    },
+    analytics: {
+      platform_metrics: analyticsRows.slice(0, 50),
+      buying_house: usersRows.filter((u) => String(u.role || '').toLowerCase() === 'buying_house').map((u) => ({
+        ...mapUserSafe(u),
+        requests: requirementRows.filter((r) => String(r.buyer_id || '') === String(u.id)).length,
+        matches: (matchesByBuyer[String(u.id)] || []).length,
+        deals: (contractsByBuyer[String(u.id)] || []).filter((c) => String(c.lifecycle_status || '').toLowerCase() === 'signed').length,
+      })),
+      funnel: funnelStats,
+      agent_performance: usersRows.filter((u) => String(u.role || '').toLowerCase() === 'agent').map((u) => ({
+        id: u.id,
+        name: u.name,
+        performance_score: u.performance_score || 0,
+        assigned_requests: u.assigned_requests || 0,
+      })),
+      conversion_trend: conversionTrend,
+      response_speed: responseSpeed,
+    },
+    search: {
+      alerts: await readJson('search_alerts.json'),
+      usage: await readJson('search_usage_counters.json'),
+    },
+    ai: {
+      knowledge_entries: knowledgeRows,
+      summary_logs: aiSummaries,
+      response_audit: aiResponseAudit,
+    },
+    system: {
+      feature_flags: config?.feature_flags || {},
+      plan_limits: config?.plan_limits || {},
+      pricing: config?.pricing || {},
+      policies: config?.policies || {},
+      integrations: config?.integrations || {},
+      retention: config?.retention || {},
+    },
+    security: {
+      admin_audit_log: auditLog.slice(-200),
+      access_log: auditLog.slice(-50).map((entry) => ({
+        id: entry.id || crypto.randomUUID(),
+        at: entry.at,
+        actor_id: entry.actor_id,
+        ip: entry.ip,
+        device_id: entry.device_id,
+        status: entry.status,
+        path: entry.path,
+      })),
+    },
+    traffic: computeTrafficAnalytics(analyticsRows, trafficAnalyticsStored),
+    emails: {
+      segments: emailSegments,
+    },
+  }
+}

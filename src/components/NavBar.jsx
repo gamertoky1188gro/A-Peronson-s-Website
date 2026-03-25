@@ -28,7 +28,7 @@
 */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Bell, DollarSign, FileText, LayoutDashboard, Menu, MessageSquare, Moon, Search, ShieldAlert, ShieldCheck, Sun } from 'lucide-react'
+import { Bell, DollarSign, FileText, LayoutDashboard, Menu, MessageSquare, Moon, Search, ShieldCheck, Sun } from 'lucide-react'
 import { motion as Motion, useMotionValue, useReducedMotion, useSpring } from 'framer-motion'
 import { apiRequest, clearSession, getCurrentUser, getRoleHome, getToken } from '../lib/auth'
 
@@ -37,6 +37,7 @@ const publicLinks = [
   { to: '/pricing', label: 'Pricing' },
   { to: '/about', label: 'About' },
   { to: '/help', label: 'Help' },
+  { to: '/support', label: 'Support' },
 ]
 
 // Auth navigation (shown for logged-in users). Each item maps to a page route + lucide icon.
@@ -48,7 +49,7 @@ const authenticatedLinks = [
   { to: '/notifications', label: 'Notifications', icon: Bell },
   { to: '/chat', label: 'Chat', icon: MessageSquare },
   { to: '/verification', label: 'Verification', icon: ShieldCheck },
-  { to: '/admin/moderation', label: 'Moderation', icon: ShieldAlert, roles: ['owner', 'admin'] },
+  { to: '/admin', label: 'Admin', icon: ShieldCheck, roles: ['owner', 'admin'] },
 ]
 
 // Premium-feeling easing curve used across nav animations.

@@ -1,0 +1,192 @@
+import crypto from 'crypto'
+import { readLocalJson, updateLocalJson } from '../utils/localStore.js'
+import { readAuditLog } from '../utils/auditStore.js'
+
+const STATE_FILE = 'security_state.json'
+const DEFAULT_STATE = {
+  zero_trust: {
+    enabled: false,
+    policy: '',
+  },
+  mfa: {
+    required: false,
+    methods: [],
+  },
+  session: {
+    timeout_minutes: 0,
+    device_fingerprinting: false,
+  },
+  ip_whitelist: [],
+  geo_fence: {
+    enabled: false,
+    countries: [],
+  },
+  tamper_proof_logs: {
+    enabled: false,
+    storage: '',
+    last_hash_at: '',
+  },
+  encryption: {
+    key_rotation_days: 0,
+    last_rotated_at: '',
+  },
+  incidents: [],
+  data_exports: {
+    dual_approval: false,
+    pending: [],
+  },
+  forensic_logs: [],
+  immutable_backups: {
+    enabled: false,
+    last_snapshot_at: '',
+  },
+}
+
+function envBool(value) {
+  if (value === undefined || value === null) return undefined
+  return ['true', '1', 'yes', 'on'].includes(String(value).toLowerCase())
+}
+
+function envList(value) {
+  if (!value) return []
+  return String(value).split(',').map((v) => v.trim()).filter(Boolean)
+}
+
+export async function getSecurityState() {
+  const current = await readLocalJson(STATE_FILE, DEFAULT_STATE)
+  const auditLog = await readAuditLog()
+  const lastHashAt = auditLog.length ? auditLog[auditLog.length - 1]?.at || '' : ''
+  const envMfaRequired = envBool(process.env.ADMIN_MFA_REQUIRED)
+  const envIpAllow = envList(process.env.ADMIN_IP_ALLOWLIST)
+  const envDeviceAllow = envList(process.env.ADMIN_DEVICE_ALLOWLIST)
+  const envTimeout = Number(process.env.ADMIN_STEPUP_MAX_MINUTES || 0)
+  const mfaEnabled = envMfaRequired !== undefined ? envMfaRequired : Boolean(process.env.ADMIN_MFA_CODE)
+  const deviceFingerprinting = envDeviceAllow.length > 0 ? true : undefined
+  return {
+    ...DEFAULT_STATE,
+    ...current,
+    zero_trust: { ...DEFAULT_STATE.zero_trust, ...(current.zero_trust || {}) },
+    mfa: {
+      ...DEFAULT_STATE.mfa,
+      ...(current.mfa || {}),
+      required: current.mfa?.required ?? mfaEnabled,
+      methods: current.mfa?.methods?.length ? current.mfa.methods : envList(process.env.ADMIN_MFA_METHODS),
+    },
+    session: {
+      ...DEFAULT_STATE.session,
+      ...(current.session || {}),
+      timeout_minutes: current.session?.timeout_minutes || (Number.isFinite(envTimeout) ? envTimeout : 0),
+      device_fingerprinting: current.session?.device_fingerprinting ?? deviceFingerprinting ?? false,
+    },
+    ip_whitelist: current.ip_whitelist?.length ? current.ip_whitelist : envIpAllow,
+    geo_fence: { ...DEFAULT_STATE.geo_fence, ...(current.geo_fence || {}) },
+    encryption: { ...DEFAULT_STATE.encryption, ...(current.encryption || {}) },
+    data_exports: { ...DEFAULT_STATE.data_exports, ...(current.data_exports || {}), dual_approval: true },
+    immutable_backups: { ...DEFAULT_STATE.immutable_backups, ...(current.immutable_backups || {}) },
+    tamper_proof_logs: {
+      ...DEFAULT_STATE.tamper_proof_logs,
+      ...(current.tamper_proof_logs || {}),
+      enabled: true,
+      storage: 'audit-log-chain',
+      last_hash_at: lastHashAt,
+    },
+  }
+}
+
+async function updateState(updater) {
+  return updateLocalJson(STATE_FILE, updater, DEFAULT_STATE)
+}
+
+export async function performSecurityAction(action = '', payload = {}) {
+  const actionId = crypto.randomUUID()
+  const now = new Date().toISOString()
+  let updated = null
+
+  if (action === 'security.zero_trust.toggle') {
+    updated = await updateState((state) => {
+      state.zero_trust = { ...state.zero_trust, enabled: Boolean(payload.enabled) }
+      return state
+    })
+  } else if (action === 'security.mfa.require') {
+    const methods = Array.isArray(payload.methods)
+      ? payload.methods
+      : String(payload.methods || '').split(',').map((v) => v.trim()).filter(Boolean)
+    updated = await updateState((state) => {
+      state.mfa = { ...state.mfa, required: Boolean(payload.required), methods: methods.length ? methods : state.mfa.methods }
+      return state
+    })
+  } else if (action === 'security.session.timeout') {
+    updated = await updateState((state) => {
+      state.session = { ...state.session, timeout_minutes: Number(payload.timeout_minutes || 30) }
+      return state
+    })
+  } else if (action === 'security.device_fingerprint') {
+    updated = await updateState((state) => {
+      state.session = { ...state.session, device_fingerprinting: Boolean(payload.enabled) }
+      return state
+    })
+  } else if (action === 'security.ip.allowlist') {
+    const list = Array.isArray(payload.ip_whitelist)
+      ? payload.ip_whitelist
+      : String(payload.ip_whitelist || '').split(',').map((v) => v.trim()).filter(Boolean)
+    updated = await updateState((state) => {
+      state.ip_whitelist = list
+      return state
+    })
+  } else if (action === 'security.geo_fence') {
+    updated = await updateState((state) => {
+      state.geo_fence = {
+        enabled: Boolean(payload.enabled),
+        countries: Array.isArray(payload.countries) ? payload.countries : String(payload.countries || '').split(',').map((v) => v.trim()).filter(Boolean),
+      }
+      return state
+    })
+  } else if (action === 'security.encryption.rotate') {
+    updated = await updateState((state) => {
+      state.encryption = { ...state.encryption, last_rotated_at: now }
+      return state
+    })
+  } else if (action === 'security.incident.create') {
+    updated = await updateState((state) => {
+      const incident = { id: actionId, title: payload.title || 'Incident', status: 'open', created_at: now, severity: payload.severity || 'medium' }
+      state.incidents = [incident, ...(state.incidents || [])]
+      return state
+    })
+  } else if (action === 'security.incident.resolve') {
+    updated = await updateState((state) => {
+      state.incidents = (state.incidents || []).map((inc) => (
+        String(inc.id) === String(payload.id) ? { ...inc, status: 'resolved', resolved_at: now } : inc
+      ))
+      return state
+    })
+  } else if (action === 'security.export.request') {
+    updated = await updateState((state) => {
+      const req = { id: actionId, dataset: payload.dataset || 'export', requested_at: now, status: 'pending' }
+      state.data_exports.pending = [req, ...(state.data_exports.pending || [])]
+      return state
+    })
+  } else if (action === 'security.export.approve') {
+    updated = await updateState((state) => {
+      state.data_exports.pending = (state.data_exports.pending || []).map((req) => (
+        String(req.id) === String(payload.id) ? { ...req, status: 'approved', approved_at: now } : req
+      ))
+      return state
+    })
+  } else if (action === 'security.forensic.log') {
+    updated = await updateState((state) => {
+      const entry = { id: actionId, message: payload.message || 'Forensic entry', created_at: now }
+      state.forensic_logs = [entry, ...(state.forensic_logs || [])].slice(0, 100)
+      return state
+    })
+  } else if (action === 'security.immutable.snapshot') {
+    updated = await updateState((state) => {
+      state.immutable_backups = { ...state.immutable_backups, last_snapshot_at: now }
+      return state
+    })
+  }
+
+  if (!updated) {
+    return { ok: false, error: 'Unsupported action' }
+  }
+  return { ok: true, state: updated }
+}

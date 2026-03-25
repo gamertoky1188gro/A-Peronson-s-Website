@@ -29,9 +29,10 @@ import CallInterface from './pages/CallInterface'
 import OwnerDashboard from './pages/OwnerDashboard'
 import AgentDashboard from './pages/AgentDashboard'
 import MvpDashboard from './pages/MvpDashboard'
-import AdminModeration from './pages/AdminModeration'
 import IndustryPage from './pages/IndustryPage'
 import RatingFeedback from './pages/RatingFeedback'
+import SupportReports from './pages/SupportReports'
+import AdminPanel from './pages/AdminPanel'
 import FloatingAssistant from './components/FloatingAssistant'
 import Footer from './components/Footer'
 import AccessDenied from './pages/AccessDenied'
@@ -89,13 +90,14 @@ function AppRoutes() {
       <Route path="/verification" element={<ProtectedRoute roles={AUTH_ROLES}><VerificationPage /></ProtectedRoute>} />
       <Route path="/verification-center" element={<ProtectedRoute roles={AUTH_ROLES}><VerificationPage /></ProtectedRoute>} />
       <Route path="/ratings/feedback" element={<ProtectedRoute roles={AUTH_ROLES}><RatingFeedback /></ProtectedRoute>} />
+      <Route path="/support" element={<ProtectedRoute roles={AUTH_ROLES}><SupportReports /></ProtectedRoute>} />
 
       <Route path="/member-management" element={<ProtectedRoute roles={MEMBER_MANAGEMENT_ROLES}><MemberManagement /></ProtectedRoute>} />
       <Route path="/org-settings" element={<ProtectedRoute roles={OWNER_ROLES}><OrgSettings /></ProtectedRoute>} />
       <Route path="/insights" element={<ProtectedRoute roles={OWNER_ROLES}><Insights /></ProtectedRoute>} />
       <Route path="/owner" element={<ProtectedRoute roles={OWNER_ROLES}><OwnerDashboard /></ProtectedRoute>} />
       <Route path="/agent" element={<ProtectedRoute roles={['buying_house', 'owner', 'admin', 'agent']}><AgentDashboard /></ProtectedRoute>} />
-      <Route path="/admin/moderation" element={<ProtectedRoute roles={['owner', 'admin']}><AdminModeration /></ProtectedRoute>} />
+      <Route path="/admin" element={<ProtectedRoute roles={['owner', 'admin']}><AdminPanel /></ProtectedRoute>} />
 
       <Route path="/mvp" element={<MvpDashboard />} />
       <Route path="*" element={<Navigate to="/" replace />} />

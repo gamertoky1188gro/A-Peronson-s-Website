@@ -299,13 +299,8 @@ async function hasAcceptedPaymentProof(contractId) {
   })
 }
 
-async function assertPaymentProof(contractId) {
-  const ok = await hasAcceptedPaymentProof(contractId)
-  if (ok) return
-  const err = new Error('Payment proof required before signing or locking this contract.')
-  err.status = 403
-  err.code = 'PAYMENT_PROOF_REQUIRED'
-  throw err
+async function checkPaymentProof(contractId) {
+  return hasAcceptedPaymentProof(contractId)
 }
 
 export async function registerExternalDocument(ownerId, entityType, entityId, type, url) {
@@ -440,9 +435,7 @@ export async function updateContractSignatures(contractId, patch = {}, actor) {
 
   const buyerSigning = previousBuyerState !== 'signed' && nextBuyerState === 'signed'
   const factorySigning = previousFactoryState !== 'signed' && nextFactoryState === 'signed'
-  if (buyerSigning || factorySigning) {
-    await assertPaymentProof(existing.id)
-  }
+  const paymentProofOk = await checkPaymentProof(existing.id)
 
   const next = {
     ...existing,
@@ -477,7 +470,7 @@ export async function updateContractSignatures(contractId, patch = {}, actor) {
   if (next.lifecycle_status === 'signed') {
     await trackEvent({ type: 'contract_signed', actor_id: actor.id, entity_id: next.id })
   }
-  return presentContractForActor(next, actor)
+  return { ...presentContractForActor(next, actor), payment_proof_ok: paymentProofOk }
 }
 
 export async function updateContractArtifact(contractId, patch = {}, actor) {
@@ -492,9 +485,7 @@ export async function updateContractArtifact(contractId, patch = {}, actor) {
     ? sanitizeArtifactState(patch.status, existing.artifact?.status || 'draft')
     : (existing.artifact?.status || 'draft')
 
-  if (artifactStatus === 'locked' && existing.artifact?.status !== 'locked') {
-    await assertPaymentProof(existing.id)
-  }
+  const paymentProofOk = await checkPaymentProof(existing.id)
 
   const hasGeneratedArtifact = Boolean(existing.artifact?.generated_at && existing.artifact?.pdf_hash && existing.artifact?.pdf_path)
   if (['locked', 'archived'].includes(artifactStatus) && !hasGeneratedArtifact) {
@@ -536,5 +527,5 @@ export async function updateContractArtifact(contractId, patch = {}, actor) {
   if (previousStatus !== artifactStatus && artifactStatus === 'archived') {
     await trackEvent({ type: 'contract_archived', actor_id: actor.id, entity_id: next.id })
   }
-  return presentContractForActor(next, actor)
+  return { ...presentContractForActor(next, actor), payment_proof_ok: paymentProofOk }
 }

@@ -253,6 +253,18 @@ export default function BuyerProfile() {
                 <p className="mt-1 text-sm font-semibold text-slate-900">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
                 <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
               </div>
+              <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                <p className="text-[11px] text-slate-500">Certifications</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">
+                  {(user.profile?.certifications || []).join(', ') || '--'}
+                </p>
+              </div>
+              <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                <p className="text-[11px] text-slate-500">Capacity</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">
+                  {user.profile?.sourcing_capacity || user.profile?.monthly_capacity || user.profile?.annual_capacity || user.profile?.capacity || '--'}
+                </p>
+              </div>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-3">
               <div className="rounded-xl bg-white/60 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">

@@ -55,6 +55,15 @@ const EMPTY_FORM = {
   expiresAt: '',
   maxSuppliers: '',
   verifiedOnly: false,
+  preferredFactoryLocation: '',
+  factorySizePreference: '',
+  exportExperiencePreference: '',
+  confidentialityToggle: false,
+  packagingRequirement: '',
+  originLabelRequired: '',
+  hangtagBarcode: '',
+  partialShipmentAllowed: '',
+  shipmentMode: '',
   customFields: [],
   customDescription: '',
 }
@@ -118,6 +127,15 @@ function formToPayload(form) {
     lab_test_required: form.labTestRequired,
     swatch_first: form.swatchFirst,
     lab_cert_notes: form.labCertNotes,
+    preferred_factory_location: form.preferredFactoryLocation,
+    factory_size_preference: form.factorySizePreference,
+    export_experience_preference: form.exportExperiencePreference,
+    confidentiality_toggle: Boolean(form.confidentialityToggle),
+    packaging_requirement: form.packagingRequirement,
+    origin_label_required: form.originLabelRequired,
+    hangtag_barcode: form.hangtagBarcode,
+    partial_shipment_allowed: form.partialShipmentAllowed,
+    shipment_mode: form.shipmentMode,
   }
 }
 
@@ -173,6 +191,15 @@ function requirementToForm(req) {
     expiresAt: req.expires_at ? new Date(req.expires_at).toISOString().slice(0, 10) : '',
     maxSuppliers: req.max_suppliers ?? '',
     verifiedOnly: Boolean(req.verified_only),
+    preferredFactoryLocation: specs.preferred_factory_location || '',
+    factorySizePreference: specs.factory_size_preference || '',
+    exportExperiencePreference: specs.export_experience_preference || '',
+    confidentialityToggle: Boolean(specs.confidentiality_toggle),
+    packagingRequirement: specs.packaging_requirement || '',
+    originLabelRequired: specs.origin_label_required || '',
+    hangtagBarcode: specs.hangtag_barcode || '',
+    partialShipmentAllowed: specs.partial_shipment_allowed || '',
+    shipmentMode: specs.shipment_mode || '',
     customFields: Array.isArray(req.custom_fields) ? req.custom_fields : [],
     customDescription: req.custom_description || '',
   }
@@ -209,6 +236,7 @@ export default function BuyerRequestManagement() {
 
   const [moreFieldsOpen, setMoreFieldsOpen] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
+  const [step, setStep] = useState(0)
   const [pendingAttachments, setPendingAttachments] = useState([])
 
   const [requests, setRequests] = useState([])
@@ -231,6 +259,18 @@ export default function BuyerRequestManagement() {
   const token = useMemo(() => getToken(), [])
 
   const isTextile = form.requestType === 'textile'
+  const steps = useMemo(() => (
+    isTextile
+      ? ['Type', 'Basics', 'Technical', 'Commercial', 'Compliance', 'Preview']
+      : ['Type', 'Basics', 'Product', 'Commercial', 'Compliance', 'Preview']
+  ), [isTextile])
+  const isFirstStep = step === 0
+  const isLastStep = step === steps.length - 1
+  const canAdvance = step === 0 ? Boolean(form.requestType) : true
+
+  useEffect(() => {
+    if (step > steps.length - 1) setStep(steps.length - 1)
+  }, [step, steps.length])
 
   function updateCustomField(index, key, value) {
     setForm((prev) => {
@@ -352,22 +392,23 @@ export default function BuyerRequestManagement() {
     loadAgents()
   }, [loadAgents, loadBrowse, loadRequests])
 
-  async function createRequest() {
+  async function createRequest(statusOverride = 'open') {
     if (!token) return
     setSaving(true)
     setError('')
     setSuccess('')
     try {
-      const created = await apiRequest('/requirements', { method: 'POST', token, body: formToPayload(form) })
+      const created = await apiRequest('/requirements', { method: 'POST', token, body: { ...formToPayload(form), status: statusOverride } })
       if (created?.id && pendingAttachments.length) {
         for (const attachment of pendingAttachments) {
           if (!attachment?.file) continue
               await uploadAttachment(created.id, attachment.file, attachment.type || 'tech_pack')
         }
       }
-      setSuccess('Buyer request posted.')
+      setSuccess(statusOverride === 'draft' ? 'Draft saved.' : 'Buyer request posted.')
       setForm(EMPTY_FORM)
       setPendingAttachments([])
+      setStep(0)
       await loadRequests()
       await loadBrowse()
     } catch (err) {
@@ -377,11 +418,25 @@ export default function BuyerRequestManagement() {
     }
   }
 
+  async function saveDraft() {
+    await createRequest('draft')
+  }
+
   function startEditing(req) {
     setEditingId(req.id)
     setEditForm(requirementToForm(req))
     setSuccess('')
     setError('')
+  }
+
+  function duplicateRequest(req) {
+    setForm(requirementToForm(req))
+    setStep(1)
+    setSuccess('Loaded the request into the form. Update details and post when ready.')
+    setError('')
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
   }
 
   async function saveEdit() {
@@ -481,7 +536,16 @@ export default function BuyerRequestManagement() {
       { label: 'Quote deadline', value: form.quoteDeadline },
       { label: 'Request expiry', value: form.expiresAt },
       { label: 'Max suppliers', value: form.maxSuppliers },
-      { label: 'Verified only', value: form.verifiedOnly ? 'Yes' : '' },
+      { label: 'Preferred location', value: form.preferredFactoryLocation },
+      { label: 'Factory size', value: form.factorySizePreference },
+      { label: 'Export experience', value: form.exportExperiencePreference },
+      { label: 'Confidentiality', value: form.confidentialityToggle ? 'Hide brand name' : '' },
+      { label: 'Packaging', value: form.packagingRequirement },
+      { label: 'Origin label', value: form.originLabelRequired },
+      { label: 'Hang tag / barcode', value: form.hangtagBarcode },
+      { label: 'Partial shipment', value: form.partialShipmentAllowed },
+      { label: 'Shipment mode', value: form.shipmentMode },
+      { label: 'Messaging access', value: form.verifiedOnly ? 'Verified request only' : 'Normal' },
     ]
     return rows.filter((row) => row.value)
   }, [form, isTextile])
@@ -531,10 +595,24 @@ export default function BuyerRequestManagement() {
             </div>
 
             <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
-              <p className="text-xs font-semibold text-slate-800">Single form â€” fill all sections</p>
-              <p className="mt-1">Keep the details complete so verified suppliers can quote faster.</p>
+              <p className="text-xs font-semibold text-slate-800">Step {step + 1} of {steps.length} â€” {steps[step]}</p>
+              <p className="mt-1">Complete each step so verified suppliers can quote faster.</p>
             </div>
 
+            <div className="mb-4 flex flex-wrap gap-2 text-xs">
+              {steps.map((label, idx) => (
+                <div
+                  key={`${label}-${idx}`}
+                  className={`rounded-full px-3 py-1 font-semibold ${
+                    idx === step ? 'bg-[var(--gt-blue)] text-white' : idx < step ? 'bg-emerald-50 text-emerald-700' : 'bg-white text-slate-500 ring-1 ring-slate-200'
+                  }`}
+                >
+                  {label}
+                </div>
+              ))}
+            </div>
+
+            {step === 0 ? (
             <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-slate-900">Request type</h3>
                 <p className="text-sm text-slate-600">Select the buyer request type so we can show the correct fields.</p>
@@ -557,7 +635,9 @@ export default function BuyerRequestManagement() {
                   </button>
                 </div>
             </div>
+            ) : null}
 
+            {step === 1 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2 text-sm font-semibold text-slate-900">Basic info</div>
                 <Field label="Request title" hint="Example: Denim Jacket — 10k pcs">
@@ -609,7 +689,9 @@ export default function BuyerRequestManagement() {
                 ) : null}
 
             </div>
+            ) : null}
 
+            {step === 2 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2 text-sm font-semibold text-slate-900">Product specifications</div>
                 {isTextile ? (
@@ -703,7 +785,9 @@ export default function BuyerRequestManagement() {
                 </div>
 
             </div>
+            ) : null}
 
+            {step === 3 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2 text-sm font-semibold text-slate-900">Commercial terms</div>
                 {isTextile ? (
@@ -767,24 +851,38 @@ export default function BuyerRequestManagement() {
                     <Field label="Max suppliers to contact">
                       <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.maxSuppliers} onChange={(e) => setForm({ ...form, maxSuppliers: e.target.value })} />
                     </Field>
-                    <Field
-                      label="Verified-only messaging"
-                      hint="When enabled, only verified suppliers can message this request. Unverified suppliers cannot send or request access."
-                    >
-                      <label className="flex items-center gap-2 text-sm text-slate-700">
-                        <input
-                          type="checkbox"
-                          checked={form.verifiedOnly}
-                          onChange={(e) => setForm({ ...form, verifiedOnly: e.target.checked })}
-                        />
-                        Allow verified suppliers only
-                      </label>
-                    </Field>
+                      <Field
+                        label="Messaging access"
+                        hint="Normal: verified goes to inbox, unverified goes to requests. Verified request only: only verified suppliers can message."
+                      >
+                        <div className="grid grid-cols-1 gap-2 text-sm text-slate-700">
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              name="verified-only-create"
+                              checked={!form.verifiedOnly}
+                              onChange={() => setForm({ ...form, verifiedOnly: false })}
+                            />
+                            Normal
+                          </label>
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              name="verified-only-create"
+                              checked={form.verifiedOnly}
+                              onChange={() => setForm({ ...form, verifiedOnly: true })}
+                            />
+                            Verified request only
+                          </label>
+                        </div>
+                      </Field>
                   </>
                 ) : null}
 
             </div>
+            ) : null}
 
+            {step === 4 ? (
             <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-slate-900">Compliance / Lab</h3>
                 {!isTextile ? (
@@ -837,6 +935,48 @@ export default function BuyerRequestManagement() {
                   </Field>
                 )}
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2 text-sm font-semibold text-slate-900">Supplier preference</div>
+                  <Field label="Preferred factory location">
+                    <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.preferredFactoryLocation} onChange={(e) => setForm({ ...form, preferredFactoryLocation: e.target.value })} placeholder="Gazipur / Chittagong / Any" />
+                  </Field>
+                  <Field label="Factory size preference">
+                    <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.factorySizePreference} onChange={(e) => setForm({ ...form, factorySizePreference: e.target.value })} placeholder="Small / Medium / Large" />
+                  </Field>
+                  <Field label="Export experience preference">
+                    <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.exportExperiencePreference} onChange={(e) => setForm({ ...form, exportExperiencePreference: e.target.value })} placeholder="EU required / US required / Any" />
+                  </Field>
+                  <Field label="Confidentiality">
+                    <label className="flex items-center gap-2 text-sm text-slate-700">
+                      <input
+                        type="checkbox"
+                        checked={form.confidentialityToggle}
+                        onChange={(e) => setForm({ ...form, confidentialityToggle: e.target.checked })}
+                      />
+                      Hide brand name (only verified suppliers can see it)
+                    </label>
+                  </Field>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2 text-sm font-semibold text-slate-900">Packaging & shipment</div>
+                  <Field label="Packaging requirement">
+                    <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.packagingRequirement} onChange={(e) => setForm({ ...form, packagingRequirement: e.target.value })} placeholder="Poly bag / Hanger / Flat pack" />
+                  </Field>
+                  <Field label="Origin label requirement">
+                    <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.originLabelRequired} onChange={(e) => setForm({ ...form, originLabelRequired: e.target.value })} placeholder="Made in Bangladesh required?" />
+                  </Field>
+                  <Field label="Hang tag / Barcode">
+                    <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.hangtagBarcode} onChange={(e) => setForm({ ...form, hangtagBarcode: e.target.value })} placeholder="Buyer-supplied / Factory to arrange" />
+                  </Field>
+                  <Field label="Partial shipment allowed">
+                    <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.partialShipmentAllowed} onChange={(e) => setForm({ ...form, partialShipmentAllowed: e.target.value })} placeholder="Yes / No" />
+                  </Field>
+                  <Field label="Shipment mode">
+                    <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.shipmentMode} onChange={(e) => setForm({ ...form, shipmentMode: e.target.value })} placeholder="Sea / Air / Both" />
+                  </Field>
+                </div>
+
                 {moreFieldsOpen ? (
                   <div className="rounded-xl border border-slate-200 p-3">
                     <p className="text-xs font-semibold text-slate-700">Custom fields</p>
@@ -872,7 +1012,9 @@ export default function BuyerRequestManagement() {
                 </Field>
 
             </div>
+            ) : null}
 
+            {step === 5 ? (
             <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-slate-900">Preview summary</h3>
                 <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200/70">
@@ -886,8 +1028,28 @@ export default function BuyerRequestManagement() {
                     {!previewRows.length ? <div className="text-xs text-slate-500">No fields filled yet.</div> : null}
                   </div>
                 </div>
+            </div>
+            ) : null}
 
-                <div className="flex gap-2">
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+              <button
+                type="button"
+                disabled={isFirstStep}
+                onClick={() => setStep((prev) => Math.max(0, prev - 1))}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+              >
+                Back
+              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={saveDraft}
+                  className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-70"
+                >
+                  {saving ? 'Saving...' : 'Save Draft'}
+                </button>
+                {isLastStep ? (
                   <button
                     type="button"
                     disabled={saving}
@@ -896,7 +1058,17 @@ export default function BuyerRequestManagement() {
                   >
                     {saving ? 'Posting...' : 'Post Request'}
                   </button>
-                </div>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={!canAdvance}
+                    onClick={() => setStep((prev) => Math.min(steps.length - 1, prev + 1))}
+                    className="rounded-lg bg-[var(--gt-blue)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--gt-blue-hover)] disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         ) : null}
@@ -923,6 +1095,7 @@ export default function BuyerRequestManagement() {
                 <thead>
                   <tr className="text-slate-500">
                     <th className="py-2 pr-3">Title</th>
+                    <th className="py-2 pr-3">Status</th>
                     <th className="py-2 pr-3">Qty</th>
                     <th className="py-2 pr-3">Target</th>
                     <th className="py-2 pr-3">Delivery</th>
@@ -936,6 +1109,11 @@ export default function BuyerRequestManagement() {
                         <div className="font-semibold text-slate-900">{r.title || r.category || 'Buyer Request'}</div>
                         <div className="text-xs text-slate-500">Buyer: {String(r.buyer_id || '').slice(0, 8)}...</div>
                         {r.ai_summary ? <div className="mt-1 text-[11px] text-slate-500">{r.ai_summary}</div> : null}
+                      </td>
+                      <td className="py-2 pr-3">
+                        <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-600">
+                          {String(r.status || 'open').replaceAll('_', ' ')}
+                        </span>
                       </td>
                       <td className="py-2 pr-3">{r.quantity || '--'}</td>
                       <td className="py-2 pr-3">{r.target_market || '--'}</td>
@@ -995,19 +1173,31 @@ export default function BuyerRequestManagement() {
                       <Field label="Custom description">
                         <textarea className="w-full min-h-[120px] rounded-lg border border-slate-200 px-3 py-2" value={editForm.customDescription} onChange={(e) => setEditForm({ ...editForm, customDescription: e.target.value })} />
                       </Field>
-                      <Field
-                        label="Verified-only messaging"
-                        hint="When enabled, only verified suppliers can message this request."
-                      >
-                        <label className="flex items-center gap-2 text-sm text-slate-700">
-                          <input
-                            type="checkbox"
-                            checked={editForm.verifiedOnly}
-                            onChange={(e) => setEditForm({ ...editForm, verifiedOnly: e.target.checked })}
-                          />
-                          Allow verified suppliers only
-                        </label>
-                      </Field>
+                        <Field
+                          label="Messaging access"
+                          hint="Normal: verified goes to inbox, unverified goes to requests. Verified request only: only verified suppliers can message."
+                        >
+                          <div className="grid grid-cols-1 gap-2 text-sm text-slate-700">
+                            <label className="flex items-center gap-2">
+                              <input
+                                type="radio"
+                                name={`verified-only-edit-${editForm.id}`}
+                                checked={!editForm.verifiedOnly}
+                                onChange={() => setEditForm({ ...editForm, verifiedOnly: false })}
+                              />
+                              Normal
+                            </label>
+                            <label className="flex items-center gap-2">
+                              <input
+                                type="radio"
+                                name={`verified-only-edit-${editForm.id}`}
+                                checked={editForm.verifiedOnly}
+                                onChange={() => setEditForm({ ...editForm, verifiedOnly: true })}
+                              />
+                              Verified request only
+                            </label>
+                          </div>
+                        </Field>
                       <div className="flex gap-2">
                         <button type="button" disabled={saving} className="rounded-lg bg-[var(--gt-blue)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--gt-blue-hover)] disabled:opacity-70" onClick={saveEdit}>
                           Save
@@ -1021,12 +1211,20 @@ export default function BuyerRequestManagement() {
                     <div className="space-y-3">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                        <div className="font-semibold text-slate-900">{r.title || r.category || 'Buyer Request'}</div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div className="font-semibold text-slate-900">{r.title || r.category || 'Buyer Request'}</div>
+                          <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-600">
+                            {String(r.status || 'open').replaceAll('_', ' ')}
+                          </span>
+                        </div>
                         <div className="mt-1 text-xs text-slate-500">
                           Qty {r.quantity || '--'} - {r.material || '--'} - Target {r.target_market || '--'} - Delivery {r.delivery_timeline || r.timeline_days || '--'}
                         </div>
                       </div>
                         <div className="shrink-0 flex gap-2">
+                        <button type="button" className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50" onClick={() => duplicateRequest(r)}>
+                          Duplicate
+                        </button>
                         <button type="button" className="rounded-full bg-[var(--gt-blue)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--gt-blue-hover)]" onClick={() => startEditing(r)}>
                           Edit
                         </button>

@@ -527,6 +527,7 @@ model Rating {
   score             Int?
   comment           String?
   reliability_flags Json?
+  auto_generated    Boolean  @default(false)
   created_at        DateTime @default(now())
 
   @@map("ratings")
@@ -594,6 +595,8 @@ model CouponCode {
   active          Boolean  @default(true)
   max_redemptions Int?
   expires_at      DateTime?
+  created_by      String?
+  marketing_source String?
   created_at      DateTime @default(now())
 
   @@map("coupon_codes")

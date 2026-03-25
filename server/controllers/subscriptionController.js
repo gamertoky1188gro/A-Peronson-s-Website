@@ -1,6 +1,7 @@
 import { findUserById } from '../services/userService.js'
 import { markVerificationExpiringSoon } from '../services/verificationService.js'
 import { getRemainingDays, getSubscription, renewPremiumMonthly, upsertSubscription } from '../services/subscriptionService.js'
+import { debitWallet } from '../services/walletService.js'
 
 export async function getMySubscription(req, res) {
   const sub = await getSubscription(req.user.id)
@@ -9,7 +10,11 @@ export async function getMySubscription(req, res) {
 
 export async function updateMySubscription(req, res) {
   const plan = req.body?.plan === 'premium' ? 'premium' : 'free'
-  const sub = await upsertSubscription(req.user.id, plan, req.body?.auto_renew)
+  const sub = await upsertSubscription(req.user.id, plan, req.body?.auto_renew, {
+    actor_id: req.user.id,
+    source: 'user_request',
+    note: 'self_service',
+  })
   return res.json(sub)
 }
 
@@ -17,14 +22,36 @@ export async function adminSetUserSubscription(req, res) {
   const user = await findUserById(req.params.userId)
   if (!user) return res.status(404).json({ error: 'User not found' })
   const plan = req.body?.plan === 'premium' ? 'premium' : 'free'
-  const sub = await upsertSubscription(user.id, plan, req.body?.auto_renew)
+  const sub = await upsertSubscription(user.id, plan, req.body?.auto_renew, {
+    actor_id: req.user.id,
+    source: 'admin_request',
+    note: 'subscription_override',
+  })
   return res.json(sub)
 }
 
 
 export async function renewMyPremiumMonthly(req, res) {
-  const sub = await renewPremiumMonthly(req.user.id, req.body?.auto_renew)
-  return res.json(sub)
+  const FIRST_MONTH_PRICE_USD = 1.99
+  const RENEWAL_PRICE_USD = 6.99
+
+  const existing = await getSubscription(req.user.id)
+  const isFirstTime = !existing || String(existing.plan || '').toLowerCase() !== 'premium'
+  const priceUsd = isFirstTime ? FIRST_MONTH_PRICE_USD : RENEWAL_PRICE_USD
+
+  try {
+    const charge = await debitWallet({
+      userId: req.user.id,
+      amountUsd: priceUsd,
+      reason: 'subscription_renewal',
+      ref: `subscription:${req.user.id}`,
+      allowRestricted: true,
+    })
+    const sub = await renewPremiumMonthly(req.user.id, req.body?.auto_renew)
+    return res.json({ ...sub, price_usd: priceUsd, wallet: charge.wallet, wallet_entry: charge.entry })
+  } catch (error) {
+    return res.status(error.status || 400).json({ error: error.message || 'Unable to renew subscription' })
+  }
 }
 
 export async function getMyRemainingDays(req, res) {

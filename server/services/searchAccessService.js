@@ -1,4 +1,5 @@
 import { FILTER_TIERS, PLAN_DAILY_LIMITS, PLAN_FILTER_ACCESS, SEARCH_CAPABILITIES } from '../config/searchAccessConfig.js'
+import { getAdminConfig } from './adminConfigService.js'
 import { getSubscription } from './subscriptionService.js'
 import { readJson, writeJson } from '../utils/jsonStore.js'
 
@@ -64,7 +65,10 @@ async function upsertUsageRow(userId, action, dateKey, incrementBy = 0) {
 
 export async function getQuotaSnapshot(userId, action, plan) {
   const resolvedPlan = resolvePlan(plan)
-  const dailyLimit = Number(PLAN_DAILY_LIMITS[resolvedPlan]?.[action] || 0)
+  const config = await getAdminConfig()
+  const configuredSearchDaily = Number(config?.plan_limits?.[resolvedPlan]?.search_daily || 0)
+  const fallbackLimit = Number(PLAN_DAILY_LIMITS[resolvedPlan]?.[action] || 0)
+  const dailyLimit = configuredSearchDaily > 0 ? configuredSearchDaily : fallbackLimit
   const today = todayKey()
   const rows = await getUsageRows()
   const usage = rows.find((row) => row.user_id === userId && row.action === action)
@@ -106,9 +110,10 @@ export async function consumeQuota(userId, action, plan) {
 
 export function getSearchCapabilities(plan) {
   const resolvedPlan = resolvePlan(plan)
+  const capabilities = SEARCH_CAPABILITIES[resolvedPlan]
   return {
     plan: resolvedPlan,
-    ...SEARCH_CAPABILITIES[resolvedPlan],
+    ...capabilities,
   }
 }
 
