@@ -1,12 +1,12 @@
-// Prisma schema for GarTexHub (MySQL)
-// Source of truth: MySQL (JSON files migrated into structured tables).
+// Prisma schema for GarTexHub (PostgreSQL)
+// Source of truth: PostgreSQL (no JSON files).
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -622,4 +622,12 @@ model MessageRead {
 
   @@unique([match_id, user_id], name: "match_id_user_id")
   @@map("message_reads")
+}
+
+model AppState {
+  key        String   @id
+  data       Json
+  updated_at DateTime @default(now())
+
+  @@map("app_state")
 }

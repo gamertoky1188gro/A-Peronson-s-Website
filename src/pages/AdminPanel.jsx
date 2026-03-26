@@ -141,6 +141,8 @@ const ACTION_GROUPS = [
       { id: 'partner.connect', label: 'Force connect partner', route: '/admin/actions', fields: [{ key: 'request_id', label: 'Request ID' }] },
       { id: 'partner.override', label: 'Record partner override', route: '/admin/actions', fields: [{ key: 'request_id', label: 'Request ID' }, { key: 'override_action', label: 'Action' }, { key: 'note', label: 'Note' }] },
       { id: 'partner.free_tier_limit', label: 'Set free-tier partner limit', route: '/admin/actions', fields: [{ key: 'limit', label: 'Limit' }] },
+      { id: 'featured.add', label: 'Add featured listing', route: '/admin/actions', fields: [{ key: 'entity_type', label: 'product/request' }, { key: 'entity_id', label: 'Entity ID' }, { key: 'label', label: 'Label (optional)' }] },
+      { id: 'featured.remove', label: 'Remove featured listing', route: '/admin/actions', fields: [{ key: 'listing_id', label: 'Listing ID' }, { key: 'entity_id', label: 'Entity ID (optional)' }] },
     ],
   },
   {
@@ -402,6 +404,7 @@ export default function AdminPanel() {
   const [fraudReview, setFraudReview] = useState({ items: [], duplicates: [] })
   const [orgOwnership, setOrgOwnership] = useState({ orgs: [], staff_list: [] })
   const [walletLedger, setWalletLedger] = useState([])
+  const [featuredForm, setFeaturedForm] = useState({ entity_type: 'product', entity_id: '', label: '' })
   const [audit, setAudit] = useState([])
   const [users, setUsers] = useState([])
   const [verificationQueue, setVerificationQueue] = useState([])
@@ -1567,6 +1570,73 @@ export default function AdminPanel() {
                     {(catalog?.emails?.segments || []).length === 0 ? <div className="text-[11px] text-slate-400">No segments yet.</div> : null}
                   </div>
                 </div>
+
+                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-bold">Featured Listings</p>
+                      <p className="text-xs text-slate-500">Control marketplace highlights.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => refreshCatalog()}
+                      className="rounded-full border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600"
+                    >
+                      Refresh
+                    </button>
+                  </div>
+                  <div className="mt-3 grid grid-cols-1 gap-2 text-[11px] text-slate-600 dark:text-slate-300">
+                    <select
+                      value={featuredForm.entity_type}
+                      onChange={(event) => setFeaturedForm((prev) => ({ ...prev, entity_type: event.target.value }))}
+                      className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs dark:border-slate-700 dark:bg-slate-950"
+                    >
+                      <option value="product">Product</option>
+                      <option value="request">Buyer request</option>
+                    </select>
+                    <input
+                      value={featuredForm.entity_id}
+                      onChange={(event) => setFeaturedForm((prev) => ({ ...prev, entity_id: event.target.value }))}
+                      placeholder="Entity ID"
+                      className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs dark:border-slate-700 dark:bg-slate-950"
+                    />
+                    <input
+                      value={featuredForm.label}
+                      onChange={(event) => setFeaturedForm((prev) => ({ ...prev, label: event.target.value }))}
+                      placeholder="Label (optional)"
+                      className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs dark:border-slate-700 dark:bg-slate-950"
+                    />
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        await runInlineAdminAction('featured.add', featuredForm)
+                        await refreshCatalog()
+                        setFeaturedForm((prev) => ({ ...prev, entity_id: '', label: '' }))
+                      }}
+                      className="w-full rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
+                    >
+                      Add featured
+                    </button>
+                  </div>
+                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
+                    {(catalog?.featured?.listings || []).slice(0, 4).map((item) => (
+                      <div key={item.id} className="flex items-center justify-between rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                        <span>{item.title} · {item.entity_type}</span>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            await runInlineAdminAction('featured.remove', { listing_id: item.id })
+                            await refreshCatalog()
+                          }}
+                          className="rounded-full border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                    {(catalog?.featured?.listings || []).length === 0 ? <div className="text-[11px] text-slate-400">No featured listings.</div> : null}
+                  </div>
+                </div>
               </div>
             ) : null}
 
@@ -2052,6 +2122,13 @@ export default function AdminPanel() {
                       <div className="text-[11px] text-slate-500">Buying house analytics: {(catalog?.analytics?.buying_house || []).length}</div>
                       <div className="text-[11px] text-slate-500">Agent performance: {(catalog?.analytics?.agent_performance || []).length}</div>
                       <div className="text-[11px] text-slate-500">Avg response: {catalog?.analytics?.response_speed?.avg_minutes || 0} min</div>
+                      <div className="text-[11px] text-slate-500">Active users (14d): {catalog?.analytics?.active_users?.last_14_days || 0} · Today {catalog?.analytics?.active_users?.last_day || 0}</div>
+                      <div className="text-[11px] text-slate-500">Login events (14d): {catalog?.analytics?.login_summary?.total || 0}</div>
+                      <div className="text-[11px] text-slate-500">Buyer requests (14d): {catalog?.analytics?.buyer_request_summary?.total || 0}</div>
+                      <div className="text-[11px] text-slate-500">Factory uploads (14d): {catalog?.analytics?.factory_performance_summary?.total || 0}</div>
+                      {(catalog?.analytics?.factory_top || []).slice(0, 1).map((row) => (
+                        <div key={row.company_id} className="text-[11px] text-slate-500">Top factory: {row.company_name} · {row.products}</div>
+                      ))}
                       <div className="text-[11px] text-slate-500">Search alerts: {(catalog?.search?.alerts || []).length}</div>
                       <div className="text-[11px] text-slate-500">Abuse records: {(catalog?.search?.usage || []).length}</div>
                     </div>
@@ -2937,6 +3014,10 @@ export default function AdminPanel() {
                     <div>Immutable snapshots: {securityState?.immutable_backups?.last_snapshot_at || 'none'}</div>
                     <div>Last key rotation: {securityState?.encryption?.last_rotated_at || 'never'}</div>
                     <div>Tamper-proof logs: {securityState?.tamper_proof_logs?.enabled ? 'On' : 'Off'}</div>
+                    <div>System events: {(securityState?.system_events || []).length}</div>
+                    {(securityState?.system_events || []).slice(0, 2).map((evt) => (
+                      <div key={evt.id} className="text-[11px] text-slate-500">{evt.level || 'event'} · {evt.message}</div>
+                    ))}
                   </div>
                 </div>
               </div>

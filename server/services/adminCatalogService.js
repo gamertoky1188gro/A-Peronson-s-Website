@@ -23,6 +23,7 @@ const TRAFFIC_ANALYTICS_FILE = 'traffic_analytics.json'
 const EMAIL_SEGMENTS_FILE = 'email_segments.json'
 const COUPON_CAMPAIGNS_FILE = 'coupon_campaigns.json'
 const PARTNER_OVERRIDES_FILE = 'partner_overrides.json'
+const FEATURED_LISTINGS_FILE = 'featured_listings.json'
 
 const DEFAULT_ORG_OVERRIDES = {
   staff_limits: {},
@@ -151,6 +152,58 @@ function buildResponseSpeed(messages = []) {
   const avg = diffs.reduce((sum, v) => sum + v, 0) / diffs.length / 60000
   const median = diffs[Math.floor(diffs.length / 2)] / 60000
   return { avg_minutes: Math.round(avg * 10) / 10, median_minutes: Math.round(median * 10) / 10 }
+}
+
+function pickDate(row, fields = ['created_at', 'submitted_at', 'updated_at', 'timestamp']) {
+  for (const field of fields) {
+    const value = row?.[field]
+    if (value) return value
+  }
+  return ''
+}
+
+function dateKey(value) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toISOString().slice(0, 10)
+}
+
+function buildDailySeries(rows = [], options = {}) {
+  const { dateField = 'created_at', days = 14, uniqueBy } = options
+  const today = new Date()
+  const series = []
+  const buckets = new Map()
+  for (let i = days - 1; i >= 0; i -= 1) {
+    const d = new Date(today)
+    d.setDate(today.getDate() - i)
+    const key = d.toISOString().slice(0, 10)
+    series.push({ date: key, count: 0 })
+    buckets.set(key, uniqueBy ? new Set() : 0)
+  }
+
+  rows.forEach((row) => {
+    const rawDate = dateField ? row?.[dateField] : pickDate(row)
+    const key = dateKey(rawDate)
+    if (!key || !buckets.has(key)) return
+    if (uniqueBy) {
+      buckets.get(key).add(String(row?.[uniqueBy] || ''))
+    } else {
+      buckets.set(key, Number(buckets.get(key) || 0) + 1)
+    }
+  })
+
+  return series.map((entry) => {
+    const bucket = buckets.get(entry.date)
+    const count = uniqueBy ? (bucket ? bucket.size : 0) : Number(bucket || 0)
+    return { ...entry, count }
+  })
+}
+
+function summarizeSeries(series = []) {
+  const total = series.reduce((sum, row) => sum + Number(row.count || 0), 0)
+  const last = series.length ? series[series.length - 1].count : 0
+  return { total, last_day: last }
 }
 
 function normalizeDocType(doc = {}) {
@@ -296,6 +349,7 @@ export async function getAdminCatalog() {
     requirements,
     matches,
     documents,
+    companyProducts,
     paymentProofs,
     callSessions,
     messages,
@@ -315,6 +369,7 @@ export async function getAdminCatalog() {
     readJson('requirements.json'),
     readJson('matches.json'),
     readJson('documents.json'),
+    readJson('company_products.json'),
     readJson('payment_proofs.json'),
     readJson('call_sessions.json'),
     readJson('messages.json'),
@@ -350,6 +405,7 @@ export async function getAdminCatalog() {
     partnerOverrides,
     invoices,
     payouts,
+    featuredListings,
   ] = await Promise.all([
     readLocalJson(ORG_OVERRIDE_FILE, DEFAULT_ORG_OVERRIDES),
     readLocalJson(VERIFICATION_BADGE_AUDIT, []),
@@ -371,6 +427,7 @@ export async function getAdminCatalog() {
     readLocalJson(PARTNER_OVERRIDES_FILE, []),
     readLocalJson('invoice_log.json', []),
     readLocalJson('payout_ledger.json', []),
+    readLocalJson(FEATURED_LISTINGS_FILE, []),
   ])
 
   const config = await getAdminConfig()
@@ -382,6 +439,7 @@ export async function getAdminCatalog() {
   const requirementRows = Array.isArray(requirements) ? requirements : []
   const matchRows = Array.isArray(matches) ? matches : []
   const documentRows = Array.isArray(documents) ? documents : []
+  const productRows = Array.isArray(companyProducts) ? companyProducts : []
   const proofRows = Array.isArray(paymentProofs) ? paymentProofs : []
   const callRows = Array.isArray(callSessions) ? callSessions : []
   const messageRows = Array.isArray(messages) ? messages : []
@@ -435,6 +493,36 @@ export async function getAdminCatalog() {
   const conversionTrend = buildConversionTrend(analyticsRows)
   const responseSpeed = buildResponseSpeed(messageRows)
 
+  const loginEvents = analyticsRows.filter((event) => {
+    const name = String(event.type || event.event || event.name || '').toLowerCase()
+    return name.includes('login') || name.includes('auth') || name.includes('session')
+  })
+  const activityEvents = analyticsRows
+    .filter((event) => event.actor_id || event.user_id)
+    .map((event) => ({ ...event, actor_id: event.actor_id || event.user_id }))
+
+  const activeUsersTrend = buildDailySeries(activityEvents, { dateField: 'created_at', uniqueBy: 'actor_id', days: 14 })
+  const loginTrend = buildDailySeries(loginEvents, { dateField: 'created_at', days: 14 })
+  const buyerRequestTrend = buildDailySeries(requirementRows, { dateField: undefined, days: 14 })
+  const factoryProducts = productRows.filter((row) => String(row.company_role || '').toLowerCase() === 'factory')
+  const factoryPerformanceTrend = buildDailySeries(factoryProducts, { dateField: 'created_at', days: 14 })
+
+  const activeUsersSummary = summarizeSeries(activeUsersTrend)
+  const loginSummary = summarizeSeries(loginTrend)
+  const requestSummary = summarizeSeries(buyerRequestTrend)
+  const factorySummary = summarizeSeries(factoryPerformanceTrend)
+
+  const factoryTop = factoryProducts.reduce((acc, row) => {
+    const key = String(row.company_id || row.owner_id || 'unknown')
+    const current = acc[key] || { company_id: key, company_name: row.company_name || 'Factory', products: 0, last_product_at: '' }
+    const created = row.created_at || row.updated_at || ''
+    const last = current.last_product_at && created
+      ? (String(created) > String(current.last_product_at) ? created : current.last_product_at)
+      : (current.last_product_at || created)
+    acc[key] = { ...current, products: current.products + 1, last_product_at: last }
+    return acc
+  }, {})
+
   const aiSummaries = notesRows.filter((note) => String(note.note || '').startsWith('AI Summary:') || String(note.note || '').startsWith('AI Negotiation:'))
   const matchesByBuyer = matchRows.reduce((acc, match) => {
     const buyerId = String(match.buyer_id || '')
@@ -450,6 +538,24 @@ export async function getAdminCatalog() {
     acc[buyerId].push(doc)
     return acc
   }, {})
+
+  const featuredRows = Array.isArray(featuredListings) ? featuredListings : []
+  const productById = new Map(productRows.map((row) => [String(row.id), row]))
+  const requirementById = new Map(requirementRows.map((row) => [String(row.id), row]))
+  const featured = featuredRows.map((row) => {
+    const entityId = String(row.entity_id || row.id)
+    const entityType = String(row.entity_type || '').toLowerCase()
+    const product = entityType.includes('product') ? productById.get(entityId) : null
+    const request = entityType.includes('request') ? requirementById.get(entityId) : null
+    return {
+      ...row,
+      entity_id: entityId,
+      entity_type: entityType || (product ? 'product' : request ? 'request' : 'unknown'),
+      title: row.label || product?.title || request?.title || 'Featured item',
+      status: product?.video_review_status || request?.status || 'active',
+      owner_id: product?.company_id || request?.buyer_id || '',
+    }
+  })
 
   return {
     orgs: {
@@ -514,7 +620,7 @@ export async function getAdminCatalog() {
       auto_spam_flags: detectSpamSignals(messageRows),
     },
     content: {
-      product_videos: await readJson('company_products.json'),
+      product_videos: productRows,
       documents: documentRows,
       flags: contentFlags,
     },
@@ -546,6 +652,18 @@ export async function getAdminCatalog() {
       })),
       conversion_trend: conversionTrend,
       response_speed: responseSpeed,
+      active_users: {
+        last_14_days: activeUsersSummary.total,
+        last_day: activeUsersSummary.last_day,
+      },
+      active_users_trend: activeUsersTrend,
+      login_trend: loginTrend,
+      login_summary: loginSummary,
+      buyer_request_trend: buyerRequestTrend,
+      buyer_request_summary: requestSummary,
+      factory_performance_trend: factoryPerformanceTrend,
+      factory_performance_summary: factorySummary,
+      factory_top: Object.values(factoryTop).sort((a, b) => b.products - a.products).slice(0, 8),
     },
     search: {
       alerts: await readJson('search_alerts.json'),
@@ -579,6 +697,9 @@ export async function getAdminCatalog() {
     traffic: computeTrafficAnalytics(analyticsRows, trafficAnalyticsStored),
     emails: {
       segments: emailSegments,
+    },
+    featured: {
+      listings: featured,
     },
   }
 }

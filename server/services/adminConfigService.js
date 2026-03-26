@@ -1,7 +1,4 @@
-import fs from 'fs/promises'
-import path from 'path'
-
-const CONFIG_PATH = path.join(process.cwd(), 'server', 'database', 'admin_config.json')
+import { readLocalJson, writeLocalJson } from '../utils/localStore.js'
 
 const DEFAULT_CONFIG = {
   feature_flags: {
@@ -53,6 +50,18 @@ const DEFAULT_CONFIG = {
   org_quotas: {},
 }
 
+export async function getAdminConfig() {
+  const parsed = await readLocalJson('admin_config.json', DEFAULT_CONFIG)
+  return mergeDeep(DEFAULT_CONFIG, parsed || {})
+}
+
+export async function updateAdminConfig(patch = {}) {
+  const current = await getAdminConfig()
+  const next = mergeDeep(current, patch)
+  await writeLocalJson('admin_config.json', next)
+  return next
+}
+
 function mergeDeep(target, source) {
   if (!source || typeof source !== 'object') return target
   const output = { ...target }
@@ -64,31 +73,4 @@ function mergeDeep(target, source) {
     }
   })
   return output
-}
-
-async function ensureConfigFile() {
-  try {
-    await fs.access(CONFIG_PATH)
-  } catch {
-    await fs.mkdir(path.dirname(CONFIG_PATH), { recursive: true })
-    await fs.writeFile(CONFIG_PATH, JSON.stringify(DEFAULT_CONFIG, null, 2), 'utf8')
-  }
-}
-
-export async function getAdminConfig() {
-  await ensureConfigFile()
-  const raw = await fs.readFile(CONFIG_PATH, 'utf8')
-  try {
-    const parsed = JSON.parse(raw)
-    return mergeDeep(DEFAULT_CONFIG, parsed || {})
-  } catch {
-    return { ...DEFAULT_CONFIG }
-  }
-}
-
-export async function updateAdminConfig(patch = {}) {
-  const current = await getAdminConfig()
-  const next = mergeDeep(current, patch)
-  await fs.writeFile(CONFIG_PATH, JSON.stringify(next, null, 2), 'utf8')
-  return next
 }

@@ -1863,6 +1863,41 @@ export async function performAdminAction(action, payload = {}, actor) {
     return { ok: true }
   }
 
+  if (name === 'featured.add') {
+    const entityType = sanitizeString(String(payload.entity_type || 'product'), 40)
+    const entityId = toId(payload.entity_id || payload.id)
+    if (!entityId) {
+      const err = new Error('entity_id is required')
+      err.status = 400
+      throw err
+    }
+    const entry = await appendLocalRecord('featured_listings.json', {
+      entity_type: entityType,
+      entity_id: entityId,
+      label: sanitizeString(String(payload.label || ''), 120),
+      created_by: admin.id,
+    })
+    return { ok: true, featured: entry }
+  }
+
+  if (name === 'featured.remove') {
+    const listingId = toId(payload.listing_id || payload.id)
+    const entityId = toId(payload.entity_id || '')
+    if (!listingId && !entityId) {
+      const err = new Error('listing_id or entity_id is required')
+      err.status = 400
+      throw err
+    }
+    if (listingId) {
+      await removeLocalRecord('featured_listings.json', listingId)
+      return { ok: true, removed: listingId }
+    }
+    await updateLocalJson('featured_listings.json', (rows = []) => (
+      Array.isArray(rows) ? rows.filter((row) => String(row.entity_id) !== entityId) : rows
+    ), [])
+    return { ok: true, removed_entity_id: entityId }
+  }
+
   const err = new Error(`Unknown admin action: ${name}`)
   err.status = 400
   throw err

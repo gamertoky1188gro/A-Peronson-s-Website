@@ -2,7 +2,7 @@ import prisma from './prisma.js'
 
 export async function ensureDatabaseConnection() {
   if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL is required to start the server (MySQL)')
+    throw new Error('DATABASE_URL is required to start the server (PostgreSQL)')
   }
   await prisma.$connect()
 }

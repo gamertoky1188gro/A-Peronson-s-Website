@@ -2,6 +2,8 @@ import crypto from 'crypto'
 import { exec } from 'child_process'
 import util from 'util'
 import os from 'os'
+import fs from 'fs/promises'
+import path from 'path'
 import { readLocalJson, updateLocalJson } from '../utils/localStore.js'
 
 const execAsync = util.promisify(exec)
@@ -16,6 +18,7 @@ const EXEC_ALLOWLIST = new Set(
 )
 
 const STATE_FILE = 'network_state.json'
+const BACKUP_DIR = path.join(process.cwd(), 'server', 'network_backups')
 const DEFAULT_INVENTORY = {
   devices: [],
   alerts: [],
@@ -127,6 +130,122 @@ async function getDynamicTopology(devices = []) {
     }
   }
   return { nodes, links }
+}
+
+async function listConfigBackups() {
+  try {
+    const entries = await fs.readdir(BACKUP_DIR, { withFileTypes: true })
+    const files = entries.filter((entry) => entry.isFile()).slice(0, 50)
+    const rows = await Promise.all(files.map(async (file) => {
+      const filePath = path.join(BACKUP_DIR, file.name)
+      const stats = await fs.stat(filePath)
+      const parts = file.name.split('-')
+      const deviceId = parts.length >= 2 ? parts[1] : 'host'
+      return {
+        id: file.name,
+        device_id: deviceId,
+        file: file.name,
+        size_bytes: stats.size,
+        created_at: stats.mtime ? new Date(stats.mtime).toISOString() : '',
+        status: 'available',
+      }
+    }))
+    return rows.sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)))
+  } catch {
+    return []
+  }
+}
+
+async function listFirmwareJobs() {
+  if (!EXEC_ENABLED) return []
+  if (process.platform === 'win32') {
+    const result = await runCommand('powershell -NoProfile -Command "Get-WmiObject Win32_PnPSignedDriver | Select-Object -First 25 DeviceName,DriverVersion,DriverDate | ConvertTo-Json"')
+    if (!result.ok || !result.stdout) return []
+    try {
+      const parsed = JSON.parse(result.stdout)
+      const rows = Array.isArray(parsed) ? parsed : [parsed]
+      return rows.map((row) => ({
+        id: crypto.randomUUID(),
+        device_id: String(row?.DeviceName || 'driver'),
+        version: String(row?.DriverVersion || ''),
+        status: 'installed',
+        created_at: row?.DriverDate ? new Date(row.DriverDate).toISOString() : new Date().toISOString(),
+      }))
+    } catch {
+      return []
+    }
+  }
+  const fwup = await runCommand('command -v fwupdmgr')
+  if (fwup.ok && fwup.stdout) {
+    const result = await runCommand('fwupdmgr get-updates')
+    if (!result.ok || !result.stdout) return []
+    return result.stdout.split('\n').filter(Boolean).slice(0, 20).map((line) => ({
+      id: crypto.randomUUID(),
+      device_id: line.trim().slice(0, 60),
+      version: '',
+      status: 'available',
+      created_at: new Date().toISOString(),
+    }))
+  }
+  return []
+}
+
+async function listQosPolicies() {
+  if (!EXEC_ENABLED) return []
+  if (process.platform === 'win32') {
+    const result = await runCommand('powershell -NoProfile -Command "Get-NetQosPolicy | Select-Object -First 25 Name,AppPathNameMatchCondition,IPDstPortStart,IPDstPortEnd,DSCPAction | ConvertTo-Json"')
+    if (!result.ok || !result.stdout) return []
+    try {
+      const parsed = JSON.parse(result.stdout)
+      const rows = Array.isArray(parsed) ? parsed : [parsed]
+      return rows.map((row) => ({
+        id: crypto.randomUUID(),
+        name: String(row?.Name || 'policy'),
+        app: String(row?.AppPathNameMatchCondition || ''),
+        ports: row?.IPDstPortStart ? `${row.IPDstPortStart}-${row.IPDstPortEnd || row.IPDstPortStart}` : '',
+        dscp: row?.DSCPAction ?? '',
+        created_at: new Date().toISOString(),
+      }))
+    } catch {
+      return []
+    }
+  }
+  const result = await runCommand('tc qdisc show')
+  if (!result.ok || !result.stdout) return []
+  return result.stdout.split('\n').filter(Boolean).slice(0, 25).map((line) => ({
+    id: crypto.randomUUID(),
+    name: line.trim().split(/\s+/g).slice(0, 3).join(' '),
+    policy: line.trim(),
+    created_at: new Date().toISOString(),
+  }))
+}
+
+async function listTrafficShapes() {
+  if (!EXEC_ENABLED) return []
+  if (process.platform === 'win32') {
+    const result = await runCommand('powershell -NoProfile -Command "Get-NetQosPolicy | Select-Object -First 25 Name,ThrottleRateAction | ConvertTo-Json"')
+    if (!result.ok || !result.stdout) return []
+    try {
+      const parsed = JSON.parse(result.stdout)
+      const rows = Array.isArray(parsed) ? parsed : [parsed]
+      return rows.map((row) => ({
+        id: crypto.randomUUID(),
+        name: String(row?.Name || 'shape'),
+        limit: row?.ThrottleRateAction ?? '',
+        created_at: new Date().toISOString(),
+      }))
+    } catch {
+      return []
+    }
+  }
+  const result = await runCommand('tc -s qdisc show')
+  if (!result.ok || !result.stdout) return []
+  return result.stdout.split('\n').filter(Boolean).slice(0, 25).map((line) => ({
+    id: crypto.randomUUID(),
+    name: line.trim().split(/\s+/g).slice(0, 3).join(' '),
+    limit: line.trim(),
+    created_at: new Date().toISOString(),
+  }))
 }
 
 async function getDefaultGateway() {
@@ -261,12 +380,22 @@ export async function getNetworkInventory() {
   const clients = await getDynamicClients()
   const tunnels = await getDynamicTunnels()
   const topology = await getDynamicTopology(devices)
+  const [configBackups, firmwareJobs, qosPolicies, trafficShapes] = await Promise.all([
+    listConfigBackups(),
+    listFirmwareJobs(),
+    listQosPolicies(),
+    listTrafficShapes(),
+  ])
   return mergeInventory({
     ...state,
     devices,
     clients,
     topology,
     tunnels,
+    config_backups: configBackups.length ? configBackups : (state.config_backups || []),
+    firmware_jobs: firmwareJobs.length ? firmwareJobs : (state.firmware_jobs || []),
+    qos_policies: qosPolicies.length ? qosPolicies : (state.qos_policies || []),
+    traffic_shapes: trafficShapes.length ? trafficShapes : (state.traffic_shapes || []),
   })
 }
 
@@ -428,10 +557,23 @@ export async function performNetworkAction(action = '', payload = {}) {
     }))
   } else if (action === 'config.backup') {
     const deviceId = String(payload?.device_id || '').trim()
+    const backupId = deviceId || 'host'
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+    const fileName = `config-${backupId}-${timestamp}.txt`
+    await fs.mkdir(BACKUP_DIR, { recursive: true }).catch(() => {})
+    let snapshot = 'snapshot unavailable'
+    if (EXEC_ENABLED) {
+      const cmd = process.platform === 'win32'
+        ? 'powershell -NoProfile -Command "ipconfig /all; route print"'
+        : 'ip addr show; ip route'
+      const result = await runCommand(cmd)
+      snapshot = result.ok ? result.stdout : result.stderr || 'snapshot failed'
+    }
+    await fs.writeFile(path.join(BACKUP_DIR, fileName), String(snapshot || ''), 'utf8').catch(() => {})
     response.inventory = await updateInventory((inventory) => appendConfigAudit({
       ...inventory,
       config_backups: [
-        { id: actionId, device_id: deviceId, created_at: requestedAt, status: 'completed' },
+        { id: actionId, device_id: deviceId || 'host', file: fileName, created_at: requestedAt, status: EXEC_ENABLED ? 'completed' : 'queued' },
         ...(inventory.config_backups || []),
       ].slice(0, 30),
     }, {

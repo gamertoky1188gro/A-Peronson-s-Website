@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123123455
+      POSTGRES_DB: gartexhub
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://postgres:123123455@db:5432/gartexhub
+      PORT: 4000
+    ports:
+      - "4000:4000"
+      - "4173:4173"
+      - "5173:5173"
+    command: bash -lc "./scripts/run.sh --dev-or-preview=preview --localrunning-or-incloud=false --iwanttorunrunfrontendby=backend --port-backend=4000"
+
+volumes:
+  postgres_data:

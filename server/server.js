@@ -68,6 +68,12 @@ if (!fs.existsSync(chatUploadsRoot)) fs.mkdirSync(chatUploadsRoot, { recursive: 
 
 app.use('/uploads', express.static(uploadsRoot))
 
+const distRoot = path.join(process.cwd(), 'dist')
+const serveDist = process.env.SERVE_DIST === 'true'
+if (serveDist && fs.existsSync(distRoot)) {
+  app.use(express.static(distRoot))
+}
+
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, service: 'textile-trust-verification-mvp' })
 })
@@ -109,6 +115,12 @@ app.use('/api/support', supportRoutes)
 app.use('/api/infra', infraRoutes)
 app.use('/api/network', networkRoutes)
 app.use(errorHandler)
+
+if (serveDist && fs.existsSync(distRoot)) {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(distRoot, 'index.html'))
+  })
+}
 
 const server = http.createServer(app)
 const wsServer = new WebSocketServer({ server })

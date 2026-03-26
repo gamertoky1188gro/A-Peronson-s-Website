@@ -1,28 +1,40 @@
-import fs from 'fs/promises'
-import path from 'path'
+import prisma from './prisma.js'
 
-const BASE_DIR = path.join(process.cwd(), 'server', 'database')
+function toSerializable(value) {
+  if (value instanceof Date) return value.toISOString()
+  if (Array.isArray(value)) return value.map(toSerializable)
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, toSerializable(v)]))
+  }
+  return value
+}
 
-async function ensureDir() {
-  await fs.mkdir(BASE_DIR, { recursive: true })
+async function ensureStateRow(key, fallback) {
+  const existing = await prisma.appState.findUnique({ where: { key } })
+  if (existing) return existing
+  const created = await prisma.appState.create({
+    data: {
+      key,
+      data: toSerializable(fallback),
+    },
+  })
+  return created
 }
 
 export async function readLocalJson(fileName, fallback = []) {
-  const filePath = path.join(BASE_DIR, fileName)
-  try {
-    const raw = await fs.readFile(filePath, 'utf8')
-    return raw ? JSON.parse(raw) : fallback
-  } catch (error) {
-    await ensureDir()
-    await fs.writeFile(filePath, JSON.stringify(fallback, null, 2), 'utf8')
-    return fallback
-  }
+  const key = String(fileName)
+  const row = await ensureStateRow(key, fallback)
+  return row?.data ?? fallback
 }
 
 export async function writeLocalJson(fileName, data) {
-  const filePath = path.join(BASE_DIR, fileName)
-  await ensureDir()
-  await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8')
+  const key = String(fileName)
+  const payload = toSerializable(data)
+  await prisma.appState.upsert({
+    where: { key },
+    create: { key, data: payload },
+    update: { data: payload, updated_at: new Date() },
+  })
   return data
 }
 

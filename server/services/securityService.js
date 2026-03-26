@@ -1,6 +1,23 @@
 import crypto from 'crypto'
+import { exec } from 'child_process'
+import util from 'util'
+import fs from 'fs/promises'
+import path from 'path'
 import { readLocalJson, updateLocalJson } from '../utils/localStore.js'
 import { readAuditLog } from '../utils/auditStore.js'
+
+const execAsync = util.promisify(exec)
+const EXEC_ENABLED = ['true', '1', 'yes'].includes(String(process.env.ADMIN_EXEC_ENABLED || '').toLowerCase())
+const EXEC_TIMEOUT_MS = Number(process.env.ADMIN_EXEC_TIMEOUT_MS || 12_000)
+const EXEC_ALLOW_ANY = ['true', '1', 'yes'].includes(String(process.env.ADMIN_EXEC_ALLOW_ANY || '').toLowerCase())
+const EXEC_ALLOWLIST = new Set(
+  String(process.env.ADMIN_EXEC_ALLOWLIST || '')
+    .split(',')
+    .map((v) => v.trim())
+    .filter(Boolean),
+)
+
+const IMMUTABLE_DIR = path.join(process.cwd(), 'server', 'immutable_backups')
 
 const STATE_FILE = 'security_state.json'
 const DEFAULT_STATE = {
@@ -52,10 +69,82 @@ function envList(value) {
   return String(value).split(',').map((v) => v.trim()).filter(Boolean)
 }
 
+async function runCommand(command) {
+  if (!EXEC_ENABLED) {
+    return { ok: false, simulated: true, stdout: '', stderr: '', exitCode: null }
+  }
+  if (!EXEC_ALLOW_ANY && EXEC_ALLOWLIST.size > 0) {
+    const allowed = [...EXEC_ALLOWLIST].some((prefix) => command.startsWith(prefix))
+    if (!allowed) {
+      return { ok: false, simulated: false, stdout: '', stderr: 'Command not allowlisted.', exitCode: 1 }
+    }
+  }
+  try {
+    const { stdout, stderr } = await execAsync(command, { timeout: EXEC_TIMEOUT_MS, windowsHide: true })
+    return { ok: true, simulated: false, stdout: stdout || '', stderr: stderr || '', exitCode: 0 }
+  } catch (error) {
+    return {
+      ok: false,
+      simulated: false,
+      stdout: error?.stdout || '',
+      stderr: error?.stderr || error?.message || '',
+      exitCode: typeof error?.code === 'number' ? error.code : 1,
+    }
+  }
+}
+
+async function listSecurityEvents() {
+  if (!EXEC_ENABLED) return []
+  if (process.platform === 'win32') {
+    const result = await runCommand('powershell -NoProfile -Command "Get-WinEvent -LogName Security -MaxEvents 10 | Select-Object TimeCreated,Id,LevelDisplayName,Message | ConvertTo-Json"')
+    if (!result.ok || !result.stdout) return []
+    try {
+      const parsed = JSON.parse(result.stdout)
+      const rows = Array.isArray(parsed) ? parsed : [parsed]
+      return rows.map((row) => ({
+        id: crypto.randomUUID(),
+        at: row?.TimeCreated ? new Date(row.TimeCreated).toISOString() : new Date().toISOString(),
+        level: row?.LevelDisplayName || '',
+        message: String(row?.Message || '').slice(0, 240),
+        code: row?.Id || '',
+      }))
+    } catch {
+      return []
+    }
+  }
+  const authLog = await runCommand('tail -n 20 /var/log/auth.log')
+  if (authLog.ok && authLog.stdout) {
+    return authLog.stdout.split('\n').filter(Boolean).map((line) => ({
+      id: crypto.randomUUID(),
+      at: new Date().toISOString(),
+      level: 'auth',
+      message: line.slice(0, 240),
+    }))
+  }
+  const secureLog = await runCommand('tail -n 20 /var/log/secure')
+  if (!secureLog.ok || !secureLog.stdout) return []
+  return secureLog.stdout.split('\n').filter(Boolean).map((line) => ({
+    id: crypto.randomUUID(),
+    at: new Date().toISOString(),
+    level: 'auth',
+    message: line.slice(0, 240),
+  }))
+}
+
+function hashAuditLog(entries = []) {
+  const hash = crypto.createHash('sha256')
+  entries.forEach((entry) => {
+    hash.update(JSON.stringify(entry))
+  })
+  return hash.digest('hex')
+}
+
 export async function getSecurityState() {
   const current = await readLocalJson(STATE_FILE, DEFAULT_STATE)
   const auditLog = await readAuditLog()
   const lastHashAt = auditLog.length ? auditLog[auditLog.length - 1]?.at || '' : ''
+  const auditHash = auditLog.length ? hashAuditLog(auditLog) : ''
+  const systemEvents = await listSecurityEvents()
   const envMfaRequired = envBool(process.env.ADMIN_MFA_REQUIRED)
   const envIpAllow = envList(process.env.ADMIN_IP_ALLOWLIST)
   const envDeviceAllow = envList(process.env.ADMIN_DEVICE_ALLOWLIST)
@@ -89,7 +178,9 @@ export async function getSecurityState() {
       enabled: true,
       storage: 'audit-log-chain',
       last_hash_at: lastHashAt,
+      hash: auditHash,
     },
+    system_events: systemEvents,
   }
 }
 
@@ -179,8 +270,14 @@ export async function performSecurityAction(action = '', payload = {}) {
       return state
     })
   } else if (action === 'security.immutable.snapshot') {
+    const auditLog = await readAuditLog()
+    const auditHash = auditLog.length ? hashAuditLog(auditLog) : crypto.randomUUID()
+    await fs.mkdir(IMMUTABLE_DIR, { recursive: true }).catch(() => {})
+    const fileName = `immutable-${now.replace(/[:.]/g, '-')}.json`
+    const payloadOut = { created_at: now, audit_hash: auditHash, entries: auditLog.slice(-200) }
+    await fs.writeFile(path.join(IMMUTABLE_DIR, fileName), JSON.stringify(payloadOut, null, 2), 'utf8').catch(() => {})
     updated = await updateState((state) => {
-      state.immutable_backups = { ...state.immutable_backups, last_snapshot_at: now }
+      state.immutable_backups = { ...state.immutable_backups, last_snapshot_at: now, last_hash: auditHash, last_file: fileName }
       return state
     })
   }
