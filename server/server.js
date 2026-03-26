@@ -117,7 +117,7 @@ app.use('/api/network', networkRoutes)
 app.use(errorHandler)
 
 if (serveDist && fs.existsSync(distRoot)) {
-  app.get('*', (req, res) => {
+  app.get('/*', (req, res) => {
     res.sendFile(path.join(distRoot, 'index.html'))
   })
 }
