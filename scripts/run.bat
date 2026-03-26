@@ -75,8 +75,9 @@ if /I "%RUN_FRONTEND_BY%"=="backend" (
     if not "%ERRORLEVEL%"=="0" exit /b %ERRORLEVEL%
   )
   set SERVE_DIST=true
+  set NODE_ENV=production
   echo Starting backend server...
-  npm run server
+  node server/server.js
   exit /b %ERRORLEVEL%
 )
 
@@ -87,8 +88,9 @@ if /I "%RUN_FRONTEND_BY%"=="ngrok" (
     if not "%ERRORLEVEL%"=="0" exit /b %ERRORLEVEL%
   )
   set SERVE_DIST=true
+  set NODE_ENV=production
   echo Starting backend server...
-  start /b npm run server
+  start /b node server/server.js
   if "%PORT_NGROK%"=="" (
     set PORT_NGROK=%PORT_BACKEND%
   )

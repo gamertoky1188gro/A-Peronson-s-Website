@@ -99,8 +99,9 @@ if [ "$RUN_FRONTEND_BY" = "backend" ]; then
     npm run build
   fi
   export SERVE_DIST="true"
+  export NODE_ENV="production"
   echo "Starting backend server..."
-  npm run server
+  node server/server.js
   exit 0
 fi
 
@@ -110,8 +111,9 @@ if [ "$RUN_FRONTEND_BY" = "ngrok" ]; then
     npm run build
   fi
   export SERVE_DIST="true"
+  export NODE_ENV="production"
   echo "Starting backend server..."
-  npm run server &
+  node server/server.js &
   BACKEND_PID=$!
   TUNNEL_PORT="${PORT_NGROK:-$PORT_BACKEND}"
   echo "Starting ngrok tunnel for port $TUNNEL_PORT..."

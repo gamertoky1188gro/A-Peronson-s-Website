@@ -72,8 +72,9 @@ if ($IWantToRunRunFrontendBy -eq "backend") {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
   }
   $env:SERVE_DIST = "true"
+  $env:NODE_ENV = "production"
   Write-Host "Starting backend server..."
-  npm run server
+  node server/server.js
   exit $LASTEXITCODE
 }
 
@@ -84,8 +85,9 @@ if ($IWantToRunRunFrontendBy -eq "ngrok") {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
   }
   $env:SERVE_DIST = "true"
+  $env:NODE_ENV = "production"
   Write-Host "Starting backend server..."
-  $backend = Start-Process npm -ArgumentList "run","server" -PassThru
+  $backend = Start-Process node -ArgumentList "server/server.js" -PassThru
   $tunnelPort = $PortNgrok
   if ($tunnelPort -eq 0) { $tunnelPort = $PortBackend }
   Write-Host "Starting ngrok tunnel for port $tunnelPort..."
