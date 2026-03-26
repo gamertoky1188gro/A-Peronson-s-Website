@@ -60,6 +60,14 @@ echo "Mode: $DEV_OR_PREVIEW"
 echo "Local: $LOCAL_RUNNING"
 echo "Frontend by: $RUN_FRONTEND_BY"
 echo "Ports: dev=$PORT_NPM_DEV preview=$PORT_NPM_PREVIEW backend=$PORT_BACKEND postgres=$PORT_POSTGRE"
+echo "SKIP_BUILD: ${SKIP_BUILD:-false}"
+
+is_skip_build() {
+  case "$(printf '%s' "${SKIP_BUILD:-false}" | tr '[:upper:]' '[:lower:]')" in
+    true|1|yes|y) return 0 ;;
+    *) return 1 ;;
+  esac
+}
 
 if [ "$DEV_OR_PREVIEW" = "dev" ]; then
   if [ "$RUN_FRONTEND_BY" != "npm" ]; then
@@ -86,8 +94,10 @@ fi
 export PORT="$PORT_BACKEND"
 
 if [ "$RUN_FRONTEND_BY" = "backend" ]; then
-  echo "Building frontend and serving dist via backend..."
-  npm run build
+  if ! is_skip_build; then
+    echo "Building frontend and serving dist via backend..."
+    npm run build
+  fi
   export SERVE_DIST="true"
   echo "Starting backend server..."
   npm run server
@@ -95,8 +105,10 @@ if [ "$RUN_FRONTEND_BY" = "backend" ]; then
 fi
 
 if [ "$RUN_FRONTEND_BY" = "ngrok" ]; then
-  echo "Building frontend and serving dist via backend..."
-  npm run build
+  if ! is_skip_build; then
+    echo "Building frontend and serving dist via backend..."
+    npm run build
+  fi
   export SERVE_DIST="true"
   echo "Starting backend server..."
   npm run server &

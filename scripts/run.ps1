@@ -33,6 +33,13 @@ Write-Host "Mode: $DevOrPreview"
 Write-Host "Local: $LocalRunningOrIncloud"
 Write-Host "Frontend by: $IWantToRunRunFrontendBy"
 Write-Host "Ports: dev=$PortNpmDev preview=$PortNpmPreview backend=$PortBackend postgres=$PortPostgre"
+Write-Host "SKIP_BUILD: $($env:SKIP_BUILD)"
+
+$skipBuild = $false
+if ($env:SKIP_BUILD) {
+  $value = $env:SKIP_BUILD.ToLower()
+  if ($value -in @("true","1","yes","y")) { $skipBuild = $true }
+}
 
 if ($DevOrPreview -eq "dev") {
   if ($IWantToRunRunFrontendBy -ne "npm") {
@@ -59,9 +66,11 @@ if ($IWantToRunRunFrontendBy -eq "npm") {
 $env:PORT = "$PortBackend"
 
 if ($IWantToRunRunFrontendBy -eq "backend") {
-  Write-Host "Building frontend and serving dist via backend..."
-  npm run build
-  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+  if (-not $skipBuild) {
+    Write-Host "Building frontend and serving dist via backend..."
+    npm run build
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+  }
   $env:SERVE_DIST = "true"
   Write-Host "Starting backend server..."
   npm run server
@@ -69,9 +78,11 @@ if ($IWantToRunRunFrontendBy -eq "backend") {
 }
 
 if ($IWantToRunRunFrontendBy -eq "ngrok") {
-  Write-Host "Building frontend and serving dist via backend..."
-  npm run build
-  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+  if (-not $skipBuild) {
+    Write-Host "Building frontend and serving dist via backend..."
+    npm run build
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+  }
   $env:SERVE_DIST = "true"
   Write-Host "Starting backend server..."
   $backend = Start-Process npm -ArgumentList "run","server" -PassThru

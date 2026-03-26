@@ -38,6 +38,12 @@ echo Mode: %DEV_OR_PREVIEW%
 echo Local: %LOCAL_RUNNING%
 echo Frontend by: %RUN_FRONTEND_BY%
 echo Ports: dev=%PORT_NPM_DEV% preview=%PORT_NPM_PREVIEW% backend=%PORT_BACKEND% postgres=%PORT_POSTGRE%
+echo SKIP_BUILD: %SKIP_BUILD%
+
+set SKIP_BUILD_NORM=%SKIP_BUILD%
+for %%Z in (TRUE True true 1 YES Yes yes Y y) do (
+  if /I "%SKIP_BUILD_NORM%"=="%%Z" set SKIP_BUILD_NORM=true
+)
 
 if /I "%DEV_OR_PREVIEW%"=="dev" (
   if /I not "%RUN_FRONTEND_BY%"=="npm" (
@@ -63,9 +69,11 @@ if /I "%RUN_FRONTEND_BY%"=="npm" (
 set PORT=%PORT_BACKEND%
 
 if /I "%RUN_FRONTEND_BY%"=="backend" (
-  echo Building frontend and serving dist via backend...
-  npm run build
-  if not "%ERRORLEVEL%"=="0" exit /b %ERRORLEVEL%
+  if /I not "%SKIP_BUILD_NORM%"=="true" (
+    echo Building frontend and serving dist via backend...
+    npm run build
+    if not "%ERRORLEVEL%"=="0" exit /b %ERRORLEVEL%
+  )
   set SERVE_DIST=true
   echo Starting backend server...
   npm run server
@@ -73,9 +81,11 @@ if /I "%RUN_FRONTEND_BY%"=="backend" (
 )
 
 if /I "%RUN_FRONTEND_BY%"=="ngrok" (
-  echo Building frontend and serving dist via backend...
-  npm run build
-  if not "%ERRORLEVEL%"=="0" exit /b %ERRORLEVEL%
+  if /I not "%SKIP_BUILD_NORM%"=="true" (
+    echo Building frontend and serving dist via backend...
+    npm run build
+    if not "%ERRORLEVEL%"=="0" exit /b %ERRORLEVEL%
+  )
   set SERVE_DIST=true
   echo Starting backend server...
   start /b npm run server
