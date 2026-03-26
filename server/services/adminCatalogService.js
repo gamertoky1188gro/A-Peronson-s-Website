@@ -325,9 +325,9 @@ function detectSpamSignals(messages = []) {
     const text = String(message.message || message.content || message.text || '').toLowerCase()
     if (!text) return null
     let score = 0
-    if (/(https?:\\/\\/|www\\.)/.test(text)) score += 2
+    if (/(https?:\/\/|www\.)/.test(text)) score += 2
     if (keywords.some((k) => text.includes(k))) score += 2
-    if (/(\\d{10,})/.test(text)) score += 1
+    if (/(\d{10,})/.test(text)) score += 1
     if (text.length > 280) score += 1
     if (score < 2) return null
     return {

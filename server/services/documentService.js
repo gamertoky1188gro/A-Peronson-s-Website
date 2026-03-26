@@ -433,8 +433,6 @@ export async function updateContractSignatures(contractId, patch = {}, actor) {
     ? sanitizeSignatureState(patch.factory_signature_state, existing.factory_signature_state)
     : existing.factory_signature_state
 
-  const buyerSigning = previousBuyerState !== 'signed' && nextBuyerState === 'signed'
-  const factorySigning = previousFactoryState !== 'signed' && nextFactoryState === 'signed'
   const paymentProofOk = await checkPaymentProof(existing.id)
 
   const next = {

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Activity, Database, Lock, Network, Server, Settings, ShieldCheck } from 'lucide-react'
 import AccessDeniedState from '../components/AccessDeniedState'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
@@ -453,7 +453,7 @@ export default function AdminPanel() {
       defaults[field.key] = ''
     })
     setActionForm(defaults)
-  }, [selectedAction?.id])
+  }, [selectedAction])
 
   useEffect(() => {
     if (!mfaCode) return
@@ -465,7 +465,7 @@ export default function AdminPanel() {
     localStorage.setItem('admin_device_id', deviceId)
   }, [deviceId])
 
-  function buildAdminHeaders({ stepUp = false } = {}) {
+  const buildAdminHeaders = useCallback(({ stepUp = false } = {}) => {
     const headers = {}
     if (mfaCode) headers['x-admin-mfa'] = mfaCode
     if (deviceId) headers['x-admin-device'] = deviceId
@@ -474,7 +474,7 @@ export default function AdminPanel() {
       headers['x-admin-stepup-at'] = new Date().toISOString()
     }
     return headers
-  }
+  }, [mfaCode, deviceId, stepUpCode])
 
   async function refreshAudit() {
     const token = getToken()
@@ -551,7 +551,7 @@ export default function AdminPanel() {
       })
       .catch((err) => setError(err.message || 'Failed to load admin data'))
       .finally(() => setLoading(false))
-  }, [isOwner, mfaCode, deviceId])
+  }, [isOwner, mfaCode, deviceId, buildAdminHeaders])
 
   const summary = master?.summary || {}
   const inventory = master?.inventory || FALLBACK_INVENTORY
@@ -904,41 +904,6 @@ export default function AdminPanel() {
     }
   }
 
-  async function runServerAdminAction(action, payload = {}) {
-    const token = getToken()
-    if (!token) return
-    const headers = buildAdminHeaders({ stepUp: true })
-    try {
-      await apiRequest('/admin/server-admin/actions', {
-        method: 'POST',
-        token,
-        headers,
-        body: { action, payload },
-      })
-      await refreshServerAdminState()
-      await refreshAudit()
-    } catch (err) {
-      setError(err.message || 'Failed to run server admin action')
-    }
-  }
-
-  async function runCmsAction(action, payload = {}) {
-    const token = getToken()
-    if (!token) return
-    const headers = buildAdminHeaders({ stepUp: true })
-    try {
-      await apiRequest('/admin/cms/actions', {
-        method: 'POST',
-        token,
-        headers,
-        body: { action, payload },
-      })
-      await refreshCmsState()
-      await refreshAudit()
-    } catch (err) {
-      setError(err.message || 'Failed to run CMS action')
-    }
-  }
 
   async function runSecurityAction(action, payload = {}) {
     const token = getToken()

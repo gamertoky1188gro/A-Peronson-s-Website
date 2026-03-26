@@ -194,7 +194,7 @@ async function listCronJobs() {
     const lines = result.stdout.split('\n').slice(1, 20).filter(Boolean)
     return lines.map((line, idx) => ({
       id: String(idx),
-      name: line.split('","')[0].replace(/^\"/, ''),
+      name: line.split('","')[0].replace(/^"/, ''),
       schedule: 'windows',
       command: line,
       status: line.includes('Ready') ? 'active' : 'disabled',

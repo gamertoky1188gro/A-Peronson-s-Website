@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { allowRoles, requireAuth } from '../middleware/auth.js'
+import { requireAuth } from '../middleware/auth.js'
 import { requireAdminSecurity } from '../middleware/adminSecurity.js'
 import { createCoupon, listCoupons } from '../controllers/couponController.js'
 

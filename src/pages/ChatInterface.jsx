@@ -645,9 +645,8 @@ export default function ChatInterface() {
     : lockType === 'agent_claim'
       ? isAgentUser
       : isAgentUser
-  const isLockRestricted = shouldRespectLock && lockStatus === 'request_access'
-  const isLockOwner = Boolean(lockMeta && lockMeta?.claimed_by === currentUser?.id && !activeThread?.isFriendThread)
-  const isAdminUser = ['owner', 'admin'].includes(String(currentUser?.role || '').toLowerCase())
+    const isLockRestricted = shouldRespectLock && lockStatus === 'request_access'
+    const isLockOwner = Boolean(lockMeta && lockMeta?.claimed_by === currentUser?.id && !activeThread?.isFriendThread)
   const canSendMessage = !isLockRestricted && !prequalBlocked && !prequalHardBlocked
 
   const sharedMedia = useMemo(() => {

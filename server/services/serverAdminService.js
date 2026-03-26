@@ -161,7 +161,7 @@ async function detectPhpVersion() {
 
 async function detectDatabases() {
   if (process.platform === 'win32') {
-    const result = await runCommand('powershell -NoProfile -Command "Get-Service -Name \"postgresql*\",\"mysql*\",\"mariadb*\",\"MongoDB\",\"MSSQL*\",\"Redis*\" -ErrorAction SilentlyContinue | Select-Object Name,Status,DisplayName | ConvertTo-Json"')
+    const result = await runCommand(`powershell -NoProfile -Command "Get-Service -Name 'postgresql*','mysql*','mariadb*','MongoDB','MSSQL*','Redis*' -ErrorAction SilentlyContinue | Select-Object Name,Status,DisplayName | ConvertTo-Json"`)
     if (!result.ok || !result.stdout) return []
     try {
       const parsed = JSON.parse(result.stdout)

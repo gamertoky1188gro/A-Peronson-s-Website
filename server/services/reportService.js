@@ -5,7 +5,7 @@ import { createNotification } from './notificationService.js'
 
 const FILE = 'reports.json'
 
-export async function createReport({ actor, entity_type, entity_id, reason = '', metadata = {} }) {
+export async function createReport({ actor, entity_type, entity_id, reason = '' }) {
   const reports = await readJson(FILE)
   const rows = Array.isArray(reports) ? reports : []
 
