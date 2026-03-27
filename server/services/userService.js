@@ -260,6 +260,51 @@ export async function verifyPassword(user, password) {
   return bcrypt.compare(password, user.password_hash)
 }
 
+function buildDeletedEmail(userId) {
+  const suffix = sanitizeString(String(userId || ''), 80).slice(0, 48) || crypto.randomUUID()
+  return `deleted+${suffix}@gartexhub.invalid`
+}
+
+export async function deleteUserWithPassword(userId, password) {
+  const users = await readJson(FILE)
+  const index = users.findIndex((u) => u.id === userId)
+  if (index < 0) return null
+
+  const current = users[index]
+  const ok = await verifyPassword(current, String(password || ''))
+  if (!ok) {
+    const err = new Error('Invalid password')
+    err.status = 401
+    throw err
+  }
+
+  const now = new Date().toISOString()
+  users[index] = {
+    ...current,
+    name: 'Deleted User',
+    email: buildDeletedEmail(current.id),
+    status: 'deleted',
+    verified: false,
+    subscription_status: 'free',
+    password_hash: await bcrypt.hash(crypto.randomUUID(), 10),
+    password_reset_at: now,
+    profile: {
+      ...(current.profile || {}),
+      deleted_at: now,
+      delete_reason: 'self_delete',
+    },
+  }
+  await writeJson(FILE, users)
+
+  const connections = await readJson(CONNECTION_FILE)
+  const filtered = connections.filter((row) => row.requester_id !== userId && row.receiver_id !== userId)
+  if (filtered.length !== connections.length) {
+    await writeJson(CONNECTION_FILE, filtered)
+  }
+
+  return cleanUser(users[index])
+}
+
 export async function updateProfile(userId, profilePatch) {
   const users = await readJson(FILE)
   const index = users.findIndex((u) => u.id === userId)

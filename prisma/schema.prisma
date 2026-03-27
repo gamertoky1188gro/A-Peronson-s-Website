@@ -259,6 +259,8 @@ model PaymentProof {
   beneficiary_name    String?
   issue_date          DateTime?
   expiry_date         DateTime?
+  lc_type             String?
+  usance_days         Int?
   document_id         String?
   document_url        String?
   created_at          DateTime @default(now())

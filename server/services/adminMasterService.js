@@ -1,6 +1,7 @@
 import { readJson } from '../utils/jsonStore.js'
 import { readLocalJson } from '../utils/localStore.js'
 import { getAdminConfig } from './adminConfigService.js'
+import { getAdminAuthConfig } from './securityService.js'
 import { readAuditLog } from '../utils/auditStore.js'
 import { getDashboardAnalytics } from './analyticsService.js'
 
@@ -620,16 +621,17 @@ export async function getAdminMasterSummary(user) {
   const clicks = dashboard?.interaction_summary?.total_clicks || 0
   const visits = dashboard?.interaction_summary?.total_page_views || 0
 
-  return {
-    generated_at: new Date().toISOString(),
-    security_context: {
-      mfa_required: Boolean(String(process.env.ADMIN_MFA_CODE || '').trim()),
-      ip_allowlist: String(process.env.ADMIN_IP_ALLOWLIST || '').split(',').map((v) => v.trim()).filter(Boolean),
-      device_allowlist: String(process.env.ADMIN_DEVICE_ALLOWLIST || '').split(',').map((v) => v.trim()).filter(Boolean),
-      step_up_required: Boolean(String(process.env.ADMIN_STEPUP_CODE || '').trim()),
-      export_dual_confirm: Boolean(String(process.env.ADMIN_EXPORT_CODE_PRIMARY || '').trim()) || Boolean(String(process.env.ADMIN_EXPORT_CODE_SECONDARY || '').trim()),
-      exec_enabled: ['true', '1', 'yes'].includes(String(process.env.ADMIN_EXEC_ENABLED || '').toLowerCase()),
-    },
+    const adminAuth = await getAdminAuthConfig()
+    return {
+      generated_at: new Date().toISOString(),
+      security_context: {
+        mfa_required: Boolean(String(adminAuth.mfa_code || '').trim()),
+        ip_allowlist: Array.isArray(adminAuth.ip_allowlist) ? adminAuth.ip_allowlist : [],
+        device_allowlist: Array.isArray(adminAuth.device_allowlist) ? adminAuth.device_allowlist : [],
+        step_up_required: Boolean(String(process.env.ADMIN_STEPUP_CODE || '').trim()),
+        export_dual_confirm: Boolean(String(process.env.ADMIN_EXPORT_CODE_PRIMARY || '').trim()) || Boolean(String(process.env.ADMIN_EXPORT_CODE_SECONDARY || '').trim()),
+        exec_enabled: ['true', '1', 'yes'].includes(String(process.env.ADMIN_EXEC_ENABLED || '').toLowerCase()),
+      },
     summary: {
       users: {
         total: userRows.length,

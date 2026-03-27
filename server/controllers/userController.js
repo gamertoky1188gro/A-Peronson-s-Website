@@ -3,6 +3,7 @@ import {
   adminLockMessaging as adminLockMessagingUser,
   adminSetPassword as adminSetPasswordUser,
   adminUpdateUser as adminUpdateUserRecord,
+  deleteUserWithPassword,
   deleteUser,
   findUserById,
   followUser,
@@ -110,4 +111,16 @@ export async function adminLockMessaging(req, res) {
   const updated = await adminLockMessagingUser(req.params.userId, hours)
   if (!updated) return res.status(404).json({ error: 'User not found' })
   return res.json({ ok: true })
+}
+
+export async function deleteMyAccount(req, res) {
+  try {
+    const password = String(req.body?.password || '')
+    if (!password) return res.status(400).json({ error: 'password is required' })
+    const deleted = await deleteUserWithPassword(req.user.id, password)
+    if (!deleted) return res.status(404).json({ error: 'User not found' })
+    return res.json({ ok: true })
+  } catch (err) {
+    return res.status(err.status || 400).json({ error: err.message || 'Unable to delete account' })
+  }
 }

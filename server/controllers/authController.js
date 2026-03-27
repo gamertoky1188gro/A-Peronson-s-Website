@@ -37,6 +37,9 @@ export async function login(req, res) {
   // If identifier looks like an email -> normal user login. Otherwise -> agent login by `member_id`.
   const user = identifierRaw.includes('@') ? await findUserByEmail(identifierRaw) : await findUserByMemberId(identifierRaw)
   if (!user) return res.status(401).json({ error: 'Invalid credentials' })
+  if (String(user.status || '').toLowerCase() === 'deleted') {
+    return res.status(403).json({ error: 'Account deleted' })
+  }
 
   const ok = await verifyPassword(user, req.body.password)
   if (!ok) return res.status(401).json({ error: 'Invalid credentials' })

@@ -268,6 +268,9 @@ export default function ContractVault() {
     amount: '',
     currency: 'USD',
     lc_number: '',
+    lc_type: 'sight',
+    usance_days: '30',
+    usance_custom_days: '',
     issuing_bank: '',
     advising_bank: '',
     applicant_name: '',
@@ -338,6 +341,9 @@ export default function ContractVault() {
       amount: '',
       currency: 'USD',
       lc_number: '',
+      lc_type: 'sight',
+      usance_days: '30',
+      usance_custom_days: '',
       issuing_bank: '',
       advising_bank: '',
       applicant_name: '',
@@ -407,6 +413,18 @@ export default function ContractVault() {
         document_id: documentId || undefined,
         document_url: documentUrl || undefined,
       }
+
+      if (paymentForm.type === 'lc') {
+        let usanceDays = paymentForm.usance_days
+        if (paymentForm.lc_type === 'usance' && String(paymentForm.usance_days) === 'custom') {
+          usanceDays = paymentForm.usance_custom_days
+        }
+        payload.usance_days = paymentForm.lc_type === 'usance' ? usanceDays : undefined
+      } else {
+        payload.lc_type = undefined
+        payload.usance_days = undefined
+      }
+      delete payload.usance_custom_days
 
       const created = await apiRequest('/payment-proofs', { method: 'POST', token, body: payload })
       setPaymentNotice('Payment proof submitted.')
@@ -773,6 +791,39 @@ export default function ContractVault() {
           ) : (
             <>
               <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="LC number" value={paymentForm.lc_number} onChange={(e) => setPaymentForm((p) => ({ ...p, lc_number: e.target.value }))} />
+              <div className="flex flex-wrap gap-2">
+                <select
+                  value={paymentForm.lc_type}
+                  onChange={(e) => setPaymentForm((p) => ({ ...p, lc_type: e.target.value }))}
+                  className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                >
+                  <option value="sight">Sight LC</option>
+                  <option value="usance">Usance LC</option>
+                </select>
+                {paymentForm.lc_type === 'usance' ? (
+                  <>
+                    <select
+                      value={paymentForm.usance_days}
+                      onChange={(e) => setPaymentForm((p) => ({ ...p, usance_days: e.target.value }))}
+                      className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                    >
+                      <option value="30">30 days</option>
+                      <option value="60">60 days</option>
+                      <option value="90">90 days</option>
+                      <option value="180">180 days</option>
+                      <option value="custom">Custom</option>
+                    </select>
+                    {String(paymentForm.usance_days) === 'custom' ? (
+                      <input
+                        className="w-32 rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                        placeholder="Days"
+                        value={paymentForm.usance_custom_days}
+                        onChange={(e) => setPaymentForm((p) => ({ ...p, usance_custom_days: e.target.value }))}
+                      />
+                    ) : null}
+                  </>
+                ) : null}
+              </div>
               <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Issuing bank" value={paymentForm.issuing_bank} onChange={(e) => setPaymentForm((p) => ({ ...p, issuing_bank: e.target.value }))} />
               <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Advising bank" value={paymentForm.advising_bank} onChange={(e) => setPaymentForm((p) => ({ ...p, advising_bank: e.target.value }))} />
               <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Applicant name" value={paymentForm.applicant_name} onChange={(e) => setPaymentForm((p) => ({ ...p, applicant_name: e.target.value }))} />
@@ -824,6 +875,12 @@ export default function ContractVault() {
               <div className="mt-2 grid grid-cols-1 gap-1">
                 {proof.transaction_reference ? <div>Ref: {proof.transaction_reference}</div> : null}
                 {proof.lc_number ? <div>LC: {proof.lc_number}</div> : null}
+                {proof.lc_type ? (
+                  <div>
+                    LC Type: {String(proof.lc_type).toUpperCase()}
+                    {proof.lc_type === 'usance' && proof.usance_days ? ` (${proof.usance_days} days)` : ''}
+                  </div>
+                ) : null}
                 {proof.amount ? <div>Amount: {proof.amount} {proof.currency || ''}</div> : null}
               </div>
               {proofDocUrl || proof.document_id ? (

@@ -15,12 +15,14 @@ import {
   me,
   searchUsersController,
   updateMyProfile,
+  deleteMyAccount,
 } from '../controllers/userController.js'
 
 const router = Router()
 
 router.get('/me', requireAuth, me)
 router.patch('/me/profile', requireAuth, updateMyProfile)
+router.delete('/me', requireAuth, deleteMyAccount)
 router.get('/search', requireAuth, searchUsersController)
 router.post('/lookup', requireAuth, lookupUsers)
 router.post('/:userId/follow', requireAuth, followUserController)

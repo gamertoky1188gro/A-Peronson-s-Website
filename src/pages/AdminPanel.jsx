@@ -428,6 +428,7 @@ export default function AdminPanel() {
   const [userDrafts, setUserDrafts] = useState({})
   const [mfaCode, setMfaCode] = useState(() => localStorage.getItem('admin_mfa_code') || '')
   const [deviceId, setDeviceId] = useState(() => localStorage.getItem('admin_device_id') || '')
+  const [passkeyValue, setPasskeyValue] = useState(() => localStorage.getItem('admin_passkey') || '')
   const [stepUpCode, setStepUpCode] = useState('')
   const [activeCategory, setActiveCategory] = useState('home')
   const [actionBusy, setActionBusy] = useState('')
@@ -483,16 +484,22 @@ export default function AdminPanel() {
     localStorage.setItem('admin_device_id', deviceId)
   }, [deviceId])
 
+  useEffect(() => {
+    if (!passkeyValue) return
+    localStorage.setItem('admin_passkey', passkeyValue)
+  }, [passkeyValue])
+
   const buildAdminHeaders = useCallback(({ stepUp = false } = {}) => {
     const headers = {}
     if (mfaCode) headers['x-admin-mfa'] = mfaCode
     if (deviceId) headers['x-admin-device'] = deviceId
+    if (passkeyValue) headers['x-admin-passkey'] = passkeyValue
     if (stepUp && stepUpCode) {
       headers['x-admin-stepup'] = stepUpCode
       headers['x-admin-stepup-at'] = new Date().toISOString()
     }
     return headers
-  }, [mfaCode, deviceId, stepUpCode])
+  }, [mfaCode, deviceId, stepUpCode, passkeyValue])
 
   async function refreshAudit() {
     const token = getToken()
@@ -607,7 +614,6 @@ export default function AdminPanel() {
 
   const analyticsOverview = catalog?.analytics || {}
   const activeUsersTrend = Array.isArray(analyticsOverview.active_users_trend) ? analyticsOverview.active_users_trend : []
-  const loginTrend = Array.isArray(analyticsOverview.login_trend) ? analyticsOverview.login_trend : []
   const buyerRequestTrend = Array.isArray(analyticsOverview.buyer_request_trend) ? analyticsOverview.buyer_request_trend : []
   const contractStatusData = useMemo(() => {
     const counts = { signed: 0, pending: 0, dispute: 0 }
@@ -623,7 +629,7 @@ export default function AdminPanel() {
       { name: 'Dispute', value: counts.dispute },
     ]
   }, [contractsVault])
-  const chartPalette = ['#f59e0b', '#f97316', '#fb7185']
+  const chartPalette = ['#4B9DFB', '#6366f1', '#22c55e']
 
   function updateDraft(id, field, value) {
     setUserDrafts((prev) => ({
@@ -961,10 +967,6 @@ export default function AdminPanel() {
     }
   }
 
-  if (!isOwner) {
-    return <AccessDeniedState message="Only owner/admin can access the admin panel." />
-  }
-
   const activeData = inventory.find((cat) => cat.id === activeCategory) || inventory[0]
   const CategoryIcon = CATEGORY_ICONS[activeCategory] || ShieldCheck
   const sidebarItems = useMemo(() => {
@@ -974,20 +976,24 @@ export default function AdminPanel() {
     ]
   }, [inventory])
 
+  if (!isOwner) {
+    return <AccessDeniedState message="Only owner/admin can access the admin panel." />
+  }
+
   return (
     <div className="admin-shell h-screen">
       <div className="admin-plasma" />
       <div className="admin-current" />
       <div className="admin-noise" />
-      <div className="relative z-10 flex h-full w-full gap-6 px-6 py-6">
-        <aside className="admin-sidebar admin-panel flex w-[250px] flex-col gap-6 rounded-3xl px-5 py-6">
+      <div className="relative z-10 flex h-full w-full gap-6 px-0 py-0">
+        <aside className="admin-sidebar admin-panel flex w-[250px] flex-col gap-6 rounded-none px-5 py-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500/70 to-yellow-300/40 text-white shadow-[0_0_18px_rgba(255,140,30,0.6)]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500/80 to-indigo-500/60 text-white shadow-[0_0_18px_rgba(75,157,251,0.6)]">
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-[11px] uppercase tracking-[0.3em] text-orange-200/80">GarTexHub</p>
-              <p className="text-base font-semibold text-white">Admin Matrix</p>
+              <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500 dark:text-sky-200/80">GarTexHub</p>
+              <p className="text-base font-semibold text-slate-900 dark:text-white">Admin Matrix</p>
             </div>
           </div>
           <div className="space-y-1">
@@ -999,11 +1005,11 @@ export default function AdminPanel() {
                   key={item.id}
                   type="button"
                   onClick={() => setActiveCategory(item.id)}
-                  className={`admin-sweep flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-left text-xs font-semibold transition ${isActive ? 'bg-white/10 text-white shadow-[0_0_18px_rgba(80,140,255,0.35)]' : 'text-slate-300 hover:bg-white/10'}`}
+                  className={`admin-sidebar-item ${isActive ? 'is-active' : ''}`}
                 >
-                  <span className={`flex h-6 w-1.5 items-center rounded-full ${isActive ? 'bg-sky-400' : 'bg-transparent'}`} />
+                  <span className="admin-sidebar-rail" />
                   <Icon className="h-4 w-4" />
-                  {item.label}
+                  <span className="admin-sidebar-label">{item.label}</span>
                 </button>
               )
             })}
@@ -1013,17 +1019,17 @@ export default function AdminPanel() {
             <p className="mt-2 text-xs text-slate-300">Unlock premium monitoring surfaces.</p>
             <button
               type="button"
-              className="mt-3 w-full rounded-full bg-gradient-to-r from-orange-500/80 to-yellow-400/70 px-3 py-2 text-xs font-semibold text-white shadow-[0_0_18px_rgba(255,140,30,0.45)]"
+              className="mt-3 w-full rounded-full bg-gradient-to-r from-sky-500/80 to-indigo-500/70 px-3 py-2 text-xs font-semibold text-white shadow-[0_0_18px_rgba(75,157,251,0.45)]"
             >
               Upgrade Now
             </button>
           </div>
         </aside>
 
-        <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <main className="flex min-w-0 flex-1 flex-col overflow-hidden px-6">
           <div className="flex flex-wrap items-center justify-between gap-4 pb-2">
             <div className="admin-panel admin-sweep flex min-w-[220px] flex-1 items-center gap-2 rounded-full px-4 py-2 text-xs text-slate-200 md:max-w-md">
-              <Search className="h-4 w-4 text-orange-200/80" />
+              <Search className="h-4 w-4 text-sky-200/80" />
               <input
                 className="w-full bg-transparent text-xs text-slate-200 placeholder:text-slate-400 focus:outline-none"
                 placeholder="Search accounts, contracts, proofs..."
@@ -1050,29 +1056,31 @@ export default function AdminPanel() {
               {activeCategory === 'home' ? (
                 <>
                   <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-                    <div className="flex flex-col justify-center gap-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">Owner Admin</p>
-                      <h1 className="text-4xl font-semibold leading-tight text-white sm:text-5xl">
-                        Command Deck
-                      </h1>
-                      <p className="max-w-xl text-sm text-slate-300">
-                        Real-time control for platform, infra, and network operations. Everything is tracked and auditable.
-                      </p>
-                      <div className="flex flex-wrap items-center gap-3">
-                        <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-semibold text-white">
-                          <ShieldCheck className="h-4 w-4 text-cyan-300" />
-                          Owner Access
-                        </span>
-                        <span className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-1.5 text-xs font-semibold text-slate-200">
-                          Audit logs enabled
-                        </span>
+                    <div className="admin-card admin-sweep p-6">
+                      <div className="flex flex-col gap-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">Owner Admin</p>
+                        <h1 className="text-4xl font-semibold leading-tight text-white sm:text-5xl">
+                          Command Deck
+                        </h1>
+                        <p className="max-w-xl text-sm text-slate-300">
+                          Real-time control for platform, infra, and network operations. Everything is tracked and auditable.
+                        </p>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span className="inline-flex items-center gap-2 rounded-full bg-[#13171E] px-4 py-1.5 text-xs font-semibold text-white">
+                            <ShieldCheck className="h-4 w-4 text-cyan-300" />
+                            Owner Access
+                          </span>
+                          <span className="inline-flex items-center gap-2 rounded-full bg-[#13171E] px-4 py-1.5 text-xs font-semibold text-slate-200">
+                            Audit logs enabled
+                          </span>
+                        </div>
                       </div>
                     </div>
                     <div className="admin-card admin-float admin-sweep relative overflow-hidden p-6">
-                      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_20%,rgba(255,140,40,0.25),transparent_55%),radial-gradient(circle_at_85%_10%,rgba(255,200,120,0.2),transparent_50%)] opacity-80" />
+                      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_20%,rgba(75,157,251,0.25),transparent_55%),radial-gradient(circle_at_85%_10%,rgba(129,140,248,0.2),transparent_50%)] opacity-80" />
                       <div className="flex items-center justify-between text-xs text-slate-200">
                         <span className="font-semibold uppercase tracking-[0.2em]">System Pulse</span>
-                        <span className="rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold text-white">Live</span>
+                        <span className="rounded-full bg-[#13171E] px-3 py-1 text-[10px] font-semibold text-white">Live</span>
                       </div>
                       <div className="mt-4 grid grid-cols-2 gap-4 text-sm text-white">
                         <div>
@@ -1093,8 +1101,8 @@ export default function AdminPanel() {
                         </div>
                       </div>
                       <div className="mt-5 flex items-center gap-3 text-xs text-slate-200">
-                        <span className="rounded-full bg-white/10 px-3 py-1">MFA {securityContext.mfa_required ? 'Required' : 'Optional'}</span>
-                        <span className="rounded-full bg-white/10 px-3 py-1">Exec {securityContext.exec_enabled ? 'Enabled' : 'Simulated'}</span>
+                        <span className="rounded-full bg-[#13171E] px-3 py-1">MFA {securityContext.mfa_required ? 'Required' : 'Optional'}</span>
+                        <span className="rounded-full bg-[#13171E] px-3 py-1">Exec {securityContext.exec_enabled ? 'Enabled' : 'Simulated'}</span>
                       </div>
                     </div>
                   </div>
@@ -1131,6 +1139,38 @@ export default function AdminPanel() {
                             placeholder="Required for destructive actions"
                           />
                         </label>
+                        <label className="flex flex-col gap-1">
+                          <span className="text-[10px] font-semibold uppercase text-slate-500">Admin Passkey</span>
+                          <input
+                            value={passkeyValue}
+                            onChange={(event) => setPasskeyValue(event.target.value)}
+                            className="w-full rounded-full border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                            placeholder="Set a passkey"
+                          />
+                        </label>
+                      </div>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => runSecurityAction('security.admin.mfa.set', { code: mfaCode })}
+                          className="rounded-full border border-sky-500/30 bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-white/10"
+                        >
+                          Save MFA
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => runSecurityAction('security.admin.device.add', { device_id: deviceId })}
+                          className="rounded-full border border-sky-500/30 bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-white/10"
+                        >
+                          Register Device
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => runSecurityAction('security.admin.passkey.add', { passkey: passkeyValue })}
+                          className="rounded-full border border-sky-500/30 bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-white/10"
+                        >
+                          Save Passkey
+                        </button>
                       </div>
                       <div className="mt-4 flex flex-wrap gap-2">
                         <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
@@ -1255,7 +1295,7 @@ export default function AdminPanel() {
                       <button
                         type="button"
                         onClick={() => runAction(selectedAction)}
-                        className="admin-glow rounded-full bg-gradient-to-r from-orange-500/80 to-yellow-400/60 px-4 py-2 text-xs font-semibold text-white shadow-[0_0_18px_rgba(255,140,30,0.5)] hover:brightness-110"
+                      className="admin-glow rounded-full bg-gradient-to-r from-sky-500/80 to-indigo-500/70 px-4 py-2 text-xs font-semibold text-white shadow-[0_0_18px_rgba(75,157,251,0.5)] hover:brightness-110"
                         disabled={actionBusy === selectedAction?.id}
                       >
                         {actionBusy === selectedAction?.id ? 'Running...' : 'Run action'}
@@ -1265,11 +1305,11 @@ export default function AdminPanel() {
 
                   <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <div className="admin-card admin-sweep rounded-3xl p-5">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-200/80">Active Users</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200/80">Active Users</p>
                       <div className="mt-4 h-32">
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart data={activeUsersTrend}>
-                            <Line type="monotone" dataKey="count" stroke="#f59e0b" strokeWidth={2.5} dot={false} isAnimationActive animationDuration={900} />
+                            <Line type="monotone" dataKey="count" stroke="#4B9DFB" strokeWidth={2.5} dot={false} isAnimationActive animationDuration={900} />
                             <Tooltip contentStyle={{ background: '#0f0f12', border: '1px solid rgba(255,140,30,0.3)', borderRadius: 12 }} />
                           </LineChart>
                         </ResponsiveContainer>
@@ -1277,17 +1317,17 @@ export default function AdminPanel() {
                       <p className="mt-3 text-xs text-slate-300">Last 14 days unique logins</p>
                     </div>
                     <div className="admin-card admin-sweep rounded-3xl p-5">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-200/80">Buyer Requests</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200/80">Buyer Requests</p>
                       <div className="mt-4 h-32">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={buyerRequestTrend}>
                             <defs>
                               <linearGradient id="reqGlow" x1="0" y1="0" x2="1" y2="0">
-                                <stop offset="0%" stopColor="#f97316" stopOpacity={0.6} />
-                                <stop offset="100%" stopColor="#fbbf24" stopOpacity={0.2} />
+                                <stop offset="0%" stopColor="#4B9DFB" stopOpacity={0.6} />
+                                <stop offset="100%" stopColor="#6366f1" stopOpacity={0.2} />
                               </linearGradient>
                             </defs>
-                            <Area type="monotone" dataKey="count" stroke="#f97316" fill="url(#reqGlow)" strokeWidth={2.2} isAnimationActive animationDuration={950} />
+                            <Area type="monotone" dataKey="count" stroke="#4B9DFB" fill="url(#reqGlow)" strokeWidth={2.2} isAnimationActive animationDuration={950} />
                             <Tooltip contentStyle={{ background: '#0f0f12', border: '1px solid rgba(255,140,30,0.3)', borderRadius: 12 }} />
                           </AreaChart>
                         </ResponsiveContainer>
@@ -1295,7 +1335,7 @@ export default function AdminPanel() {
                       <p className="mt-3 text-xs text-slate-300">Demand flow over time</p>
                     </div>
                     <div className="admin-card admin-sweep rounded-3xl p-5">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-200/80">Contract Status</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200/80">Contract Status</p>
                       <div className="mt-4 h-32">
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
@@ -1349,7 +1389,7 @@ export default function AdminPanel() {
                     <button
                       type="button"
                       onClick={() => exportEmailsCsv(users)}
-                      className="rounded-full border border-orange-500/40 bg-black/40 px-3 py-2 text-xs font-semibold text-orange-100 hover:bg-white/10"
+                      className="rounded-full border border-orange-500/40 bg-black/40 px-3 py-2 text-xs font-semibold text-orange-100 hover:bg-[#13171E]"
                     >
                       Export CSV
                     </button>
@@ -1932,7 +1972,7 @@ export default function AdminPanel() {
                             <p className="text-[10px] font-semibold uppercase text-slate-500">Payment Proofs</p>
                             {proofs.length ? proofs.map((proof) => (
                               <div key={proof.id} className="rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
-                                {proof.type} · {proof.status} · {proof.amount || '--'} {proof.currency || ''}
+                                {proof.type} ? {proof.status} ? {proof.amount || '--'} {proof.currency || ''}{proof.lc_type ? ` ? ${String(proof.lc_type).toUpperCase()}${proof.lc_type === 'usance' && proof.usance_days ? ` (${proof.usance_days}d)` : ''}` : ''}
                               </div>
                             )) : <p className="text-slate-400">No payment proofs.</p>}
                           </div>
@@ -3218,16 +3258,16 @@ export default function AdminPanel() {
           </section>
 
           <aside className="space-y-4">
-            <div className="admin-card admin-sweep rounded-3xl p-5">
-              <div className="flex items-center justify-between gap-2">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-200/80">Verification Queue</p>
-                  <p className="text-[11px] text-slate-400">EU/USA docs pending review.</p>
-                </div>
+              <div className="admin-card admin-sweep rounded-3xl p-5">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200/80">Verification Queue</p>
+                    <p className="text-[11px] text-slate-400">EU/USA docs pending review.</p>
+                  </div>
                 <button
                   type="button"
                   onClick={() => refreshVerificationQueue()}
-                  className="rounded-full border border-orange-500/30 bg-black/40 px-3 py-1 text-[10px] font-semibold text-orange-100 hover:bg-white/10"
+                  className="rounded-full border border-sky-500/30 bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-[#13171E]"
                 >
                   Refresh
                 </button>
@@ -3245,16 +3285,16 @@ export default function AdminPanel() {
               </div>
             </div>
 
-            <div className="admin-card admin-sweep rounded-3xl p-5">
-              <div className="flex items-center justify-between gap-2">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-200/80">Dispute Radar</p>
-                  <p className="text-[11px] text-slate-400">Contracts with open issues.</p>
-                </div>
+              <div className="admin-card admin-sweep rounded-3xl p-5">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200/80">Dispute Radar</p>
+                    <p className="text-[11px] text-slate-400">Contracts with open issues.</p>
+                  </div>
                 <button
                   type="button"
                   onClick={() => refreshDisputes()}
-                  className="rounded-full border border-orange-500/30 bg-black/40 px-3 py-1 text-[10px] font-semibold text-orange-100 hover:bg-white/10"
+                  className="rounded-full border border-sky-500/30 bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-[#13171E]"
                 >
                   Sync
                 </button>
@@ -3272,16 +3312,16 @@ export default function AdminPanel() {
               </div>
             </div>
 
-            <div className="admin-card admin-sweep rounded-3xl p-5">
-              <div className="flex items-center justify-between gap-2">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-200/80">Audit Pulse</p>
-                  <p className="text-[11px] text-slate-400">Most recent admin actions.</p>
-                </div>
+              <div className="admin-card admin-sweep rounded-3xl p-5">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200/80">Audit Pulse</p>
+                    <p className="text-[11px] text-slate-400">Most recent admin actions.</p>
+                  </div>
                 <button
                   type="button"
                   onClick={() => refreshAudit()}
-                  className="rounded-full border border-orange-500/30 bg-black/40 px-3 py-1 text-[10px] font-semibold text-orange-100 hover:bg-white/10"
+                  className="rounded-full border border-sky-500/30 bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-[#13171E]"
                 >
                   Refresh
                 </button>
@@ -3310,7 +3350,7 @@ export default function AdminPanel() {
                     <button
                       type="button"
                       onClick={() => refreshAudit()}
-                      className="rounded-full border border-orange-500/30 bg-black/40 px-3 py-1 text-xs font-semibold text-orange-100 hover:bg-white/10"
+                    className="rounded-full border border-sky-500/30 bg-black/40 px-3 py-1 text-xs font-semibold text-sky-100 hover:bg-[#13171E]"
                     >
                       Refresh log
                     </button>
@@ -3338,4 +3378,5 @@ export default function AdminPanel() {
     </div>
   )
 }
+
 

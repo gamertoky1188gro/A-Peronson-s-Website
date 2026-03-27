@@ -25,6 +25,11 @@ const DEFAULT_STATE = {
     enabled: false,
     policy: '',
   },
+  admin_auth: {
+    mfa_code: '',
+    device_allowlist: [],
+    passkeys: [],
+  },
   mfa: {
     required: false,
     methods: [],
@@ -154,6 +159,10 @@ export async function getSecurityState() {
   return {
     ...DEFAULT_STATE,
     ...current,
+    admin_auth: {
+      ...DEFAULT_STATE.admin_auth,
+      ...(current.admin_auth || {}),
+    },
     zero_trust: { ...DEFAULT_STATE.zero_trust, ...(current.zero_trust || {}) },
     mfa: {
       ...DEFAULT_STATE.mfa,
@@ -181,6 +190,20 @@ export async function getSecurityState() {
       hash: auditHash,
     },
     system_events: systemEvents,
+  }
+}
+
+export async function getAdminAuthConfig() {
+  const current = await readLocalJson(STATE_FILE, DEFAULT_STATE)
+  const adminAuth = { ...DEFAULT_STATE.admin_auth, ...(current.admin_auth || {}) }
+  const envMfa = String(process.env.ADMIN_MFA_CODE || '').trim()
+  const envDevices = envList(process.env.ADMIN_DEVICE_ALLOWLIST)
+  const envIps = envList(process.env.ADMIN_IP_ALLOWLIST)
+  return {
+    mfa_code: adminAuth.mfa_code || envMfa,
+    device_allowlist: adminAuth.device_allowlist?.length ? adminAuth.device_allowlist : envDevices,
+    ip_allowlist: envIps,
+    passkeys: adminAuth.passkeys || [],
   }
 }
 
@@ -278,6 +301,45 @@ export async function performSecurityAction(action = '', payload = {}) {
     await fs.writeFile(path.join(IMMUTABLE_DIR, fileName), JSON.stringify(payloadOut, null, 2), 'utf8').catch(() => {})
     updated = await updateState((state) => {
       state.immutable_backups = { ...state.immutable_backups, last_snapshot_at: now, last_hash: auditHash, last_file: fileName }
+      return state
+    })
+  }
+  else if (action === 'security.admin.mfa.set') {
+    const code = String(payload.code || '').trim()
+    updated = await updateState((state) => {
+      state.admin_auth = { ...(state.admin_auth || {}), mfa_code: code }
+      return state
+    })
+  } else if (action === 'security.admin.device.add') {
+    const deviceId = String(payload.device_id || '').trim().toLowerCase()
+    if (!deviceId) return { ok: false, error: 'Missing device ID' }
+    updated = await updateState((state) => {
+      const list = new Set(state.admin_auth?.device_allowlist || [])
+      list.add(deviceId)
+      state.admin_auth = { ...(state.admin_auth || {}), device_allowlist: Array.from(list) }
+      return state
+    })
+  } else if (action === 'security.admin.device.remove') {
+    const deviceId = String(payload.device_id || '').trim().toLowerCase()
+    updated = await updateState((state) => {
+      const list = (state.admin_auth?.device_allowlist || []).filter((id) => String(id).toLowerCase() !== deviceId)
+      state.admin_auth = { ...(state.admin_auth || {}), device_allowlist: list }
+      return state
+    })
+  } else if (action === 'security.admin.passkey.add') {
+    const passkey = String(payload.passkey || '').trim()
+    if (!passkey) return { ok: false, error: 'Missing passkey' }
+    updated = await updateState((state) => {
+      const list = new Set(state.admin_auth?.passkeys || [])
+      list.add(passkey)
+      state.admin_auth = { ...(state.admin_auth || {}), passkeys: Array.from(list) }
+      return state
+    })
+  } else if (action === 'security.admin.passkey.remove') {
+    const passkey = String(payload.passkey || '').trim()
+    updated = await updateState((state) => {
+      const list = (state.admin_auth?.passkeys || []).filter((key) => key !== passkey)
+      state.admin_auth = { ...(state.admin_auth || {}), passkeys: list }
       return state
     })
   }

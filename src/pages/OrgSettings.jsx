@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import AccessDeniedState from '../components/AccessDeniedState'
-import { apiRequest, getCurrentUser, getToken, saveSession } from '../lib/auth'
+import { apiRequest, clearSession, getCurrentUser, getToken, saveSession } from '../lib/auth'
 
 const emptyKnowledge = { type: 'faq', question: '', answer: '', keywords: '' }
 const TAB_KEYS = [
@@ -91,6 +91,9 @@ export default function OrgSettings() {
   const [boostPrice, setBoostPrice] = useState('9.99')
   const [boostFeedback, setBoostFeedback] = useState('')
   const [loadingBoosts, setLoadingBoosts] = useState(false)
+  const [deletePassword, setDeletePassword] = useState('')
+  const [deleteFeedback, setDeleteFeedback] = useState('')
+  const [deletingAccount, setDeletingAccount] = useState(false)
 
   const verificationStatus = useMemo(() => {
     if (remainingDays <= 0) return 'expired'
@@ -267,6 +270,32 @@ export default function OrgSettings() {
       await loadBilling()
     } catch (err) {
       setBillingFeedback(err.message || 'Coupon redemption failed')
+    }
+  }
+
+  async function deleteAccount() {
+    const token = getToken()
+    if (!token) {
+      setDeleteFeedback('Please login again to delete your account.')
+      return
+    }
+    if (!deletePassword) {
+      setDeleteFeedback('Password is required to delete your account.')
+      return
+    }
+    const confirmed = window.confirm('This will permanently disable your account. Continue?')
+    if (!confirmed) return
+    setDeletingAccount(true)
+    setDeleteFeedback('')
+    try {
+      await apiRequest('/users/me', { method: 'DELETE', token, body: { password: deletePassword } })
+      clearSession()
+      setDeleteFeedback('Account deleted. You have been logged out.')
+      window.location.href = '/login'
+    } catch (err) {
+      setDeleteFeedback(err.message || 'Unable to delete account')
+    } finally {
+      setDeletingAccount(false)
     }
   }
 
@@ -489,6 +518,28 @@ export default function OrgSettings() {
               <div>
                 <label className="flex items-center gap-3"><input type="checkbox"/> Enable 2FA</label>
                 <div className="mt-3 text-sm text-[#5A5A5A]">Active sessions and login activity are shown here.</div>
+                <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-4">
+                  <p className="text-sm font-semibold text-rose-700">Delete account</p>
+                  <p className="mt-1 text-xs text-rose-600">Enter your password to permanently delete your account.</p>
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <input
+                      type="password"
+                      value={deletePassword}
+                      onChange={(e) => setDeletePassword(e.target.value)}
+                      className="w-full border border-rose-200 px-3 py-2 rounded"
+                      placeholder="Confirm password"
+                    />
+                    <button
+                      type="button"
+                      onClick={deleteAccount}
+                      disabled={deletingAccount}
+                      className="px-3 py-2 rounded bg-rose-600 text-white disabled:opacity-60"
+                    >
+                      Delete account
+                    </button>
+                  </div>
+                  {deleteFeedback ? <div className="mt-2 text-xs text-rose-700">{deleteFeedback}</div> : null}
+                </div>
               </div>
             )}
 

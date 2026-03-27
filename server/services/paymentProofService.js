@@ -34,6 +34,24 @@ function normalizeType(value) {
   return ''
 }
 
+function normalizeLcType(value) {
+  const type = String(value || '').toLowerCase().trim()
+  if (!type) return ''
+  if (type === 'sight') return 'sight'
+  if (type === 'usance') return 'usance'
+  return ''
+}
+
+function normalizeUsanceDays(value) {
+  if (value === undefined || value === null || value === '') return null
+  const days = Number(value)
+  if (!Number.isFinite(days)) return null
+  const rounded = Math.round(days)
+  if (rounded <= 0) return null
+  if (rounded > 365) return 365
+  return rounded
+}
+
 function requireFields(payload, fields) {
   const missing = fields.filter((field) => !String(payload?.[field] || '').trim())
   return missing
@@ -97,6 +115,22 @@ export async function createPaymentProof(actor, payload = {}) {
       err.status = 400
       throw err
     }
+
+    const lcType = normalizeLcType(payload.lc_type || payload.lcType)
+    if (!lcType) {
+      const err = new Error('lc_type is required (sight or usance)')
+      err.status = 400
+      throw err
+    }
+
+    if (lcType === 'usance') {
+      const usanceDays = normalizeUsanceDays(payload.usance_days ?? payload.usanceDays ?? payload.usance_tenor)
+      if (!usanceDays) {
+        const err = new Error('usance_days is required for usance LC')
+        err.status = 400
+        throw err
+      }
+    }
   }
 
   const proofs = await readJson(FILE)
@@ -123,6 +157,8 @@ export async function createPaymentProof(actor, payload = {}) {
     beneficiary_name: sanitizeString(payload.beneficiary_name || '', 120),
     issue_date: normalizeDate(payload.issue_date),
     expiry_date: normalizeDate(payload.expiry_date),
+    lc_type: normalizeLcType(payload.lc_type || payload.lcType) || null,
+    usance_days: normalizeUsanceDays(payload.usance_days ?? payload.usanceDays ?? payload.usance_tenor),
     document_id: sanitizeString(payload.document_id || '', 120) || null,
     document_url: sanitizeString(payload.document_url || payload.document_path || '', 600) || null,
     created_at: now,
