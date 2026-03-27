@@ -973,7 +973,7 @@ export default function AdminPanel() {
       <div className="admin-plasma" />
       <div className="admin-current" />
       <div className="admin-noise" />
-      <div className="relative mx-auto max-w-[1400px] px-6 py-10 space-y-8">
+      <div className="relative w-full px-6 py-10 space-y-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500/70 to-yellow-300/40 text-white shadow-[0_0_18px_rgba(255,140,30,0.6)]">
