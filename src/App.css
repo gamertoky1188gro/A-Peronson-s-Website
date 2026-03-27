@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700&display=swap");
 
 /* Tailwind v4: make `dark:` respond to the `.dark` class (not OS media). */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -268,6 +269,197 @@
     color: #c4b5fd !important;
     text-shadow: none;
   }
+
+  .admin-shell {
+    --admin-bg: #050505;
+    --admin-panel: rgba(15, 15, 18, 0.76);
+    --admin-panel-strong: rgba(20, 20, 24, 0.9);
+    --admin-border: rgba(255, 140, 30, 0.22);
+    --admin-glow: rgba(255, 140, 30, 0.45);
+    --admin-glow-soft: rgba(255, 140, 30, 0.2);
+    position: relative;
+    background: var(--admin-bg);
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(255, 140, 30, 0.18), transparent 45%),
+      radial-gradient(circle at 88% 12%, rgba(255, 200, 120, 0.12), transparent 40%);
+    color: #f8fafc;
+    overflow: hidden;
+    font-family: "Space Grotesk", "Sora", Inter, system-ui, sans-serif;
+  }
+
+  :root:not(.dark) .admin-shell {
+    --admin-bg: #eef2f8;
+    --admin-panel: rgba(255, 255, 255, 0.9);
+    --admin-panel-strong: rgba(255, 255, 255, 0.96);
+    --admin-border: rgba(255, 140, 30, 0.18);
+    --admin-glow: rgba(255, 140, 30, 0.25);
+    --admin-glow-soft: rgba(255, 140, 30, 0.12);
+    color: #0f172a;
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(255, 140, 30, 0.12), transparent 48%),
+      radial-gradient(circle at 80% 0%, rgba(255, 200, 120, 0.08), transparent 40%);
+  }
+
+  .admin-plasma {
+    position: absolute;
+    inset: 10% -20% auto -20%;
+    height: 220px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 140, 30, 0.08) 30%, rgba(255, 190, 80, 0.22) 50%, rgba(255, 140, 30, 0.08) 70%, transparent 100%);
+    filter: blur(28px);
+    opacity: 0.9;
+    animation: plasmaFlow 18s linear infinite;
+    pointer-events: none;
+  }
+
+  .admin-current {
+    position: absolute;
+    inset: 22% -30% auto -30%;
+    height: 120px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 120, 24, 0.12) 25%, rgba(255, 200, 120, 0.35) 55%, rgba(255, 120, 24, 0.12) 75%, transparent 100%);
+    filter: blur(18px);
+    opacity: 0.9;
+    animation: currentFlow 12s linear infinite;
+    pointer-events: none;
+  }
+
+  .admin-noise {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.05), transparent 40%), radial-gradient(circle at 80% 10%, rgba(255, 140, 30, 0.08), transparent 45%), radial-gradient(circle at 80% 80%, rgba(255, 200, 120, 0.05), transparent 50%);
+    mix-blend-mode: screen;
+    opacity: 0.35;
+  }
+
+  .admin-panel {
+    background: var(--admin-panel);
+    border: 1px solid var(--admin-border);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.6),
+      0 20px 60px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(18px);
+    border-radius: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .admin-card {
+    background: var(--admin-panel-strong);
+    border: 1px solid var(--admin-border);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 22px 40px rgba(0, 0, 0, 0.5);
+    transition: transform 220ms ease, box-shadow 240ms ease, border-color 240ms ease;
+    border-radius: 22px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .admin-card::before,
+  .admin-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, transparent 38%),
+      linear-gradient(0deg, rgba(255, 140, 30, 0.08), transparent 55%);
+    opacity: 0.7;
+  }
+
+  .admin-card:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 26px 60px rgba(0, 0, 0, 0.6),
+      0 0 22px var(--admin-glow);
+    border-color: rgba(255, 190, 90, 0.45);
+  }
+
+  .admin-glow {
+    box-shadow: 0 0 20px var(--admin-glow-soft), 0 0 45px var(--admin-glow);
+  }
+
+  .admin-float {
+    animation: floatSlow 6s ease-in-out infinite;
+  }
+
+  .admin-sweep {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .admin-sweep::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent 0%, rgba(255, 170, 60, 0.15) 45%, transparent 70%);
+    transform: translateX(-120%);
+    transition: transform 600ms ease;
+  }
+
+  .admin-sweep:hover::after {
+    transform: translateX(120%);
+  }
+
+  .admin-shell input,
+  .admin-shell select,
+  .admin-shell textarea {
+    background: rgba(8, 8, 10, 0.72);
+    border: 1px solid var(--admin-border);
+    color: inherit;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 18px rgba(255, 140, 30, 0.12);
+    backdrop-filter: blur(10px);
+  }
+
+  :root:not(.dark) .admin-shell input,
+  :root:not(.dark) .admin-shell select,
+  :root:not(.dark) .admin-shell textarea {
+    background: rgba(255, 255, 255, 0.9);
+    color: #0f172a;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 10px 24px rgba(15, 23, 42, 0.08);
+  }
+
+  :root.dark .admin-shell [class~="bg-white"] {
+    background: var(--admin-panel-strong) !important;
+  }
+
+  :root.dark .admin-shell [class~="bg-slate-100"] {
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: #e2e8f0 !important;
+  }
+
+  :root.dark .admin-shell [class~="bg-slate-900"] {
+    background: rgba(10, 10, 12, 0.9) !important;
+  }
+
+  :root.dark .admin-shell [class~="border-slate-200"] {
+    border-color: var(--admin-border) !important;
+  }
+
+  :root.dark .admin-shell [class~="text-slate-500"] {
+    color: rgba(226, 232, 240, 0.58) !important;
+  }
+
+  :root.dark .admin-shell [class~="text-slate-600"] {
+    color: rgba(226, 232, 240, 0.72) !important;
+  }
+}
+
+@keyframes plasmaFlow {
+  0% { transform: translateX(-15%) }
+  100% { transform: translateX(15%) }
+}
+
+@keyframes currentFlow {
+  0% { transform: translateX(-20%); }
+  100% { transform: translateX(20%); }
+}
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px) }
+  50% { transform: translateY(-6px) }
 }
 
 @layer components {

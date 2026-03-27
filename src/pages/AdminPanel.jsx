@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Activity, Database, Lock, Network, Server, Settings, ShieldCheck } from 'lucide-react'
+import { Activity, Database, Lock, Network, Search, Server, Settings, ShieldCheck, Sparkles, Sun, Moon } from 'lucide-react'
+import { Area, AreaChart, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import AccessDeniedState from '../components/AccessDeniedState'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 
@@ -352,7 +353,7 @@ const ACTION_GROUPS = [
 ]
 
 function statusBadge() {
-  return 'bg-emerald-100 text-emerald-700'
+  return 'bg-emerald-400/20 text-emerald-200'
 }
 
 function formatNumber(value) {
@@ -385,6 +386,12 @@ function exportEmailsCsv(rows = []) {
 export default function AdminPanel() {
   const user = getCurrentUser()
   const isOwner = OWNER_ROLES.has(String(user?.role || '').toLowerCase())
+  const [adminDark, setAdminDark] = useState(() => {
+    const stored = localStorage.getItem('admin_theme')
+    if (stored === 'light') return false
+    if (stored === 'dark') return true
+    return true
+  })
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -459,6 +466,17 @@ export default function AdminPanel() {
     if (!mfaCode) return
     localStorage.setItem('admin_mfa_code', mfaCode)
   }, [mfaCode])
+
+  useEffect(() => {
+    const root = document.documentElement
+    if (adminDark) {
+      root.classList.add('dark')
+      localStorage.setItem('admin_theme', 'dark')
+    } else {
+      root.classList.remove('dark')
+      localStorage.setItem('admin_theme', 'light')
+    }
+  }, [adminDark])
 
   useEffect(() => {
     if (!deviceId) return
@@ -586,6 +604,26 @@ export default function AdminPanel() {
       return true
     })
   }, [users, userQuery, roleFilter, statusFilter, regionFilter, verificationFilter, premiumFilter])
+
+  const analyticsOverview = catalog?.analytics || {}
+  const activeUsersTrend = Array.isArray(analyticsOverview.active_users_trend) ? analyticsOverview.active_users_trend : []
+  const loginTrend = Array.isArray(analyticsOverview.login_trend) ? analyticsOverview.login_trend : []
+  const buyerRequestTrend = Array.isArray(analyticsOverview.buyer_request_trend) ? analyticsOverview.buyer_request_trend : []
+  const contractStatusData = useMemo(() => {
+    const counts = { signed: 0, pending: 0, dispute: 0 }
+    contractsVault.forEach((row) => {
+      const status = String(row?.lifecycle_status || '').toLowerCase()
+      if (status.includes('signed')) counts.signed += 1
+      else if (status.includes('dispute')) counts.dispute += 1
+      else counts.pending += 1
+    })
+    return [
+      { name: 'Signed', value: counts.signed },
+      { name: 'Pending', value: counts.pending },
+      { name: 'Dispute', value: counts.dispute },
+    ]
+  }, [contractsVault])
+  const chartPalette = ['#f59e0b', '#f97316', '#fb7185']
 
   function updateDraft(id, field, value) {
     setUserDrafts((prev) => ({
@@ -931,12 +969,37 @@ export default function AdminPanel() {
   const CategoryIcon = CATEGORY_ICONS[activeCategory] || ShieldCheck
 
   return (
-    <div
-      className="dark min-h-screen bg-[#0b1120] text-slate-100"
-      style={{ fontFamily: "'Space Grotesk', 'Manrope', sans-serif" }}
-    >
-      <style>{'@import url(\"https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap\");'}</style>
-      <div className="mx-auto max-w-[1400px] px-6 py-10 space-y-8">
+    <div className="admin-shell min-h-screen">
+      <div className="admin-plasma" />
+      <div className="admin-current" />
+      <div className="admin-noise" />
+      <div className="relative mx-auto max-w-[1400px] px-6 py-10 space-y-8">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500/70 to-yellow-300/40 text-white shadow-[0_0_18px_rgba(255,140,30,0.6)]">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.35em] text-orange-200/80">GarTexHub</p>
+              <p className="text-lg font-semibold text-white">Admin Matrix</p>
+            </div>
+          </div>
+          <div className="admin-panel admin-sweep flex min-w-[220px] flex-1 items-center gap-2 rounded-full px-4 py-2 text-xs text-slate-200 md:max-w-md">
+            <Search className="h-4 w-4 text-orange-200/80" />
+            <input
+              className="w-full bg-transparent text-xs text-slate-200 placeholder:text-slate-400 focus:outline-none"
+              placeholder="Search accounts, contracts, proofs..."
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => setAdminDark((prev) => !prev)}
+            className="admin-panel flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold text-white/90"
+          >
+            {adminDark ? <Sun className="h-4 w-4 text-yellow-300" /> : <Moon className="h-4 w-4 text-slate-700" />}
+            {adminDark ? 'Light' : 'Dark'}
+          </button>
+        </div>
         <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="flex flex-col justify-center gap-4">
             <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">Owner Admin</p>
@@ -956,7 +1019,8 @@ export default function AdminPanel() {
               </span>
             </div>
           </div>
-          <div className="rounded-[32px] border border-white/10 bg-gradient-to-br from-[#1a2542] via-[#23325b] to-[#1c1338] p-6 shadow-[0_25px_80px_-40px_rgba(88,128,255,0.9)]">
+          <div className="admin-card admin-float admin-sweep relative overflow-hidden p-6">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_20%,rgba(255,140,40,0.25),transparent_55%),radial-gradient(circle_at_85%_10%,rgba(255,200,120,0.2),transparent_50%)] opacity-80" />
             <div className="flex items-center justify-between text-xs text-slate-200">
               <span className="font-semibold uppercase tracking-[0.2em]">System Pulse</span>
               <span className="rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold text-white">Live</span>
@@ -986,10 +1050,14 @@ export default function AdminPanel() {
           </div>
         </div>
 
-        {error ? <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div> : null}
+        {error ? (
+          <div className="admin-panel admin-sweep rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+            {error}
+          </div>
+        ) : null}
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+          <div className="admin-card admin-sweep rounded-3xl p-6">
             <p className="text-sm font-bold">Admin Security</p>
             <p className="mt-1 text-xs text-slate-500">MFA, device binding, and step-up codes are enforced on destructive actions.</p>
             <div className="mt-4 space-y-3 text-xs">
@@ -1037,7 +1105,7 @@ export default function AdminPanel() {
             </div>
           </div>
 
-          <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+          <div className="admin-card admin-sweep rounded-3xl p-6">
             <div className="flex items-center gap-2 text-sm font-bold">
               <Activity className="h-4 w-4 text-emerald-500" />
               Platform Snapshot
@@ -1067,7 +1135,7 @@ export default function AdminPanel() {
             </div>
           </div>
 
-          <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+          <div className="admin-card admin-sweep rounded-3xl p-6">
             <div className="flex items-center gap-2 text-sm font-bold">
               <Server className="h-4 w-4 text-indigo-500" />
               Infra + Network Health
@@ -1096,7 +1164,7 @@ export default function AdminPanel() {
           </div>
         </div>
 
-        <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+        <div className="admin-card admin-sweep rounded-3xl p-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-sm font-bold">Action Console</p>
@@ -1144,7 +1212,7 @@ export default function AdminPanel() {
             <button
               type="button"
               onClick={() => runAction(selectedAction)}
-              className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800"
+              className="admin-glow rounded-full bg-gradient-to-r from-orange-500/80 to-yellow-400/60 px-4 py-2 text-xs font-semibold text-white shadow-[0_0_18px_rgba(255,140,30,0.5)] hover:brightness-110"
               disabled={actionBusy === selectedAction?.id}
             >
               {actionBusy === selectedAction?.id ? 'Running...' : 'Run action'}
@@ -1152,9 +1220,58 @@ export default function AdminPanel() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[240px_1fr]">
-          <aside className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-            <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">Modules</p>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="admin-card admin-sweep rounded-3xl p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-200/80">Active Users</p>
+            <div className="mt-4 h-32">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={activeUsersTrend}>
+                  <Line type="monotone" dataKey="count" stroke="#f59e0b" strokeWidth={2.5} dot={false} isAnimationActive animationDuration={900} />
+                  <Tooltip contentStyle={{ background: '#0f0f12', border: '1px solid rgba(255,140,30,0.3)', borderRadius: 12 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <p className="mt-3 text-xs text-slate-300">Last 14 days unique logins</p>
+          </div>
+          <div className="admin-card admin-sweep rounded-3xl p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-200/80">Buyer Requests</p>
+            <div className="mt-4 h-32">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={buyerRequestTrend}>
+                  <defs>
+                    <linearGradient id="reqGlow" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#f97316" stopOpacity={0.6} />
+                      <stop offset="100%" stopColor="#fbbf24" stopOpacity={0.2} />
+                    </linearGradient>
+                  </defs>
+                  <Area type="monotone" dataKey="count" stroke="#f97316" fill="url(#reqGlow)" strokeWidth={2.2} isAnimationActive animationDuration={950} />
+                  <Tooltip contentStyle={{ background: '#0f0f12', border: '1px solid rgba(255,140,30,0.3)', borderRadius: 12 }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+            <p className="mt-3 text-xs text-slate-300">Demand flow over time</p>
+          </div>
+          <div className="admin-card admin-sweep rounded-3xl p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-200/80">Contract Status</p>
+            <div className="mt-4 h-32">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={contractStatusData} dataKey="value" innerRadius={40} outerRadius={62} paddingAngle={4} isAnimationActive animationDuration={900}>
+                    {contractStatusData.map((entry, index) => (
+                      <Cell key={entry.name} fill={chartPalette[index % chartPalette.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ background: '#0f0f12', border: '1px solid rgba(255,140,30,0.3)', borderRadius: 12 }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <p className="mt-3 text-xs text-slate-300">Signed vs pending vs disputes</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[240px_1fr_320px]">
+          <aside className="admin-panel rounded-3xl p-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-orange-200/70">Modules</p>
             <div className="mt-3 space-y-2">
               {inventory.map((category) => {
                 const Icon = CATEGORY_ICONS[category.id] || ShieldCheck
@@ -1163,7 +1280,7 @@ export default function AdminPanel() {
                     key={category.id}
                     type="button"
                     onClick={() => setActiveCategory(category.id)}
-                    className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold transition ${activeCategory === category.id ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200'}`}
+                    className={`admin-sweep flex w-full items-center gap-2 rounded-xl border border-orange-500/20 px-3 py-2 text-left text-xs font-semibold transition ${activeCategory === category.id ? 'bg-white/10 text-white shadow-[0_0_18px_rgba(255,140,30,0.35)]' : 'bg-black/30 text-slate-300 hover:bg-white/10'}`}
                   >
                     <Icon className="h-4 w-4" />
                     {category.label}
@@ -1174,10 +1291,10 @@ export default function AdminPanel() {
           </aside>
 
           <section className="space-y-4">
-            <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+            <div className="admin-card admin-sweep rounded-3xl p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <CategoryIcon className="h-5 w-5 text-slate-700 dark:text-slate-200" />
+                  <CategoryIcon className="h-5 w-5 text-orange-200/80" />
                   <div>
                     <p className="text-sm font-bold">{activeData?.label || 'Module'}</p>
                     <p className="text-xs text-slate-500">{activeData?.sections?.length || 0} sections</p>
@@ -1188,7 +1305,7 @@ export default function AdminPanel() {
             </div>
 
             {activeCategory === 'platform' ? (
-              <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+              <div className="admin-card admin-sweep rounded-3xl p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-bold">User Management</p>
@@ -1204,7 +1321,7 @@ export default function AdminPanel() {
                     <button
                       type="button"
                       onClick={() => exportEmailsCsv(users)}
-                      className="rounded-full bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800"
+                      className="rounded-full border border-orange-500/40 bg-black/40 px-3 py-2 text-xs font-semibold text-orange-100 hover:bg-white/10"
                     >
                       Export CSV
                     </button>
@@ -1409,7 +1526,7 @@ export default function AdminPanel() {
 
             {activeCategory === 'platform' ? (
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div className="flex items-center justify-between gap-2">
                     <div>
                       <p className="text-sm font-bold">Signup + Email Export</p>
@@ -1449,7 +1566,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div className="flex items-center justify-between gap-2">
                     <div>
                       <p className="text-sm font-bold">Fraud Review</p>
@@ -1474,7 +1591,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div className="flex items-center justify-between gap-2">
                     <div>
                       <p className="text-sm font-bold">Strike History</p>
@@ -1498,7 +1615,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div className="flex items-center justify-between gap-2">
                     <div>
                       <p className="text-sm font-bold">Org Ownership</p>
@@ -1522,7 +1639,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div className="flex items-center justify-between gap-2">
                     <div>
                       <p className="text-sm font-bold">Wallet Ledger</p>
@@ -1546,7 +1663,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div className="flex items-center justify-between gap-2">
                     <div>
                       <p className="text-sm font-bold">Email Segments</p>
@@ -1577,7 +1694,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div className="flex items-center justify-between gap-2">
                     <div>
                       <p className="text-sm font-bold">Featured Listings</p>
@@ -1647,7 +1764,7 @@ export default function AdminPanel() {
             ) : null}
 
             {activeCategory === 'platform' ? (
-              <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+              <div className="admin-card admin-sweep rounded-3xl p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-bold">Verification Queue</p>
@@ -1741,7 +1858,7 @@ export default function AdminPanel() {
             ) : null}
 
             {activeCategory === 'platform' ? (
-              <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+              <div className="admin-card admin-sweep rounded-3xl p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-bold">Contracts Vault</p>
@@ -1833,7 +1950,7 @@ export default function AdminPanel() {
             ) : null}
 
             {activeCategory === 'platform' ? (
-              <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+              <div className="admin-card admin-sweep rounded-3xl p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-bold">Disputes</p>
@@ -1879,7 +1996,7 @@ export default function AdminPanel() {
             ) : null}
 
             {activeCategory === 'platform' ? (
-              <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+              <div className="admin-card admin-sweep rounded-3xl p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-bold">Partner Requests</p>
@@ -1943,7 +2060,7 @@ export default function AdminPanel() {
             ) : null}
 
             {activeCategory === 'platform' ? (
-              <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+              <div className="admin-card admin-sweep rounded-3xl p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-bold">Platform Master Lists</p>
@@ -2170,7 +2287,7 @@ export default function AdminPanel() {
             ) : null}
 
             {activeCategory === 'infra' ? (
-              <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+              <div className="admin-card admin-sweep rounded-3xl p-6">
                 <div className="flex items-center gap-2">
                   <Server className="h-5 w-5 text-indigo-500" />
                   <div>
@@ -2208,7 +2325,7 @@ export default function AdminPanel() {
 
             {activeCategory === 'infra' ? (
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div className="flex items-center justify-between gap-2">
                     <div>
                       <p className="text-sm font-bold">Firewall Rules</p>
@@ -2286,7 +2403,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div>
                     <p className="text-sm font-bold">Package Updates</p>
                     <p className="text-xs text-slate-500">Safe presets for update checks and installs.</p>
@@ -2314,7 +2431,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div>
                     <p className="text-sm font-bold">Cron Manager</p>
                     <p className="text-xs text-slate-500">Schedule safe recurring tasks.</p>
@@ -2385,7 +2502,7 @@ export default function AdminPanel() {
 
             {activeCategory === 'infra' ? (
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div className="flex items-center justify-between gap-2">
                     <div>
                       <p className="text-sm font-bold">System Logs + Zombie Scan</p>
@@ -2418,7 +2535,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div>
                     <p className="text-sm font-bold">OS Users + SSH Keys</p>
                     <p className="text-xs text-slate-500">Create/delete accounts and manage keys.</p>
@@ -2485,7 +2602,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div>
                     <p className="text-sm font-bold">SSL + Backups + Network Settings</p>
                     <p className="text-xs text-slate-500">Certificates, retention, DNS, timezone.</p>
@@ -2541,7 +2658,7 @@ export default function AdminPanel() {
             ) : null}
 
             {activeCategory === 'network' ? (
-              <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+              <div className="admin-card admin-sweep rounded-3xl p-6">
                 <div className="flex items-center gap-2">
                   <Network className="h-5 w-5 text-emerald-500" />
                   <div>
@@ -2572,7 +2689,7 @@ export default function AdminPanel() {
 
             {activeCategory === 'network' ? (
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div className="flex items-center justify-between gap-2">
                     <div>
                       <p className="text-sm font-bold">Device Inventory</p>
@@ -2602,7 +2719,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div>
                     <p className="text-sm font-bold">VLAN Management</p>
                     <p className="text-xs text-slate-500">Create and retire VLANs.</p>
@@ -2656,7 +2773,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div>
                     <p className="text-sm font-bold">IPAM + Config Backups</p>
                     <p className="text-xs text-slate-500">Reserve IPs and capture configs.</p>
@@ -2718,7 +2835,7 @@ export default function AdminPanel() {
 
             {activeCategory === 'network' ? (
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div>
                     <p className="text-sm font-bold">IDS/IPS + Rogue AP</p>
                     <p className="text-xs text-slate-500">Security monitoring feeds.</p>
@@ -2737,7 +2854,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div>
                     <p className="text-sm font-bold">NetFlow + Alert Integrations</p>
                     <p className="text-xs text-slate-500">Traffic analytics and alert sinks.</p>
@@ -2758,7 +2875,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div>
                     <p className="text-sm font-bold">Client Monitoring + Auth Servers</p>
                     <p className="text-xs text-slate-500">Connected clients and RADIUS/TACACS.</p>
@@ -2782,7 +2899,7 @@ export default function AdminPanel() {
 
             {activeCategory === 'server-admin' ? (
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div className="flex items-center justify-between gap-2">
                     <div>
                       <p className="text-sm font-bold">Web Server + PHP</p>
@@ -2804,7 +2921,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div>
                     <p className="text-sm font-bold">Domains + Apps</p>
                     <p className="text-xs text-slate-500">DNS, installers, and file manager.</p>
@@ -2822,7 +2939,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div>
                     <p className="text-sm font-bold">RBAC + Queues + Backups</p>
                     <p className="text-xs text-slate-500">Admin roles and task queues.</p>
@@ -2843,7 +2960,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div className="flex items-center justify-between gap-2">
                     <div>
                       <p className="text-sm font-bold">Integrations + Installers</p>
@@ -2886,7 +3003,7 @@ export default function AdminPanel() {
 
             {activeCategory === 'cms' ? (
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div className="flex items-center justify-between gap-2">
                     <div>
                       <p className="text-sm font-bold">Articles + Pages</p>
@@ -2913,7 +3030,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div>
                     <p className="text-sm font-bold">Theme + SEO + Cache</p>
                     <p className="text-xs text-slate-500">Frontend configuration.</p>
@@ -2932,7 +3049,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div>
                     <p className="text-sm font-bold">Deployments + Backups</p>
                     <p className="text-xs text-slate-500">Automation and cron scripts.</p>
@@ -2954,7 +3071,7 @@ export default function AdminPanel() {
 
             {activeCategory === 'ultra-security' ? (
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div className="flex items-center justify-between gap-2">
                     <div>
                       <p className="text-sm font-bold">Zero Trust + MFA</p>
@@ -2993,7 +3110,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div>
                     <p className="text-sm font-bold">Incident Response</p>
                     <p className="text-xs text-slate-500">Incident dashboard and approvals.</p>
@@ -3010,7 +3127,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <div className="admin-card admin-sweep rounded-3xl p-6">
                   <div>
                     <p className="text-sm font-bold">Forensic + Immutable Backups</p>
                     <p className="text-xs text-slate-500">Tamper-proof logs and snapshots.</p>
@@ -3034,7 +3151,7 @@ export default function AdminPanel() {
                 const metrics = SECTION_METRICS[section.id] || []
                 const features = Array.isArray(section.features) ? section.features : []
                 return (
-                  <details key={section.id} className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                  <details key={section.id} className="admin-card admin-sweep rounded-3xl p-6">
                     <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
                       <div>
                         <p className="text-sm font-bold">{section.title}</p>
@@ -3071,9 +3188,92 @@ export default function AdminPanel() {
               })}
             </div>
           </section>
+
+          <aside className="space-y-4">
+            <div className="admin-card admin-sweep rounded-3xl p-5">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-200/80">Verification Queue</p>
+                  <p className="text-[11px] text-slate-400">EU/USA docs pending review.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => refreshVerificationQueue()}
+                  className="rounded-full border border-orange-500/30 bg-black/40 px-3 py-1 text-[10px] font-semibold text-orange-100 hover:bg-white/10"
+                >
+                  Refresh
+                </button>
+              </div>
+              <div className="mt-3 space-y-2 text-xs">
+                {verificationQueue.slice(0, 3).map((row) => (
+                  <div key={row.id || row.user_id} className="rounded-2xl border border-orange-500/20 px-3 py-2">
+                    <p className="text-[11px] font-semibold">{row.user_name || row.user_email || row.user_id}</p>
+                    <p className="text-[10px] text-slate-400">Doc: {row.doc_type || row.type || 'business'} · Status: {row.status || 'pending'}</p>
+                  </div>
+                ))}
+                {!verificationQueue.length ? (
+                  <p className="text-[11px] text-slate-400">No pending verifications in queue.</p>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="admin-card admin-sweep rounded-3xl p-5">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-200/80">Dispute Radar</p>
+                  <p className="text-[11px] text-slate-400">Contracts with open issues.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => refreshDisputes()}
+                  className="rounded-full border border-orange-500/30 bg-black/40 px-3 py-1 text-[10px] font-semibold text-orange-100 hover:bg-white/10"
+                >
+                  Sync
+                </button>
+              </div>
+              <div className="mt-3 space-y-2 text-xs">
+                {disputes.slice(0, 3).map((dispute) => (
+                  <div key={dispute.id} className="rounded-2xl border border-orange-500/20 px-3 py-2">
+                    <p className="text-[11px] font-semibold">{dispute.title || dispute.contract_id || 'Dispute'}</p>
+                    <p className="text-[10px] text-slate-400">Status: {dispute.status || 'open'} · Priority: {dispute.priority || 'normal'}</p>
+                  </div>
+                ))}
+                {!disputes.length ? (
+                  <p className="text-[11px] text-slate-400">No active disputes.</p>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="admin-card admin-sweep rounded-3xl p-5">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-200/80">Audit Pulse</p>
+                  <p className="text-[11px] text-slate-400">Most recent admin actions.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => refreshAudit()}
+                  className="rounded-full border border-orange-500/30 bg-black/40 px-3 py-1 text-[10px] font-semibold text-orange-100 hover:bg-white/10"
+                >
+                  Refresh
+                </button>
+              </div>
+              <div className="mt-3 space-y-2 text-xs">
+                {audit.slice(0, 5).map((entry) => (
+                  <div key={entry.id || entry.at} className="rounded-2xl border border-orange-500/20 px-3 py-2">
+                    <p className="text-[11px] font-semibold">{entry.action || 'Admin action'}</p>
+                    <p className="text-[10px] text-slate-400">{entry.at ? new Date(entry.at).toLocaleString() : '--'} · {entry.actor || 'system'}</p>
+                  </div>
+                ))}
+                {!audit.length ? (
+                  <p className="text-[11px] text-slate-400">No recent activity.</p>
+                ) : null}
+              </div>
+            </div>
+          </aside>
         </div>
 
-        <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+        <div className="admin-card admin-sweep rounded-3xl p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm font-bold">Admin Audit Log</p>
@@ -3082,7 +3282,7 @@ export default function AdminPanel() {
             <button
               type="button"
               onClick={() => refreshAudit()}
-              className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600"
+              className="rounded-full border border-orange-500/30 bg-black/40 px-3 py-1 text-xs font-semibold text-orange-100 hover:bg-white/10"
             >
               Refresh log
             </button>
@@ -3105,3 +3305,4 @@ export default function AdminPanel() {
     </div>
   )
 }
+
