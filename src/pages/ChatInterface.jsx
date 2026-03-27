@@ -532,6 +532,22 @@ export default function ChatInterface() {
     loadInbox()
   }, [loadInbox])
 
+  const filteredPriorityInbox = useMemo(() => {
+    if (!query.trim()) return priorityInbox
+    const search = query.toLowerCase()
+    return priorityInbox.filter((thread) => thread.name.toLowerCase().includes(search) || thread.last.toLowerCase().includes(search))
+  }, [priorityInbox, query])
+
+  const filteredRequests = useMemo(() => {
+    if (!query.trim()) return messageRequests
+    const search = query.toLowerCase()
+    return messageRequests.filter((thread) => thread.name.toLowerCase().includes(search) || thread.last.toLowerCase().includes(search))
+  }, [messageRequests, query])
+
+  const allVisibleThreads = useMemo(() => [...filteredPriorityInbox, ...filteredRequests], [filteredPriorityInbox, filteredRequests])
+  const activeThread = allVisibleThreads.find((thread) => thread.id === activeThreadId)
+  activeThreadMatchIdRef.current = activeThread?.matchId || ''
+
   useEffect(() => {
     const token = getToken()
     if (!token || !activeThread?.matchId || activeThread?.isFriendThread) {
@@ -580,22 +596,6 @@ export default function ChatInterface() {
       setAiNegotiation(null)
     }
   }, [leadSummary])
-
-  const filteredPriorityInbox = useMemo(() => {
-    if (!query.trim()) return priorityInbox
-    const search = query.toLowerCase()
-    return priorityInbox.filter((thread) => thread.name.toLowerCase().includes(search) || thread.last.toLowerCase().includes(search))
-  }, [priorityInbox, query])
-
-  const filteredRequests = useMemo(() => {
-    if (!query.trim()) return messageRequests
-    const search = query.toLowerCase()
-    return messageRequests.filter((thread) => thread.name.toLowerCase().includes(search) || thread.last.toLowerCase().includes(search))
-  }, [messageRequests, query])
-
-  const allVisibleThreads = useMemo(() => [...filteredPriorityInbox, ...filteredRequests], [filteredPriorityInbox, filteredRequests])
-  const activeThread = allVisibleThreads.find((thread) => thread.id === activeThreadId)
-  activeThreadMatchIdRef.current = activeThread?.matchId || ''
   const activeCallHistory = useMemo(() => {
     if (!activeThread?.matchId) return []
     return callHistoryByThread[activeThread.matchId] || []
