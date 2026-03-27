@@ -1315,7 +1315,8 @@ export default function AdminPanel() {
               ) : null}
 
               {activeCategory !== 'home' ? (
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+                <>
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
 
           <section className="space-y-4">
             <div className="admin-card admin-sweep rounded-3xl p-6">
@@ -3328,6 +3329,7 @@ export default function AdminPanel() {
                     {audit.length === 0 ? <p className="text-xs text-slate-500">No audit entries yet.</p> : null}
                   </div>
                 </div>
+                </>
               ) : null}
             </div>
           </div>
