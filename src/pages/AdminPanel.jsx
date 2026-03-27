@@ -931,17 +931,58 @@ export default function AdminPanel() {
   const CategoryIcon = CATEGORY_ICONS[activeCategory] || ShieldCheck
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100">
-      <div className="mx-auto max-w-7xl px-4 py-8 space-y-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Owner Admin</p>
-            <h1 className="mt-2 text-3xl font-bold">Admin Control Center</h1>
-            <p className="mt-1 text-sm text-slate-500">Full platform, system, and network control. All actions are logged and secured.</p>
+    <div
+      className="dark min-h-screen bg-[#0b1120] text-slate-100"
+      style={{ fontFamily: "'Space Grotesk', 'Manrope', sans-serif" }}
+    >
+      <style>{'@import url(\"https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap\");'}</style>
+      <div className="mx-auto max-w-[1400px] px-6 py-10 space-y-8">
+        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="flex flex-col justify-center gap-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">Owner Admin</p>
+            <h1 className="text-4xl font-semibold leading-tight text-white sm:text-5xl">
+              Command Deck
+            </h1>
+            <p className="max-w-xl text-sm text-slate-300">
+              Real-time control for platform, infra, and network operations. Everything is tracked and auditable.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-semibold text-white">
+                <ShieldCheck className="h-4 w-4 text-cyan-300" />
+                Owner Access
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-1.5 text-xs font-semibold text-slate-200">
+                Audit logs enabled
+              </span>
+            </div>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white">
-            <ShieldCheck className="h-4 w-4" />
-            Owner Access
+          <div className="rounded-[32px] border border-white/10 bg-gradient-to-br from-[#1a2542] via-[#23325b] to-[#1c1338] p-6 shadow-[0_25px_80px_-40px_rgba(88,128,255,0.9)]">
+            <div className="flex items-center justify-between text-xs text-slate-200">
+              <span className="font-semibold uppercase tracking-[0.2em]">System Pulse</span>
+              <span className="rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold text-white">Live</span>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-4 text-sm text-white">
+              <div>
+                <p className="text-[11px] uppercase text-slate-300">Total accounts</p>
+                <p className="mt-1 text-2xl font-semibold">{formatNumber(summary?.users?.total)}</p>
+              </div>
+              <div>
+                <p className="text-[11px] uppercase text-slate-300">Pending verifications</p>
+                <p className="mt-1 text-2xl font-semibold">{formatNumber(summary?.verification?.pending)}</p>
+              </div>
+              <div>
+                <p className="text-[11px] uppercase text-slate-300">Infra alerts</p>
+                <p className="mt-1 text-2xl font-semibold">{formatNumber(network?.alert_count)}</p>
+              </div>
+              <div>
+                <p className="text-[11px] uppercase text-slate-300">Open tickets</p>
+                <p className="mt-1 text-2xl font-semibold">{formatNumber(summary?.support?.open)}</p>
+              </div>
+            </div>
+            <div className="mt-5 flex items-center gap-3 text-xs text-slate-200">
+              <span className="rounded-full bg-white/10 px-3 py-1">MFA {securityContext.mfa_required ? 'Required' : 'Optional'}</span>
+              <span className="rounded-full bg-white/10 px-3 py-1">Exec {securityContext.exec_enabled ? 'Enabled' : 'Simulated'}</span>
+            </div>
           </div>
         </div>
 

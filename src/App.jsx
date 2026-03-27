@@ -108,6 +108,8 @@ function AppRoutes() {
 function AppLayout() {
   const location = useLocation()
   const isImmersiveRoute = location.pathname === '/chat' || location.pathname === '/call'
+  const isAdminRoute = location.pathname.startsWith('/admin')
+  const hideChrome = isImmersiveRoute || isAdminRoute
   const navigationRef = useRef({ path: '', startedAt: 0 })
   const sessionRef = useRef({ startedAt: 0, ended: false })
 
@@ -181,12 +183,12 @@ function AppLayout() {
 
   return (
     <div className="app-shell min-h-screen">
-      {!isImmersiveRoute ? <NavBar /> : null}
-      <main className={isImmersiveRoute ? '' : 'pb-10'}>
+      {!hideChrome ? <NavBar /> : null}
+      <main className={hideChrome ? '' : 'pb-10'}>
         <AppRoutes />
       </main>
-      {!isImmersiveRoute ? <Footer /> : null}
-      <FloatingAssistant />
+      {!hideChrome ? <Footer /> : null}
+      {!hideChrome ? <FloatingAssistant /> : null}
     </div>
   )
 }
