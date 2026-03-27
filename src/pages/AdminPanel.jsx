@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Activity, Database, Lock, Network, Search, Server, Settings, ShieldCheck, Sparkles, Sun, Moon } from 'lucide-react'
+import { Activity, Database, Home, Lock, Network, Search, Server, Settings, ShieldCheck, Sparkles, Sun, Moon } from 'lucide-react'
 import { Area, AreaChart, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import AccessDeniedState from '../components/AccessDeniedState'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
@@ -429,7 +429,7 @@ export default function AdminPanel() {
   const [mfaCode, setMfaCode] = useState(() => localStorage.getItem('admin_mfa_code') || '')
   const [deviceId, setDeviceId] = useState(() => localStorage.getItem('admin_device_id') || '')
   const [stepUpCode, setStepUpCode] = useState('')
-  const [activeCategory, setActiveCategory] = useState('platform')
+  const [activeCategory, setActiveCategory] = useState('home')
   const [actionBusy, setActionBusy] = useState('')
 
   const actionOptions = useMemo(() => {
@@ -967,328 +967,355 @@ export default function AdminPanel() {
 
   const activeData = inventory.find((cat) => cat.id === activeCategory) || inventory[0]
   const CategoryIcon = CATEGORY_ICONS[activeCategory] || ShieldCheck
+  const sidebarItems = useMemo(() => {
+    return [
+      { id: 'home', label: 'Home', icon: Home },
+      ...inventory.map((item) => ({ ...item, icon: CATEGORY_ICONS[item.id] || ShieldCheck })),
+    ]
+  }, [inventory])
 
   return (
-    <div className="admin-shell min-h-screen">
+    <div className="admin-shell h-screen">
       <div className="admin-plasma" />
       <div className="admin-current" />
       <div className="admin-noise" />
-      <div className="relative w-full px-6 py-10 space-y-8">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="relative z-10 flex h-full w-full gap-6 px-6 py-6">
+        <aside className="admin-sidebar admin-panel flex w-[250px] flex-col gap-6 rounded-3xl px-5 py-6">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500/70 to-yellow-300/40 text-white shadow-[0_0_18px_rgba(255,140,30,0.6)]">
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-orange-200/80">GarTexHub</p>
-              <p className="text-lg font-semibold text-white">Admin Matrix</p>
+              <p className="text-[11px] uppercase tracking-[0.3em] text-orange-200/80">GarTexHub</p>
+              <p className="text-base font-semibold text-white">Admin Matrix</p>
             </div>
           </div>
-          <div className="admin-panel admin-sweep flex min-w-[220px] flex-1 items-center gap-2 rounded-full px-4 py-2 text-xs text-slate-200 md:max-w-md">
-            <Search className="h-4 w-4 text-orange-200/80" />
-            <input
-              className="w-full bg-transparent text-xs text-slate-200 placeholder:text-slate-400 focus:outline-none"
-              placeholder="Search accounts, contracts, proofs..."
-            />
+          <div className="space-y-1">
+            {sidebarItems.map((item) => {
+              const Icon = item.icon
+              const isActive = activeCategory === item.id
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setActiveCategory(item.id)}
+                  className={`admin-sweep flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-left text-xs font-semibold transition ${isActive ? 'bg-white/10 text-white shadow-[0_0_18px_rgba(80,140,255,0.35)]' : 'text-slate-300 hover:bg-white/10'}`}
+                >
+                  <span className={`flex h-6 w-1.5 items-center rounded-full ${isActive ? 'bg-sky-400' : 'bg-transparent'}`} />
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </button>
+              )
+            })}
           </div>
-          <button
-            type="button"
-            onClick={() => setAdminDark((prev) => !prev)}
-            className="admin-panel flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold text-white/90"
-          >
-            {adminDark ? <Sun className="h-4 w-4 text-yellow-300" /> : <Moon className="h-4 w-4 text-slate-700" />}
-            {adminDark ? 'Light' : 'Dark'}
-          </button>
-        </div>
-        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="flex flex-col justify-center gap-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">Owner Admin</p>
-            <h1 className="text-4xl font-semibold leading-tight text-white sm:text-5xl">
-              Command Deck
-            </h1>
-            <p className="max-w-xl text-sm text-slate-300">
-              Real-time control for platform, infra, and network operations. Everything is tracked and auditable.
-            </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-semibold text-white">
-                <ShieldCheck className="h-4 w-4 text-cyan-300" />
-                Owner Access
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-1.5 text-xs font-semibold text-slate-200">
-                Audit logs enabled
-              </span>
-            </div>
-          </div>
-          <div className="admin-card admin-float admin-sweep relative overflow-hidden p-6">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_20%,rgba(255,140,40,0.25),transparent_55%),radial-gradient(circle_at_85%_10%,rgba(255,200,120,0.2),transparent_50%)] opacity-80" />
-            <div className="flex items-center justify-between text-xs text-slate-200">
-              <span className="font-semibold uppercase tracking-[0.2em]">System Pulse</span>
-              <span className="rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold text-white">Live</span>
-            </div>
-            <div className="mt-4 grid grid-cols-2 gap-4 text-sm text-white">
-              <div>
-                <p className="text-[11px] uppercase text-slate-300">Total accounts</p>
-                <p className="mt-1 text-2xl font-semibold">{formatNumber(summary?.users?.total)}</p>
-              </div>
-              <div>
-                <p className="text-[11px] uppercase text-slate-300">Pending verifications</p>
-                <p className="mt-1 text-2xl font-semibold">{formatNumber(summary?.verification?.pending)}</p>
-              </div>
-              <div>
-                <p className="text-[11px] uppercase text-slate-300">Infra alerts</p>
-                <p className="mt-1 text-2xl font-semibold">{formatNumber(network?.alert_count)}</p>
-              </div>
-              <div>
-                <p className="text-[11px] uppercase text-slate-300">Open tickets</p>
-                <p className="mt-1 text-2xl font-semibold">{formatNumber(summary?.support?.open)}</p>
-              </div>
-            </div>
-            <div className="mt-5 flex items-center gap-3 text-xs text-slate-200">
-              <span className="rounded-full bg-white/10 px-3 py-1">MFA {securityContext.mfa_required ? 'Required' : 'Optional'}</span>
-              <span className="rounded-full bg-white/10 px-3 py-1">Exec {securityContext.exec_enabled ? 'Enabled' : 'Simulated'}</span>
-            </div>
-          </div>
-        </div>
-
-        {error ? (
-          <div className="admin-panel admin-sweep rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
-            {error}
-          </div>
-        ) : null}
-
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <div className="admin-card admin-sweep rounded-3xl p-6">
-            <p className="text-sm font-bold">Admin Security</p>
-            <p className="mt-1 text-xs text-slate-500">MFA, device binding, and step-up codes are enforced on destructive actions.</p>
-            <div className="mt-4 space-y-3 text-xs">
-              <label className="flex flex-col gap-1">
-                <span className="text-[10px] font-semibold uppercase text-slate-500">MFA Code</span>
-                <input
-                  value={mfaCode}
-                  onChange={(event) => setMfaCode(event.target.value)}
-                  className="w-full rounded-full border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
-                  placeholder="Enter MFA code"
-                />
-              </label>
-              <label className="flex flex-col gap-1">
-                <span className="text-[10px] font-semibold uppercase text-slate-500">Device ID</span>
-                <input
-                  value={deviceId}
-                  onChange={(event) => setDeviceId(event.target.value)}
-                  className="w-full rounded-full border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
-                  placeholder="Bind this device ID"
-                />
-              </label>
-              <label className="flex flex-col gap-1">
-                <span className="text-[10px] font-semibold uppercase text-slate-500">Step-up Code</span>
-                <input
-                  value={stepUpCode}
-                  onChange={(event) => setStepUpCode(event.target.value)}
-                  className="w-full rounded-full border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
-                  placeholder="Required for destructive actions"
-                />
-              </label>
-            </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
-                MFA {securityContext.mfa_required ? 'Required' : 'Optional'}
-              </span>
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
-                IP allowlist {securityContext.ip_allowlist?.length ? 'On' : 'Off'}
-              </span>
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
-                Device allowlist {securityContext.device_allowlist?.length ? 'On' : 'Off'}
-              </span>
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
-                Exec {securityContext.exec_enabled ? 'Enabled' : 'Simulated'}
-              </span>
-            </div>
-          </div>
-
-          <div className="admin-card admin-sweep rounded-3xl p-6">
-            <div className="flex items-center gap-2 text-sm font-bold">
-              <Activity className="h-4 w-4 text-emerald-500" />
-              Platform Snapshot
-            </div>
-            <div className="mt-4 grid grid-cols-2 gap-3 text-xs text-slate-600 dark:text-slate-300">
-              <div>
-                <p className="text-[10px] uppercase text-slate-500">Total accounts</p>
-                <p className="text-lg font-semibold text-slate-900 dark:text-white">{formatNumber(summary?.users?.total)}</p>
-              </div>
-              <div>
-                <p className="text-[10px] uppercase text-slate-500">Verification pending</p>
-                <p className="text-lg font-semibold text-slate-900 dark:text-white">{formatNumber(summary?.verification?.pending)}</p>
-              </div>
-              <div>
-                <p className="text-[10px] uppercase text-slate-500">Reports open</p>
-                <p className="text-lg font-semibold text-slate-900 dark:text-white">{formatNumber(summary?.support?.open)}</p>
-              </div>
-              <div>
-                <p className="text-[10px] uppercase text-slate-500">Domain clicks / visits</p>
-                <p className="text-lg font-semibold text-slate-900 dark:text-white">
-                  {formatNumber(summary?.traffic?.clicks)} / {formatNumber(summary?.traffic?.visits)}
-                </p>
-              </div>
-            </div>
-            <div className="mt-4 text-xs text-slate-500">
-              Premium users: {formatNumber(premiumUsers.length)}. Suspended: {formatNumber(summary?.users?.suspended)}.
-            </div>
-          </div>
-
-          <div className="admin-card admin-sweep rounded-3xl p-6">
-            <div className="flex items-center gap-2 text-sm font-bold">
-              <Server className="h-4 w-4 text-indigo-500" />
-              Infra + Network Health
-            </div>
-            <div className="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
-              <div className="flex items-center justify-between">
-                <span>CPU load (1m)</span>
-                <span className="font-semibold text-slate-900 dark:text-white">{infra?.cpu?.load_1m?.toFixed?.(2) || '--'}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>Memory used</span>
-                <span className="font-semibold text-slate-900 dark:text-white">
-                  {infra?.memory?.used_bytes ? formatNumber(Math.round(infra.memory.used_bytes / (1024 * 1024))) : '--'} MB
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>Devices up/down</span>
-                <span className="font-semibold text-slate-900 dark:text-white">{formatNumber(network?.device_up)} / {formatNumber(network?.device_down)}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>Network alerts</span>
-                <span className="font-semibold text-slate-900 dark:text-white">{formatNumber(network?.alert_count)}</span>
-              </div>
-            </div>
-            <p className="mt-4 text-xs text-slate-500">Live system stats from infra and network controllers.</p>
-          </div>
-        </div>
-
-        <div className="admin-card admin-sweep rounded-3xl p-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-bold">Action Console</p>
-              <p className="text-xs text-slate-500">Run platform, infra, and network actions with full audit logging.</p>
-            </div>
-            <div className="inline-flex items-center gap-2 text-xs text-slate-500">
-              <Lock className="h-4 w-4" />
-              Step-up required for destructive actions
-            </div>
-          </div>
-          <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-[1.2fr_1fr]">
-            <label className="flex flex-col gap-1 text-xs">
-              <span className="text-[10px] font-semibold uppercase text-slate-500">Action</span>
-              <select
-                value={selectedActionId}
-                onChange={(event) => setSelectedActionId(event.target.value)}
-                className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
-              >
-                {ACTION_GROUPS.map((group) => (
-                  <optgroup key={group.label} label={group.label}>
-                    {group.actions.map((action) => (
-                      <option key={action.id} value={action.id}>{action.label}</option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
-            </label>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {selectedAction?.fields?.length ? selectedAction.fields.map((field) => (
-                <label key={field.key} className="flex flex-col gap-1 text-xs">
-                  <span className="text-[10px] font-semibold uppercase text-slate-500">{field.label}</span>
-                  <input
-                    value={actionForm[field.key] || ''}
-                    onChange={(event) => setActionForm((prev) => ({ ...prev, [field.key]: event.target.value }))}
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
-                    placeholder={field.label}
-                  />
-                </label>
-              )) : (
-                <div className="text-xs text-slate-500">No parameters required.</div>
-              )}
-            </div>
-          </div>
-          <div className="mt-4 flex items-center justify-end">
+          <div className="mt-auto admin-card admin-sweep rounded-3xl p-4 text-center">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-slate-400">Upgrade</p>
+            <p className="mt-2 text-xs text-slate-300">Unlock premium monitoring surfaces.</p>
             <button
               type="button"
-              onClick={() => runAction(selectedAction)}
-              className="admin-glow rounded-full bg-gradient-to-r from-orange-500/80 to-yellow-400/60 px-4 py-2 text-xs font-semibold text-white shadow-[0_0_18px_rgba(255,140,30,0.5)] hover:brightness-110"
-              disabled={actionBusy === selectedAction?.id}
+              className="mt-3 w-full rounded-full bg-gradient-to-r from-orange-500/80 to-yellow-400/70 px-3 py-2 text-xs font-semibold text-white shadow-[0_0_18px_rgba(255,140,30,0.45)]"
             >
-              {actionBusy === selectedAction?.id ? 'Running...' : 'Run action'}
+              Upgrade Now
             </button>
           </div>
-        </div>
+        </aside>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="admin-card admin-sweep rounded-3xl p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-200/80">Active Users</p>
-            <div className="mt-4 h-32">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={activeUsersTrend}>
-                  <Line type="monotone" dataKey="count" stroke="#f59e0b" strokeWidth={2.5} dot={false} isAnimationActive animationDuration={900} />
-                  <Tooltip contentStyle={{ background: '#0f0f12', border: '1px solid rgba(255,140,30,0.3)', borderRadius: 12 }} />
-                </LineChart>
-              </ResponsiveContainer>
+        <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-4 pb-2">
+            <div className="admin-panel admin-sweep flex min-w-[220px] flex-1 items-center gap-2 rounded-full px-4 py-2 text-xs text-slate-200 md:max-w-md">
+              <Search className="h-4 w-4 text-orange-200/80" />
+              <input
+                className="w-full bg-transparent text-xs text-slate-200 placeholder:text-slate-400 focus:outline-none"
+                placeholder="Search accounts, contracts, proofs..."
+              />
             </div>
-            <p className="mt-3 text-xs text-slate-300">Last 14 days unique logins</p>
+            <button
+              type="button"
+              onClick={() => setAdminDark((prev) => !prev)}
+              className="admin-panel flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold text-white/90"
+            >
+              {adminDark ? <Sun className="h-4 w-4 text-yellow-300" /> : <Moon className="h-4 w-4 text-slate-700" />}
+              {adminDark ? 'Light' : 'Dark'}
+            </button>
           </div>
-          <div className="admin-card admin-sweep rounded-3xl p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-200/80">Buyer Requests</p>
-            <div className="mt-4 h-32">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={buyerRequestTrend}>
-                  <defs>
-                    <linearGradient id="reqGlow" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#f97316" stopOpacity={0.6} />
-                      <stop offset="100%" stopColor="#fbbf24" stopOpacity={0.2} />
-                    </linearGradient>
-                  </defs>
-                  <Area type="monotone" dataKey="count" stroke="#f97316" fill="url(#reqGlow)" strokeWidth={2.2} isAnimationActive animationDuration={950} />
-                  <Tooltip contentStyle={{ background: '#0f0f12', border: '1px solid rgba(255,140,30,0.3)', borderRadius: 12 }} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-            <p className="mt-3 text-xs text-slate-300">Demand flow over time</p>
-          </div>
-          <div className="admin-card admin-sweep rounded-3xl p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-200/80">Contract Status</p>
-            <div className="mt-4 h-32">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={contractStatusData} dataKey="value" innerRadius={40} outerRadius={62} paddingAngle={4} isAnimationActive animationDuration={900}>
-                    {contractStatusData.map((entry, index) => (
-                      <Cell key={entry.name} fill={chartPalette[index % chartPalette.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip contentStyle={{ background: '#0f0f12', border: '1px solid rgba(255,140,30,0.3)', borderRadius: 12 }} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <p className="mt-3 text-xs text-slate-300">Signed vs pending vs disputes</p>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[240px_1fr_320px]">
-          <aside className="admin-panel rounded-3xl p-4">
-            <p className="text-xs font-semibold uppercase tracking-widest text-orange-200/70">Modules</p>
-            <div className="mt-3 space-y-2">
-              {inventory.map((category) => {
-                const Icon = CATEGORY_ICONS[category.id] || ShieldCheck
-                return (
-                  <button
-                    key={category.id}
-                    type="button"
-                    onClick={() => setActiveCategory(category.id)}
-                    className={`admin-sweep flex w-full items-center gap-2 rounded-xl border border-orange-500/20 px-3 py-2 text-left text-xs font-semibold transition ${activeCategory === category.id ? 'bg-white/10 text-white shadow-[0_0_18px_rgba(255,140,30,0.35)]' : 'bg-black/30 text-slate-300 hover:bg-white/10'}`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {category.label}
-                  </button>
-                )
-              })}
-            </div>
-          </aside>
+          <div className="flex-1 overflow-y-auto pb-6 pr-2">
+            <div className="space-y-8">
+              {error ? (
+                <div className="admin-panel admin-sweep rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                  {error}
+                </div>
+              ) : null}
+
+              {activeCategory === 'home' ? (
+                <>
+                  <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+                    <div className="flex flex-col justify-center gap-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">Owner Admin</p>
+                      <h1 className="text-4xl font-semibold leading-tight text-white sm:text-5xl">
+                        Command Deck
+                      </h1>
+                      <p className="max-w-xl text-sm text-slate-300">
+                        Real-time control for platform, infra, and network operations. Everything is tracked and auditable.
+                      </p>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-semibold text-white">
+                          <ShieldCheck className="h-4 w-4 text-cyan-300" />
+                          Owner Access
+                        </span>
+                        <span className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-1.5 text-xs font-semibold text-slate-200">
+                          Audit logs enabled
+                        </span>
+                      </div>
+                    </div>
+                    <div className="admin-card admin-float admin-sweep relative overflow-hidden p-6">
+                      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_20%,rgba(255,140,40,0.25),transparent_55%),radial-gradient(circle_at_85%_10%,rgba(255,200,120,0.2),transparent_50%)] opacity-80" />
+                      <div className="flex items-center justify-between text-xs text-slate-200">
+                        <span className="font-semibold uppercase tracking-[0.2em]">System Pulse</span>
+                        <span className="rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold text-white">Live</span>
+                      </div>
+                      <div className="mt-4 grid grid-cols-2 gap-4 text-sm text-white">
+                        <div>
+                          <p className="text-[11px] uppercase text-slate-300">Total accounts</p>
+                          <p className="mt-1 text-2xl font-semibold">{formatNumber(summary?.users?.total)}</p>
+                        </div>
+                        <div>
+                          <p className="text-[11px] uppercase text-slate-300">Pending verifications</p>
+                          <p className="mt-1 text-2xl font-semibold">{formatNumber(summary?.verification?.pending)}</p>
+                        </div>
+                        <div>
+                          <p className="text-[11px] uppercase text-slate-300">Infra alerts</p>
+                          <p className="mt-1 text-2xl font-semibold">{formatNumber(network?.alert_count)}</p>
+                        </div>
+                        <div>
+                          <p className="text-[11px] uppercase text-slate-300">Open tickets</p>
+                          <p className="mt-1 text-2xl font-semibold">{formatNumber(summary?.support?.open)}</p>
+                        </div>
+                      </div>
+                      <div className="mt-5 flex items-center gap-3 text-xs text-slate-200">
+                        <span className="rounded-full bg-white/10 px-3 py-1">MFA {securityContext.mfa_required ? 'Required' : 'Optional'}</span>
+                        <span className="rounded-full bg-white/10 px-3 py-1">Exec {securityContext.exec_enabled ? 'Enabled' : 'Simulated'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                    <div className="admin-card admin-sweep rounded-3xl p-6">
+                      <p className="text-sm font-bold">Admin Security</p>
+                      <p className="mt-1 text-xs text-slate-500">MFA, device binding, and step-up codes are enforced on destructive actions.</p>
+                      <div className="mt-4 space-y-3 text-xs">
+                        <label className="flex flex-col gap-1">
+                          <span className="text-[10px] font-semibold uppercase text-slate-500">MFA Code</span>
+                          <input
+                            value={mfaCode}
+                            onChange={(event) => setMfaCode(event.target.value)}
+                            className="w-full rounded-full border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                            placeholder="Enter MFA code"
+                          />
+                        </label>
+                        <label className="flex flex-col gap-1">
+                          <span className="text-[10px] font-semibold uppercase text-slate-500">Device ID</span>
+                          <input
+                            value={deviceId}
+                            onChange={(event) => setDeviceId(event.target.value)}
+                            className="w-full rounded-full border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                            placeholder="Bind this device ID"
+                          />
+                        </label>
+                        <label className="flex flex-col gap-1">
+                          <span className="text-[10px] font-semibold uppercase text-slate-500">Step-up Code</span>
+                          <input
+                            value={stepUpCode}
+                            onChange={(event) => setStepUpCode(event.target.value)}
+                            className="w-full rounded-full border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                            placeholder="Required for destructive actions"
+                          />
+                        </label>
+                      </div>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                          MFA {securityContext.mfa_required ? 'Required' : 'Optional'}
+                        </span>
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                          IP allowlist {securityContext.ip_allowlist?.length ? 'On' : 'Off'}
+                        </span>
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                          Device allowlist {securityContext.device_allowlist?.length ? 'On' : 'Off'}
+                        </span>
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                          Exec {securityContext.exec_enabled ? 'Enabled' : 'Simulated'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="admin-card admin-sweep rounded-3xl p-6">
+                      <div className="flex items-center gap-2 text-sm font-bold">
+                        <Activity className="h-4 w-4 text-emerald-500" />
+                        Platform Snapshot
+                      </div>
+                      <div className="mt-4 grid grid-cols-2 gap-3 text-xs text-slate-600 dark:text-slate-300">
+                        <div>
+                          <p className="text-[10px] uppercase text-slate-500">Total accounts</p>
+                          <p className="text-lg font-semibold text-slate-900 dark:text-white">{formatNumber(summary?.users?.total)}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase text-slate-500">Verification pending</p>
+                          <p className="text-lg font-semibold text-slate-900 dark:text-white">{formatNumber(summary?.verification?.pending)}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase text-slate-500">Reports open</p>
+                          <p className="text-lg font-semibold text-slate-900 dark:text-white">{formatNumber(summary?.support?.open)}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase text-slate-500">Domain clicks / visits</p>
+                          <p className="text-lg font-semibold text-slate-900 dark:text-white">
+                            {formatNumber(summary?.traffic?.clicks)} / {formatNumber(summary?.traffic?.visits)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-4 text-xs text-slate-500">
+                        Premium users: {formatNumber(premiumUsers.length)}. Suspended: {formatNumber(summary?.users?.suspended)}.
+                      </div>
+                    </div>
+
+                    <div className="admin-card admin-sweep rounded-3xl p-6">
+                      <div className="flex items-center gap-2 text-sm font-bold">
+                        <Server className="h-4 w-4 text-indigo-500" />
+                        Infra + Network Health
+                      </div>
+                      <div className="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
+                        <div className="flex items-center justify-between">
+                          <span>CPU load (1m)</span>
+                          <span className="font-semibold text-slate-900 dark:text-white">{infra?.cpu?.load_1m?.toFixed?.(2) || '--'}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span>Memory used</span>
+                          <span className="font-semibold text-slate-900 dark:text-white">
+                            {infra?.memory?.used_bytes ? formatNumber(Math.round(infra.memory.used_bytes / (1024 * 1024))) : '--'} MB
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span>Devices up/down</span>
+                          <span className="font-semibold text-slate-900 dark:text-white">{formatNumber(network?.device_up)} / {formatNumber(network?.device_down)}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span>Network alerts</span>
+                          <span className="font-semibold text-slate-900 dark:text-white">{formatNumber(network?.alert_count)}</span>
+                        </div>
+                      </div>
+                      <p className="mt-4 text-xs text-slate-500">Live system stats from infra and network controllers.</p>
+                    </div>
+                  </div>
+
+                  <div className="admin-card admin-sweep rounded-3xl p-6">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div>
+                        <p className="text-sm font-bold">Action Console</p>
+                        <p className="text-xs text-slate-500">Run platform, infra, and network actions with full audit logging.</p>
+                      </div>
+                      <div className="inline-flex items-center gap-2 text-xs text-slate-500">
+                        <Lock className="h-4 w-4" />
+                        Step-up required for destructive actions
+                      </div>
+                    </div>
+                    <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-[1.2fr_1fr]">
+                      <label className="flex flex-col gap-1 text-xs">
+                        <span className="text-[10px] font-semibold uppercase text-slate-500">Action</span>
+                        <select
+                          value={selectedActionId}
+                          onChange={(event) => setSelectedActionId(event.target.value)}
+                          className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                        >
+                          {ACTION_GROUPS.map((group) => (
+                            <optgroup key={group.label} label={group.label}>
+                              {group.actions.map((action) => (
+                                <option key={action.id} value={action.id}>{action.label}</option>
+                              ))}
+                            </optgroup>
+                          ))}
+                        </select>
+                      </label>
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        {selectedAction?.fields?.length ? selectedAction.fields.map((field) => (
+                          <label key={field.key} className="flex flex-col gap-1 text-xs">
+                            <span className="text-[10px] font-semibold uppercase text-slate-500">{field.label}</span>
+                            <input
+                              value={actionForm[field.key] || ''}
+                              onChange={(event) => setActionForm((prev) => ({ ...prev, [field.key]: event.target.value }))}
+                              className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                              placeholder={field.label}
+                            />
+                          </label>
+                        )) : (
+                          <div className="text-xs text-slate-500">No parameters required.</div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-4 flex items-center justify-end">
+                      <button
+                        type="button"
+                        onClick={() => runAction(selectedAction)}
+                        className="admin-glow rounded-full bg-gradient-to-r from-orange-500/80 to-yellow-400/60 px-4 py-2 text-xs font-semibold text-white shadow-[0_0_18px_rgba(255,140,30,0.5)] hover:brightness-110"
+                        disabled={actionBusy === selectedAction?.id}
+                      >
+                        {actionBusy === selectedAction?.id ? 'Running...' : 'Run action'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                    <div className="admin-card admin-sweep rounded-3xl p-5">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-200/80">Active Users</p>
+                      <div className="mt-4 h-32">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={activeUsersTrend}>
+                            <Line type="monotone" dataKey="count" stroke="#f59e0b" strokeWidth={2.5} dot={false} isAnimationActive animationDuration={900} />
+                            <Tooltip contentStyle={{ background: '#0f0f12', border: '1px solid rgba(255,140,30,0.3)', borderRadius: 12 }} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <p className="mt-3 text-xs text-slate-300">Last 14 days unique logins</p>
+                    </div>
+                    <div className="admin-card admin-sweep rounded-3xl p-5">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-200/80">Buyer Requests</p>
+                      <div className="mt-4 h-32">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={buyerRequestTrend}>
+                            <defs>
+                              <linearGradient id="reqGlow" x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0%" stopColor="#f97316" stopOpacity={0.6} />
+                                <stop offset="100%" stopColor="#fbbf24" stopOpacity={0.2} />
+                              </linearGradient>
+                            </defs>
+                            <Area type="monotone" dataKey="count" stroke="#f97316" fill="url(#reqGlow)" strokeWidth={2.2} isAnimationActive animationDuration={950} />
+                            <Tooltip contentStyle={{ background: '#0f0f12', border: '1px solid rgba(255,140,30,0.3)', borderRadius: 12 }} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <p className="mt-3 text-xs text-slate-300">Demand flow over time</p>
+                    </div>
+                    <div className="admin-card admin-sweep rounded-3xl p-5">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-200/80">Contract Status</p>
+                      <div className="mt-4 h-32">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie data={contractStatusData} dataKey="value" innerRadius={40} outerRadius={62} paddingAngle={4} isAnimationActive animationDuration={900}>
+                              {contractStatusData.map((entry, index) => (
+                                <Cell key={entry.name} fill={chartPalette[index % chartPalette.length]} />
+                              ))}
+                            </Pie>
+                            <Tooltip contentStyle={{ background: '#0f0f12', border: '1px solid rgba(255,140,30,0.3)', borderRadius: 12 }} />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <p className="mt-3 text-xs text-slate-300">Signed vs pending vs disputes</p>
+                    </div>
+                  </div>
+                </>
+              ) : null}
+
+              {activeCategory !== 'home' ? (
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
 
           <section className="space-y-4">
             <div className="admin-card admin-sweep rounded-3xl p-6">
@@ -3273,34 +3300,38 @@ export default function AdminPanel() {
           </aside>
         </div>
 
-        <div className="admin-card admin-sweep rounded-3xl p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-bold">Admin Audit Log</p>
-              <p className="text-xs text-slate-500">Immutable, tamper-evident audit trail for every admin action.</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => refreshAudit()}
-              className="rounded-full border border-orange-500/30 bg-black/40 px-3 py-1 text-xs font-semibold text-orange-100 hover:bg-white/10"
-            >
-              Refresh log
-            </button>
-          </div>
-          <div className="mt-4 grid grid-cols-1 gap-2">
-            {audit.slice(0, 10).map((entry) => (
-              <div key={entry.id} className="rounded-xl border border-slate-200 px-3 py-2 text-[11px] text-slate-600 dark:border-slate-700 dark:text-slate-300">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="font-semibold text-slate-900 dark:text-white">{entry.action || entry.path}</div>
-                  <div>{entry.at ? new Date(entry.at).toLocaleString() : '--'}</div>
+                <div className="admin-card admin-sweep rounded-3xl p-6">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-bold">Admin Audit Log</p>
+                      <p className="text-xs text-slate-500">Immutable, tamper-evident audit trail for every admin action.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => refreshAudit()}
+                      className="rounded-full border border-orange-500/30 bg-black/40 px-3 py-1 text-xs font-semibold text-orange-100 hover:bg-white/10"
+                    >
+                      Refresh log
+                    </button>
+                  </div>
+                  <div className="mt-4 grid grid-cols-1 gap-2">
+                    {audit.slice(0, 10).map((entry) => (
+                      <div key={entry.id} className="rounded-xl border border-slate-200 px-3 py-2 text-[11px] text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="font-semibold text-slate-900 dark:text-white">{entry.action || entry.path}</div>
+                          <div>{entry.at ? new Date(entry.at).toLocaleString() : '--'}</div>
+                        </div>
+                        <div className="mt-1 text-[10px] text-slate-500">Actor: {entry.actor_id || 'system'} / Status: {entry.status}</div>
+                        <div className="mt-1 text-[10px] text-slate-500">IP: {entry.ip || '--'} / Device: {entry.device_id || '--'}</div>
+                      </div>
+                    ))}
+                    {audit.length === 0 ? <p className="text-xs text-slate-500">No audit entries yet.</p> : null}
+                  </div>
                 </div>
-                <div className="mt-1 text-[10px] text-slate-500">Actor: {entry.actor_id || 'system'} / Status: {entry.status}</div>
-                <div className="mt-1 text-[10px] text-slate-500">IP: {entry.ip || '--'} / Device: {entry.device_id || '--'}</div>
-              </div>
-            ))}
-            {audit.length === 0 ? <p className="text-xs text-slate-500">No audit entries yet.</p> : null}
+              ) : null}
+            </div>
           </div>
-        </div>
+        </main>
       </div>
     </div>
   )
