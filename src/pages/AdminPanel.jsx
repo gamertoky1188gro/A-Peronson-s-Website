@@ -630,6 +630,80 @@ export default function AdminPanel() {
     ]
   }, [contractsVault])
   const chartPalette = ['#4B9DFB', '#6366f1', '#22c55e']
+  const premiumBundles = [
+    {
+      title: 'Buyer (Premium)',
+      highlights: [
+        'Advanced Search Filters',
+        'Priority Buyer Request Placement',
+        'Dedicated Support',
+        'Contract History & Audit Trail',
+        'Early Access to New Verified Factories',
+        'Buying Pattern Analysis',
+        'Order Completion Certification',
+        'AI Auto-reply Customization',
+        'Smart Supplier Matching',
+        'Request Performance Insights',
+        'Profile, product boost & increased reach',
+      ],
+    },
+    {
+      title: 'Factory (Premium)',
+      highlights: [
+        'Profile, product boost & increased reach',
+        'Advanced analytics (who viewed, inquiry rate)',
+        'Priority in search results & filters',
+        'AI auto-reply customization',
+        'Dedicated account manager',
+        'Custom branding on profile',
+        'Enterprise analytics dashboard',
+        'Unlimited agent/sub-ID creation',
+        'Buying Pattern Analysis',
+        'Order Completion Certification',
+        'Dedicated Support',
+        'Contract history & audit trail',
+        'Multi-agent management',
+        'Multiple team/agent access controls',
+        'Request & factory performance insights',
+        'Buyer interest analytics',
+        'Agent performance analytics & reporting',
+        'More product/video posting capacity',
+        'Lead distribution across agents',
+        'Buyer communication insights',
+        'Buyer Request Priority Access',
+        'Buyer Conversion Insights',
+        'Unlimited Partner Network request acceptance',
+      ],
+    },
+    {
+      title: 'Buying House (Premium)',
+      highlights: [
+        'Profile, product boost & increased reach',
+        'Advanced analytics (who viewed, inquiry rate)',
+        'Priority in search results & filters',
+        'AI auto-reply customization',
+        'Dedicated account manager',
+        'Custom branding on profile',
+        'Enterprise analytics dashboard',
+        'Unlimited agent/sub-ID creation',
+        'Buying Pattern Analysis',
+        'Order Completion Certification',
+        'Dedicated Support',
+        'Contract history & audit trail',
+        'Multi-agent management',
+        'Multiple team/agent access controls',
+        'Request Buying House performance insights',
+        'Buyer interest analytics',
+        'Agent performance analytics & reporting',
+        'More product/video posting capacity',
+        'Lead distribution across agents',
+        'Buyer communication insights',
+        'Buyer Request Priority Access',
+        'Buyer Conversion Insights',
+        'Unlimited Partner Network access',
+      ],
+    },
+  ]
 
   function updateDraft(id, field, value) {
     setUserDrafts((prev) => ({
@@ -1350,6 +1424,21 @@ export default function AdminPanel() {
                       </div>
                       <p className="mt-3 text-xs text-slate-300">Signed vs pending vs disputes</p>
                     </div>
+                  </div>
+                  <div className="grid gap-4 lg:grid-cols-3">
+                    {premiumBundles.map((bundle) => (
+                      <div key={bundle.title} className="admin-card admin-sweep rounded-3xl p-5">
+                        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">{bundle.title}</p>
+                        <ul className="mt-4 space-y-2 text-xs text-slate-200">
+                          {bundle.highlights.map((item) => (
+                            <li key={item} className="flex items-start gap-2 text-slate-200">
+                              <span className="mt-[2px] h-1.5 w-1.5 rounded-full bg-sky-400" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
                   </div>
                 </>
               ) : null}
