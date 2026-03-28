@@ -209,14 +209,89 @@ export default function Pricing() {
     expired: 'Expired (renew to restore badge)',
   }
 
-  const statusChip = {
-    verified_active:
-      'verified-pulse bg-[rgba(245,158,11,0.18)] text-[#f59e0b] shadow-[0_0_0_1px_rgba(245,158,11,0.22),0_18px_40px_rgba(245,158,11,0.10)] dark:bg-[rgba(245,158,11,0.14)]',
-    expiring_soon:
-      'bg-[rgba(245,158,11,0.16)] text-[#f59e0b] shadow-[0_0_0_1px_rgba(245,158,11,0.18)] dark:bg-[rgba(245,158,11,0.12)]',
-    expired:
-      'bg-[rgba(244,63,94,0.16)] text-[#fb7185] shadow-[0_0_0_1px_rgba(244,63,94,0.20)] dark:bg-[rgba(244,63,94,0.12)]',
-  }
+const statusChip = {
+  verified_active:
+    'verified-pulse bg-[rgba(245,158,11,0.18)] text-[#f59e0b] shadow-[0_0_0_1px_rgba(245,158,11,0.22),0_18px_40px_rgba(245,158,11,0.10)] dark:bg-[rgba(245,158,11,0.14)]',
+  expiring_soon:
+    'bg-[rgba(245,158,11,0.16)] text-[#f59e0b] shadow-[0_0_0_1px_rgba(245,158,11,0.18)] dark:bg-[rgba(245,158,11,0.12)]',
+  expired:
+    'bg-[rgba(244,63,94,0.16)] text-[#fb7185] shadow-[0_0_0_1px_rgba(244,63,94,0.20)] dark:bg-[rgba(244,63,94,0.12)]',
+}
+
+const premiumFeatures = [
+  {
+    title: 'Buyer (Premium)',
+    items: [
+      'Advanced Search Filters',
+      'Priority Buyer Request Placement',
+      'Dedicated Support',
+      'Contract History & Audit Trail',
+      'Early Access to New Verified Factories',
+      'Buying Pattern Analysis',
+      'Order Completion Certification',
+      'AI Auto-reply Customization',
+      'Smart Supplier Matching',
+      'Request Performance Insights',
+      'Profile & product boost with increased reach',
+    ],
+  },
+  {
+    title: 'Factory (Premium)',
+    items: [
+      'Profile & product boost with increased reach',
+      'Advanced Analytics (views + inquiry rate)',
+      'Priority in search results & filters',
+      'AI auto-reply customization',
+      'Dedicated Account Manager',
+      'Custom Branding on Profile',
+      'Enterprise Analytics Dashboard',
+      'Unlimited Agent / Sub-ID Creation',
+      'Buying Pattern Analysis',
+      'Order Completion Certification',
+      'Dedicated Support',
+      'Contract History & Audit Trail',
+      'Multi-agent Management',
+      'Multiple Team / Agent Access Controls',
+      'Request & Factory Performance Insights',
+      'Buyer Interest Analytics',
+      'Agent Performance Analytics & Reporting',
+      'More Product & Video Posting Capacity',
+      'Lead Distribution Across Agents',
+      'Buyer Communication Insights',
+      'Buyer Request Priority Access',
+      'Buyer Conversion Insights',
+      'Unlimited Partner Network Request Acceptance',
+    ],
+  },
+  {
+    title: 'Buying House (Premium)',
+    items: [
+      'Profile & product boost with increased reach',
+      'Advanced Analytics (views + inquiry rate)',
+      'Priority in search results & filters',
+      'AI auto-reply customization',
+      'Dedicated Account Manager',
+      'Custom Branding on Profile',
+      'Enterprise Analytics Dashboard',
+      'Unlimited Agent / Sub-ID Creation',
+      'Buying Pattern Analysis',
+      'Order Completion Certification',
+      'Dedicated Support',
+      'Contract History & Audit Trail',
+      'Multi-agent Management',
+      'Multiple Team / Agent Access Controls',
+      'Request Buying House Performance Insights',
+      'Buyer Interest Analytics',
+      'Agent Performance Analytics & Reporting',
+      'More Product & Video Posting Capacity',
+      'Lead Distribution Across Agents',
+      'Buyer Communication Insights',
+      'Buyer Request Priority Access',
+      'Buyer Conversion Insights',
+      'Unlimited Partner Network Access',
+    ],
+  },
+]
 
   const tableRows = useMemo(() => {
     const roleSpecificFirstRow = (() => {
@@ -532,6 +607,33 @@ export default function Pricing() {
                 </div>
               </SpotlightCard>
             </MotionItem>
+          </div>
+        </div>
+
+        <div className="mt-10">
+          <h2 className="text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa] text-center">Premium feature deep dive</h2>
+          <p className="mt-2 text-center text-sm text-[#52525b] dark:text-[#a1a1aa]">A role-specific roundup of what the Premium plan unlocks.</p>
+          <div className="mt-6 grid gap-6 lg:grid-cols-3">
+            {premiumFeatures.map((bundle) => (
+              <SpotlightCard
+                key={bundle.title}
+                className={[
+                  'rounded-2xl p-6',
+                  'border border-white/10 bg-[rgba(9,9,11,0.04)]',
+                  'shadow-[0_20px_40px_-26px_rgba(0,0,0,0.85)] dark:bg-[rgba(250,250,250,0.04)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
+                ].join(' ')}
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">{bundle.title}</p>
+                <ul className="mt-4 space-y-2 text-sm text-[#09090b] dark:text-[#fafafa]">
+                  {bundle.items.map((item) => (
+                    <li key={item} className="flex items-start gap-2">
+                      <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-[#4B9DFB]" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </SpotlightCard>
+            ))}
           </div>
         </div>
 
