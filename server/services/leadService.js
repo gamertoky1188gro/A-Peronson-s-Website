@@ -2,6 +2,7 @@ import crypto from 'crypto'
 import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { forbiddenError, isAgent, isOwnerOrAdmin } from '../utils/permissions.js'
+import { getPlanForUser } from './entitlementService.js'
 
 const LEADS_FILE = 'leads.json'
 const NOTES_FILE = 'lead_notes.json'
@@ -158,19 +159,51 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp }) 
   const interactionAt = sanitizeString(timestamp || now, 64) || now
   const updated = []
 
+  const leadCountsByAgent = leads.reduce((acc, row) => {
+    const agentId = String(row.assigned_agent_id || '')
+    if (!agentId) return acc
+    acc[agentId] = (acc[agentId] || 0) + 1
+    return acc
+  }, {})
+
+  const agentsByOrg = users.reduce((acc, u) => {
+    if (String(u.role || '').toLowerCase() !== 'agent') return acc
+    const ownerId = String(u.org_owner_id || '')
+    if (!ownerId) return acc
+    if (!acc.has(ownerId)) acc.set(ownerId, [])
+    acc.get(ownerId).push(u)
+    return acc
+  }, new Map())
+
+  function pickLeastLoadedAgent(orgOwnerId) {
+    const agents = agentsByOrg.get(String(orgOwnerId || '')) || []
+    if (!agents.length) return ''
+    const sorted = agents.slice().sort((a, b) => {
+      const aCount = (leadCountsByAgent[String(a.id)] || 0) + Number(a.assigned_requests || 0)
+      const bCount = (leadCountsByAgent[String(b.id)] || 0) + Number(b.assigned_requests || 0)
+      return aCount - bCount
+    })
+    return String(sorted[0]?.id || '')
+  }
+
   for (const [orgOwnerId, extras] of orgTargets.entries()) {
     const orgId = sanitizeString(String(orgOwnerId || ''), 120)
     if (!orgId) continue
 
+    const orgOwner = usersById.get(orgId)
+    const plan = orgOwner ? await getPlanForUser(orgOwner) : 'free'
+    const allowAutoAssign = plan === 'premium'
+
     const existingIndex = leads.findIndex((lead) => String(lead.org_owner_id || '') === orgId && String(lead.match_id || '') === matchId)
     const counterpartyId = pickCounterparty({ buyerId, supplierId, orgOwnerId: orgId, friendPair })
+    const autoAssignedAgent = !extras.assigned_agent_id && allowAutoAssign ? pickLeastLoadedAgent(orgId) : ''
 
     if (existingIndex >= 0) {
       const current = leads[existingIndex]
       leads[existingIndex] = {
         ...current,
         counterparty_id: current.counterparty_id || counterpartyId,
-        assigned_agent_id: extras.assigned_agent_id || current.assigned_agent_id || '',
+        assigned_agent_id: extras.assigned_agent_id || current.assigned_agent_id || autoAssignedAgent || '',
         last_interaction_at: interactionAt,
         updated_at: now,
       }
@@ -185,7 +218,7 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp }) 
       counterparty_id: counterpartyId,
       source: 'message',
       status: 'new',
-      assigned_agent_id: extras.assigned_agent_id || '',
+      assigned_agent_id: extras.assigned_agent_id || autoAssignedAgent || '',
       created_at: now,
       updated_at: now,
       last_interaction_at: interactionAt,

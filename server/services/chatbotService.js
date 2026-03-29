@@ -269,6 +269,65 @@ function resolveOrgOwnerForCompany(companyUser) {
   return String(companyUser?.id || '')
 }
 
+function sanitizeAutoReply(raw = {}) {
+  const payload = raw && typeof raw === 'object' ? raw : {}
+  return {
+    enabled: payload.enabled === undefined ? true : Boolean(payload.enabled),
+    greeting: sanitizeString(payload.greeting || '', 240),
+    signature: sanitizeString(payload.signature || '', 200),
+    fallback: sanitizeString(payload.fallback || '', 400),
+    tone: sanitizeString(payload.tone || '', 80),
+    qualification_prompt: sanitizeString(payload.qualification_prompt || '', 240),
+  }
+}
+
+export async function getChatbotSettings(userId) {
+  const users = await readJson(USERS_FILE)
+  const user = Array.isArray(users) ? users.find((u) => String(u.id) === String(userId || '')) : null
+  if (!user) return null
+  const autoReply = sanitizeAutoReply(user.profile?.auto_reply || {})
+  return {
+    user_id: user.id,
+    chatbot_enabled: Boolean(user.chatbot_enabled || user?.profile?.chatbot_enabled),
+    handoff_mode: String(user.handoff_mode || user?.profile?.handoff_mode || 'notify_agent'),
+    auto_reply: autoReply,
+  }
+}
+
+export async function updateChatbotSettings(userId, payload = {}) {
+  const users = await readJson(USERS_FILE)
+  const idx = Array.isArray(users) ? users.findIndex((u) => String(u.id) === String(userId || '')) : -1
+  if (idx < 0) return null
+
+  const current = users[idx]
+  const autoReply = sanitizeAutoReply(payload.auto_reply || payload.autoReply || current.profile?.auto_reply || {})
+  const chatbotEnabled = payload.chatbot_enabled === undefined ? Boolean(current.chatbot_enabled) : Boolean(payload.chatbot_enabled)
+  const handoffMode = sanitizeString(payload.handoff_mode || payload.handoffMode || current.handoff_mode || 'notify_agent', 80) || 'notify_agent'
+
+  const nextProfile = {
+    ...(current.profile || {}),
+    chatbot_enabled: chatbotEnabled,
+    handoff_mode: handoffMode,
+    auto_reply: autoReply,
+  }
+
+  users[idx] = {
+    ...current,
+    chatbot_enabled: chatbotEnabled,
+    handoff_mode: handoffMode,
+    profile: nextProfile,
+    updated_at: new Date().toISOString(),
+  }
+
+  await writeJson(USERS_FILE, users)
+  return {
+    user_id: users[idx].id,
+    chatbot_enabled: chatbotEnabled,
+    handoff_mode: handoffMode,
+    auto_reply: autoReply,
+  }
+}
+
 export async function getChatbotProfileSummary(targetUserId) {
   const users = await readJson(USERS_FILE)
   const user = Array.isArray(users) ? users.find((u) => String(u.id) === String(targetUserId || '')) : null
@@ -304,6 +363,9 @@ export async function maybeGenerateBotReply({ match_id, sender_id, message }) {
 
   const enabled = Boolean(companyUser.chatbot_enabled || companyUser?.profile?.chatbot_enabled)
   if (!enabled) return { reply: null, reason: 'disabled' }
+
+  const autoReplySettings = sanitizeAutoReply(companyUser?.profile?.auto_reply || {})
+  if (autoReplySettings.enabled === false) return { reply: null, reason: 'auto_reply_disabled' }
 
   const [messages, requests] = await Promise.all([
     readJson(MESSAGES_FILE),
@@ -351,6 +413,9 @@ export async function maybeGenerateBotReply({ match_id, sender_id, message }) {
     const updatedRequirement = Object.keys(patch || {}).length ? { ...requirement, ...patch } : requirement
     const missingFields = computeMissingFields(updatedRequirement)
     qualificationQuestion = buildQualificationQuestion(missingFields)
+    if (autoReplySettings.qualification_prompt) {
+      qualificationQuestion = autoReplySettings.qualification_prompt
+    }
     if (qualificationQuestion) {
       await addLeadNoteForMatch({
         matchId,
@@ -382,6 +447,9 @@ export async function maybeGenerateBotReply({ match_id, sender_id, message }) {
     rawReply = qualificationQuestion
   } else if (rawReply && qualificationQuestion) {
     rawReply = `${rawReply}\n\nQuick check: ${qualificationQuestion}`
+  }
+  if (!rawReply && autoReplySettings.fallback) {
+    rawReply = autoReplySettings.fallback
   }
   if (!rawReply) {
     // Handoff: notify org owner + assigned agent if any.
@@ -423,13 +491,18 @@ export async function maybeGenerateBotReply({ match_id, sender_id, message }) {
     // silent
   }
 
+  const signature = autoReplySettings.signature ? `\n\n${autoReplySettings.signature}` : ''
+  const greeting = autoReplySettings.greeting ? `${autoReplySettings.greeting}\n\n` : ''
+  const toneHint = autoReplySettings.tone ? `Tone: ${autoReplySettings.tone}. ` : ''
+  const finalReply = `${greeting}${toneHint}${safeReply}${signature}`.trim()
+
   const entry = {
     id: crypto.randomUUID(),
     match_id: matchId,
     sender_id: String(companyUser.id),
     sender_name: sanitizeString(companyUser.name || companyUser.email || 'GarTexHub Bot', 120),
     sender_role: companyUser.role || '',
-    message: safeReply,
+    message: finalReply,
     type: 'bot',
     timestamp: new Date().toISOString(),
     moderated: false,

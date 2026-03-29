@@ -4,6 +4,7 @@ import { requireAuth } from '../middleware/auth.js'
 import {
   createContractDraft,
   getContracts,
+  getContractAudit,
   getDocuments,
   patchContractArtifact,
   patchContractSignatures,
@@ -20,6 +21,7 @@ router.post('/url', requireAuth, registerDocumentUrl)
 
 router.post('/contracts/draft', requireAuth, createContractDraft)
 router.get('/contracts', requireAuth, getContracts)
+router.get('/contracts/:contractId/audit', requireAuth, getContractAudit)
 router.patch('/contracts/:contractId/signatures', requireAuth, patchContractSignatures)
 router.patch('/contracts/:contractId/artifact', requireAuth, patchContractArtifact)
 router.get('/', requireAuth, getDocuments)

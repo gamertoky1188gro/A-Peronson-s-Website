@@ -5,6 +5,8 @@ import { trackEvent } from './analyticsService.js'
 import { emitNotificationsForEntity } from './notificationService.js'
 import { moderateTextOrRedact } from './policyService.js'
 import { isAgent, isOwnerOrAdmin } from '../utils/permissions.js'
+import { getAdminConfig } from './adminConfigService.js'
+import { getPlanForUser } from './entitlementService.js'
 
 const FILE = 'company_products.json'
 const PROHIBITED_MEDIA_KEYWORDS = ['porn', 'explicit', 'nudity', 'violence', 'weapon', 'drugs', 'hate']
@@ -220,6 +222,37 @@ function resolveProductOwner(actor, users = []) {
   return { ownerId, ownerRole: owner.role || 'buying_house' }
 }
 
+async function enforceProductLimits({ owner, allProducts, nextVideoUrl = '' }) {
+  if (!owner) return
+  const plan = await getPlanForUser(owner)
+  if (plan === 'premium') return
+
+  const config = await getAdminConfig()
+  const planLimits = config?.plan_limits?.free || {}
+  const productLimit = Number(planLimits.product_limit || 20)
+  const videoLimit = Number(planLimits.video_limit || 2)
+
+  const ownerId = String(owner.id || '')
+  const ownerProducts = Array.isArray(allProducts)
+    ? allProducts.filter((p) => String(p.company_id || '') === ownerId)
+    : []
+
+  if (productLimit > 0 && ownerProducts.length >= productLimit) {
+    const err = new Error(`Free plan allows up to ${productLimit} products. Upgrade to add more.`)
+    err.status = 403
+    throw err
+  }
+
+  if (nextVideoUrl) {
+    const existingVideos = ownerProducts.filter((p) => String(p.video_url || '').trim()).length
+    if (videoLimit > 0 && existingVideos >= videoLimit) {
+      const err = new Error(`Free plan allows up to ${videoLimit} product videos. Upgrade to add more.`)
+      err.status = 403
+      throw err
+    }
+  }
+}
+
 function getVideoModerationResult({ title = '', description = '', videoUrl = '' }) {
   const hardFlags = []
   const softFlags = []
@@ -263,9 +296,13 @@ export async function createProduct(user, payload) {
     readJson('users.json'),
   ])
   const { ownerId, ownerRole } = resolveProductOwner(user, users)
+  const ownerUser = users.find((u) => String(u.id) === String(ownerId)) || user
   const title = sanitizeString(payload.title, 120)
   let description = sanitizeString(payload.description || '', 1200)
   const videoUrl = sanitizeString(payload.video_url || '', 260)
+
+  await enforceProductLimits({ owner: ownerUser, allProducts: all, nextVideoUrl: videoUrl })
+
   const status = normalizeProductStatus(payload.status || 'published')
   const imageCandidates = extractImageUrlCandidates(payload.image_urls || payload.imageUrls)
   const imageUrls = normalizeImageUrls(imageCandidates)
@@ -372,6 +409,13 @@ export async function updateProductById(actor, productId, patch = {}) {
   const nextTitle = patch.title !== undefined ? sanitizeString(patch.title, 120) : existing.title
   let nextDescription = patch.description !== undefined ? sanitizeString(patch.description || '', 1200) : existing.description
   const nextVideoUrl = patch.video_url !== undefined ? sanitizeString(patch.video_url || '', 260) : existing.video_url
+  const ownerId = String(existing.company_id || '')
+  const users = await readJson('users.json')
+  const ownerRecord = users.find((u) => String(u.id) === ownerId) || actor
+  const addingVideo = !String(existing.video_url || '').trim() && String(nextVideoUrl || '').trim()
+  if (addingVideo) {
+    await enforceProductLimits({ owner: ownerRecord, allProducts: all, nextVideoUrl })
+  }
   const moderation = getVideoModerationResult({ title: nextTitle, description: nextDescription, videoUrl: nextVideoUrl })
   const status = patch.status !== undefined ? normalizeProductStatus(patch.status, existing.status || 'published') : normalizeProductStatus(existing.status)
   const imageCandidates = patch.image_urls !== undefined || patch.imageUrls !== undefined

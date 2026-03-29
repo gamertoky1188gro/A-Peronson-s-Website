@@ -114,6 +114,11 @@ function AppLayout() {
   const sessionRef = useRef({ startedAt: 0, ended: false })
 
   useEffect(() => {
+    // Reset scroll so new routes don't inherit the old scroll position.
+    window.scrollTo(0, 0)
+  }, [location.pathname, location.search])
+
+  useEffect(() => {
     // Global event tracking (project.md): page views + time-on-page.
     // Uses a public endpoint that also accepts auth (if present).
     const currentPath = `${location.pathname}${location.search || ''}`
@@ -182,9 +187,9 @@ function AppLayout() {
   }, [])
 
   return (
-    <div className="app-shell min-h-screen">
+    <div className="app-shell min-h-screen bg-[var(--bg)]">
       {!hideChrome ? <NavBar /> : null}
-      <main className={hideChrome ? '' : 'pb-10'}>
+      <main className={`${hideChrome ? '' : 'pb-10'} min-h-screen bg-[var(--bg)]`}>
         <AppRoutes />
       </main>
       {!hideChrome ? <Footer /> : null}

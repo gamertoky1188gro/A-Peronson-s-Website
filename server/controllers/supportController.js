@@ -1,5 +1,6 @@
 import { createReport } from '../services/reportService.js'
 import { sanitizeString } from '../utils/validators.js'
+import { isPremiumUser } from '../services/entitlementService.js'
 
 export async function createSupportReport(req, res) {
   const subject = sanitizeString(String(req.body?.subject || ''), 140)
@@ -8,11 +9,18 @@ export async function createSupportReport(req, res) {
     return res.status(400).json({ error: 'Subject and description are required' })
   }
 
+  const premium = await isPremiumUser(req.user)
+  const requestedPriority = sanitizeString(String(req.body?.priority || ''), 40).toLowerCase()
+  const priority = premium && ['high', 'urgent', 'priority'].includes(requestedPriority)
+    ? 'priority'
+    : 'standard'
+
   const metadata = {
     category: sanitizeString(String(req.body?.category || ''), 80),
     page_url: sanitizeString(String(req.body?.page_url || ''), 240),
-    priority: sanitizeString(String(req.body?.priority || ''), 40),
+    priority,
     contact_email: sanitizeString(String(req.body?.contact_email || ''), 120),
+    premium_support: premium,
   }
 
   const report = await createReport({
@@ -20,10 +28,7 @@ export async function createSupportReport(req, res) {
     entity_type: 'support',
     entity_id: `support:${req.user?.id || 'anonymous'}`,
     reason: subject,
-    metadata: {
-      ...metadata,
-      description,
-    },
+    metadata: { ...metadata, description },
   })
 
   return res.status(201).json(report)

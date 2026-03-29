@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { requireAuth } from '../middleware/auth.js'
-import { getChatbotProfile, replyWithChatbot } from '../controllers/chatbotController.js'
+import { getChatbotProfile, replyWithChatbot, getChatbotSettingsController, updateChatbotSettingsController } from '../controllers/chatbotController.js'
 
 const router = Router()
 
@@ -9,5 +9,7 @@ router.get('/profile/:userId', requireAuth, getChatbotProfile)
 
 // Generate an optional bot reply for a chat thread.
 router.post('/reply', requireAuth, replyWithChatbot)
+router.get('/settings', requireAuth, getChatbotSettingsController)
+router.post('/settings', requireAuth, updateChatbotSettingsController)
 
 export default router

@@ -7,6 +7,7 @@ export default function useAnalyticsDashboard() {
   const [dashboard, setDashboard] = useState(null)
   const [companyAnalytics, setCompanyAnalytics] = useState(null)
   const [platformAnalytics, setPlatformAnalytics] = useState(null)
+  const [premiumInsights, setPremiumInsights] = useState(null)
   const [subscription, setSubscription] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -49,6 +50,16 @@ export default function useAnalyticsDashboard() {
             if (!alive) return
             setPlatformAnalytics(null)
           })
+
+        apiRequest('/analytics/premium', { token })
+          .then((data) => {
+            if (!alive) return
+            setPremiumInsights(data)
+          })
+          .catch(() => {
+            if (!alive) return
+            setPremiumInsights(null)
+          })
       } catch (err) {
         if (!alive) return
         setForbidden(err.status === 403)
@@ -67,5 +78,5 @@ export default function useAnalyticsDashboard() {
 
   const isEnterprise = useMemo(() => ENTERPRISE_PLANS.has(subscription?.plan), [subscription?.plan])
 
-  return { dashboard, companyAnalytics, platformAnalytics, subscription, isEnterprise, loading, error, forbidden }
+  return { dashboard, companyAnalytics, platformAnalytics, premiumInsights, subscription, isEnterprise, loading, error, forbidden }
 }

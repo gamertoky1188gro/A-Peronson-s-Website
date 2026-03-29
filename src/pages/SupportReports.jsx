@@ -7,7 +7,7 @@
     - Store submissions in the reports queue for admin review.
 */
 import React, { useMemo, useState } from 'react'
-import { apiRequest, API_BASE, getToken } from '../lib/auth'
+import { apiRequest, API_BASE, getCurrentUser, getToken } from '../lib/auth'
 
 const CATEGORY_OPTIONS = [
   'Bug Report',
@@ -24,6 +24,8 @@ const PRIORITY_OPTIONS = ['Low', 'Medium', 'High', 'Urgent']
 
 export default function SupportReports() {
   const token = useMemo(() => getToken(), [])
+  const sessionUser = getCurrentUser()
+  const isPremium = String(sessionUser?.subscription_status || '').toLowerCase() === 'premium'
   const [subject, setSubject] = useState('')
   const [category, setCategory] = useState('Bug Report')
   const [description, setDescription] = useState('')
@@ -53,7 +55,7 @@ export default function SupportReports() {
           category,
           description,
           page_url: pageUrl,
-          priority,
+          ...(isPremium ? { priority } : {}),
           contact_email: contactEmail,
         },
       })
@@ -124,11 +126,19 @@ export default function SupportReports() {
             </div>
             <div>
               <label className="block text-sm font-medium">Priority</label>
-              <select className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" value={priority} onChange={(e) => setPriority(e.target.value)}>
+              <select
+                className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                disabled={!isPremium}
+              >
                 {PRIORITY_OPTIONS.map((option) => (
                   <option key={option} value={option}>{option}</option>
                 ))}
               </select>
+              {!isPremium ? (
+                <p className="mt-1 text-[11px] text-amber-600">Premium required for priority support.</p>
+              ) : null}
             </div>
           </div>
 

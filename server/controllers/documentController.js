@@ -2,6 +2,7 @@ import {
   createDraftContract,
   deleteDocument,
   listContracts,
+  listContractAudit,
   listDocuments,
   registerExternalDocument,
   saveDocumentMetadata,
@@ -9,6 +10,7 @@ import {
   updateContractSignatures,
 } from '../services/documentService.js'
 import { deny, handleControllerError } from '../utils/permissions.js'
+import { ensureEntitlement } from '../services/entitlementService.js'
 
 export async function uploadDocument(req, res) {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
@@ -60,6 +62,18 @@ export async function createContractDraft(req, res) {
 export async function getContracts(req, res) {
   const contracts = await listContracts(req.user)
   return res.json(contracts)
+}
+
+export async function getContractAudit(req, res) {
+  try {
+    await ensureEntitlement(req.user, 'contract_history_audit', 'Premium plan required for contract audit trail.')
+    const audit = await listContractAudit(req.user, req.params.contractId)
+    if (audit === 'forbidden') return deny(res)
+    if (!audit) return res.status(404).json({ error: 'Contract not found' })
+    return res.json(audit)
+  } catch (error) {
+    return handleControllerError(res, error)
+  }
 }
 
 export async function patchContractSignatures(req, res) {

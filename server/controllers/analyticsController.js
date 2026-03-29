@@ -1,4 +1,4 @@
-import { getAnalyticsSummary, getCompanyAnalytics, getDashboardAnalytics, getPlatformAnalytics } from '../services/analyticsService.js'
+import { getAnalyticsSummary, getCompanyAnalytics, getDashboardAnalytics, getPlatformAnalytics, getPremiumInsights } from '../services/analyticsService.js'
 import { handleControllerError } from '../utils/permissions.js'
 import { findUserById } from '../services/userService.js'
 
@@ -40,6 +40,16 @@ export async function analyticsPlatform(req, res) {
   try {
     const report = await getPlatformAnalytics(req.user)
     return res.json(report)
+  } catch (error) {
+    return handleError(res, error)
+  }
+}
+
+export async function analyticsPremium(req, res) {
+  try {
+    const actor = req.user?.role === 'agent' ? await findUserById(req.user.id) : req.user
+    const insights = await getPremiumInsights(actor)
+    return res.json(insights)
   } catch (error) {
     return handleError(res, error)
   }

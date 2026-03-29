@@ -8,8 +8,22 @@ const DEFAULT_CONFIG = {
     system_broadcasts: true,
   },
   plan_limits: {
-    free: { partner_limit: 5, search_daily: 20, request_limit: 3 },
-    premium: { partner_limit: 50, search_daily: 200, request_limit: 50 },
+    free: {
+      partner_limit: 5,
+      search_daily: 20,
+      request_limit: 3,
+      product_limit: 20,
+      video_limit: 2,
+      agent_limit: 10,
+    },
+    premium: {
+      partner_limit: 50,
+      search_daily: 200,
+      request_limit: 50,
+      product_limit: 500,
+      video_limit: 200,
+      agent_limit: 999,
+    },
   },
   pricing: {
     free_usd: 0,

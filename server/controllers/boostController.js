@@ -1,5 +1,6 @@
 import { cancelBoost, listBoostsForUser, purchaseBoost } from '../services/boostService.js'
 import { handleControllerError } from '../utils/permissions.js'
+import { ensureEntitlement } from '../services/entitlementService.js'
 
 export async function getMyBoosts(req, res) {
   const items = await listBoostsForUser(req.user.id)
@@ -8,6 +9,9 @@ export async function getMyBoosts(req, res) {
 
 export async function createBoost(req, res) {
   try {
+    const scope = String(req.body?.scope || '').toLowerCase()
+    const feature = scope === 'profile' ? 'profile_boost' : 'product_boost'
+    await ensureEntitlement(req.user, feature, 'Premium boost requires an active subscription.')
     const result = await purchaseBoost(req.user.id, req.body || {})
     if (result === 'active_exists') {
       return res.status(409).json({ error: 'An active boost already exists for this scope.' })
@@ -24,4 +28,3 @@ export async function cancelBoostController(req, res) {
   if (result === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
   return res.json(result)
 }
-

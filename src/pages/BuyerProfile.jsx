@@ -76,6 +76,9 @@ export default function BuyerProfile() {
   const viewerPerms = profile?.viewer_permissions || { is_self: false, is_admin: false }
   const isBoosted = Boolean(profileBoost)
   const isPremium = String(user?.subscription_status || '').toLowerCase() === 'premium'
+  const brandProfile = user?.profile || {}
+  const hasBrandKit = Boolean(brandProfile.brand_name || brandProfile.brand_logo_url || brandProfile.brand_tagline || brandProfile.brand_website)
+  const hasAccountManager = Boolean(brandProfile.account_manager_name || brandProfile.account_manager_email || brandProfile.account_manager_phone)
 
   const loadProfile = useCallback(async () => {
     if (!id) return
@@ -321,6 +324,42 @@ export default function BuyerProfile() {
                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100">About</p>
                     <p className="mt-2 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{user.profile?.about || 'No description added yet.'}</p>
                   </div>
+
+                  {hasBrandKit ? (
+                    <div className="rounded-xl bg-slate-50/70 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Brand Kit</p>
+                      <div className="mt-3 flex items-center gap-3">
+                        {brandProfile.brand_logo_url ? (
+                          <img src={brandProfile.brand_logo_url} alt="Brand logo" className="h-12 w-12 rounded-xl object-cover" />
+                        ) : (
+                          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
+                        )}
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+                            {brandProfile.brand_name || user.name}
+                          </div>
+                          {brandProfile.brand_tagline ? (
+                            <div className="text-xs text-slate-600 dark:text-slate-300">{brandProfile.brand_tagline}</div>
+                          ) : null}
+                          {brandProfile.brand_website ? (
+                            <div className="text-xs text-slate-500 dark:text-slate-400 truncate">{brandProfile.brand_website}</div>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {hasAccountManager ? (
+                    <div className="rounded-xl bg-slate-50/70 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Dedicated Account Manager</p>
+                      <div className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                        {brandProfile.account_manager_name || 'Assigned manager'}
+                      </div>
+                      <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        {brandProfile.account_manager_email || brandProfile.account_manager_phone || ''}
+                      </div>
+                    </div>
+                  ) : null}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">

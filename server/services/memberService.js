@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs'
 import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { getSubscription } from './subscriptionService.js'
+import { getAdminConfig } from './adminConfigService.js'
+import { getPlanForUser } from './entitlementService.js'
 
 /**
  * Member/Team system (Phase 2)
@@ -14,7 +16,7 @@ import { getSubscription } from './subscriptionService.js'
 const USERS_FILE = 'users.json'
 const LEGACY_MEMBERS_FILE = 'members.json'
 
-const FREE_MEMBER_LIMIT = 10
+const DEFAULT_FREE_MEMBER_LIMIT = 10
 
 // Legacy permissions are still supported for UI compatibility (checkbox list).
 const VALID_PERMISSIONS = new Set(['view_requests', 'assign_requests', 'manage_members', 'reports_only'])
@@ -176,14 +178,15 @@ export async function listMembers(orgOwnerId) {
   return agents.map(cleanAgent)
 }
 
-async function assertFreePlanMemberLimit(orgOwnerId, allAgents, currentAgent = null, nextStatus = 'active') {
-  const subscription = await getSubscription(orgOwnerId)
-  const plan = subscription?.plan === 'premium' ? 'premium' : 'free'
+async function assertFreePlanMemberLimit(orgOwnerId, allAgents, currentAgent = null, nextStatus = 'active', orgOwnerRecord = null) {
+  const plan = orgOwnerRecord ? await getPlanForUser(orgOwnerRecord) : (await getSubscription(orgOwnerId))?.plan === 'premium' ? 'premium' : 'free'
   if (plan !== 'free') return
 
+  const config = await getAdminConfig()
+  const freeLimit = Number(config?.plan_limits?.free?.agent_limit || DEFAULT_FREE_MEMBER_LIMIT)
   const activeCount = allAgents.filter((m) => m.status === 'active' && String(m.id) !== String(currentAgent?.id)).length
-  if (nextStatus === 'active' && activeCount >= FREE_MEMBER_LIMIT) {
-    const error = new Error('Free plan allows up to 10 active sub-accounts')
+  if (nextStatus === 'active' && activeCount >= freeLimit) {
+    const error = new Error(`Free plan allows up to ${freeLimit} active sub-accounts`)
     error.status = 403
     throw error
   }
@@ -240,7 +243,8 @@ export async function createMember(orgOwnerId, payload) {
     .filter((u) => String(u.role || '').toLowerCase() === 'agent')
     .filter((u) => String(u.org_owner_id) === String(orgOwnerId))
 
-  await assertFreePlanMemberLimit(orgOwnerId, orgAgents)
+  const orgOwner = users.find((u) => String(u.id) === String(orgOwnerId)) || null
+  await assertFreePlanMemberLimit(orgOwnerId, orgAgents, null, 'active', orgOwner)
 
   const rawPassword = String(payload.password || '').trim() || crypto.randomBytes(8).toString('base64url')
   agent.password_hash = await bcrypt.hash(rawPassword, 10)
@@ -282,7 +286,8 @@ export async function updateMember(orgOwnerId, memberId, payload) {
     .filter((u) => String(u.role || '').toLowerCase() === 'agent')
     .filter((u) => String(u.org_owner_id) === String(orgOwnerId))
 
-  await assertFreePlanMemberLimit(orgOwnerId, orgAgents, current, next.status)
+  const orgOwner = users.find((u) => String(u.id) === String(orgOwnerId)) || null
+  await assertFreePlanMemberLimit(orgOwnerId, orgAgents, current, next.status, orgOwner)
 
   users[idx] = {
     ...current,
@@ -339,7 +344,7 @@ export async function deactivateOrRemoveMember(orgOwnerId, memberId, mode = 'dea
 
 export function getMemberConstraints() {
   return {
-    free_member_limit: FREE_MEMBER_LIMIT,
+    free_member_limit: DEFAULT_FREE_MEMBER_LIMIT,
     valid_permissions: [...VALID_PERMISSIONS],
     permission_conflicts: PERMISSION_CONFLICTS,
     permission_matrix_sections: MATRIX_SECTIONS,

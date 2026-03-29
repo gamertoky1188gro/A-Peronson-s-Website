@@ -66,8 +66,16 @@ export default function OrgSettings() {
   const [verification, setVerification] = useState(null)
   const [billingFeedback, setBillingFeedback] = useState('')
   const [couponCode, setCouponCode] = useState('')
+  const [entitlements, setEntitlements] = useState(null)
   const [chatbotEnabled, setChatbotEnabled] = useState(() => Boolean(currentUser?.chatbot_enabled || currentUser?.profile?.chatbot_enabled))
   const [handoffMode, setHandoffMode] = useState(() => String(currentUser?.handoff_mode || currentUser?.profile?.handoff_mode || 'notify_agent'))
+  const [autoReplyGreeting, setAutoReplyGreeting] = useState('')
+  const [autoReplySignature, setAutoReplySignature] = useState('')
+  const [autoReplyFallback, setAutoReplyFallback] = useState('')
+  const [autoReplyTone, setAutoReplyTone] = useState('professional')
+  const [autoReplyQualification, setAutoReplyQualification] = useState('')
+  const [autoReplyFeedback, setAutoReplyFeedback] = useState('')
+  const [loadingAutoReply, setLoadingAutoReply] = useState(false)
   const [autoSaveSearchAlerts, setAutoSaveSearchAlerts] = useState(() => {
     const raw = currentUser?.profile?.auto_save_search_alerts
     if (raw === undefined || raw === null || raw === '') return true
@@ -80,6 +88,16 @@ export default function OrgSettings() {
   const [exportPorts, setExportPorts] = useState(() => (currentUser?.profile?.export_ports || []).join(', '))
   const [locationLat, setLocationLat] = useState(() => String(currentUser?.profile?.location_lat || ''))
   const [locationLng, setLocationLng] = useState(() => String(currentUser?.profile?.location_lng || ''))
+  const [brandName, setBrandName] = useState(() => String(currentUser?.profile?.brand_name || ''))
+  const [brandTagline, setBrandTagline] = useState(() => String(currentUser?.profile?.brand_tagline || ''))
+  const [brandWebsite, setBrandWebsite] = useState(() => String(currentUser?.profile?.brand_website || ''))
+  const [brandLogoUrl, setBrandLogoUrl] = useState(() => String(currentUser?.profile?.brand_logo_url || ''))
+  const [brandCoverUrl, setBrandCoverUrl] = useState(() => String(currentUser?.profile?.brand_cover_url || ''))
+  const [brandColor, setBrandColor] = useState(() => String(currentUser?.profile?.brand_color || ''))
+  const [brandAccent, setBrandAccent] = useState(() => String(currentUser?.profile?.brand_accent || ''))
+  const [accountManagerName, setAccountManagerName] = useState(() => String(currentUser?.profile?.account_manager_name || ''))
+  const [accountManagerEmail, setAccountManagerEmail] = useState(() => String(currentUser?.profile?.account_manager_email || ''))
+  const [accountManagerPhone, setAccountManagerPhone] = useState(() => String(currentUser?.profile?.account_manager_phone || ''))
   const [entries, setEntries] = useState([])
   const [knowledgeForm, setKnowledgeForm] = useState(emptyKnowledge)
   const [editingId, setEditingId] = useState('')
@@ -121,9 +139,41 @@ export default function OrgSettings() {
     }
   }, [])
 
+  const loadEntitlements = useCallback(async () => {
+    const token = getToken()
+    if (!token) return
+    try {
+      const me = await apiRequest('/users/me', { token })
+      setEntitlements(me?.entitlements || null)
+    } catch {
+      setEntitlements(null)
+    }
+  }, [])
+
+  const loadChatbotSettings = useCallback(async () => {
+    const token = getToken()
+    if (!token) return
+    setLoadingAutoReply(true)
+    setAutoReplyFeedback('')
+    try {
+      const data = await apiRequest('/chatbot/settings', { token })
+      const settings = data?.settings || {}
+      setAutoReplyGreeting(String(settings?.auto_reply_greeting || ''))
+      setAutoReplySignature(String(settings?.auto_reply_signature || ''))
+      setAutoReplyFallback(String(settings?.auto_reply_fallback || ''))
+      setAutoReplyTone(String(settings?.auto_reply_tone || 'professional'))
+      setAutoReplyQualification(String(settings?.auto_reply_qualification_prompt || ''))
+    } catch (err) {
+      setAutoReplyFeedback(err.message || 'Unable to load auto-reply settings')
+    } finally {
+      setLoadingAutoReply(false)
+    }
+  }, [])
+
   useEffect(() => {
     loadBilling()
-  }, [loadBilling])
+    loadEntitlements()
+  }, [loadBilling, loadEntitlements])
 
   useEffect(() => {
     if (!TAB_KEYS.includes(initialTab)) return
@@ -254,6 +304,34 @@ export default function OrgSettings() {
     }
   }
 
+  async function saveBrandingSettings() {
+    const token = getToken()
+    if (!token) return
+    setBillingFeedback('')
+    try {
+      const updated = await apiRequest('/users/me/profile', {
+        method: 'PATCH',
+        token,
+        body: {
+          brand_name: brandName,
+          brand_tagline: brandTagline,
+          brand_website: brandWebsite,
+          brand_logo_url: brandLogoUrl,
+          brand_cover_url: brandCoverUrl,
+          brand_color: brandColor,
+          brand_accent: brandAccent,
+          account_manager_name: accountManagerName,
+          account_manager_email: accountManagerEmail,
+          account_manager_phone: accountManagerPhone,
+        },
+      })
+      saveSession(updated, token)
+      setBillingFeedback('Branding updated')
+    } catch (err) {
+      setBillingFeedback(err.message || 'Unable to save branding')
+    }
+  }
+
   async function redeemCoupon() {
     const token = getToken()
     if (!token) return
@@ -320,6 +398,12 @@ export default function OrgSettings() {
       loadBoosts()
     }
   }, [loadBoosts, tab])
+
+  useEffect(() => {
+    if (tab === 'general') {
+      loadChatbotSettings()
+    }
+  }, [loadChatbotSettings, tab])
 
   async function purchaseBoost() {
     const token = getToken()
@@ -419,6 +503,87 @@ export default function OrgSettings() {
                 </div>
 
                 <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-slate-800">AI Auto-Reply Customization</p>
+                    <span className="text-[11px] text-slate-500">{entitlements?.premium ? 'Premium enabled' : 'Premium required'}</span>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500">Customize the AI assistant greeting, tone, and qualification prompts.</p>
+                  {loadingAutoReply ? <p className="mt-2 text-xs text-slate-500">Loading...</p> : null}
+                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input
+                      className="w-full border px-3 py-2 rounded"
+                      placeholder="Greeting (e.g., Hello, thanks for reaching out...)"
+                      value={autoReplyGreeting}
+                      onChange={(e) => setAutoReplyGreeting(e.target.value)}
+                      disabled={!entitlements?.premium}
+                    />
+                    <input
+                      className="w-full border px-3 py-2 rounded"
+                      placeholder="Signature (e.g., Gartexhub Team)"
+                      value={autoReplySignature}
+                      onChange={(e) => setAutoReplySignature(e.target.value)}
+                      disabled={!entitlements?.premium}
+                    />
+                    <input
+                      className="w-full border px-3 py-2 rounded"
+                      placeholder="Fallback response"
+                      value={autoReplyFallback}
+                      onChange={(e) => setAutoReplyFallback(e.target.value)}
+                      disabled={!entitlements?.premium}
+                    />
+                    <select
+                      className="w-full border px-3 py-2 rounded"
+                      value={autoReplyTone}
+                      onChange={(e) => setAutoReplyTone(e.target.value)}
+                      disabled={!entitlements?.premium}
+                    >
+                      <option value="professional">Professional</option>
+                      <option value="warm">Warm</option>
+                      <option value="direct">Direct</option>
+                      <option value="friendly">Friendly</option>
+                    </select>
+                    <textarea
+                      className="sm:col-span-2 w-full border px-3 py-2 rounded min-h-24"
+                      placeholder="Qualification prompt (e.g., Share target quantities, price range, and lead time.)"
+                      value={autoReplyQualification}
+                      onChange={(e) => setAutoReplyQualification(e.target.value)}
+                      disabled={!entitlements?.premium}
+                    />
+                  </div>
+                  <div className="mt-3 flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={!entitlements?.premium}
+                      onClick={async () => {
+                        const token = getToken()
+                        if (!token) return
+                        setAutoReplyFeedback('Saving auto-reply settings...')
+                        try {
+                          await apiRequest('/chatbot/settings', {
+                            method: 'POST',
+                            token,
+                            body: {
+                              auto_reply_greeting: autoReplyGreeting,
+                              auto_reply_signature: autoReplySignature,
+                              auto_reply_fallback: autoReplyFallback,
+                              auto_reply_tone: autoReplyTone,
+                              auto_reply_qualification_prompt: autoReplyQualification,
+                            },
+                          })
+                          setAutoReplyFeedback('Auto-reply settings saved.')
+                        } catch (err) {
+                          setAutoReplyFeedback(err.message || 'Unable to save auto-reply settings')
+                        }
+                      }}
+                      className="px-3 py-2 bg-[#0A66C2] text-white rounded disabled:opacity-60"
+                    >
+                      Save auto-reply settings
+                    </button>
+                    {autoReplyFeedback ? <span className="text-xs text-[#5A5A5A]">{autoReplyFeedback}</span> : null}
+                  </div>
+                </div>
+
+                <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
                   <p className="text-sm font-semibold text-slate-800">Supplier profile (factory / buying house)</p>
                   <p className="mt-1 text-xs text-slate-500">These fields power advanced supplier filters (processes, response speed, distance, and team capacity).</p>
                   <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -507,10 +672,52 @@ export default function OrgSettings() {
 
             {tab === 'branding' && (
               <div>
-                <label className="block text-sm">Primary Contact Email</label>
-                <input className="w-full border px-3 py-2 rounded mb-3" />
-                <label className="block text-sm">Support Contact Number</label>
-                <input className="w-full border px-3 py-2 rounded mb-3" />
+                <p className="text-xs text-[#5A5A5A] mb-3">Custom branding is available on Premium plans.</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm">Brand name</label>
+                    <input className="w-full border px-3 py-2 rounded" value={brandName} onChange={(e) => setBrandName(e.target.value)} disabled={!entitlements?.premium} />
+                  </div>
+                  <div>
+                    <label className="block text-sm">Brand tagline</label>
+                    <input className="w-full border px-3 py-2 rounded" value={brandTagline} onChange={(e) => setBrandTagline(e.target.value)} disabled={!entitlements?.premium} />
+                  </div>
+                  <div>
+                    <label className="block text-sm">Brand website</label>
+                    <input className="w-full border px-3 py-2 rounded" value={brandWebsite} onChange={(e) => setBrandWebsite(e.target.value)} disabled={!entitlements?.premium} />
+                  </div>
+                  <div>
+                    <label className="block text-sm">Logo URL</label>
+                    <input className="w-full border px-3 py-2 rounded" value={brandLogoUrl} onChange={(e) => setBrandLogoUrl(e.target.value)} disabled={!entitlements?.premium} />
+                  </div>
+                  <div>
+                    <label className="block text-sm">Cover URL</label>
+                    <input className="w-full border px-3 py-2 rounded" value={brandCoverUrl} onChange={(e) => setBrandCoverUrl(e.target.value)} disabled={!entitlements?.premium} />
+                  </div>
+                  <div>
+                    <label className="block text-sm">Brand color</label>
+                    <input className="w-full border px-3 py-2 rounded" value={brandColor} onChange={(e) => setBrandColor(e.target.value)} disabled={!entitlements?.premium} />
+                  </div>
+                  <div>
+                    <label className="block text-sm">Accent color</label>
+                    <input className="w-full border px-3 py-2 rounded" value={brandAccent} onChange={(e) => setBrandAccent(e.target.value)} disabled={!entitlements?.premium} />
+                  </div>
+                  <div>
+                    <label className="block text-sm">Account manager name</label>
+                    <input className="w-full border px-3 py-2 rounded" value={accountManagerName} onChange={(e) => setAccountManagerName(e.target.value)} disabled={!entitlements?.premium} />
+                  </div>
+                  <div>
+                    <label className="block text-sm">Account manager email</label>
+                    <input className="w-full border px-3 py-2 rounded" value={accountManagerEmail} onChange={(e) => setAccountManagerEmail(e.target.value)} disabled={!entitlements?.premium} />
+                  </div>
+                  <div>
+                    <label className="block text-sm">Account manager phone</label>
+                    <input className="w-full border px-3 py-2 rounded" value={accountManagerPhone} onChange={(e) => setAccountManagerPhone(e.target.value)} disabled={!entitlements?.premium} />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <button onClick={saveBrandingSettings} disabled={!entitlements?.premium} className="px-3 py-2 bg-[#0A66C2] text-white rounded disabled:opacity-60">Save branding</button>
+                </div>
               </div>
             )}
 
@@ -584,30 +791,35 @@ export default function OrgSettings() {
                 <div className="text-sm text-[#5A5A5A]">
                   Purchase temporary boosts to increase visibility in feed or profile discovery.
                 </div>
+                {!entitlements?.premium ? (
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+                    Premium required to activate boosts. Upgrade to unlock profile and product boosts.
+                  </div>
+                ) : null}
                 <div className="rounded-lg border border-slate-200 p-4 space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium mb-1">Boost scope</label>
-                      <select value={boostScope} onChange={(e) => setBoostScope(e.target.value)} className="w-full border px-3 py-2 rounded">
+                      <select value={boostScope} onChange={(e) => setBoostScope(e.target.value)} className="w-full border px-3 py-2 rounded" disabled={!entitlements?.premium}>
                         <option value="feed">Feed visibility</option>
                         <option value="profile">Profile visibility</option>
                       </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Duration (days)</label>
-                      <input value={boostDuration} onChange={(e) => setBoostDuration(e.target.value)} className="w-full border px-3 py-2 rounded" />
+                      <input value={boostDuration} onChange={(e) => setBoostDuration(e.target.value)} className="w-full border px-3 py-2 rounded" disabled={!entitlements?.premium} />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Multiplier</label>
-                      <input value={boostMultiplier} onChange={(e) => setBoostMultiplier(e.target.value)} className="w-full border px-3 py-2 rounded" />
+                      <input value={boostMultiplier} onChange={(e) => setBoostMultiplier(e.target.value)} className="w-full border px-3 py-2 rounded" disabled={!entitlements?.premium} />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Price (USD)</label>
-                      <input value={boostPrice} onChange={(e) => setBoostPrice(e.target.value)} className="w-full border px-3 py-2 rounded" />
+                      <input value={boostPrice} onChange={(e) => setBoostPrice(e.target.value)} className="w-full border px-3 py-2 rounded" disabled={!entitlements?.premium} />
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-3">
-                    <button onClick={purchaseBoost} className="px-3 py-2 bg-[#0A66C2] text-white rounded">Purchase boost</button>
+                    <button onClick={purchaseBoost} disabled={!entitlements?.premium} className="px-3 py-2 bg-[#0A66C2] text-white rounded disabled:opacity-60">Purchase boost</button>
                     <span className="text-xs text-[#5A5A5A]">Wallet balance: ${Number(walletBalance || 0).toFixed(2)} | Restricted: ${Number(walletRestricted || 0).toFixed(2)}</span>
                   </div>
                 </div>

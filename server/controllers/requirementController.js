@@ -10,6 +10,8 @@ import {
 } from '../services/searchAccessService.js'
 import { readJson } from '../utils/jsonStore.js'
 import { handleControllerError } from '../utils/permissions.js'
+import { ensureEntitlement } from '../services/entitlementService.js'
+import { generateMatchesForRequirement, listMatchesForRequirement } from '../services/matchingService.js'
 
 function redactRequirementForBuyer(requirement) {
   return {
@@ -261,8 +263,41 @@ export async function getRequirements(req, res) {
 }
 
 export async function browseRequirements(req, res) {
-  const all = await listRequirements({})
-  const out = all.map((r) => (r.buyer_id === req.user.id ? r : redactRequirementForBuyer(r)))
+  const [all, users] = await Promise.all([
+    listRequirements({}),
+    readJson('users.json'),
+  ])
+  const usersById = new Map(users.map((u) => [u.id, u]))
+  const viewerPlan = await getUserPlan(req.user.id)
+  const viewerPremium = viewerPlan === 'premium'
+  const viewerRole = String(req.user?.role || '').toLowerCase()
+  const enforcePriorityAccess = !viewerPremium && ['factory', 'buying_house', 'agent'].includes(viewerRole)
+  const nowMs = Date.now()
+
+  const out = all
+    .map((r) => {
+      const buyer = usersById.get(r.buyer_id) || null
+      const buyerPlan = String(buyer?.subscription_status || '').toLowerCase()
+      const buyerPremium = buyerPlan === 'premium'
+      const priorityUntil = r.priority_until ? new Date(r.priority_until).getTime() : 0
+      const priorityActive = String(r.priority_tier || '').toLowerCase() === 'priority'
+        && (!priorityUntil || priorityUntil > nowMs)
+
+      return {
+        ...r,
+        priority_score: (buyerPremium ? 2 : 0) + (buyer?.verified ? 0.5 : 0),
+        priority_active: priorityActive,
+      }
+    })
+    .filter((r) => (enforcePriorityAccess ? !r.priority_active : true))
+    .sort((a, b) => {
+      if (a.priority_score !== b.priority_score) return b.priority_score - a.priority_score
+      const aCreated = new Date(a.created_at || '').getTime()
+      const bCreated = new Date(b.created_at || '').getTime()
+      return bCreated - aCreated
+    })
+    .map((r) => (r.buyer_id === req.user.id ? r : redactRequirementForBuyer(r)))
+
   return res.json(out)
 }
 
@@ -273,6 +308,23 @@ export async function getRequirement(req, res) {
     return res.status(403).json({ error: 'Forbidden' })
   }
   return res.json(requirement)
+}
+
+export async function getSmartMatches(req, res) {
+  try {
+    await ensureEntitlement(req.user, 'smart_supplier_matching', 'Premium plan required for smart supplier matching.')
+    const requirement = await getRequirementById(req.params.requirementId)
+    if (!requirement) return res.status(404).json({ error: 'Requirement not found' })
+    if (req.user.role === 'buyer' && requirement.buyer_id !== req.user.id) {
+      return res.status(403).json({ error: 'Forbidden' })
+    }
+
+    const matches = await generateMatchesForRequirement(requirement)
+    const ranked = Array.isArray(matches) && matches.length ? matches : await listMatchesForRequirement(requirement.id)
+    return res.json({ matches: ranked })
+  } catch (error) {
+    return handleControllerError(res, error)
+  }
 }
 
 export async function patchRequirement(req, res) {
@@ -369,11 +421,21 @@ export async function searchRequirements(req, res) {
   const locationLng = parseCoordinate(req.query.locationLng)
   const distanceFilterActive = distanceKm !== null && locationLat !== null && locationLng !== null
 
+  const viewerPremium = plan === 'premium'
+  const viewerRole = String(req.user?.role || '').toLowerCase()
+  const enforcePriorityAccess = !viewerPremium && ['factory', 'buying_house', 'agent'].includes(viewerRole)
+  const nowMs = Date.now()
+
   const results = all
     .map((r) => {
       const buyer = usersById.get(r.buyer_id) || null
+      const buyerPlan = String(buyer?.subscription_status || '').toLowerCase()
+      const buyerPremium = buyerPlan === 'premium'
       const authorCountry = String(buyer?.profile?.country || '').trim()
       const profile = buyer?.profile || {}
+      const priorityUntil = r.priority_until ? new Date(r.priority_until).getTime() : 0
+      const priorityActive = String(r.priority_tier || '').toLowerCase() === 'priority'
+        && (!priorityUntil || priorityUntil > nowMs)
       return {
         ...r,
         author: buyer ? {
@@ -381,6 +443,7 @@ export async function searchRequirements(req, res) {
           name: buyer.name,
           role: buyer.role,
           verified: Boolean(buyer.verified),
+          premium: buyerPremium,
           country: authorCountry,
           industry: String(profile?.industry || ''),
           main_processes: Array.isArray(profile?.main_processes) ? profile.main_processes : [],
@@ -393,8 +456,11 @@ export async function searchRequirements(req, res) {
           avg_response_hours: responseTimeByOwner.get(String(buyer.id)) ?? null,
         } : { id: r.buyer_id, name: 'Unknown buyer', role: 'buyer', verified: false, country: '' },
         profile_key: `user:${r.buyer_id}`,
+        priority_score: (buyerPremium ? 2 : 0) + (buyer?.verified ? 0.5 : 0),
+        priority_active: priorityActive,
       }
     })
+    .filter((r) => (enforcePriorityAccess ? !r.priority_active : true))
     .filter((r) => {
       if (searchTokens.length) {
         const searchText = normalizeSearchText(`${r.category} ${r.product} ${r.material} ${r.custom_description} ${r.title} ${r.color_pantone || ''} ${r.size_range || ''}`)
@@ -490,7 +556,18 @@ export async function searchRequirements(req, res) {
       return true
     })
 
-  const items = results.map((row) => {
+  const viewerPremium = plan === 'premium'
+  const items = results
+    .sort((a, b) => {
+      if (a.priority_score !== b.priority_score) return b.priority_score - a.priority_score
+      if (viewerPremium) {
+        const aCreated = new Date(a.created_at || '').getTime()
+        const bCreated = new Date(b.created_at || '').getTime()
+        return bCreated - aCreated
+      }
+      return 0
+    })
+    .map((row) => {
     if (req.user.role === 'buyer' && row.buyer_id !== req.user.id) {
       return { ...redactRequirementForBuyer(row), author: row.author, profile_key: row.profile_key }
     }

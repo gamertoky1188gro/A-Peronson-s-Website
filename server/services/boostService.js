@@ -50,6 +50,26 @@ function isActiveBoost(boost) {
   return now >= startsAt && now <= endsAt
 }
 
+export async function getActiveBoostMap(scope = '') {
+  const normalizedScope = scope ? normalizeScope(scope) : ''
+  const boosts = await readJson(FILE)
+  const rows = Array.isArray(boosts) ? boosts : []
+  const activeByUser = {}
+
+  rows.forEach((boost) => {
+    if (!isActiveBoost(boost)) return
+    if (normalizedScope && String(boost.scope || '').toLowerCase() !== normalizedScope) return
+    const userId = String(boost.user_id || '')
+    if (!userId) return
+    const multiplier = Number(boost.multiplier || 1)
+    if (!Number.isFinite(multiplier) || multiplier <= 1) return
+    const current = Number(activeByUser[userId] || 1)
+    if (multiplier > current) activeByUser[userId] = multiplier
+  })
+
+  return activeByUser
+}
+
 export async function listBoostsForUser(userId) {
   const boosts = await readJson(FILE)
   return boosts.filter((b) => String(b.user_id) === String(userId || ''))
@@ -160,4 +180,3 @@ export async function expireBoosts() {
   if (changed) await writeJson(FILE, next)
   return next
 }
-

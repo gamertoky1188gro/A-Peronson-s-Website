@@ -17,18 +17,32 @@
     - This page does not call any API.
 */
 import React from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 export default function AccessDenied() {
   // Read the attempted path from router state (ProtectedRoute sets this when redirecting here).
   const location = useLocation()
+  const navigate = useNavigate()
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1)
+      return
+    }
+    navigate('/', { replace: true })
+  }
 
   return (
     // Full-height page wrapper (keeps center content vertically spaced on large screens).
     <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card p-6">
       {/* Centered panel to keep the message readable and focused. */}
       <div className="max-w-3xl mx-auto mt-16 bg-white neo-panel cyberpunk-card rounded-xl p-8">
-        <h1 className="text-3xl font-bold">Access denied</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Access denied</h1>
+          <button type="button" onClick={handleBack} className="text-sm text-slate-600 hover:text-slate-900">
+            Back
+          </button>
+        </div>
         <p className="mt-3 text-gray-600">
           {/* Show the blocked route (fallback to generic wording if missing). */}
           You do not have permission to access <strong>{location.state?.from || 'this page'}</strong>.

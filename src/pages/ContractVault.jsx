@@ -258,6 +258,9 @@ export default function ContractVault() {
   const [paymentProofs, setPaymentProofs] = useState([])
   const [paymentLoading, setPaymentLoading] = useState(false)
   const [paymentNotice, setPaymentNotice] = useState('')
+  const [auditLog, setAuditLog] = useState([])
+  const [auditLoading, setAuditLoading] = useState(false)
+  const [auditError, setAuditError] = useState('')
   const [paymentForm, setPaymentForm] = useState({
     type: 'bank_transfer',
     transaction_reference: '',
@@ -373,6 +376,29 @@ export default function ContractVault() {
     }
   }
 
+  const loadAuditTrail = async (contractId) => {
+    const token = getToken()
+    if (!token || !contractId) {
+      setAuditLog([])
+      return
+    }
+    setAuditLoading(true)
+    setAuditError('')
+    try {
+      const data = await apiRequest(`/documents/contracts/${encodeURIComponent(contractId)}/audit`, { token })
+      setAuditLog(Array.isArray(data?.items) ? data.items : [])
+    } catch (err) {
+      if (err.status === 403) {
+        setAuditError('Premium plan required to view the contract audit trail.')
+      } else {
+        setAuditError(err.message || 'Unable to load audit trail.')
+      }
+      setAuditLog([])
+    } finally {
+      setAuditLoading(false)
+    }
+  }
+
   const uploadPaymentDocument = async (contractId) => {
     if (!paymentForm.document_file) return null
     const token = getToken()
@@ -474,6 +500,11 @@ export default function ContractVault() {
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [])
+
+  useEffect(() => {
+    if (!selected?.id) return
+    loadAuditTrail(selected.id)
+  }, [selected?.id])
 
   const visibleContracts = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -986,6 +1017,37 @@ export default function ContractVault() {
             Signature timestamps: Buyer {safeDash(selected.artifact?.signature_timestamps?.buyer_signed_at)} <span className="mx-1">-</span> Factory {safeDash(selected.artifact?.signature_timestamps?.factory_signed_at)}
           </div>
         </div>
+      </div>
+
+      <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="text-sm font-semibold text-slate-900">Contract Audit Trail</div>
+          <div className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600">Premium</div>
+        </div>
+        {auditLoading ? (
+          <div className="mt-3 text-sm text-slate-600">Loading audit trail...</div>
+        ) : auditError ? (
+          <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+            {auditError}
+          </div>
+        ) : auditLog.length ? (
+          <div className="mt-3 space-y-2 text-xs text-slate-600">
+            {auditLog.map((entry) => (
+              <div key={entry.id || `${entry.timestamp}-${entry.note}`} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-semibold text-slate-900">{entry.action || 'update'}</span>
+                  <span>{entry.timestamp ? new Date(entry.timestamp).toLocaleString() : '\u2014'}</span>
+                </div>
+                <div className="mt-1 text-slate-600">{entry.note || 'Audit entry recorded.'}</div>
+                {entry.actor_name || entry.actor_id ? (
+                  <div className="mt-2 text-[11px] text-slate-500">By {entry.actor_name || entry.actor_id}</div>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-3 text-sm text-slate-600">No audit entries yet.</div>
+        )}
       </div>
     </div>
   ) : (

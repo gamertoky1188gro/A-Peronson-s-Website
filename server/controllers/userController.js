@@ -9,17 +9,21 @@ import {
   followUser,
   listUsers,
   listUsersByIds,
+  listEarlyVerifiedFactories,
   searchUsers,
   sendFriendRequest,
   setUserVerification,
   updateProfile,
 } from '../services/userService.js'
+import { getEntitlements } from '../services/entitlementService.js'
+import { ensureEntitlement } from '../services/entitlementService.js'
 
 export async function me(req, res) {
   const user = await findUserById(req.user.id)
   if (!user) return res.status(404).json({ error: 'User not found' })
   const { password_hash: _passwordHash, ...safeUser } = user
-  return res.json(safeUser)
+  const entitlements = await getEntitlements(user)
+  return res.json({ ...safeUser, entitlements })
 }
 
 export async function updateMyProfile(req, res) {
@@ -40,6 +44,14 @@ export async function searchUsersController(req, res) {
 export async function lookupUsers(req, res) {
   const ids = Array.isArray(req.body?.ids) ? req.body.ids : []
   return res.status(200).json({ users: await listUsersByIds(ids) })
+}
+
+export async function listEarlyVerifiedFactoriesController(req, res) {
+  await ensureEntitlement(req.user, 'early_access_verified_factories', 'Premium plan required for early access to verified factories.')
+  const days = Number(req.query?.days || 30)
+  const limit = Number(req.query?.limit || 20)
+  const factories = await listEarlyVerifiedFactories({ days, limit })
+  return res.status(200).json({ items: factories })
 }
 
 export async function followUserController(req, res) {

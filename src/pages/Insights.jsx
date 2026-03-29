@@ -13,7 +13,7 @@ function StatCard({ label, value, hint = '' }) {
 }
 
 export default function Insights() {
-  const { dashboard, companyAnalytics, platformAnalytics, subscription, isEnterprise, loading, error, forbidden } = useAnalyticsDashboard()
+  const { dashboard, companyAnalytics, platformAnalytics, premiumInsights, subscription, isEnterprise, loading, error, forbidden } = useAnalyticsDashboard()
   const totals = dashboard?.totals || {}
   const byType = dashboard?.analytics_events?.by_type || {}
   const interactionSummary = dashboard?.interaction_summary || {}
@@ -26,6 +26,7 @@ export default function Insights() {
   const platformByCountry = Array.isArray(platformAnalytics?.top_categories_by_country) ? platformAnalytics.top_categories_by_country : []
   const platformPriceDemand = Array.isArray(platformAnalytics?.price_range_demand) ? platformAnalytics.price_range_demand : []
   const platformMonthly = Array.isArray(platformAnalytics?.monthly_demand_trend) ? platformAnalytics.monthly_demand_trend : []
+  const premiumRole = premiumInsights?.role || ''
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-500 dark:bg-[#020617] dark:text-slate-100">
@@ -136,8 +137,168 @@ export default function Insights() {
               )}
             </div>
 
+            <div className="mt-6 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold">Premium Insights</h3>
+                <span className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">
+                  {premiumRole || 'premium'}
+                </span>
+              </div>
+              {!premiumInsights ? (
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                  Premium analytics unlock buying patterns, conversion insights, and agent performance. Upgrade to Premium to view.
+                </p>
+              ) : (
+                <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+                  {premiumInsights.request_performance ? (
+                    <StatCard
+                      label="Request Match Rate"
+                      value={`${premiumInsights.request_performance.match_rate_pct ?? 0}%`}
+                      hint="Matched buyer requests"
+                    />
+                  ) : null}
+                  {premiumInsights.request_performance_insights ? (
+                    <StatCard
+                      label="Open Requests"
+                      value={premiumInsights.request_performance_insights.open_requests ?? 0}
+                      hint="Requests still open"
+                    />
+                  ) : null}
+                  {premiumInsights.request_performance_insights ? (
+                    <StatCard
+                      label="Response Speed"
+                      value={premiumInsights.request_performance_insights.response_speed || premiumInsights.request_performance_insights.response_speed_hours || '--'}
+                      hint="Avg response time"
+                    />
+                  ) : null}
+                  {premiumInsights.request_performance ? (
+                    <StatCard
+                      label="Avg Response Time"
+                      value={premiumInsights.request_performance.avg_response_time || '--'}
+                      hint="Premium response speed"
+                    />
+                  ) : null}
+                  {premiumInsights.buyer_conversion_insights ? (
+                    <StatCard
+                      label="Conversion Rate"
+                      value={`${premiumInsights.buyer_conversion_insights.conversion_rate_pct ?? 0}%`}
+                      hint="Deals closed"
+                    />
+                  ) : null}
+                  {premiumInsights.advanced_analytics ? (
+                    <StatCard
+                      label="Product Views"
+                      value={premiumInsights.advanced_analytics.product_views ?? 0}
+                      hint="Premium visibility"
+                    />
+                  ) : null}
+                  {premiumInsights.advanced_analytics ? (
+                    <StatCard
+                      label="Inquiry Rate"
+                      value={premiumInsights.advanced_analytics.inquiry_rate ?? 0}
+                      hint="Inbound inquiries per view"
+                    />
+                  ) : null}
+                  {premiumInsights.buyer_interest_analytics ? (
+                    <StatCard
+                      label="Buyer Interest"
+                      value={premiumInsights.buyer_interest_analytics.unique_buyers ?? 0}
+                      hint="Unique buyers reached"
+                    />
+                  ) : null}
+                  {premiumInsights.buyer_interest_analytics ? (
+                    <StatCard
+                      label="Matched Requests"
+                      value={premiumInsights.buyer_interest_analytics.matched_requests ?? 0}
+                      hint="Requests matched"
+                    />
+                  ) : null}
+                  {premiumInsights.buyer_communication_insights ? (
+                    <StatCard
+                      label="Inbound Messages"
+                      value={premiumInsights.buyer_communication_insights.inbound_messages ?? 0}
+                      hint="Buyer communications"
+                    />
+                  ) : null}
+                  {premiumInsights.buyer_communication_insights ? (
+                    <StatCard
+                      label="Total Messages"
+                      value={premiumInsights.buyer_communication_insights.total_messages ?? 0}
+                      hint="All thread messages"
+                    />
+                  ) : null}
+                  {premiumInsights.buyer_communication_insights ? (
+                    <StatCard
+                      label="Avg Reply Time"
+                      value={premiumInsights.buyer_communication_insights.avg_response_time || '--'}
+                      hint="Response speed"
+                    />
+                  ) : null}
+                  {premiumInsights.order_completion_certification ? (
+                    <StatCard
+                      label="Completion Cert"
+                      value={premiumInsights.order_completion_certification.status || 'pending'}
+                      hint="Order completion status"
+                    />
+                  ) : null}
+                  {premiumInsights.buyer_conversion_insights ? (
+                    <StatCard
+                      label="Contracts Signed"
+                      value={premiumInsights.buyer_conversion_insights.contracts_signed ?? 0}
+                      hint="Closed deals"
+                    />
+                  ) : null}
+                </div>
+              )}
+
+              {premiumInsights?.agent_performance_analytics?.length ? (
+                <div className="mt-4">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Agent Performance</p>
+                  <div className="mt-2 space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                    {premiumInsights.agent_performance_analytics.map((agent) => (
+                      <div key={agent.agent_id} className="flex items-center justify-between rounded-lg border border-slate-200/60 px-3 py-2 dark:border-slate-800">
+                        <span className="truncate">{agent.name || agent.agent_id}</span>
+                        <span className="text-xs font-semibold">{agent.assigned_leads ?? 0} leads</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {premiumInsights?.buying_pattern_analysis?.length ? (
+                <div className="mt-4">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Buying Pattern Analysis</p>
+                  <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-700 dark:text-slate-300">
+                    {premiumInsights.buying_pattern_analysis.map((row) => (
+                      <span key={row.label} className="rounded-full border border-slate-200/60 px-3 py-1 dark:border-slate-800">
+                        {row.label} - {row.count}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+              {premiumInsights?.lead_distribution ? (
+                <div className="mt-4">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Lead Distribution</p>
+                  <div className="mt-2 space-y-2 text-xs text-slate-700 dark:text-slate-300">
+                    {Object.entries(premiumInsights.lead_distribution).map(([agentId, count]) => (
+                      <div key={agentId} className="flex items-center justify-between rounded-lg border border-slate-200/60 px-3 py-2 dark:border-slate-800">
+                        <span className="truncate">{agentId}</span>
+                        <span className="font-semibold">{count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
             {companyAnalytics ? (
               <div className="mt-6 space-y-4">
+                {companyAnalytics.limited ? (
+                  <div className="rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
+                    Advanced analytics (who viewed, inquiry rate, conversion metrics) are available on Premium. Upgrade to unlock full company analytics.
+                  </div>
+                ) : null}
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
                   <StatCard label="Profile Visits" value={companyTotals.profile_visits ?? 0} />
                   <StatCard label="Product Views" value={companyTotals.product_views ?? 0} />
@@ -225,4 +386,5 @@ export default function Insights() {
     </div>
   )
 }
+
 

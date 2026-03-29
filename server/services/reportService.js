@@ -5,9 +5,11 @@ import { createNotification } from './notificationService.js'
 
 const FILE = 'reports.json'
 
-export async function createReport({ actor, entity_type, entity_id, reason = '' }) {
+export async function createReport({ actor, entity_type, entity_id, reason = '', metadata = {} }) {
   const reports = await readJson(FILE)
   const rows = Array.isArray(reports) ? reports : []
+
+  const safeMeta = metadata && typeof metadata === 'object' ? metadata : {}
 
   const row = {
     id: crypto.randomUUID(),
@@ -17,6 +19,7 @@ export async function createReport({ actor, entity_type, entity_id, reason = '' 
     reason: sanitizeString(String(reason || ''), 400),
     actor_id: sanitizeString(String(actor?.id || ''), 120),
     actor_name: sanitizeString(String(actor?.name || actor?.email || ''), 120),
+    meta: safeMeta,
     created_at: new Date().toISOString(),
     resolved_at: '',
     resolved_by: '',

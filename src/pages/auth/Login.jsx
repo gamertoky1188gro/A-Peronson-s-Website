@@ -20,15 +20,16 @@
     - Styling is still using legacy `neo-page` / `cyberpunk-card` utilities.
       (We are only adding comments here; not changing styles/behavior.)
 */
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { apiRequest, getRoleHome, saveSession } from '../../lib/auth'
+import { apiRequest, getCurrentUser, getRoleHome, saveSession } from '../../lib/auth'
 
 export default function Login() {
   // `navigate` is used after a successful login (or when routing needs to change).
   const navigate = useNavigate()
   // `location` holds router state, including the "from" path set by ProtectedRoute when redirecting to /login.
   const location = useLocation()
+  const existingUser = getCurrentUser()
 
   // Form fields (controlled inputs).
   const [identifier, setIdentifier] = useState('')
@@ -41,6 +42,19 @@ export default function Login() {
 
   // If ProtectedRoute sent us here, it passes the blocked path in state so we can return after login.
   const redirectTo = location.state?.from || null
+
+  useEffect(() => {
+    if (!existingUser?.role) return
+    navigate(getRoleHome(existingUser.role), { replace: true })
+  }, [existingUser?.role, navigate])
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1)
+      return
+    }
+    navigate('/', { replace: true })
+  }
 
   // Submit handler: calls backend auth endpoint, stores the session, and redirects.
   const handleLogin = async (e) => {
@@ -73,7 +87,12 @@ export default function Login() {
     <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card flex items-center justify-center p-4">
       {/* Login card container (max width keeps form readable). */}
       <div className="w-full max-w-md bg-white neo-panel cyberpunk-card rounded-xl p-8">
-        <h1 className="text-3xl font-bold">Login</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Login</h1>
+          <button type="button" onClick={handleBack} className="text-sm text-slate-600 hover:text-slate-900">
+            Back
+          </button>
+        </div>
         <p className="mt-2 text-sm text-gray-600">Access pages based on your role (Buyer, Factory, Buying House, Admin).</p>
 
         {/* Controlled form: React state is the single source of truth for inputs. */}

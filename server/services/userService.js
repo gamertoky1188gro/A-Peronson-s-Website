@@ -5,6 +5,7 @@ import { sanitizeString } from '../utils/validators.js'
 import { upsertSubscription } from './subscriptionService.js'
 import { getAdminConfig } from './adminConfigService.js'
 import { creditWallet, redeemCouponForUser } from './walletService.js'
+import { getPlanForUser } from './entitlementService.js'
 
 const FILE = 'users.json'
 const CONNECTION_FILE = 'user_connections.json'
@@ -77,6 +78,23 @@ export async function listUsersByIds(ids = []) {
   const users = await readJson(FILE)
   const set = new Set((Array.isArray(ids) ? ids : []).map((id) => String(id)))
   return users.filter((u) => set.has(String(u.id))).map(cleanUser)
+}
+
+export async function listEarlyVerifiedFactories({ days = 30, limit = 20 } = {}) {
+  const users = await readJson(FILE)
+  const cutoff = Date.now() - Number(days || 30) * 24 * 60 * 60 * 1000
+  const rows = users
+    .filter((u) => String(u.role || '').toLowerCase() === 'factory')
+    .filter((u) => Boolean(u.verified))
+    .filter((u) => {
+      const ts = new Date(u.updated_at || u.created_at || '').getTime()
+      return Number.isFinite(ts) ? ts >= cutoff : false
+    })
+    .sort((a, b) => String(b.updated_at || b.created_at || '').localeCompare(String(a.updated_at || a.created_at || '')))
+    .slice(0, Math.max(1, Math.min(50, Number(limit || 20))))
+    .map(cleanUser)
+
+  return rows
 }
 
 export async function searchUsers(viewerId, query) {
@@ -311,9 +329,26 @@ export async function updateProfile(userId, profilePatch) {
   if (index < 0) return null
 
   const current = users[index]
+  const plan = await getPlanForUser(current)
+  const brandingFields = new Set([
+    'brand_logo_url',
+    'brand_cover_url',
+    'brand_color',
+    'brand_accent',
+    'brand_tagline',
+    'brand_website',
+    'brand_name',
+    'account_manager_name',
+    'account_manager_email',
+    'account_manager_phone',
+  ])
+  const patchEntries = Object.entries(profilePatch || {})
+    .filter(([key]) => plan === 'premium' || !brandingFields.has(key))
+    .map(([k, v]) => [k, Array.isArray(v) ? v.map((x) => sanitizeString(String(x), 120)) : sanitizeString(String(v ?? ''), 240)])
+
   const nextProfile = {
     ...current.profile,
-    ...Object.fromEntries(Object.entries(profilePatch).map(([k, v]) => [k, Array.isArray(v) ? v.map((x) => sanitizeString(String(x), 120)) : sanitizeString(String(v ?? ''), 240)])),
+    ...Object.fromEntries(patchEntries),
   }
 
   users[index] = { ...current, profile: nextProfile }

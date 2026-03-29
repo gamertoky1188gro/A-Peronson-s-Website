@@ -392,7 +392,7 @@ export default function TexHub() {
                 to="/login"
                 className="border-0 px-4 py-2 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B]/5 text-[#1E293B]/80 font-semibold transition duration-300 ease-out hover:bg-[#1E293B]/8 dark:bg-white/[0.03] dark:text-slate-200 dark:hover:bg-white/[0.06]"
               >
-                dont login...just kidding...pls login
+                
               </MagneticLinkButton>
             </div>
 

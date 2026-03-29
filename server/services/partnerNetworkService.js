@@ -4,6 +4,7 @@ import { findUserById, listUsers } from './userService.js'
 import { recordMilestone } from './ratingsService.js'
 import { createNotification } from './notificationService.js'
 import { getAdminConfig } from './adminConfigService.js'
+import { getPlanForUser } from './entitlementService.js'
 import {
   canManagePartnerNetwork,
   canViewPartnerNetwork,
@@ -16,8 +17,9 @@ import {
 const FILE = 'partner_requests.json'
 const ACTIVE_STATUSES = new Set(['pending', 'connected'])
 
-function isPremium(user) {
-  return String(user?.subscription_status || '').toLowerCase() === 'premium'
+async function isPremium(user) {
+  const plan = await getPlanForUser(user)
+  return plan === 'premium'
 }
 
 function isAllowedPair(fromRole, toRole) {
@@ -108,7 +110,7 @@ export async function sendPartnerRequest(user, targetAccountId) {
       throw err
     }
 
-    if (user.role === 'buying_house' && !isPremium(user)) {
+    if (user.role === 'buying_house' && !(await isPremium(user))) {
       const outgoing = rows.filter((r) => r.requester_id === user.id && ACTIVE_STATUSES.has(r.status))
       if (outgoing.length >= freePartnerLimit) {
         const err = new Error(`Upgrade to premium to send more than ${freePartnerLimit} partner requests.`)
@@ -188,7 +190,7 @@ export async function updatePartnerRequestStatus(user, requestId, action) {
       throw err
     }
 
-    if (action === 'accept' && String(user.role || '').toLowerCase() === 'factory' && !isPremium(user)) {
+    if (action === 'accept' && String(user.role || '').toLowerCase() === 'factory' && !(await isPremium(user))) {
       const existingConnections = rows.filter((r) => r.target_id === user.id && r.status === 'connected').length
       if (existingConnections >= freePartnerLimit) {
         const err = new Error(`Subscribe to premium to accept more than ${freePartnerLimit} partner requests.`)

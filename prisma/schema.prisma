@@ -431,6 +431,7 @@ model Report {
   reason            String?
   actor_id          String?
   actor_name        String?
+  meta              Json?
   created_at        DateTime @default(now())
   resolved_at       DateTime?
   resolved_by       String?

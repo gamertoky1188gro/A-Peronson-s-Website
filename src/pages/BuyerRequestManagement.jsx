@@ -233,6 +233,7 @@ const GARMENT_SUSTAIN_CERTS = ['GOTS', 'OEKO-TEX', 'GRS']
 export default function BuyerRequestManagement() {
   const user = useMemo(() => getCurrentUser(), [])
   const role = String(user?.role || '').toLowerCase()
+  const isPremium = String(user?.subscription_status || '').toLowerCase() === 'premium'
 
   const [moreFieldsOpen, setMoreFieldsOpen] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
@@ -252,6 +253,9 @@ export default function BuyerRequestManagement() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [smartMatches, setSmartMatches] = useState({})
+  const [smartMatchLoading, setSmartMatchLoading] = useState('')
+  const [smartMatchError, setSmartMatchError] = useState({})
 
   const [editingId, setEditingId] = useState('')
   const [editForm, setEditForm] = useState(EMPTY_FORM)
@@ -472,6 +476,21 @@ export default function BuyerRequestManagement() {
       setError(err.message || 'Failed to delete request.')
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function loadSmartMatches(requirementId) {
+    if (!token || !requirementId) return
+    setSmartMatchLoading(requirementId)
+    setSmartMatchError((prev) => ({ ...prev, [requirementId]: '' }))
+    try {
+      const data = await apiRequest(`/requirements/${encodeURIComponent(requirementId)}/matches`, { token })
+      setSmartMatches((prev) => ({ ...prev, [requirementId]: Array.isArray(data?.matches) ? data.matches : [] }))
+    } catch (err) {
+      setSmartMatchError((prev) => ({ ...prev, [requirementId]: err.message || 'Unable to load smart matches' }))
+      setSmartMatches((prev) => ({ ...prev, [requirementId]: [] }))
+    } finally {
+      setSmartMatchLoading('')
     }
   }
 
@@ -1225,6 +1244,14 @@ export default function BuyerRequestManagement() {
                         <button type="button" className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50" onClick={() => duplicateRequest(r)}>
                           Duplicate
                         </button>
+                        <button
+                          type="button"
+                          disabled={!isPremium}
+                          className="rounded-full border border-indigo-200 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 disabled:opacity-60"
+                          onClick={() => loadSmartMatches(r.id)}
+                        >
+                          {smartMatchLoading === r.id ? 'Matching...' : 'Smart match'}
+                        </button>
                         <button type="button" className="rounded-full bg-[var(--gt-blue)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--gt-blue-hover)]" onClick={() => startEditing(r)}>
                           Edit
                         </button>
@@ -1233,6 +1260,31 @@ export default function BuyerRequestManagement() {
                         </button>
                       </div>
                     </div>
+
+                    {!isPremium ? (
+                      <p className="text-[11px] text-amber-600">Premium required for smart supplier matching.</p>
+                    ) : null}
+
+                    {smartMatchError[r.id] ? (
+                      <p className="text-[11px] text-rose-600">{smartMatchError[r.id]}</p>
+                    ) : null}
+
+                    {isPremium && (smartMatches[r.id]?.length || smartMatchLoading === r.id) ? (
+                      <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200/70">
+                        <p className="text-xs font-semibold text-slate-700">Smart matches</p>
+                        <div className="mt-2 space-y-2">
+                          {(smartMatches[r.id] || []).slice(0, 3).map((match) => (
+                            <div key={match.id || match.supplier_id} className="flex items-center justify-between rounded-lg bg-white px-2 py-2 text-xs ring-1 ring-slate-200/60">
+                              <span className="truncate">{match.name || match.supplier_name || match.supplier_id}</span>
+                              <span className="text-slate-500">{match.score || match.match_score || '--'}</span>
+                            </div>
+                          ))}
+                          {!smartMatches[r.id]?.length && smartMatchLoading === r.id ? (
+                            <div className="text-xs text-slate-500">Finding matches...</div>
+                          ) : null}
+                        </div>
+                      </div>
+                    ) : null}
 
                     <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200/70">
                       <div className="flex items-center justify-between">

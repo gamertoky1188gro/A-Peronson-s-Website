@@ -5,6 +5,7 @@ import { logInfo } from '../utils/logger.js'
 import { createNotification, emitNotificationsForEntity } from './notificationService.js'
 import { recordMilestone } from './ratingsService.js'
 import { moderateTextOrRedact } from './policyService.js'
+import { getPlanForUser } from './entitlementService.js'
 
 const FILE = 'requirements.json'
 
@@ -225,6 +226,8 @@ function normalizeRequirement(buyerId, payload) {
     assigned_at: sanitizeString(payload.assigned_at || '', 40),
     assigned_by: sanitizeString(payload.assigned_by || '', 120),
     status: status || 'open',
+    priority_tier: sanitizeString(payload.priority_tier || '', 40),
+    priority_until: normalizeDate(payload.priority_until),
     created_at: new Date().toISOString(),
   }
   normalized.ai_summary = buildRequirementSummary(normalized)
@@ -234,6 +237,14 @@ function normalizeRequirement(buyerId, payload) {
 export async function createRequirement(buyerId, payload) {
   const requirements = await readJson(FILE)
   const requirement = normalizeRequirement(buyerId, payload)
+  const plan = await getPlanForUser({ id: buyerId })
+  if (plan === 'premium') {
+    requirement.priority_tier = 'priority'
+    requirement.priority_until = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+  } else {
+    requirement.priority_tier = 'standard'
+    requirement.priority_until = null
+  }
 
   // Trust & safety (project.md): auto-remove outside-contact sharing or obscene text.
   // We moderate the free-text fields that are most likely to contain contact details.
@@ -376,6 +387,8 @@ export async function updateRequirement(requirementId, patch, actor) {
     assigned_agent_id: assignmentChanged ? requestedAssignedAgentId : sanitizeString(previous.assigned_agent_id || '', 120),
     assigned_at: assignmentChanged ? new Date().toISOString() : sanitizeString(previous.assigned_at || '', 40),
     assigned_by: assignmentChanged ? sanitizeString(actor.id || '', 120) : sanitizeString(previous.assigned_by || '', 120),
+    priority_tier: patch.priority_tier !== undefined ? sanitizeString(patch.priority_tier || '', 40) : (previous.priority_tier || ''),
+    priority_until: patch.priority_until !== undefined ? normalizeDate(patch.priority_until) : (previous.priority_until || null),
   }
 
   assertRequiredFields({

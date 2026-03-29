@@ -11,6 +11,7 @@ import {
   adminLockMessaging,
   followUserController,
   friendRequestController,
+  listEarlyVerifiedFactoriesController,
   lookupUsers,
   me,
   searchUsersController,
@@ -24,6 +25,7 @@ router.get('/me', requireAuth, me)
 router.patch('/me/profile', requireAuth, updateMyProfile)
 router.delete('/me', requireAuth, deleteMyAccount)
 router.get('/search', requireAuth, searchUsersController)
+router.get('/verified/early', requireAuth, listEarlyVerifiedFactoriesController)
 router.post('/lookup', requireAuth, lookupUsers)
 router.post('/:userId/follow', requireAuth, followUserController)
 router.post('/:userId/friend-request', requireAuth, friendRequestController)

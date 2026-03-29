@@ -2,11 +2,13 @@ import crypto from 'crypto'
 import path from 'path'
 import fs from 'fs/promises'
 import { readJson, writeJson } from '../utils/jsonStore.js'
+import { readLocalJson } from '../utils/localStore.js'
 import { sanitizeString } from '../utils/validators.js'
-import { canManagePartnerNetwork, canModifyContract, isAgent, isOwnerOrAdmin, scopeRecordsForUser } from '../utils/permissions.js'
+import { canAccessContract, canManagePartnerNetwork, canModifyContract, isAgent, isOwnerOrAdmin, scopeRecordsForUser } from '../utils/permissions.js'
 import { trackEvent } from './analyticsService.js'
 
 const FILE = 'documents.json'
+const CONTRACT_AUDIT_FILE = 'contract_audit.json'
 const PAYMENT_PROOFS_FILE = 'payment_proofs.json'
 
 const SIGNATURE_STATES = new Set(['pending', 'signed'])
@@ -414,6 +416,22 @@ export async function listContracts(actor) {
   return scoped
     .map((c) => ({ ...c, lifecycle_status: normalizeContractLifecycle(c) }))
     .map((c) => presentContractForActor(c, actor))
+}
+
+export async function listContractAudit(actor, contractId) {
+  const id = sanitizeString(String(contractId || ''), 120)
+  if (!id) return null
+  const docs = await readJson(FILE)
+  const contract = docs.find((d) => d.entity_type === 'contract' && String(d.id) === id) || null
+  if (!contract) return null
+  if (!canAccessContract(actor, contract)) return 'forbidden'
+
+  const auditRows = await readLocalJson(CONTRACT_AUDIT_FILE, [])
+  const items = (Array.isArray(auditRows) ? auditRows : [])
+    .filter((row) => String(row.contract_id || '') === id)
+    .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')))
+
+  return { contract_id: id, items }
 }
 
 export async function updateContractSignatures(contractId, patch = {}, actor) {

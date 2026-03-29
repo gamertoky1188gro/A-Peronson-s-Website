@@ -19,13 +19,14 @@
     - This file currently uses legacy `neo-page` / `cyberpunk-card` styles.
       We are only adding comments, not altering visuals or behavior.
 */
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { apiRequest, saveSession } from '../../lib/auth'
+import { apiRequest, getCurrentUser, getRoleHome, saveSession } from '../../lib/auth'
 
 export default function Signup() {
   // Router navigation after successful account creation.
   const navigate = useNavigate()
+  const existingUser = getCurrentUser()
   // UX state for async submit + error display.
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -41,6 +42,19 @@ export default function Signup() {
 
   // Generic onChange helper so each input doesn't need its own setter function.
   const onChange = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
+
+  useEffect(() => {
+    if (!existingUser?.role) return
+    navigate(getRoleHome(existingUser.role), { replace: true })
+  }, [existingUser?.role, navigate])
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1)
+      return
+    }
+    navigate('/', { replace: true })
+  }
 
   // Submit handler: builds backend payload, calls register endpoint, and saves session.
   const handleSubmit = async (e) => {
@@ -81,9 +95,17 @@ export default function Signup() {
             <h1 className="text-3xl font-bold text-slate-900">Create your account</h1>
             <p className="mt-2 text-sm text-slate-500">A clean, professional start for Garments and Textile sourcing teams.</p>
           </div>
-          <div className="hidden sm:flex items-center rounded-full bg-blue-50 px-3 py-1 text-[11px] font-semibold text-[#0A66C2]">
-            GarTexHub
+          <div className="hidden sm:flex items-center gap-3">
+            <div className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-semibold text-[#0A66C2]">GarTexHub</div>
+            <button type="button" onClick={handleBack} className="text-sm text-slate-600 hover:text-slate-900">
+              Back
+            </button>
           </div>
+        </div>
+        <div className="mt-3 sm:hidden">
+          <button type="button" onClick={handleBack} className="text-sm text-slate-600 hover:text-slate-900">
+            Back
+          </button>
         </div>
 
         <form className="mt-8 grid md:grid-cols-2 gap-4" onSubmit={handleSubmit}>

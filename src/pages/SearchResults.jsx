@@ -22,7 +22,7 @@
     - POST /api/search/alerts (save alerts)
 
   Major UI/UX patterns:
-    - Glass + glow search bar with shortcut hint (Ctrl/âŒ˜ + K).
+    - Glass + glow search bar with shortcut hint (Ctrl/Cmd + K).
     - layoutId animated tabs for "All / Buyer Requests / Companies".
     - Skeleton shimmer while loading.
     - Optional premium-locked overlays for advanced filters.
@@ -184,6 +184,8 @@ export default function SearchResults() {
   const [upgradePrompt, setUpgradePrompt] = useState('')
   const [alertFeedback, setAlertFeedback] = useState('')
   const [autoSaveCandidate, setAutoSaveCandidate] = useState(null)
+  const [earlyVerifiedFactories, setEarlyVerifiedFactories] = useState([])
+  const [earlyVerifiedError, setEarlyVerifiedError] = useState('')
   const [autoSaveAlertsEnabled] = useState(() => {
     const raw = sessionUser?.profile?.auto_save_search_alerts
     if (raw === undefined || raw === null || raw === '') return true
@@ -224,6 +226,33 @@ export default function SearchResults() {
     locationLat: searchParams.get('locationLat') || '',
     locationLng: searchParams.get('locationLng') || '',
   }))
+
+  useEffect(() => {
+    let alive = true
+    const loadEarlyVerified = async () => {
+      if (!token) return
+      const isBuyer = String(sessionUser?.role || '').toLowerCase() === 'buyer'
+      const isPremium = String(sessionUser?.subscription_status || '').toLowerCase() === 'premium'
+      if (!isBuyer || !isPremium) {
+        setEarlyVerifiedFactories([])
+        return
+      }
+      try {
+        const data = await apiRequest('/users/verified/early', { token })
+        if (!alive) return
+        setEarlyVerifiedFactories(Array.isArray(data?.items) ? data.items : [])
+        setEarlyVerifiedError('')
+      } catch (err) {
+        if (!alive) return
+        setEarlyVerifiedFactories([])
+        setEarlyVerifiedError(err.message || 'Unable to load early verified factories')
+      }
+    }
+    loadEarlyVerified()
+    return () => {
+      alive = false
+    }
+  }, [sessionUser, token])
 
   const [capabilities, setCapabilities] = useState(() => ({
     filters: { advanced: sessionUser?.subscription_status === 'premium' },
@@ -858,7 +887,7 @@ export default function SearchResults() {
                   />
                 </div>
                 ) : (
-                  <p className="mt-3 text-[11px] text-slate-500 dark:text-slate-400">Advanced filters are hidden to keep search simple. Use â€œMore filtersâ€ when needed.</p>
+                  <p className="mt-3 text-[11px] text-slate-500 dark:text-slate-400">Advanced filters are hidden to keep search simple. Use "More filters" when needed.</p>
                 )}
               </div>
 
@@ -975,8 +1004,8 @@ export default function SearchResults() {
                       const isExpired = expiresAt && !Number.isNaN(expiresAt.getTime()) && expiresAt.getTime() < Date.now()
                       const maxSuppliers = Number.isFinite(Number(r.max_suppliers)) ? Number(r.max_suppliers) : null
                       const specLabel = requestType === 'textile'
-                        ? [specs.material_type || r.category, specs.unit || ''].filter(Boolean).join(' â€¢ ')
-                        : [specs.gender_target || '', specs.season || ''].filter(Boolean).join(' â€¢ ')
+                        ? [specs.material_type || r.category, specs.unit || ''].filter(Boolean).join(' - ')
+                        : [specs.gender_target || '', specs.season || ''].filter(Boolean).join(' - ')
                       return (
                         <motion.div
                           key={r.id}
@@ -1007,6 +1036,11 @@ export default function SearchResults() {
                                 {author.verified ? (
                                   <span className="verified-shimmer inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 px-2 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:from-emerald-500/12 dark:to-teal-400/10 dark:text-emerald-200 dark:ring-emerald-400/25">
                                     Verified
+                                  </span>
+                                ) : null}
+                                {r.priority_active ? (
+                                  <span className="inline-flex items-center rounded-full bg-sky-50 px-2 py-1 text-[10px] font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-200">
+                                    Priority
                                   </span>
                                 ) : null}
                                 {author.country ? <span className="text-[11px] text-slate-500 dark:text-slate-400">- {author.country}</span> : null}
@@ -1077,6 +1111,16 @@ export default function SearchResults() {
                                     Verified
                                   </span>
                                 ) : null}
+                                {author.premium ? (
+                                  <span className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-1 text-[10px] font-semibold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-200">
+                                    Premium
+                                  </span>
+                                ) : null}
+                                {p.boost_active ? (
+                                  <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-200">
+                                    Boosted {p.boost_multiplier && p.boost_multiplier !== 1 ? `x${p.boost_multiplier}` : ""}
+                                  </span>
+                                ) : null}
                                 {author.country ? <span className="text-[11px] text-slate-500 dark:text-slate-400">- {author.country}</span> : null}
                                 {author.role ? <span className="text-[11px] text-slate-500 dark:text-slate-400 uppercase">- {String(author.role).replaceAll('_', ' ')}</span> : null}
                               </div>
@@ -1125,6 +1169,30 @@ export default function SearchResults() {
           </div>
 
           <aside className="col-span-12 xl:col-span-3 space-y-4">
+            {earlyVerifiedFactories.length || earlyVerifiedError ? (
+              <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Early verified factories</p>
+                <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Premium-only early access list</p>
+                {earlyVerifiedError ? (
+                  <div className="mt-2 text-xs text-rose-600 dark:text-rose-300">{earlyVerifiedError}</div>
+                ) : (
+                  <div className="mt-3 space-y-2">
+                    {earlyVerifiedFactories.length ? earlyVerifiedFactories.slice(0, 6).map((row) => (
+                      <Link
+                        key={row.id}
+                        to={roleToProfileRoute(row.role, row.id)}
+                        className="block rounded-xl bg-white px-3 py-2 text-left ring-1 ring-slate-200/70 transition hover:bg-slate-50 dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/8"
+                      >
+                        <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{row.name || 'Factory'}</p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{row.country || '-'} - verified</p>
+                      </Link>
+                    )) : (
+                      <div className="text-xs text-slate-500 dark:text-slate-400">No new verified factories yet.</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : null}
             <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
               <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Recently viewed</p>
               <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Private to you - Recorded on Quick View</p>
@@ -1141,7 +1209,7 @@ export default function SearchResults() {
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{row.author?.name || 'Company'} - {new Date(row.viewed_at).toLocaleString()}</p>
                   </button>
                 )) : (
-                  <div className="text-xs text-slate-500 dark:text-slate-400">No views yet. Use â€œQuick viewâ€ on a product.</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">No views yet. Use "Quick view" on a product.</div>
                 )}
               </div>
               <div className="mt-3">
@@ -1170,6 +1238,8 @@ export default function SearchResults() {
     </div>
   )
 }
+
+
 
 
 

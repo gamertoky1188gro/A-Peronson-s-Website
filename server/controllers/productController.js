@@ -12,6 +12,7 @@ import { readJson } from '../utils/jsonStore.js'
 import { listMyProductViews, recordView } from '../services/productViewService.js'
 import { findUserById } from '../services/userService.js'
 import { handleControllerError } from '../utils/permissions.js'
+import { getActiveBoostMap } from '../services/boostService.js'
 
 function parseNumber(value) {
   if (value === undefined || value === null) return null
@@ -285,9 +286,10 @@ export async function searchProducts(req, res) {
   }
 
   const all = await listProducts({})
-  const [users, messages] = await Promise.all([
+  const [users, messages, boostMap] = await Promise.all([
     readJson('users.json'),
     readJson('messages.json'),
+    getActiveBoostMap('feed'),
   ])
   const usersById = new Map(users.map((u) => [u.id, u]))
   const responseTimeByOwner = buildResponseTimeByOwner(messages, users)
@@ -335,8 +337,15 @@ export async function searchProducts(req, res) {
   const results = all
     .map((p) => {
       const company = usersById.get(p.company_id) || null
+      const companyPremium = String(company?.subscription_status || '').toLowerCase() === 'premium'
       const authorCountry = String(company?.profile?.country || '').trim()
       const profile = company?.profile || {}
+      const paidBoostMultiplier = Number(boostMap?.[String(p.company_id)] || 1)
+      const premiumBoostMultiplier = companyPremium ? 1.1 : 1
+      const effectiveBoost = (Number.isFinite(paidBoostMultiplier) ? paidBoostMultiplier : 1) * premiumBoostMultiplier
+      const boostActive = effectiveBoost > 1
+      const priorityScore = (companyPremium ? 2 : 0) + (company?.verified ? 0.5 : 0) + (boostActive ? 1.25 : 0)
+
       return {
         ...p,
         author: company ? {
@@ -344,6 +353,7 @@ export async function searchProducts(req, res) {
           name: company.name,
           role: company.role,
           verified: Boolean(company.verified),
+          premium: companyPremium,
           country: authorCountry,
           industry: String(profile?.industry || ''),
           certifications: Array.isArray(profile?.certifications) ? profile.certifications : [],
@@ -364,6 +374,9 @@ export async function searchProducts(req, res) {
           avg_response_hours: responseTimeByOwner.get(String(company.id)) ?? null,
         } : { id: p.company_id, name: 'Unknown company', role: 'factory', verified: false, country: '' },
         profile_key: `user:${p.company_id}`,
+        priority_score: priorityScore,
+        boost_active: boostActive,
+        boost_multiplier: Number.isFinite(effectiveBoost) ? Number(effectiveBoost.toFixed(2)) : 1,
       }
     })
     .filter((p) => {
@@ -461,7 +474,16 @@ export async function searchProducts(req, res) {
       return true
     })
 
-  const facets = results.reduce((acc, row) => {
+  const sortedResults = results
+    .sort((a, b) => {
+      if (a.priority_score !== b.priority_score) return b.priority_score - a.priority_score
+      const aCreated = new Date(a.created_at || '').getTime()
+      const bCreated = new Date(b.created_at || '').getTime()
+      if (Number.isFinite(aCreated) && Number.isFinite(bCreated)) return bCreated - aCreated
+      return 0
+    })
+
+  const facets = sortedResults.reduce((acc, row) => {
     const category = String(row.category || 'Other')
     const country = String(row.author?.country || 'Unknown')
     acc.categories[category] = (acc.categories[category] || 0) + 1
@@ -505,7 +527,7 @@ export async function searchProducts(req, res) {
   }
 
   return res.json({
-    items: results,
+    items: sortedResults,
     facets: cappedFacets,
     ...buildSearchAccessPayload({
       action: 'products_search',
