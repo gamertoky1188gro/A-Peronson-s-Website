@@ -325,10 +325,10 @@ export default function MainFeed() {
     setReportBusy(true)
     setNotice({ type: '', message: '' })
     try {
-      await apiRequest(`/social/${encodeURIComponent(reportItem.entityType)}/${encodeURIComponent(reportItem.id)}/report`, {
+      await apiRequest('/reports/content', {
         method: 'POST',
         token,
-        body: { reason },
+        body: { entity_type: reportItem.entityType, entity_id: reportItem.id, reason },
       })
       const key = `${reportItem.entityType}:${reportItem.id}`
       setReportCooldowns((prev) => ({ ...prev, [key]: Date.now() + 15000 }))

@@ -394,7 +394,7 @@ export async function getAdminCatalog() {
     callEscalations,
     chatTransfers,
     contentFlags,
-    supportTickets,
+    supportTicketsLocal,
     notificationTemplates,
     notificationBatches,
     monthlyTriggers,
@@ -452,6 +452,8 @@ export async function getAdminCatalog() {
   const couponRedemptionRows = Array.isArray(couponRedemptions) ? couponRedemptions : []
   const knowledgeRows = Array.isArray(assistantKnowledge) ? assistantKnowledge : []
   const notesRows = Array.isArray(leadNotes) ? leadNotes : []
+  const supportTicketRows = await readJson(SUPPORT_TICKETS_FILE)
+  const supportTickets = Array.isArray(supportTicketRows) ? supportTicketRows : []
 
   const orgRegistry = deriveOrgRegistry(usersRows, orgOverrides || DEFAULT_ORG_OVERRIDES, config || {})
 
@@ -625,7 +627,7 @@ export async function getAdminCatalog() {
       flags: contentFlags,
     },
     support: {
-      tickets: supportTickets,
+      tickets: supportTickets.length ? supportTickets : supportTicketsLocal,
       reports: reportRows,
       sla_targets: config?.support?.sla_targets || {},
     },

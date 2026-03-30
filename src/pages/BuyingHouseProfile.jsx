@@ -55,6 +55,7 @@ export default function BuyingHouseProfile() {
   const [error, setError] = useState('')
   const [profile, setProfile] = useState(null)
   const [ratingSummary, setRatingSummary] = useState(null)
+  const [certification, setCertification] = useState(null)
   const [notice, setNotice] = useState('')
 
   const [activeTab, setActiveTab] = useState('overview')
@@ -107,6 +108,16 @@ export default function BuyingHouseProfile() {
     }
   }, [id])
 
+  const loadCertification = useCallback(async () => {
+    if (!id || !token) return
+    try {
+      const data = await apiRequest(`/certifications/org/${encodeURIComponent(id)}`, { token })
+      setCertification(data?.summary || null)
+    } catch {
+      setCertification(null)
+    }
+  }, [id, token])
+
   const loadProducts = useCallback(async ({ reset }) => {
     if (!id) return
     const cursor = reset ? 0 : productsCursor
@@ -140,7 +151,8 @@ export default function BuyingHouseProfile() {
   useEffect(() => {
     loadProfile()
     loadRatings()
-  }, [loadProfile, loadRatings])
+    loadCertification()
+  }, [loadProfile, loadRatings, loadCertification])
 
   useEffect(() => {
     if (!user?.id) return
@@ -295,6 +307,13 @@ export default function BuyingHouseProfile() {
           </motion.div>
 
           <VerificationPanel summary={verification} />
+          {certification ? (
+            <div className="mt-4 rounded-xl bg-white/60 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+              <p className="text-[11px] text-slate-500">Order Completion Certification</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">{certification.status || 'pending'}</p>
+              <p className="text-[11px] text-slate-600">Signed contracts: {certification.signed_contracts ?? 0}</p>
+            </div>
+          ) : null}
         </aside>
 
         <main className="col-span-12 lg:col-span-8 space-y-4">

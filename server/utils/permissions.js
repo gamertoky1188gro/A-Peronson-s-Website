@@ -58,7 +58,7 @@ export function canViewAnalyticsAdmin(user) {
 
 export function canViewAnalyticsDashboard(user) {
   if (isOwnerOrAdmin(user)) return true
-  if (hasRole(user, 'buying_house', 'factory')) return true
+  if (hasRole(user, 'buying_house', 'factory', 'buyer')) return true
   if (isAgent(user)) return Boolean(user?.permission_matrix?.analytics?.view)
   return false
 }

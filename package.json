@@ -18,8 +18,10 @@
     "db:migrate:pg": "prisma migrate dev"
   },
   "dependencies": {
-    "@prisma/client": "^6.15.0",
     "@fortawesome/fontawesome-free": "^7.2.0",
+    "@prisma/client": "^6.15.0",
+    "@simplewebauthn/browser": "^13.3.0",
+    "@simplewebauthn/server": "^13.3.0",
     "@tailwindcss/vite": "^4.2.0",
     "axios": "^1.13.6",
     "bcryptjs": "^3.0.3",

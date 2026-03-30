@@ -721,7 +721,7 @@ const premiumFeatures = [
             {[
               { q: 'Can I upgrade anytime*', a: 'Yes -- your data stays intact.' },
               { q: 'Can I downgrade*', a: 'Yes -- plan limits apply immediately.' },
-              { q: 'Does GarTexHub handle payments*', a: 'Not yet. The platform focuses on workflow + coordination.' },
+              { q: 'Does GarTexHub handle payments*', a: 'Not yet. The platform focuses on workflow + coordination. Premium can be activated via promo coupon without a card when eligible.' },
               { q: 'Are calls recorded*', a: 'Yes -- for documentation and compliance.' },
             ].map((item, idx) => (
               <MotionItem key={item.q} index={5 + idx}>

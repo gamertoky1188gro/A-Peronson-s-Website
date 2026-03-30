@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import AccessDeniedState from '../components/AccessDeniedState'
 import { apiRequest, clearSession, getCurrentUser, getToken, saveSession } from '../lib/auth'
+import { startRegistration } from '@simplewebauthn/browser'
 
 const emptyKnowledge = { type: 'faq', question: '', answer: '', keywords: '' }
 const TAB_KEYS = [
@@ -112,6 +113,11 @@ export default function OrgSettings() {
   const [deletePassword, setDeletePassword] = useState('')
   const [deleteFeedback, setDeleteFeedback] = useState('')
   const [deletingAccount, setDeletingAccount] = useState(false)
+  const [passkeys, setPasskeys] = useState(() => Array.isArray(currentUser?.passkeys) ? currentUser.passkeys : [])
+  const [passkeyName, setPasskeyName] = useState('')
+  const [passkeyBusy, setPasskeyBusy] = useState(false)
+  const [passkeyNotice, setPasskeyNotice] = useState('')
+  const [passkeyError, setPasskeyError] = useState('')
 
   const verificationStatus = useMemo(() => {
     if (remainingDays <= 0) return 'expired'
@@ -150,6 +156,17 @@ export default function OrgSettings() {
     }
   }, [])
 
+  const loadPasskeys = useCallback(async () => {
+    const token = getToken()
+    if (!token) return
+    try {
+      const data = await apiRequest('/auth/passkeys', { token })
+      setPasskeys(Array.isArray(data?.passkeys) ? data.passkeys : [])
+    } catch {
+      setPasskeys([])
+    }
+  }, [])
+
   const loadChatbotSettings = useCallback(async () => {
     const token = getToken()
     if (!token) return
@@ -173,7 +190,53 @@ export default function OrgSettings() {
   useEffect(() => {
     loadBilling()
     loadEntitlements()
-  }, [loadBilling, loadEntitlements])
+    loadPasskeys()
+  }, [loadBilling, loadEntitlements, loadPasskeys])
+
+  async function registerPasskey() {
+    const token = getToken()
+    if (!token) {
+      setPasskeyError('Please login again to register a passkey.')
+      return
+    }
+    if (typeof window === 'undefined' || !window.PublicKeyCredential) {
+      setPasskeyError('Passkeys are not supported on this device/browser.')
+      return
+    }
+    setPasskeyError('')
+    setPasskeyNotice('')
+    setPasskeyBusy(true)
+    try {
+      const optionsRes = await apiRequest('/auth/passkey/registration/options', { method: 'POST', token })
+      const credential = await startRegistration(optionsRes.options)
+      const verifyRes = await apiRequest('/auth/passkey/registration/verify', {
+        method: 'POST',
+        token,
+        body: { credential, nickname: passkeyName },
+      })
+      setPasskeys(Array.isArray(verifyRes?.passkeys) ? verifyRes.passkeys : [])
+      setPasskeyNotice('Passkey added successfully.')
+      setPasskeyName('')
+    } catch (err) {
+      setPasskeyError(err.message || 'Unable to register passkey.')
+    } finally {
+      setPasskeyBusy(false)
+    }
+  }
+
+  async function removePasskey(credentialId) {
+    const token = getToken()
+    if (!token || !credentialId) return
+    setPasskeyError('')
+    setPasskeyNotice('')
+    try {
+      const data = await apiRequest(`/auth/passkeys/${encodeURIComponent(credentialId)}`, { method: 'DELETE', token })
+      setPasskeys(Array.isArray(data?.passkeys) ? data.passkeys : [])
+      setPasskeyNotice('Passkey removed.')
+    } catch (err) {
+      setPasskeyError(err.message || 'Unable to remove passkey.')
+    }
+  }
 
   useEffect(() => {
     if (!TAB_KEYS.includes(initialTab)) return
@@ -704,16 +767,17 @@ export default function OrgSettings() {
                   </div>
                   <div>
                     <label className="block text-sm">Account manager name</label>
-                    <input className="w-full border px-3 py-2 rounded" value={accountManagerName} onChange={(e) => setAccountManagerName(e.target.value)} disabled={!entitlements?.premium} />
+                    <input className="w-full border px-3 py-2 rounded" value={accountManagerName} onChange={(e) => setAccountManagerName(e.target.value)} disabled />
                   </div>
                   <div>
                     <label className="block text-sm">Account manager email</label>
-                    <input className="w-full border px-3 py-2 rounded" value={accountManagerEmail} onChange={(e) => setAccountManagerEmail(e.target.value)} disabled={!entitlements?.premium} />
+                    <input className="w-full border px-3 py-2 rounded" value={accountManagerEmail} onChange={(e) => setAccountManagerEmail(e.target.value)} disabled />
                   </div>
                   <div>
                     <label className="block text-sm">Account manager phone</label>
-                    <input className="w-full border px-3 py-2 rounded" value={accountManagerPhone} onChange={(e) => setAccountManagerPhone(e.target.value)} disabled={!entitlements?.premium} />
+                    <input className="w-full border px-3 py-2 rounded" value={accountManagerPhone} onChange={(e) => setAccountManagerPhone(e.target.value)} disabled />
                   </div>
+                  <p className="text-[11px] text-slate-500">Assigned by admin for Premium accounts.</p>
                 </div>
                 <div className="mt-3">
                   <button onClick={saveBrandingSettings} disabled={!entitlements?.premium} className="px-3 py-2 bg-[#0A66C2] text-white rounded disabled:opacity-60">Save branding</button>
@@ -721,13 +785,57 @@ export default function OrgSettings() {
               </div>
             )}
 
-            {tab === 'security' && (
-              <div>
-                <label className="flex items-center gap-3"><input type="checkbox"/> Enable 2FA</label>
-                <div className="mt-3 text-sm text-[#5A5A5A]">Active sessions and login activity are shown here.</div>
-                <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-4">
-                  <p className="text-sm font-semibold text-rose-700">Delete account</p>
-                  <p className="mt-1 text-xs text-rose-600">Enter your password to permanently delete your account.</p>
+              {tab === 'security' && (
+                <div>
+                  <label className="flex items-center gap-3"><input type="checkbox"/> Enable 2FA</label>
+                  <div className="mt-3 text-sm text-[#5A5A5A]">Active sessions and login activity are shown here.</div>
+                  <div className="mt-6 rounded-lg border border-slate-200 bg-white p-4">
+                    <p className="text-sm font-semibold text-slate-800">Passkeys</p>
+                    <p className="mt-1 text-xs text-slate-500">Use passkeys for passwordless login on this device.</p>
+                    <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+                      <input
+                        type="text"
+                        value={passkeyName}
+                        onChange={(e) => setPasskeyName(e.target.value)}
+                        className="w-full border border-slate-200 px-3 py-2 rounded"
+                        placeholder="Optional label (e.g., My Laptop)"
+                      />
+                      <button
+                        type="button"
+                        onClick={registerPasskey}
+                        disabled={passkeyBusy}
+                        className="px-3 py-2 rounded bg-slate-900 text-white disabled:opacity-60"
+                      >
+                        {passkeyBusy ? 'Creating...' : 'Add passkey'}
+                      </button>
+                    </div>
+                    {passkeys.length ? (
+                      <div className="mt-3 space-y-2">
+                        {passkeys.map((key) => (
+                          <div key={key.id} className="flex items-center justify-between rounded border border-slate-200 px-3 py-2 text-xs">
+                            <div>
+                              <div className="font-semibold text-slate-800">{key.name || 'Passkey'}</div>
+                              <div className="text-[11px] text-slate-500">Created: {key.created_at ? new Date(key.created_at).toLocaleString() : '--'}</div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removePasskey(key.id)}
+                              className="text-rose-600 font-semibold"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="mt-3 text-xs text-slate-500">No passkeys registered yet.</div>
+                    )}
+                    {passkeyError ? <div className="mt-2 text-xs text-rose-600">{passkeyError}</div> : null}
+                    {passkeyNotice ? <div className="mt-2 text-xs text-emerald-700">{passkeyNotice}</div> : null}
+                  </div>
+                  <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-4">
+                    <p className="text-sm font-semibold text-rose-700">Delete account</p>
+                    <p className="mt-1 text-xs text-rose-600">Enter your password to permanently delete your account.</p>
                   <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                     <input
                       type="password"
@@ -771,7 +879,7 @@ export default function OrgSettings() {
                 </div>
                 <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
                   <p className="text-sm font-semibold text-slate-800">Redeem coupon credit</p>
-                  <p className="mt-1 text-xs text-slate-500">Coupon credit can be used for premium subscriptions and verification renewals only.</p>
+                  <p className="mt-1 text-xs text-slate-500">Coupon credit can be used for premium subscriptions and verification renewals. Card is optional when using a coupon that does not require a payment method.</p>
                   <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                     <input
                       value={couponCode}

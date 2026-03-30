@@ -23,6 +23,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { apiRequest, getCurrentUser, getRoleHome, saveSession } from '../../lib/auth'
+import { startAuthentication, startRegistration } from '@simplewebauthn/browser'
 
 export default function Login() {
   // `navigate` is used after a successful login (or when routing needs to change).
@@ -38,15 +39,39 @@ export default function Login() {
   const [rememberMe, setRememberMe] = useState(true)
   // UX states for the submit button + inline error message.
   const [loading, setLoading] = useState(false)
+  const [passkeyLoading, setPasskeyLoading] = useState(false)
+  const [enrollLoading, setEnrollLoading] = useState(false)
+  const [suppressRedirect, setSuppressRedirect] = useState(false)
+  const [rememberPasskeyUser, setRememberPasskeyUser] = useState(() => {
+    const raw = localStorage.getItem('remember_passkey_user')
+    return raw ? raw === 'true' : true
+  })
+  const [passkeyHint, setPasskeyHint] = useState(() => {
+    try {
+      const raw = localStorage.getItem('passkey_user_hint')
+      return raw ? JSON.parse(raw) : null
+    } catch {
+      return null
+    }
+  })
   const [error, setError] = useState('')
 
   // If ProtectedRoute sent us here, it passes the blocked path in state so we can return after login.
   const redirectTo = location.state?.from || null
 
   useEffect(() => {
+    if (suppressRedirect) return
     if (!existingUser?.role) return
     navigate(getRoleHome(existingUser.role), { replace: true })
-  }, [existingUser?.role, navigate])
+  }, [existingUser?.role, navigate, suppressRedirect])
+
+  useEffect(() => {
+    localStorage.setItem('remember_passkey_user', rememberPasskeyUser ? 'true' : 'false')
+    if (!rememberPasskeyUser) {
+      localStorage.removeItem('passkey_user_hint')
+      setPasskeyHint(null)
+    }
+  }, [rememberPasskeyUser])
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -79,6 +104,85 @@ export default function Login() {
       setError(err.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handlePasskeyLogin = async () => {
+    if (typeof window === 'undefined' || !window.PublicKeyCredential) {
+      setError('Passkeys are not supported on this device/browser.')
+      return
+    }
+    setError('')
+    setPasskeyLoading(true)
+    try {
+      const optionsRes = await apiRequest('/auth/passkey/login/options', {
+        method: 'POST',
+        body: { identifier: identifier.trim() || undefined },
+      })
+      const assertion = await startAuthentication(optionsRes.options)
+      const data = await apiRequest('/auth/passkey/login/verify', {
+        method: 'POST',
+        body: { identifier: identifier.trim() || undefined, credential: assertion },
+      })
+      if (rememberPasskeyUser) {
+        const hint = {
+          user_name: data?.user?.name || '',
+          user_email: data?.user?.email || '',
+          passkey_name: data?.passkey?.name || '',
+        }
+        localStorage.setItem('passkey_user_hint', JSON.stringify(hint))
+        localStorage.setItem('remember_passkey_user', 'true')
+        setPasskeyHint(hint)
+      } else {
+        localStorage.removeItem('passkey_user_hint')
+        localStorage.setItem('remember_passkey_user', 'false')
+        setPasskeyHint(null)
+      }
+      saveSession(data.user, data.token, { remember: rememberMe })
+      const onboardingCompleted = data?.user?.profile?.onboarding_completed === true || String(data?.user?.profile?.onboarding_completed || '').toLowerCase() === 'true'
+      navigate(onboardingCompleted ? (redirectTo || getRoleHome(data.user.role)) : '/onboarding', { replace: true })
+    } catch (err) {
+      setError(err.message || 'Passkey login failed')
+    } finally {
+      setPasskeyLoading(false)
+    }
+  }
+
+  const handlePasskeyEnroll = async () => {
+    if (!identifier.trim() || !password) {
+      setError('Enter your email/Agent ID and password to set up a passkey.')
+      return
+    }
+    if (typeof window === 'undefined' || !window.PublicKeyCredential) {
+      setError('Passkeys are not supported on this device/browser.')
+      return
+    }
+    setError('')
+    setEnrollLoading(true)
+    setSuppressRedirect(true)
+    try {
+      const loginRes = await apiRequest('/auth/login', {
+        method: 'POST',
+        body: { identifier, password },
+      })
+      const optionsRes = await apiRequest('/auth/passkey/registration/options', {
+        method: 'POST',
+        token: loginRes.token,
+      })
+      const credential = await startRegistration(optionsRes.options)
+      await apiRequest('/auth/passkey/registration/verify', {
+        method: 'POST',
+        token: loginRes.token,
+        body: { credential },
+      })
+      saveSession(loginRes.user, loginRes.token, { remember: rememberMe })
+      const onboardingCompleted = loginRes?.user?.profile?.onboarding_completed === true || String(loginRes?.user?.profile?.onboarding_completed || '').toLowerCase() === 'true'
+      navigate(onboardingCompleted ? (redirectTo || getRoleHome(loginRes.user.role)) : '/onboarding', { replace: true })
+    } catch (err) {
+      setError(err.message || 'Passkey setup failed')
+    } finally {
+      setEnrollLoading(false)
+      setSuppressRedirect(false)
     }
   }
 
@@ -115,11 +219,27 @@ export default function Login() {
             <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required className="w-full px-4 py-3 border rounded-lg" />
           </div>
 
-          {/* "Remember me" determines how session is stored (cookie/localStorage) based on `saveSession` implementation. */}
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
-            Remember me
-          </label>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
+              Remember me
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={rememberPasskeyUser}
+                onChange={(e) => setRememberPasskeyUser(e.target.checked)}
+              />
+              Remember passkey user
+            </label>
+            {passkeyHint ? (
+              <p className="text-xs text-slate-500">
+                Passkey: <span className="font-semibold">{passkeyHint.passkey_name || 'Passkey'}</span>
+                {passkeyHint.user_name ? ` · ${passkeyHint.user_name}` : ''}
+                {passkeyHint.user_email ? ` (${passkeyHint.user_email})` : ''}
+              </p>
+            ) : null}
+          </div>
 
           {/* Inline error (only renders when there is an error string). */}
           {error ? <p className="text-sm text-red-500">{error}</p> : null}
@@ -127,6 +247,22 @@ export default function Login() {
           {/* Primary CTA: uses brand blue color */}
           <button disabled={loading} className="w-full px-4 py-3 rounded-lg bg-[var(--gt-blue)] hover:bg-[var(--gt-blue-hover)] text-white disabled:opacity-70 transition">
             {loading ? 'Signing in...' : 'Sign in'}
+          </button>
+          <button
+            type="button"
+            onClick={handlePasskeyLogin}
+            disabled={passkeyLoading}
+            className="w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-700 disabled:opacity-70"
+          >
+            {passkeyLoading ? 'Opening passkey...' : 'Sign in with passkey'}
+          </button>
+          <button
+            type="button"
+            onClick={handlePasskeyEnroll}
+            disabled={enrollLoading}
+            className="w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-700 disabled:opacity-70"
+          >
+            {enrollLoading ? 'Setting up passkey...' : 'Set up passkey (first time)'}
           </button>
         </form>
 

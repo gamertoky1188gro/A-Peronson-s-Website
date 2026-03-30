@@ -2,7 +2,7 @@ import crypto from 'crypto'
 import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { trackEvent } from './analyticsService.js'
-import { emitNotificationsForEntity } from './notificationService.js'
+import { createNotification, emitNotificationsForEntity } from './notificationService.js'
 import { moderateTextOrRedact } from './policyService.js'
 import { isAgent, isOwnerOrAdmin } from '../utils/permissions.js'
 import { getAdminConfig } from './adminConfigService.js'
@@ -25,6 +25,7 @@ const MUSIC_INSTRUMENT_KEYWORDS = [
 ]
 const PRODUCT_STATUSES = new Set(['draft', 'published'])
 const IMAGE_URL_LIMIT = 12
+const REVIEW_STATUSES = new Set(['approved', 'pending_review', 'rejected'])
 
 function normalizeVideoReview(row) {
   const reviewStatus = row.video_review_status || 'approved'
@@ -290,6 +291,80 @@ function getVideoModerationResult({ title = '', description = '', videoUrl = '' 
   }
 }
 
+function normalizeTerms(list = []) {
+  if (!Array.isArray(list)) return []
+  return list.map((t) => String(t || '').trim().toLowerCase()).filter(Boolean)
+}
+
+function collectTermMatches(text = '', terms = []) {
+  if (!text || !terms.length) return []
+  const hay = String(text || '').toLowerCase()
+  return terms.filter((term) => term && hay.includes(term))
+}
+
+function buildReviewReason(template = '', matched = []) {
+  const base = template || 'This listing violates our content standards for modest apparel.'
+  if (!matched.length) return base
+  return `${base} Restricted keyword(s) detected: ${matched.slice(0, 3).join(', ')}.`
+}
+
+function resolveReviewStatus(status) {
+  const normalized = String(status || 'approved').toLowerCase()
+  return REVIEW_STATUSES.has(normalized) ? normalized : 'approved'
+}
+
+async function evaluateClothingModeration({ title, description, category, material, media = [] }) {
+  const config = await getAdminConfig()
+  const rules = config?.moderation?.clothing_rules || {}
+  const forbiddenTerms = normalizeTerms(rules.forbidden_terms)
+  const flagTerms = normalizeTerms(rules.flag_terms)
+  const allowedTerms = normalizeTerms(rules.allowed_terms)
+  const exceptions = normalizeTerms(rules.context_exceptions)
+  const templates = rules.reason_templates || {}
+
+  const text = [title, description, category, material, ...(media || [])]
+    .map((part) => String(part || '').trim())
+    .filter(Boolean)
+    .join(' ')
+
+  const forbiddenMatches = collectTermMatches(text, forbiddenTerms)
+  const flagMatches = collectTermMatches(text, flagTerms)
+  const allowedMatches = collectTermMatches(text, allowedTerms)
+  const exceptionMatches = collectTermMatches(text, exceptions)
+  const hasException = exceptionMatches.length > 0
+
+  if (forbiddenMatches.length && !hasException) {
+    return {
+      status: 'rejected',
+      reason: buildReviewReason(templates.rejected, forbiddenMatches),
+      flags: [
+        ...forbiddenMatches.map((term) => `forbidden:${term}`),
+        ...flagMatches.map((term) => `flag:${term}`),
+      ],
+    }
+  }
+
+  if (flagMatches.length && !hasException) {
+    return {
+      status: 'pending_review',
+      reason: buildReviewReason(templates.pending_review, flagMatches),
+      flags: [
+        ...flagMatches.map((term) => `flag:${term}`),
+        ...allowedMatches.map((term) => `allowed:${term}`),
+      ],
+    }
+  }
+
+  return {
+    status: 'approved',
+    reason: '',
+    flags: [
+      ...allowedMatches.map((term) => `allowed:${term}`),
+      ...exceptionMatches.map((term) => `exception:${term}`),
+    ],
+  }
+}
+
 export async function createProduct(user, payload) {
   const [all, users] = await Promise.all([
     readJson(FILE),
@@ -312,6 +387,13 @@ export async function createProduct(user, payload) {
   assertInternalMediaUrl(videoUrl, 'product video')
   const { cover_image_url, image_urls } = syncCoverImage(imageUrls, coverSeed)
   const moderation = getVideoModerationResult({ title, description, videoUrl })
+  const clothingReview = await evaluateClothingModeration({
+    title,
+    description,
+    category: sanitizeString(payload.category, 80),
+    material: sanitizeString(payload.material, 80),
+    media: [videoUrl, coverSeed, ...imageCandidates],
+  })
   const row = {
     id: crypto.randomUUID(),
     company_id: ownerId,
@@ -337,6 +419,11 @@ export async function createProduct(user, payload) {
     video_review_status: moderation.videoReviewStatus,
     video_restricted: moderation.videoRestricted,
     video_moderation_flags: moderation.flags,
+    content_review_status: resolveReviewStatus(clothingReview.status),
+    content_review_reason: clothingReview.reason || '',
+    content_review_flags: clothingReview.flags || [],
+    content_reviewed_at: new Date().toISOString(),
+    content_reviewed_by: 'system',
     created_at: new Date().toISOString(),
   }
 
@@ -361,7 +448,24 @@ export async function createProduct(user, payload) {
   await trackEvent({ type: 'product_created', actor_id: user.id, entity_id: row.id })
   if (status === 'published') {
     await trackEvent({ type: 'product_published', actor_id: user.id, entity_id: row.id })
-    await emitNotificationsForEntity('company_product', row)
+    if (row.content_review_status === 'approved') {
+      await emitNotificationsForEntity('company_product', row)
+    }
+  }
+
+  if (row.content_review_status !== 'approved') {
+    const config = await getAdminConfig()
+    const fixTip = config?.moderation?.clothing_rules?.reason_templates?.fix_guidance || ''
+    const notice = row.content_review_status === 'rejected'
+      ? `Product rejected: ${row.content_review_reason || 'Content standards violation.'} ${fixTip}`.trim()
+      : `Product pending review: ${row.content_review_reason || 'Manual review required.'}`.trim()
+    await createNotification(ownerId, {
+      type: 'product_content_review',
+      entity_type: 'company_product',
+      entity_id: row.id,
+      message: notice,
+      meta: { review_status: row.content_review_status, reason: row.content_review_reason },
+    })
   }
 
   const viewer = isAgent(user) ? { id: ownerId, role: ownerRole } : user
@@ -381,6 +485,14 @@ export async function listProducts(filters = {}) {
     .filter((p) => !filters.category || String(p.category || '').toLowerCase() === String(filters.category).toLowerCase())
     .filter((p) => !filters.companyId || String(p.company_id) === String(filters.companyId))
     .filter((p) => (includeDrafts ? true : normalizeProductStatus(p.status) === 'published'))
+    .filter((p) => {
+      const reviewStatus = resolveReviewStatus(p.content_review_status)
+      if (reviewStatus === 'approved') return true
+      if (!viewerId) return false
+      if (String(p.company_id) === String(viewerId)) return true
+      if (['owner', 'admin'].includes(String(viewerRole || '').toLowerCase())) return true
+      return false
+    })
     .map((p) => presentProduct(p, documents, viewer))
 }
 
@@ -444,6 +556,14 @@ export async function updateProductById(actor, productId, patch = {}) {
     // silent
   }
 
+  const clothingReview = await evaluateClothingModeration({
+    title: nextTitle,
+    description: nextDescription,
+    category: patch.category !== undefined ? sanitizeString(patch.category, 80) : existing.category,
+    material: patch.material !== undefined ? sanitizeString(patch.material, 80) : existing.material,
+    media: [nextVideoUrl, coverSeed, ...imageCandidates],
+  })
+
   const next = {
     ...existing,
     title: nextTitle,
@@ -467,6 +587,11 @@ export async function updateProductById(actor, productId, patch = {}) {
     video_review_status: moderation.videoReviewStatus,
     video_restricted: moderation.videoRestricted,
     video_moderation_flags: moderation.flags,
+    content_review_status: resolveReviewStatus(clothingReview.status),
+    content_review_reason: clothingReview.reason || '',
+    content_review_flags: clothingReview.flags || [],
+    content_reviewed_at: new Date().toISOString(),
+    content_reviewed_by: 'system',
     updated_at: new Date().toISOString(),
   }
 
@@ -482,9 +607,24 @@ export async function updateProductById(actor, productId, patch = {}) {
   if (existing.status !== status && status === 'draft') {
     await trackEvent({ type: 'product_unpublished', actor_id: actor.id, entity_id: next.id })
   }
-  if (status === 'published') {
+  if (status === 'published' && next.content_review_status === 'approved') {
     // project.md: smart notifications trigger when new matching posts appear.
     await emitNotificationsForEntity('company_product', next)
+  }
+
+  if (next.content_review_status !== 'approved') {
+    const config = await getAdminConfig()
+    const fixTip = config?.moderation?.clothing_rules?.reason_templates?.fix_guidance || ''
+    const notice = next.content_review_status === 'rejected'
+      ? `Product rejected: ${next.content_review_reason || 'Content standards violation.'} ${fixTip}`.trim()
+      : `Product pending review: ${next.content_review_reason || 'Manual review required.'}`.trim()
+    await createNotification(ownerId, {
+      type: 'product_content_review',
+      entity_type: 'company_product',
+      entity_id: next.id,
+      message: notice,
+      meta: { review_status: next.content_review_status, reason: next.content_review_reason },
+    })
   }
   return presentProduct(next, documents, actor)
 }

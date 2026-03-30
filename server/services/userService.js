@@ -11,8 +11,19 @@ const FILE = 'users.json'
 const CONNECTION_FILE = 'user_connections.json'
 
 function cleanUser(user) {
-  const { password_hash: _passwordHash, ...safe } = user
-  return safe
+  const { password_hash: _passwordHash, passkeys, ...safe } = user
+  return {
+    ...safe,
+    passkeys: Array.isArray(passkeys)
+      ? passkeys.map((key) => ({
+        id: key.id,
+        name: key.name || '',
+        created_at: key.created_at || '',
+        last_used_at: key.last_used_at || '',
+        transports: Array.isArray(key.transports) ? key.transports : [],
+      }))
+      : [],
+  }
 }
 
 
@@ -234,6 +245,7 @@ export async function registerUser(payload) {
     // Trust & moderation state (project.md): warnings/restrictions for policy violations.
     policy_strikes: 0,
     messaging_restricted_until: null,
+    passkeys: [],
     profile: {
       country: sanitizeString(payload.profile?.country || '', 120),
       certifications: Array.isArray(payload.profile?.certifications) ? payload.profile.certifications.map((c) => sanitizeString(c, 80)) : [],

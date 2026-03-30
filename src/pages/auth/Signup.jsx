@@ -22,6 +22,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiRequest, getCurrentUser, getRoleHome, saveSession } from '../../lib/auth'
+import { BUYER_COUNTRY_OPTIONS } from '../../../shared/config/geo.js'
 
 export default function Signup() {
   // Router navigation after successful account creation.
@@ -35,10 +36,13 @@ export default function Signup() {
     name: '',
     email: '',
     password: '',
+    confirmPassword: '',
     primaryRole: 'buyer',
     country: '',
     organization: '',
   })
+  const [passwordVisible, setPasswordVisible] = useState(false)
+  const [confirmVisible, setConfirmVisible] = useState(false)
 
   // Generic onChange helper so each input doesn't need its own setter function.
   const onChange = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
@@ -61,6 +65,11 @@ export default function Signup() {
     e.preventDefault()
     setLoading(true)
     setError('')
+    if (form.password !== form.confirmPassword) {
+      setLoading(false)
+      setError('Passwords do not match.')
+      return
+    }
     try {
       // Backend expects a slightly different field naming; map UI fields -> API fields here.
       const resolvedRole = form.primaryRole
@@ -119,23 +128,79 @@ export default function Signup() {
           </div>
           <div>
             <label className="block text-sm font-medium mb-1 text-slate-700">Password</label>
-            <input type="password" className="w-full px-4 py-3 border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20" value={form.password} onChange={(e) => onChange('password', e.target.value)} required />
-          </div>
-            <div>
-              <label className="block text-sm font-medium mb-1 text-slate-700">Account Type</label>
-              <select
-                className="w-full px-4 py-3 border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20"
-                value={form.primaryRole}
-                onChange={(e) => onChange('primaryRole', e.target.value)}
+            <div className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
+              <input
+                type={passwordVisible ? 'text' : 'password'}
+                className="w-full bg-transparent outline-none"
+                value={form.password}
+                onChange={(e) => onChange('password', e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setPasswordVisible((prev) => !prev)}
+                className="text-xs font-semibold text-slate-500"
               >
-                <option value="buyer">Buyer</option>
-                <option value="factory">Factory</option>
-                <option value="buying_house">Buying House</option>
-              </select>
+                {passwordVisible ? 'Hide' : 'Show'}
+              </button>
             </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1 text-slate-700">Confirm Password</label>
+            <div className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
+              <input
+                type={confirmVisible ? 'text' : 'password'}
+                className="w-full bg-transparent outline-none"
+                value={form.confirmPassword}
+                onChange={(e) => onChange('confirmPassword', e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setConfirmVisible((prev) => !prev)}
+                className="text-xs font-semibold text-slate-500"
+              >
+                {confirmVisible ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-2 text-slate-700">Account Type</label>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {[
+                { value: 'buyer', label: 'Buyer' },
+                { value: 'factory', label: 'Factory' },
+                { value: 'buying_house', label: 'Buying House' },
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => onChange('primaryRole', option.value)}
+                  className={`rounded-lg border px-3 py-3 text-sm font-semibold transition ${
+                    form.primaryRole === option.value
+                      ? 'border-[#0A66C2] bg-blue-50 text-[#0A66C2]'
+                      : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <div>
             <label className="block text-sm font-medium mb-1 text-slate-700">Country</label>
-            <input className="w-full px-4 py-3 border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20" value={form.country} onChange={(e) => onChange('country', e.target.value)} required />
+            <input
+              list="country-options"
+              className="w-full px-4 py-3 border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20"
+              value={form.country}
+              onChange={(e) => onChange('country', e.target.value)}
+              required
+            />
+            <datalist id="country-options">
+              {BUYER_COUNTRY_OPTIONS.map((country) => (
+                <option key={country} value={country} />
+              ))}
+            </datalist>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1 text-slate-700">Organization Name</label>
@@ -149,7 +214,12 @@ export default function Signup() {
             <button disabled={loading} className="px-5 py-3 rounded-lg bg-[#0A66C2] hover:bg-[#004182] text-white disabled:opacity-70">
               {loading ? 'Creating account...' : 'Create account'}
             </button>
-            <Link to="/login" className="px-5 py-3 rounded-lg border border-slate-200 text-slate-700">Already have an account? Login</Link>
+            <Link
+              to="/login"
+              className="px-5 py-3 rounded-lg border border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 dark:border-slate-700 dark:text-slate-100 dark:bg-slate-900/60"
+            >
+              Already have an account? Login
+            </Link>
           </div>
         </form>
       </div>

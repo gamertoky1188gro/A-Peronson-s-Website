@@ -176,6 +176,22 @@ export default function ProductManagement() {
     }
   }
 
+  async function reportProductAppeal(product) {
+    if (!token || !product?.id) return
+    const reason = window.prompt('Explain why this product should be approved:') || ''
+    if (!reason.trim()) return
+    try {
+      await apiRequest('/reports/product-appeal', {
+        method: 'POST',
+        token,
+        body: { product_id: product.id, reason },
+      })
+      setNotice('Appeal submitted. Our team will review it shortly.')
+    } catch (err) {
+      setError(err.message || 'Unable to submit appeal.')
+    }
+  }
+
   function toPublicUrl(filePath = '') {
     if (!filePath) return ''
     const normalized = String(filePath).replace(/\\/g, '/')
@@ -461,6 +477,25 @@ export default function ProductManagement() {
                 {p.hasVideo ? <p className="mt-2 text-xs font-semibold text-indigo-700">Video available</p> : null}
                 <p className="mt-2 text-[11px] text-slate-500">Status: {String(p.status || 'published')}</p>
                 <p className="mt-1 text-[11px] text-slate-500">Video status: {String(p.video_review_status || 'approved').replaceAll('_', ' ')}</p>
+                <p className="mt-1 text-[11px] text-slate-500">Content review: {String(p.content_review_status || 'approved').replaceAll('_', ' ')}</p>
+                {p.content_review_status === 'rejected' ? (
+                  <div className="mt-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-[11px] text-rose-700">
+                    <p className="font-semibold">Rejected</p>
+                    <p className="mt-1">{p.content_review_reason || 'This product needs changes to meet content standards.'}</p>
+                    <button
+                      type="button"
+                      onClick={() => reportProductAppeal(p)}
+                      className="mt-2 w-full rounded-full bg-rose-600 px-3 py-2 text-[11px] font-semibold text-white"
+                    >
+                      If you think this is a mistake, report it for review
+                    </button>
+                  </div>
+                ) : null}
+                {p.content_review_status === 'pending_review' ? (
+                  <div className="mt-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-[11px] text-amber-700">
+                    Pending review. We will check this item shortly.
+                  </div>
+                ) : null}
                 {Array.isArray(p.image_gallery) && p.image_gallery.length ? (
                   <p className="mt-1 text-[11px] text-slate-500">Images: {p.image_gallery.length}</p>
                 ) : null}

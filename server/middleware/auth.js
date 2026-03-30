@@ -6,7 +6,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'mvp-dev-secret'
 const JWT_ISSUER = process.env.JWT_ISSUER || 'gartexhub-api'
 const JWT_AUDIENCE = process.env.JWT_AUDIENCE || 'gartexhub-client'
 
-export function signToken(user) {
+export function signToken(user, options = {}) {
   // Token includes only the fields needed for server-side authorization/scoping.
   // Agents are enterprise sub-accounts, so we include `org_owner_id` and `member_id` to support:
   // - scoping records to the owning organization
@@ -17,6 +17,8 @@ export function signToken(user) {
     email: user.email,
     org_owner_id: user.org_owner_id || '',
     member_id: user.member_id || '',
+    auth_via_passkey: Boolean(options.authViaPasskey),
+    passkey_verified_at: options.authViaPasskey ? new Date().toISOString() : '',
   }
 
   return jwt.sign(payload, JWT_SECRET, {

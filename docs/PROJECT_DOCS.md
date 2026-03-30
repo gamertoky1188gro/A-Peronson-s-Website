@@ -26,7 +26,7 @@ Goals:
 - Factory + Buying House can post products.
 - Image uploads + internal video uploads.
 - Video moderation workflow (pending ? approved).
-- Product views tracked for analytics and �viewed history�.
+- Product views tracked for analytics and “viewed history”.
 
 ### 3.3 Messaging & Contact Control
 - Verified suppliers: direct inbox.
@@ -114,3 +114,62 @@ JSON files used for rapid MVP:
 
 ---
 This document summarizes current MVP scope and workflow as implemented.
+
+
+## 9) Launch & Marketing Readiness (Paid Launch)
+Minimum UI readiness checklist:
+- Login/signup stable
+- Feed/search works
+- Chat + call stable
+- Profile pages readable
+- Support/contact available
+
+Go/No-Go checklist:
+- All above UI checks pass
+- Error rate monitored on key flows
+- Support queue active with SLA targets
+- Coupon redemption tested for premium activation
+
+Update cadence:
+- Weekly update summary (features shipped + known issues)
+- Monthly premium roadmap update
+
+Marketing FAQ (internal):
+- What is live now: core buyer requests, profiles, messaging, contracts, verification, analytics, boosts.
+- What is in progress: dedicated support workflow, account manager assignment, order completion certification, expanded insights.
+
+Payment promo policy:
+- Coupon-only premium activation is allowed (card optional if coupon does not require card).
+- Card is required only when no coupon is used.
+
+Stakeholder response draft (for updates):
+Hi Shaun, this is Cyber Code Master.
+
+আপনার সব প্রশ্ন একসাথে পরিষ্কারভাবে উত্তর দিলাম:
+
+1) “customaiz option থাকা যেতে পারে”
+হ্যাঁ। Customization option আছে।
+Premium প্ল্যানে Org Settings > Branding এবং AI Auto-Reply customization আছে। এটা implement করা আছে।
+
+2) “account delete option দরকার, password দিয়ে delete করা যাবে”
+হ্যাঁ, implement করা আছে।
+User নিজের password দিয়ে account delete করতে পারে (Org Settings > Security/Account area)।
+এটা live কাজ করছে।
+
+3) “বাস্তবায়িত?”
+যেগুলো বর্তমানে কাজ করছে (MVP-তে):
+- Advanced Search Filters (Premium gatingসহ)
+- Priority Buyer Request Placement
+- AI Auto-Reply customization
+- Smart Supplier Matching
+- Contract History / Audit Trail (ডকুমেন্ট/contract ট্রেইল)
+- Early Access to verified factories
+- Profile & Product boost
+- Analytics/Insights dashboard
+- Custom branding (Premium)
+
+আর যেগুলো plan/in-progress:
+- Dedicated Support / Account Manager workflow
+- Order Completion Certification
+- Buying Pattern Analysis (উন্নত version)
+- Enterprise-grade export/reporting polish

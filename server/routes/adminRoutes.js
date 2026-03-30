@@ -7,17 +7,25 @@ import { adminAuditLogger } from '../middleware/adminAudit.js'
 import {
   approveDocument,
   approveVideo,
+  assignSupportTicket,
+  assignAccountManager,
+  listSupportTicketsAdminController,
   listReportsAudit,
+  listSystemReportsAudit,
+  listProductAppealReportsAudit,
+  listContentReportsAudit,
   pendingDocuments,
   pendingVideos,
   rejectDocument,
   rejectVideo,
   resolveReportAudit,
   subscriptionsAudit,
+  updateSupportTicket,
   usersAudit,
   verificationAudit,
   violationsAudit,
 } from '../controllers/adminController.js'
+import { listModerationProducts, updateModerationProduct } from '../controllers/moderationController.js'
 import { adminAction as adminActionController, adminAuditLog as adminAuditLogController, adminDataExport as adminDataExportController, adminEmailExport as adminEmailExportController, adminGetConfig as adminGetConfigController, adminMasterOverview as adminMasterOverviewController, adminUpdateConfig as adminUpdateConfigController } from '../controllers/adminMasterController.js'
 import { adminCatalogOverview } from '../controllers/adminCatalogController.js'
 import { getServerAdminStateController, serverAdminActionController } from '../controllers/serverAdminController.js'
@@ -62,7 +70,16 @@ router.get('/media/pending', requireAuth, requireAdminSecurity, adminAuditLogger
 router.post('/media/:documentId/approve', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), approveDocument)
 router.post('/media/:documentId/reject', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), rejectDocument)
 router.get('/reports', requireAuth, requireAdminSecurity, adminAuditLogger(), listReportsAudit)
+router.get('/reports/system', requireAuth, requireAdminSecurity, adminAuditLogger(), listSystemReportsAudit)
+router.get('/reports/product-appeals', requireAuth, requireAdminSecurity, adminAuditLogger(), listProductAppealReportsAudit)
+router.get('/reports/content', requireAuth, requireAdminSecurity, adminAuditLogger(), listContentReportsAudit)
 router.post('/reports/:reportId/resolve', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), resolveReportAudit)
+router.get('/moderation/products', requireAuth, requireAdminSecurity, adminAuditLogger(), listModerationProducts)
+router.patch('/moderation/products/:productId', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), updateModerationProduct)
+router.get('/support/tickets', requireAuth, requireAdminSecurity, adminAuditLogger(), listSupportTicketsAdminController)
+router.post('/support/assign', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), assignSupportTicket)
+router.patch('/support/:ticketId', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), updateSupportTicket)
+router.post('/account-manager/assign', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), assignAccountManager)
 router.get('/contracts', requireAuth, requireAdminSecurity, adminAuditLogger(), listContractsAdmin)
 router.get('/disputes', requireAuth, requireAdminSecurity, adminAuditLogger(), listDisputesAdmin)
 router.get('/partner-requests', requireAuth, requireAdminSecurity, adminAuditLogger(), listPartnerRequestsAdmin)

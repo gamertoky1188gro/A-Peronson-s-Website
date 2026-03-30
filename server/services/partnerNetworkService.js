@@ -99,6 +99,7 @@ export async function sendPartnerRequest(user, targetAccountId) {
   const id = crypto.randomUUID()
   const config = await getAdminConfig()
   const freePartnerLimit = Number(config?.plan_limits?.free?.partner_limit || 5)
+  const isPremiumUser = await isPremium(user)
 
   const created = await updateJson(FILE, (rows) => {
   const duplicate = rows.find((r) =>
@@ -110,7 +111,7 @@ export async function sendPartnerRequest(user, targetAccountId) {
       throw err
     }
 
-    if (user.role === 'buying_house' && !(await isPremium(user))) {
+    if (user.role === 'buying_house' && !isPremiumUser) {
       const outgoing = rows.filter((r) => r.requester_id === user.id && ACTIVE_STATUSES.has(r.status))
       if (outgoing.length >= freePartnerLimit) {
         const err = new Error(`Upgrade to premium to send more than ${freePartnerLimit} partner requests.`)
@@ -171,6 +172,7 @@ export async function updatePartnerRequestStatus(user, requestId, action) {
 
   const config = await getAdminConfig()
   const freePartnerLimit = Number(config?.plan_limits?.free?.partner_limit || 5)
+  const isPremiumUser = await isPremium(user)
 
   let updatedRow = null
   const nextStatus = action === 'accept' ? 'connected' : action === 'reject' ? 'rejected' : 'cancelled'
@@ -190,7 +192,7 @@ export async function updatePartnerRequestStatus(user, requestId, action) {
       throw err
     }
 
-    if (action === 'accept' && String(user.role || '').toLowerCase() === 'factory' && !(await isPremium(user))) {
+    if (action === 'accept' && String(user.role || '').toLowerCase() === 'factory' && !isPremiumUser) {
       const existingConnections = rows.filter((r) => r.target_id === user.id && r.status === 'connected').length
       if (existingConnections >= freePartnerLimit) {
         const err = new Error(`Subscribe to premium to accept more than ${freePartnerLimit} partner requests.`)

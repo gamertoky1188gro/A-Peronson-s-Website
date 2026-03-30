@@ -61,6 +61,19 @@ const DEFAULT_CONFIG = {
     blacklist: [],
     whitelist: [],
   },
+  moderation: {
+    clothing_rules: {
+      forbidden_terms: [],
+      flag_terms: [],
+      allowed_terms: [],
+      context_exceptions: [],
+      reason_templates: {
+        rejected: 'This listing appears to include indecent or revealing clothing. Please adjust images or description to match our content standards for modest apparel.',
+        pending_review: 'This listing needs a manual review to confirm it follows our content standards.',
+        fix_guidance: 'Update images, title, or description to describe modest apparel. Innerwear or under-layer items must be clearly labeled.',
+      },
+    },
+  },
   org_quotas: {},
 }
 

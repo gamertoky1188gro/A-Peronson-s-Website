@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
-import { apiRequest, getToken } from '../../lib/auth'
+import { apiRequest, getCurrentUser, getToken } from '../../lib/auth'
 
 function roleToProfileRoute(role, id) {
   if (!id) return '/feed'
@@ -14,11 +14,20 @@ function roleToProfileRoute(role, id) {
 export default function ProductQuickViewModal({ open, onClose, item, onViewed }) {
   const navigate = useNavigate()
   const token = useMemo(() => getToken(), [])
+  const user = useMemo(() => getCurrentUser(), [])
   const viewRecordedRef = useRef({ productId: '', recorded: false })
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
 
   const productId = item?.product?.id || item?.id || ''
+  const companyId = item?.company_id || item?.product?.company_id || item?.author?.id || ''
   const author = item?.author || item?.product?.author || null
+  const contentReviewStatus = String(item?.content_review_status || item?.product?.content_review_status || '').toLowerCase()
+  const contentReviewReason = item?.content_review_reason || item?.product?.content_review_reason || ''
+  const viewerRole = String(user?.role || '').toLowerCase()
+  const isOwner = Boolean(user?.id) && String(user.id) === String(companyId)
+  const isAgentOwner = viewerRole === 'agent' && String(user?.org_owner_id || '') === String(companyId)
+  const canAppeal = contentReviewStatus === 'rejected' && (isOwner || isAgentOwner)
   const gallery = Array.isArray(item?.image_gallery)
     ? item.image_gallery
     : Array.isArray(item?.product?.image_gallery)
@@ -61,6 +70,7 @@ export default function ProductQuickViewModal({ open, onClose, item, onViewed })
   function handleClose() {
     viewRecordedRef.current = { productId: '', recorded: false }
     setError('')
+    setNotice('')
     onClose?.()
   }
 
@@ -68,6 +78,24 @@ export default function ProductQuickViewModal({ open, onClose, item, onViewed })
     const name = author?.name || 'company'
     navigate('/chat', { state: { notice: `Contacting ${name}. If you are unverified, your first message may appear as a request.` } })
     handleClose()
+  }
+
+  async function reportMistake() {
+    if (!token || !productId) return
+    const reason = window.prompt('Explain why this product should be approved:') || ''
+    if (!reason.trim()) return
+    setError('')
+    setNotice('')
+    try {
+      await apiRequest('/reports/product-appeal', {
+        method: 'POST',
+        token,
+        body: { product_id: productId, reason },
+      })
+      setNotice('Appeal submitted. Our team will review it shortly.')
+    } catch (err) {
+      setError(err.message || 'Unable to submit appeal.')
+    }
   }
 
   const profileLink = author?.id ? roleToProfileRoute(author.role, author.id) : ''
@@ -128,7 +156,21 @@ export default function ProductQuickViewModal({ open, onClose, item, onViewed })
             <p className="mt-3 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
               {item?.description || item?.product?.description || 'No description provided.'}
             </p>
+            {canAppeal ? (
+              <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-3 py-3">
+                <p className="text-xs font-semibold text-rose-900">This product was rejected.</p>
+                <p className="mt-1 text-xs text-rose-700">{contentReviewReason || 'This product needs changes to meet content standards.'}</p>
+                <button
+                  type="button"
+                  onClick={reportMistake}
+                  className="mt-3 w-full rounded-lg bg-rose-600 px-3 py-2 text-xs font-semibold text-white"
+                >
+                  If you think this is a mistake, report it for review
+                </button>
+              </div>
+            ) : null}
             {error ? <p className="mt-3 text-xs text-rose-700">{error}</p> : null}
+            {notice ? <p className="mt-3 text-xs text-emerald-700">{notice}</p> : null}
           </div>
         </div>
 

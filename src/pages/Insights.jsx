@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import AccessDeniedState from '../components/AccessDeniedState'
 import useAnalyticsDashboard from '../hooks/useAnalyticsDashboard'
+import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 
 function StatCard({ label, value, hint = '' }) {
   return (
@@ -14,6 +15,10 @@ function StatCard({ label, value, hint = '' }) {
 
 export default function Insights() {
   const { dashboard, companyAnalytics, platformAnalytics, premiumInsights, subscription, isEnterprise, loading, error, forbidden } = useAnalyticsDashboard()
+  const currentUser = useMemo(() => getCurrentUser(), [])
+  const [profileViewers, setProfileViewers] = useState([])
+  const [productViewers, setProductViewers] = useState([])
+  const [viewerLoading, setViewerLoading] = useState(false)
   const totals = dashboard?.totals || {}
   const byType = dashboard?.analytics_events?.by_type || {}
   const interactionSummary = dashboard?.interaction_summary || {}
@@ -27,6 +32,38 @@ export default function Insights() {
   const platformPriceDemand = Array.isArray(platformAnalytics?.price_range_demand) ? platformAnalytics.price_range_demand : []
   const platformMonthly = Array.isArray(platformAnalytics?.monthly_demand_trend) ? platformAnalytics.monthly_demand_trend : []
   const premiumRole = premiumInsights?.role || ''
+
+  useEffect(() => {
+    const role = String(premiumRole || '').toLowerCase()
+    if (!['factory', 'buying_house'].includes(role)) return
+    const token = getToken()
+    if (!token || !currentUser?.id) return
+
+    async function loadViewers() {
+      setViewerLoading(true)
+      try {
+        const productId = companyAnalytics?.top_products?.[0]?.product_id || ''
+        const requests = [
+          apiRequest(`/analytics/viewers?entity=profile&id=${encodeURIComponent(currentUser.id)}&limit=8`, { token }),
+        ]
+        if (productId) {
+          requests.push(apiRequest(`/analytics/viewers?entity=product&id=${encodeURIComponent(productId)}&limit=8`, { token }))
+        }
+        const results = await Promise.all(requests)
+        const profileData = results[0]
+        const productData = results[1]
+        setProfileViewers(Array.isArray(profileData?.items) ? profileData.items : [])
+        setProductViewers(Array.isArray(productData?.items) ? productData.items : [])
+      } catch {
+        setProfileViewers([])
+        setProductViewers([])
+      } finally {
+        setViewerLoading(false)
+      }
+    }
+
+    loadViewers()
+  }, [premiumRole, currentUser?.id, companyAnalytics?.top_products])
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-500 dark:bg-[#020617] dark:text-slate-100">
@@ -287,6 +324,41 @@ export default function Insights() {
                         <span className="font-semibold">{count}</span>
                       </div>
                     ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {['factory', 'buying_house'].includes(String(premiumRole || '').toLowerCase()) ? (
+                <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="rounded-xl border border-slate-200/60 p-3 dark:border-slate-800">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Recent Profile Viewers</p>
+                    {viewerLoading ? (
+                      <div className="mt-2 text-xs text-slate-500">Loading viewers...</div>
+                    ) : (
+                      <div className="mt-2 space-y-2 text-xs text-slate-700 dark:text-slate-300">
+                        {profileViewers.length ? profileViewers.map((row) => (
+                          <div key={row.viewer_id} className="flex items-center justify-between">
+                            <span className="truncate">{row.viewer?.name || row.viewer_id}</span>
+                            <span className="text-[11px] text-slate-500">{new Date(row.viewed_at).toLocaleDateString()}</span>
+                          </div>
+                        )) : <div className="text-xs text-slate-500">No viewers yet.</div>}
+                      </div>
+                    )}
+                  </div>
+                  <div className="rounded-xl border border-slate-200/60 p-3 dark:border-slate-800">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Recent Product Viewers</p>
+                    {viewerLoading ? (
+                      <div className="mt-2 text-xs text-slate-500">Loading viewers...</div>
+                    ) : (
+                      <div className="mt-2 space-y-2 text-xs text-slate-700 dark:text-slate-300">
+                        {productViewers.length ? productViewers.map((row) => (
+                          <div key={row.viewer_id} className="flex items-center justify-between">
+                            <span className="truncate">{row.viewer?.name || row.viewer_id}</span>
+                            <span className="text-[11px] text-slate-500">{new Date(row.viewed_at).toLocaleDateString()}</span>
+                          </div>
+                        )) : <div className="text-xs text-slate-500">No viewers yet.</div>}
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : null}

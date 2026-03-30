@@ -49,8 +49,8 @@ body,
 :root.dark .bg-cyan-600,
 :root.dark .bg-pink-600,
 :root.dark .bg-\[\#0A66C2\] {
-  background-image: linear-gradient(120deg, #0ea5e9 0%, #8b5cf6 44%, #ec4899 100%) !important;
-  background-color: #8b5cf6 !important;
+  background-image: linear-gradient(120deg, #0A66C2 0%, #2E8BFF 100%) !important;
+  background-color: #0A66C2 !important;
 }
 
 :root.dark .enterprise-gradient,

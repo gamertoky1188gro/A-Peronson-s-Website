@@ -6,6 +6,7 @@ import { readLocalJson } from '../utils/localStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { canAccessContract, canManagePartnerNetwork, canModifyContract, isAgent, isOwnerOrAdmin, scopeRecordsForUser } from '../utils/permissions.js'
 import { trackEvent } from './analyticsService.js'
+import { ensureCertificationForContract } from './certificationService.js'
 
 const FILE = 'documents.json'
 const CONTRACT_AUDIT_FILE = 'contract_audit.json'
@@ -485,6 +486,7 @@ export async function updateContractSignatures(contractId, patch = {}, actor) {
   }
   if (next.lifecycle_status === 'signed') {
     await trackEvent({ type: 'contract_signed', actor_id: actor.id, entity_id: next.id })
+    await ensureCertificationForContract(next)
   }
   return { ...presentContractForActor(next, actor), payment_proof_ok: paymentProofOk }
 }

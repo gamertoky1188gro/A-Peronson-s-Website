@@ -28,6 +28,7 @@ import { recordPolicyViolation, scanPolicyText } from './policyService.js'
 import { markRecording } from './callSessionService.js'
 import { createKnowledgeEntry, deleteKnowledgeEntry, updateKnowledgeEntry } from './assistantService.js'
 import { recordRefund } from './refundService.js'
+import { adminUpdateSupportTicket, createSupportTicket } from './supportTicketService.js'
 
 function toId(value, max = 120) {
   return sanitizeString(String(value || ''), max)
@@ -1491,15 +1492,26 @@ export async function performAdminAction(action, payload = {}, actor) {
   }
 
   if (name === 'support.ticket.create') {
-    const entry = await appendLocalRecord('support_tickets.json', {
-      user_id: toId(payload.user_id),
-      subject: sanitizeString(String(payload.subject || 'Support ticket'), 160),
-      status: sanitizeString(String(payload.status || 'open'), 40),
-      priority: sanitizeString(String(payload.priority || 'normal'), 40),
-      note: sanitizeString(String(payload.note || ''), 200),
-      actor_id: admin.id,
+    const userId = toId(payload.user_id)
+    if (!userId) {
+      const err = new Error('user_id is required')
+      err.status = 400
+      throw err
+    }
+    const user = await ensureUserExists(userId)
+    const subject = sanitizeString(String(payload.subject || 'Support ticket'), 160)
+    const note = sanitizeString(String(payload.note || 'Created by admin'), 1200)
+    const priority = sanitizeString(String(payload.priority || 'standard'), 40)
+    const created = await createSupportTicket({
+      actor: user,
+      subject,
+      description: note,
+      category: 'Admin',
+      priority,
+      pageUrl: '',
+      contactEmail: user.email || '',
     })
-    return { ok: true, ticket: entry }
+    return { ok: true, ticket: created.ticket }
   }
 
   if (name === 'support.ticket.update') {
@@ -1509,12 +1521,12 @@ export async function performAdminAction(action, payload = {}, actor) {
       err.status = 400
       throw err
     }
-    const updated = await updateLocalRecord('support_tickets.json', ticketId, {
+    const patch = {
       status: sanitizeString(String(payload.status || ''), 40),
       priority: sanitizeString(String(payload.priority || ''), 40),
-      note: sanitizeString(String(payload.note || ''), 200),
-      updated_by: admin.id,
-    })
+      resolution_note: sanitizeString(String(payload.note || ''), 240),
+    }
+    const updated = await adminUpdateSupportTicket(ticketId, patch, admin.id)
     return { ok: true, ticket: updated }
   }
 
@@ -1525,11 +1537,7 @@ export async function performAdminAction(action, payload = {}, actor) {
       err.status = 400
       throw err
     }
-    const updated = await updateLocalRecord('support_tickets.json', ticketId, {
-      status: 'resolved',
-      resolved_at: new Date().toISOString(),
-      updated_by: admin.id,
-    })
+    const updated = await adminUpdateSupportTicket(ticketId, { status: 'resolved' }, admin.id)
     return { ok: true, ticket: updated }
   }
 
@@ -1540,12 +1548,36 @@ export async function performAdminAction(action, payload = {}, actor) {
       err.status = 400
       throw err
     }
-    const updated = await updateLocalRecord('support_tickets.json', ticketId, {
+    const updated = await adminUpdateSupportTicket(ticketId, {
       priority: 'high',
-      escalation_note: sanitizeString(String(payload.note || ''), 200),
-      updated_by: admin.id,
-    })
+      resolution_note: sanitizeString(String(payload.note || ''), 240),
+    }, admin.id)
     return { ok: true, ticket: updated }
+  }
+
+  if (name === 'account.manager.assign') {
+    const userId = toId(payload.user_id)
+    if (!userId) {
+      const err = new Error('user_id is required')
+      err.status = 400
+      throw err
+    }
+    const users = await readJson('users.json')
+    const rows = Array.isArray(users) ? users : []
+    const idx = rows.findIndex((u) => String(u.id) === String(userId))
+    if (idx < 0) {
+      const err = new Error('User not found')
+      err.status = 404
+      throw err
+    }
+    const profile = { ...(rows[idx].profile || {}) }
+    profile.account_manager_id = sanitizeString(String(payload.account_manager_id || ''), 120) || null
+    profile.account_manager_name = sanitizeString(String(payload.account_manager_name || ''), 120)
+    profile.account_manager_email = sanitizeString(String(payload.account_manager_email || ''), 160)
+    profile.account_manager_phone = sanitizeString(String(payload.account_manager_phone || ''), 60)
+    rows[idx] = { ...rows[idx], profile }
+    await writeJson('users.json', rows)
+    return { ok: true, user_id: rows[idx].id, profile }
   }
 
   if (name === 'notification.broadcast') {

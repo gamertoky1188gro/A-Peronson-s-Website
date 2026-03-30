@@ -39,8 +39,10 @@ import industryRoutes from './routes/industryRoutes.js'
 import paymentProofRoutes from './routes/paymentProofRoutes.js'
 import couponRoutes from './routes/couponRoutes.js'
 import supportRoutes from './routes/supportRoutes.js'
+import reportRoutes from './routes/reportRoutes.js'
 import infraRoutes from './routes/infraRoutes.js'
 import networkRoutes from './routes/networkRoutes.js'
+import certificationRoutes from './routes/certificationRoutes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { logInfo, logError } from './utils/logger.js'
 import { assistantReply } from './services/assistantService.js'
@@ -112,6 +114,8 @@ app.use('/api/industry', industryRoutes)
 app.use('/api/payment-proofs', paymentProofRoutes)
 app.use('/api/coupons', couponRoutes)
 app.use('/api/support', supportRoutes)
+app.use('/api/reports', reportRoutes)
+app.use('/api/certifications', certificationRoutes)
 app.use('/api/infra', infraRoutes)
 app.use('/api/network', networkRoutes)
 app.use(errorHandler)

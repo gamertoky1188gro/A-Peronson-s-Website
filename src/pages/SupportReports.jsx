@@ -1,4 +1,4 @@
-/*
+﻿/*
   Route: /support
   Access: Protected (login required)
 
@@ -6,7 +6,7 @@
     - Collect bug reports, feature requests, account issues, and general feedback.
     - Store submissions in the reports queue for admin review.
 */
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { apiRequest, API_BASE, getCurrentUser, getToken } from '../lib/auth'
 
 const CATEGORY_OPTIONS = [
@@ -26,6 +26,8 @@ export default function SupportReports() {
   const token = useMemo(() => getToken(), [])
   const sessionUser = getCurrentUser()
   const isPremium = String(sessionUser?.subscription_status || '').toLowerCase() === 'premium'
+  const accountManager = sessionUser?.profile || {}
+  const hasAccountManager = Boolean(accountManager.account_manager_name || accountManager.account_manager_email || accountManager.account_manager_phone)
   const [subject, setSubject] = useState('')
   const [category, setCategory] = useState('Bug Report')
   const [description, setDescription] = useState('')
@@ -36,6 +38,37 @@ export default function SupportReports() {
   const [loading, setLoading] = useState(false)
   const [feedback, setFeedback] = useState('')
   const [reportId, setReportId] = useState('')
+  const [tickets, setTickets] = useState([])
+  const [ticketsLoading, setTicketsLoading] = useState(false)
+  const [messagesByTicket, setMessagesByTicket] = useState({})
+  const [messageDrafts, setMessageDrafts] = useState({})
+
+  async function loadTickets() {
+    if (!token) return
+    setTicketsLoading(true)
+    try {
+      const data = await apiRequest('/support/tickets', { token })
+      setTickets(Array.isArray(data?.items) ? data.items : [])
+    } catch {
+      setTickets([])
+    } finally {
+      setTicketsLoading(false)
+    }
+  }
+
+  async function loadMessages(ticketId) {
+    if (!token || !ticketId) return
+    try {
+      const data = await apiRequest(`/support/tickets/${encodeURIComponent(ticketId)}/messages`, { token })
+      setMessagesByTicket((prev) => ({ ...prev, [ticketId]: Array.isArray(data?.items) ? data.items : [] }))
+    } catch {
+      setMessagesByTicket((prev) => ({ ...prev, [ticketId]: [] }))
+    }
+  }
+
+  useEffect(() => {
+    loadTickets()
+  }, [token])
 
   async function submitReport(e) {
     e.preventDefault()
@@ -47,7 +80,7 @@ export default function SupportReports() {
     setFeedback('')
     setReportId('')
     try {
-      const report = await apiRequest('/support/reports', {
+      const report = await apiRequest('/support/tickets', {
         method: 'POST',
         token,
         body: {
@@ -60,11 +93,12 @@ export default function SupportReports() {
         },
       })
 
-      if (attachment && report?.id) {
+      const ticketId = report?.ticket?.id || report?.id
+      if (attachment && ticketId) {
         const formData = new FormData()
         formData.append('file', attachment)
-        formData.append('entity_type', 'support_report')
-        formData.append('entity_id', report.id)
+        formData.append('entity_type', 'support_ticket')
+        formData.append('entity_id', ticketId)
         formData.append('type', 'screenshot')
 
         const res = await fetch(`${API_BASE}/documents`, {
@@ -78,18 +112,36 @@ export default function SupportReports() {
         }
       }
 
-      setReportId(report?.id || '')
-      setFeedback('Report submitted successfully.')
+      setReportId(ticketId || '')
+      setFeedback('Ticket submitted successfully.')
       setSubject('')
       setDescription('')
       setPageUrl('')
       setPriority('Medium')
       setContactEmail('')
       setAttachment(null)
+      await loadTickets()
     } catch (err) {
       setFeedback(err.message || 'Unable to submit report')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function submitMessage(ticketId) {
+    const message = String(messageDrafts?.[ticketId] || '').trim()
+    if (!token || !ticketId || !message) return
+    try {
+      await apiRequest(`/support/tickets/${encodeURIComponent(ticketId)}/messages`, {
+        method: 'POST',
+        token,
+        body: { message },
+      })
+      setMessageDrafts((prev) => ({ ...prev, [ticketId]: '' }))
+      await loadMessages(ticketId)
+      await loadTickets()
+    } catch (err) {
+      setFeedback(err.message || 'Unable to send message')
     }
   }
 
@@ -101,6 +153,14 @@ export default function SupportReports() {
           <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
             Report bugs, request features, or share any issue. We collect everything in one place so it can be tracked and resolved.
           </p>
+          {hasAccountManager ? (
+            <div className="mt-3 rounded-xl bg-slate-50 p-3 text-xs text-slate-600 ring-1 ring-slate-200/60">
+              <div className="font-semibold text-slate-800">Dedicated account manager</div>
+              <div>{accountManager.account_manager_name || 'Support manager'}</div>
+              <div>{accountManager.account_manager_email || ''}</div>
+              <div>{accountManager.account_manager_phone || ''}</div>
+            </div>
+          ) : null}
         </div>
 
         <form onSubmit={submitReport} className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800 space-y-4">
@@ -199,7 +259,75 @@ export default function SupportReports() {
             </button>
           </div>
         </form>
+
+        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">My Support Tickets</h2>
+            <button type="button" onClick={loadTickets} className="text-xs text-slate-600 hover:text-slate-900">Refresh</button>
+          </div>
+          {ticketsLoading ? (
+            <div className="text-sm text-slate-500">Loading tickets...</div>
+          ) : null}
+          {!ticketsLoading && tickets.length === 0 ? (
+            <div className="text-sm text-slate-500">No tickets yet.</div>
+          ) : null}
+          <div className="space-y-4">
+            {tickets.map((ticket) => (
+              <div key={ticket.id} className="rounded-xl border border-slate-200 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <div className="text-sm font-semibold">{ticket.subject || 'Support ticket'}</div>
+                    <div className="text-xs text-slate-500">Status: {ticket.status || 'open'} - Priority: {ticket.priority || 'standard'}</div>
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    SLA: Response by {ticket.sla_response_due_at ? new Date(ticket.sla_response_due_at).toLocaleString() : '--'} -
+                    Resolve by {ticket.sla_resolution_due_at ? new Date(ticket.sla_resolution_due_at).toLocaleString() : '--'}
+                  </div>
+                </div>
+
+                <div className="mt-3 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => loadMessages(ticket.id)}
+                    className="text-xs text-[var(--gt-blue)] hover:underline"
+                  >
+                    View messages
+                  </button>
+                </div>
+
+                {(messagesByTicket[ticket.id] || []).length ? (
+                  <div className="mt-3 space-y-2 max-h-48 overflow-auto rounded-lg bg-slate-50 p-3">
+                    {(messagesByTicket[ticket.id] || []).map((msg) => (
+                      <div key={msg.id} className="text-xs">
+                        <div className="font-semibold">{msg.sender_role || 'user'}</div>
+                        <div className="text-slate-600">{msg.message}</div>
+                        <div className="text-[10px] text-slate-400">{new Date(msg.created_at).toLocaleString()}</div>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+
+                <div className="mt-3 flex items-center gap-2">
+                  <input
+                    className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-xs"
+                    placeholder="Send a follow-up message"
+                    value={messageDrafts[ticket.id] || ''}
+                    onChange={(e) => setMessageDrafts((prev) => ({ ...prev, [ticket.id]: e.target.value }))}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => submitMessage(ticket.id)}
+                    className="rounded-lg bg-[var(--gt-blue)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--gt-blue-hover)]"
+                  >
+                    Send
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   )
 }
+

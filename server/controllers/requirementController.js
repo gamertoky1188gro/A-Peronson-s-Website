@@ -556,7 +556,6 @@ export async function searchRequirements(req, res) {
       return true
     })
 
-  const viewerPremium = plan === 'premium'
   const items = results
     .sort((a, b) => {
       if (a.priority_score !== b.priority_score) return b.priority_score - a.priority_score

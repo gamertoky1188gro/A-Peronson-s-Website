@@ -21,6 +21,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { API_BASE } from '../lib/auth'
+import { Bot } from 'lucide-react'
 
 /**
  * Helper component to simulate typing effect
@@ -179,11 +180,11 @@ export default function FloatingAssistant() {
             'w-14 h-14 rounded-full flex items-center justify-center text-white text-2xl transition-transform active:scale-95',
             orbMode
               ? 'assistant-orb-btn hover:scale-110'
-              : 'bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] shadow-xl hover:scale-110',
+              : 'bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] shadow-xl hover:scale-110 ring-2 ring-white/20',
           ].join(' ')}
           aria-label="Toggle assistant"
         >
-          {open ? 'X' : 'BOT'}
+          {open ? 'X' : <Bot size={22} />}
         </button>
       </div>
 

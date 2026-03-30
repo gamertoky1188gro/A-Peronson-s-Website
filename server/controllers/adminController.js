@@ -2,6 +2,7 @@ import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { createNotification } from '../services/notificationService.js'
 import { listReports, resolveReport } from '../services/reportService.js'
+import { adminAssignSupportTicket, adminUpdateSupportTicket, buildSupportTicketSummary, listSupportTicketsAdmin } from '../services/supportTicketService.js'
 
 function toPublicFileUrl(filePath = '') {
   if (!filePath) return ''
@@ -185,8 +186,74 @@ export async function listReportsAudit(req, res) {
   return res.json({ items })
 }
 
+export async function listSystemReportsAudit(req, res) {
+  const items = await listReports()
+  const filtered = items.filter((r) => ['system_report', 'support'].includes(String(r.entity_type || '').toLowerCase()))
+  return res.json({ items: filtered })
+}
+
+export async function listProductAppealReportsAudit(req, res) {
+  const items = await listReports()
+  const filtered = items.filter((r) => String(r.entity_type || '').toLowerCase() === 'product_appeal')
+  return res.json({ items: filtered })
+}
+
+export async function listContentReportsAudit(req, res) {
+  const items = await listReports()
+  const filtered = items.filter((r) => String(r.entity_type || '').toLowerCase() === 'content_report')
+  return res.json({ items: filtered })
+}
+
 export async function resolveReportAudit(req, res) {
   const updated = await resolveReport(req.params.reportId, req.user, req.body || {})
   if (!updated) return res.status(404).json({ error: 'Report not found' })
   return res.json({ ok: true, item: updated })
+}
+
+export async function assignSupportTicket(req, res) {
+  const ticketId = sanitizeString(String(req.body?.ticket_id || ''), 120)
+  if (!ticketId) return res.status(400).json({ error: 'ticket_id is required' })
+  const assigneeId = sanitizeString(String(req.body?.assignee_id || ''), 120)
+  const updated = await adminAssignSupportTicket(ticketId, assigneeId, req.user.id)
+  if (!updated) return res.status(404).json({ error: 'Ticket not found' })
+  return res.json({ ok: true, ticket: await buildSupportTicketSummary(updated) })
+}
+
+export async function updateSupportTicket(req, res) {
+  const ticketId = sanitizeString(String(req.params.ticketId || ''), 120)
+  if (!ticketId) return res.status(400).json({ error: 'ticketId is required' })
+  const updated = await adminUpdateSupportTicket(ticketId, req.body || {}, req.user.id)
+  if (!updated) return res.status(404).json({ error: 'Ticket not found' })
+  return res.json({ ok: true, ticket: await buildSupportTicketSummary(updated) })
+}
+
+export async function listSupportTicketsAdminController(req, res) {
+  const status = sanitizeString(String(req.query?.status || ''), 40)
+  const priority = sanitizeString(String(req.query?.priority || ''), 40)
+  const assignedTo = sanitizeString(String(req.query?.assigned_to || ''), 120)
+  const premiumOnly = req.query?.premium_only !== undefined ? ['true', '1', 'yes'].includes(String(req.query?.premium_only).toLowerCase()) : undefined
+  const limit = Math.max(1, Math.min(200, Number(req.query?.limit || 50)))
+  const offset = Math.max(0, Number(req.query?.offset || 0))
+  const tickets = await listSupportTicketsAdmin({ status, priority, assignedTo, premiumOnly, limit, offset })
+  const summaries = await Promise.all(tickets.map((ticket) => buildSupportTicketSummary(ticket)))
+  return res.json({ items: summaries })
+}
+
+export async function assignAccountManager(req, res) {
+  const userId = sanitizeString(String(req.body?.user_id || ''), 120)
+  if (!userId) return res.status(400).json({ error: 'user_id is required' })
+  const users = await readJson('users.json')
+  const rows = Array.isArray(users) ? users : []
+  const idx = rows.findIndex((u) => String(u.id) === userId)
+  if (idx < 0) return res.status(404).json({ error: 'User not found' })
+
+  const profile = { ...(rows[idx].profile || {}) }
+  profile.account_manager_id = sanitizeString(String(req.body?.account_manager_id || ''), 120) || null
+  profile.account_manager_name = sanitizeString(String(req.body?.account_manager_name || ''), 120)
+  profile.account_manager_email = sanitizeString(String(req.body?.account_manager_email || ''), 160)
+  profile.account_manager_phone = sanitizeString(String(req.body?.account_manager_phone || ''), 60)
+
+  rows[idx] = { ...rows[idx], profile }
+  await writeJson('users.json', rows)
+  return res.json({ ok: true, user_id: rows[idx].id, profile })
 }

@@ -42,6 +42,7 @@ import { trackClientEvent } from './lib/events'
 
 const AUTH_ROLES = ['buyer', 'buying_house', 'factory', 'owner', 'admin', 'agent']
 const OWNER_ROLES = ['owner', 'admin', 'buying_house', 'factory']
+const INSIGHTS_ROLES = ['owner', 'admin', 'buying_house', 'factory', 'buyer']
 const MEMBER_MANAGEMENT_ROLES = ['owner', 'admin', 'buying_house', 'factory']
 
 function ProtectedRoute({ children, roles }) {
@@ -94,7 +95,7 @@ function AppRoutes() {
 
       <Route path="/member-management" element={<ProtectedRoute roles={MEMBER_MANAGEMENT_ROLES}><MemberManagement /></ProtectedRoute>} />
       <Route path="/org-settings" element={<ProtectedRoute roles={OWNER_ROLES}><OrgSettings /></ProtectedRoute>} />
-      <Route path="/insights" element={<ProtectedRoute roles={OWNER_ROLES}><Insights /></ProtectedRoute>} />
+      <Route path="/insights" element={<ProtectedRoute roles={INSIGHTS_ROLES}><Insights /></ProtectedRoute>} />
       <Route path="/owner" element={<ProtectedRoute roles={OWNER_ROLES}><OwnerDashboard /></ProtectedRoute>} />
       <Route path="/agent" element={<ProtectedRoute roles={['buying_house', 'owner', 'admin', 'agent']}><AgentDashboard /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute roles={['owner', 'admin']}><AdminPanel /></ProtectedRoute>} />

@@ -512,30 +512,30 @@ function isPendingVerification(row) {
 }
 
 export async function getAdminMasterSummary(user) {
-  const [
-    users,
-    verifications,
-    subscriptions,
-    walletHistory,
-    couponCodes,
-    couponRedemptions,
-    partnerRequests,
-    requirements,
-    matches,
-    documents,
-    paymentProofs,
-    callSessions,
-    messages,
-    violations,
-    reports,
-    notifications,
-    searchAlerts,
-    searchUsage,
+    const [
+      users,
+      verifications,
+      subscriptions,
+      walletHistory,
+      couponCodes,
+      couponRedemptions,
+      partnerRequests,
+      requirements,
+      matches,
+      documents,
+      paymentProofs,
+      callSessions,
+      messages,
+      violations,
+      notifications,
+      searchAlerts,
+      searchUsage,
     assistantKnowledge,
     products,
     analytics,
     subscriptionHistory,
     refundLog,
+    supportTickets,
   ] = await Promise.all([
     readJson('users.json'),
     readJson('verification.json'),
@@ -548,18 +548,18 @@ export async function getAdminMasterSummary(user) {
     readJson('matches.json'),
     readJson('documents.json'),
     readJson('payment_proofs.json'),
-    readJson('call_sessions.json'),
-    readJson('messages.json'),
-    readJson('violations.json'),
-    readJson('reports.json'),
-    readJson('notifications.json'),
-    readJson('search_alerts.json'),
-    readJson('search_usage_counters.json'),
+      readJson('call_sessions.json'),
+      readJson('messages.json'),
+      readJson('violations.json'),
+      readJson('notifications.json'),
+      readJson('search_alerts.json'),
+      readJson('search_usage_counters.json'),
     readJson('assistant_knowledge.json'),
     readJson('company_products.json'),
     readJson('analytics.json'),
     readLocalJson('subscription_history.json', []),
     readLocalJson('refund_log.json', []),
+    readJson('support_tickets.json'),
   ])
 
   const userRows = Array.isArray(users) ? users : []
@@ -576,7 +576,6 @@ export async function getAdminMasterSummary(user) {
   const callRows = Array.isArray(callSessions) ? callSessions : []
   const messageRows = Array.isArray(messages) ? messages : []
   const violationRows = Array.isArray(violations) ? violations : []
-  const reportRows = Array.isArray(reports) ? reports : []
   const notificationRows = Array.isArray(notifications) ? notifications : []
   const searchAlertRows = Array.isArray(searchAlerts) ? searchAlerts : []
   const searchUsageRows = Array.isArray(searchUsage) ? searchUsage : []
@@ -584,6 +583,7 @@ export async function getAdminMasterSummary(user) {
   const productRows = Array.isArray(products) ? products : []
   const historyRows = Array.isArray(subscriptionHistory) ? subscriptionHistory : []
   const refundRows = Array.isArray(refundLog) ? refundLog : []
+  const supportTicketRows = Array.isArray(supportTickets) ? supportTickets : []
 
   const roleCounts = countBy(userRows, 'role')
   const premiumUsers = userRows.filter((u) => String(u.subscription_status || '').toLowerCase() === 'premium').length
@@ -697,8 +697,8 @@ export async function getAdminMasterSummary(user) {
         docs_pending: documentRows.filter((d) => String(d.moderation_status || '').toLowerCase() === 'pending_review').length,
       },
       support: {
-        tickets: reportRows.length,
-        open: reportRows.filter((r) => String(r.status || '').toLowerCase() !== 'resolved').length,
+        tickets: supportTicketRows.length,
+        open: supportTicketRows.filter((r) => String(r.status || '').toLowerCase() !== 'resolved').length,
       },
       notifications: {
         total: notificationRows.length,

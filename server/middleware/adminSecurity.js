@@ -53,7 +53,8 @@ export async function requireAdminSecurity(req, res, next) {
 
   if (Array.isArray(authConfig.passkeys) && authConfig.passkeys.length) {
     const provided = String(req.headers['x-admin-passkey'] || '').trim()
-    if (!provided || !authConfig.passkeys.includes(provided)) {
+    const passkeyLogin = Boolean(req.user?.auth_via_passkey)
+    if ((!provided || !authConfig.passkeys.includes(provided)) && !passkeyLogin) {
       return res.status(403).json({ error: 'Admin passkey required.' })
     }
   }

@@ -24,6 +24,16 @@ const CATEGORY_ICONS = {
   'ultra-security': Lock,
 }
 
+function listToTextarea(value) {
+  return Array.isArray(value) ? value.join('\n') : ''
+}
+
+function textareaToList(value) {
+  const raw = String(value || '').split(/[\n,]/)
+  const cleaned = raw.map((entry) => entry.trim()).filter(Boolean)
+  return [...new Set(cleaned)]
+}
+
 const SECTION_METRICS = {
   users: [
     { label: 'Total', path: 'users.total' },
@@ -149,6 +159,13 @@ const ACTION_GROUPS = [
   {
     label: 'Org & Agents',
     actions: [
+      { id: 'account.manager.assign', label: 'Assign account manager', route: '/admin/actions', fields: [
+        { key: 'user_id', label: 'Org owner ID' },
+        { key: 'account_manager_id', label: 'Manager user ID (optional)' },
+        { key: 'account_manager_name', label: 'Manager name' },
+        { key: 'account_manager_email', label: 'Manager email' },
+        { key: 'account_manager_phone', label: 'Manager phone' },
+      ] },
       { id: 'org.transfer', label: 'Transfer org ownership', route: '/admin/actions', fields: [{ key: 'from_owner_id', label: 'Current owner ID' }, { key: 'to_owner_id', label: 'New owner ID' }] },
       { id: 'org.merge', label: 'Merge orgs', route: '/admin/actions', fields: [{ key: 'source_owner_id', label: 'Source owner ID' }, { key: 'target_owner_id', label: 'Target owner ID' }, { key: 'archive_source', label: 'Archive source (true/false)' }] },
       { id: 'org.split', label: 'Split org staff', route: '/admin/actions', fields: [{ key: 'org_owner_id', label: 'Current owner ID' }, { key: 'new_owner_id', label: 'New owner ID' }, { key: 'member_ids', label: 'Member IDs (comma)' }] },
@@ -182,7 +199,7 @@ const ACTION_GROUPS = [
       { id: 'wallet.debit', label: 'Wallet debit', route: '/admin/actions', fields: [{ key: 'user_id', label: 'User ID' }, { key: 'amount_usd', label: 'Amount (USD)' }, { key: 'reason', label: 'Reason' }, { key: 'allow_restricted', label: 'Allow restricted (true/false)' }] },
       { id: 'wallet.refund', label: 'Wallet refund', route: '/admin/actions', fields: [{ key: 'user_id', label: 'User ID' }, { key: 'amount_usd', label: 'Amount (USD)' }, { key: 'reason', label: 'Reason' }, { key: 'ref', label: 'Reference' }] },
       { id: 'wallet.auto_credit', label: 'Toggle auto-credit', route: '/admin/actions', fields: [{ key: 'enabled', label: 'true/false' }] },
-      { id: 'coupon.create', label: 'Create coupon', route: '/admin/actions', fields: [{ key: 'code', label: 'Coupon code' }, { key: 'amount_usd', label: 'Amount (USD)' }, { key: 'expires_at', label: 'Expires at (ISO)' }, { key: 'max_redemptions', label: 'Max redemptions' }, { key: 'marketing_source', label: 'Marketing source' }, { key: 'campaign', label: 'Campaign tag' }, { key: 'role_restrictions', label: 'Role restrictions (comma)' }, { key: 'verification_free_months', label: 'Free months' }] },
+      { id: 'coupon.create', label: 'Create coupon', route: '/admin/actions', fields: [{ key: 'code', label: 'Coupon code' }, { key: 'amount_usd', label: 'Amount (USD)' }, { key: 'expires_at', label: 'Expires at (ISO)' }, { key: 'max_redemptions', label: 'Max redemptions' }, { key: 'marketing_source', label: 'Marketing source' }, { key: 'campaign', label: 'Campaign tag' }, { key: 'role_restrictions', label: 'Role restrictions (comma)' }, { key: 'verification_free_months', label: 'Free months' }, { key: 'requires_card', label: 'Requires card (true/false)' }] },
       { id: 'coupon.disable', label: 'Disable coupon', route: '/admin/actions', fields: [{ key: 'code', label: 'Coupon code or ID' }] },
       { id: 'coupon.expire', label: 'Expire coupon', route: '/admin/actions', fields: [{ key: 'code', label: 'Coupon code or ID' }, { key: 'expires_at', label: 'Expires at (ISO)' }] },
       { id: 'coupon.redemption.add', label: 'Add coupon redemption', route: '/admin/actions', fields: [{ key: 'code_id', label: 'Coupon ID' }, { key: 'user_id', label: 'User ID' }, { key: 'amount_usd', label: 'Amount USD' }] },
@@ -417,6 +434,26 @@ export default function AdminPanel() {
   const [verificationQueue, setVerificationQueue] = useState([])
   const [contractsVault, setContractsVault] = useState([])
   const [disputes, setDisputes] = useState([])
+  const [supportTickets, setSupportTickets] = useState([])
+  const [supportLoading, setSupportLoading] = useState(false)
+  const [supportFilters, setSupportFilters] = useState({ status: 'all', priority: 'all', assigned_to: '' })
+  const [moderationPending, setModerationPending] = useState([])
+  const [moderationRejected, setModerationRejected] = useState([])
+  const [clothingRulesForm, setClothingRulesForm] = useState({
+    forbidden_terms: '',
+    flag_terms: '',
+    allowed_terms: '',
+    context_exceptions: '',
+    reason_rejected: '',
+    reason_pending: '',
+    reason_fix: '',
+  })
+  const [clothingRulesBusy, setClothingRulesBusy] = useState(false)
+  const [clothingRulesNotice, setClothingRulesNotice] = useState('')
+  const [clothingRulesError, setClothingRulesError] = useState('')
+  const [systemReports, setSystemReports] = useState([])
+  const [productAppealReports, setProductAppealReports] = useState([])
+  const [contentReports, setContentReports] = useState([])
   const [partnerRequests, setPartnerRequests] = useState([])
   const [paymentProofs, setPaymentProofs] = useState([])
   const [userQuery, setUserQuery] = useState('')
@@ -488,6 +525,27 @@ export default function AdminPanel() {
     if (!passkeyValue) return
     localStorage.setItem('admin_passkey', passkeyValue)
   }, [passkeyValue])
+
+  useEffect(() => {
+    if (activeCategory !== 'platform') return
+    refreshSupportTickets()
+    refreshModerationQueues()
+    refreshReportQueues()
+  }, [activeCategory])
+
+  useEffect(() => {
+    const rules = master?.config?.moderation?.clothing_rules
+    if (!rules) return
+    setClothingRulesForm({
+      forbidden_terms: listToTextarea(rules.forbidden_terms),
+      flag_terms: listToTextarea(rules.flag_terms),
+      allowed_terms: listToTextarea(rules.allowed_terms),
+      context_exceptions: listToTextarea(rules.context_exceptions),
+      reason_rejected: rules?.reason_templates?.rejected || '',
+      reason_pending: rules?.reason_templates?.pending_review || '',
+      reason_fix: rules?.reason_templates?.fix_guidance || '',
+    })
+  }, [master?.config])
 
   const buildAdminHeaders = useCallback(({ stepUp = false } = {}) => {
     const headers = {}
@@ -848,6 +906,136 @@ export default function AdminPanel() {
     const headers = buildAdminHeaders()
     const data = await apiRequest('/admin/disputes', { token, headers })
     setDisputes(Array.isArray(data?.items) ? data.items : [])
+  }
+
+  async function refreshSupportTickets() {
+    const token = getToken()
+    if (!token) return
+    setSupportLoading(true)
+    const headers = buildAdminHeaders()
+    try {
+      const params = new URLSearchParams()
+      if (supportFilters.status && supportFilters.status !== 'all') params.set('status', supportFilters.status)
+      if (supportFilters.priority && supportFilters.priority !== 'all') params.set('priority', supportFilters.priority)
+      if (supportFilters.assigned_to) params.set('assigned_to', supportFilters.assigned_to)
+      const query = params.toString()
+      const path = query ? `/admin/support/tickets?${query}` : '/admin/support/tickets'
+      const data = await apiRequest(path, { token, headers })
+      setSupportTickets(Array.isArray(data?.items) ? data.items : [])
+    } catch (err) {
+      setSupportTickets([])
+      setError(err.message || 'Failed to load support tickets')
+    } finally {
+      setSupportLoading(false)
+    }
+  }
+
+  async function refreshModerationQueues() {
+    const token = getToken()
+    if (!token) return
+    const headers = buildAdminHeaders()
+    const [pendingData, rejectedData] = await Promise.all([
+      apiRequest('/admin/moderation/products?status=pending_review', { token, headers }),
+      apiRequest('/admin/moderation/products?status=rejected', { token, headers }),
+    ])
+    setModerationPending(Array.isArray(pendingData?.items) ? pendingData.items : [])
+    setModerationRejected(Array.isArray(rejectedData?.items) ? rejectedData.items : [])
+  }
+
+  async function refreshReportQueues() {
+    const token = getToken()
+    if (!token) return
+    const headers = buildAdminHeaders()
+    const [systemData, appealData, contentData] = await Promise.all([
+      apiRequest('/admin/reports/system', { token, headers }),
+      apiRequest('/admin/reports/product-appeals', { token, headers }),
+      apiRequest('/admin/reports/content', { token, headers }),
+    ])
+    setSystemReports(Array.isArray(systemData?.items) ? systemData.items : [])
+    setProductAppealReports(Array.isArray(appealData?.items) ? appealData.items : [])
+    setContentReports(Array.isArray(contentData?.items) ? contentData.items : [])
+  }
+
+  async function saveClothingRules() {
+    const token = getToken()
+    if (!token) return
+    setClothingRulesBusy(true)
+    setClothingRulesNotice('')
+    setClothingRulesError('')
+    try {
+      const patch = {
+        moderation: {
+          clothing_rules: {
+            forbidden_terms: textareaToList(clothingRulesForm.forbidden_terms),
+            flag_terms: textareaToList(clothingRulesForm.flag_terms),
+            allowed_terms: textareaToList(clothingRulesForm.allowed_terms),
+            context_exceptions: textareaToList(clothingRulesForm.context_exceptions),
+            reason_templates: {
+              rejected: String(clothingRulesForm.reason_rejected || '').trim(),
+              pending_review: String(clothingRulesForm.reason_pending || '').trim(),
+              fix_guidance: String(clothingRulesForm.reason_fix || '').trim(),
+            },
+          },
+        },
+      }
+      const updated = await apiRequest('/admin/config', {
+        method: 'PATCH',
+        token,
+        headers: buildAdminHeaders({ stepUp: true }),
+        body: patch,
+      })
+      setMaster((prev) => (prev ? { ...prev, config: updated } : prev))
+      setClothingRulesNotice('Clothing moderation rules updated.')
+    } catch (err) {
+      setClothingRulesError(err.message || 'Unable to update rules.')
+    } finally {
+      setClothingRulesBusy(false)
+    }
+  }
+
+  async function resolveReportAdmin(reportId, action = 'reviewed') {
+    const token = getToken()
+    if (!token || !reportId) return
+    const headers = buildAdminHeaders({ stepUp: true })
+    const note = window.prompt('Resolution note (optional):') || ''
+    await apiRequest(`/admin/reports/${encodeURIComponent(reportId)}/resolve`, {
+      method: 'POST',
+      token,
+      headers,
+      body: { action, note },
+    })
+    await refreshReportQueues()
+    await refreshAudit()
+  }
+
+  async function assignSupportTicketAdmin(ticketId) {
+    const token = getToken()
+    if (!token || !ticketId) return
+    const assigneeId = window.prompt('Assign to user ID (leave blank to clear):') ?? ''
+    if (assigneeId === null) return
+    const headers = buildAdminHeaders({ stepUp: true })
+    await apiRequest('/admin/support/assign', {
+      method: 'POST',
+      token,
+      headers,
+      body: { ticket_id: ticketId, assignee_id: assigneeId },
+    })
+    await refreshSupportTickets()
+    await refreshAudit()
+  }
+
+  async function updateSupportTicketAdmin(ticketId, patch = {}) {
+    const token = getToken()
+    if (!token || !ticketId) return
+    const headers = buildAdminHeaders({ stepUp: true })
+    await apiRequest(`/admin/support/${encodeURIComponent(ticketId)}`, {
+      method: 'PATCH',
+      token,
+      headers,
+      body: patch,
+    })
+    await refreshSupportTickets()
+    await refreshAudit()
   }
 
   async function refreshPartnerRequests() {
@@ -2148,6 +2336,347 @@ export default function AdminPanel() {
                     </div>
                   ))}
                   {disputes.length === 0 ? <p className="text-xs text-slate-500">No disputes found.</p> : null}
+                </div>
+              </div>
+            ) : null}
+
+              {activeCategory === 'platform' ? (
+                <div className="admin-card admin-sweep rounded-3xl p-6">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-bold">Product Moderation Queue</p>
+                    <p className="text-xs text-slate-500">Pending review and rejected product listings.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => refreshModerationQueues()}
+                    className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600"
+                  >
+                    Refresh queue
+                  </button>
+                </div>
+                <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+                  <div className="rounded-2xl border border-slate-200 p-4 text-xs">
+                    <p className="text-[11px] font-semibold uppercase text-slate-500">Pending Review</p>
+                    <div className="mt-2 space-y-2">
+                      {moderationPending.slice(0, 6).map((row) => (
+                        <div key={row.id} className="rounded-xl border border-slate-200 px-3 py-2">
+                          <p className="text-sm font-semibold text-slate-900">{row.title || 'Product'}</p>
+                          <p className="text-[11px] text-slate-500">Owner: {row.owner?.name || row.company_id}</p>
+                          <p className="text-[11px] text-slate-500">{row.content_review_reason || 'Pending review'}</p>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                await apiRequest(`/admin/moderation/products/${encodeURIComponent(row.id)}`, {
+                                  method: 'PATCH',
+                                  token: getToken(),
+                                  headers: buildAdminHeaders({ stepUp: true }),
+                                  body: { status: 'approved' },
+                                })
+                                await refreshModerationQueues()
+                              }}
+                              className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                const reason = window.prompt('Reject reason (neutral language):') || ''
+                                await apiRequest(`/admin/moderation/products/${encodeURIComponent(row.id)}`, {
+                                  method: 'PATCH',
+                                  token: getToken(),
+                                  headers: buildAdminHeaders({ stepUp: true }),
+                                  body: { status: 'rejected', reason },
+                                })
+                                await refreshModerationQueues()
+                              }}
+                              className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      {!moderationPending.length ? <p className="text-[11px] text-slate-500">No pending products.</p> : null}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-slate-200 p-4 text-xs">
+                    <p className="text-[11px] font-semibold uppercase text-slate-500">Rejected</p>
+                    <div className="mt-2 space-y-2">
+                      {moderationRejected.slice(0, 6).map((row) => (
+                        <div key={row.id} className="rounded-xl border border-slate-200 px-3 py-2">
+                          <p className="text-sm font-semibold text-slate-900">{row.title || 'Product'}</p>
+                          <p className="text-[11px] text-slate-500">Owner: {row.owner?.name || row.company_id}</p>
+                          <p className="text-[11px] text-slate-500">{row.content_review_reason || 'Rejected'}</p>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                await apiRequest(`/admin/moderation/products/${encodeURIComponent(row.id)}`, {
+                                  method: 'PATCH',
+                                  token: getToken(),
+                                  headers: buildAdminHeaders({ stepUp: true }),
+                                  body: { status: 'approved' },
+                                })
+                                await refreshModerationQueues()
+                              }}
+                              className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
+                            >
+                              Restore
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      {!moderationRejected.length ? <p className="text-[11px] text-slate-500">No rejected products.</p> : null}
+                    </div>
+                  </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {activeCategory === 'platform' ? (
+                <div className="admin-card admin-sweep rounded-3xl p-6">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-bold">Clothing Moderation Rules</p>
+                      <p className="text-xs text-slate-500">Edit moderation terms and neutral reason templates (no halal/haram language).</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={saveClothingRules}
+                      disabled={clothingRulesBusy}
+                      className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+                    >
+                      {clothingRulesBusy ? 'Saving...' : 'Save rules'}
+                    </button>
+                  </div>
+                  <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2 text-xs">
+                    <div className="rounded-2xl border border-slate-200 p-4">
+                      <p className="text-[11px] font-semibold uppercase text-slate-500">Forbidden Terms (Auto Reject)</p>
+                      <textarea
+                        rows={6}
+                        value={clothingRulesForm.forbidden_terms}
+                        onChange={(e) => setClothingRulesForm((prev) => ({ ...prev, forbidden_terms: e.target.value }))}
+                        placeholder="One term per line"
+                        className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                      />
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 p-4">
+                      <p className="text-[11px] font-semibold uppercase text-slate-500">Flag Terms (Pending Review)</p>
+                      <textarea
+                        rows={6}
+                        value={clothingRulesForm.flag_terms}
+                        onChange={(e) => setClothingRulesForm((prev) => ({ ...prev, flag_terms: e.target.value }))}
+                        placeholder="One term per line"
+                        className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                      />
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 p-4">
+                      <p className="text-[11px] font-semibold uppercase text-slate-500">Allowed Terms (Safe Signal)</p>
+                      <textarea
+                        rows={6}
+                        value={clothingRulesForm.allowed_terms}
+                        onChange={(e) => setClothingRulesForm((prev) => ({ ...prev, allowed_terms: e.target.value }))}
+                        placeholder="One term per line"
+                        className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                      />
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 p-4">
+                      <p className="text-[11px] font-semibold uppercase text-slate-500">Context Exceptions</p>
+                      <textarea
+                        rows={6}
+                        value={clothingRulesForm.context_exceptions}
+                        onChange={(e) => setClothingRulesForm((prev) => ({ ...prev, context_exceptions: e.target.value }))}
+                        placeholder="e.g., innerwear, lining, undershirt"
+                        className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3 text-xs">
+                    <div className="rounded-2xl border border-slate-200 p-4">
+                      <p className="text-[11px] font-semibold uppercase text-slate-500">Rejected Reason</p>
+                      <textarea
+                        rows={4}
+                        value={clothingRulesForm.reason_rejected}
+                        onChange={(e) => setClothingRulesForm((prev) => ({ ...prev, reason_rejected: e.target.value }))}
+                        className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                      />
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 p-4">
+                      <p className="text-[11px] font-semibold uppercase text-slate-500">Pending Review Reason</p>
+                      <textarea
+                        rows={4}
+                        value={clothingRulesForm.reason_pending}
+                        onChange={(e) => setClothingRulesForm((prev) => ({ ...prev, reason_pending: e.target.value }))}
+                        className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                      />
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 p-4">
+                      <p className="text-[11px] font-semibold uppercase text-slate-500">Fix Guidance</p>
+                      <textarea
+                        rows={4}
+                        value={clothingRulesForm.reason_fix}
+                        onChange={(e) => setClothingRulesForm((prev) => ({ ...prev, reason_fix: e.target.value }))}
+                        className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                      />
+                    </div>
+                  </div>
+                  {clothingRulesError ? <p className="mt-3 text-xs text-rose-600">{clothingRulesError}</p> : null}
+                  {clothingRulesNotice ? <p className="mt-3 text-xs text-emerald-700">{clothingRulesNotice}</p> : null}
+                </div>
+              ) : null}
+
+              {activeCategory === 'platform' ? (
+                <div className="admin-card admin-sweep rounded-3xl p-6">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-bold">Report Queues</p>
+                    <p className="text-xs text-slate-500">System/support, product appeals, and public content reports.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => refreshReportQueues()}
+                    className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600"
+                  >
+                    Refresh reports
+                  </button>
+                </div>
+                <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3 text-xs">
+                  {[{ title: 'System & Support', items: systemReports }, { title: 'Product Appeals', items: productAppealReports }, { title: 'Content Reports', items: contentReports }].map((group) => (
+                    <div key={group.title} className="rounded-2xl border border-slate-200 p-4">
+                      <p className="text-[11px] font-semibold uppercase text-slate-500">{group.title}</p>
+                      <div className="mt-2 space-y-2">
+                        {group.items.slice(0, 6).map((row) => (
+                          <div key={row.id} className="rounded-xl border border-slate-200 px-3 py-2">
+                            <p className="text-sm font-semibold text-slate-900">{row.reason || 'Report'}</p>
+                            <p className="text-[11px] text-slate-500">{row.entity_id}</p>
+                            <div className="mt-2">
+                              <button
+                                type="button"
+                                onClick={() => resolveReportAdmin(row.id, 'reviewed')}
+                                className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600"
+                              >
+                                Mark reviewed
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                        {!group.items.length ? <p className="text-[11px] text-slate-500">No reports.</p> : null}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {activeCategory === 'platform' ? (
+              <div className="admin-card admin-sweep rounded-3xl p-6">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-bold">Support Queue</p>
+                    <p className="text-xs text-slate-500">Dedicated support tickets with SLA tracking.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => refreshSupportTickets()}
+                    className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600"
+                  >
+                    Refresh tickets
+                  </button>
+                </div>
+
+                <div className="mt-4 grid grid-cols-1 gap-3 text-xs text-slate-600 sm:grid-cols-4">
+                  <select
+                    value={supportFilters.status}
+                    onChange={(event) => setSupportFilters((prev) => ({ ...prev, status: event.target.value }))}
+                    className="rounded-lg border border-slate-200 px-3 py-2 text-xs"
+                  >
+                    <option value="all">All status</option>
+                    <option value="open">Open</option>
+                    <option value="in_progress">In progress</option>
+                    <option value="resolved">Resolved</option>
+                  </select>
+                  <select
+                    value={supportFilters.priority}
+                    onChange={(event) => setSupportFilters((prev) => ({ ...prev, priority: event.target.value }))}
+                    className="rounded-lg border border-slate-200 px-3 py-2 text-xs"
+                  >
+                    <option value="all">All priority</option>
+                    <option value="standard">Standard</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="priority">Priority</option>
+                  </select>
+                  <input
+                    value={supportFilters.assigned_to}
+                    onChange={(event) => setSupportFilters((prev) => ({ ...prev, assigned_to: event.target.value }))}
+                    placeholder="Assigned user ID"
+                    className="rounded-lg border border-slate-200 px-3 py-2 text-xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => refreshSupportTickets()}
+                    className="rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
+                  >
+                    Apply filters
+                  </button>
+                </div>
+
+                <div className="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
+                  {supportLoading ? <p className="text-xs text-slate-500">Loading tickets...</p> : null}
+                  {!supportLoading && supportTickets.length === 0 ? <p className="text-xs text-slate-500">No support tickets.</p> : null}
+                  {supportTickets.slice(0, 15).map((ticket) => (
+                    <div key={ticket.id} className="rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white">{ticket.subject || 'Support ticket'}</p>
+                          <p className="text-[11px] text-slate-500">
+                            User: {ticket.user?.name || ticket.user_id} - {ticket.user?.email || 'no email'}
+                          </p>
+                          <p className="text-[11px] text-slate-500">
+                            Status: {ticket.status || 'open'} - Priority: {ticket.priority || 'standard'}
+                          </p>
+                        </div>
+                        <div className="text-[11px] text-slate-500">
+                          SLA: {ticket.sla_response_due_at ? new Date(ticket.sla_response_due_at).toLocaleString() : '--'} /
+                          {ticket.sla_resolution_due_at ? new Date(ticket.sla_resolution_due_at).toLocaleString() : '--'}
+                        </div>
+                      </div>
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => assignSupportTicketAdmin(ticket.id)}
+                          className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600"
+                        >
+                          Assign
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updateSupportTicketAdmin(ticket.id, { status: 'in_progress' })}
+                          className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600"
+                        >
+                          Mark in progress
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updateSupportTicketAdmin(ticket.id, { status: 'resolved' })}
+                          className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
+                        >
+                          Resolve
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updateSupportTicketAdmin(ticket.id, { priority: 'priority' })}
+                          className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600"
+                        >
+                          Escalate
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             ) : null}
