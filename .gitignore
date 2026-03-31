@@ -11,10 +11,7 @@ node_modules
 
 *.local
 
-# Llama.cpp and AI Models
-llama/
-models/
-server/uploads/
+# Llama.cpp and AI Models (tracked with Git LFS)
 
 # Editor directories and files
 .vscode/*
