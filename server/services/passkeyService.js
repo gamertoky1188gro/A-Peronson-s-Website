@@ -72,13 +72,25 @@ function sanitizePasskeys(passkeys = []) {
   }))
 }
 
+function isStoredPasskeyValid(key) {
+  return Boolean(
+    key
+    && typeof key.id === 'string'
+    && key.id.trim()
+    && typeof key.publicKey === 'string'
+    && key.publicKey.trim(),
+  )
+}
+
 async function readPasskeyState() {
   const record = await prisma.appState.findUnique({ where: { key: PASSKEY_STATE_KEY } })
   const data = record?.data
-  if (data && typeof data === 'object' && Array.isArray(data.passkeys)) {
-    return data.passkeys
+  const passkeys = (data && typeof data === 'object' && Array.isArray(data.passkeys)) ? data.passkeys : []
+  const cleaned = passkeys.filter(isStoredPasskeyValid)
+  if (cleaned.length !== passkeys.length) {
+    await writePasskeyState(cleaned)
   }
-  return []
+  return cleaned
 }
 
 async function writePasskeyState(passkeys) {
