@@ -58,6 +58,10 @@ function encodeBase64Url(buffer) {
   return Buffer.from(buffer).toString('base64url')
 }
 
+function toUserIdBuffer(value) {
+  return Buffer.from(String(value || ''), 'utf8')
+}
+
 function sanitizePasskeys(passkeys = []) {
   return (Array.isArray(passkeys) ? passkeys : []).map((key) => ({
     id: key.id,
@@ -103,7 +107,7 @@ export async function createRegistrationOptions({ userId, req, rpName = 'GartexH
   const options = generateRegistrationOptions({
     rpName,
     rpID,
-    userID: user.id,
+    userID: toUserIdBuffer(user.id),
     userName: user.email || user.name || user.id,
     userDisplayName: user.name || user.email || 'User',
     attestationType: 'none',
