@@ -37,19 +37,39 @@ export function clearSession() {
 }
 
 export async function apiRequest(path, { method = 'GET', token = '', body, signal, headers = {} } = {}) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    method,
-    cache: 'no-store',
-    signal,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...headers,
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  })
+  const debugRequests = import.meta.env.DEV || String(import.meta.env.VITE_REQUEST_DEBUG || '').toLowerCase() === 'true'
+  const startedAt = debugRequests ? performance.now() : 0
+  let res
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      method,
+      cache: 'no-store',
+      signal,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...headers,
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    })
+  } catch (err) {
+    if (debugRequests) {
+      const elapsed = performance.now() - startedAt
+      console.warn('[api] request failed', { method, path, ms: Math.round(elapsed) })
+    }
+    throw err
+  }
 
   const data = await res.json().catch(() => ({}))
+  if (debugRequests) {
+    const elapsed = performance.now() - startedAt
+    const entry = { method, path, status: res.status, ms: Math.round(elapsed) }
+    if (elapsed >= 10000) {
+      console.warn('[api] slow request', entry)
+    } else {
+      console.info('[api] request', entry)
+    }
+  }
   if (!res.ok) {
     if (res.status === 401) {
       clearSession()

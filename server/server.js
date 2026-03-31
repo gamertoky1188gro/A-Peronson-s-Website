@@ -43,6 +43,7 @@ import reportRoutes from './routes/reportRoutes.js'
 import infraRoutes from './routes/infraRoutes.js'
 import networkRoutes from './routes/networkRoutes.js'
 import certificationRoutes from './routes/certificationRoutes.js'
+import { requestLogger } from './middleware/requestLogger.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { logInfo, logError } from './utils/logger.js'
 import { assistantReply } from './services/assistantService.js'
@@ -76,10 +77,11 @@ if (serveDist && fs.existsSync(distRoot)) {
   app.use(express.static(distRoot))
 }
 
+app.use('/api', requestLogger({ timeoutMs: Number(process.env.REQUEST_TIMEOUT_MS || 45000) }))
+
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, service: 'textile-trust-verification-mvp' })
 })
-
 app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/requirements', requirementRoutes)

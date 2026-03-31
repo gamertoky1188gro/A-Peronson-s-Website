@@ -1,8 +1,20 @@
 import prisma from './prisma.js'
 
+let dbConnected = false
+let dbError = ''
+
+export function getDbStatus() {
+  return {
+    connected: dbConnected,
+    error: dbError,
+  }
+}
+
 export async function ensureDatabaseConnection() {
   if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL is required to start the server (PostgreSQL)')
+    dbConnected = false
+    dbError = 'DATABASE_URL is required to start the server (PostgreSQL)'
+    throw new Error(dbError)
   }
   try {
     const safeUrl = new URL(process.env.DATABASE_URL)
@@ -14,9 +26,18 @@ export async function ensureDatabaseConnection() {
     // eslint-disable-next-line no-console
     console.log('[db] Using DATABASE_URL (unparsed):', '[redacted]')
   }
-  await prisma.$connect()
+  try {
+    await prisma.$connect()
+    dbConnected = true
+    dbError = ''
+  } catch (error) {
+    dbConnected = false
+    dbError = error?.message || 'DB connection failed'
+    throw error
+  }
 }
 
 export async function closeDatabaseConnection() {
   await prisma.$disconnect()
+  dbConnected = false
 }
