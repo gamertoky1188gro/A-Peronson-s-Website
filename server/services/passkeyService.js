@@ -93,7 +93,12 @@ export async function createRegistrationOptions({ userId, req, rpName = 'GartexH
     throw err
   }
   const origin = normalizeOrigin(req)
-  const rpID = resolveRpId(req, origin)
+  const rpID = resolveRpId(req, origin) || String(process.env.PASSKEY_RP_ID || '')
+  if (!rpID) {
+    const err = new Error('Passkey RP ID is missing')
+    err.status = 500
+    throw err
+  }
   const passkeys = Array.isArray(user.passkeys) ? user.passkeys : []
   const options = generateRegistrationOptions({
     rpName,
@@ -112,6 +117,11 @@ export async function createRegistrationOptions({ userId, req, rpName = 'GartexH
       transports: Array.isArray(key.transports) ? key.transports : undefined,
     })),
   })
+  if (!options?.challenge) {
+    const err = new Error('Passkey registration options missing challenge')
+    err.status = 500
+    throw err
+  }
 
   storeChallenge(registrationChallenges, user.id, options.challenge)
   return { options, origin, rpID }
@@ -205,11 +215,22 @@ export async function createAuthenticationOptions({ identifier, req }) {
     }))
   }
 
+  const rpID = resolveRpId(req, normalizeOrigin(req)) || String(process.env.PASSKEY_RP_ID || '')
+  if (!rpID) {
+    const err = new Error('Passkey RP ID is missing')
+    err.status = 500
+    throw err
+  }
   const options = generateAuthenticationOptions({
-    rpID: resolveRpId(req, normalizeOrigin(req)),
+    rpID,
     userVerification: 'preferred',
     allowCredentials,
   })
+  if (!options?.challenge) {
+    const err = new Error('Passkey authentication options missing challenge')
+    err.status = 500
+    throw err
+  }
 
   const challengeKey = user?.id || DISCOVERABLE_KEY
   storeChallenge(authenticationChallenges, challengeKey, options.challenge)
