@@ -37,6 +37,7 @@ function normalizeUserRow(row = {}) {
   if (next.created_at === '') delete next.created_at
   if (next.updated_at === '') next.updated_at = null
   if (next.wallet_updated_at !== undefined) delete next.wallet_updated_at
+  if (next.passkeys !== undefined) delete next.passkeys
   return next
 }
 

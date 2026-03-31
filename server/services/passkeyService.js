@@ -1,8 +1,8 @@
 import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthenticationResponse, verifyRegistrationResponse } from '@simplewebauthn/server'
-import { readJson, writeJson } from '../utils/jsonStore.js'
+import prisma from '../utils/prisma.js'
 import { findUserByEmail, findUserById, findUserByMemberId } from './userService.js'
 
-const USERS_FILE = 'users.json'
+const PASSKEY_STATE_KEY = 'passkeys'
 const CHALLENGE_TTL_MS = 5 * 60 * 1000
 const registrationChallenges = new Map()
 const authenticationChallenges = new Map()
@@ -72,21 +72,49 @@ function sanitizePasskeys(passkeys = []) {
   }))
 }
 
+async function readPasskeyState() {
+  const record = await prisma.appState.findUnique({ where: { key: PASSKEY_STATE_KEY } })
+  const data = record?.data
+  if (data && typeof data === 'object' && Array.isArray(data.passkeys)) {
+    return data.passkeys
+  }
+  return []
+}
+
+async function writePasskeyState(passkeys) {
+  const data = { passkeys }
+  await prisma.appState.upsert({
+    where: { key: PASSKEY_STATE_KEY },
+    update: { data },
+    create: { key: PASSKEY_STATE_KEY, data },
+  })
+}
+
+async function listPasskeysByUser(userId) {
+  const passkeys = await readPasskeyState()
+  return passkeys.filter((key) => String(key.user_id) === String(userId))
+}
+
+async function findPasskeyByCredentialId(credentialId) {
+  if (!credentialId) return null
+  const passkeys = await readPasskeyState()
+  return passkeys.find((key) => key.id === credentialId) || null
+}
+
 export async function listUserPasskeys(userId) {
   const user = await findUserById(userId)
   if (!user) return []
-  return sanitizePasskeys(user.passkeys || [])
+  const passkeys = await listPasskeysByUser(userId)
+  return sanitizePasskeys(passkeys)
 }
 
 export async function removeUserPasskey(userId, credentialId) {
-  const users = await readJson(USERS_FILE)
-  const index = users.findIndex((u) => String(u.id) === String(userId))
-  if (index < 0) return null
-  const passkeys = Array.isArray(users[index].passkeys) ? users[index].passkeys : []
-  const next = passkeys.filter((key) => key.id !== credentialId)
-  users[index] = { ...users[index], passkeys: next }
-  await writeJson(USERS_FILE, users)
-  return sanitizePasskeys(next)
+  const user = await findUserById(userId)
+  if (!user) return null
+  const passkeys = await readPasskeyState()
+  const next = passkeys.filter((key) => !(String(key.user_id) === String(userId) && key.id === credentialId))
+  await writePasskeyState(next)
+  return sanitizePasskeys(next.filter((key) => String(key.user_id) === String(userId)))
 }
 
 export async function createRegistrationOptions({ userId, req, rpName = 'GartexHub' }) {
@@ -103,7 +131,7 @@ export async function createRegistrationOptions({ userId, req, rpName = 'GartexH
     err.status = 500
     throw err
   }
-  const passkeys = Array.isArray(user.passkeys) ? user.passkeys : []
+  const passkeys = await listPasskeysByUser(user.id)
   const options = await generateRegistrationOptions({
     rpName,
     rpID,
@@ -172,24 +200,15 @@ export async function verifyRegistration({ userId, req, credential, nickname }) 
     last_used_at: null,
   }
 
-  const users = await readJson(USERS_FILE)
-  const index = users.findIndex((u) => String(u.id) === String(user.id))
-  if (index < 0) {
-    const err = new Error('User not found')
-    err.status = 404
-    throw err
-  }
-  const existing = Array.isArray(users[index].passkeys) ? users[index].passkeys : []
+  const existing = await listPasskeysByUser(user.id)
   if (existing.some((key) => key.id === passkey.id)) {
     return sanitizePasskeys(existing)
   }
-  users[index] = {
-    ...users[index],
-    passkeys: [...existing, passkey],
-  }
-  await writeJson(USERS_FILE, users)
+  const allPasskeys = await readPasskeyState()
+  const next = [...allPasskeys, { ...passkey, user_id: user.id }]
+  await writePasskeyState(next)
 
-  return sanitizePasskeys(users[index].passkeys)
+  return sanitizePasskeys(next.filter((key) => String(key.user_id) === String(user.id)))
 }
 
 export async function createAuthenticationOptions({ identifier, req }) {
@@ -206,7 +225,7 @@ export async function createAuthenticationOptions({ identifier, req }) {
       err.status = 404
       throw err
     }
-    const passkeys = Array.isArray(user.passkeys) ? user.passkeys : []
+    const passkeys = await listPasskeysByUser(user.id)
     if (!passkeys.length) {
       const err = new Error('No passkeys registered')
       err.status = 400
@@ -257,8 +276,7 @@ export async function verifyAuthentication({ identifier, req, credential }) {
     err.status = 404
     throw err
   }
-  const passkeys = Array.isArray(user.passkeys) ? user.passkeys : []
-  const passkey = passkeys.find((key) => key.id === credentialId)
+  const passkey = await findPasskeyByCredentialId(credentialId)
   if (!passkey) {
     const err = new Error('Passkey not registered')
     err.status = 400
@@ -294,30 +312,23 @@ export async function verifyAuthentication({ identifier, req, credential }) {
   }
 
   const { newCounter } = verification.authenticationInfo
-  const users = await readJson(USERS_FILE)
-  const index = users.findIndex((u) => String(u.id) === String(user.id))
-  if (index >= 0) {
-    const stored = Array.isArray(users[index].passkeys) ? users[index].passkeys : []
-    users[index] = {
-      ...users[index],
-      passkeys: stored.map((key) => (
-        key.id === passkey.id
-          ? {
-            ...key,
-            counter: Number(newCounter || key.counter || 0),
-            last_used_at: new Date().toISOString(),
-          }
-          : key
-      )),
-    }
-    await writeJson(USERS_FILE, users)
-  }
+  const allPasskeys = await readPasskeyState()
+  const updated = allPasskeys.map((key) => (
+    key.id === passkey.id
+      ? {
+        ...key,
+        counter: Number(newCounter || key.counter || 0),
+        last_used_at: new Date().toISOString(),
+      }
+      : key
+  ))
+  await writePasskeyState(updated)
 
   return { user, passkey: { id: passkey.id, name: passkey.name || '' } }
 }
 
 export async function findUserByPasskeyId(credentialId) {
-  if (!credentialId) return null
-  const users = await readJson(USERS_FILE)
-  return users.find((user) => Array.isArray(user.passkeys) && user.passkeys.some((key) => key.id === credentialId))
+  const passkey = await findPasskeyByCredentialId(credentialId)
+  if (!passkey) return null
+  return findUserById(passkey.user_id)
 }
