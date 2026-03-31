@@ -169,6 +169,9 @@ export default function Login() {
         method: 'POST',
         token: loginRes.token,
       })
+      if (!optionsRes?.options?.challenge) {
+        throw new Error('Passkey setup failed. Please refresh and try again.')
+      }
       const credential = await startRegistration(optionsRes.options)
       await apiRequest('/auth/passkey/registration/verify', {
         method: 'POST',

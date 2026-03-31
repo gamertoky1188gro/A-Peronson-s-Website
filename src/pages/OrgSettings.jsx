@@ -208,6 +208,9 @@ export default function OrgSettings() {
     setPasskeyBusy(true)
     try {
       const optionsRes = await apiRequest('/auth/passkey/registration/options', { method: 'POST', token })
+      if (!optionsRes?.options?.challenge) {
+        throw new Error('Passkey setup failed. Please refresh and try again.')
+      }
       const credential = await startRegistration(optionsRes.options)
       const verifyRes = await apiRequest('/auth/passkey/registration/verify', {
         method: 'POST',
