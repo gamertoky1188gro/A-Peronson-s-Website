@@ -121,14 +121,31 @@ async function syncUserProfilePasskeys(userId, passkeys) {
   const nextProfile = { ...profile, passkeys: sanitizeStoredPasskeys(passkeys) }
   try {
     await prisma.user.update({ where: { id: userId }, data: { profile: nextProfile } })
-  } catch {
+  } catch (error) {
     // Non-blocking: profile sync failures should not block passkey flow
+    // but log to help debug missing passkey lists.
+    console.error('[passkeys] Failed to sync user profile passkeys', error)
   }
 }
 
 async function listPasskeysByUser(userId) {
+  const user = await findUserById(userId)
+  if (!user) return []
+  const profileKeys = (Array.isArray(user.profile?.passkeys) ? user.profile.passkeys : [])
+    .filter(isStoredPasskeyValid)
+    .map((key) => ({ ...key, user_id: userId }))
   const passkeys = await readPasskeyState()
-  return passkeys.filter((key) => String(key.user_id) === String(userId))
+  const stateKeys = passkeys.filter((key) => String(key.user_id) === String(userId))
+  const merged = [...profileKeys]
+  stateKeys.forEach((key) => {
+    if (!merged.some((existing) => existing.id === key.id)) {
+      merged.push(key)
+    }
+  })
+  if (merged.length && profileKeys.length !== merged.length) {
+    await syncUserProfilePasskeys(userId, merged)
+  }
+  return merged
 }
 
 async function findPasskeyByCredentialId(credentialId) {
