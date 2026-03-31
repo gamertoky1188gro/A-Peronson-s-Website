@@ -104,7 +104,7 @@ export async function createRegistrationOptions({ userId, req, rpName = 'GartexH
     throw err
   }
   const passkeys = Array.isArray(user.passkeys) ? user.passkeys : []
-  const options = generateRegistrationOptions({
+  const options = await generateRegistrationOptions({
     rpName,
     rpID,
     userID: toUserIdBuffer(user.id),
@@ -225,7 +225,7 @@ export async function createAuthenticationOptions({ identifier, req }) {
     err.status = 500
     throw err
   }
-  const options = generateAuthenticationOptions({
+  const options = await generateAuthenticationOptions({
     rpID,
     userVerification: 'preferred',
     allowCredentials,
