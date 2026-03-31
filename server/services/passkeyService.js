@@ -227,6 +227,7 @@ export async function createAuthenticationOptions({ identifier, req }) {
   const identifierRaw = String(identifier || '').trim()
   let allowCredentials
   let user = null
+  let useDiscoverable = false
 
   if (identifierRaw) {
     user = identifierRaw.includes('@')
@@ -238,16 +239,18 @@ export async function createAuthenticationOptions({ identifier, req }) {
       throw err
     }
     const passkeys = await listPasskeysByUser(user.id)
-    if (!passkeys.length) {
-      const err = new Error('No passkeys registered')
-      err.status = 400
-      throw err
+    if (passkeys.length) {
+      allowCredentials = passkeys.map((key) => ({
+        id: toBuffer(key.id),
+        type: 'public-key',
+        transports: Array.isArray(key.transports) ? key.transports : undefined,
+      }))
+    } else {
+      // Fallback to discoverable credentials so users can still pick a passkey
+      // even if server-side passkey list is out of sync.
+      user = null
+      useDiscoverable = true
     }
-    allowCredentials = passkeys.map((key) => ({
-      id: toBuffer(key.id),
-      type: 'public-key',
-      transports: Array.isArray(key.transports) ? key.transports : undefined,
-    }))
   }
 
   const rpID = resolveRpId(req, normalizeOrigin(req)) || String(process.env.PASSKEY_RP_ID || '')
@@ -269,7 +272,7 @@ export async function createAuthenticationOptions({ identifier, req }) {
 
   const challengeKey = user?.id || DISCOVERABLE_KEY
   storeChallenge(authenticationChallenges, challengeKey, options.challenge)
-  return { options, user }
+  return { options, user, discoverable: useDiscoverable }
 }
 
 export async function verifyAuthentication({ identifier, req, credential }) {
@@ -283,18 +286,22 @@ export async function verifyAuthentication({ identifier, req, credential }) {
   } else {
     user = await findUserByPasskeyId(credentialId)
   }
-  if (!user) {
-    const err = new Error('User not found')
-    err.status = 404
-    throw err
-  }
   const passkey = await findPasskeyByCredentialId(credentialId)
   if (!passkey) {
     const err = new Error('Passkey not registered')
     err.status = 400
     throw err
   }
+  if (!user) {
+    user = await findUserById(passkey.user_id)
+  }
+  if (!user) {
+    const err = new Error('User not found')
+    err.status = 404
+    throw err
+  }
   const expectedChallenge = readChallenge(authenticationChallenges, identifierRaw ? user.id : DISCOVERABLE_KEY)
+    || readChallenge(authenticationChallenges, DISCOVERABLE_KEY)
   if (!expectedChallenge) {
     const err = new Error('Authentication challenge expired')
     err.status = 400
