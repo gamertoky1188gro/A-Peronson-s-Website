@@ -72,6 +72,18 @@ function sanitizePasskeys(passkeys = []) {
   }))
 }
 
+function sanitizeStoredPasskeys(passkeys = []) {
+  return (Array.isArray(passkeys) ? passkeys : []).map((key) => ({
+    id: key.id,
+    publicKey: key.publicKey,
+    counter: Number(key.counter || 0),
+    name: key.name || '',
+    transports: Array.isArray(key.transports) ? key.transports : [],
+    created_at: key.created_at || '',
+    last_used_at: key.last_used_at || '',
+  }))
+}
+
 function isStoredPasskeyValid(key) {
   return Boolean(
     key
@@ -102,6 +114,18 @@ async function writePasskeyState(passkeys) {
   })
 }
 
+async function syncUserProfilePasskeys(userId, passkeys) {
+  const user = await findUserById(userId)
+  if (!user) return
+  const profile = user.profile && typeof user.profile === 'object' ? user.profile : {}
+  const nextProfile = { ...profile, passkeys: sanitizeStoredPasskeys(passkeys) }
+  try {
+    await prisma.user.update({ where: { id: userId }, data: { profile: nextProfile } })
+  } catch {
+    // Non-blocking: profile sync failures should not block passkey flow
+  }
+}
+
 async function listPasskeysByUser(userId) {
   const passkeys = await readPasskeyState()
   return passkeys.filter((key) => String(key.user_id) === String(userId))
@@ -116,7 +140,16 @@ async function findPasskeyByCredentialId(credentialId) {
 export async function listUserPasskeys(userId) {
   const user = await findUserById(userId)
   if (!user) return []
-  const passkeys = await listPasskeysByUser(userId)
+  let passkeys = await listPasskeysByUser(userId)
+  if (!passkeys.length) {
+    const fallback = Array.isArray(user.profile?.passkeys) ? user.profile.passkeys : []
+    passkeys = fallback.filter(isStoredPasskeyValid).map((key) => ({ ...key, user_id: userId }))
+    if (passkeys.length) {
+      const all = await readPasskeyState()
+      const merged = [...all, ...passkeys.filter((key) => !all.some((p) => p.id === key.id))]
+      await writePasskeyState(merged)
+    }
+  }
   return sanitizePasskeys(passkeys)
 }
 
@@ -126,7 +159,9 @@ export async function removeUserPasskey(userId, credentialId) {
   const passkeys = await readPasskeyState()
   const next = passkeys.filter((key) => !(String(key.user_id) === String(userId) && key.id === credentialId))
   await writePasskeyState(next)
-  return sanitizePasskeys(next.filter((key) => String(key.user_id) === String(userId)))
+  const remaining = next.filter((key) => String(key.user_id) === String(userId))
+  await syncUserProfilePasskeys(userId, remaining)
+  return sanitizePasskeys(remaining)
 }
 
 export async function createRegistrationOptions({ userId, req, rpName = 'GartexHub' }) {
@@ -219,6 +254,7 @@ export async function verifyRegistration({ userId, req, credential, nickname }) 
   const allPasskeys = await readPasskeyState()
   const next = [...allPasskeys, { ...passkey, user_id: user.id }]
   await writePasskeyState(next)
+  await syncUserProfilePasskeys(user.id, next.filter((key) => String(key.user_id) === String(user.id)))
 
   return sanitizePasskeys(next.filter((key) => String(key.user_id) === String(user.id)))
 }
@@ -238,7 +274,11 @@ export async function createAuthenticationOptions({ identifier, req }) {
       err.status = 404
       throw err
     }
-    const passkeys = await listPasskeysByUser(user.id)
+    let passkeys = await listPasskeysByUser(user.id)
+    if (!passkeys.length) {
+      passkeys = (Array.isArray(user.profile?.passkeys) ? user.profile.passkeys : [])
+        .filter(isStoredPasskeyValid)
+    }
     if (passkeys.length) {
       allowCredentials = passkeys.map((key) => ({
         id: toBuffer(key.id),
@@ -286,7 +326,18 @@ export async function verifyAuthentication({ identifier, req, credential }) {
   } else {
     user = await findUserByPasskeyId(credentialId)
   }
-  const passkey = await findPasskeyByCredentialId(credentialId)
+  let passkey = await findPasskeyByCredentialId(credentialId)
+  if (!passkey && user) {
+    const fallback = Array.isArray(user.profile?.passkeys) ? user.profile.passkeys : []
+    const match = fallback.find((key) => key?.id === credentialId)
+    if (match && isStoredPasskeyValid(match)) {
+      passkey = { ...match, user_id: user.id }
+      const all = await readPasskeyState()
+      if (!all.some((p) => p.id === passkey.id)) {
+        await writePasskeyState([...all, passkey])
+      }
+    }
+  }
   if (!passkey) {
     const err = new Error('Passkey not registered')
     err.status = 400
@@ -342,6 +393,7 @@ export async function verifyAuthentication({ identifier, req, credential }) {
       : key
   ))
   await writePasskeyState(updated)
+  await syncUserProfilePasskeys(user.id, updated.filter((key) => String(key.user_id) === String(user.id)))
 
   return { user, passkey: { id: passkey.id, name: passkey.name || '' } }
 }
