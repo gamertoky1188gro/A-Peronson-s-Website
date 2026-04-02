@@ -58,6 +58,18 @@ function encodeBase64Url(buffer) {
   return Buffer.from(buffer).toString('base64url')
 }
 
+function normalizeBase64Url(value) {
+  if (!value || typeof value !== 'string') return ''
+  const trimmed = value.trim()
+  if (!trimmed) return ''
+  if (/^[A-Za-z0-9_-]+$/.test(trimmed)) return trimmed
+  try {
+    return Buffer.from(trimmed, 'base64').toString('base64url')
+  } catch {
+    return ''
+  }
+}
+
 function toUserIdBuffer(value) {
   return Buffer.from(String(value || ''), 'utf8')
 }
@@ -254,9 +266,16 @@ export async function verifyRegistration({ userId, req, credential, nickname }) 
   }
 
   const { credentialID, credentialPublicKey, counter } = verification.registrationInfo
+  const fallbackPublicKey = normalizeBase64Url(credential?.response?.publicKey)
+  const normalizedPublicKey = encodeBase64Url(credentialPublicKey) || fallbackPublicKey
+  if (!normalizedPublicKey) {
+    const err = new Error('Passkey public key missing')
+    err.status = 400
+    throw err
+  }
   const passkey = {
     id: encodeBase64Url(credentialID),
-    publicKey: encodeBase64Url(credentialPublicKey),
+    publicKey: normalizedPublicKey,
     counter: Number(counter || 0),
     name: String(nickname || '').trim(),
     transports: Array.isArray(credential.response?.transports) ? credential.response.transports : [],
