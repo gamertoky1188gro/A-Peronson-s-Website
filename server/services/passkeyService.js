@@ -425,9 +425,9 @@ export async function verifyAuthentication({ identifier, req, credential }) {
     expectedOrigin: origin,
     expectedRPID: rpID,
     requireUserVerification: false,
-    authenticator: {
-      credentialID: toBuffer(passkey.id),
-      credentialPublicKey: toBuffer(passkey.publicKey),
+    credential: {
+      id: passkey.id,
+      publicKey: toBuffer(passkey.publicKey),
       counter: Number(passkey.counter || 0),
     },
   })
