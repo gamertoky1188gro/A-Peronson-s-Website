@@ -1,4 +1,5 @@
 import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthenticationResponse, verifyRegistrationResponse } from '@simplewebauthn/server'
+import { isoCBOR } from '@simplewebauthn/server/helpers'
 import prisma from '../utils/prisma.js'
 import { findUserByEmail, findUserById, findUserByMemberId } from './userService.js'
 
@@ -71,8 +72,14 @@ function normalizeBase64Url(value) {
 }
 
 function normalizeCredentialId(credentialID, credential) {
-  const encoded = encodeBase64Url(credentialID)
-  if (encoded) return encoded
+  if (typeof credentialID === 'string') {
+    const normalized = normalizeBase64Url(credentialID)
+    if (normalized) return normalized
+  }
+  if (credentialID) {
+    const encoded = encodeBase64Url(credentialID)
+    if (encoded) return encoded
+  }
   const rawId = credential?.rawId
   if (rawId && typeof rawId !== 'string') {
     const rawEncoded = encodeBase64Url(rawId)
@@ -80,6 +87,16 @@ function normalizeCredentialId(credentialID, credential) {
   }
   return normalizeBase64Url(credential?.id)
     || normalizeBase64Url(typeof rawId === 'string' ? rawId : '')
+}
+
+function isCosePublicKey(value) {
+  if (!value || typeof value !== 'string') return false
+  try {
+    const decoded = isoCBOR.decodeFirst(toBuffer(value))
+    return Boolean(decoded && typeof decoded.get === 'function')
+  } catch {
+    return false
+  }
 }
 
 function toUserIdBuffer(value) {
@@ -114,7 +131,8 @@ function isStoredPasskeyValid(key) {
     && typeof key.id === 'string'
     && key.id.trim()
     && typeof key.publicKey === 'string'
-    && key.publicKey.trim(),
+    && key.publicKey.trim()
+    && isCosePublicKey(key.publicKey),
   )
 }
 
@@ -280,9 +298,14 @@ export async function verifyRegistration({ userId, req, credential, nickname }) 
     throw err
   }
 
-  const { credentialID, credentialPublicKey, counter } = verification.registrationInfo
-  const fallbackPublicKey = normalizeBase64Url(credential?.response?.publicKey)
-  const normalizedPublicKey = encodeBase64Url(credentialPublicKey) || fallbackPublicKey
+  const registrationInfo = verification.registrationInfo
+  const credentialInfo = registrationInfo?.credential || {}
+  const credentialID = credentialInfo?.id ?? registrationInfo?.credentialID
+  const credentialPublicKey = credentialInfo?.publicKey ?? registrationInfo?.credentialPublicKey
+  const counter = credentialInfo?.counter ?? registrationInfo?.counter
+  const normalizedPublicKey = typeof credentialPublicKey === 'string'
+    ? normalizeBase64Url(credentialPublicKey)
+    : encodeBase64Url(credentialPublicKey)
   if (!normalizedPublicKey) {
     const err = new Error('Passkey public key missing')
     err.status = 400
@@ -299,7 +322,9 @@ export async function verifyRegistration({ userId, req, credential, nickname }) 
     publicKey: normalizedPublicKey,
     counter: Number(counter || 0),
     name: String(nickname || '').trim(),
-    transports: Array.isArray(credential.response?.transports) ? credential.response.transports : [],
+    transports: Array.isArray(credentialInfo?.transports)
+      ? credentialInfo.transports
+      : (Array.isArray(credential.response?.transports) ? credential.response.transports : []),
     created_at: new Date().toISOString(),
     last_used_at: null,
   }
