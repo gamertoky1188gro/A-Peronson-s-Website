@@ -235,7 +235,7 @@ export async function createRegistrationOptions({ userId, req, rpName = 'GartexH
       userVerification: 'preferred',
     },
     excludeCredentials: passkeys.map((key) => ({
-      id: toBuffer(key.id),
+      id: key.id,
       type: 'public-key',
       transports: Array.isArray(key.transports) ? key.transports : undefined,
     })),
@@ -338,7 +338,7 @@ export async function createAuthenticationOptions({ identifier, req }) {
     }
     if (passkeys.length) {
       allowCredentials = passkeys.map((key) => ({
-        id: toBuffer(key.id),
+        id: key.id,
         type: 'public-key',
         transports: Array.isArray(key.transports) ? key.transports : undefined,
       }))
