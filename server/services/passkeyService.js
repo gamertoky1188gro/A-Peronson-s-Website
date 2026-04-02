@@ -70,6 +70,18 @@ function normalizeBase64Url(value) {
   }
 }
 
+function normalizeCredentialId(credentialID, credential) {
+  const encoded = encodeBase64Url(credentialID)
+  if (encoded) return encoded
+  const rawId = credential?.rawId
+  if (rawId && typeof rawId !== 'string') {
+    const rawEncoded = encodeBase64Url(rawId)
+    if (rawEncoded) return rawEncoded
+  }
+  return normalizeBase64Url(credential?.id)
+    || normalizeBase64Url(typeof rawId === 'string' ? rawId : '')
+}
+
 function toUserIdBuffer(value) {
   return Buffer.from(String(value || ''), 'utf8')
 }
@@ -143,12 +155,15 @@ async function syncUserProfilePasskeys(userId, passkeys) {
 async function listPasskeysByUser(userId) {
   const user = await findUserById(userId)
   if (!user) return []
-  const profileKeys = (Array.isArray(user.profile?.passkeys) ? user.profile.passkeys : [])
-    .filter(isStoredPasskeyValid)
-    .map((key) => ({ ...key, user_id: userId }))
+  const profileRaw = Array.isArray(user.profile?.passkeys) ? user.profile.passkeys : []
+  const profileKeys = profileRaw.filter(isStoredPasskeyValid)
+  if (profileRaw.length && profileKeys.length !== profileRaw.length) {
+    await syncUserProfilePasskeys(userId, profileKeys)
+  }
+  const profileWithUser = profileKeys.map((key) => ({ ...key, user_id: userId }))
   const passkeys = await readPasskeyState()
   const stateKeys = passkeys.filter((key) => String(key.user_id) === String(userId))
-  const merged = [...profileKeys]
+  const merged = [...profileWithUser]
   stateKeys.forEach((key) => {
     if (!merged.some((existing) => existing.id === key.id)) {
       merged.push(key)
@@ -273,8 +288,14 @@ export async function verifyRegistration({ userId, req, credential, nickname }) 
     err.status = 400
     throw err
   }
+  const normalizedCredentialId = normalizeCredentialId(credentialID, credential)
+  if (!normalizedCredentialId) {
+    const err = new Error('Passkey credential id missing')
+    err.status = 400
+    throw err
+  }
   const passkey = {
-    id: encodeBase64Url(credentialID),
+    id: normalizedCredentialId,
     publicKey: normalizedPublicKey,
     counter: Number(counter || 0),
     name: String(nickname || '').trim(),
@@ -353,7 +374,7 @@ export async function createAuthenticationOptions({ identifier, req }) {
 
 export async function verifyAuthentication({ identifier, req, credential }) {
   const identifierRaw = String(identifier || '').trim()
-  const credentialId = String(credential?.id || '')
+  const credentialId = normalizeCredentialId(null, credential)
   let user = null
   if (identifierRaw) {
     user = identifierRaw.includes('@')
