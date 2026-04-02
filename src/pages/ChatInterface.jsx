@@ -1357,8 +1357,7 @@ export default function ChatInterface() {
         .chat-interface-container *,
         .chat-interface-container *:before,
         .chat-interface-container *:after {
-          border-color: ${isLight ? '#e2e8f0' : 'transparent'} !important;
-          box-shadow: none !important;
+          border: none !important;
           outline: none !important;
         }
         .chat-interface-container img {
@@ -1391,7 +1390,8 @@ export default function ChatInterface() {
         .chat-markdown blockquote {
           margin: 0.35rem 0;
           padding-left: 0.75rem;
-          border-left: 3px solid ${isLight ? '#cbd5e1' : '#2f295c'};
+          border: none;
+          box-shadow: inset 3px 0 0 ${isLight ? '#cbd5e1' : '#2f295c'};
           color: ${isLight ? '#334155' : '#cdd2ff'};
           opacity: ${isLight ? 0.9 : 0.95};
         }
@@ -1421,7 +1421,8 @@ export default function ChatInterface() {
           font-size: 12px;
         }
         .chat-markdown th, .chat-markdown td {
-          border: 1px solid ${isLight ? '#e2e8f0' : 'rgba(255,255,255,0.12)'};
+          border: none;
+          box-shadow: inset 0 0 0 1px ${isLight ? '#e2e8f0' : 'rgba(255,255,255,0.12)'};
           padding: 0.35rem 0.5rem;
         }
         .chat-markdown th {
@@ -1433,7 +1434,8 @@ export default function ChatInterface() {
         }
         .chat-markdown hr {
           border: none;
-          border-top: 1px solid ${isLight ? '#e2e8f0' : 'rgba(255,255,255,0.12)'};
+          height: 1px;
+          box-shadow: inset 0 -1px 0 ${isLight ? '#e2e8f0' : 'rgba(255,255,255,0.12)'};
           margin: 0.5rem 0;
         }
       `}</style>
@@ -1580,7 +1582,10 @@ export default function ChatInterface() {
                         )}
                         <span
                           className="absolute bottom-0 right-0 h-3 w-3 rounded-full"
-                          style={{ background: presenceStatus(thread.senderId) === 'online' ? '#22c55e' : '#94a3b8', border: '2px solid transparent' }}
+                          style={{
+                            background: presenceStatus(thread.senderId) === 'online' ? '#22c55e' : '#94a3b8',
+                            boxShadow: `0 0 0 2px ${isLight ? '#e2e8f0' : 'rgba(255,255,255,0.18)'}`,
+                          }}
                         />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -1617,7 +1622,10 @@ export default function ChatInterface() {
                     )}
                     <span
                       className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full"
-                      style={{ background: presenceStatus(activeThread?.senderId) === 'online' ? '#22c55e' : '#94a3b8', border: '2px solid transparent' }}
+                      style={{
+                        background: presenceStatus(activeThread?.senderId) === 'online' ? '#22c55e' : '#94a3b8',
+                        boxShadow: `0 0 0 2px ${isLight ? '#e2e8f0' : 'rgba(255,255,255,0.18)'}`,
+                      }}
                     />
                   </div>
                   <div>

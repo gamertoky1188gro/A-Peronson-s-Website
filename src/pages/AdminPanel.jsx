@@ -1572,7 +1572,7 @@ export default function AdminPanel() {
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart data={activeUsersTrend}>
                             <Line type="monotone" dataKey="count" stroke="#4B9DFB" strokeWidth={2.5} dot={false} isAnimationActive animationDuration={900} />
-                            <Tooltip contentStyle={{ background: '#0f0f12', border: '1px solid rgba(255,140,30,0.3)', borderRadius: 12 }} />
+                            <Tooltip contentStyle={{ background: '#0f0f12', border: 'none', boxShadow: '0 0 0 1px rgba(255,140,30,0.3), 0 14px 30px rgba(0,0,0,0.35)', borderRadius: 12 }} />
                           </LineChart>
                         </ResponsiveContainer>
                       </div>
@@ -1590,7 +1590,7 @@ export default function AdminPanel() {
                               </linearGradient>
                             </defs>
                             <Area type="monotone" dataKey="count" stroke="#4B9DFB" fill="url(#reqGlow)" strokeWidth={2.2} isAnimationActive animationDuration={950} />
-                            <Tooltip contentStyle={{ background: '#0f0f12', border: '1px solid rgba(255,140,30,0.3)', borderRadius: 12 }} />
+                            <Tooltip contentStyle={{ background: '#0f0f12', border: 'none', boxShadow: '0 0 0 1px rgba(255,140,30,0.3), 0 14px 30px rgba(0,0,0,0.35)', borderRadius: 12 }} />
                           </AreaChart>
                         </ResponsiveContainer>
                       </div>
@@ -1606,7 +1606,7 @@ export default function AdminPanel() {
                                 <Cell key={entry.name} fill={chartPalette[index % chartPalette.length]} />
                               ))}
                             </Pie>
-                            <Tooltip contentStyle={{ background: '#0f0f12', border: '1px solid rgba(255,140,30,0.3)', borderRadius: 12 }} />
+                            <Tooltip contentStyle={{ background: '#0f0f12', border: 'none', boxShadow: '0 0 0 1px rgba(255,140,30,0.3), 0 14px 30px rgba(0,0,0,0.35)', borderRadius: 12 }} />
                           </PieChart>
                         </ResponsiveContainer>
                       </div>

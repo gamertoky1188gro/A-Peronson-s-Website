@@ -148,3 +148,98 @@ body,
 :root.dark header {
   background-color: rgba(7, 14, 31, 0.85) !important;
 }
+
+/* Borderless UI: replace borders with shadows */
+:root {
+  --borderless-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 12px 28px rgba(15, 23, 42, 0.10);
+  --borderless-divider: inset 0 -1px 0 rgba(15, 23, 42, 0.12);
+  --borderless-divider-top: inset 0 1px 0 rgba(15, 23, 42, 0.12);
+  --borderless-divider-left: inset 1px 0 0 rgba(15, 23, 42, 0.12);
+  --borderless-divider-right: inset -1px 0 0 rgba(15, 23, 42, 0.12);
+  --borderless-divider-x: inset 1px 0 0 rgba(15, 23, 42, 0.12), inset -1px 0 0 rgba(15, 23, 42, 0.12);
+  --borderless-divider-y: inset 0 1px 0 rgba(15, 23, 42, 0.12), inset 0 -1px 0 rgba(15, 23, 42, 0.12);
+}
+
+:root.dark {
+  --borderless-shadow: 0 10px 26px rgba(0, 0, 0, 0.45), 0 22px 50px rgba(0, 0, 0, 0.55);
+  --borderless-divider: inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+  --borderless-divider-top: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --borderless-divider-left: inset 1px 0 0 rgba(255, 255, 255, 0.08);
+  --borderless-divider-right: inset -1px 0 0 rgba(255, 255, 255, 0.08);
+  --borderless-divider-x: inset 1px 0 0 rgba(255, 255, 255, 0.08), inset -1px 0 0 rgba(255, 255, 255, 0.08);
+  --borderless-divider-y: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+}
+
+:where(
+  .border,
+  .border-0,
+  .border-2,
+  .border-4,
+  .border-8,
+  .border-x,
+  .border-y,
+  .border-t,
+  .border-b,
+  .border-l,
+  .border-r,
+  [class*='border-'],
+  [class~='border']
+) {
+  border: none !important;
+}
+
+:where([class~='border'], [class*='border-']):not([class~='shadow']):not([class^='shadow-']):not([class*=' shadow-']):not([class*='border-none']):not([class*='border-0']) {
+  --tw-shadow: var(--borderless-shadow);
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000),
+    var(--tw-ring-shadow, 0 0 #0000),
+    var(--tw-shadow);
+}
+
+:where([class*='border-b']):not([class~='shadow']):not([class^='shadow-']):not([class*=' shadow-']):not([class*='border-none']):not([class*='border-0']) {
+  --tw-shadow: var(--borderless-divider);
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000),
+    var(--tw-ring-shadow, 0 0 #0000),
+    var(--tw-shadow);
+}
+
+:where([class*='border-t']):not([class~='shadow']):not([class^='shadow-']):not([class*=' shadow-']):not([class*='border-none']):not([class*='border-0']) {
+  --tw-shadow: var(--borderless-divider-top);
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000),
+    var(--tw-ring-shadow, 0 0 #0000),
+    var(--tw-shadow);
+}
+
+:where([class*='border-l']):not([class~='shadow']):not([class^='shadow-']):not([class*=' shadow-']):not([class*='border-none']):not([class*='border-0']) {
+  --tw-shadow: var(--borderless-divider-left);
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000),
+    var(--tw-ring-shadow, 0 0 #0000),
+    var(--tw-shadow);
+}
+
+:where([class*='border-r']):not([class~='shadow']):not([class^='shadow-']):not([class*=' shadow-']):not([class*='border-none']):not([class*='border-0']) {
+  --tw-shadow: var(--borderless-divider-right);
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000),
+    var(--tw-ring-shadow, 0 0 #0000),
+    var(--tw-shadow);
+}
+
+:where([class*='border-x']):not([class~='shadow']):not([class^='shadow-']):not([class*=' shadow-']):not([class*='border-none']):not([class*='border-0']) {
+  --tw-shadow: var(--borderless-divider-x);
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000),
+    var(--tw-ring-shadow, 0 0 #0000),
+    var(--tw-shadow);
+}
+
+:where([class*='border-y']):not([class~='shadow']):not([class^='shadow-']):not([class*=' shadow-']):not([class*='border-none']):not([class*='border-0']) {
+  --tw-shadow: var(--borderless-divider-y);
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000),
+    var(--tw-ring-shadow, 0 0 #0000),
+    var(--tw-shadow);
+}
