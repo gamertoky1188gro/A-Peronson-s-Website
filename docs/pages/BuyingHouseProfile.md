@@ -1,3 +1,4 @@
+{% raw %}
 # BuyingHouseProfile - Route `/buying-house/:id`
 
 **Access:** Protected (Login required). **Roles:** buyer, buying_house, factory, owner, admin, agent
@@ -2440,4 +2441,5 @@
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
+{% endraw %}
 
