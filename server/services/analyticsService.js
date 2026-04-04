@@ -413,13 +413,14 @@ export async function getCompanyAnalytics(user) {
   ensureAnalyticsDashboardAccess(user)
   const plan = await getPlanForUser(user)
 
-  const [events, products, productViews, messages, documents, users] = await Promise.all([
+  const [events, products, productViews, messages, documents, users, leads] = await Promise.all([
     readJson(FILE),
     readJson('company_products.json'),
     readJson('product_views.json'),
     readJson('messages.json'),
     readJson('documents.json'),
     readJson('users.json'),
+    readJson('leads.json'),
   ])
 
   const actorRole = String(user?.role || '').toLowerCase()
@@ -526,6 +527,17 @@ export async function getCompanyAnalytics(user) {
     ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
     : 0
 
+  const leadRows = (Array.isArray(leads) ? leads : []).filter((l) => String(l.org_owner_id || '') === orgOwnerId)
+  const leadSources = leadRows.reduce((acc, lead) => {
+    const label = String(lead.source_type || 'message')
+    acc[label] = (acc[label] || 0) + 1
+    return acc
+  }, {})
+  const topLeadSources = Object.entries(leadSources)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([label, count]) => ({ label, count }))
+
   return {
     totals: {
       profile_visits: profileEvents.length,
@@ -539,15 +551,17 @@ export async function getCompanyAnalytics(user) {
     },
     top_products: topProducts,
     profile_visits_by_country: profileVisitsByCountryList,
+    top_lead_sources: topLeadSources,
   }
 }
 
 export async function getPlatformAnalytics(user) {
   ensureAnalyticsAdminAccess(user)
 
-  const [requirements, users] = await Promise.all([
+  const [requirements, users, events] = await Promise.all([
     readJson('requirements.json'),
     readJson('users.json'),
+    readJson(FILE),
   ])
 
   const usersById = new Map((Array.isArray(users) ? users : []).map((u) => [String(u.id), u]))
@@ -556,6 +570,7 @@ export async function getPlatformAnalytics(user) {
   const priceBuckets = {}
 
   const requirementsRows = Array.isArray(requirements) ? requirements : []
+  const eventRows = Array.isArray(events) ? events : []
 
   for (const req of requirementsRows) {
     const buyer = usersById.get(String(req.buyer_id || ''))
@@ -597,6 +612,49 @@ export async function getPlatformAnalytics(user) {
   const repeatBuyers = buyers.filter((bid) => buyerCounts[bid] >= 2).length
   const repeatBuyerRate = calcPercent(repeatBuyers, buyers.length)
 
+  const searchEvents = eventRows.filter((e) => String(e.type || '') === 'search_run')
+  const searchByCountry = {}
+  const searchGlobal = {}
+
+  searchEvents.forEach((event) => {
+    const country = String(event?.metadata?.country || 'Unknown')
+    const category = String(event?.metadata?.category || event?.metadata?.filters?.category || 'Other')
+    if (!searchByCountry[country]) searchByCountry[country] = {}
+    searchByCountry[country][category] = (searchByCountry[country][category] || 0) + 1
+    searchGlobal[category] = (searchGlobal[category] || 0) + 1
+  })
+
+  const topSearchCategoriesByCountry = Object.entries(searchByCountry).map(([country, categories]) => ({
+    country,
+    categories: Object.entries(categories)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([label, count]) => ({ label, count })),
+  }))
+
+  const topSearchCategoriesGlobal = Object.entries(searchGlobal)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([label, count]) => ({ label, count }))
+
+  const now = Date.now()
+  const last30 = now - 30 * 24 * 60 * 60 * 1000
+  const prev30 = now - 60 * 24 * 60 * 60 * 1000
+  const trendBuckets = { current: {}, previous: {} }
+  searchEvents.forEach((event) => {
+    const ts = new Date(event.created_at || '').getTime()
+    const category = String(event?.metadata?.category || event?.metadata?.filters?.category || 'Other')
+    if (!Number.isFinite(ts)) return
+    if (ts >= last30) trendBuckets.current[category] = (trendBuckets.current[category] || 0) + 1
+    else if (ts >= prev30) trendBuckets.previous[category] = (trendBuckets.previous[category] || 0) + 1
+  })
+
+  const trendingCategories = Object.keys(trendBuckets.current).map((cat) => {
+    const current = trendBuckets.current[cat] || 0
+    const previous = trendBuckets.previous[cat] || 0
+    return { label: cat, delta: current - previous, current, previous }
+  }).sort((a, b) => b.delta - a.delta).slice(0, 6)
+
   return {
     totals: {
       buyer_requests: requirementsRows.length,
@@ -606,6 +664,9 @@ export async function getPlatformAnalytics(user) {
     top_categories_global: topCategoriesGlobal,
     monthly_demand_trend: toMonthlySeries(requirementsRows, 'created_at'),
     price_range_demand: priceRangeDemand,
+    top_search_categories_by_country: topSearchCategoriesByCountry,
+    top_search_categories_global: topSearchCategoriesGlobal,
+    trending_search_categories: trendingCategories,
   }
 }
 
@@ -742,12 +803,25 @@ export async function getPremiumInsights(user) {
     return acc
   }, {})
 
+  const leadOutcomeByAgent = leadRows.reduce((acc, lead) => {
+    const key = String(lead.assigned_agent_id || 'unassigned')
+    if (!acc[key]) acc[key] = { closed: 0, confirmed: 0, converted: 0 }
+    const status = String(lead.status || '')
+    if (status === 'closed') acc[key].closed += 1
+    if (status === 'order_confirmed') acc[key].confirmed += 1
+    if (lead.conversion_at) acc[key].converted += 1
+    return acc
+  }, {})
+
   const agentPerformance = orgUsers
     .filter((u) => String(u.role || '').toLowerCase() === 'agent')
     .map((agent) => ({
       agent_id: agent.id,
       name: agent.name,
       assigned_leads: leadByAgent[String(agent.id)] || 0,
+      closed_leads: leadOutcomeByAgent[String(agent.id)]?.closed || 0,
+      orders_confirmed: leadOutcomeByAgent[String(agent.id)]?.confirmed || 0,
+      conversions: leadOutcomeByAgent[String(agent.id)]?.converted || 0,
     }))
 
   const categoryCounts = orgRequests.reduce((acc, r) => {

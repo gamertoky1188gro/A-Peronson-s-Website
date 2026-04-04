@@ -26,11 +26,15 @@ export default function Insights() {
   const companyTotals = companyAnalytics?.totals || {}
   const topProducts = Array.isArray(companyAnalytics?.top_products) ? companyAnalytics.top_products : []
   const visitCountries = Array.isArray(companyAnalytics?.profile_visits_by_country) ? companyAnalytics.profile_visits_by_country : []
+  const leadSources = Array.isArray(companyAnalytics?.top_lead_sources) ? companyAnalytics.top_lead_sources : []
   const platformTotals = platformAnalytics?.totals || {}
   const platformCategories = Array.isArray(platformAnalytics?.top_categories_global) ? platformAnalytics.top_categories_global : []
   const platformByCountry = Array.isArray(platformAnalytics?.top_categories_by_country) ? platformAnalytics.top_categories_by_country : []
   const platformPriceDemand = Array.isArray(platformAnalytics?.price_range_demand) ? platformAnalytics.price_range_demand : []
   const platformMonthly = Array.isArray(platformAnalytics?.monthly_demand_trend) ? platformAnalytics.monthly_demand_trend : []
+  const platformSearchGlobal = Array.isArray(platformAnalytics?.top_search_categories_global) ? platformAnalytics.top_search_categories_global : []
+  const platformSearchByCountry = Array.isArray(platformAnalytics?.top_search_categories_by_country) ? platformAnalytics.top_search_categories_by_country : []
+  const platformTrending = Array.isArray(platformAnalytics?.trending_search_categories) ? platformAnalytics.trending_search_categories : []
   const premiumRole = premiumInsights?.role || ''
 
   useEffect(() => {
@@ -410,6 +414,18 @@ export default function Insights() {
                     </div>
                   </div>
                 </div>
+
+                <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                  <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Top Lead Sources</p>
+                  <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                    {leadSources.length ? leadSources.map((row) => (
+                      <div key={row.label} className="flex items-center justify-between rounded-lg borderless-shadow px-3 py-2">
+                        <span className="truncate">{row.label}</span>
+                        <span className="text-xs font-semibold">{row.count}</span>
+                      </div>
+                    )) : <div className="text-sm text-slate-500">No lead source data yet.</div>}
+                  </div>
+                </div>
               </div>
             ) : null}
 
@@ -443,6 +459,43 @@ export default function Insights() {
                         </div>
                       )) : <div className="text-sm text-slate-500">No price-range data yet.</div>}
                     </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Top Search Categories</p>
+                    <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                      {platformSearchGlobal.length ? platformSearchGlobal.map((row) => (
+                        <div key={row.label} className="flex items-center justify-between rounded-lg borderless-shadow px-3 py-2">
+                          <span className="truncate">{row.label}</span>
+                          <span className="text-xs font-semibold">{row.count}</span>
+                        </div>
+                      )) : <div className="text-sm text-slate-500">No search data yet.</div>}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Trending Searches (30d)</p>
+                    <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                      {platformTrending.length ? platformTrending.map((row) => (
+                        <div key={row.label} className="flex items-center justify-between rounded-lg borderless-shadow px-3 py-2">
+                          <span className="truncate">{row.label}</span>
+                          <span className="text-xs font-semibold">{row.delta}</span>
+                        </div>
+                      )) : <div className="text-sm text-slate-500">No trend data yet.</div>}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+                  <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Search Categories by Country</p>
+                  <div className="mt-3 space-y-3 text-sm text-slate-700 dark:text-slate-300">
+                    {platformSearchByCountry.length ? platformSearchByCountry.map((row) => (
+                      <div key={row.country} className="rounded-lg borderless-shadow px-3 py-2">
+                        <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">{row.country}</div>
+                        <div className="mt-1 text-sm">{(row.categories || []).map((c) => c.label).join(', ') || '--'}</div>
+                      </div>
+                    )) : <div className="text-sm text-slate-500">No search data yet.</div>}
                   </div>
                 </div>
 

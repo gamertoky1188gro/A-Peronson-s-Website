@@ -24,6 +24,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 import { trackClientEvent } from '../lib/events'
 import VerificationPanel from '../components/profile/VerificationPanel'
+import CrmSummaryPanel from '../components/profile/CrmSummaryPanel'
 
 const Motion = motion
 
@@ -319,6 +320,7 @@ export default function BuyingHouseProfile() {
         </aside>
 
         <main className="col-span-12 lg:col-span-8 space-y-4">
+          <CrmSummaryPanel targetId={user.id} />
           <motion.div
             initial={reduceMotion ? false : { opacity: 0, y: 16 }}
             animate={reduceMotion ? false : { opacity: 1, y: 0 }}

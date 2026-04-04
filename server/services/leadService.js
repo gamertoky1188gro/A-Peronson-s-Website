@@ -3,6 +3,7 @@ import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { forbiddenError, isAgent, isOwnerOrAdmin } from '../utils/permissions.js'
 import { getPlanForUser } from './entitlementService.js'
+import { trackEvent } from './analyticsService.js'
 
 const LEADS_FILE = 'leads.json'
 const NOTES_FILE = 'lead_notes.json'
@@ -122,6 +123,8 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp }) 
   const marketplace = friendPair ? null : parseMarketplaceMatchId(matchId)
   const buyerId = marketplace ? await resolveBuyerId(marketplace.requirementId) : ''
   const supplierId = marketplace ? marketplace.supplierId : ''
+  const leadSourceType = marketplace ? 'buyer_request' : (friendPair ? 'direct' : 'message')
+  const leadSourceId = marketplace?.requirementId || matchId || ''
 
   const orgTargets = new Map()
 
@@ -204,6 +207,8 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp }) 
         ...current,
         counterparty_id: current.counterparty_id || counterpartyId,
         assigned_agent_id: extras.assigned_agent_id || current.assigned_agent_id || autoAssignedAgent || '',
+        source_type: current.source_type || leadSourceType,
+        source_id: current.source_id || leadSourceId,
         last_interaction_at: interactionAt,
         updated_at: now,
       }
@@ -217,17 +222,56 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp }) 
       match_id: matchId,
       counterparty_id: counterpartyId,
       source: 'message',
+      source_type: leadSourceType,
+      source_id: leadSourceId,
       status: 'new',
       assigned_agent_id: extras.assigned_agent_id || autoAssignedAgent || '',
       created_at: now,
       updated_at: now,
       last_interaction_at: interactionAt,
+      conversion_at: '',
     }
     leads.push(row)
     updated.push(row)
+    await trackEvent({ type: 'lead_created', actor_id: senderId || orgId, entity_id: row.id, metadata: { source_type: leadSourceType, source_id: leadSourceId } })
   }
 
   await writeJson(LEADS_FILE, leads)
+  return updated
+}
+
+export async function markLeadConvertedFromContract({ buyerId, factoryId, contractId }) {
+  const safeBuyer = sanitizeString(String(buyerId || ''), 120)
+  const safeFactory = sanitizeString(String(factoryId || ''), 120)
+  const safeContract = sanitizeString(String(contractId || ''), 120)
+  if (!safeBuyer || !safeFactory || !safeContract) return []
+
+  const leads = await readJson(LEADS_FILE)
+  let touched = false
+  const now = new Date().toISOString()
+  const updated = []
+
+  const next = leads.map((lead) => {
+    const orgId = String(lead.org_owner_id || '')
+    const counterparty = String(lead.counterparty_id || '')
+    const shouldMatch = (orgId === safeFactory && counterparty === safeBuyer) || (orgId === safeBuyer && counterparty === safeFactory)
+    if (!shouldMatch) return lead
+    if (lead.conversion_at) return lead
+    const row = {
+      ...lead,
+      conversion_at: now,
+      updated_at: now,
+    }
+    touched = true
+    updated.push(row)
+    return row
+  })
+
+  if (touched) {
+    await writeJson(LEADS_FILE, next)
+    await trackEvent({ type: 'lead_converted', actor_id: safeFactory || safeBuyer, entity_id: safeContract, metadata: { buyer_id: safeBuyer, factory_id: safeFactory } })
+  }
+
   return updated
 }
 

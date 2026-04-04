@@ -187,6 +187,7 @@ export default function SearchResults() {
   const [category, setCategory] = useState(() => searchParams.get('category') || '')
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false)
+  const [filterMode, setFilterMode] = useState('product')
   const [upgradePrompt, setUpgradePrompt] = useState('')
   const [alertFeedback, setAlertFeedback] = useState('')
   const [autoSaveCandidate, setAutoSaveCandidate] = useState(null)
@@ -752,196 +753,218 @@ export default function SearchResults() {
 
                 {advancedFiltersOpen ? (
                   <div className="mt-3 grid grid-cols-1 gap-2">
-                  <input
-                    value={filters.fabricType}
-                    onChange={(e) => updateAdvancedFilter('fabricType', e.target.value)}
-                    placeholder="Fabric type (e.g. Cotton)"
-                    disabled={premiumLocked}
-                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                  />
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      value={filters.gsmMin}
-                      onChange={(e) => updateAdvancedFilter('gsmMin', e.target.value)}
-                      placeholder="GSM min"
-                      disabled={premiumLocked}
-                      className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                    />
-                    <input
-                      value={filters.gsmMax}
-                      onChange={(e) => updateAdvancedFilter('gsmMax', e.target.value)}
-                      placeholder="GSM max"
-                      disabled={premiumLocked}
-                      className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                    />
-                  </div>
-                  <input
-                    value={filters.sizeRange}
-                    onChange={(e) => updateAdvancedFilter('sizeRange', e.target.value)}
-                    placeholder="Size range"
-                    disabled={premiumLocked}
-                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                  />
-                  <input
-                    value={filters.colorPantone}
-                    onChange={(e) => updateAdvancedFilter('colorPantone', e.target.value)}
-                    placeholder="Color / Pantone"
-                    disabled={premiumLocked}
-                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                  />
-                  <input
-                    value={filters.customization}
-                    onChange={(e) => updateAdvancedFilter('customization', e.target.value)}
-                    placeholder="Customization capability"
-                    disabled={premiumLocked}
-                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                  />
-                  <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
-                    <input
-                      type="checkbox"
-                      checked={filters.sampleAvailable}
-                      onChange={(e) => updateAdvancedFilter('sampleAvailable', e.target.checked)}
-                      disabled={premiumLocked}
-                      className="h-4 w-4"
-                    />
-                    Sample available
-                  </label>
-                  <input
-                    value={filters.sampleLeadTime}
-                    onChange={(e) => updateAdvancedFilter('sampleLeadTime', e.target.value)}
-                    placeholder="Sample lead time (days)"
-                    disabled={premiumLocked}
-                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                  />
-                  <input
-                    value={filters.certifications}
-                    onChange={(e) => updateAdvancedFilter('certifications', e.target.value)}
-                    placeholder="Certifications (e.g. GOTS,BSCI)"
-                    disabled={premiumLocked}
-                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                  />
-                  <select
-                    value={filters.incoterms}
-                    onChange={(e) => updateAdvancedFilter('incoterms', e.target.value)}
-                    disabled={premiumLocked}
-                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                  >
-                    <option value="">Incoterms (Any)</option>
-                    <option value="FOB">FOB</option>
-                    <option value="CIF">CIF</option>
-                    <option value="EXW">EXW</option>
-                    <option value="DDP">DDP</option>
-                  </select>
-                  <input
-                    value={filters.paymentTerms}
-                    onChange={(e) => updateAdvancedFilter('paymentTerms', e.target.value)}
-                    placeholder="Payment terms"
-                    disabled={premiumLocked}
-                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                  />
-                  <input
-                    value={filters.documentReady}
-                    onChange={(e) => updateAdvancedFilter('documentReady', e.target.value)}
-                    placeholder="Document readiness"
-                    disabled={premiumLocked}
-                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                  />
-                  <input
-                    value={filters.auditDate}
-                    onChange={(e) => updateAdvancedFilter('auditDate', e.target.value)}
-                    placeholder="Audit date"
-                    disabled={premiumLocked}
-                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                  />
-                  <input
-                    value={filters.languageSupport}
-                    onChange={(e) => updateAdvancedFilter('languageSupport', e.target.value)}
-                    placeholder="Language support"
-                    disabled={premiumLocked}
-                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                  />
-                  <input
-                    value={filters.capacityMin}
-                    onChange={(e) => updateAdvancedFilter('capacityMin', e.target.value)}
-                    placeholder="Min capacity / month"
-                    disabled={premiumLocked}
-                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                  />
+                    <div className="flex flex-wrap gap-2 rounded-full bg-slate-50 p-1 text-[11px] font-semibold text-slate-600 dark:bg-white/5 dark:text-slate-300">
+                      <button
+                        type="button"
+                        onClick={() => setFilterMode('product')}
+                        className={`rounded-full px-3 py-1 ${filterMode === 'product' ? 'bg-white text-slate-900 shadow-sm' : 'opacity-70'}`}
+                      >
+                        Product Filters
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFilterMode('supplier')}
+                        className={`rounded-full px-3 py-1 ${filterMode === 'supplier' ? 'bg-white text-slate-900 shadow-sm' : 'opacity-70'}`}
+                      >
+                        Supplier Filters
+                      </button>
+                    </div>
 
-                  <div className="pt-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400">Supplier & account</div>
-                  <input
-                    value={filters.processes}
-                    onChange={(e) => updateAdvancedFilter('processes', e.target.value)}
-                    placeholder="Main processes (e.g. knit, woven)"
-                    disabled={premiumLocked}
-                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                  />
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      value={filters.yearsInBusinessMin}
-                      onChange={(e) => updateAdvancedFilter('yearsInBusinessMin', e.target.value)}
-                      placeholder="Years in business (min)"
-                      disabled={premiumLocked}
-                      className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                    />
-                    <input
-                      value={filters.responseTimeMax}
-                      onChange={(e) => updateAdvancedFilter('responseTimeMax', e.target.value)}
-                      placeholder="Response time max (hours)"
-                      disabled={premiumLocked}
-                      className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                    />
+                    {filterMode === 'product' ? (
+                      <>
+                        <input
+                          value={filters.fabricType}
+                          onChange={(e) => updateAdvancedFilter('fabricType', e.target.value)}
+                          placeholder="Fabric type (e.g. Cotton)"
+                          disabled={premiumLocked}
+                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                        />
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            value={filters.gsmMin}
+                            onChange={(e) => updateAdvancedFilter('gsmMin', e.target.value)}
+                            placeholder="GSM min"
+                            disabled={premiumLocked}
+                            className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                          />
+                          <input
+                            value={filters.gsmMax}
+                            onChange={(e) => updateAdvancedFilter('gsmMax', e.target.value)}
+                            placeholder="GSM max"
+                            disabled={premiumLocked}
+                            className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                          />
+                        </div>
+                        <input
+                          value={filters.sizeRange}
+                          onChange={(e) => updateAdvancedFilter('sizeRange', e.target.value)}
+                          placeholder="Size range"
+                          disabled={premiumLocked}
+                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                        />
+                        <input
+                          value={filters.colorPantone}
+                          onChange={(e) => updateAdvancedFilter('colorPantone', e.target.value)}
+                          placeholder="Color / Pantone"
+                          disabled={premiumLocked}
+                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                        />
+                        <input
+                          value={filters.customization}
+                          onChange={(e) => updateAdvancedFilter('customization', e.target.value)}
+                          placeholder="Customization capability"
+                          disabled={premiumLocked}
+                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                        />
+                        <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
+                          <input
+                            type="checkbox"
+                            checked={filters.sampleAvailable}
+                            onChange={(e) => updateAdvancedFilter('sampleAvailable', e.target.checked)}
+                            disabled={premiumLocked}
+                            className="h-4 w-4"
+                          />
+                          Sample available
+                        </label>
+                        <input
+                          value={filters.sampleLeadTime}
+                          onChange={(e) => updateAdvancedFilter('sampleLeadTime', e.target.value)}
+                          placeholder="Sample lead time (days)"
+                          disabled={premiumLocked}
+                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                        />
+                        <input
+                          value={filters.certifications}
+                          onChange={(e) => updateAdvancedFilter('certifications', e.target.value)}
+                          placeholder="Certifications (e.g. GOTS,BSCI)"
+                          disabled={premiumLocked}
+                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                        />
+                        <select
+                          value={filters.incoterms}
+                          onChange={(e) => updateAdvancedFilter('incoterms', e.target.value)}
+                          disabled={premiumLocked}
+                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                        >
+                          <option value="">Incoterms (Any)</option>
+                          <option value="FOB">FOB</option>
+                          <option value="CIF">CIF</option>
+                          <option value="EXW">EXW</option>
+                          <option value="DDP">DDP</option>
+                        </select>
+                      </>
+                    ) : (
+                      <>
+                        <input
+                          value={filters.paymentTerms}
+                          onChange={(e) => updateAdvancedFilter('paymentTerms', e.target.value)}
+                          placeholder="Payment terms"
+                          disabled={premiumLocked}
+                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                        />
+                        <input
+                          value={filters.documentReady}
+                          onChange={(e) => updateAdvancedFilter('documentReady', e.target.value)}
+                          placeholder="Document readiness"
+                          disabled={premiumLocked}
+                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                        />
+                        <input
+                          value={filters.auditDate}
+                          onChange={(e) => updateAdvancedFilter('auditDate', e.target.value)}
+                          placeholder="Audit date"
+                          disabled={premiumLocked}
+                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                        />
+                        <input
+                          value={filters.languageSupport}
+                          onChange={(e) => updateAdvancedFilter('languageSupport', e.target.value)}
+                          placeholder="Language support"
+                          disabled={premiumLocked}
+                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                        />
+                        <input
+                          value={filters.capacityMin}
+                          onChange={(e) => updateAdvancedFilter('capacityMin', e.target.value)}
+                          placeholder="Min capacity / month"
+                          disabled={premiumLocked}
+                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                        />
+                        <input
+                          value={filters.processes}
+                          onChange={(e) => updateAdvancedFilter('processes', e.target.value)}
+                          placeholder="Main processes (e.g. knit, woven)"
+                          disabled={premiumLocked}
+                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                        />
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            value={filters.yearsInBusinessMin}
+                            onChange={(e) => updateAdvancedFilter('yearsInBusinessMin', e.target.value)}
+                            placeholder="Years in business (min)"
+                            disabled={premiumLocked}
+                            className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                          />
+                          <input
+                            value={filters.responseTimeMax}
+                            onChange={(e) => updateAdvancedFilter('responseTimeMax', e.target.value)}
+                            placeholder="Response time max (hours)"
+                            disabled={premiumLocked}
+                            className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            value={filters.teamSeatsMin}
+                            onChange={(e) => updateAdvancedFilter('teamSeatsMin', e.target.value)}
+                            placeholder="Team seats (min)"
+                            disabled={premiumLocked}
+                            className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                          />
+                          <input
+                            value={filters.exportPort}
+                            onChange={(e) => updateAdvancedFilter('exportPort', e.target.value)}
+                            placeholder="Export ports (comma-separated)"
+                            disabled={premiumLocked}
+                            className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                          />
+                        </div>
+                        <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
+                          <input
+                            type="checkbox"
+                            checked={filters.handlesMultipleFactories}
+                            onChange={(e) => updateAdvancedFilter('handlesMultipleFactories', e.target.checked)}
+                            disabled={premiumLocked}
+                            className="h-4 w-4"
+                          />
+                          Handles multiple factories
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            value={filters.locationLat}
+                            onChange={(e) => updateAdvancedFilter('locationLat', e.target.value)}
+                            placeholder="Location latitude"
+                            disabled={premiumLocked}
+                            className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                          />
+                          <input
+                            value={filters.locationLng}
+                            onChange={(e) => updateAdvancedFilter('locationLng', e.target.value)}
+                            placeholder="Location longitude"
+                            disabled={premiumLocked}
+                            className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                          />
+                        </div>
+                        <input
+                          value={filters.distanceKm}
+                          onChange={(e) => updateAdvancedFilter('distanceKm', e.target.value)}
+                          placeholder="Distance radius (km)"
+                          disabled={premiumLocked}
+                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                        />
+                      </>
+                    )}
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      value={filters.teamSeatsMin}
-                      onChange={(e) => updateAdvancedFilter('teamSeatsMin', e.target.value)}
-                      placeholder="Team seats (min)"
-                      disabled={premiumLocked}
-                      className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                    />
-                    <input
-                      value={filters.exportPort}
-                      onChange={(e) => updateAdvancedFilter('exportPort', e.target.value)}
-                      placeholder="Export ports (comma-separated)"
-                      disabled={premiumLocked}
-                      className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                    />
-                  </div>
-                  <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
-                    <input
-                      type="checkbox"
-                      checked={filters.handlesMultipleFactories}
-                      onChange={(e) => updateAdvancedFilter('handlesMultipleFactories', e.target.checked)}
-                      disabled={premiumLocked}
-                      className="h-4 w-4"
-                    />
-                    Handles multiple factories
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      value={filters.locationLat}
-                      onChange={(e) => updateAdvancedFilter('locationLat', e.target.value)}
-                      placeholder="Location latitude"
-                      disabled={premiumLocked}
-                      className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                    />
-                    <input
-                      value={filters.locationLng}
-                      onChange={(e) => updateAdvancedFilter('locationLng', e.target.value)}
-                      placeholder="Location longitude"
-                      disabled={premiumLocked}
-                      className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                    />
-                  </div>
-                  <input
-                    value={filters.distanceKm}
-                    onChange={(e) => updateAdvancedFilter('distanceKm', e.target.value)}
-                    placeholder="Distance radius (km)"
-                    disabled={premiumLocked}
-                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                  />
-                </div>
                 ) : (
                   <p className="mt-3 text-[11px] text-slate-500 dark:text-slate-400">Advanced filters are hidden to keep search simple. Use "More filters" when needed.</p>
                 )}
