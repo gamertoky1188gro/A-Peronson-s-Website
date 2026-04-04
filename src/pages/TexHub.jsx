@@ -46,7 +46,7 @@ function VerifiedBadge({ label = 'Verified' }) {
   )
 }
 
-function Surface({ className = '', children }) {
+function Surface({ className='', children }) {
   function handleSpotlightMove(event) {
     // Mouse-follow spotlight:
     // - store cursor position inside the card as CSS variables
@@ -75,7 +75,7 @@ function Surface({ className = '', children }) {
   )
 }
 
-function GlassSurface({ className = '', children }) {
+function GlassSurface({ className='', children }) {
   function handleSpotlightMove(event) {
     // Same spotlight behavior as `Surface`, but on a darker "secure room" glass surface.
     const rect = event.currentTarget.getBoundingClientRect()
@@ -103,7 +103,7 @@ function GlassSurface({ className = '', children }) {
   )
 }
 
-function BentoMotion({ index, className = '', children }) {
+function BentoMotion({ index, className='', children }) {
   const reduceMotion = useReducedMotion()
   // Accessibility: if user prefers reduced motion, render without animation.
   if (reduceMotion) return <div className={className}>{children}</div>
@@ -126,7 +126,7 @@ function BentoMotion({ index, className = '', children }) {
   )
 }
 
-function AnimatedHeroHeading({ text, className = '' }) {
+function AnimatedHeroHeading({ text, className='' }) {
   const reduceMotion = useReducedMotion()
   // Reduced-motion users get static text (no per-character animation).
   if (reduceMotion) return <span className={className}>{text}</span>
@@ -167,7 +167,7 @@ function AnimatedHeroHeading({ text, className = '' }) {
   )
 }
 
-function MagneticLinkButton({ to, className = '', children }) {
+function MagneticLinkButton({ to, className='', children }) {
   const reduceMotion = useReducedMotion()
   // Motion values track the current offset; springs return to center smoothly.
   const x = useMotionValue(0)
@@ -211,7 +211,7 @@ function MagneticLinkButton({ to, className = '', children }) {
   )
 }
 
-function SkeletonLine({ className = '' }) {
+function SkeletonLine({ className='' }) {
   // Skeleton shimmer utility (App.css): used during loading to avoid layout shifts.
   return <div className={['skeleton rounded-xl', className].join(' ')} />
 }
@@ -378,19 +378,19 @@ export default function TexHub() {
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <MagneticLinkButton
                 to="/signup"
-                className="shimmer-btn border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
+                className="shimmer-btn px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
               >
                 Create Buyer Account
               </MagneticLinkButton>
               <MagneticLinkButton
                 to="/signup"
-                className="border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-white/70 text-[#1E293B] font-semibold tracking-tight backdrop-blur-sm transition duration-300 ease-out hover:bg-white hover:shadow-[0_22px_50px_rgba(15,23,42,0.10)] dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06] dark:hover:shadow-[0_26px_70px_rgba(0,0,0,0.55)]"
+                className="px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-white/70 text-[#1E293B] font-semibold tracking-tight backdrop-blur-sm transition duration-300 ease-out hover:bg-white hover:shadow-[0_22px_50px_rgba(15,23,42,0.10)] dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06] dark:hover:shadow-[0_26px_70px_rgba(0,0,0,0.55)]"
               >
                 Register Factory
               </MagneticLinkButton>
               <MagneticLinkButton
                 to="/login"
-                className="border-0 px-4 py-2 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B]/5 text-[#1E293B]/80 font-semibold transition duration-300 ease-out hover:bg-[#1E293B]/8 dark:bg-white/[0.03] dark:text-slate-200 dark:hover:bg-white/[0.06]"
+                className="px-4 py-2 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B]/5 text-[#1E293B]/80 font-semibold transition duration-300 ease-out hover:bg-[#1E293B]/8 dark:bg-white/[0.03] dark:text-slate-200 dark:hover:bg-white/[0.06]"
               >
                 
               </MagneticLinkButton>
@@ -813,7 +813,7 @@ export default function TexHub() {
               <div className="lg:col-span-5 lg:flex lg:justify-end">
                 <MagneticLinkButton
                   to="/pricing"
-                  className="border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-emerald-600 text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-emerald-500 hover:shadow-[0_22px_50px_rgba(16,185,129,0.28)] dark:bg-emerald-500/80 dark:hover:bg-emerald-500/90 dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
+                  className="px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-emerald-600 text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-emerald-500 hover:shadow-[0_22px_50px_rgba(16,185,129,0.28)] dark:bg-emerald-500/80 dark:hover:bg-emerald-500/90 dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
                 >
                   View enterprise plans
                 </MagneticLinkButton>
@@ -851,13 +851,13 @@ export default function TexHub() {
               <div className="flex flex-wrap gap-3 lg:col-span-5 lg:justify-end">
                 <MagneticLinkButton
                   to="/signup"
-                  className="shimmer-btn border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
+                  className="shimmer-btn px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
                 >
                   Create account
                 </MagneticLinkButton>
                 <MagneticLinkButton
                   to="/login"
-                  className="border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-white/70 text-[#1E293B] font-semibold tracking-tight backdrop-blur-sm transition duration-300 ease-out hover:bg-white hover:shadow-[0_22px_50px_rgba(15,23,42,0.10)] dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06] dark:hover:shadow-[0_26px_70px_rgba(0,0,0,0.55)]"
+                  className="px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-white/70 text-[#1E293B] font-semibold tracking-tight backdrop-blur-sm transition duration-300 ease-out hover:bg-white hover:shadow-[0_22px_50px_rgba(15,23,42,0.10)] dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06] dark:hover:shadow-[0_26px_70px_rgba(0,0,0,0.55)]"
                 >
                   Login
                 </MagneticLinkButton>

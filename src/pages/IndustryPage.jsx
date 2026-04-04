@@ -180,10 +180,10 @@ export default function IndustryPage() {
           </div>
           {aiError ? <div className="mt-3 text-xs font-semibold text-rose-600">{aiError}</div> : null}
           {aiReply ? (
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-100">
+            <div className="mt-4 rounded-2xl borderless-shadow bg-slate-50 p-4 text-sm text-slate-700 dark:bg-white/5 dark:text-slate-100">
               <p className="whitespace-pre-wrap">{aiReply}</p>
               <div className="mt-3 flex items-center gap-3 text-xs text-slate-500">
-                <button type="button" onClick={copyReply} className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100">
+                <button type="button" onClick={copyReply} className="rounded-full borderless-shadow px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100">
                   Copy
                 </button>
                 {copyStatus ? <span>{copyStatus}</span> : null}
@@ -197,7 +197,7 @@ export default function IndustryPage() {
             <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Latest buyer requests</p>
             <div className="mt-3 space-y-3">
               {(requests || []).slice(0, 6).map((req) => (
-                <div key={req.id} className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900/60">
+                <div key={req.id} className="rounded-2xl borderless-shadow bg-white p-4 dark:bg-slate-900/60">
                   <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{req.title || req.category || 'Buyer request'}</p>
                   <p className="mt-1 text-xs text-slate-500">{req.category || '--'} - MOQ {req.moq || '--'} - Price {req.price_range || '--'}</p>
                   <p className="mt-2 text-xs text-slate-500">Buyer: {req.author?.name || req.buyer_name || 'Buyer'}</p>
@@ -211,7 +211,7 @@ export default function IndustryPage() {
             <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Top products</p>
             <div className="mt-3 space-y-3">
               {(products || []).slice(0, 6).map((product) => (
-                <div key={product.id} className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900/60">
+                <div key={product.id} className="rounded-2xl borderless-shadow bg-white p-4 dark:bg-slate-900/60">
                   <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{product.title || 'Product'}</p>
                   <p className="mt-1 text-xs text-slate-500">{product.category || '--'} - MOQ {product.moq || '--'} - Lead time {product.lead_time_days || '--'}</p>
                   <p className="mt-2 text-xs text-slate-500">Company: {product.author?.name || product.company_name || 'Company'}</p>

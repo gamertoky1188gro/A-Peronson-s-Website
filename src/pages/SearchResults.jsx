@@ -31,7 +31,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Briefcase, Building2, Filter, LayoutGrid, Bell, Search as SearchIcon } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
+import { apiRequest, getCurrentUser, getToken, hasEntitlement } from '../lib/auth'
 import ProductQuickViewModal from '../components/products/ProductQuickViewModal'
 import { trackClientEvent } from '../lib/events'
 
@@ -61,7 +61,7 @@ function roleToProfileRoute(role, id) {
   return `/factory/${encodeURIComponent(id)}`
 }
 
-const CORE_FILTER_KEYS = ['industry', 'moqRange', 'priceRange', 'country', 'verifiedOnly', 'orgType', 'leadTimeMax']
+const CORE_FILTER_KEYS = ['industry', 'moqRange', 'priceRange', 'country', 'verifiedOnly', 'orgType', 'leadTimeMax', 'priorityOnly']
 const ADVANCED_FILTER_KEYS = [
   'fabricType',
   'gsmMin',
@@ -89,7 +89,7 @@ const ADVANCED_FILTER_KEYS = [
   'locationLng',
 ]
 
-function buildQueryString({ q, category, filters, includeAdvanced }) {
+function buildQueryString({ q, category, filters, includeAdvanced, includePriority = false }) {
   // Build URLSearchParams from UI state.
   // Core filters are always free; advanced filters require premium.
   const params = new URLSearchParams()
@@ -104,6 +104,7 @@ function buildQueryString({ q, category, filters, includeAdvanced }) {
   if (filters.verifiedOnly) params.set('verifiedOnly', 'true')
   if (filters.orgType) params.set('orgType', filters.orgType)
   if (filters.leadTimeMax) params.set('leadTimeMax', filters.leadTimeMax)
+  if (includePriority && filters.priorityOnly) params.set('priorityOnly', 'true')
 
   // Advanced filters (premium only)
   if (includeAdvanced) {
@@ -171,6 +172,11 @@ export default function SearchResults() {
   const [searchParams, setSearchParams] = useSearchParams()
   const token = useMemo(() => getToken(), [])
   const sessionUser = getCurrentUser()
+  const isBuyer = String(sessionUser?.role || '').toLowerCase() === 'buyer'
+  const canAdvancedFilters = hasEntitlement(sessionUser, 'advanced_search_filters')
+  const canEarlyAccess = hasEntitlement(sessionUser, 'early_access_verified_factories')
+  const canPriorityAccessRequests = hasEntitlement(sessionUser, 'buyer_request_priority_access')
+  const canPriorityAccessCompanies = hasEntitlement(sessionUser, 'priority_search_ranking')
   const reduceMotion = useReducedMotion()
   const queryInputRef = useRef(null)
   const isMac = useMemo(() => (typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)), [])
@@ -199,6 +205,7 @@ export default function SearchResults() {
     country: searchParams.get('country') || '',
     verifiedOnly: searchParams.get('verifiedOnly') === 'true',
     orgType: searchParams.get('orgType') || '',
+    priorityOnly: searchParams.get('priorityOnly') === 'true',
     // Expanded filters (project.md)
     leadTimeMax: searchParams.get('leadTimeMax') || '',
     fabricType: searchParams.get('fabricType') || '',
@@ -231,9 +238,7 @@ export default function SearchResults() {
     let alive = true
     const loadEarlyVerified = async () => {
       if (!token) return
-      const isBuyer = String(sessionUser?.role || '').toLowerCase() === 'buyer'
-      const isPremium = String(sessionUser?.subscription_status || '').toLowerCase() === 'premium'
-      if (!isBuyer || !isPremium) {
+      if (!isBuyer || !canEarlyAccess) {
         setEarlyVerifiedFactories([])
         return
       }
@@ -252,13 +257,18 @@ export default function SearchResults() {
     return () => {
       alive = false
     }
-  }, [sessionUser, token])
+  }, [canEarlyAccess, isBuyer, sessionUser, token])
 
   const [capabilities, setCapabilities] = useState(() => ({
-    filters: { advanced: sessionUser?.subscription_status === 'premium' },
+    filters: { advanced: canAdvancedFilters },
   }))
   const hasAdvancedAccess = Boolean(capabilities?.filters?.advanced)
   const premiumLocked = !hasAdvancedAccess
+  const priorityAllowedForTab = useMemo(() => {
+    if (activeTab === 'requests') return canPriorityAccessRequests
+    if (activeTab === 'companies') return canPriorityAccessCompanies
+    return canPriorityAccessRequests && canPriorityAccessCompanies
+  }, [activeTab, canPriorityAccessRequests, canPriorityAccessCompanies])
 
   const categoryOptions = useMemo(() => {
     const industry = String(filters.industry || '').toLowerCase()
@@ -313,21 +323,38 @@ export default function SearchResults() {
     setAlertFeedback('')
 
     try {
-      const qs = buildQueryString({
+      const qsUrl = buildQueryString({
         q,
         category: category.trim(),
         filters,
         includeAdvanced: hasAdvancedAccess,
+        includePriority: Boolean(filters.priorityOnly),
+      })
+      const includePriorityRequests = Boolean(filters.priorityOnly) && activeTab !== 'companies' && canPriorityAccessRequests
+      const includePriorityCompanies = Boolean(filters.priorityOnly) && activeTab !== 'requests' && canPriorityAccessCompanies
+      const qsRequests = buildQueryString({
+        q,
+        category: category.trim(),
+        filters,
+        includeAdvanced: hasAdvancedAccess,
+        includePriority: includePriorityRequests,
+      })
+      const qsProducts = buildQueryString({
+        q,
+        category: category.trim(),
+        filters,
+        includeAdvanced: hasAdvancedAccess,
+        includePriority: includePriorityCompanies,
       })
 
       // Keep URL in sync so searches are shareable/bookmarkable (project.md).
-      const nextParams = new URLSearchParams(qs)
+      const nextParams = new URLSearchParams(qsUrl)
       if (activeTab) nextParams.set('tab', activeTab)
       setSearchParams(nextParams, { replace: true })
 
       const [reqRes, prodRes] = await Promise.all([
-        apiRequest(`/requirements/search?${qs}`, { token }),
-        apiRequest(`/products/search?${qs}`, { token }),
+        apiRequest(`/requirements/search?${qsRequests}`, { token }),
+        apiRequest(`/products/search?${qsProducts}`, { token }),
       ])
 
       const reqItems = Array.isArray(reqRes?.items) ? reqRes.items : []
@@ -405,6 +432,13 @@ export default function SearchResults() {
   }, [category, filters, query, runSearch])
 
   useEffect(() => {
+    if (!filters.priorityOnly) return
+    if (priorityAllowedForTab) return
+    setFilters((prev) => ({ ...prev, priorityOnly: false }))
+    setUpgradePrompt('Priority-only filter requires a Premium plan.')
+  }, [filters.priorityOnly, priorityAllowedForTab])
+
+  useEffect(() => {
     const payload = {
       query: query.trim(),
       category: category.trim(),
@@ -462,6 +496,14 @@ export default function SearchResults() {
 
   function updateCoreFilter(key, value) {
     setFilters((prev) => ({ ...prev, [key]: value }))
+  }
+
+  function updatePriorityFilter(value) {
+    if (!priorityAllowedForTab) {
+      setUpgradePrompt('Priority-only filter requires a Premium plan.')
+      return
+    }
+    setFilters((prev) => ({ ...prev, priorityOnly: value }))
   }
 
   async function saveAlert(presetLabel = '') {
@@ -590,7 +632,7 @@ export default function SearchResults() {
             <button
               type="button"
               onClick={() => setCategory('')}
-              className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition ${category ? 'bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50' : 'bg-[var(--gt-blue)] text-white ring-transparent'}`}
+              className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${category ? 'bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50' : 'bg-[var(--gt-blue)] text-white ring-transparent'}`}
             >
               All categories
             </button>
@@ -599,7 +641,7 @@ export default function SearchResults() {
                 key={option}
                 type="button"
                 onClick={() => setCategory(option)}
-                className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition ${category === option ? 'bg-[var(--gt-blue)] text-white ring-transparent' : 'bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50'}`}
+                className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${category === option ? 'bg-[var(--gt-blue)] text-white ring-transparent' : 'bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50'}`}
               >
                 {option}
               </button>
@@ -664,6 +706,20 @@ export default function SearchResults() {
                     />
                     Verified only
                   </label>
+                  <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
+                    <input
+                      type="checkbox"
+                      checked={filters.priorityOnly}
+                      onChange={(e) => updatePriorityFilter(e.target.checked)}
+                      className="h-4 w-4"
+                    />
+                    Priority only
+                    {!priorityAllowedForTab ? (
+                      <span className="ml-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                        Premium
+                      </span>
+                    ) : null}
+                  </label>
                   <select
                     value={filters.leadTimeMax}
                     onChange={(e) => updateCoreFilter('leadTimeMax', e.target.value)}
@@ -679,7 +735,7 @@ export default function SearchResults() {
                 </div>
               </div>
 
-              <div className={`rounded-2xl p-4 ring-1 shadow-sm ${premiumLocked ? 'bg-amber-50 ring-amber-200 dark:bg-amber-500/10 dark:ring-amber-500/30' : 'bg-[#ffffff] ring-slate-200/70 dark:bg-slate-900/40 dark:ring-white/10'}`}>
+              <div className={`rounded-2xl p-4 ring-1 shadow-sm${premiumLocked ? 'bg-amber-50 ring-amber-200 dark:bg-amber-500/10 dark:ring-amber-500/30' : 'bg-[#ffffff] ring-slate-200/70 dark:bg-slate-900/40 dark:ring-white/10'}`}>
                 <div className="flex items-center justify-between gap-2">
                   <div>
                     <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Advanced filters</p>
@@ -904,8 +960,8 @@ export default function SearchResults() {
                 <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Status & presets</p>
                 <div className="mt-2 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                   {quotaMessage ? <p>{quotaMessage}</p> : <p>Run a search to see quota status.</p>}
-                  {upgradePrompt ? <p className="text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-2">{upgradePrompt}</p> : null}
-                  {alertFeedback ? <p className="text-sky-800 bg-sky-50 border border-sky-200 rounded-xl p-2">{alertFeedback}</p> : null}
+                  {upgradePrompt ? <p className="text-amber-800 bg-amber-50 borderless-shadow rounded-xl p-2">{upgradePrompt}</p> : null}
+                  {alertFeedback ? <p className="text-sky-800 bg-sky-50 borderless-shadow rounded-xl p-2">{alertFeedback}</p> : null}
                 </div>
 
                 <div className="mt-4">
@@ -918,7 +974,7 @@ export default function SearchResults() {
                 </div>
 
                 {autoSaveCandidate ? (
-                  <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-[11px] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
+                  <div className="mt-4 rounded-xl borderless-shadow bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-white/5 dark:text-slate-200">
                     <p className="font-semibold text-slate-700 dark:text-slate-100">Save this search as a preset</p>
                     <div className="mt-2 flex flex-wrap gap-2">
                       <button type="button" onClick={() => savePreset('buyer')} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Buyer</button>
@@ -935,7 +991,7 @@ export default function SearchResults() {
 
         <div className="mt-5 grid grid-cols-12 gap-4">
           <div className="col-span-12 xl:col-span-9 rounded-2xl bg-white/70 shadow-sm ring-1 ring-slate-200/60 backdrop-blur-md overflow-hidden dark:bg-slate-950/30 dark:ring-white/10">
-            <div className="relative flex items-center gap-2 px-4 py-3 bg-white/40 dark:bg-slate-950/20 border-b border-slate-200/60 dark:border-transparent dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
+            <div className="relative flex items-center gap-2 px-4 py-3 bg-white/40 dark:bg-slate-950/20 borderless-divider-b dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
               {TAB_OPTIONS.map((t) => {
                 const Icon = t.icon
                 const active = activeTab === t.id
@@ -946,7 +1002,7 @@ export default function SearchResults() {
                     type="button"
                     onClick={() => setActiveTab(t.id)}
                     whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                    className={`relative inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ring-1 ${
+                    className={`relative inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ring-1${
                       active
                         ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
                         : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
@@ -999,6 +1055,7 @@ export default function SearchResults() {
                       const profileRoute = roleToProfileRoute(author.role, author.id)
                       const requestType = String(r.request_type || 'garments').toLowerCase()
                       const specs = r.specs && typeof r.specs === 'object' ? r.specs : {}
+                      const isCertified = String(author.order_certification_status || '').toLowerCase() === 'certified'
                       const quoteDeadline = r.quote_deadline ? new Date(r.quote_deadline) : null
                       const expiresAt = r.expires_at ? new Date(r.expires_at) : null
                       const isExpired = expiresAt && !Number.isNaN(expiresAt.getTime()) && expiresAt.getTime() < Date.now()
@@ -1038,6 +1095,11 @@ export default function SearchResults() {
                                     Verified
                                   </span>
                                 ) : null}
+                                {isCertified ? (
+                                  <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200">
+                                    Certified
+                                  </span>
+                                ) : null}
                                 {r.priority_active ? (
                                   <span className="inline-flex items-center rounded-full bg-sky-50 px-2 py-1 text-[10px] font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-200">
                                     Priority
@@ -1050,7 +1112,7 @@ export default function SearchResults() {
                                   {specLabel ? <span className="rounded-full bg-slate-100 px-2 py-1 dark:bg-white/10">{specLabel}</span> : null}
                                   {quoteDeadline ? <span className="rounded-full bg-sky-50 px-2 py-1 text-sky-700 dark:bg-sky-500/10 dark:text-sky-200">Quote by {quoteDeadline.toLocaleDateString()}</span> : null}
                                   {expiresAt ? (
-                                    <span className={`rounded-full px-2 py-1 ${isExpired ? 'bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-200' : 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-200'}`}>
+                                    <span className={`rounded-full px-2 py-1${isExpired ? 'bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-200' : 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-200'}`}>
                                       {isExpired ? 'Expired' : `Expires ${expiresAt.toLocaleDateString()}`}
                                     </span>
                                   ) : null}
@@ -1092,6 +1154,7 @@ export default function SearchResults() {
                       const author = p.author || {}
                       const profileRoute = roleToProfileRoute(author.role, author.id)
                       const rating = ratingsByProfileKey?.[p.profile_key] || null
+                      const isCertified = String(author.order_certification_status || '').toLowerCase() === 'certified'
                       return (
                         <motion.div
                           key={p.id}
@@ -1109,6 +1172,11 @@ export default function SearchResults() {
                                 {author.verified ? (
                                   <span className="verified-shimmer inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 px-2 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:from-emerald-500/12 dark:to-teal-400/10 dark:text-emerald-200 dark:ring-emerald-400/25">
                                     Verified
+                                  </span>
+                                ) : null}
+                                {isCertified ? (
+                                  <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200">
+                                    Certified
                                   </span>
                                 ) : null}
                                 {author.premium ? (
@@ -1169,11 +1237,18 @@ export default function SearchResults() {
           </div>
 
           <aside className="col-span-12 xl:col-span-3 space-y-4">
-            {earlyVerifiedFactories.length || earlyVerifiedError ? (
+            {isBuyer ? (
               <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
                 <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Early verified factories</p>
                 <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Premium-only early access list</p>
-                {earlyVerifiedError ? (
+                {!canEarlyAccess ? (
+                  <div className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
+                    Upgrade to Premium to unlock early access to newly verified factories.
+                    <div className="mt-2">
+                      <Link to="/pricing" className="text-[11px] font-semibold text-[var(--gt-blue)] hover:underline">View Premium options</Link>
+                    </div>
+                  </div>
+                ) : earlyVerifiedError ? (
                   <div className="mt-2 text-xs text-rose-600 dark:text-rose-300">{earlyVerifiedError}</div>
                 ) : (
                   <div className="mt-3 space-y-2">

@@ -21,7 +21,7 @@ export default function VerificationPanel({ summary }) {
           <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Verification & Credibility</p>
           <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">More licensing proof increases credibility and international trust.</p>
         </div>
-        <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ring-1 ${chip.className}`} title="Verification is subscription-based and renews monthly">
+        <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ring-1${chip.className}`} title="Verification is subscription-based and renews monthly">
           <Icon size={16} />
           {chip.label}
         </span>
@@ -62,7 +62,7 @@ export default function VerificationPanel({ summary }) {
           {(summary?.required_checklist || []).map((row) => (
             <div key={row.key} className="flex items-center justify-between gap-2 rounded-xl bg-white px-3 py-2 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
               <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">{row.label}</span>
-              <span className={`text-xs font-bold ${row.submitted ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}>
+              <span className={`text-xs font-bold${row.submitted ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}>
                 {row.submitted ? '✓' : 'Missing'}
               </span>
             </div>

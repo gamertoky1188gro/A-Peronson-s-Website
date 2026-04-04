@@ -35,7 +35,7 @@ export default function FeedItemCard({
 
   return (
     <article
-      className={`relative overflow-hidden rounded-2xl bg-[#ffffff] shadow-sm ring-1 ring-slate-200/60 transition hover:-translate-y-0.5 hover:shadow-md dark:bg-slate-900/50 dark:ring-slate-800 ${
+      className={`relative overflow-hidden rounded-2xl bg-[#ffffff] shadow-sm ring-1 ring-slate-200/60 transition hover:-translate-y-0.5 hover:shadow-md dark:bg-slate-900/50 dark:ring-slate-800${
         highlight ? 'ring-2 ring-[#3b82f6]/35' : ''
       }`}
       id={`feed-item-${item.entityType}-${item.id}`}
@@ -72,6 +72,16 @@ export default function FeedItemCard({
                     <span className="hidden sm:inline">Boosted</span>
                   </span>
                 ) : null}
+                {String(item.certificationStatus || '').toLowerCase() === 'certified' ? (
+                  <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200">
+                    Certified
+                  </span>
+                ) : null}
+                {isBuyerRequest && item.priorityActive ? (
+                  <span className="inline-flex items-center rounded-full bg-sky-50 px-2 py-1 text-[11px] font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-200">
+                    Priority
+                  </span>
+                ) : null}
                 {item.discussionActive ? (
                   <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-400/25">
                     Active discussion
@@ -91,7 +101,7 @@ export default function FeedItemCard({
 
       <div className="relative p-4">
         <div className="flex items-center justify-between gap-3">
-          <p className={`text-xs font-semibold ${isBuyerRequest ? 'text-emerald-700 dark:text-emerald-300' : 'text-indigo-700 dark:text-indigo-300'}`}>
+          <p className={`text-xs font-semibold${isBuyerRequest ? 'text-emerald-700 dark:text-emerald-300' : 'text-indigo-700 dark:text-indigo-300'}`}>
             {isBuyerRequest ? 'Buyer Request' : 'Company Product'}
           </p>
           {item.createdAt ? <p className="text-[11px] text-slate-400 dark:text-slate-500">{item.createdAt}</p> : null}
@@ -124,7 +134,7 @@ export default function FeedItemCard({
         )}
 
         {item.hasVideo ? (
-          <div className="mt-3 rounded-xl border border-dashed border-slate-300 bg-white p-4 text-center dark:border-white/10 dark:bg-white/5">
+          <div className="mt-3 rounded-xl borderless-shadow bg-white p-4 text-center dark:bg-white/5">
             <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Video available</p>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">Open the profile to view the gallery.</p>
           </div>

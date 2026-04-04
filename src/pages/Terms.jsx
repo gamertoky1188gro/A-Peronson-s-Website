@@ -22,7 +22,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 const easePremium = [0.16, 1, 0.3, 1]
 const Motion = motion
 
-function SignatureMark({ className = '' }) {
+function SignatureMark({ className='' }) {
   return (
     <div
       className={[
@@ -46,7 +46,7 @@ function SignatureMark({ className = '' }) {
   )
 }
 
-function LegalCard({ children, className = '', index = 0, id }) {
+function LegalCard({ children, className='', index = 0, id }) {
   const reduceMotion = useReducedMotion()
 
   return (
@@ -61,8 +61,8 @@ function LegalCard({ children, className = '', index = 0, id }) {
       }}
       className={[
         'rounded-2xl p-6 lg:p-8 transition-colors duration-500 ease-in-out',
-        'bg-[#ffffff] border border-slate-200 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
-        'dark:bg-[#0f172a] dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/5',
+        'bg-[#ffffff] borderless-shadow shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
+        'dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5',
         className,
       ].join(' ')}
     >
@@ -88,10 +88,10 @@ export default function Terms() {
           transition={{ duration: 0.5, ease: easePremium }}
           className="mb-8"
         >
-          <div className="rounded-3xl bg-[#ffffff]/80 backdrop-blur-md border border-slate-200 shadow-[0_10px_40px_rgba(2,6,23,0.06)] p-6 lg:p-8 dark:bg-[#0f172a]/70 dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out">
+          <div className="rounded-3xl bg-[#ffffff]/80 backdrop-blur-md borderless-shadow shadow-[0_10px_40px_rgba(2,6,23,0.06)] p-6 lg:p-8 dark:bg-[#0f172a]/70 dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out">
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase bg-indigo-50 text-indigo-700 border border-indigo-100 dark:bg-white/5 dark:text-indigo-200 dark:border-transparent dark:ring-1 dark:ring-white/10">
+                <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase bg-indigo-50 text-indigo-700 borderless-shadow dark:bg-white/5 dark:text-indigo-200 dark:ring-1 dark:ring-white/10">
                   Legal Agreement
                 </div>
                 <h1 className="mt-4 text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#0f172a] dark:text-white">
@@ -114,7 +114,7 @@ export default function Terms() {
         <div className="grid grid-cols-12 gap-6">
           <LegalCard index={0} className="col-span-12 md:col-span-6" id="purpose">
             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100 dark:bg-white/5 dark:text-indigo-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm">
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 borderless-shadow dark:bg-white/5 dark:text-indigo-200 dark:ring-1 dark:ring-white/10 text-sm">
                 1
               </span>
               Purpose of the Platform
@@ -136,7 +136,7 @@ export default function Terms() {
 
           <LegalCard index={1} className="col-span-12 md:col-span-6" id="account-policy">
             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100 dark:bg-white/5 dark:text-indigo-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm">
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 borderless-shadow dark:bg-white/5 dark:text-indigo-200 dark:ring-1 dark:ring-white/10 text-sm">
                 2
               </span>
               Account Policy
@@ -161,13 +161,13 @@ export default function Terms() {
             index={2}
             className={[
               'col-span-12',
-              '!bg-rose-50 !text-[#0f172a] !border-rose-200 !shadow-[0_12px_40px_rgba(244,63,94,0.12)]',
-              'dark:!bg-[#0b1220] dark:!text-white dark:border-transparent dark:ring-1 dark:ring-white/10 dark:shadow-none',
+              '!bg-rose-50 !text-[#0f172a] !ring-1 !ring-rose-200/70 !shadow-[0_12px_40px_rgba(244,63,94,0.12)]',
+              'dark:!bg-[#0b1220] dark:!text-white dark:ring-1 dark:ring-white/10 dark:ring-1 dark:ring-white/10 dark:shadow-none',
             ].join(' ')}
             id="conduct"
           >
             <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-3 flex items-center gap-3 text-[#0f172a] dark:text-white">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-rose-100 text-rose-800 border border-rose-200 dark:bg-white/10 dark:text-white dark:border-transparent text-sm">
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-rose-100 text-rose-800 borderless-shadow dark:bg-white/10 dark:text-white text-sm">
                 3
               </span>
               User Conduct
@@ -199,7 +199,7 @@ export default function Terms() {
             <p className="mt-6 text-sm italic text-slate-600 dark:text-white/80">
               All media content must be published in a professional and business-like manner.
             </p>
-            <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900 shadow-[0_8px_30px_rgba(244,63,94,0.12)] dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-100">
+            <div className="mt-6 rounded-2xl borderless-shadow bg-rose-50 p-4 text-sm text-rose-900 shadow-[0_8px_30px_rgba(244,63,94,0.12)] dark:bg-rose-500/10 dark:text-rose-100">
               <p className="font-bold uppercase tracking-wide">Strict policy: No third-party contact sharing</p>
               <p className="mt-2 leading-relaxed">
                 Sharing any external contact information (phone, email, WhatsApp, Telegram, Facebook, Instagram, or similar)
@@ -266,12 +266,12 @@ export default function Terms() {
                 index={3 + sectionIndex}
                 className={[
                   'col-span-12 md:col-span-6',
-                  isStitch ? 'border-dashed border-slate-200 dark:border-transparent outline outline-1 outline-dashed outline-slate-200/80 dark:outline-white/10' : '',
+                  isStitch ? 'ring-1 ring-slate-200/70 dark:ring-1 dark:ring-white/10 outline outline-1 outline-dashed outline-slate-200/80 dark:outline-white/10' : '',
                 ].join(' ')}
                 id={`section-${section.id}`}
               >
                 <h2 className="text-lg md:text-xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
-                  <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 dark:bg-white/5 dark:text-slate-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
                     {section.id}
                   </span>
                   {section.title}
@@ -295,7 +295,7 @@ export default function Terms() {
 
           <LegalCard
             index={8}
-            className="col-span-12 bg-amber-50 border-amber-200 text-amber-950 dark:bg-[rgba(120,53,15,0.10)] dark:text-amber-50 dark:ring-1 dark:ring-amber-500/20"
+            className="col-span-12 bg-amber-50 text-amber-950 dark:bg-[rgba(120,53,15,0.10)] dark:text-amber-50 dark:ring-1 dark:ring-amber-500/20 borderless-shadow"
             id="liability"
           >
             <h2 className="text-lg md:text-xl font-bold tracking-tight mb-3 flex items-center gap-2 text-amber-950 dark:text-white">
@@ -316,7 +316,7 @@ export default function Terms() {
 
           <LegalCard index={9} className="col-span-12" id="suspension">
             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 dark:bg-white/5 dark:text-slate-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm">
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
                 10
               </span>
               Account Suspension or Cancellation
@@ -359,7 +359,7 @@ export default function Terms() {
             transition={{ duration: 0.55, ease: easePremium, delay: reduceMotion ? 0 : 12 * 0.1 }}
             className="col-span-12 text-center"
           >
-            <div className="rounded-2xl p-6 bg-[#ffffff] border border-slate-200 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#0f172a] dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/5 transition-colors duration-500 ease-in-out">
+            <div className="rounded-2xl p-6 bg-[#ffffff] borderless-shadow shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5 transition-colors duration-500 ease-in-out">
               <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                 © 2026 GarTexHub Professional Network. All Rights Reserved.
               </p>
@@ -370,3 +370,4 @@ export default function Terms() {
     </div>
   )
 }
+

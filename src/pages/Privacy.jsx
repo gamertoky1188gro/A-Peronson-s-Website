@@ -23,7 +23,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 const easePremium = [0.16, 1, 0.3, 1]
 const Motion = motion
 
-function LegalCard({ children, className = '', index = 0, id }) {
+function LegalCard({ children, className='', index = 0, id }) {
   const reduceMotion = useReducedMotion()
 
   return (
@@ -38,8 +38,8 @@ function LegalCard({ children, className = '', index = 0, id }) {
       }}
       className={[
         'rounded-2xl p-6 lg:p-8 transition-colors duration-500 ease-in-out',
-        'bg-[#ffffff] border border-slate-200 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
-        'dark:bg-[#0f172a] dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/5',
+        'bg-[#ffffff] borderless-shadow shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
+        'dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5',
         className,
       ].join(' ')}
     >
@@ -72,10 +72,10 @@ export default function Privacy() {
           transition={{ duration: 0.5, ease: easePremium }}
           className="mb-5"
         >
-          <div className="rounded-3xl bg-[#ffffff]/80 backdrop-blur-md border border-slate-200 shadow-[0_10px_40px_rgba(2,6,23,0.06)] p-6 lg:p-8 dark:bg-[#0f172a]/70 dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out">
+          <div className="rounded-3xl bg-[#ffffff]/80 backdrop-blur-md borderless-shadow shadow-[0_10px_40px_rgba(2,6,23,0.06)] p-6 lg:p-8 dark:bg-[#0f172a]/70 dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out">
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase bg-sky-50 text-sky-700 border border-sky-100 dark:bg-white/5 dark:text-sky-200 dark:border-transparent dark:ring-1 dark:ring-white/10">
+                <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase bg-sky-50 text-sky-700 borderless-shadow dark:bg-white/5 dark:text-sky-200 dark:ring-1 dark:ring-white/10">
                   Legal Documentation
                 </div>
                 <h1 className="mt-4 text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#0f172a] dark:text-white">
@@ -94,7 +94,7 @@ export default function Privacy() {
         </motion.header>
 
         <div className="sticky top-[72px] z-40 mb-6">
-          <div className="rounded-2xl border border-slate-200 bg-[#ffffff]/70 backdrop-blur-md shadow-[0_10px_34px_rgba(2,6,23,0.05)] px-4 py-3 dark:bg-[#020617]/60 dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out">
+          <div className="rounded-2xl borderless-shadow bg-[#ffffff]/70 backdrop-blur-md shadow-[0_10px_34px_rgba(2,6,23,0.05)] px-4 py-3 dark:bg-[#020617]/60 dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out">
             <div className="flex flex-wrap items-center gap-2">
               <TocLink href="#collect" label="1. Collect" />
               <TocLink href="#use" label="2. Use" />
@@ -112,14 +112,14 @@ export default function Privacy() {
         <div className="grid grid-cols-12 gap-6">
           <LegalCard index={0} className="col-span-12" id="collect">
             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 dark:bg-white/5 dark:text-slate-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm">
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
                 1
               </span>
               Information We Collect
             </h2>
 
             <div className="grid grid-cols-12 gap-4">
-              <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] border border-slate-200 dark:bg-white/5 dark:border-transparent dark:ring-1 dark:ring-white/10">
+              <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10">
                 <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Account Data</h3>
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
                   {['Full Name', 'Organization Name', 'Email Address', 'Phone Number', 'Country', 'Verification Docs', 'Account Type'].map((item) => (
@@ -131,7 +131,7 @@ export default function Privacy() {
                 </ul>
               </div>
 
-              <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] border border-slate-200 dark:bg-white/5 dark:border-transparent dark:ring-1 dark:ring-white/10">
+              <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10">
                 <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Business Data</h3>
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
                   {['Product Specifications', 'Design Requirements', 'Order Documents', 'Digital Signature Records'].map((item) => (
@@ -143,7 +143,7 @@ export default function Privacy() {
                 </ul>
               </div>
 
-              <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] border border-slate-200 dark:bg-white/5 dark:border-transparent dark:ring-1 dark:ring-white/10">
+              <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10">
                 <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Communications</h3>
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
                   {['Chat messages', 'Video/Audio logs', 'Call recordings'].map((item) => (
@@ -155,7 +155,7 @@ export default function Privacy() {
                 </ul>
               </div>
 
-              <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] border border-slate-200 dark:bg-white/5 dark:border-transparent dark:ring-1 dark:ring-white/10">
+              <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10">
                 <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Technical Information</h3>
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
                   {['IP address', 'Device/Browser type', 'Usage activity', 'Search history'].map((item) => (
@@ -171,13 +171,13 @@ export default function Privacy() {
 
           <LegalCard index={1} className="col-span-12" id="use">
             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 dark:bg-white/5 dark:text-slate-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm">
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
                 2
               </span>
               How We Use Your Information
             </h2>
 
-            <div className="rounded-2xl p-5 bg-black/[0.02] border border-slate-200 dark:bg-white/5 dark:border-transparent dark:ring-1 dark:ring-white/10">
+            <div className="rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10">
               <ul className="grid md:grid-cols-2 gap-4 list-none p-0 m-0">
                 {[
                   'Account Management',
@@ -282,7 +282,7 @@ export default function Privacy() {
             transition={{ duration: 0.55, ease: easePremium, delay: reduceMotion ? 0 : 9 * 0.1 }}
             className="col-span-12 text-center"
           >
-            <div className="rounded-2xl p-6 bg-[#ffffff] border border-slate-200 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#0f172a] dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/5 transition-colors duration-500 ease-in-out">
+            <div className="rounded-2xl p-6 bg-[#ffffff] borderless-shadow shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5 transition-colors duration-500 ease-in-out">
               <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                 © 2026 GARTEXHUB PROFESSIONAL NETWORK. ALL RIGHTS RESERVE
               </p>
@@ -293,3 +293,4 @@ export default function Privacy() {
     </div>
   )
 }
+

@@ -1,6 +1,6 @@
 ﻿import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { apiRequest, getCurrentUser, getToken, API_BASE } from '../lib/auth'
+import { apiRequest, getCurrentUser, getToken, API_BASE, hasEntitlement } from '../lib/auth'
 
 // Roles allowed by router:
 // - buyer: create requests + see own requests + browse redacted summaries
@@ -233,7 +233,7 @@ const GARMENT_SUSTAIN_CERTS = ['GOTS', 'OEKO-TEX', 'GRS']
 export default function BuyerRequestManagement() {
   const user = useMemo(() => getCurrentUser(), [])
   const role = String(user?.role || '').toLowerCase()
-  const isPremium = String(user?.subscription_status || '').toLowerCase() === 'premium'
+  const canSmartMatch = hasEntitlement(user, 'smart_supplier_matching')
 
   const [moreFieldsOpen, setMoreFieldsOpen] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
@@ -481,6 +481,7 @@ export default function BuyerRequestManagement() {
 
   async function loadSmartMatches(requirementId) {
     if (!token || !requirementId) return
+    if (!canSmartMatch) return
     setSmartMatchLoading(requirementId)
     setSmartMatchError((prev) => ({ ...prev, [requirementId]: '' }))
     try {
@@ -613,8 +614,8 @@ export default function BuyerRequestManagement() {
               </button>
             </div>
 
-            <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
-              <p className="text-xs font-semibold text-slate-800">Step {step + 1} of {steps.length} â€” {steps[step]}</p>
+            <div className="mb-4 rounded-xl borderless-shadow bg-slate-50 p-3 text-xs text-slate-600">
+              <p className="text-xs font-semibold text-slate-800">Step {step + 1} of {steps.length} — {steps[step]}</p>
               <p className="mt-1">Complete each step so verified suppliers can quote faster.</p>
             </div>
 
@@ -622,7 +623,7 @@ export default function BuyerRequestManagement() {
               {steps.map((label, idx) => (
                 <div
                   key={`${label}-${idx}`}
-                  className={`rounded-full px-3 py-1 font-semibold ${
+                  className={`rounded-full px-3 py-1 font-semibold${
                     idx === step ? 'bg-[var(--gt-blue)] text-white' : idx < step ? 'bg-emerald-50 text-emerald-700' : 'bg-white text-slate-500 ring-1 ring-slate-200'
                   }`}
                 >
@@ -638,7 +639,7 @@ export default function BuyerRequestManagement() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <button
                     type="button"
-                    className={`rounded-2xl border px-4 py-4 text-left transition ${form.requestType === 'garments' ? 'border-[var(--gt-blue)] ring-2 ring-[var(--gt-blue)]/30' : 'border-slate-200'}`}
+                    className={`rounded-2xl borderless-shadow px-4 py-4 text-left transition${form.requestType === 'garments' ? ' ring-2 ring-[var(--gt-blue)]/30' : ''}`}
                     onClick={() => setForm({ ...form, requestType: 'garments' })}
                   >
                     <p className="text-sm font-semibold">Garments Buyer</p>
@@ -646,7 +647,7 @@ export default function BuyerRequestManagement() {
                   </button>
                   <button
                     type="button"
-                    className={`rounded-2xl border px-4 py-4 text-left transition ${form.requestType === 'textile' ? 'border-[var(--gt-blue)] ring-2 ring-[var(--gt-blue)]/30' : 'border-slate-200'}`}
+                    className={`rounded-2xl borderless-shadow px-4 py-4 text-left transition${form.requestType === 'textile' ? ' ring-2 ring-[var(--gt-blue)]/30' : ''}`}
                     onClick={() => setForm({ ...form, requestType: 'textile' })}
                   >
                     <p className="text-sm font-semibold">Textile Buyer</p>
@@ -659,37 +660,37 @@ export default function BuyerRequestManagement() {
             {step === 1 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2 text-sm font-semibold text-slate-900">Basic info</div>
-                <Field label="Request title" hint="Example: Denim Jacket — 10k pcs">
-                  <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+                <Field label="Request title" hint="Example: Denim Jacket � 10k pcs">
+                  <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
                 </Field>
                 {isTextile ? (
                   <>
                     <Field label="Material type">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.materialType} onChange={(e) => setForm({ ...form, materialType: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.materialType} onChange={(e) => setForm({ ...form, materialType: e.target.value })} />
                     </Field>
                     <Field label="Sub-category">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.subCategory} onChange={(e) => setForm({ ...form, subCategory: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.subCategory} onChange={(e) => setForm({ ...form, subCategory: e.target.value })} />
                     </Field>
                     <Field label="Quantity">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} />
                     </Field>
                     <Field label="Unit">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
                     </Field>
                   </>
                 ) : (
                   <>
                     <Field label="Product category">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
                     </Field>
                     <Field label="Gender target">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.genderTarget} onChange={(e) => setForm({ ...form, genderTarget: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.genderTarget} onChange={(e) => setForm({ ...form, genderTarget: e.target.value })} />
                     </Field>
                     <Field label="Season">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.season} onChange={(e) => setForm({ ...form, season: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.season} onChange={(e) => setForm({ ...form, season: e.target.value })} />
                     </Field>
                     <Field label="Total quantity (pcs)">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.totalQuantity} onChange={(e) => setForm({ ...form, totalQuantity: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.totalQuantity} onChange={(e) => setForm({ ...form, totalQuantity: e.target.value })} />
                     </Field>
                   </>
                 )}
@@ -697,11 +698,11 @@ export default function BuyerRequestManagement() {
                 {moreFieldsOpen ? (
                   <>
                     <Field label="Industry (optional)">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.industry} onChange={(e) => setForm({ ...form, industry: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.industry} onChange={(e) => setForm({ ...form, industry: e.target.value })} />
                     </Field>
                     {!isTextile ? (
                       <Field label="Number of styles (optional)">
-                        <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.numberOfStyles} onChange={(e) => setForm({ ...form, numberOfStyles: e.target.value })} />
+                        <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.numberOfStyles} onChange={(e) => setForm({ ...form, numberOfStyles: e.target.value })} />
                       </Field>
                     ) : null}
                   </>
@@ -716,55 +717,55 @@ export default function BuyerRequestManagement() {
                 {isTextile ? (
                   <>
                     <Field label="Fiber composition">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.fiberComposition} onChange={(e) => setForm({ ...form, fiberComposition: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.fiberComposition} onChange={(e) => setForm({ ...form, fiberComposition: e.target.value })} />
                     </Field>
                     <Field label="Fabric weight (GSM)">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.fabricWeightGsm} onChange={(e) => setForm({ ...form, fabricWeightGsm: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.fabricWeightGsm} onChange={(e) => setForm({ ...form, fabricWeightGsm: e.target.value })} />
                     </Field>
                     <Field label="Fabric width">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.fabricWidth} onChange={(e) => setForm({ ...form, fabricWidth: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.fabricWidth} onChange={(e) => setForm({ ...form, fabricWidth: e.target.value })} />
                     </Field>
                     <Field label="Yarn count">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.yarnCount} onChange={(e) => setForm({ ...form, yarnCount: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.yarnCount} onChange={(e) => setForm({ ...form, yarnCount: e.target.value })} />
                     </Field>
                     <Field label="Thread count">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.threadCount} onChange={(e) => setForm({ ...form, threadCount: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.threadCount} onChange={(e) => setForm({ ...form, threadCount: e.target.value })} />
                     </Field>
                     <Field label="Finish required">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.finishRequired} onChange={(e) => setForm({ ...form, finishRequired: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.finishRequired} onChange={(e) => setForm({ ...form, finishRequired: e.target.value })} />
                     </Field>
                     <Field label="Stretch required">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.stretchRequired} onChange={(e) => setForm({ ...form, stretchRequired: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.stretchRequired} onChange={(e) => setForm({ ...form, stretchRequired: e.target.value })} />
                     </Field>
                     <Field label="Color">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} />
                     </Field>
                     <Field label="Pattern">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.pattern} onChange={(e) => setForm({ ...form, pattern: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.pattern} onChange={(e) => setForm({ ...form, pattern: e.target.value })} />
                     </Field>
                   </>
                 ) : (
                   <>
                     <Field label="Fabric composition">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.fabricComposition} onChange={(e) => setForm({ ...form, fabricComposition: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.fabricComposition} onChange={(e) => setForm({ ...form, fabricComposition: e.target.value })} />
                     </Field>
                     <Field label="Fabric weight (GSM)">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.fabricWeightGsm} onChange={(e) => setForm({ ...form, fabricWeightGsm: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.fabricWeightGsm} onChange={(e) => setForm({ ...form, fabricWeightGsm: e.target.value })} />
                     </Field>
                     <Field label="Weave / Knit type">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.weaveOrKnit} onChange={(e) => setForm({ ...form, weaveOrKnit: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.weaveOrKnit} onChange={(e) => setForm({ ...form, weaveOrKnit: e.target.value })} />
                     </Field>
                     <Field label="Size range">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.sizeRange} onChange={(e) => setForm({ ...form, sizeRange: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.sizeRange} onChange={(e) => setForm({ ...form, sizeRange: e.target.value })} />
                     </Field>
                     <Field label="Color requirement">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.colorRequirement} onChange={(e) => setForm({ ...form, colorRequirement: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.colorRequirement} onChange={(e) => setForm({ ...form, colorRequirement: e.target.value })} />
                     </Field>
                     <Field label="Style description">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.styleDescription} onChange={(e) => setForm({ ...form, styleDescription: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.styleDescription} onChange={(e) => setForm({ ...form, styleDescription: e.target.value })} />
                     </Field>
                     <Field label="Tech pack required">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.techPackRequired} onChange={(e) => setForm({ ...form, techPackRequired: e.target.value })} placeholder="Yes / No" />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.techPackRequired} onChange={(e) => setForm({ ...form, techPackRequired: e.target.value })} placeholder="Yes / No" />
                     </Field>
                   </>
                 )}
@@ -812,49 +813,49 @@ export default function BuyerRequestManagement() {
                 {isTextile ? (
                   <>
                     <Field label="Target price">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.targetPrice} onChange={(e) => setForm({ ...form, targetPrice: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.targetPrice} onChange={(e) => setForm({ ...form, targetPrice: e.target.value })} />
                     </Field>
                     <Field label="Price unit">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.priceUnit} onChange={(e) => setForm({ ...form, priceUnit: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.priceUnit} onChange={(e) => setForm({ ...form, priceUnit: e.target.value })} />
                     </Field>
                     <Field label="Incoterm">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.incoterms} onChange={(e) => setForm({ ...form, incoterms: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.incoterms} onChange={(e) => setForm({ ...form, incoterms: e.target.value })} />
                     </Field>
                     <Field label="Delivery port">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.deliveryPort} onChange={(e) => setForm({ ...form, deliveryPort: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.deliveryPort} onChange={(e) => setForm({ ...form, deliveryPort: e.target.value })} />
                     </Field>
                     <Field label="Lead time required">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.leadTimeRequired} onChange={(e) => setForm({ ...form, leadTimeRequired: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.leadTimeRequired} onChange={(e) => setForm({ ...form, leadTimeRequired: e.target.value })} />
                     </Field>
                     <Field label="Lab test required">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.labTestRequired} onChange={(e) => setForm({ ...form, labTestRequired: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.labTestRequired} onChange={(e) => setForm({ ...form, labTestRequired: e.target.value })} />
                     </Field>
                     <Field label="Swatch/sample first?">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.swatchFirst} onChange={(e) => setForm({ ...form, swatchFirst: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.swatchFirst} onChange={(e) => setForm({ ...form, swatchFirst: e.target.value })} />
                     </Field>
                   </>
                 ) : (
                   <>
                     <Field label="Target FOB price">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.targetFobPrice} onChange={(e) => setForm({ ...form, targetFobPrice: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.targetFobPrice} onChange={(e) => setForm({ ...form, targetFobPrice: e.target.value })} />
                     </Field>
                     <Field label="Incoterm">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.incoterms} onChange={(e) => setForm({ ...form, incoterms: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.incoterms} onChange={(e) => setForm({ ...form, incoterms: e.target.value })} />
                     </Field>
                     <Field label="Destination port">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.destinationPort} onChange={(e) => setForm({ ...form, destinationPort: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.destinationPort} onChange={(e) => setForm({ ...form, destinationPort: e.target.value })} />
                     </Field>
                     <Field label="Ex-factory date">
-                      <input type="date" className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.exFactoryDate} onChange={(e) => setForm({ ...form, exFactoryDate: e.target.value })} />
+                      <input type="date" className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.exFactoryDate} onChange={(e) => setForm({ ...form, exFactoryDate: e.target.value })} />
                     </Field>
                     <Field label="Sample required">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.sampleRequired} onChange={(e) => setForm({ ...form, sampleRequired: e.target.value })} placeholder="Yes / No" />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.sampleRequired} onChange={(e) => setForm({ ...form, sampleRequired: e.target.value })} placeholder="Yes / No" />
                     </Field>
                     <Field label="Sample type">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.sampleType} onChange={(e) => setForm({ ...form, sampleType: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.sampleType} onChange={(e) => setForm({ ...form, sampleType: e.target.value })} />
                     </Field>
                     <Field label="Payment terms">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.paymentTerms} onChange={(e) => setForm({ ...form, paymentTerms: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.paymentTerms} onChange={(e) => setForm({ ...form, paymentTerms: e.target.value })} />
                     </Field>
                   </>
                 )}
@@ -862,13 +863,13 @@ export default function BuyerRequestManagement() {
                 {moreFieldsOpen ? (
                   <>
                     <Field label="Quote deadline">
-                      <input type="date" className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.quoteDeadline} onChange={(e) => setForm({ ...form, quoteDeadline: e.target.value })} />
+                      <input type="date" className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.quoteDeadline} onChange={(e) => setForm({ ...form, quoteDeadline: e.target.value })} />
                     </Field>
                     <Field label="Request expiry">
-                      <input type="date" className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.expiresAt} onChange={(e) => setForm({ ...form, expiresAt: e.target.value })} />
+                      <input type="date" className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.expiresAt} onChange={(e) => setForm({ ...form, expiresAt: e.target.value })} />
                     </Field>
                     <Field label="Max suppliers to contact">
-                      <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.maxSuppliers} onChange={(e) => setForm({ ...form, maxSuppliers: e.target.value })} />
+                      <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.maxSuppliers} onChange={(e) => setForm({ ...form, maxSuppliers: e.target.value })} />
                     </Field>
                       <Field
                         label="Messaging access"
@@ -909,7 +910,7 @@ export default function BuyerRequestManagement() {
                     <Field label="Compliance certifications">
                       <div className="flex flex-wrap gap-2">
                         {GARMENT_COMPLIANCE_CERTS.map((cert) => (
-                          <label key={cert} className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs">
+                          <label key={cert} className="inline-flex items-center gap-2 rounded-full borderless-shadow px-3 py-1 text-xs">
                             <input
                               type="checkbox"
                               checked={form.complianceCerts.includes(cert)}
@@ -928,7 +929,7 @@ export default function BuyerRequestManagement() {
                     <Field label="Sustainability certifications">
                       <div className="flex flex-wrap gap-2">
                         {GARMENT_SUSTAIN_CERTS.map((cert) => (
-                          <label key={cert} className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs">
+                          <label key={cert} className="inline-flex items-center gap-2 rounded-full borderless-shadow px-3 py-1 text-xs">
                             <input
                               type="checkbox"
                               checked={form.sustainabilityCerts.includes(cert)}
@@ -945,25 +946,25 @@ export default function BuyerRequestManagement() {
                       </div>
                     </Field>
                     <Field label="Compliance notes">
-                      <textarea className="w-full min-h-[100px] rounded-lg border border-slate-200 px-3 py-2" value={form.complianceNotes} onChange={(e) => setForm({ ...form, complianceNotes: e.target.value })} />
+                      <textarea className="w-full min-h-[100px] rounded-lg borderless-shadow px-3 py-2" value={form.complianceNotes} onChange={(e) => setForm({ ...form, complianceNotes: e.target.value })} />
                     </Field>
                   </>
                 ) : (
                   <Field label="Lab/Certification notes">
-                    <textarea className="w-full min-h-[100px] rounded-lg border border-slate-200 px-3 py-2" value={form.labCertNotes} onChange={(e) => setForm({ ...form, labCertNotes: e.target.value })} />
+                    <textarea className="w-full min-h-[100px] rounded-lg borderless-shadow px-3 py-2" value={form.labCertNotes} onChange={(e) => setForm({ ...form, labCertNotes: e.target.value })} />
                   </Field>
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2 text-sm font-semibold text-slate-900">Supplier preference</div>
                   <Field label="Preferred factory location">
-                    <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.preferredFactoryLocation} onChange={(e) => setForm({ ...form, preferredFactoryLocation: e.target.value })} placeholder="Gazipur / Chittagong / Any" />
+                    <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.preferredFactoryLocation} onChange={(e) => setForm({ ...form, preferredFactoryLocation: e.target.value })} placeholder="Gazipur / Chittagong / Any" />
                   </Field>
                   <Field label="Factory size preference">
-                    <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.factorySizePreference} onChange={(e) => setForm({ ...form, factorySizePreference: e.target.value })} placeholder="Small / Medium / Large" />
+                    <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.factorySizePreference} onChange={(e) => setForm({ ...form, factorySizePreference: e.target.value })} placeholder="Small / Medium / Large" />
                   </Field>
                   <Field label="Export experience preference">
-                    <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.exportExperiencePreference} onChange={(e) => setForm({ ...form, exportExperiencePreference: e.target.value })} placeholder="EU required / US required / Any" />
+                    <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.exportExperiencePreference} onChange={(e) => setForm({ ...form, exportExperiencePreference: e.target.value })} placeholder="EU required / US required / Any" />
                   </Field>
                   <Field label="Confidentiality">
                     <label className="flex items-center gap-2 text-sm text-slate-700">
@@ -980,41 +981,41 @@ export default function BuyerRequestManagement() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2 text-sm font-semibold text-slate-900">Packaging & shipment</div>
                   <Field label="Packaging requirement">
-                    <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.packagingRequirement} onChange={(e) => setForm({ ...form, packagingRequirement: e.target.value })} placeholder="Poly bag / Hanger / Flat pack" />
+                    <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.packagingRequirement} onChange={(e) => setForm({ ...form, packagingRequirement: e.target.value })} placeholder="Poly bag / Hanger / Flat pack" />
                   </Field>
                   <Field label="Origin label requirement">
-                    <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.originLabelRequired} onChange={(e) => setForm({ ...form, originLabelRequired: e.target.value })} placeholder="Made in Bangladesh required?" />
+                    <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.originLabelRequired} onChange={(e) => setForm({ ...form, originLabelRequired: e.target.value })} placeholder="Made in Bangladesh required?" />
                   </Field>
                   <Field label="Hang tag / Barcode">
-                    <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.hangtagBarcode} onChange={(e) => setForm({ ...form, hangtagBarcode: e.target.value })} placeholder="Buyer-supplied / Factory to arrange" />
+                    <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.hangtagBarcode} onChange={(e) => setForm({ ...form, hangtagBarcode: e.target.value })} placeholder="Buyer-supplied / Factory to arrange" />
                   </Field>
                   <Field label="Partial shipment allowed">
-                    <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.partialShipmentAllowed} onChange={(e) => setForm({ ...form, partialShipmentAllowed: e.target.value })} placeholder="Yes / No" />
+                    <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.partialShipmentAllowed} onChange={(e) => setForm({ ...form, partialShipmentAllowed: e.target.value })} placeholder="Yes / No" />
                   </Field>
                   <Field label="Shipment mode">
-                    <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={form.shipmentMode} onChange={(e) => setForm({ ...form, shipmentMode: e.target.value })} placeholder="Sea / Air / Both" />
+                    <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.shipmentMode} onChange={(e) => setForm({ ...form, shipmentMode: e.target.value })} placeholder="Sea / Air / Both" />
                   </Field>
                 </div>
 
                 {moreFieldsOpen ? (
-                  <div className="rounded-xl border border-slate-200 p-3">
+                  <div className="rounded-xl borderless-shadow p-3">
                     <p className="text-xs font-semibold text-slate-700">Custom fields</p>
                     <div className="mt-2 space-y-2">
                       {(Array.isArray(form.customFields) ? form.customFields : []).map((row, index) => (
                         <div key={`custom-${index}`} className="flex flex-wrap gap-2">
                           <input
-                            className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                            className="flex-1 rounded-lg borderless-shadow px-3 py-2 text-sm"
                             placeholder="Label"
                             value={row.label}
                             onChange={(e) => updateCustomField(index, 'label', e.target.value)}
                           />
                           <input
-                            className="flex-[2] rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                            className="flex-[2] rounded-lg borderless-shadow px-3 py-2 text-sm"
                             placeholder="Value"
                             value={row.value}
                             onChange={(e) => updateCustomField(index, 'value', e.target.value)}
                           />
-                          <button type="button" className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold" onClick={() => removeCustomField(index)}>
+                          <button type="button" className="rounded-lg borderless-shadow px-3 py-2 text-xs font-semibold" onClick={() => removeCustomField(index)}>
                             Remove
                           </button>
                         </div>
@@ -1027,7 +1028,7 @@ export default function BuyerRequestManagement() {
                 ) : null}
 
                 <Field label="Custom description" hint="Use this for extra notes, design details, or negotiation context.">
-                  <textarea className="w-full min-h-[140px] rounded-lg border border-slate-200 px-3 py-2" value={form.customDescription} onChange={(e) => setForm({ ...form, customDescription: e.target.value })} />
+                  <textarea className="w-full min-h-[140px] rounded-lg borderless-shadow px-3 py-2" value={form.customDescription} onChange={(e) => setForm({ ...form, customDescription: e.target.value })} />
                 </Field>
 
             </div>
@@ -1055,7 +1056,7 @@ export default function BuyerRequestManagement() {
                 type="button"
                 disabled={isFirstStep}
                 onClick={() => setStep((prev) => Math.max(0, prev - 1))}
-                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                className="rounded-lg borderless-shadow px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
               >
                 Back
               </button>
@@ -1064,7 +1065,7 @@ export default function BuyerRequestManagement() {
                   type="button"
                   disabled={saving}
                   onClick={saveDraft}
-                  className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-70"
+                  className="rounded-lg borderless-shadow px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-70"
                 >
                   {saving ? 'Saving...' : 'Save Draft'}
                 </button>
@@ -1098,10 +1099,10 @@ export default function BuyerRequestManagement() {
               <div>
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Open Buyer Requests</h2>
                 <p className="text-xs text-slate-500">
-                  <span className="font-semibold">Assign</span> routes a request to an Agent ID so teammates donâ€™t overlap work.
+                  <span className="font-semibold">Assign</span> routes a request to an Agent ID so teammates don’t overlap work.
                 </p>
               </div>
-              <button type="button" onClick={loadRequests} className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold hover:bg-slate-50">
+              <button type="button" onClick={loadRequests} className="rounded-full borderless-shadow px-3 py-2 text-xs font-semibold hover:bg-slate-50">
                 Refresh
               </button>
             </div>
@@ -1123,7 +1124,7 @@ export default function BuyerRequestManagement() {
                 </thead>
                 <tbody>
                   {myRequests.map((r) => (
-                    <tr key={r.id} className="border-t border-slate-200/60">
+                    <tr key={r.id} className="borderless-divider-t">
                       <td className="py-2 pr-3">
                         <div className="font-semibold text-slate-900">{r.title || r.category || 'Buyer Request'}</div>
                         <div className="text-xs text-slate-500">Buyer: {String(r.buyer_id || '').slice(0, 8)}...</div>
@@ -1139,7 +1140,7 @@ export default function BuyerRequestManagement() {
                       <td className="py-2 pr-3">{r.delivery_timeline || r.timeline_days || '--'}</td>
                       <td className="py-2 pr-3">
                         <select
-                          className="w-full rounded-lg border border-slate-200 px-2 py-2 text-sm"
+                          className="w-full rounded-lg borderless-shadow px-2 py-2 text-sm"
                           value={r.assigned_agent_id || ''}
                           onChange={(e) => assignRequest(r.id, e.target.value)}
                         >
@@ -1164,7 +1165,7 @@ export default function BuyerRequestManagement() {
           <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">My Requests</h2>
-              <button type="button" onClick={loadRequests} className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold hover:bg-slate-50">
+              <button type="button" onClick={loadRequests} className="rounded-full borderless-shadow px-3 py-2 text-xs font-semibold hover:bg-slate-50">
                 Refresh
               </button>
             </div>
@@ -1181,16 +1182,16 @@ export default function BuyerRequestManagement() {
                   {editingId === r.id ? (
                     <div className="space-y-3">
                       <Field label="Title">
-                        <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} />
+                        <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} />
                       </Field>
                       <Field label="Category">
-                        <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={editForm.category} onChange={(e) => setEditForm({ ...editForm, category: e.target.value })} />
+                        <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={editForm.category} onChange={(e) => setEditForm({ ...editForm, category: e.target.value })} />
                       </Field>
                       <Field label="Quantity">
-                        <input className="w-full rounded-lg border border-slate-200 px-3 py-2" value={editForm.quantity} onChange={(e) => setEditForm({ ...editForm, quantity: e.target.value })} />
+                        <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={editForm.quantity} onChange={(e) => setEditForm({ ...editForm, quantity: e.target.value })} />
                       </Field>
                       <Field label="Custom description">
-                        <textarea className="w-full min-h-[120px] rounded-lg border border-slate-200 px-3 py-2" value={editForm.customDescription} onChange={(e) => setEditForm({ ...editForm, customDescription: e.target.value })} />
+                        <textarea className="w-full min-h-[120px] rounded-lg borderless-shadow px-3 py-2" value={editForm.customDescription} onChange={(e) => setEditForm({ ...editForm, customDescription: e.target.value })} />
                       </Field>
                         <Field
                           label="Messaging access"
@@ -1221,7 +1222,7 @@ export default function BuyerRequestManagement() {
                         <button type="button" disabled={saving} className="rounded-lg bg-[var(--gt-blue)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--gt-blue-hover)] disabled:opacity-70" onClick={saveEdit}>
                           Save
                         </button>
-                        <button type="button" className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold" onClick={() => setEditingId('')}>
+                        <button type="button" className="rounded-lg borderless-shadow px-4 py-2 text-sm font-semibold" onClick={() => setEditingId('')}>
                           Cancel
                         </button>
                       </div>
@@ -1241,13 +1242,13 @@ export default function BuyerRequestManagement() {
                         </div>
                       </div>
                         <div className="shrink-0 flex gap-2">
-                        <button type="button" className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50" onClick={() => duplicateRequest(r)}>
+                        <button type="button" className="rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50" onClick={() => duplicateRequest(r)}>
                           Duplicate
                         </button>
                         <button
                           type="button"
-                          disabled={!isPremium}
-                          className="rounded-full border border-indigo-200 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 disabled:opacity-60"
+                          disabled={!canSmartMatch}
+                          className="rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 disabled:opacity-60"
                           onClick={() => loadSmartMatches(r.id)}
                         >
                           {smartMatchLoading === r.id ? 'Matching...' : 'Smart match'}
@@ -1255,21 +1256,26 @@ export default function BuyerRequestManagement() {
                         <button type="button" className="rounded-full bg-[var(--gt-blue)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--gt-blue-hover)]" onClick={() => startEditing(r)}>
                           Edit
                         </button>
-                        <button type="button" className="rounded-full border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50" onClick={() => deleteRequest(r.id)}>
+                        <button type="button" className="rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50" onClick={() => deleteRequest(r.id)}>
                           Delete
                         </button>
                       </div>
                     </div>
 
-                    {!isPremium ? (
-                      <p className="text-[11px] text-amber-600">Premium required for smart supplier matching.</p>
+                    {!canSmartMatch ? (
+                      <div className="rounded-xl bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-200/70">
+                        Smart supplier matching is a Premium feature.
+                        <div className="mt-2">
+                          <Link to="/pricing" className="text-[11px] font-semibold text-[var(--gt-blue)] hover:underline">Upgrade to unlock</Link>
+                        </div>
+                      </div>
                     ) : null}
 
                     {smartMatchError[r.id] ? (
                       <p className="text-[11px] text-rose-600">{smartMatchError[r.id]}</p>
                     ) : null}
 
-                    {isPremium && (smartMatches[r.id]?.length || smartMatchLoading === r.id) ? (
+                    {canSmartMatch && (smartMatches[r.id]?.length || smartMatchLoading === r.id) ? (
                       <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200/70">
                         <p className="text-xs font-semibold text-slate-700">Smart matches</p>
                         <div className="mt-2 space-y-2">
@@ -1323,7 +1329,7 @@ export default function BuyerRequestManagement() {
 
                       <div className="mt-3 flex flex-wrap items-center gap-2">
                         <select
-                          className="rounded-lg border border-slate-200 px-2 py-1 text-xs"
+                          className="rounded-lg borderless-shadow px-2 py-1 text-xs"
                           value={selectedType}
                           onChange={(e) => setAttachmentTypeByRequest((prev) => ({ ...prev, [r.id]: e.target.value }))}
                         >
@@ -1363,7 +1369,7 @@ export default function BuyerRequestManagement() {
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Browse Requests (Summary Only)</h2>
                 <p className="text-xs text-slate-500">You can research market demand, but full details remain private.</p>
               </div>
-              <button type="button" onClick={loadBrowse} className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold hover:bg-slate-50">
+              <button type="button" onClick={loadBrowse} className="rounded-full borderless-shadow px-3 py-2 text-xs font-semibold hover:bg-slate-50">
                 {loadingBrowse ? 'Refreshing...' : 'Refresh'}
               </button>
             </div>
@@ -1393,6 +1399,8 @@ export default function BuyerRequestManagement() {
     </div>
   )
 }
+
+
 
 
 

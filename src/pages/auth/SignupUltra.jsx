@@ -73,7 +73,7 @@ export default function SignupUltra() {
 
   return (
     <div className="min-h-screen neo-page cyberpunk-page bg-slate-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl bg-white neo-panel cyberpunk-card rounded-xl p-8 border-4 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.5)]">
+      <div className="w-full max-w-2xl bg-white neo-panel cyberpunk-card rounded-xl p-8 shadow-[0_0_20px_rgba(99,102,241,0.5)]">
         <div className="flex items-center gap-2 mb-2">
           <span className="bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-tighter">Ultra Access</span>
           <h1 className="text-3xl font-bold text-slate-900">Elevated Registration</h1>
@@ -83,19 +83,19 @@ export default function SignupUltra() {
         <form className="mt-6 grid md:grid-cols-2 gap-4" onSubmit={handleSubmit}>
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">Full Name</label>
-            <input className="w-full px-4 py-2.5 border-2 border-slate-100 rounded-lg focus:border-indigo-500 outline-none transition-colors" value={form.name} onChange={(e) => onChange('name', e.target.value)} required />
+            <input className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors borderless-shadow" value={form.name} onChange={(e) => onChange('name', e.target.value)} required />
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">Secret Email</label>
-            <input type="email" className="w-full px-4 py-2.5 border-2 border-slate-100 rounded-lg focus:border-indigo-500 outline-none transition-colors" value={form.email} onChange={(e) => onChange('email', e.target.value)} required />
+            <input type="email" className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors borderless-shadow" value={form.email} onChange={(e) => onChange('email', e.target.value)} required />
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">Master Password</label>
-            <input type="password" placeholder="--------" className="w-full px-4 py-2.5 border-2 border-slate-100 rounded-lg focus:border-indigo-500 outline-none transition-colors" value={form.password} onChange={(e) => onChange('password', e.target.value)} required />
+            <input type="password" placeholder="--------" className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors borderless-shadow" value={form.password} onChange={(e) => onChange('password', e.target.value)} required />
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">Elevated Role</label>
-            <select className="w-full px-4 py-2.5 border-2 border-slate-100 rounded-lg focus:border-indigo-500 outline-none bg-white transition-colors" value={form.role} onChange={(e) => onChange('role', e.target.value)}>
+            <select className="w-full px-4 py-2.5 rounded-lg outline-none bg-white transition-colors borderless-shadow" value={form.role} onChange={(e) => onChange('role', e.target.value)}>
               <option value="admin">Administrator</option>
               <option value="owner">System Owner</option>
               <option value="agent">Operational Agent</option>
@@ -106,19 +106,19 @@ export default function SignupUltra() {
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">HQ Country</label>
-            <input className="w-full px-4 py-2.5 border-2 border-slate-100 rounded-lg focus:border-indigo-500 outline-none transition-colors" value={form.country} onChange={(e) => onChange('country', e.target.value)} required />
+            <input className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors borderless-shadow" value={form.country} onChange={(e) => onChange('country', e.target.value)} required />
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">Organization / Entity</label>
-            <input className="w-full px-4 py-2.5 border-2 border-slate-100 rounded-lg focus:border-indigo-500 outline-none transition-colors" value={form.organization} onChange={(e) => onChange('organization', e.target.value)} />
+            <input className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors borderless-shadow" value={form.organization} onChange={(e) => onChange('organization', e.target.value)} />
           </div>
 
-          <div className="md:col-span-2 bg-indigo-50 border-2 border-indigo-100 rounded-xl p-4 text-xs text-indigo-900 leading-relaxed">
+          <div className="md:col-span-2 bg-indigo-50 rounded-xl p-4 text-xs text-indigo-900 leading-relaxed borderless-shadow">
             <p className="font-bold mb-1 underline">⚠️ Security Notice:</p>
             <p>Admin and Owner accounts are automatically granted full system verification and override capabilities. All actions performed through this terminal are logged for security auditing. High-level accounts must maintain 2FA after initial login.</p>
           </div>
 
-          {error ? <p className="md:col-span-2 text-sm font-bold text-rose-600 bg-rose-50 p-2 rounded border border-rose-100">Auth Error: {error}</p> : null}
+          {error ? <p className="md:col-span-2 text-sm font-bold text-rose-600 bg-rose-50 p-2 rounded borderless-shadow">Auth Error: {error}</p> : null}
 
           <div className="md:col-span-2 pt-2">
             <button 

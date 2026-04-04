@@ -17,7 +17,7 @@ function Stars({ value, onChange }) {
           key={score}
           type="button"
           onClick={() => onChange(score)}
-          className={`h-8 w-8 rounded-full text-sm font-semibold transition ${
+          className={`h-8 w-8 rounded-full text-sm font-semibold transition${
             score <= value
               ? 'bg-amber-400 text-white shadow-sm'
               : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
@@ -131,7 +131,7 @@ export default function RatingFeedback() {
           </p>
         </div>
 
-        {feedback ? <div className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700">{feedback}</div> : null}
+        {feedback ? <div className="rounded-xl borderless-shadow bg-white p-3 text-sm text-slate-700">{feedback}</div> : null}
 
         {items.length === 0 ? (
           <div className="rounded-2xl bg-white p-6 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
@@ -149,7 +149,7 @@ export default function RatingFeedback() {
             return (
               <div
                 key={row.id}
-                className={`rounded-2xl bg-white p-5 shadow-sm ring-1 ${isFocused ? 'ring-[var(--gt-blue)]' : 'ring-slate-200/60'} dark:bg-slate-900/50 dark:ring-slate-800`}
+                className={`rounded-2xl bg-white p-5 shadow-sm ring-1${isFocused ? 'ring-[var(--gt-blue)]' : 'ring-slate-200/60'}dark:bg-slate-900/50 dark:ring-slate-800`}
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
@@ -163,7 +163,7 @@ export default function RatingFeedback() {
                 </div>
 
                 {suggested ? (
-                  <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-900">
+                  <div className="mt-4 rounded-xl borderless-shadow bg-emerald-50 p-3 text-xs text-emerald-900">
                     Suggested rating: <span className="font-semibold">{suggested.toFixed(1)}</span>
                     {Array.isArray(row.suggested_reasons) && row.suggested_reasons.length ? (
                       <span className="ml-2 text-emerald-800">({row.suggested_reasons.join(', ')})</span>
@@ -187,7 +187,7 @@ export default function RatingFeedback() {
                     value={draft.comment}
                     onChange={(e) => updateDraft(row.id, { comment: e.target.value })}
                     placeholder="Optional comment for this interaction..."
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100"
+                    className="w-full rounded-xl borderless-shadow bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-slate-950/40 dark:text-slate-100"
                     rows={3}
                   />
                 </div>

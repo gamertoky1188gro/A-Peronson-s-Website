@@ -342,9 +342,15 @@ export async function deactivateOrRemoveMember(orgOwnerId, memberId, mode = 'dea
   return { member: cleanAgent(users[idx]), mode: 'deactivate' }
 }
 
-export function getMemberConstraints() {
+export async function getMemberConstraints(orgOwnerRecord = null) {
+  const config = await getAdminConfig()
+  const freeLimit = Number(config?.plan_limits?.free?.agent_limit ?? DEFAULT_FREE_MEMBER_LIMIT)
+  const premiumLimit = Number(config?.plan_limits?.premium?.agent_limit ?? 999)
+  const plan = orgOwnerRecord ? await getPlanForUser(orgOwnerRecord) : 'free'
   return {
-    free_member_limit: DEFAULT_FREE_MEMBER_LIMIT,
+    plan,
+    free_member_limit: freeLimit,
+    premium_member_limit: premiumLimit,
     valid_permissions: [...VALID_PERMISSIONS],
     permission_conflicts: PERMISSION_CONFLICTS,
     permission_matrix_sections: MATRIX_SECTIONS,

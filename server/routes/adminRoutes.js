@@ -33,6 +33,12 @@ import { getCmsStateController, cmsActionController } from '../controllers/cmsCo
 import { getSecurityStateController, securityActionController } from '../controllers/securityController.js'
 import { integrationActionController, integrationStatusController } from '../controllers/integrationController.js'
 import {
+  approveOrderCertificationAdmin,
+  attachOrderCertificationEvidenceAdmin,
+  listOrderCertificationsAdmin,
+  revokeOrderCertificationAdmin,
+} from '../controllers/orderCertificationAdminController.js'
+import {
   listAiAuditLogs,
   listCallsAdmin,
   listContractsAdmin,
@@ -80,6 +86,10 @@ router.get('/support/tickets', requireAuth, requireAdminSecurity, adminAuditLogg
 router.post('/support/assign', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), assignSupportTicket)
 router.patch('/support/:ticketId', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), updateSupportTicket)
 router.post('/account-manager/assign', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), assignAccountManager)
+router.get('/order-certifications', requireAuth, requireAdminSecurity, adminAuditLogger(), listOrderCertificationsAdmin)
+router.post('/order-certifications/evidence', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), attachOrderCertificationEvidenceAdmin)
+router.post('/order-certifications/approve', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), approveOrderCertificationAdmin)
+router.post('/order-certifications/revoke', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), revokeOrderCertificationAdmin)
 router.get('/contracts', requireAuth, requireAdminSecurity, adminAuditLogger(), listContractsAdmin)
 router.get('/disputes', requireAuth, requireAdminSecurity, adminAuditLogger(), listDisputesAdmin)
 router.get('/partner-requests', requireAuth, requireAdminSecurity, adminAuditLogger(), listPartnerRequestsAdmin)

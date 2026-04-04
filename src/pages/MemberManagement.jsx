@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import AccessDeniedState from '../components/AccessDeniedState'
-import { apiRequest, getToken } from '../lib/auth'
+import { apiRequest, getCurrentUser, getToken, hasEntitlement } from '../lib/auth'
 
 const MEMBER_API_BASE = '/org/members'
 
@@ -34,6 +34,8 @@ function createBlankMatrix(sections = []) {
 }
 
 export default function MemberManagement() {
+  const sessionUser = getCurrentUser()
+  const canTeamAccess = hasEntitlement(sessionUser, 'team_access_management')
   const [search, setSearch] = useState('')
   const [members, setMembers] = useState([])
   const [constraints, setConstraints] = useState({
@@ -86,6 +88,12 @@ export default function MemberManagement() {
     return members.filter((m) => [m.name, m.username, m.member_id, m.role, m.status].join(' ').toLowerCase().includes(q))
   }, [members, search])
 
+  const planLabel = String(constraints.plan || 'free').toUpperCase()
+  const premiumLimitValue = Number(constraints.premium_member_limit)
+  const premiumLimitLabel = Number.isFinite(premiumLimitValue)
+    ? (premiumLimitValue >= 999 ? 'Unlimited' : constraints.premium_member_limit)
+    : '--'
+
   function getConflictMessage(permissions) {
     const conflict = constraints.permission_conflicts.find(([a, b]) => permissions.includes(a) && permissions.includes(b))
     if (!conflict) return ''
@@ -97,14 +105,19 @@ export default function MemberManagement() {
     setError('')
     setSuccess('')
 
-    const conflict = getConflictMessage(createForm.permissions)
-    if (conflict) {
-      setError(conflict)
-      return
+    if (canTeamAccess) {
+      const conflict = getConflictMessage(createForm.permissions)
+      if (conflict) {
+        setError(conflict)
+        return
+      }
     }
 
     try {
-      const data = await apiRequest(MEMBER_API_BASE, { method: 'POST', token, body: createForm })
+      const payload = canTeamAccess
+        ? createForm
+        : Object.fromEntries(Object.entries(createForm).filter(([key]) => !['permissions', 'permission_matrix'].includes(key)))
+      const data = await apiRequest(MEMBER_API_BASE, { method: 'POST', token, body: payload })
       const created = data?.member || null
       // If the UI didn't provide a password, server may return a generated temp password to share with the agent.
       const temp = created?.temporary_password ? ` Temporary password: ${created.temporary_password}` : ''
@@ -144,16 +157,21 @@ export default function MemberManagement() {
   }
 
   async function handleUpdateMember(memberId, payload) {
-    const conflict = getConflictMessage(payload.permissions)
-    if (conflict) {
-      setError(conflict)
-      return
+    if (canTeamAccess) {
+      const conflict = getConflictMessage(payload.permissions)
+      if (conflict) {
+        setError(conflict)
+        return
+      }
     }
 
     setError('')
     setSuccess('')
     try {
-      await apiRequest(`${MEMBER_API_BASE}/${memberId}`, { method: 'PUT', token, body: payload })
+      const nextPayload = canTeamAccess
+        ? payload
+        : Object.fromEntries(Object.entries(payload).filter(([key]) => !['permissions', 'permission_matrix'].includes(key)))
+      await apiRequest(`${MEMBER_API_BASE}/${memberId}`, { method: 'PUT', token, body: nextPayload })
       setSuccess('Member updated.')
       setActivePermissionMember(null)
       await loadMembers()
@@ -173,17 +191,24 @@ export default function MemberManagement() {
           <button className="px-4 py-2 bg-[#0A66C2] text-white rounded-md" onClick={() => setShowCreate(true)}>+ Add New Member</button>
         </div>
 
-        {!!error && <div className="mb-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded p-2">{error}</div>}
-        {!!success && <div className="mb-3 text-sm text-green-700 bg-green-50 border border-green-200 rounded p-2">{success}</div>}
+        {!!error && <div className="mb-3 text-sm text-red-700 bg-red-50 borderless-shadow rounded p-2">{error}</div>}
+        {!!success && <div className="mb-3 text-sm text-green-700 bg-green-50 borderless-shadow rounded p-2">{success}</div>}
 
         {forbidden ? <AccessDeniedState message="You do not have permission to manage members for this organization." /> : null}
 
         {forbidden ? null : (
-          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-sm border p-4">
+          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-sm borderless-shadow p-4">
             <div className="mb-4 flex items-center gap-3">
-              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search members" className="px-3 py-2 border rounded w-64" />
-              <div className="text-sm text-[#5A5A5A]">Free plan limit: {constraints.free_member_limit} members</div>
+              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search members" className="px-3 py-2 borderless-shadow rounded w-64" />
+              <div className="text-sm text-[#5A5A5A]">
+                Plan: {planLabel} • Free limit: {constraints.free_member_limit} • Premium limit: {premiumLimitLabel}
+              </div>
             </div>
+            {!canTeamAccess ? (
+              <div className="mb-3 rounded-lg borderless-shadow bg-amber-50 p-3 text-xs text-amber-900">
+                Team/agent access management is a Premium feature. Upgrade to edit permissions and access controls.
+              </div>
+            ) : null}
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
@@ -205,7 +230,7 @@ export default function MemberManagement() {
                     <tr><td className="py-4 px-3" colSpan={6}>No members found.</td></tr>
                   )}
                   {!loading && filtered.map((m) => (
-                    <tr key={m.id} className="border-t">
+                    <tr key={m.id} className="borderless-divider-t">
                       <td className="py-2 px-3">{m.name}</td>
                       <td className="py-2 px-3">{m.username}</td>
                       <td className="py-2 px-3">{m.member_id || m.account_id}</td>
@@ -213,9 +238,9 @@ export default function MemberManagement() {
                       <td className="py-2 px-3">{m.status}</td>
                       <td className="py-2 px-3">
                         <button className="px-2 py-1 bg-[#0A66C2] text-white rounded mr-2" onClick={() => setActivePermissionMember(m)}>Edit</button>
-                        <button className="px-2 py-1 border rounded mr-2" onClick={() => handleResetPassword(m.id)}>Reset</button>
-                        <button className="px-2 py-1 border rounded mr-2 text-amber-700" onClick={() => handleDeactivateOrRemove(m.id, false)}>Deactivate</button>
-                        <button className="px-2 py-1 border rounded text-red-600" onClick={() => handleDeactivateOrRemove(m.id, true)}>Remove</button>
+                        <button className="px-2 py-1 borderless-shadow rounded mr-2" onClick={() => handleResetPassword(m.id)}>Reset</button>
+                        <button className="px-2 py-1 borderless-shadow rounded mr-2 text-amber-700" onClick={() => handleDeactivateOrRemove(m.id, false)}>Deactivate</button>
+                        <button className="px-2 py-1 borderless-shadow rounded text-red-600" onClick={() => handleDeactivateOrRemove(m.id, true)}>Remove</button>
                       </td>
                     </tr>
                   ))}
@@ -229,18 +254,19 @@ export default function MemberManagement() {
       {showCreate && (
         <Modal title="Create member" onClose={() => setShowCreate(false)}>
           <form className="space-y-3" onSubmit={handleCreateMember}>
-            <input className="w-full border rounded px-3 py-2" placeholder="Member name" value={createForm.name} onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })} />
-            <input className="w-full border rounded px-3 py-2" placeholder="Unique username" value={createForm.username} onChange={(e) => setCreateForm({ ...createForm, username: e.target.value })} />
-            <input className="w-full border rounded px-3 py-2" placeholder="Unique member ID" value={createForm.member_id} onChange={(e) => setCreateForm({ ...createForm, member_id: e.target.value })} />
+            <input className="w-full borderless-shadow rounded px-3 py-2" placeholder="Member name" value={createForm.name} onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })} />
+            <input className="w-full borderless-shadow rounded px-3 py-2" placeholder="Unique username" value={createForm.username} onChange={(e) => setCreateForm({ ...createForm, username: e.target.value })} />
+            <input className="w-full borderless-shadow rounded px-3 py-2" placeholder="Unique member ID" value={createForm.member_id} onChange={(e) => setCreateForm({ ...createForm, member_id: e.target.value })} />
             <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
               Role is fixed to <span className="font-semibold">Agent</span>. Agents login using their <span className="font-semibold">Member ID</span>.
             </div>
-            <input className="w-full border rounded px-3 py-2" placeholder="Initial password (optional -- auto-generate if empty)" value={createForm.password} onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })} />
+            <input className="w-full borderless-shadow rounded px-3 py-2" placeholder="Initial password (optional -- auto-generate if empty)" value={createForm.password} onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })} />
 
             <PermissionMatrixEditor
               matrix={createForm.permission_matrix}
               sections={constraints.permission_matrix_sections}
               onChange={(permission_matrix) => setCreateForm({ ...createForm, permission_matrix })}
+              disabled={!canTeamAccess}
             />
 
             <PermissionSelector
@@ -248,6 +274,7 @@ export default function MemberManagement() {
               validPermissions={constraints.valid_permissions}
               onChange={(permissions) => setCreateForm({ ...createForm, permissions })}
               conflict={getConflictMessage(createForm.permissions)}
+              disabled={!canTeamAccess}
             />
 
             <button type="submit" className="px-4 py-2 bg-[#0A66C2] text-white rounded">Create</button>
@@ -262,6 +289,7 @@ export default function MemberManagement() {
             constraints={constraints}
             getConflictMessage={getConflictMessage}
             onSave={(payload) => handleUpdateMember(activePermissionMember.id, payload)}
+            canTeamAccess={canTeamAccess}
           />
         </Modal>
       )}
@@ -270,16 +298,17 @@ export default function MemberManagement() {
   )
 }
 
-function PermissionSelector({ permissions, validPermissions, onChange, conflict }) {
+function PermissionSelector({ permissions, validPermissions, onChange, conflict, disabled = false }) {
   return (
     <div>
       <div className="text-sm mb-1">Permissions</div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className={`grid grid-cols-2 gap-2${disabled ? ' opacity-60' : ''}`}>
         {validPermissions.map((perm) => (
           <label key={perm} className="text-sm flex items-center gap-2">
             <input
               type="checkbox"
               checked={permissions.includes(perm)}
+              disabled={disabled}
               onChange={(e) => {
                 const next = e.target.checked ? [...permissions, perm] : permissions.filter((p) => p !== perm)
                 onChange(next)
@@ -294,19 +323,20 @@ function PermissionSelector({ permissions, validPermissions, onChange, conflict 
   )
 }
 
-function PermissionMatrixEditor({ matrix, sections, onChange }) {
+function PermissionMatrixEditor({ matrix, sections, onChange, disabled = false }) {
   return (
     <div>
       <div className="text-sm mb-1">Permission matrix (view/edit per module)</div>
-      <div className="space-y-2">
+      <div className={`space-y-2${disabled ? ' opacity-60' : ''}`}>
         {sections.map((section) => (
-          <div key={section} className="flex items-center justify-between border rounded px-3 py-2">
+          <div key={section} className="flex items-center justify-between borderless-shadow rounded px-3 py-2">
             <span className="text-sm font-medium capitalize">{section}</span>
             <div className="flex items-center gap-4 text-sm">
               <label className="flex items-center gap-1">
                 <input
                   type="checkbox"
                   checked={Boolean(matrix?.[section]?.view)}
+                  disabled={disabled}
                   onChange={(e) =>
                     onChange({
                       ...matrix,
@@ -320,6 +350,7 @@ function PermissionMatrixEditor({ matrix, sections, onChange }) {
                 <input
                   type="checkbox"
                   checked={Boolean(matrix?.[section]?.edit)}
+                  disabled={disabled}
                   onChange={(e) =>
                     onChange({
                       ...matrix,
@@ -337,7 +368,7 @@ function PermissionMatrixEditor({ matrix, sections, onChange }) {
   )
 }
 
-function MemberEditor({ member, constraints, getConflictMessage, onSave }) {
+function MemberEditor({ member, constraints, getConflictMessage, onSave, canTeamAccess }) {
   const [form, setForm] = useState({
     name: member.name || '',
     username: member.username || '',
@@ -353,14 +384,14 @@ function MemberEditor({ member, constraints, getConflictMessage, onSave }) {
 
   return (
     <div className="space-y-3">
-      <input className="w-full border rounded px-3 py-2" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Member name" />
-      <input className="w-full border rounded px-3 py-2" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} placeholder="Username" />
-      <input className="w-full border rounded px-3 py-2" value={form.member_id} onChange={(e) => setForm({ ...form, member_id: e.target.value })} placeholder="Member ID" />
+      <input className="w-full borderless-shadow rounded px-3 py-2" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Member name" />
+      <input className="w-full borderless-shadow rounded px-3 py-2" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} placeholder="Username" />
+      <input className="w-full borderless-shadow rounded px-3 py-2" value={form.member_id} onChange={(e) => setForm({ ...form, member_id: e.target.value })} placeholder="Member ID" />
       <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
         Role: <span className="font-semibold">Agent</span> (fixed)
       </div>
 
-      <select className="w-full border rounded px-3 py-2" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
+      <select className="w-full borderless-shadow rounded px-3 py-2" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
         <option value="active">active</option>
         <option value="inactive">inactive</option>
       </select>
@@ -369,6 +400,7 @@ function MemberEditor({ member, constraints, getConflictMessage, onSave }) {
         matrix={form.permission_matrix}
         sections={constraints.permission_matrix_sections}
         onChange={(permission_matrix) => setForm({ ...form, permission_matrix })}
+        disabled={!canTeamAccess}
       />
 
       <PermissionSelector
@@ -376,6 +408,7 @@ function MemberEditor({ member, constraints, getConflictMessage, onSave }) {
         validPermissions={constraints.valid_permissions}
         onChange={(permissions) => setForm({ ...form, permissions })}
         conflict={conflict}
+        disabled={!canTeamAccess}
       />
 
       <button className="px-4 py-2 bg-[#0A66C2] text-white rounded" onClick={() => onSave(form)}>Save changes</button>

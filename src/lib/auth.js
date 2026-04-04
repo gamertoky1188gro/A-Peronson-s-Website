@@ -18,8 +18,20 @@ export function getCurrentUser() {
   }
 }
 
+export function persistUser(user) {
+  if (!user) return null
+  const existing = getCurrentUser() || {}
+  const merged = {
+    ...existing,
+    ...user,
+    entitlements: user.entitlements || existing.entitlements || null,
+  }
+  localStorage.setItem(USER_KEY, JSON.stringify(merged))
+  return merged
+}
+
 export function saveSession(user, token, { remember = true } = {}) {
-  localStorage.setItem(USER_KEY, JSON.stringify(user))
+  persistUser(user)
   if (remember) {
     localStorage.setItem(TOKEN_KEY, token)
     sessionStorage.removeItem(TOKEN_KEY)
@@ -102,6 +114,21 @@ export function getRoleHome(role) {
 
 export async function fetchCurrentUser(token = getToken()) {
   if (!token) return null
-  const data = await apiRequest('/auth/me', { token })
-  return data?.user || null
+  const data = await apiRequest('/users/me', { token })
+  const user = data || null
+  if (user) {
+    persistUser(user)
+  }
+  return user
+}
+
+export function hasEntitlement(user, feature) {
+  if (!user || !feature) return false
+  const entitlements = user.entitlements || user
+  if (entitlements?.features && Object.prototype.hasOwnProperty.call(entitlements.features, feature)) {
+    return Boolean(entitlements.features[feature])
+  }
+  const plan = String(entitlements?.plan || user.subscription_status || '').toLowerCase()
+  if (plan === 'premium') return true
+  return false
 }

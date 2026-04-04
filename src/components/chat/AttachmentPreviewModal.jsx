@@ -582,10 +582,10 @@ export default function AttachmentPreviewModal({ open = false, attachment = null
       }}
     >
       <div
-        className="w-full max-w-4xl overflow-hidden rounded-2xl border border-white/10 bg-[#0f0d22] shadow-2xl"
+        className="w-full max-w-4xl overflow-hidden rounded-2xl borderless-shadow bg-[#0f0d22] shadow-2xl"
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+        <div className="flex items-center justify-between gap-3 borderless-divider-b px-4 py-3">
           <div className="min-w-0">
             <div className="truncate text-sm font-semibold text-white">{title}</div>
             {subtitle ? <div className="truncate text-[11px] text-slate-400">{subtitle}</div> : null}
@@ -637,7 +637,7 @@ export default function AttachmentPreviewModal({ open = false, attachment = null
                   onError={() => setVideoError(true)}
                 />
               ) : (
-                <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200">
+                <div className="rounded-xl borderless-shadow bg-white/5 p-4 text-sm text-slate-200">
                   This video format can't be previewed in your browser. Please download the file to play it.
                 </div>
               )}
@@ -648,12 +648,12 @@ export default function AttachmentPreviewModal({ open = false, attachment = null
             <div className="space-y-3">
               {pdfState.loading ? <div className="text-sm text-slate-300">Loading preview...</div> : null}
               {pdfState.error ? (
-                <div className="rounded-xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-200">
+                <div className="rounded-xl borderless-shadow bg-red-500/10 p-4 text-sm text-red-200">
                   {pdfState.error}
                 </div>
               ) : null}
               {!pdfState.loading && !pdfState.error ? (
-                <div className="h-[70vh] overflow-hidden rounded-xl border border-white/10 bg-white/5">
+                <div className="h-[70vh] overflow-hidden rounded-xl borderless-shadow bg-white/5">
                   <iframe
                     src={pdfState.blobUrl || file.url}
                     title={file.name || 'PDF Preview'}
@@ -675,13 +675,13 @@ export default function AttachmentPreviewModal({ open = false, attachment = null
           {(kind === 'office' || kind === 'presentation') ? (
             <div className="space-y-3">
               {officeIsPrivate ? (
-                <div className="rounded-xl border border-yellow-400/20 bg-yellow-500/10 p-4 text-sm text-yellow-100">
+                <div className="rounded-xl borderless-shadow bg-yellow-500/10 p-4 text-sm text-yellow-100">
                   Microsoft Office Web Viewer needs a publicly reachable URL. Your file URL looks local/private ({absoluteFileUrl}).
                   Please use Cloudflare Tunnel / a public domain, or download the file.
                 </div>
               ) : null}
               {!officeIsPrivate && officeEmbed ? (
-                <div className="h-[70vh] overflow-hidden rounded-xl border border-white/10 bg-white/5">
+                <div className="h-[70vh] overflow-hidden rounded-xl borderless-shadow bg-white/5">
                   <iframe
                     src={officeEmbed}
                     title={file.name || 'Office Preview'}
@@ -704,7 +704,7 @@ export default function AttachmentPreviewModal({ open = false, attachment = null
             <div className="space-y-3">
               {spreadsheetState.loading ? <div className="text-sm text-slate-300">Loading preview...</div> : null}
               {spreadsheetState.error ? (
-                <div className="rounded-xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-200">
+                <div className="rounded-xl borderless-shadow bg-red-500/10 p-4 text-sm text-red-200">
                   {spreadsheetState.error}
                 </div>
               ) : null}
@@ -717,7 +717,7 @@ export default function AttachmentPreviewModal({ open = false, attachment = null
                       <select
                         value={spreadsheetState.activeSheet}
                         onChange={(event) => selectSpreadsheetSheet(event.target.value)}
-                        className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-white outline-none"
+                        className="rounded-lg borderless-shadow bg-white/5 px-2 py-1 text-[11px] text-white outline-none"
                       >
                         {spreadsheetState.sheetNames.map((name) => (
                           <option key={name} value={name}>{name}</option>
@@ -729,15 +729,15 @@ export default function AttachmentPreviewModal({ open = false, attachment = null
                     <div className="text-[11px] text-slate-400">Showing up to 200 rows × 40 columns</div>
                   )}
 
-                  <div className="max-h-[70vh] overflow-auto rounded-xl border border-white/10 bg-black/40">
-                    <table className="min-w-full border-collapse text-[12px] text-slate-100">
+                  <div className="max-h-[70vh] overflow-auto rounded-xl borderless-shadow bg-black/40">
+                    <table className="min-w-full text-[12px] text-slate-100 borderless-shadow">
                       <tbody>
                         {(spreadsheetState.rows || []).map((row, rowIndex) => (
                           <tr key={rowIndex} className={rowIndex === 0 ? 'bg-white/5' : ''}>
                             {(row || []).map((cell, cellIndex) => (
                               <td
                                 key={cellIndex}
-                                className="border border-white/10 px-2 py-1 align-top"
+                                className="borderless-shadow px-2 py-1 align-top"
                               >
                                 {String(cell ?? '')}
                               </td>
@@ -756,12 +756,12 @@ export default function AttachmentPreviewModal({ open = false, attachment = null
             <div className="space-y-3">
               {rtfState.loading ? <div className="text-sm text-slate-300">Loading preview...</div> : null}
               {rtfState.error ? (
-                <div className="rounded-xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-200">
+                <div className="rounded-xl borderless-shadow bg-red-500/10 p-4 text-sm text-red-200">
                   {rtfState.error}
                 </div>
               ) : null}
               {!rtfState.loading && !rtfState.error ? (
-                <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-slate-100">
+                <div className="rounded-xl borderless-shadow bg-white/5 p-4 text-slate-100">
                   <div className="prose prose-invert max-w-none text-[13px] leading-relaxed" dangerouslySetInnerHTML={{ __html: rtfState.html || '' }} />
                 </div>
               ) : null}
@@ -769,7 +769,7 @@ export default function AttachmentPreviewModal({ open = false, attachment = null
           ) : null}
 
           {kind === 'odt' ? (
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200">
+            <div className="rounded-xl borderless-shadow bg-white/5 p-4 text-sm text-slate-200">
               ODT preview isn't available in this build yet (WebODF isn't bundled). Please download the file for now.
             </div>
           ) : null}
@@ -778,12 +778,12 @@ export default function AttachmentPreviewModal({ open = false, attachment = null
             <div className="space-y-3">
               {textState.loading ? <div className="text-sm text-slate-300">Loading preview...</div> : null}
               {textState.error ? (
-                <div className="rounded-xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-200">
+                <div className="rounded-xl borderless-shadow bg-red-500/10 p-4 text-sm text-red-200">
                   {textState.error}
                 </div>
               ) : null}
               {!textState.loading && !textState.error ? (
-                <div className="h-[70vh] overflow-hidden rounded-xl border border-white/10 bg-white/5">
+                <div className="h-[70vh] overflow-hidden rounded-xl borderless-shadow bg-white/5">
                   <iframe
                     title={file.name || 'HTML Preview'}
                     sandbox=""
@@ -808,18 +808,18 @@ export default function AttachmentPreviewModal({ open = false, attachment = null
             <div className="space-y-3">
               {textState.loading ? <div className="text-sm text-slate-300">Loading preview...</div> : null}
               {textState.error ? (
-                <div className="rounded-xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-200">
+                <div className="rounded-xl borderless-shadow bg-red-500/10 p-4 text-sm text-red-200">
                   {textState.error}
                 </div>
               ) : null}
               {highlightState.loading ? <div className="text-sm text-slate-300">Formatting and highlighting...</div> : null}
               {highlightState.error ? (
-                <div className="rounded-xl border border-yellow-400/20 bg-yellow-500/10 p-4 text-sm text-yellow-100">
+                <div className="rounded-xl borderless-shadow bg-yellow-500/10 p-4 text-sm text-yellow-100">
                   {highlightState.error}
                 </div>
               ) : null}
               {!textState.loading && !textState.error && !highlightState.loading ? (
-                <pre className="language-markup overflow-auto rounded-xl border border-white/10 bg-black/40 p-4 text-[12px] leading-relaxed text-slate-100">
+                <pre className="language-markup overflow-auto rounded-xl borderless-shadow bg-black/40 p-4 text-[12px] leading-relaxed text-slate-100">
                   <code dangerouslySetInnerHTML={{ __html: highlightState.html || escapeHtml(formatXml(textState.content || '')) }} />
                 </pre>
               ) : null}
@@ -830,18 +830,18 @@ export default function AttachmentPreviewModal({ open = false, attachment = null
             <div className="space-y-3">
               {textState.loading ? <div className="text-sm text-slate-300">Loading preview...</div> : null}
               {textState.error ? (
-                <div className="rounded-xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-200">
+                <div className="rounded-xl borderless-shadow bg-red-500/10 p-4 text-sm text-red-200">
                   {textState.error}
                 </div>
               ) : null}
               {highlightState.loading ? <div className="text-sm text-slate-300">Highlighting...</div> : null}
               {highlightState.error ? (
-                <div className="rounded-xl border border-yellow-400/20 bg-yellow-500/10 p-4 text-sm text-yellow-100">
+                <div className="rounded-xl borderless-shadow bg-yellow-500/10 p-4 text-sm text-yellow-100">
                   {highlightState.error}
                 </div>
               ) : null}
               {!textState.loading && !textState.error && !highlightState.loading ? (
-                <pre className={`language-${highlightState.language || prismLanguageForExt(fileExt) || 'markup'} overflow-auto rounded-xl border border-white/10 bg-black/40 p-4 text-[12px] leading-relaxed text-slate-100`}>
+                <pre className={`language-${highlightState.language || prismLanguageForExt(fileExt) || 'markup'}overflow-auto rounded-xl borderless-shadow bg-black/40 p-4 text-[12px] leading-relaxed text-slate-100`}>
                   <code dangerouslySetInnerHTML={{ __html: highlightState.html || escapeHtml(textState.content || '') }} />
                 </pre>
               ) : null}
@@ -852,12 +852,12 @@ export default function AttachmentPreviewModal({ open = false, attachment = null
             <div className="space-y-3">
               {textState.loading ? <div className="text-sm text-slate-300">Loading preview...</div> : null}
               {textState.error ? (
-                <div className="rounded-xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-200">
+                <div className="rounded-xl borderless-shadow bg-red-500/10 p-4 text-sm text-red-200">
                   {textState.error}
                 </div>
               ) : null}
               {!textState.loading && !textState.error ? (
-                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                <div className="rounded-xl borderless-shadow bg-white/5 p-4">
                   <MarkdownMessage text={textState.content} />
                 </div>
               ) : null}
@@ -868,12 +868,12 @@ export default function AttachmentPreviewModal({ open = false, attachment = null
             <div className="space-y-3">
               {textState.loading ? <div className="text-sm text-slate-300">Loading preview...</div> : null}
               {textState.error ? (
-                <div className="rounded-xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-200">
+                <div className="rounded-xl borderless-shadow bg-red-500/10 p-4 text-sm text-red-200">
                   {textState.error}
                 </div>
               ) : null}
               {!textState.loading && !textState.error ? (
-                <pre className="whitespace-pre-wrap break-words rounded-xl border border-white/10 bg-black/40 p-4 text-[12px] leading-relaxed text-slate-100">
+                <pre className="whitespace-pre-wrap break-words rounded-xl borderless-shadow bg-black/40 p-4 text-[12px] leading-relaxed text-slate-100">
                   {textState.content}
                 </pre>
               ) : null}
@@ -881,7 +881,7 @@ export default function AttachmentPreviewModal({ open = false, attachment = null
           ) : null}
 
           {kind === 'file' ? (
-            <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-10 text-center">
+            <div className="flex flex-col items-center justify-center gap-3 rounded-2xl borderless-shadow bg-white/5 p-10 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-white">
                 <File size={26} />
               </div>

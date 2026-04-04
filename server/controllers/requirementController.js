@@ -12,6 +12,7 @@ import { readJson } from '../utils/jsonStore.js'
 import { handleControllerError } from '../utils/permissions.js'
 import { ensureEntitlement } from '../services/entitlementService.js'
 import { generateMatchesForRequirement, listMatchesForRequirement } from '../services/matchingService.js'
+import { getOrderCertificationMap } from '../services/orderCertificationService.js'
 
 function redactRequirementForBuyer(requirement) {
   return {
@@ -347,6 +348,10 @@ export async function deleteRequirement(req, res) {
 
 export async function searchRequirements(req, res) {
   const plan = await getUserPlan(req.user.id)
+  const priorityOnly = req.query.priorityOnly === 'true'
+  if (priorityOnly) {
+    await ensureEntitlement(req.user, 'buyer_request_priority_access', 'Premium plan required for priority buyer requests.')
+  }
   const advancedFilters = extractUsedAdvancedFilters(req.query)
   const quotaPreview = advancedFilters.length > 0
     ? await getQuotaSnapshot(req.user.id, 'requirements_search', plan)
@@ -374,9 +379,10 @@ export async function searchRequirements(req, res) {
   }
 
   const all = await listRequirements({})
-  const [users, messages] = await Promise.all([
+  const [users, messages, orderCertMap] = await Promise.all([
     readJson('users.json'),
     readJson('messages.json'),
+    getOrderCertificationMap(),
   ])
   const usersById = new Map(users.map((u) => [u.id, u]))
   const responseTimeByOwner = buildResponseTimeByOwner(messages, users)
@@ -431,6 +437,7 @@ export async function searchRequirements(req, res) {
       const buyer = usersById.get(r.buyer_id) || null
       const buyerPlan = String(buyer?.subscription_status || '').toLowerCase()
       const buyerPremium = buyerPlan === 'premium'
+      const certification = buyer ? orderCertMap.get(String(buyer.id)) : null
       const authorCountry = String(buyer?.profile?.country || '').trim()
       const profile = buyer?.profile || {}
       const priorityUntil = r.priority_until ? new Date(r.priority_until).getTime() : 0
@@ -454,6 +461,7 @@ export async function searchRequirements(req, res) {
           location_lat: profile?.location_lat ?? '',
           location_lng: profile?.location_lng ?? '',
           avg_response_hours: responseTimeByOwner.get(String(buyer.id)) ?? null,
+          order_certification_status: certification?.status || '',
         } : { id: r.buyer_id, name: 'Unknown buyer', role: 'buyer', verified: false, country: '' },
         profile_key: `user:${r.buyer_id}`,
         priority_score: (buyerPremium ? 2 : 0) + (buyer?.verified ? 0.5 : 0),
@@ -462,6 +470,7 @@ export async function searchRequirements(req, res) {
     })
     .filter((r) => (enforcePriorityAccess ? !r.priority_active : true))
     .filter((r) => {
+      if (priorityOnly && !r.priority_active) return false
       if (searchTokens.length) {
         const searchText = normalizeSearchText(`${r.category} ${r.product} ${r.material} ${r.custom_description} ${r.title} ${r.color_pantone || ''} ${r.size_range || ''}`)
         const hit = searchTokens.every((token) => searchText.includes(token))

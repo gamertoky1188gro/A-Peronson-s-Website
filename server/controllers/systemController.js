@@ -123,7 +123,11 @@ export async function systemHome(req, res) {
 }
 
 export async function systemPricing(req, res) {
-  const [messages, metrics] = await Promise.all([readJson('messages.json'), readJson('metrics.json')])
+  const [messages, metrics, config] = await Promise.all([
+    readJson('messages.json'),
+    readJson('metrics.json'),
+    getAdminConfig(),
+  ])
 
   const messageCount = Array.isArray(messages) ? messages.length : 0
   const metricCount = Array.isArray(metrics) ? metrics.length : 0
@@ -147,6 +151,7 @@ export async function systemPricing(req, res) {
         { label: 'Response SLA', value: responseSla, sublabel: 'median', accent: 'blue' },
       ],
     },
+    plan_limits: config?.plan_limits || {},
   })
 }
 

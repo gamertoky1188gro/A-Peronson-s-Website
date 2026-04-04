@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import AccessDeniedState from '../components/AccessDeniedState'
-import { apiRequest, clearSession, getCurrentUser, getToken, saveSession } from '../lib/auth'
+import { apiRequest, clearSession, getCurrentUser, getToken, saveSession, hasEntitlement, persistUser } from '../lib/auth'
 import { startRegistration } from '@simplewebauthn/browser'
 
 const emptyKnowledge = { type: 'faq', question: '', answer: '', keywords: '' }
@@ -67,7 +67,8 @@ export default function OrgSettings() {
   const [verification, setVerification] = useState(null)
   const [billingFeedback, setBillingFeedback] = useState('')
   const [couponCode, setCouponCode] = useState('')
-  const [entitlements, setEntitlements] = useState(null)
+  const [entitlements, setEntitlements] = useState(() => currentUser?.entitlements || null)
+  const [planLimits, setPlanLimits] = useState(null)
   const [chatbotEnabled, setChatbotEnabled] = useState(() => Boolean(currentUser?.chatbot_enabled || currentUser?.profile?.chatbot_enabled))
   const [handoffMode, setHandoffMode] = useState(() => String(currentUser?.handoff_mode || currentUser?.profile?.handoff_mode || 'notify_agent'))
   const [autoReplyGreeting, setAutoReplyGreeting] = useState('')
@@ -125,6 +126,14 @@ export default function OrgSettings() {
     return 'verified_active'
   }, [remainingDays])
 
+  const entitlementContext = useMemo(() => (entitlements ? { entitlements } : null), [entitlements])
+  const canAutoReply = hasEntitlement(entitlementContext, 'ai_auto_reply_customization')
+  const canBranding = hasEntitlement(entitlementContext, 'custom_branding')
+  const canAccountManager = hasEntitlement(entitlementContext, 'dedicated_account_manager')
+  const canProfileBoost = hasEntitlement(entitlementContext, 'profile_boost')
+  const canProductBoost = hasEntitlement(entitlementContext, 'product_boost')
+  const canBoost = canProfileBoost || canProductBoost
+
   const loadBilling = useCallback(async () => {
     const token = getToken()
     if (!token) return
@@ -150,9 +159,19 @@ export default function OrgSettings() {
     if (!token) return
     try {
       const me = await apiRequest('/users/me', { token })
+      persistUser(me)
       setEntitlements(me?.entitlements || null)
     } catch {
       setEntitlements(null)
+    }
+  }, [])
+
+  const loadPlanLimits = useCallback(async () => {
+    try {
+      const data = await apiRequest('/system/pricing')
+      setPlanLimits(data?.plan_limits || null)
+    } catch {
+      setPlanLimits(null)
     }
   }, [])
 
@@ -191,7 +210,8 @@ export default function OrgSettings() {
     loadBilling()
     loadEntitlements()
     loadPasskeys()
-  }, [loadBilling, loadEntitlements, loadPasskeys])
+    loadPlanLimits()
+  }, [loadBilling, loadEntitlements, loadPasskeys, loadPlanLimits])
 
   async function registerPasskey() {
     const token = getToken()
@@ -513,6 +533,14 @@ export default function OrgSettings() {
     return `${days} day(s)`
   }
 
+  function formatLimit(value) {
+    if (value === null || value === undefined || value === '') return '--'
+    const n = Number(value)
+    if (!Number.isFinite(n)) return String(value)
+    if (n >= 999) return 'Unlimited'
+    return String(n)
+  }
+
   return (
     <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
       <div className="max-w-7xl mx-auto p-6">
@@ -528,15 +556,15 @@ export default function OrgSettings() {
         {isOrgManager ? (
 
         <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow p-4">
-          <div className="flex gap-4 border-b mb-4 flex-wrap">
-            <button onClick={() => setTab('general')} className={`px-3 py-2 ${tab === 'general' ? 'border-b-2 border-[#0A66C2]' : ''}`}>General Info</button>
-            <button onClick={() => setTab('verification')} className={`px-3 py-2 ${tab === 'verification' ? 'border-b-2 border-[#0A66C2]' : ''}`}>Verification</button>
-            <button onClick={() => setTab('branding')} className={`px-3 py-2 ${tab === 'branding' ? 'border-b-2 border-[#0A66C2]' : ''}`}>Branding</button>
-            <button onClick={() => setTab('security')} className={`px-3 py-2 ${tab === 'security' ? 'border-b-2 border-[#0A66C2]' : ''}`}>Security</button>
-            <button onClick={() => setTab('members')} className={`px-3 py-2 ${tab === 'members' ? 'border-b-2 border-[#0A66C2]' : ''}`}>Members</button>
-            <button onClick={() => setTab('subscription')} className={`px-3 py-2 ${tab === 'subscription' ? 'border-b-2 border-[#0A66C2]' : ''}`}>Subscription</button>
-            <button onClick={() => setTab('boosts')} className={`px-3 py-2 ${tab === 'boosts' ? 'border-b-2 border-[#0A66C2]' : ''}`}>Boosts</button>
-            <button onClick={() => { setTab('assistant_knowledge'); loadFaqs() }} className={`px-3 py-2 ${tab === 'assistant_knowledge' ? 'border-b-2 border-[#0A66C2]' : ''}`}>Assistant Knowledge</button>
+          <div className="flex gap-4 borderless-divider-b mb-4 flex-wrap">
+            <button onClick={() => setTab('general')} className={`px-3 py-2${tab === 'general' ? 'shadow-[inset_0_-2px_0_var(--gt-blue)]' : ''}`}>General Info</button>
+            <button onClick={() => setTab('verification')} className={`px-3 py-2${tab === 'verification' ? 'shadow-[inset_0_-2px_0_var(--gt-blue)]' : ''}`}>Verification</button>
+            <button onClick={() => setTab('branding')} className={`px-3 py-2${tab === 'branding' ? 'shadow-[inset_0_-2px_0_var(--gt-blue)]' : ''}`}>Branding</button>
+            <button onClick={() => setTab('security')} className={`px-3 py-2${tab === 'security' ? 'shadow-[inset_0_-2px_0_var(--gt-blue)]' : ''}`}>Security</button>
+            <button onClick={() => setTab('members')} className={`px-3 py-2${tab === 'members' ? 'shadow-[inset_0_-2px_0_var(--gt-blue)]' : ''}`}>Members</button>
+            <button onClick={() => setTab('subscription')} className={`px-3 py-2${tab === 'subscription' ? 'shadow-[inset_0_-2px_0_var(--gt-blue)]' : ''}`}>Subscription</button>
+            <button onClick={() => setTab('boosts')} className={`px-3 py-2${tab === 'boosts' ? 'shadow-[inset_0_-2px_0_var(--gt-blue)]' : ''}`}>Boosts</button>
+            <button onClick={() => { setTab('assistant_knowledge'); loadFaqs() }} className={`px-3 py-2${tab === 'assistant_knowledge' ? 'shadow-[inset_0_-2px_0_var(--gt-blue)]' : ''}`}>Assistant Knowledge</button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -562,46 +590,46 @@ export default function OrgSettings() {
                 </div>
                 <div className="mt-4">
                   <label className="block text-sm font-medium mb-1">Handoff mode</label>
-                  <select className="w-full border px-3 py-2 rounded" value={handoffMode} onChange={(e) => setHandoffMode(e.target.value)}>
+                  <select className="w-full borderless-shadow px-3 py-2 rounded" value={handoffMode} onChange={(e) => setHandoffMode(e.target.value)}>
                     <option value="notify_agent">Notify agent / owner</option>
                     <option value="notify_owner">Notify owner only</option>
                   </select>
                 </div>
 
-                <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="mt-6 rounded-xl borderless-shadow bg-slate-50 p-4">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-semibold text-slate-800">AI Auto-Reply Customization</p>
-                    <span className="text-[11px] text-slate-500">{entitlements?.premium ? 'Premium enabled' : 'Premium required'}</span>
+                    <span className="text-[11px] text-slate-500">{canAutoReply ? 'Premium enabled' : 'Premium required'}</span>
                   </div>
                   <p className="mt-1 text-xs text-slate-500">Customize the AI assistant greeting, tone, and qualification prompts.</p>
                   {loadingAutoReply ? <p className="mt-2 text-xs text-slate-500">Loading...</p> : null}
                   <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <input
-                      className="w-full border px-3 py-2 rounded"
+                      className="w-full borderless-shadow px-3 py-2 rounded"
                       placeholder="Greeting (e.g., Hello, thanks for reaching out...)"
                       value={autoReplyGreeting}
                       onChange={(e) => setAutoReplyGreeting(e.target.value)}
-                      disabled={!entitlements?.premium}
+                      disabled={!canAutoReply}
                     />
                     <input
-                      className="w-full border px-3 py-2 rounded"
+                      className="w-full borderless-shadow px-3 py-2 rounded"
                       placeholder="Signature (e.g., Gartexhub Team)"
                       value={autoReplySignature}
                       onChange={(e) => setAutoReplySignature(e.target.value)}
-                      disabled={!entitlements?.premium}
+                      disabled={!canAutoReply}
                     />
                     <input
-                      className="w-full border px-3 py-2 rounded"
+                      className="w-full borderless-shadow px-3 py-2 rounded"
                       placeholder="Fallback response"
                       value={autoReplyFallback}
                       onChange={(e) => setAutoReplyFallback(e.target.value)}
-                      disabled={!entitlements?.premium}
+                      disabled={!canAutoReply}
                     />
                     <select
-                      className="w-full border px-3 py-2 rounded"
+                      className="w-full borderless-shadow px-3 py-2 rounded"
                       value={autoReplyTone}
                       onChange={(e) => setAutoReplyTone(e.target.value)}
-                      disabled={!entitlements?.premium}
+                      disabled={!canAutoReply}
                     >
                       <option value="professional">Professional</option>
                       <option value="warm">Warm</option>
@@ -609,17 +637,17 @@ export default function OrgSettings() {
                       <option value="friendly">Friendly</option>
                     </select>
                     <textarea
-                      className="sm:col-span-2 w-full border px-3 py-2 rounded min-h-24"
+                      className="sm:col-span-2 w-full borderless-shadow px-3 py-2 rounded min-h-24"
                       placeholder="Qualification prompt (e.g., Share target quantities, price range, and lead time.)"
                       value={autoReplyQualification}
                       onChange={(e) => setAutoReplyQualification(e.target.value)}
-                      disabled={!entitlements?.premium}
+                      disabled={!canAutoReply}
                     />
                   </div>
                   <div className="mt-3 flex items-center gap-2">
                     <button
                       type="button"
-                      disabled={!entitlements?.premium}
+                      disabled={!canAutoReply}
                       onClick={async () => {
                         const token = getToken()
                         if (!token) return
@@ -649,30 +677,30 @@ export default function OrgSettings() {
                   </div>
                 </div>
 
-                <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="mt-6 rounded-xl borderless-shadow bg-slate-50 p-4">
                   <p className="text-sm font-semibold text-slate-800">Supplier profile (factory / buying house)</p>
                   <p className="mt-1 text-xs text-slate-500">These fields power advanced supplier filters (processes, response speed, distance, and team capacity).</p>
                   <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <input
-                      className="w-full border px-3 py-2 rounded"
+                      className="w-full borderless-shadow px-3 py-2 rounded"
                       placeholder="Main processes (comma-separated)"
                       value={mainProcesses}
                       onChange={(e) => setMainProcesses(e.target.value)}
                     />
                     <input
-                      className="w-full border px-3 py-2 rounded"
+                      className="w-full borderless-shadow px-3 py-2 rounded"
                       placeholder="Years in business"
                       value={yearsInBusiness}
                       onChange={(e) => setYearsInBusiness(e.target.value)}
                     />
                     <input
-                      className="w-full border px-3 py-2 rounded"
+                      className="w-full borderless-shadow px-3 py-2 rounded"
                       placeholder="Team seats"
                       value={teamSeats}
                       onChange={(e) => setTeamSeats(e.target.value)}
                     />
                     <input
-                      className="w-full border px-3 py-2 rounded"
+                      className="w-full borderless-shadow px-3 py-2 rounded"
                       placeholder="Export ports (comma-separated)"
                       value={exportPorts}
                       onChange={(e) => setExportPorts(e.target.value)}
@@ -687,13 +715,13 @@ export default function OrgSettings() {
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <input
-                        className="w-full border px-3 py-2 rounded"
+                        className="w-full borderless-shadow px-3 py-2 rounded"
                         placeholder="Location lat"
                         value={locationLat}
                         onChange={(e) => setLocationLat(e.target.value)}
                       />
                       <input
-                        className="w-full border px-3 py-2 rounded"
+                        className="w-full borderless-shadow px-3 py-2 rounded"
                         placeholder="Location lng"
                         value={locationLng}
                         onChange={(e) => setLocationLng(e.target.value)}
@@ -713,7 +741,7 @@ export default function OrgSettings() {
                   Verification is subscription-based and renewed monthly (project.md). Upload the required documents in Verification Center.
                 </p>
                 <div className="mt-3 flex items-center gap-2">
-                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusChipClasses[verificationStatus]}`}>
+                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold${statusChipClasses[verificationStatus]}`}>
                     {statusLabel[verificationStatus]}
                   </span>
                   <span className="text-xs text-[#5A5A5A]">{Math.max(0, remainingDays)} day(s) remaining</span>
@@ -721,11 +749,11 @@ export default function OrgSettings() {
                 <p className="mt-2 text-xs text-[#5A5A5A]">Verification is subscription-based, not permanent. Keep premium active to keep the badge visible.</p>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <Link to="/verification" className="px-3 py-2 bg-[#0A66C2] text-white rounded">Open Verification Center</Link>
-                  <button onClick={renewVerification} className="px-3 py-2 border rounded">Renew verification ($6.99)</button>
+                  <button onClick={renewVerification} className="px-3 py-2 borderless-shadow rounded">Renew verification ($6.99)</button>
                   <span className="text-xs text-[#5A5A5A]">Wallet balance: ${Number(walletBalance || 0).toFixed(2)} | Restricted: ${Number(walletRestricted || 0).toFixed(2)}</span>
                 </div>
                 {verification?.missing_required?.length ? (
-                  <div className="mt-4 rounded-lg border bg-amber-50 p-3 text-sm text-amber-900">
+                  <div className="mt-4 rounded-lg borderless-shadow bg-amber-50 p-3 text-sm text-amber-900">
                     Missing required docs: {(verification.missing_required || []).slice(0, 6).join(', ')}
                   </div>
                 ) : null}
@@ -733,7 +761,7 @@ export default function OrgSettings() {
             )}
 
             {tab !== 'general' && !isOrgManager && (
-              <div className="p-4 bg-yellow-50 border rounded mt-4">You do not have permission to view this section.</div>
+              <div className="p-4 bg-yellow-50 borderless-shadow rounded mt-4">You do not have permission to view this section.</div>
             )}
 
             {tab === 'branding' && (
@@ -742,48 +770,56 @@ export default function OrgSettings() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm">Brand name</label>
-                    <input className="w-full border px-3 py-2 rounded" value={brandName} onChange={(e) => setBrandName(e.target.value)} disabled={!entitlements?.premium} />
+                    <input className="w-full borderless-shadow px-3 py-2 rounded" value={brandName} onChange={(e) => setBrandName(e.target.value)} disabled={!canBranding} />
                   </div>
                   <div>
                     <label className="block text-sm">Brand tagline</label>
-                    <input className="w-full border px-3 py-2 rounded" value={brandTagline} onChange={(e) => setBrandTagline(e.target.value)} disabled={!entitlements?.premium} />
+                    <input className="w-full borderless-shadow px-3 py-2 rounded" value={brandTagline} onChange={(e) => setBrandTagline(e.target.value)} disabled={!canBranding} />
                   </div>
                   <div>
                     <label className="block text-sm">Brand website</label>
-                    <input className="w-full border px-3 py-2 rounded" value={brandWebsite} onChange={(e) => setBrandWebsite(e.target.value)} disabled={!entitlements?.premium} />
+                    <input className="w-full borderless-shadow px-3 py-2 rounded" value={brandWebsite} onChange={(e) => setBrandWebsite(e.target.value)} disabled={!canBranding} />
                   </div>
                   <div>
                     <label className="block text-sm">Logo URL</label>
-                    <input className="w-full border px-3 py-2 rounded" value={brandLogoUrl} onChange={(e) => setBrandLogoUrl(e.target.value)} disabled={!entitlements?.premium} />
+                    <input className="w-full borderless-shadow px-3 py-2 rounded" value={brandLogoUrl} onChange={(e) => setBrandLogoUrl(e.target.value)} disabled={!canBranding} />
                   </div>
                   <div>
                     <label className="block text-sm">Cover URL</label>
-                    <input className="w-full border px-3 py-2 rounded" value={brandCoverUrl} onChange={(e) => setBrandCoverUrl(e.target.value)} disabled={!entitlements?.premium} />
+                    <input className="w-full borderless-shadow px-3 py-2 rounded" value={brandCoverUrl} onChange={(e) => setBrandCoverUrl(e.target.value)} disabled={!canBranding} />
                   </div>
                   <div>
                     <label className="block text-sm">Brand color</label>
-                    <input className="w-full border px-3 py-2 rounded" value={brandColor} onChange={(e) => setBrandColor(e.target.value)} disabled={!entitlements?.premium} />
+                    <input className="w-full borderless-shadow px-3 py-2 rounded" value={brandColor} onChange={(e) => setBrandColor(e.target.value)} disabled={!canBranding} />
                   </div>
                   <div>
                     <label className="block text-sm">Accent color</label>
-                    <input className="w-full border px-3 py-2 rounded" value={brandAccent} onChange={(e) => setBrandAccent(e.target.value)} disabled={!entitlements?.premium} />
+                    <input className="w-full borderless-shadow px-3 py-2 rounded" value={brandAccent} onChange={(e) => setBrandAccent(e.target.value)} disabled={!canBranding} />
                   </div>
-                  <div>
-                    <label className="block text-sm">Account manager name</label>
-                    <input className="w-full border px-3 py-2 rounded" value={accountManagerName} onChange={(e) => setAccountManagerName(e.target.value)} disabled />
-                  </div>
-                  <div>
-                    <label className="block text-sm">Account manager email</label>
-                    <input className="w-full border px-3 py-2 rounded" value={accountManagerEmail} onChange={(e) => setAccountManagerEmail(e.target.value)} disabled />
-                  </div>
-                  <div>
-                    <label className="block text-sm">Account manager phone</label>
-                    <input className="w-full border px-3 py-2 rounded" value={accountManagerPhone} onChange={(e) => setAccountManagerPhone(e.target.value)} disabled />
-                  </div>
-                  <p className="text-[11px] text-slate-500">Assigned by admin for Premium accounts.</p>
+                  {canAccountManager ? (
+                    <>
+                      <div>
+                        <label className="block text-sm">Account manager name</label>
+                        <input className="w-full borderless-shadow px-3 py-2 rounded" value={accountManagerName} onChange={(e) => setAccountManagerName(e.target.value)} disabled />
+                      </div>
+                      <div>
+                        <label className="block text-sm">Account manager email</label>
+                        <input className="w-full borderless-shadow px-3 py-2 rounded" value={accountManagerEmail} onChange={(e) => setAccountManagerEmail(e.target.value)} disabled />
+                      </div>
+                      <div>
+                        <label className="block text-sm">Account manager phone</label>
+                        <input className="w-full borderless-shadow px-3 py-2 rounded" value={accountManagerPhone} onChange={(e) => setAccountManagerPhone(e.target.value)} disabled />
+                      </div>
+                      <p className="text-[11px] text-slate-500">Assigned by admin for Premium accounts.</p>
+                    </>
+                  ) : (
+                    <div className="sm:col-span-2 rounded-lg borderless-shadow bg-amber-50 p-3 text-xs text-amber-900">
+                      Dedicated account managers are available on Premium plans.
+                    </div>
+                  )}
                 </div>
                 <div className="mt-3">
-                  <button onClick={saveBrandingSettings} disabled={!entitlements?.premium} className="px-3 py-2 bg-[#0A66C2] text-white rounded disabled:opacity-60">Save branding</button>
+                  <button onClick={saveBrandingSettings} disabled={!canBranding} className="px-3 py-2 bg-[#0A66C2] text-white rounded disabled:opacity-60">Save branding</button>
                 </div>
               </div>
             )}
@@ -792,7 +828,7 @@ export default function OrgSettings() {
                 <div>
                   <label className="flex items-center gap-3"><input type="checkbox"/> Enable 2FA</label>
                   <div className="mt-3 text-sm text-[#5A5A5A]">Active sessions and login activity are shown here.</div>
-                  <div className="mt-6 rounded-lg border border-slate-200 bg-white p-4">
+                  <div className="mt-6 rounded-lg borderless-shadow bg-white p-4">
                     <p className="text-sm font-semibold text-slate-800">Passkeys</p>
                     <p className="mt-1 text-xs text-slate-500">Use passkeys for passwordless login on this device.</p>
                     <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -800,7 +836,7 @@ export default function OrgSettings() {
                         type="text"
                         value={passkeyName}
                         onChange={(e) => setPasskeyName(e.target.value)}
-                        className="w-full border border-slate-200 px-3 py-2 rounded"
+                        className="w-full borderless-shadow px-3 py-2 rounded"
                         placeholder="Optional label (e.g., My Laptop)"
                       />
                       <button
@@ -815,7 +851,7 @@ export default function OrgSettings() {
                     {passkeys.length ? (
                       <div className="mt-3 space-y-2">
                         {passkeys.map((key) => (
-                          <div key={key.id} className="flex items-center justify-between rounded border border-slate-200 px-3 py-2 text-xs">
+                          <div key={key.id} className="flex items-center justify-between rounded borderless-shadow px-3 py-2 text-xs">
                             <div>
                               <div className="font-semibold text-slate-800">{key.name || 'Passkey'}</div>
                               <div className="text-[11px] text-slate-500">Created: {key.created_at ? new Date(key.created_at).toLocaleString() : '--'}</div>
@@ -836,7 +872,7 @@ export default function OrgSettings() {
                     {passkeyError ? <div className="mt-2 text-xs text-rose-600">{passkeyError}</div> : null}
                     {passkeyNotice ? <div className="mt-2 text-xs text-emerald-700">{passkeyNotice}</div> : null}
                   </div>
-                  <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-4">
+                  <div className="mt-4 rounded-lg borderless-shadow bg-rose-50 p-4">
                     <p className="text-sm font-semibold text-rose-700">Delete account</p>
                     <p className="mt-1 text-xs text-rose-600">Enter your password to permanently delete your account.</p>
                   <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -844,7 +880,7 @@ export default function OrgSettings() {
                       type="password"
                       value={deletePassword}
                       onChange={(e) => setDeletePassword(e.target.value)}
-                      className="w-full border border-rose-200 px-3 py-2 rounded"
+                      className="w-full borderless-shadow px-3 py-2 rounded"
                       placeholder="Confirm password"
                     />
                     <button
@@ -870,8 +906,11 @@ export default function OrgSettings() {
             {tab === 'subscription' && (
               <div>
                 <div className="text-sm">Current Plan: {String(subscriptionPlan || 'free').toUpperCase()}</div>
+                {canBoost ? (
+                  <div className="mt-2 text-xs text-emerald-700">Boosted visibility is unlocked on your Premium plan.</div>
+                ) : null}
                 <div className="mt-2 flex items-center gap-2">
-                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusChipClasses[verificationStatus]}`}>
+                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold${statusChipClasses[verificationStatus]}`}>
                     {statusLabel[verificationStatus]}
                   </span>
                   <span className="text-xs text-[#5A5A5A]">Verification is subscription-based, not permanent.</span>
@@ -880,20 +919,45 @@ export default function OrgSettings() {
                   <button onClick={renewVerification} className="px-3 py-2 bg-[#0A66C2] text-white rounded">Renew premium monthly</button>
                   <span className="text-xs text-[#5A5A5A]">Remaining: {Math.max(0, remainingDays)} day(s)</span>
                 </div>
-                <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <div className="mt-4 rounded-lg borderless-shadow bg-slate-50 p-4">
                   <p className="text-sm font-semibold text-slate-800">Redeem coupon credit</p>
                   <p className="mt-1 text-xs text-slate-500">Coupon credit can be used for premium subscriptions and verification renewals. Card is optional when using a coupon that does not require a payment method.</p>
                   <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                     <input
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
-                      className="w-full border px-3 py-2 rounded"
+                      className="w-full borderless-shadow px-3 py-2 rounded"
                       placeholder="Enter coupon code"
                     />
                     <button onClick={redeemCoupon} className="px-3 py-2 bg-[#0A66C2] text-white rounded">Redeem</button>
                   </div>
                   <div className="mt-2 text-xs text-[#5A5A5A]">Wallet balance: ${Number(walletBalance || 0).toFixed(2)} | Restricted: ${Number(walletRestricted || 0).toFixed(2)}</div>
                 </div>
+                {planLimits ? (
+                  <div className="mt-4 rounded-lg borderless-shadow bg-white p-4">
+                    <p className="text-sm font-semibold text-slate-800">Plan limits</p>
+                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-600">
+                      <div className="rounded-lg borderless-shadow p-3">
+                        <p className="font-semibold text-slate-800">Free</p>
+                        <div className="mt-2 space-y-1">
+                          <div>Products: <span className="font-semibold text-slate-800">{formatLimit(planLimits?.free?.product_limit)}</span></div>
+                          <div>Videos: <span className="font-semibold text-slate-800">{formatLimit(planLimits?.free?.video_limit)}</span></div>
+                          <div>Partners: <span className="font-semibold text-slate-800">{formatLimit(planLimits?.free?.partner_limit)}</span></div>
+                          <div>Agents: <span className="font-semibold text-slate-800">{formatLimit(planLimits?.free?.agent_limit)}</span></div>
+                        </div>
+                      </div>
+                      <div className="rounded-lg borderless-shadow p-3">
+                        <p className="font-semibold text-slate-800">Premium</p>
+                        <div className="mt-2 space-y-1">
+                          <div>Products: <span className="font-semibold text-slate-800">{formatLimit(planLimits?.premium?.product_limit)}</span></div>
+                          <div>Videos: <span className="font-semibold text-slate-800">{formatLimit(planLimits?.premium?.video_limit)}</span></div>
+                          <div>Partners: <span className="font-semibold text-slate-800">{formatLimit(planLimits?.premium?.partner_limit)}</span></div>
+                          <div>Agents: <span className="font-semibold text-slate-800">{formatLimit(planLimits?.premium?.agent_limit)}</span></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             )}
 
@@ -902,40 +966,40 @@ export default function OrgSettings() {
                 <div className="text-sm text-[#5A5A5A]">
                   Purchase temporary boosts to increase visibility in feed or profile discovery.
                 </div>
-                {!entitlements?.premium ? (
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+                {!canBoost ? (
+                  <div className="rounded-lg borderless-shadow bg-amber-50 p-3 text-xs text-amber-900">
                     Premium required to activate boosts. Upgrade to unlock profile and product boosts.
                   </div>
                 ) : null}
-                <div className="rounded-lg border border-slate-200 p-4 space-y-3">
+                <div className="rounded-lg borderless-shadow p-4 space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium mb-1">Boost scope</label>
-                      <select value={boostScope} onChange={(e) => setBoostScope(e.target.value)} className="w-full border px-3 py-2 rounded" disabled={!entitlements?.premium}>
+                      <select value={boostScope} onChange={(e) => setBoostScope(e.target.value)} className="w-full borderless-shadow px-3 py-2 rounded" disabled={!canBoost}>
                         <option value="feed">Feed visibility</option>
                         <option value="profile">Profile visibility</option>
                       </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Duration (days)</label>
-                      <input value={boostDuration} onChange={(e) => setBoostDuration(e.target.value)} className="w-full border px-3 py-2 rounded" disabled={!entitlements?.premium} />
+                      <input value={boostDuration} onChange={(e) => setBoostDuration(e.target.value)} className="w-full borderless-shadow px-3 py-2 rounded" disabled={!canBoost} />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Multiplier</label>
-                      <input value={boostMultiplier} onChange={(e) => setBoostMultiplier(e.target.value)} className="w-full border px-3 py-2 rounded" disabled={!entitlements?.premium} />
+                      <input value={boostMultiplier} onChange={(e) => setBoostMultiplier(e.target.value)} className="w-full borderless-shadow px-3 py-2 rounded" disabled={!canBoost} />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">Price (USD)</label>
-                      <input value={boostPrice} onChange={(e) => setBoostPrice(e.target.value)} className="w-full border px-3 py-2 rounded" disabled={!entitlements?.premium} />
+                      <input value={boostPrice} onChange={(e) => setBoostPrice(e.target.value)} className="w-full borderless-shadow px-3 py-2 rounded" disabled={!canBoost} />
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-3">
-                    <button onClick={purchaseBoost} disabled={!entitlements?.premium} className="px-3 py-2 bg-[#0A66C2] text-white rounded disabled:opacity-60">Purchase boost</button>
+                    <button onClick={purchaseBoost} disabled={!canBoost} className="px-3 py-2 bg-[#0A66C2] text-white rounded disabled:opacity-60">Purchase boost</button>
                     <span className="text-xs text-[#5A5A5A]">Wallet balance: ${Number(walletBalance || 0).toFixed(2)} | Restricted: ${Number(walletRestricted || 0).toFixed(2)}</span>
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-slate-200 p-4">
+                <div className="rounded-lg borderless-shadow p-4">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-semibold">Active boosts</h3>
                     <button onClick={loadBoosts} className="text-sm text-[#0A66C2] hover:underline">Refresh</button>
@@ -944,7 +1008,7 @@ export default function OrgSettings() {
                   {!loadingBoosts && boosts.length === 0 ? <div className="text-sm text-[#5A5A5A]">No boosts yet.</div> : null}
                   <div className="space-y-3">
                     {boosts.map((boost) => (
-                      <div key={boost.id} className="rounded-lg border border-slate-200 p-3">
+                      <div key={boost.id} className="rounded-lg borderless-shadow p-3">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div>
                             <p className="text-sm font-semibold">{boost.scope} boost</p>
@@ -971,38 +1035,38 @@ export default function OrgSettings() {
 
             {tab === 'assistant_knowledge' && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <form onSubmit={saveFaq} className="border rounded p-4">
+                <form onSubmit={saveFaq} className="borderless-shadow rounded p-4">
                   <h3 className="font-semibold mb-2">{editingId ? 'Edit Knowledge Entry' : 'Add Knowledge Entry'}</h3>
                   <label className="block text-sm">Entry Type</label>
-                  <select value={knowledgeForm.type} onChange={(e) => setKnowledgeForm({ ...knowledgeForm, type: e.target.value })} className="w-full border px-3 py-2 rounded mb-3">
+                  <select value={knowledgeForm.type} onChange={(e) => setKnowledgeForm({ ...knowledgeForm, type: e.target.value })} className="w-full borderless-shadow px-3 py-2 rounded mb-3">
                     <option value="faq">FAQ</option>
                     <option value="fact">Company Fact</option>
                   </select>
                   <label className="block text-sm">Question</label>
-                  <input value={knowledgeForm.question} onChange={(e) => setKnowledgeForm({ ...knowledgeForm, question: e.target.value })} className="w-full border px-3 py-2 rounded mb-3" required />
+                  <input value={knowledgeForm.question} onChange={(e) => setKnowledgeForm({ ...knowledgeForm, question: e.target.value })} className="w-full borderless-shadow px-3 py-2 rounded mb-3" required />
                   <label className="block text-sm">Answer</label>
-                  <textarea value={knowledgeForm.answer} onChange={(e) => setKnowledgeForm({ ...knowledgeForm, answer: e.target.value })} className="w-full border px-3 py-2 rounded mb-3 min-h-28" required />
+                  <textarea value={knowledgeForm.answer} onChange={(e) => setKnowledgeForm({ ...knowledgeForm, answer: e.target.value })} className="w-full borderless-shadow px-3 py-2 rounded mb-3 min-h-28" required />
                   <label className="block text-sm">Keywords (comma separated)</label>
-                  <input value={knowledgeForm.keywords} onChange={(e) => setKnowledgeForm({ ...knowledgeForm, keywords: e.target.value })} className="w-full border px-3 py-2 rounded mb-3" />
+                  <input value={knowledgeForm.keywords} onChange={(e) => setKnowledgeForm({ ...knowledgeForm, keywords: e.target.value })} className="w-full borderless-shadow px-3 py-2 rounded mb-3" />
                   <div className="flex items-center gap-2">
                     <button type="submit" className="px-3 py-2 bg-[#0A66C2] text-white rounded">{editingId ? 'Update' : 'Save'} Entry</button>
-                    {editingId && <button type="button" onClick={resetForm} className="px-3 py-2 border rounded">Cancel edit</button>}
+                    {editingId && <button type="button" onClick={resetForm} className="px-3 py-2 borderless-shadow rounded">Cancel edit</button>}
                   </div>
                   {faqFeedback && <p className="mt-3 text-sm text-[#5A5A5A]">{faqFeedback}</p>}
                 </form>
 
-                <div className="border rounded p-4">
+                <div className="borderless-shadow rounded p-4">
                   <h3 className="font-semibold mb-2">Assistant Knowledge Entries ({entries.length})</h3>
                   <div className="space-y-3 max-h-[420px] overflow-auto">
                     {entries.map((entry) => (
-                      <div key={entry.id} className="border rounded p-3">
+                      <div key={entry.id} className="borderless-shadow rounded p-3">
                         <p className="text-xs uppercase tracking-wide text-[#5A5A5A]">{entry.type || 'faq'}</p>
                         <p className="font-semibold">{entry.question}</p>
                         <p className="text-sm text-[#5A5A5A] mt-1">{entry.answer}</p>
                         <p className="text-xs mt-2">Keywords: {(entry.keywords || []).join(', ') || 'None'}</p>
                         <div className="mt-2 flex gap-2">
-                          <button onClick={() => selectForEdit(entry)} className="px-2 py-1 text-sm border rounded">Edit</button>
-                          <button onClick={() => removeFaq(entry.id)} className="px-2 py-1 text-sm border rounded text-red-600">Delete</button>
+                          <button onClick={() => selectForEdit(entry)} className="px-2 py-1 text-sm borderless-shadow rounded">Edit</button>
+                          <button onClick={() => removeFaq(entry.id)} className="px-2 py-1 text-sm borderless-shadow rounded text-red-600">Delete</button>
                         </div>
                       </div>
                     ))}
@@ -1014,7 +1078,7 @@ export default function OrgSettings() {
 
             </div>
             <aside className="lg:col-span-1">
-              <div className="rounded-xl border border-slate-200 bg-[#F8FAFF] p-4 text-sm text-slate-700">
+              <div className="rounded-xl borderless-shadow bg-[#F8FAFF] p-4 text-sm text-slate-700">
                 <p className="font-semibold">{HELP_COPY[tab]?.title || 'Settings help'}</p>
                 <p className="mt-2 text-xs text-slate-600">{HELP_COPY[tab]?.description || 'Choose a tab to see guidance for that section.'}</p>
               </div>
@@ -1028,3 +1092,4 @@ export default function OrgSettings() {
     </div>
   )
 }
+

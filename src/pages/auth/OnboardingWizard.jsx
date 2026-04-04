@@ -112,7 +112,7 @@ export default function OnboardingWizard() {
                 value={profileImage}
                 onChange={(e) => setProfileImage(e.target.value)}
                 placeholder="https://..."
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-[rgba(10,102,194,0.55)] dark:border-slate-800 dark:bg-[#0b1224]"
+                className="mt-2 w-full rounded-xl borderless-shadow bg-white px-4 py-3 text-sm outline-none transition dark:bg-[#0b1224]"
               />
               {profileImage ? (
                 <div className="mt-4 flex items-center gap-3">
@@ -135,7 +135,7 @@ export default function OnboardingWizard() {
                 value={organizationName}
                 onChange={(e) => setOrganizationName(e.target.value)}
                 placeholder="Your company / buying house name"
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-[rgba(10,102,194,0.55)] dark:border-slate-800 dark:bg-[#0b1224]"
+                className="mt-2 w-full rounded-xl borderless-shadow bg-white px-4 py-3 text-sm outline-none transition dark:bg-[#0b1224]"
               />
               <div className="mt-3 text-xs text-slate-500 dark:text-slate-400">
                 Account role: <span className="font-semibold text-slate-700 dark:text-slate-200">{String(user?.role || '').replace('_', ' ')}</span>
@@ -182,7 +182,7 @@ export default function OnboardingWizard() {
                 type="button"
                 onClick={back}
                 disabled={step === 1 || saving}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60 dark:border-slate-800 dark:bg-[#0b1224] dark:text-slate-200"
+                className="rounded-xl borderless-shadow bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60 dark:bg-[#0b1224] dark:text-slate-200"
               >
                 Back
               </button>

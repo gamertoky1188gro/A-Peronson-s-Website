@@ -159,7 +159,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true 
             <button
               type="button"
               onClick={loadLeads}
-              className="px-3 py-1.5 text-sm rounded-md border hover:bg-slate-50 active:scale-[0.98]"
+              className="px-3 py-1.5 text-sm rounded-md borderless-shadow hover:bg-slate-50 active:scale-[0.98]"
               disabled={loading}
             >
               Refresh
@@ -183,8 +183,8 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true 
                   type="button"
                   onClick={() => setSelectedId(lead.id)}
                   className={[
-                    'w-full text-left rounded-lg border px-3 py-2 transition',
-                    isActive ? 'border-[var(--gt-blue)] bg-[#F4F9FF]' : 'border-slate-200 hover:bg-slate-50',
+                    'w-full text-left rounded-lg borderless-shadow px-3 py-2 transition',
+                    isActive ? 'bg-[#F4F9FF] ring-1 ring-[var(--gt-blue)]' : 'hover:bg-slate-50',
                   ].join(' ')}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -209,11 +209,11 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true 
 
         <div className="lg:w-3/5">
           {!selectedId ? (
-            <div className="rounded-xl border border-dashed border-slate-200 p-6 text-sm text-slate-500">
+            <div className="rounded-xl borderless-shadow p-6 text-sm text-slate-500">
               Select a lead to view details, notes, and reminders.
             </div>
           ) : (
-            <div className="rounded-xl border border-slate-200 p-4">
+            <div className="rounded-xl borderless-shadow p-4">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
                   <p className="text-xs uppercase tracking-widest text-slate-500">Counterparty</p>
@@ -238,7 +238,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true 
                   <select
                     value={selected?.status || 'new'}
                     onChange={(e) => updateLead({ status: e.target.value })}
-                    className="rounded-md border px-3 py-2 text-sm"
+                    className="rounded-md borderless-shadow px-3 py-2 text-sm"
                     disabled={saving}
                   >
                     {STATUS_OPTIONS.map((opt) => (
@@ -247,7 +247,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true 
                   </select>
                   <button
                     type="button"
-                    className="rounded-md border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                    className="rounded-md borderless-shadow px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                     disabled={!selected?.match_id}
                     onClick={() => {
                       if (!selected?.match_id) return
@@ -295,7 +295,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true 
                     value={noteDraft}
                     onChange={(e) => setNoteDraft(e.target.value)}
                     placeholder="Add a note for your team..."
-                    className="flex-1 rounded-md border px-3 py-2 text-sm"
+                    className="flex-1 rounded-md borderless-shadow px-3 py-2 text-sm"
                     disabled={saving}
                   />
                   <button
@@ -311,7 +311,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true 
                 <div className="mt-3 space-y-2 max-h-[260px] overflow-auto pr-1">
                   {(selected?.notes || []).length === 0 ? <div className="text-sm text-slate-500">No notes yet.</div> : null}
                   {(selected?.notes || []).map((note) => (
-                    <div key={note.id} className="rounded-lg border border-slate-200 p-3">
+                    <div key={note.id} className="rounded-lg borderless-shadow p-3">
                       <p className="text-sm text-slate-900">{note.note}</p>
                       <p className="mt-1 text-xs text-slate-500">{formatDate(note.created_at)}</p>
                     </div>
@@ -324,7 +324,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true 
                 <div className="mt-2 space-y-2">
                   {(selected?.reminders || []).length === 0 ? <div className="text-sm text-slate-500">No reminders yet.</div> : null}
                   {(selected?.reminders || []).map((reminder) => (
-                    <div key={reminder.id} className="rounded-lg border border-slate-200 p-3">
+                    <div key={reminder.id} className="rounded-lg borderless-shadow p-3">
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-sm font-medium">{reminder.message}</p>
                         <p className="text-xs text-slate-500">{formatDate(reminder.remind_at)}</p>

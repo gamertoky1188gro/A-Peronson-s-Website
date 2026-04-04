@@ -54,12 +54,12 @@ const defaultPricing = {
   },
 }
 
-function Skeleton({ className = '' }) {
+function Skeleton({ className='' }) {
   // Shimmer skeleton block (App.css `.skeleton`).
   return <div className={['skeleton', className].join(' ')} />
 }
 
-function MotionItem({ index, className = '', children }) {
+function MotionItem({ index, className='', children }) {
   const reduceMotion = useReducedMotion()
   // Respect reduced-motion preference.
   if (reduceMotion) return <div className={className}>{children}</div>
@@ -396,7 +396,7 @@ const premiumFeatures = [
               className={[
                 'rounded-xl p-6',
                 'bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
-                'dark:bg-[#18181b] dark:border dark:border-[#27272a] dark:shadow-none',
+                'dark:bg-[#18181b] dark:ring-1 dark:ring-white/10 dark:shadow-none',
                 'transition duration-300 ease-out',
                 'hover:-translate-y-0.5 hover:shadow-[0_12px_34px_-8px_rgba(0,0,0,0.18)]',
                 'dark:hover:translate-y-0 dark:hover:shadow-none',
@@ -451,7 +451,7 @@ const premiumFeatures = [
           {visibleSections.map((section, sectionIndex) => {
             const rolePlan = plansByRole[section.key]
             return (
-              <div key={section.key} className="rounded-3xl border border-slate-200 bg-white/70 p-6 shadow-[0_10px_30px_rgba(2,6,23,0.06)] dark:bg-[#0f172a]/70 dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/10">
+              <div key={section.key} className="rounded-3xl borderless-shadow bg-white/70 p-6 shadow-[0_10px_30px_rgba(2,6,23,0.06)] dark:bg-[#0f172a]/70 dark:shadow-none dark:ring-1 dark:ring-white/10">
                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{section.title}</p>
@@ -472,7 +472,7 @@ const premiumFeatures = [
                 'bg-[rgba(9,9,11,0.02)] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
                 'transition duration-300 ease-out',
                 'hover:-translate-y-0.5 hover:shadow-[0_14px_44px_-18px_rgba(0,0,0,0.22)]',
-                'dark:bg-[#18181b] dark:border dark:border-[#27272a] dark:shadow-none',
+                'dark:bg-[#18181b] dark:ring-1 dark:ring-white/10 dark:shadow-none',
                 'dark:hover:translate-y-0 dark:hover:shadow-none',
               ].join(' ')}
             >
@@ -514,10 +514,10 @@ const premiumFeatures = [
                 className={[
                   'conic-beam rounded-xl p-7',
                   'bg-[rgba(255,255,255,0.70)] backdrop-blur-[12px]',
-                  'border border-black/5 shadow-[0_10px_38px_-18px_rgba(0,0,0,0.22)]',
+                  'borderless-shadow shadow-[0_10px_38px_-18px_rgba(0,0,0,0.22)]',
                   'transition duration-300 ease-out',
                   'hover:-translate-y-0.5 hover:shadow-[0_16px_54px_-22px_rgba(0,0,0,0.26)]',
-                  'dark:bg-[rgba(24,24,27,0.70)] dark:border-[#27272a] dark:shadow-none',
+                  'dark:bg-[rgba(24,24,27,0.70)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
                   'dark:hover:translate-y-0 dark:hover:shadow-none',
                 ].join(' ')}
               >
@@ -573,7 +573,7 @@ const premiumFeatures = [
                 className={[
                   'rounded-xl p-7',
                   'bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
-                  'dark:bg-[#18181b] dark:border dark:border-[#27272a] dark:shadow-none',
+                  'dark:bg-[#18181b] dark:ring-1 dark:ring-white/10 dark:shadow-none',
                   'transition duration-300 ease-out',
                   'hover:-translate-y-0.5 hover:shadow-[0_12px_34px_-8px_rgba(0,0,0,0.18)]',
                   'dark:hover:translate-y-0 dark:hover:shadow-none',
@@ -601,7 +601,7 @@ const premiumFeatures = [
                 className={[
                   'rounded-xl p-7',
                   'bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
-                  'dark:bg-[#18181b] dark:border dark:border-[#27272a] dark:shadow-none',
+                  'dark:bg-[#18181b] dark:ring-1 dark:ring-white/10 dark:shadow-none',
                   'transition duration-300 ease-out',
                   'hover:-translate-y-0.5 hover:shadow-[0_12px_34px_-8px_rgba(0,0,0,0.18)]',
                   'dark:hover:translate-y-0 dark:hover:shadow-none',
@@ -653,7 +653,7 @@ const premiumFeatures = [
                 key={bundle.title}
                 className={[
                   'rounded-2xl p-6',
-                  'border border-white/10 bg-[rgba(9,9,11,0.04)]',
+                  'borderless-shadow bg-[rgba(9,9,11,0.04)]',
                   'shadow-[0_20px_40px_-26px_rgba(0,0,0,0.85)] dark:bg-[rgba(250,250,250,0.04)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
                 ].join(' ')}
               >
@@ -677,7 +677,7 @@ const premiumFeatures = [
             <p className="mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">Horizontal lines only. Clear, audit-ready differences.</p>
           </div>
 
-          <div className="mt-6 overflow-x-auto rounded-xl bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#18181b] dark:border dark:border-[#27272a] dark:shadow-none">
+          <div className="mt-6 overflow-x-auto rounded-xl bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#18181b] dark:borderless-shadow dark:shadow-none">
             <table className="min-w-full text-left text-sm">
               <thead>
                 <tr className="text-xs font-semibold uppercase tracking-[0.12em] text-[#52525b] dark:text-[#a1a1aa]">
@@ -729,7 +729,7 @@ const premiumFeatures = [
                   className={[
                     'rounded-xl p-6',
                     'bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
-                    'dark:bg-[#18181b] dark:border dark:border-[#27272a] dark:shadow-none',
+                    'dark:bg-[#18181b] dark:ring-1 dark:ring-white/10 dark:shadow-none',
                     'transition duration-300 ease-out',
                     'hover:-translate-y-0.5 hover:shadow-[0_12px_34px_-8px_rgba(0,0,0,0.18)]',
                     'dark:hover:translate-y-0 dark:hover:shadow-none',
@@ -748,7 +748,7 @@ const premiumFeatures = [
             className={[
               'rounded-xl p-10 text-center',
               'bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
-              'dark:bg-[#18181b] dark:border dark:border-[#27272a] dark:shadow-none',
+              'dark:bg-[#18181b] dark:ring-1 dark:ring-white/10 dark:shadow-none',
             ].join(' ')}
           >
             <h2 className="text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">
@@ -777,4 +777,5 @@ const premiumFeatures = [
     </div>
   )
 }
+
 

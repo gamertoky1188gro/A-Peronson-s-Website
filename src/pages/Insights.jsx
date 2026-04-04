@@ -194,6 +194,13 @@ export default function Insights() {
                       hint="Matched buyer requests"
                     />
                   ) : null}
+                  {premiumInsights.smart_matching_success_rate ? (
+                    <StatCard
+                      label="Smart Match Success"
+                      value={`${premiumInsights.smart_matching_success_rate.match_rate_pct ?? 0}%`}
+                      hint="Matched requests converted"
+                    />
+                  ) : null}
                   {premiumInsights.request_performance_insights ? (
                     <StatCard
                       label="Open Requests"
@@ -293,7 +300,7 @@ export default function Insights() {
                   <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Agent Performance</p>
                   <div className="mt-2 space-y-2 text-sm text-slate-700 dark:text-slate-300">
                     {premiumInsights.agent_performance_analytics.map((agent) => (
-                      <div key={agent.agent_id} className="flex items-center justify-between rounded-lg border border-slate-200/60 px-3 py-2 dark:border-slate-800">
+                      <div key={agent.agent_id} className="flex items-center justify-between rounded-lg borderless-shadow px-3 py-2">
                         <span className="truncate">{agent.name || agent.agent_id}</span>
                         <span className="text-xs font-semibold">{agent.assigned_leads ?? 0} leads</span>
                       </div>
@@ -307,7 +314,7 @@ export default function Insights() {
                   <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Buying Pattern Analysis</p>
                   <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-700 dark:text-slate-300">
                     {premiumInsights.buying_pattern_analysis.map((row) => (
-                      <span key={row.label} className="rounded-full border border-slate-200/60 px-3 py-1 dark:border-slate-800">
+                      <span key={row.label} className="rounded-full borderless-shadow px-3 py-1">
                         {row.label} - {row.count}
                       </span>
                     ))}
@@ -319,7 +326,7 @@ export default function Insights() {
                   <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Lead Distribution</p>
                   <div className="mt-2 space-y-2 text-xs text-slate-700 dark:text-slate-300">
                     {Object.entries(premiumInsights.lead_distribution).map(([agentId, count]) => (
-                      <div key={agentId} className="flex items-center justify-between rounded-lg border border-slate-200/60 px-3 py-2 dark:border-slate-800">
+                      <div key={agentId} className="flex items-center justify-between rounded-lg borderless-shadow px-3 py-2">
                         <span className="truncate">{agentId}</span>
                         <span className="font-semibold">{count}</span>
                       </div>
@@ -330,7 +337,7 @@ export default function Insights() {
 
               {['factory', 'buying_house'].includes(String(premiumRole || '').toLowerCase()) ? (
                 <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="rounded-xl border border-slate-200/60 p-3 dark:border-slate-800">
+                  <div className="rounded-xl borderless-shadow p-3">
                     <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Recent Profile Viewers</p>
                     {viewerLoading ? (
                       <div className="mt-2 text-xs text-slate-500">Loading viewers...</div>
@@ -345,7 +352,7 @@ export default function Insights() {
                       </div>
                     )}
                   </div>
-                  <div className="rounded-xl border border-slate-200/60 p-3 dark:border-slate-800">
+                  <div className="rounded-xl borderless-shadow p-3">
                     <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Recent Product Viewers</p>
                     {viewerLoading ? (
                       <div className="mt-2 text-xs text-slate-500">Loading viewers...</div>
@@ -384,7 +391,7 @@ export default function Insights() {
                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Top Viewed Products</p>
                     <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
                       {topProducts.length ? topProducts.map((row) => (
-                        <div key={row.product_id} className="flex items-center justify-between rounded-lg border border-slate-200/60 px-3 py-2 dark:border-slate-800">
+                        <div key={row.product_id} className="flex items-center justify-between rounded-lg borderless-shadow px-3 py-2">
                           <span className="truncate">{row.title}</span>
                           <span className="text-xs font-semibold">{row.views}</span>
                         </div>
@@ -395,7 +402,7 @@ export default function Insights() {
                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Profile Visits by Country</p>
                     <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
                       {visitCountries.length ? visitCountries.map((row) => (
-                        <div key={row.country} className="flex items-center justify-between rounded-lg border border-slate-200/60 px-3 py-2 dark:border-slate-800">
+                        <div key={row.country} className="flex items-center justify-between rounded-lg borderless-shadow px-3 py-2">
                           <span className="truncate">{row.country}</span>
                           <span className="text-xs font-semibold">{row.count}</span>
                         </div>
@@ -419,7 +426,7 @@ export default function Insights() {
                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Top Categories by Country</p>
                     <div className="mt-3 space-y-3 text-sm text-slate-700 dark:text-slate-300">
                       {platformByCountry.length ? platformByCountry.map((row) => (
-                        <div key={row.country} className="rounded-lg border border-slate-200/60 px-3 py-2 dark:border-slate-800">
+                        <div key={row.country} className="rounded-lg borderless-shadow px-3 py-2">
                           <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">{row.country}</div>
                           <div className="mt-1 text-sm">{(row.categories || []).map((c) => c.label).join(', ') || '--'}</div>
                         </div>
@@ -430,7 +437,7 @@ export default function Insights() {
                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Price Range Demand</p>
                     <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
                       {platformPriceDemand.length ? platformPriceDemand.map((row) => (
-                        <div key={row.bucket} className="flex items-center justify-between rounded-lg border border-slate-200/60 px-3 py-2 dark:border-slate-800">
+                        <div key={row.bucket} className="flex items-center justify-between rounded-lg borderless-shadow px-3 py-2">
                           <span className="truncate">{row.bucket}</span>
                           <span className="text-xs font-semibold">{row.count}</span>
                         </div>
@@ -443,7 +450,7 @@ export default function Insights() {
                   <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Monthly Demand Trend</p>
                   <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
                     {platformMonthly.length ? platformMonthly.map((row) => (
-                      <div key={row.month} className="flex items-center justify-between rounded-lg border border-slate-200/60 px-3 py-2 dark:border-slate-800">
+                      <div key={row.month} className="flex items-center justify-between rounded-lg borderless-shadow px-3 py-2">
                         <span>{row.month}</span>
                         <span className="text-xs font-semibold">{row.count}</span>
                       </div>

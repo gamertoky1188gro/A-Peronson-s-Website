@@ -4,7 +4,7 @@ import { motion, useMotionValue, useReducedMotion, useSpring } from 'framer-moti
 
 const MotionLink = motion.create(Link)
 
-export default function MagneticButton({ to, onClick, className = '', children, ...rest }) {
+export default function MagneticButton({ to, onClick, className='', children, ...rest }) {
   const reduceMotion = useReducedMotion()
   const x = useMotionValue(0)
   const y = useMotionValue(0)

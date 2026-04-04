@@ -29,6 +29,7 @@ import { markRecording } from './callSessionService.js'
 import { createKnowledgeEntry, deleteKnowledgeEntry, updateKnowledgeEntry } from './assistantService.js'
 import { recordRefund } from './refundService.js'
 import { adminUpdateSupportTicket, createSupportTicket } from './supportTicketService.js'
+import { addOrderCertificationEvidence, approveOrderCertification, revokeOrderCertification } from './orderCertificationService.js'
 
 function toId(value, max = 120) {
   return sanitizeString(String(value || ''), max)
@@ -1578,6 +1579,53 @@ export async function performAdminAction(action, payload = {}, actor) {
     rows[idx] = { ...rows[idx], profile }
     await writeJson('users.json', rows)
     return { ok: true, user_id: rows[idx].id, profile }
+  }
+
+  if (name === 'order.certification.approve') {
+    const userId = toId(payload.user_id)
+    if (!userId) {
+      const err = new Error('user_id is required')
+      err.status = 400
+      throw err
+    }
+    await ensureUserExists(userId)
+    const evidence = parseCsvList(payload.evidence_contract_ids || payload.evidence_ids)
+    const record = await approveOrderCertification(userId, {
+      issuedBy: admin.id,
+      evidenceContractIds: evidence,
+      note: payload.note,
+    })
+    return { ok: true, record }
+  }
+
+  if (name === 'order.certification.revoke') {
+    const userId = toId(payload.user_id)
+    if (!userId) {
+      const err = new Error('user_id is required')
+      err.status = 400
+      throw err
+    }
+    await ensureUserExists(userId)
+    const record = await revokeOrderCertification(userId, { issuedBy: admin.id, note: payload.note })
+    return { ok: true, record }
+  }
+
+  if (name === 'order.certification.evidence') {
+    const userId = toId(payload.user_id)
+    if (!userId) {
+      const err = new Error('user_id is required')
+      err.status = 400
+      throw err
+    }
+    await ensureUserExists(userId)
+    const evidence = parseCsvList(payload.evidence_contract_ids || payload.evidence_ids)
+    if (!evidence.length) {
+      const err = new Error('evidence_contract_ids are required')
+      err.status = 400
+      throw err
+    }
+    const record = await addOrderCertificationEvidence(userId, evidence, { issuedBy: admin.id, note: payload.note })
+    return { ok: true, record }
   }
 
   if (name === 'notification.broadcast') {

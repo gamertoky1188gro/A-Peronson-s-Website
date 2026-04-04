@@ -98,7 +98,7 @@ export default function PartnerNetwork() {
               value={targetAccountId}
               onChange={(e) => setTargetAccountId(e.target.value)}
               placeholder="Target account ID"
-              className="px-3 py-2 border rounded w-64"
+              className="px-3 py-2 borderless-shadow rounded w-64"
               disabled={!canManage || loading}
             />
             <button
@@ -112,7 +112,7 @@ export default function PartnerNetwork() {
         </div>
 
         <div className="mb-4 flex items-center gap-3">
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search partners" className="px-3 py-2 border rounded w-72" />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search partners" className="px-3 py-2 borderless-shadow rounded w-72" />
           <div className="text-sm text-[#5A5A5A]">Signed in as: {user?.role || 'unknown'}</div>
         </div>
 
@@ -122,7 +122,7 @@ export default function PartnerNetwork() {
               <button
                 key={item.key}
                 onClick={() => setTab(item.key)}
-                className={`px-3 py-2 rounded ${tab === item.key ? 'bg-[#0A66C2] text-white' : 'border'}`}
+                className={`px-3 py-2 rounded${tab === item.key ? 'bg-[#0A66C2] text-white' : 'borderless-shadow bg-white/70 text-slate-700'}`}
               >
                 {item.label}
               </button>
@@ -139,7 +139,7 @@ export default function PartnerNetwork() {
             const isIncoming = row.direction === 'incoming'
             const isMine = row.requester_id === user?.id
             return (
-              <div key={row.id} className="bg-white neo-panel cyberpunk-card border rounded-lg p-4 shadow-sm">
+              <div key={row.id} className="bg-white neo-panel cyberpunk-card borderless-shadow rounded-lg p-4 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <div className="font-semibold">{counterparty.name || 'Unknown account'}</div>
@@ -164,13 +164,13 @@ export default function PartnerNetwork() {
 
                   {row.status === 'pending' && canManage && isIncoming && (
                     <>
-                      <button onClick={() => applyAction(row.id, 'accept')} className="px-3 py-1 border rounded text-sm" disabled={loading}>Accept</button>
-                      <button onClick={() => applyAction(row.id, 'reject')} className="px-3 py-1 border rounded text-sm" disabled={loading}>Reject</button>
+                      <button onClick={() => applyAction(row.id, 'accept')} className="px-3 py-1 borderless-shadow rounded text-sm" disabled={loading}>Accept</button>
+                      <button onClick={() => applyAction(row.id, 'reject')} className="px-3 py-1 borderless-shadow rounded text-sm" disabled={loading}>Reject</button>
                     </>
                   )}
 
                   {row.status === 'pending' && canManage && isMine && (
-                    <button onClick={() => applyAction(row.id, 'cancel')} className="px-3 py-1 border rounded text-sm" disabled={loading}>Cancel</button>
+                    <button onClick={() => applyAction(row.id, 'cancel')} className="px-3 py-1 borderless-shadow rounded text-sm" disabled={loading}>Cancel</button>
                   )}
                 </div>
               </div>

@@ -14,7 +14,7 @@
     - Provide mobile navigation drawer.
 
   Key UX patterns:
-    - Glassmorphism base via `.nav-glass` (App.css): semi-transparent + blur + subtle border.
+    - Glassmorphism base via `.nav-glass` (App.css): semi-transparent + blur + subtle shadow.
     - "Active" indicator uses Framer Motion `layoutId="nav-active"` so it smoothly slides between links.
     - Ctrl+K / Cmd+K focuses search.
 
@@ -128,11 +128,11 @@ function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
         <Link
           to={to}
           // Visual: rounded icon button with soft hover background (light + dark).
-          className={`relative rounded-full p-2 transition-colors ${
+          className={`relative rounded-full p-2 transition-colors${
             active
               ? 'text-[var(--gt-blue)]'
               : 'text-slate-600 hover:text-[var(--gt-blue)] dark:text-slate-300 dark:hover:text-[var(--gt-blue)]'
-          } hover:bg-slate-100/50 dark:hover:bg-slate-800/50`}
+          }hover:bg-slate-100/50 dark:hover:bg-slate-800/50`}
           aria-label={label}
         >
           {active ? (
@@ -396,7 +396,7 @@ export default function NavBar() {
     // Top navigation shell.
     // `nav-glass` is a custom utility (src/App.css) that provides: translucent background + blur + safe borders in dark mode.
     // `sticky top-0 z-50` keeps the nav pinned and above content during scroll.
-    <nav className="nav-glass sticky top-0 z-50 border-b">
+    <nav className="nav-glass sticky top-0 z-50 borderless-divider-b">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex min-h-16 flex-wrap items-center justify-between gap-3 py-2">
           {/* Left cluster: brand + primary nav (desktop). */}
@@ -458,15 +458,15 @@ export default function NavBar() {
                 }}
                 onFocus={() => setSearchOpen(true)}
                 placeholder="Search users..."
-                className="w-full rounded-full border border-slate-200/70 bg-white/70 px-4 py-2 pr-16 text-sm text-slate-700 shadow-inner outline-none ring-sky-300/30 transition focus:ring-2 dark:border-slate-800/60 dark:bg-slate-900/60 dark:text-slate-100"
+                className="w-full rounded-full borderless-shadow bg-white/70 px-4 py-2 pr-16 text-sm text-slate-700 shadow-inner outline-none ring-sky-300/30 transition focus:ring-2 dark:bg-slate-900/60 dark:text-slate-100"
               />
               {/* Shortcut hint chip shown inside the input (visual only). */}
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full border border-slate-200/70 bg-white/70 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-slate-500 dark:border-slate-700/60 dark:bg-slate-950/50 dark:text-slate-400">
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full borderless-shadow bg-white/70 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-slate-500 dark:bg-slate-950/50 dark:text-slate-400">
                 {isMac ? 'Cmd K' : 'Ctrl K'}
               </span>
 
               {user && searchOpen && searchQuery.trim().length >= 1 ? (
-                <div className="absolute right-0 top-11 z-50 w-[360px] rounded-xl border border-slate-200 bg-white p-2 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+                <div className="absolute right-0 top-11 z-50 w-[360px] rounded-xl borderless-shadow bg-white p-2 shadow-xl dark:bg-slate-900">
                   {searchLoading ? <p className="px-2 py-3 text-xs text-slate-500">Searching...</p> : null}
                   {!searchLoading && searchError ? <p className="px-2 py-3 text-xs text-rose-500">{searchError}</p> : null}
                   {!searchLoading && !searchError && searchResults.length === 0 ? <p className="px-2 py-3 text-xs text-slate-500">No users found.</p> : null}
@@ -474,7 +474,7 @@ export default function NavBar() {
                   {actionStatus ? <p className="px-2 pb-2 text-[11px] text-emerald-600">{actionStatus}</p> : null}
 
                   {!searchLoading && !searchError && searchResults.map((result) => (
-                    <div key={result.id} className="mb-1 rounded-lg border border-slate-100 px-2 py-2 last:mb-0 dark:border-slate-800">
+                    <div key={result.id} className="mb-1 rounded-lg borderless-shadow px-2 py-2 last:mb-0">
                       <div className="flex items-center justify-between gap-2">
                         <div>
                           <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{result.name}{result.is_self ? ' (You)' : ''}</p>
@@ -487,14 +487,14 @@ export default function NavBar() {
                         <button
                           disabled={result.is_self || result.following || actionBusyKey === `follow:${result.id}`}
                           onClick={() => followUser(result.id)}
-                          className="rounded-md border border-sky-300 px-2 py-1 text-xs font-semibold text-sky-700 disabled:cursor-not-allowed disabled:opacity-60 dark:border-sky-700 dark:text-sky-300"
+                          className="rounded-md borderless-shadow px-2 py-1 text-xs font-semibold text-sky-700 disabled:cursor-not-allowed disabled:opacity-60 dark:text-sky-300"
                         >
                           {actionBusyKey === `follow:${result.id}` ? 'Following...' : (result.is_self ? 'Follow' : (result.following ? 'Following' : 'Follow (optional)'))}
                         </button>
                         <button
                           disabled={result.is_self || ['friends', 'requested', 'self'].includes(result.friend_status) || actionBusyKey === `friend:${result.id}`}
                           onClick={() => addFriend(result.id)}
-                          className="rounded-md border border-indigo-300 px-2 py-1 text-xs font-semibold text-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 dark:border-indigo-700 dark:text-indigo-300"
+                          className="rounded-md borderless-shadow px-2 py-1 text-xs font-semibold text-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 dark:text-indigo-300"
                         >
                           {actionBusyKey === `friend:${result.id}` ? 'Sending...' : (result.is_self ? 'Add Friend' : (result.friend_status === 'incoming' ? 'Accept Friend' : 'Add Friend'))}
                         </button>
@@ -503,14 +503,14 @@ export default function NavBar() {
                             <button
                               disabled={actionBusyKey === `message:${result.id}`}
                               onClick={() => messageFriend(result.id)}
-                              className="rounded-md border border-emerald-300 px-2 py-1 text-xs font-semibold text-emerald-700 disabled:cursor-not-allowed disabled:opacity-60 dark:border-emerald-700 dark:text-emerald-300"
+                              className="rounded-md borderless-shadow px-2 py-1 text-xs font-semibold text-emerald-700 disabled:cursor-not-allowed disabled:opacity-60 dark:text-emerald-300"
                             >
                               Message
                             </button>
                             <button
                               disabled={actionBusyKey === `call:${result.id}`}
                               onClick={() => callFriend(result.id)}
-                              className="rounded-md border border-violet-300 px-2 py-1 text-xs font-semibold text-violet-700 disabled:cursor-not-allowed disabled:opacity-60 dark:border-violet-700 dark:text-violet-300"
+                              className="rounded-md borderless-shadow px-2 py-1 text-xs font-semibold text-violet-700 disabled:cursor-not-allowed disabled:opacity-60 dark:text-violet-300"
                             >
                               Call
                             </button>
@@ -526,7 +526,7 @@ export default function NavBar() {
             <div className="ml-auto flex items-center gap-2 sm:gap-3">
               <button
                 onClick={() => setDark(!dark)}
-                className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
+                className="inline-flex items-center gap-2 rounded-full borderless-shadow bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:shadow-md dark:bg-slate-900 dark:text-slate-100"
                 aria-label="Toggle dark mode"
               >
                 {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -537,7 +537,7 @@ export default function NavBar() {
                 <>
                   <button
                     onClick={handleLogout}
-                    className="rounded-full border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                    className="rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"
                   >
                     Logout
                   </button>
@@ -545,7 +545,7 @@ export default function NavBar() {
               ) : (
                 <Link
                   to="/login"
-                  className="rounded-full border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  className="rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"
                 >
                   Login
                 </Link>
@@ -553,7 +553,7 @@ export default function NavBar() {
 
               <button
                 onClick={() => setMobileOpen((v) => !v)}
-                className="inline-flex items-center justify-center rounded-full border border-slate-200/60 bg-white/70 p-2 text-slate-700 shadow-sm md:hidden dark:border-slate-800/60 dark:bg-slate-950/60 dark:text-slate-100"
+                className="inline-flex items-center justify-center rounded-full borderless-shadow bg-white/70 p-2 text-slate-700 shadow-sm md:hidden dark:bg-slate-950/60 dark:text-slate-100"
                 aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
               >
                 <Menu className="h-5 w-5" />
@@ -619,7 +619,7 @@ export default function NavBar() {
                 </Link>
               ) : null}
 
-              <div className="mt-4 border-t border-slate-200 pt-3 dark:border-slate-700">
+              <div className="mt-4 borderless-divider-t pt-3">
                 <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Legal</p>
                 <Link
                   to="/terms"

@@ -33,7 +33,7 @@ export default function MarkdownMessage({ text = '' }) {
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw, [rehypeSanitize, schema]]}
         components={{
-          a({ href = '', className = '', ...props }) {
+          a({ href = '', className='', ...props }) {
             const external = /^https*:\/\//i.test(String(href || ''))
             return (
               <a
@@ -45,11 +45,11 @@ export default function MarkdownMessage({ text = '' }) {
               />
             )
           },
-        img({ className = '', ...props }) {
+        img({ className='', ...props }) {
           return (
             <img
               {...props}
-              className={`max-w-full rounded-xl border border-white/10 ${className}`.trim()}
+              className={`max-w-full rounded-xl borderless-shadow ${className}`.trim()}
               loading="lazy"
             />
           )

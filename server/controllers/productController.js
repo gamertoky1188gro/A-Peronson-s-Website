@@ -12,7 +12,9 @@ import { readJson } from '../utils/jsonStore.js'
 import { listMyProductViews, recordView } from '../services/productViewService.js'
 import { findUserById } from '../services/userService.js'
 import { handleControllerError } from '../utils/permissions.js'
+import { ensureEntitlement } from '../services/entitlementService.js'
 import { getActiveBoostMap } from '../services/boostService.js'
+import { getOrderCertificationMap } from '../services/orderCertificationService.js'
 
 function parseNumber(value) {
   if (value === undefined || value === null) return null
@@ -259,6 +261,10 @@ export async function getProducts(req, res) {
 
 export async function searchProducts(req, res) {
   const plan = await getUserPlan(req.user.id)
+  const priorityOnly = req.query.priorityOnly === 'true'
+  if (priorityOnly) {
+    await ensureEntitlement(req.user, 'priority_search_ranking', 'Premium plan required for priority search filter.')
+  }
   const advancedFilters = extractUsedAdvancedFilters(req.query)
   const quotaPreview = advancedFilters.length > 0
     ? await getQuotaSnapshot(req.user.id, 'products_search', plan)
@@ -286,10 +292,11 @@ export async function searchProducts(req, res) {
   }
 
   const all = await listProducts({})
-  const [users, messages, boostMap] = await Promise.all([
+  const [users, messages, boostMap, orderCertMap] = await Promise.all([
     readJson('users.json'),
     readJson('messages.json'),
     getActiveBoostMap('feed'),
+    getOrderCertificationMap(),
   ])
   const usersById = new Map(users.map((u) => [u.id, u]))
   const responseTimeByOwner = buildResponseTimeByOwner(messages, users)
@@ -338,6 +345,7 @@ export async function searchProducts(req, res) {
     .map((p) => {
       const company = usersById.get(p.company_id) || null
       const companyPremium = String(company?.subscription_status || '').toLowerCase() === 'premium'
+      const certification = company ? orderCertMap.get(String(company.id)) : null
       const authorCountry = String(company?.profile?.country || '').trim()
       const profile = company?.profile || {}
       const paidBoostMultiplier = Number(boostMap?.[String(p.company_id)] || 1)
@@ -372,14 +380,17 @@ export async function searchProducts(req, res) {
           location_lat: profile?.location_lat ?? '',
           location_lng: profile?.location_lng ?? '',
           avg_response_hours: responseTimeByOwner.get(String(company.id)) ?? null,
+          order_certification_status: certification?.status || '',
         } : { id: p.company_id, name: 'Unknown company', role: 'factory', verified: false, country: '' },
         profile_key: `user:${p.company_id}`,
         priority_score: priorityScore,
+        priority_active: companyPremium || boostActive,
         boost_active: boostActive,
         boost_multiplier: Number.isFinite(effectiveBoost) ? Number(effectiveBoost.toFixed(2)) : 1,
       }
     })
     .filter((p) => {
+      if (priorityOnly && !p.priority_active) return false
       if (searchTokens.length) {
         const searchText = normalizeSearchText(`${p.title} ${p.category} ${p.material} ${p.description} ${p.color_pantone || ''} ${p.size_range || ''}`)
         const hit = searchTokens.every((token) => searchText.includes(token))

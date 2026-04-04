@@ -10,6 +10,7 @@ import {
   verifyAuthentication,
   verifyRegistration,
 } from '../services/passkeyService.js'
+import { getEntitlements } from '../services/entitlementService.js'
 
 function sanitizeUser(user) {
   if (!user) return null
@@ -47,7 +48,8 @@ export async function register(req, res) {
 
   const user = await registerUser(req.body)
   const token = signToken(user)
-  return res.status(201).json({ user: sanitizeUser(user), token })
+  const entitlements = await getEntitlements(user)
+  return res.status(201).json({ user: { ...sanitizeUser(user), entitlements }, token })
 }
 
 export async function login(req, res) {
@@ -70,15 +72,16 @@ export async function login(req, res) {
   if (!ok) return res.status(401).json({ error: 'Invalid credentials' })
 
   const token = signToken(user, { authViaPasskey: false })
-  return res.json({ user: sanitizeUser(user), token })
+  const entitlements = await getEntitlements(user)
+  return res.json({ user: { ...sanitizeUser(user), entitlements }, token })
 }
 
 
 export async function me(req, res) {
   const user = await findUserById(req.user.id)
   if (!user) return res.status(404).json({ error: 'User not found' })
-
-  return res.json({ user: sanitizeUser(user) })
+  const entitlements = await getEntitlements(user)
+  return res.json({ user: { ...sanitizeUser(user), entitlements } })
 }
 
 export async function logout(req, res) {
@@ -132,7 +135,8 @@ export async function passkeyLoginVerify(req, res) {
       return res.status(403).json({ error: 'Account deleted' })
     }
     const token = signToken(user, { authViaPasskey: true })
-    return res.json({ user: sanitizeUser(user), token, passkey })
+    const entitlements = await getEntitlements(user)
+    return res.json({ user: { ...sanitizeUser(user), entitlements }, token, passkey })
   } catch (err) {
     return res.status(err.status || 400).json({ error: err.message || 'Passkey login failed' })
   }

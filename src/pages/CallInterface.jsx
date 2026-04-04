@@ -1498,13 +1498,13 @@ export default function CallInterface() {
       </div>
       {toast ? (
         <div className="pointer-events-none fixed left-1/2 top-[76px] z-[70] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 px-2">
-          <div className={`rounded-2xl px-4 py-2 text-center text-sm font-semibold shadow-lg ring-1 backdrop-blur-xl ${toast.tone === 'error' ? 'bg-rose-500/15 text-rose-100 ring-rose-500/25' : toast.tone === 'success' ? 'bg-emerald-500/15 text-emerald-50 ring-emerald-500/25' : 'bg-slate-950/75 text-white ring-white/10'}`}>
+          <div className={`rounded-2xl px-4 py-2 text-center text-sm font-semibold shadow-lg ring-1 backdrop-blur-xl${toast.tone === 'error' ? 'bg-rose-500/15 text-rose-100 ring-rose-500/25' : toast.tone === 'success' ? 'bg-emerald-500/15 text-emerald-50 ring-emerald-500/25' : 'bg-slate-950/75 text-white ring-white/10'}`}>
             {toast.message}
           </div>
         </div>
       ) : null}
       {/* Top Header */}
-      <header className="flex h-16 items-center justify-between gap-4 border-b border-slate-200/60 bg-white/70 px-4 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/40 sm:px-6">
+      <header className="flex h-16 items-center justify-between gap-4 borderless-divider-b bg-white/70 px-4 shadow-sm backdrop-blur-xl dark:bg-slate-950/40 sm:px-6">
         <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <button
             type="button"
@@ -1525,13 +1525,13 @@ export default function CallInterface() {
         </div>
 
         <div className="flex flex-none items-center gap-2">
-          <span className={`hidden items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ring-1 sm:inline-flex ${connectionBadge.pillClass}`}>
-            <span className={`h-2 w-2 rounded-full ${connectionBadge.dotClass}`} />
+          <span className={`hidden items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ring-1 sm:inline-flex${connectionBadge.pillClass}`}>
+            <span className={`h-2 w-2 rounded-full${connectionBadge.dotClass}`} />
             {connectionBadge.label}
           </span>
           {recordingState !== 'idle' ? (
             <span className="hidden items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/60 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 sm:inline-flex">
-              <span className={`h-2 w-2 rounded-full ${recordingState === 'recording' ? 'bg-rose-500 animate-pulse' : recordingState === 'available' ? 'bg-emerald-500' : recordingState === 'uploading' ? 'bg-amber-500 animate-pulse' : 'bg-rose-500'}`} />
+              <span className={`h-2 w-2 rounded-full${recordingState === 'recording' ? 'bg-rose-500 animate-pulse' : recordingState === 'available' ? 'bg-emerald-500' : recordingState === 'uploading' ? 'bg-amber-500 animate-pulse' : 'bg-rose-500'}`} />
               {recordingState === 'recording'
                 ? 'REC'
                 : recordingState === 'uploading'
@@ -1585,7 +1585,7 @@ export default function CallInterface() {
 
             {mediaGate && !hasLocalStream && (
               <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 p-6">
-                <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/10 p-6 text-center text-white backdrop-blur-md">
+                <div className="w-full max-w-md rounded-2xl borderless-shadow bg-white/10 p-6 text-center text-white backdrop-blur-md">
                   <div className="text-lg font-semibold">{mediaGate.title}</div>
                   <div className="mt-2 text-sm text-white/80">{mediaGate.message}</div>
                   <div className="mt-5 flex items-center justify-center gap-3">
@@ -1613,7 +1613,7 @@ export default function CallInterface() {
 
             {/* Local Video (PiP) */}
             <div
-              className={`absolute right-5 top-5 z-30 aspect-video w-40 overflow-hidden rounded-2xl bg-black/80 ring-1 ${isSpeaking ? 'ring-cyan-300/70' : 'ring-white/20'} shadow-2xl shadow-black/40 sm:w-56`}
+              className={`absolute right-5 top-5 z-30 aspect-video w-40 overflow-hidden rounded-2xl bg-black/80 ring-1${isSpeaking ? 'ring-cyan-300/70' : 'ring-white/20'}shadow-2xl shadow-black/40 sm:w-56`}
               style={isSpeaking ? { boxShadow: '0 22px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(34,211,238,0.35), 0 0 34px rgba(34,211,238,0.25)' } : undefined}
             >
               <video 
@@ -1633,7 +1633,7 @@ export default function CallInterface() {
               <button
                 type="button"
                 onClick={() => setIsChatOpen((prev) => !prev)}
-                className={`relative flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95 ${isChatOpen ? 'bg-sky-500/90 hover:bg-sky-500' : 'bg-white/10 hover:bg-white/15'}`}
+                className={`relative flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95${isChatOpen ? 'bg-sky-500/90 hover:bg-sky-500' : 'bg-white/10 hover:bg-white/15'}`}
                 title={isChatOpen ? 'Hide chat' : 'Show chat'}
               >
                 <MessageSquare size={20} />
@@ -1646,7 +1646,7 @@ export default function CallInterface() {
               <button
                 type="button"
                 onClick={toggleSpeaker}
-                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95 ${isSpeakerMuted ? 'bg-amber-500/90 hover:bg-amber-500' : 'bg-white/10 hover:bg-white/15'}`}
+                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95${isSpeakerMuted ? 'bg-amber-500/90 hover:bg-amber-500' : 'bg-white/10 hover:bg-white/15'}`}
                 title={isSpeakerMuted ? 'Unmute speaker' : 'Mute speaker'}
               >
                 {isSpeakerMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
@@ -1654,7 +1654,7 @@ export default function CallInterface() {
               <button 
                 type="button"
                 onClick={toggleMute}
-                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95 ${isMuted ? 'bg-rose-500 hover:bg-rose-600' : 'bg-white/10 hover:bg-white/15'}`}
+                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95${isMuted ? 'bg-rose-500 hover:bg-rose-600' : 'bg-white/10 hover:bg-white/15'}`}
                 title={isMuted ? 'Unmute mic' : 'Mute mic'}
                 aria-pressed={!isMuted}
                 style={!isMuted && micLevel > 0.02 ? { boxShadow: `0 0 ${10 + micLevel * 26}px rgba(34,211,238,${0.18 + micLevel * 0.35})` } : undefined}
@@ -1672,7 +1672,7 @@ export default function CallInterface() {
               <button 
                 type="button"
                 onClick={toggleCamera}
-                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95 ${!isCameraOn ? 'bg-rose-500 hover:bg-rose-600' : 'bg-white/10 hover:bg-white/15'}`}
+                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95${!isCameraOn ? 'bg-rose-500 hover:bg-rose-600' : 'bg-white/10 hover:bg-white/15'}`}
                 title={!isCameraOn ? 'Turn camera on' : 'Turn camera off'}
               >
                 {!isCameraOn ? <VideoOff size={20} /> : <Video size={20} />}
@@ -1680,7 +1680,7 @@ export default function CallInterface() {
               <button
                 type="button"
                 onClick={toggleFullscreen}
-                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95 ${isFullscreen ? 'bg-white/20' : 'bg-white/10 hover:bg-white/15'}`}
+                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95${isFullscreen ? 'bg-white/20' : 'bg-white/10 hover:bg-white/15'}`}
                 title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
               >
                 <Maximize size={20} />
@@ -1689,7 +1689,7 @@ export default function CallInterface() {
           </div>
 
           {/* Transcription Bar */}
-          <div className="flex items-center gap-3 border-t border-slate-200/60 bg-white/70 px-4 py-3 backdrop-blur-xl dark:border-white/10 dark:bg-white/5 sm:px-6">
+          <div className="flex items-center gap-3 borderless-divider-t bg-white/70 px-4 py-3 backdrop-blur-xl dark:bg-white/5 sm:px-6">
             <div className="flex items-end gap-1.5 text-sky-600 dark:text-cyan-300" aria-hidden="true">
               {[0.28, 0.44, 0.72, 0.44, 0.28].map((base, index) => (
                 <span
@@ -1708,14 +1708,14 @@ export default function CallInterface() {
         {/* Right Side: Chat Sidebar */}
         {isChatOpen ? (
           <aside className="flex w-full flex-col overflow-hidden rounded-[28px] bg-white/70 shadow-xl shadow-slate-900/5 ring-1 ring-slate-200/60 backdrop-blur-xl dark:bg-white/5 dark:ring-white/10 lg:w-[380px]">
-            <div className="flex h-14 items-center justify-between gap-3 border-b border-slate-200/60 bg-white/40 px-5 backdrop-blur-xl dark:border-white/10 dark:bg-white/5">
+            <div className="flex h-14 items-center justify-between gap-3 borderless-divider-b bg-white/40 px-5 backdrop-blur-xl dark:bg-white/5">
               <div className="min-w-0">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300/80">Chat</h2>
                 <p className="truncate text-[11px] text-slate-500 dark:text-slate-300/70">{remoteName}</p>
               </div>
               <div ref={morePopoverRef} className="relative flex items-center gap-2">
-                <span className={`hidden items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold ring-1 sm:inline-flex ${isChatLive ? 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-200' : 'bg-slate-500/10 text-slate-600 ring-slate-400/20 dark:text-slate-300'}`}>
-                  <span className={`h-2 w-2 rounded-full ${isChatLive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                <span className={`hidden items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold ring-1 sm:inline-flex${isChatLive ? 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-200' : 'bg-slate-500/10 text-slate-600 ring-slate-400/20 dark:text-slate-300'}`}>
+                  <span className={`h-2 w-2 rounded-full${isChatLive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
                   {isChatLive ? 'Live' : 'Syncing'}
                 </span>
                 <button
@@ -1788,7 +1788,7 @@ export default function CallInterface() {
               const sender = userMap.get(msg.sender_id)
               const senderName = msg.sender_name || sender?.name || sender?.email || 'User'
               return (
-                <div key={msg.id} className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
+                <div key={msg.id} className={`flex flex-col${isOwn ? 'items-end' : 'items-start'}`}>
                   <div className="flex items-center gap-2 mb-1">
                     {!isOwn && (
                       <div className="h-6 w-6 rounded-full bg-green-500 flex items-center justify-center text-[10px] text-white font-bold">
@@ -1798,7 +1798,7 @@ export default function CallInterface() {
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{senderName}</span>
                     <span className="text-[10px] text-slate-400 dark:text-slate-400/80">{formatMessageTime(msg.timestamp)}</span>
                   </div>
-                  <div className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm leading-relaxed shadow-sm ${
+                  <div className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm leading-relaxed shadow-sm${
                     isOwn
                       ? 'bg-blue-600 text-white rounded-tr-none'
                       : 'bg-white/80 text-slate-800 ring-1 ring-slate-200/60 rounded-tl-none dark:bg-white/5 dark:text-slate-100 dark:ring-white/10'
@@ -1813,7 +1813,7 @@ export default function CallInterface() {
             <div ref={chatEndRef} />
           </div>
 
-            <div className="border-t border-slate-200/60 p-4 dark:border-white/10">
+            <div className="borderless-divider-t p-4">
               <div className="relative flex items-center gap-2 rounded-2xl bg-white/70 p-2 shadow-sm ring-1 ring-slate-200/60 focus-within:ring-sky-500/30 dark:bg-white/5 dark:ring-white/10">
                 <div ref={emojiPopoverRef} className="relative ml-1">
                   <button
@@ -1822,7 +1822,7 @@ export default function CallInterface() {
                       setIsEmojiOpen((prev) => !prev)
                       setIsMoreOpen(false)
                     }}
-                    className={`flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-slate-200 ${isEmojiOpen ? 'bg-slate-100 dark:bg-white/10' : ''}`}
+                    className={`flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-slate-200${isEmojiOpen ? 'bg-slate-100 dark:bg-white/10' : ''}`}
                     title="Emoji"
                   >
                     <Smile size={20} />

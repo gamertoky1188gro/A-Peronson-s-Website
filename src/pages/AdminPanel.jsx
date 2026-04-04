@@ -191,6 +191,9 @@ const ACTION_GROUPS = [
       { id: 'verification.badge.revoke', label: 'Revoke badge', route: '/admin/actions', fields: [{ key: 'user_id', label: 'User ID' }, { key: 'reason', label: 'Reason' }] },
       { id: 'verification.doc.review', label: 'Review verification doc', route: '/admin/actions', fields: [{ key: 'doc_id', label: 'Doc ID' }, { key: 'status', label: 'Status' }, { key: 'reason', label: 'Reason' }] },
       { id: 'verification.fraud.flag', label: 'Flag verification fraud', route: '/admin/actions', fields: [{ key: 'user_id', label: 'User ID' }, { key: 'reason', label: 'Reason' }] },
+      { id: 'order.certification.approve', label: 'Approve order certification', route: '/admin/actions', fields: [{ key: 'user_id', label: 'User ID' }, { key: 'evidence_contract_ids', label: 'Evidence contract IDs (comma)' }, { key: 'note', label: 'Note' }] },
+      { id: 'order.certification.revoke', label: 'Revoke order certification', route: '/admin/actions', fields: [{ key: 'user_id', label: 'User ID' }, { key: 'note', label: 'Reason' }] },
+      { id: 'order.certification.evidence', label: 'Attach certification evidence', route: '/admin/actions', fields: [{ key: 'user_id', label: 'User ID' }, { key: 'evidence_contract_ids', label: 'Evidence contract IDs (comma)' }, { key: 'note', label: 'Note' }] },
       { id: 'subscription.set_plan', label: 'Set subscription plan', route: '/admin/actions', fields: [{ key: 'user_id', label: 'User ID' }, { key: 'plan', label: 'free/premium' }, { key: 'auto_renew', label: 'Auto renew (true/false)' }] },
       { id: 'subscription.renew', label: 'Renew premium', route: '/admin/actions', fields: [{ key: 'user_id', label: 'User ID' }, { key: 'auto_renew', label: 'Auto renew (true/false)' }] },
       { id: 'finance.invoice.add', label: 'Add invoice', route: '/admin/actions', fields: [{ key: 'user_id', label: 'User ID' }, { key: 'amount_usd', label: 'Amount USD' }, { key: 'status', label: 'Status' }, { key: 'note', label: 'Note' }] },
@@ -1267,7 +1270,7 @@ export default function AdminPanel() {
                   key={item.id}
                   type="button"
                   onClick={() => setActiveCategory(item.id)}
-                  className={`admin-sidebar-item ${isActive ? 'is-active' : ''}`}
+                  className={`admin-sidebar-item${isActive ? 'is-active' : ''}`}
                 >
                   <span className="admin-sidebar-rail" />
                   <Icon className="h-4 w-4" />
@@ -1310,7 +1313,7 @@ export default function AdminPanel() {
           <div className="flex-1 overflow-y-auto pb-6 pr-2">
             <div className="space-y-8">
               {error ? (
-                <div className="admin-panel admin-sweep rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                <div className="admin-panel admin-sweep rounded-2xl borderless-shadow bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
                   {error}
                 </div>
               ) : null}
@@ -1379,7 +1382,7 @@ export default function AdminPanel() {
                           <input
                             value={mfaCode}
                             onChange={(event) => setMfaCode(event.target.value)}
-                            className="w-full rounded-full border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                            className="w-full rounded-full borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                             placeholder="Enter MFA code"
                           />
                         </label>
@@ -1388,7 +1391,7 @@ export default function AdminPanel() {
                           <input
                             value={deviceId}
                             onChange={(event) => setDeviceId(event.target.value)}
-                            className="w-full rounded-full border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                            className="w-full rounded-full borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                             placeholder="Bind this device ID"
                           />
                         </label>
@@ -1397,7 +1400,7 @@ export default function AdminPanel() {
                           <input
                             value={stepUpCode}
                             onChange={(event) => setStepUpCode(event.target.value)}
-                            className="w-full rounded-full border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                            className="w-full rounded-full borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                             placeholder="Required for destructive actions"
                           />
                         </label>
@@ -1406,7 +1409,7 @@ export default function AdminPanel() {
                           <input
                             value={passkeyValue}
                             onChange={(event) => setPasskeyValue(event.target.value)}
-                            className="w-full rounded-full border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                            className="w-full rounded-full borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                             placeholder="Set a passkey"
                           />
                         </label>
@@ -1415,21 +1418,21 @@ export default function AdminPanel() {
                         <button
                           type="button"
                           onClick={() => runSecurityAction('security.admin.mfa.set', { code: mfaCode })}
-                          className="rounded-full border border-sky-500/30 bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-white/10"
+                          className="rounded-full borderless-shadow bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-white/10"
                         >
                           Save MFA
                         </button>
                         <button
                           type="button"
                           onClick={() => runSecurityAction('security.admin.device.add', { device_id: deviceId })}
-                          className="rounded-full border border-sky-500/30 bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-white/10"
+                          className="rounded-full borderless-shadow bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-white/10"
                         >
                           Register Device
                         </button>
                         <button
                           type="button"
                           onClick={() => runSecurityAction('security.admin.passkey.add', { passkey: passkeyValue })}
-                          className="rounded-full border border-sky-500/30 bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-white/10"
+                          className="rounded-full borderless-shadow bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-white/10"
                         >
                           Save Passkey
                         </button>
@@ -1526,7 +1529,7 @@ export default function AdminPanel() {
                         <select
                           value={selectedActionId}
                           onChange={(event) => setSelectedActionId(event.target.value)}
-                          className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                          className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                         >
                           {ACTION_GROUPS.map((group) => (
                             <optgroup key={group.label} label={group.label}>
@@ -1544,7 +1547,7 @@ export default function AdminPanel() {
                             <input
                               value={actionForm[field.key] || ''}
                               onChange={(event) => setActionForm((prev) => ({ ...prev, [field.key]: event.target.value }))}
-                              className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                              className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                               placeholder={field.label}
                             />
                           </label>
@@ -1572,7 +1575,7 @@ export default function AdminPanel() {
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart data={activeUsersTrend}>
                             <Line type="monotone" dataKey="count" stroke="#4B9DFB" strokeWidth={2.5} dot={false} isAnimationActive animationDuration={900} />
-                            <Tooltip contentStyle={{ background: '#0f0f12', border: 'none', boxShadow: '0 0 0 1px rgba(255,140,30,0.3), 0 14px 30px rgba(0,0,0,0.35)', borderRadius: 12 }} />
+                            <Tooltip contentStyle={{ background: '#0f0f12', boxShadow: '0 0 0 1px rgba(255,140,30,0.3), 0 14px 30px rgba(0,0,0,0.35)', borderRadius: 12 }} />
                           </LineChart>
                         </ResponsiveContainer>
                       </div>
@@ -1590,7 +1593,7 @@ export default function AdminPanel() {
                               </linearGradient>
                             </defs>
                             <Area type="monotone" dataKey="count" stroke="#4B9DFB" fill="url(#reqGlow)" strokeWidth={2.2} isAnimationActive animationDuration={950} />
-                            <Tooltip contentStyle={{ background: '#0f0f12', border: 'none', boxShadow: '0 0 0 1px rgba(255,140,30,0.3), 0 14px 30px rgba(0,0,0,0.35)', borderRadius: 12 }} />
+                            <Tooltip contentStyle={{ background: '#0f0f12', boxShadow: '0 0 0 1px rgba(255,140,30,0.3), 0 14px 30px rgba(0,0,0,0.35)', borderRadius: 12 }} />
                           </AreaChart>
                         </ResponsiveContainer>
                       </div>
@@ -1606,7 +1609,7 @@ export default function AdminPanel() {
                                 <Cell key={entry.name} fill={chartPalette[index % chartPalette.length]} />
                               ))}
                             </Pie>
-                            <Tooltip contentStyle={{ background: '#0f0f12', border: 'none', boxShadow: '0 0 0 1px rgba(255,140,30,0.3), 0 14px 30px rgba(0,0,0,0.35)', borderRadius: 12 }} />
+                            <Tooltip contentStyle={{ background: '#0f0f12', boxShadow: '0 0 0 1px rgba(255,140,30,0.3), 0 14px 30px rgba(0,0,0,0.35)', borderRadius: 12 }} />
                           </PieChart>
                         </ResponsiveContainer>
                       </div>
@@ -1645,7 +1648,7 @@ export default function AdminPanel() {
                     <p className="text-xs text-slate-500">{activeData?.sections?.length || 0} sections</p>
                   </div>
                 </div>
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${statusBadge('live')}`}>live</span>
+                <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold${statusBadge('live')}`}>live</span>
               </div>
             </div>
 
@@ -1660,13 +1663,13 @@ export default function AdminPanel() {
                     <input
                       value={userQuery}
                       onChange={(event) => setUserQuery(event.target.value)}
-                      className="w-56 rounded-full border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="w-56 rounded-full borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                       placeholder="Search name/email/role"
                     />
                     <button
                       type="button"
                       onClick={() => exportEmailsCsv(users)}
-                      className="rounded-full border border-orange-500/40 bg-black/40 px-3 py-2 text-xs font-semibold text-orange-100 hover:bg-[#13171E]"
+                      className="rounded-full borderless-shadow bg-black/40 px-3 py-2 text-xs font-semibold text-orange-100 hover:bg-[#13171E]"
                     >
                       Export CSV
                     </button>
@@ -1676,7 +1679,7 @@ export default function AdminPanel() {
                   <select
                     value={roleFilter}
                     onChange={(event) => setRoleFilter(event.target.value)}
-                    className="rounded-full border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                    className="rounded-full borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                   >
                     <option value="all">All roles</option>
                     <option value="buyer">buyer</option>
@@ -1689,7 +1692,7 @@ export default function AdminPanel() {
                   <select
                     value={statusFilter}
                     onChange={(event) => setStatusFilter(event.target.value)}
-                    className="rounded-full border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                    className="rounded-full borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                   >
                     <option value="all">All statuses</option>
                     <option value="active">active</option>
@@ -1700,7 +1703,7 @@ export default function AdminPanel() {
                   <select
                     value={verificationFilter}
                     onChange={(event) => setVerificationFilter(event.target.value)}
-                    className="rounded-full border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                    className="rounded-full borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                   >
                     <option value="all">All verification</option>
                     <option value="verified">verified</option>
@@ -1709,7 +1712,7 @@ export default function AdminPanel() {
                   <select
                     value={premiumFilter}
                     onChange={(event) => setPremiumFilter(event.target.value)}
-                    className="rounded-full border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                    className="rounded-full borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                   >
                     <option value="all">All plans</option>
                     <option value="premium">premium</option>
@@ -1718,7 +1721,7 @@ export default function AdminPanel() {
                   <select
                     value={regionFilter}
                     onChange={(event) => setRegionFilter(event.target.value)}
-                    className="rounded-full border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                    className="rounded-full borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                   >
                     {regionOptions.map((region) => (
                       <option key={region} value={region}>{region === 'all' ? 'All regions' : region}</option>
@@ -1737,7 +1740,7 @@ export default function AdminPanel() {
                     const notesValue = draft.admin_notes ?? u.profile?.admin_notes ?? ''
 
                     return (
-                      <div key={u.id} className="rounded-2xl border border-slate-200 p-4 text-xs dark:border-slate-700">
+                      <div key={u.id} className="rounded-2xl borderless-shadow p-4 text-xs">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div>
                             <p className="text-sm font-semibold">{u.name || 'Unnamed'} ({u.email || 'no email'})</p>
@@ -1753,21 +1756,21 @@ export default function AdminPanel() {
                             <button
                               type="button"
                               onClick={() => forceLogout(u.id)}
-                              className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600"
+                              className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600"
                             >
                               Force logout
                             </button>
                             <button
                               type="button"
                               onClick={() => resetPassword(u.id)}
-                              className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600"
+                              className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600"
                             >
                               Reset password
                             </button>
                             <button
                               type="button"
                               onClick={() => lockMessaging(u.id, 24)}
-                              className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600"
+                              className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600"
                             >
                               Lock messaging 24h
                             </button>
@@ -1779,7 +1782,7 @@ export default function AdminPanel() {
                             <select
                               value={roleValue}
                               onChange={(event) => updateDraft(u.id, 'role', event.target.value)}
-                              className="rounded-lg border border-slate-200 px-2 py-1 text-xs dark:border-slate-700 dark:bg-slate-950"
+                              className="rounded-lg borderless-shadow px-2 py-1 text-xs dark:bg-slate-950"
                             >
                               <option value="buyer">buyer</option>
                               <option value="factory">factory</option>
@@ -1794,7 +1797,7 @@ export default function AdminPanel() {
                             <select
                               value={statusValue}
                               onChange={(event) => updateDraft(u.id, 'status', event.target.value)}
-                              className="rounded-lg border border-slate-200 px-2 py-1 text-xs dark:border-slate-700 dark:bg-slate-950"
+                              className="rounded-lg borderless-shadow px-2 py-1 text-xs dark:bg-slate-950"
                             >
                               <option value="active">active</option>
                               <option value="suspended">suspended</option>
@@ -1805,7 +1808,7 @@ export default function AdminPanel() {
                             <select
                               value={String(verifiedValue)}
                               onChange={(event) => updateDraft(u.id, 'verified', event.target.value === 'true')}
-                              className="rounded-lg border border-slate-200 px-2 py-1 text-xs dark:border-slate-700 dark:bg-slate-950"
+                              className="rounded-lg borderless-shadow px-2 py-1 text-xs dark:bg-slate-950"
                             >
                               <option value="true">true</option>
                               <option value="false">false</option>
@@ -1816,7 +1819,7 @@ export default function AdminPanel() {
                             <select
                               value={subValue}
                               onChange={(event) => updateDraft(u.id, 'subscription_status', event.target.value)}
-                              className="rounded-lg border border-slate-200 px-2 py-1 text-xs dark:border-slate-700 dark:bg-slate-950"
+                              className="rounded-lg borderless-shadow px-2 py-1 text-xs dark:bg-slate-950"
                             >
                               <option value="free">free</option>
                               <option value="premium">premium</option>
@@ -1829,7 +1832,7 @@ export default function AdminPanel() {
                               min="0"
                               value={strikeValue}
                               onChange={(event) => updateDraft(u.id, 'policy_strikes', Number(event.target.value))}
-                              className="rounded-lg border border-slate-200 px-2 py-1 text-xs dark:border-slate-700 dark:bg-slate-950"
+                              className="rounded-lg borderless-shadow px-2 py-1 text-xs dark:bg-slate-950"
                             />
                           </label>
                           <label className="flex flex-col gap-1">
@@ -1837,7 +1840,7 @@ export default function AdminPanel() {
                             <input
                               value={fraudValue}
                               onChange={(event) => updateDraft(u.id, 'fraud_flags', event.target.value)}
-                              className="rounded-lg border border-slate-200 px-2 py-1 text-xs dark:border-slate-700 dark:bg-slate-950"
+                              className="rounded-lg borderless-shadow px-2 py-1 text-xs dark:bg-slate-950"
                               placeholder="flag1, flag2"
                             />
                           </label>
@@ -1848,7 +1851,7 @@ export default function AdminPanel() {
                             rows="2"
                             value={notesValue}
                             onChange={(event) => updateDraft(u.id, 'admin_notes', event.target.value)}
-                            className="rounded-lg border border-slate-200 px-2 py-1 text-xs dark:border-slate-700 dark:bg-slate-950"
+                            className="rounded-lg borderless-shadow px-2 py-1 text-xs dark:bg-slate-950"
                             placeholder="Internal notes visible to admins only"
                           />
                         </label>
@@ -1880,7 +1883,7 @@ export default function AdminPanel() {
                     <button
                       type="button"
                       onClick={() => refreshSignups()}
-                      className="rounded-full border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600"
+                      className="rounded-full borderless-shadow px-2 py-1 text-[10px] font-semibold text-slate-600"
                     >
                       Refresh
                     </button>
@@ -1896,14 +1899,14 @@ export default function AdminPanel() {
                     <button
                       type="button"
                       onClick={() => downloadCsv('/admin/exports/run?dataset=users&format=csv', 'users.csv').catch((err) => setError(err.message || 'Export failed'))}
-                      className="rounded-full border border-slate-200 px-3 py-1 text-[10px] font-semibold text-slate-600"
+                      className="rounded-full borderless-shadow px-3 py-1 text-[10px] font-semibold text-slate-600"
                     >
                       Export users CSV
                     </button>
                   </div>
                   <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {signups.slice(0, 4).map((row) => (
-                      <div key={row.id} className="rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={row.id} className="rounded-xl borderless-shadow px-2 py-1">
                         {row.name || row.email || row.id} · {row.role || 'role'} · {row.created_at ? new Date(row.created_at).toLocaleDateString() : '--'}
                       </div>
                     ))}
@@ -1920,7 +1923,7 @@ export default function AdminPanel() {
                     <button
                       type="button"
                       onClick={() => refreshFraudReview()}
-                      className="rounded-full border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600"
+                      className="rounded-full borderless-shadow px-2 py-1 text-[10px] font-semibold text-slate-600"
                     >
                       Refresh
                     </button>
@@ -1928,7 +1931,7 @@ export default function AdminPanel() {
                   <div className="mt-3 text-[11px] text-slate-500">Duplicates detected: {fraudReview.duplicates?.length || 0}</div>
                   <div className="mt-2 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {fraudReview.items.slice(0, 4).map((row) => (
-                      <div key={row.user_id || row.id} className="rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={row.user_id || row.id} className="rounded-xl borderless-shadow px-2 py-1">
                         {row.company_name || row.user_id} · Flag: {row.fraud_flag ? 'Yes' : 'No'}
                       </div>
                     ))}
@@ -1945,14 +1948,14 @@ export default function AdminPanel() {
                     <button
                       type="button"
                       onClick={() => refreshStrikeHistory()}
-                      className="rounded-full border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600"
+                      className="rounded-full borderless-shadow px-2 py-1 text-[10px] font-semibold text-slate-600"
                     >
                       Refresh
                     </button>
                   </div>
                   <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {strikeHistory.slice(0, 4).map((row) => (
-                      <div key={row.id} className="rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={row.id} className="rounded-xl borderless-shadow px-2 py-1">
                         {row.user?.name || row.actor_id} · {row.reason} · Strikes {row.strikes}
                       </div>
                     ))}
@@ -1969,14 +1972,14 @@ export default function AdminPanel() {
                     <button
                       type="button"
                       onClick={() => refreshOrgOwnership()}
-                      className="rounded-full border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600"
+                      className="rounded-full borderless-shadow px-2 py-1 text-[10px] font-semibold text-slate-600"
                     >
                       Refresh
                     </button>
                   </div>
                   <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {(orgOwnership.orgs || []).slice(0, 4).map((org) => (
-                      <div key={org.org_owner_id} className="rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={org.org_owner_id} className="rounded-xl borderless-shadow px-2 py-1">
                         {org.org_name} · Staff {org.staff_count}/{org.staff_limit}
                       </div>
                     ))}
@@ -1993,14 +1996,14 @@ export default function AdminPanel() {
                     <button
                       type="button"
                       onClick={() => refreshWalletLedger()}
-                      className="rounded-full border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600"
+                      className="rounded-full borderless-shadow px-2 py-1 text-[10px] font-semibold text-slate-600"
                     >
                       Refresh
                     </button>
                   </div>
                   <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {walletLedger.slice(0, 4).map((row) => (
-                      <div key={row.id || row.created_at} className="rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={row.id || row.created_at} className="rounded-xl borderless-shadow px-2 py-1">
                         {row.entry_type || row.type} · ${row.amount_usd || 0} · {row.reason || row.note || '--'}
                       </div>
                     ))}
@@ -2017,19 +2020,19 @@ export default function AdminPanel() {
                     <button
                       type="button"
                       onClick={() => refreshCatalog()}
-                      className="rounded-full border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600"
+                      className="rounded-full borderless-shadow px-2 py-1 text-[10px] font-semibold text-slate-600"
                     >
                       Refresh
                     </button>
                   </div>
                   <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {(catalog?.emails?.segments || []).slice(0, 4).map((segment) => (
-                      <div key={segment.id} className="flex items-center justify-between rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={segment.id} className="flex items-center justify-between rounded-xl borderless-shadow px-2 py-1">
                         <span>{segment.name || segment.id}</span>
                         <button
                           type="button"
                           onClick={() => downloadCsv(`/admin/emails/segments/export?segment_id=${encodeURIComponent(segment.id)}`, `segment_${segment.id}.csv`).catch((err) => setError(err.message || 'Export failed'))}
-                          className="rounded-full border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600"
+                          className="rounded-full borderless-shadow px-2 py-1 text-[10px] font-semibold text-slate-600"
                         >
                           Export
                         </button>
@@ -2048,7 +2051,7 @@ export default function AdminPanel() {
                     <button
                       type="button"
                       onClick={() => refreshCatalog()}
-                      className="rounded-full border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600"
+                      className="rounded-full borderless-shadow px-2 py-1 text-[10px] font-semibold text-slate-600"
                     >
                       Refresh
                     </button>
@@ -2057,7 +2060,7 @@ export default function AdminPanel() {
                     <select
                       value={featuredForm.entity_type}
                       onChange={(event) => setFeaturedForm((prev) => ({ ...prev, entity_type: event.target.value }))}
-                      className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="w-full rounded-lg borderless-shadow px-2 py-1 text-xs dark:bg-slate-950"
                     >
                       <option value="product">Product</option>
                       <option value="request">Buyer request</option>
@@ -2066,13 +2069,13 @@ export default function AdminPanel() {
                       value={featuredForm.entity_id}
                       onChange={(event) => setFeaturedForm((prev) => ({ ...prev, entity_id: event.target.value }))}
                       placeholder="Entity ID"
-                      className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="w-full rounded-lg borderless-shadow px-2 py-1 text-xs dark:bg-slate-950"
                     />
                     <input
                       value={featuredForm.label}
                       onChange={(event) => setFeaturedForm((prev) => ({ ...prev, label: event.target.value }))}
                       placeholder="Label (optional)"
-                      className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="w-full rounded-lg borderless-shadow px-2 py-1 text-xs dark:bg-slate-950"
                     />
                     <button
                       type="button"
@@ -2088,7 +2091,7 @@ export default function AdminPanel() {
                   </div>
                   <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {(catalog?.featured?.listings || []).slice(0, 4).map((item) => (
-                      <div key={item.id} className="flex items-center justify-between rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={item.id} className="flex items-center justify-between rounded-xl borderless-shadow px-2 py-1">
                         <span>{item.title} · {item.entity_type}</span>
                         <button
                           type="button"
@@ -2096,7 +2099,7 @@ export default function AdminPanel() {
                             await runInlineAdminAction('featured.remove', { listing_id: item.id })
                             await refreshCatalog()
                           }}
-                          className="rounded-full border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600"
+                          className="rounded-full borderless-shadow px-2 py-1 text-[10px] font-semibold text-slate-600"
                         >
                           Remove
                         </button>
@@ -2118,14 +2121,14 @@ export default function AdminPanel() {
                   <button
                     type="button"
                     onClick={() => refreshVerificationQueue()}
-                    className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600"
+                    className="rounded-full borderless-shadow px-3 py-1 text-xs font-semibold text-slate-600"
                   >
                     Refresh queue
                   </button>
                 </div>
                 <div className="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
                   {verificationQueue.slice(0, 20).map((row) => (
-                    <details key={row.user_id} className="rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
+                    <details key={row.user_id} className="rounded-2xl borderless-shadow p-4">
                       <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
                         <div>
                           <p className="text-sm font-semibold text-slate-900 dark:text-white">{row.user?.name || row.user_id}</p>
@@ -2147,7 +2150,7 @@ export default function AdminPanel() {
                           <p className="text-[11px] font-semibold uppercase text-slate-500">Required Checklist</p>
                           <div className="flex flex-wrap gap-2">
                             {row.required_checklist?.map((item) => (
-                              <span key={item.key} className={`rounded-full px-2 py-1 text-[10px] font-semibold ${item.submitted ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                              <span key={item.key} className={`rounded-full px-2 py-1 text-[10px] font-semibold${item.submitted ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
                                 {item.label}
                               </span>
                             ))}
@@ -2212,7 +2215,7 @@ export default function AdminPanel() {
                   <button
                     type="button"
                     onClick={() => refreshContractsVault()}
-                    className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600"
+                    className="rounded-full borderless-shadow px-3 py-1 text-xs font-semibold text-slate-600"
                   >
                     Refresh contracts
                   </button>
@@ -2221,7 +2224,7 @@ export default function AdminPanel() {
                   {contractsVault.slice(0, 12).map((contract) => {
                     const proofs = paymentProofs.filter((proof) => String(proof.contract_id) === String(contract.id))
                     return (
-                      <details key={contract.id} className="rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
+                      <details key={contract.id} className="rounded-2xl borderless-shadow p-4">
                         <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
                           <div>
                             <p className="text-sm font-semibold text-slate-900 dark:text-white">{contract.title || 'Contract'}</p>
@@ -2248,7 +2251,7 @@ export default function AdminPanel() {
                           <div className="space-y-1 text-[11px]">
                             <p className="text-[10px] font-semibold uppercase text-slate-500">Payment Proofs</p>
                             {proofs.length ? proofs.map((proof) => (
-                              <div key={proof.id} className="rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                              <div key={proof.id} className="rounded-xl borderless-shadow px-2 py-1">
                                 {proof.type} ? {proof.status} ? {proof.amount || '--'} {proof.currency || ''}{proof.lc_type ? ` ? ${String(proof.lc_type).toUpperCase()}${proof.lc_type === 'usance' && proof.usance_days ? ` (${proof.usance_days}d)` : ''}` : ''}
                               </div>
                             )) : <p className="text-slate-400">No payment proofs.</p>}
@@ -2271,7 +2274,7 @@ export default function AdminPanel() {
                               await runInlineAdminAction('contract.unlock', { contract_id: contract.id })
                               await refreshContractsVault()
                             }}
-                            className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600"
+                            className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600"
                           >
                             Unlock
                           </button>
@@ -2281,7 +2284,7 @@ export default function AdminPanel() {
                               await runInlineAdminAction('contract.archive', { contract_id: contract.id })
                               await refreshContractsVault()
                             }}
-                            className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600"
+                            className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600"
                           >
                             Archive
                           </button>
@@ -2304,14 +2307,14 @@ export default function AdminPanel() {
                   <button
                     type="button"
                     onClick={() => refreshDisputes()}
-                    className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600"
+                    className="rounded-full borderless-shadow px-3 py-1 text-xs font-semibold text-slate-600"
                   >
                     Refresh disputes
                   </button>
                 </div>
                 <div className="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
                   {disputes.slice(0, 12).map((dispute) => (
-                    <div key={dispute.id} className="rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
+                    <div key={dispute.id} className="rounded-2xl borderless-shadow p-4">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                           <p className="text-sm font-semibold text-slate-900 dark:text-white">{dispute.entity_id}</p>
@@ -2350,17 +2353,17 @@ export default function AdminPanel() {
                   <button
                     type="button"
                     onClick={() => refreshModerationQueues()}
-                    className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600"
+                    className="rounded-full borderless-shadow px-3 py-1 text-xs font-semibold text-slate-600"
                   >
                     Refresh queue
                   </button>
                 </div>
                 <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-                  <div className="rounded-2xl border border-slate-200 p-4 text-xs">
+                  <div className="rounded-2xl borderless-shadow p-4 text-xs">
                     <p className="text-[11px] font-semibold uppercase text-slate-500">Pending Review</p>
                     <div className="mt-2 space-y-2">
                       {moderationPending.slice(0, 6).map((row) => (
-                        <div key={row.id} className="rounded-xl border border-slate-200 px-3 py-2">
+                        <div key={row.id} className="rounded-xl borderless-shadow px-3 py-2">
                           <p className="text-sm font-semibold text-slate-900">{row.title || 'Product'}</p>
                           <p className="text-[11px] text-slate-500">Owner: {row.owner?.name || row.company_id}</p>
                           <p className="text-[11px] text-slate-500">{row.content_review_reason || 'Pending review'}</p>
@@ -2392,7 +2395,7 @@ export default function AdminPanel() {
                                 })
                                 await refreshModerationQueues()
                               }}
-                              className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600"
+                              className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600"
                             >
                               Reject
                             </button>
@@ -2402,11 +2405,11 @@ export default function AdminPanel() {
                       {!moderationPending.length ? <p className="text-[11px] text-slate-500">No pending products.</p> : null}
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-slate-200 p-4 text-xs">
+                  <div className="rounded-2xl borderless-shadow p-4 text-xs">
                     <p className="text-[11px] font-semibold uppercase text-slate-500">Rejected</p>
                     <div className="mt-2 space-y-2">
                       {moderationRejected.slice(0, 6).map((row) => (
-                        <div key={row.id} className="rounded-xl border border-slate-200 px-3 py-2">
+                        <div key={row.id} className="rounded-xl borderless-shadow px-3 py-2">
                           <p className="text-sm font-semibold text-slate-900">{row.title || 'Product'}</p>
                           <p className="text-[11px] text-slate-500">Owner: {row.owner?.name || row.company_id}</p>
                           <p className="text-[11px] text-slate-500">{row.content_review_reason || 'Rejected'}</p>
@@ -2453,73 +2456,73 @@ export default function AdminPanel() {
                     </button>
                   </div>
                   <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2 text-xs">
-                    <div className="rounded-2xl border border-slate-200 p-4">
+                    <div className="rounded-2xl borderless-shadow p-4">
                       <p className="text-[11px] font-semibold uppercase text-slate-500">Forbidden Terms (Auto Reject)</p>
                       <textarea
                         rows={6}
                         value={clothingRulesForm.forbidden_terms}
                         onChange={(e) => setClothingRulesForm((prev) => ({ ...prev, forbidden_terms: e.target.value }))}
                         placeholder="One term per line"
-                        className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                        className="mt-2 w-full rounded-xl borderless-shadow px-3 py-2 text-xs"
                       />
                     </div>
-                    <div className="rounded-2xl border border-slate-200 p-4">
+                    <div className="rounded-2xl borderless-shadow p-4">
                       <p className="text-[11px] font-semibold uppercase text-slate-500">Flag Terms (Pending Review)</p>
                       <textarea
                         rows={6}
                         value={clothingRulesForm.flag_terms}
                         onChange={(e) => setClothingRulesForm((prev) => ({ ...prev, flag_terms: e.target.value }))}
                         placeholder="One term per line"
-                        className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                        className="mt-2 w-full rounded-xl borderless-shadow px-3 py-2 text-xs"
                       />
                     </div>
-                    <div className="rounded-2xl border border-slate-200 p-4">
+                    <div className="rounded-2xl borderless-shadow p-4">
                       <p className="text-[11px] font-semibold uppercase text-slate-500">Allowed Terms (Safe Signal)</p>
                       <textarea
                         rows={6}
                         value={clothingRulesForm.allowed_terms}
                         onChange={(e) => setClothingRulesForm((prev) => ({ ...prev, allowed_terms: e.target.value }))}
                         placeholder="One term per line"
-                        className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                        className="mt-2 w-full rounded-xl borderless-shadow px-3 py-2 text-xs"
                       />
                     </div>
-                    <div className="rounded-2xl border border-slate-200 p-4">
+                    <div className="rounded-2xl borderless-shadow p-4">
                       <p className="text-[11px] font-semibold uppercase text-slate-500">Context Exceptions</p>
                       <textarea
                         rows={6}
                         value={clothingRulesForm.context_exceptions}
                         onChange={(e) => setClothingRulesForm((prev) => ({ ...prev, context_exceptions: e.target.value }))}
                         placeholder="e.g., innerwear, lining, undershirt"
-                        className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                        className="mt-2 w-full rounded-xl borderless-shadow px-3 py-2 text-xs"
                       />
                     </div>
                   </div>
                   <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3 text-xs">
-                    <div className="rounded-2xl border border-slate-200 p-4">
+                    <div className="rounded-2xl borderless-shadow p-4">
                       <p className="text-[11px] font-semibold uppercase text-slate-500">Rejected Reason</p>
                       <textarea
                         rows={4}
                         value={clothingRulesForm.reason_rejected}
                         onChange={(e) => setClothingRulesForm((prev) => ({ ...prev, reason_rejected: e.target.value }))}
-                        className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                        className="mt-2 w-full rounded-xl borderless-shadow px-3 py-2 text-xs"
                       />
                     </div>
-                    <div className="rounded-2xl border border-slate-200 p-4">
+                    <div className="rounded-2xl borderless-shadow p-4">
                       <p className="text-[11px] font-semibold uppercase text-slate-500">Pending Review Reason</p>
                       <textarea
                         rows={4}
                         value={clothingRulesForm.reason_pending}
                         onChange={(e) => setClothingRulesForm((prev) => ({ ...prev, reason_pending: e.target.value }))}
-                        className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                        className="mt-2 w-full rounded-xl borderless-shadow px-3 py-2 text-xs"
                       />
                     </div>
-                    <div className="rounded-2xl border border-slate-200 p-4">
+                    <div className="rounded-2xl borderless-shadow p-4">
                       <p className="text-[11px] font-semibold uppercase text-slate-500">Fix Guidance</p>
                       <textarea
                         rows={4}
                         value={clothingRulesForm.reason_fix}
                         onChange={(e) => setClothingRulesForm((prev) => ({ ...prev, reason_fix: e.target.value }))}
-                        className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                        className="mt-2 w-full rounded-xl borderless-shadow px-3 py-2 text-xs"
                       />
                     </div>
                   </div>
@@ -2538,25 +2541,25 @@ export default function AdminPanel() {
                   <button
                     type="button"
                     onClick={() => refreshReportQueues()}
-                    className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600"
+                    className="rounded-full borderless-shadow px-3 py-1 text-xs font-semibold text-slate-600"
                   >
                     Refresh reports
                   </button>
                 </div>
                 <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3 text-xs">
                   {[{ title: 'System & Support', items: systemReports }, { title: 'Product Appeals', items: productAppealReports }, { title: 'Content Reports', items: contentReports }].map((group) => (
-                    <div key={group.title} className="rounded-2xl border border-slate-200 p-4">
+                    <div key={group.title} className="rounded-2xl borderless-shadow p-4">
                       <p className="text-[11px] font-semibold uppercase text-slate-500">{group.title}</p>
                       <div className="mt-2 space-y-2">
                         {group.items.slice(0, 6).map((row) => (
-                          <div key={row.id} className="rounded-xl border border-slate-200 px-3 py-2">
+                          <div key={row.id} className="rounded-xl borderless-shadow px-3 py-2">
                             <p className="text-sm font-semibold text-slate-900">{row.reason || 'Report'}</p>
                             <p className="text-[11px] text-slate-500">{row.entity_id}</p>
                             <div className="mt-2">
                               <button
                                 type="button"
                                 onClick={() => resolveReportAdmin(row.id, 'reviewed')}
-                                className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600"
+                                className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600"
                               >
                                 Mark reviewed
                               </button>
@@ -2581,7 +2584,7 @@ export default function AdminPanel() {
                   <button
                     type="button"
                     onClick={() => refreshSupportTickets()}
-                    className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600"
+                    className="rounded-full borderless-shadow px-3 py-1 text-xs font-semibold text-slate-600"
                   >
                     Refresh tickets
                   </button>
@@ -2591,7 +2594,7 @@ export default function AdminPanel() {
                   <select
                     value={supportFilters.status}
                     onChange={(event) => setSupportFilters((prev) => ({ ...prev, status: event.target.value }))}
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-xs"
+                    className="rounded-lg borderless-shadow px-3 py-2 text-xs"
                   >
                     <option value="all">All status</option>
                     <option value="open">Open</option>
@@ -2601,7 +2604,7 @@ export default function AdminPanel() {
                   <select
                     value={supportFilters.priority}
                     onChange={(event) => setSupportFilters((prev) => ({ ...prev, priority: event.target.value }))}
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-xs"
+                    className="rounded-lg borderless-shadow px-3 py-2 text-xs"
                   >
                     <option value="all">All priority</option>
                     <option value="standard">Standard</option>
@@ -2614,7 +2617,7 @@ export default function AdminPanel() {
                     value={supportFilters.assigned_to}
                     onChange={(event) => setSupportFilters((prev) => ({ ...prev, assigned_to: event.target.value }))}
                     placeholder="Assigned user ID"
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-xs"
+                    className="rounded-lg borderless-shadow px-3 py-2 text-xs"
                   />
                   <button
                     type="button"
@@ -2629,7 +2632,7 @@ export default function AdminPanel() {
                   {supportLoading ? <p className="text-xs text-slate-500">Loading tickets...</p> : null}
                   {!supportLoading && supportTickets.length === 0 ? <p className="text-xs text-slate-500">No support tickets.</p> : null}
                   {supportTickets.slice(0, 15).map((ticket) => (
-                    <div key={ticket.id} className="rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
+                    <div key={ticket.id} className="rounded-2xl borderless-shadow p-4">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                           <p className="text-sm font-semibold text-slate-900 dark:text-white">{ticket.subject || 'Support ticket'}</p>
@@ -2649,14 +2652,14 @@ export default function AdminPanel() {
                         <button
                           type="button"
                           onClick={() => assignSupportTicketAdmin(ticket.id)}
-                          className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600"
+                          className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600"
                         >
                           Assign
                         </button>
                         <button
                           type="button"
                           onClick={() => updateSupportTicketAdmin(ticket.id, { status: 'in_progress' })}
-                          className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600"
+                          className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600"
                         >
                           Mark in progress
                         </button>
@@ -2670,7 +2673,7 @@ export default function AdminPanel() {
                         <button
                           type="button"
                           onClick={() => updateSupportTicketAdmin(ticket.id, { priority: 'priority' })}
-                          className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600"
+                          className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600"
                         >
                           Escalate
                         </button>
@@ -2691,14 +2694,14 @@ export default function AdminPanel() {
                   <button
                     type="button"
                     onClick={() => refreshPartnerRequests()}
-                    className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600"
+                    className="rounded-full borderless-shadow px-3 py-1 text-xs font-semibold text-slate-600"
                   >
                     Refresh requests
                   </button>
                 </div>
                 <div className="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
                   {partnerRequests.slice(0, 12).map((request) => (
-                    <div key={request.id} className="rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
+                    <div key={request.id} className="rounded-2xl borderless-shadow p-4">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                           <p className="text-sm font-semibold text-slate-900 dark:text-white">{request.requester_id || request.buyer_id}</p>
@@ -2723,7 +2726,7 @@ export default function AdminPanel() {
                             await runInlineAdminAction('partner.force_reject', { request_id: request.id })
                             await refreshPartnerRequests()
                           }}
-                          className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600"
+                          className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600"
                         >
                           Force reject
                         </button>
@@ -2733,7 +2736,7 @@ export default function AdminPanel() {
                             await runInlineAdminAction('partner.force_cancel', { request_id: request.id })
                             await refreshPartnerRequests()
                           }}
-                          className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600"
+                          className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600"
                         >
                           Force cancel
                         </button>
@@ -2755,13 +2758,13 @@ export default function AdminPanel() {
                   <button
                     type="button"
                     onClick={() => refreshCatalog()}
-                    className="rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600"
+                    className="rounded-full borderless-shadow px-3 py-1 text-xs font-semibold text-slate-600"
                   >
                     Refresh catalog
                   </button>
                 </div>
                 <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-                  <div className="rounded-2xl border border-slate-200 p-4 text-xs dark:border-slate-700">
+                  <div className="rounded-2xl borderless-shadow p-4 text-xs">
                     <p className="text-[11px] font-semibold uppercase text-slate-500">Org Directory + Staff Limits</p>
                     <div className="mt-2 space-y-2">
                       {(catalog?.orgs?.list || []).slice(0, 4).map((org) => (
@@ -2779,7 +2782,7 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 p-4 text-xs dark:border-slate-700">
+                  <div className="rounded-2xl borderless-shadow p-4 text-xs">
                     <p className="text-[11px] font-semibold uppercase text-slate-500">Verification Compliance</p>
                     <div className="mt-2 space-y-2">
                       {(catalog?.verification?.docs_queue || []).slice(0, 3).map((doc) => (
@@ -2798,7 +2801,7 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 p-4 text-xs dark:border-slate-700">
+                  <div className="rounded-2xl borderless-shadow p-4 text-xs">
                     <p className="text-[11px] font-semibold uppercase text-slate-500">Finance Ledgers</p>
                     <div className="mt-2 space-y-2">
                       <div className="text-[11px] text-slate-500">Failed renewals: {(catalog?.finance?.failed_renewals || []).length}</div>
@@ -2821,7 +2824,7 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 p-4 text-xs dark:border-slate-700">
+                  <div className="rounded-2xl borderless-shadow p-4 text-xs">
                     <p className="text-[11px] font-semibold uppercase text-slate-500">Wallet + Coupons</p>
                     <div className="mt-2 space-y-2">
                       <div className="text-[11px] text-slate-500">Transactions: {(catalog?.wallet?.ledger || []).length}</div>
@@ -2843,7 +2846,7 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 p-4 text-xs dark:border-slate-700">
+                  <div className="rounded-2xl borderless-shadow p-4 text-xs">
                     <p className="text-[11px] font-semibold uppercase text-slate-500">Partner Network</p>
                     <div className="mt-2 space-y-2">
                       <div className="text-[11px] text-slate-500">Requests: {(catalog?.partners?.requests || []).length}</div>
@@ -2856,7 +2859,7 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 p-4 text-xs dark:border-slate-700">
+                  <div className="rounded-2xl borderless-shadow p-4 text-xs">
                     <p className="text-[11px] font-semibold uppercase text-slate-500">Requests + Matching</p>
                     <div className="mt-2 space-y-2">
                       <div className="text-[11px] text-slate-500">Requests: {(catalog?.requests?.list || []).length}</div>
@@ -2869,7 +2872,7 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 p-4 text-xs dark:border-slate-700">
+                  <div className="rounded-2xl borderless-shadow p-4 text-xs">
                     <p className="text-[11px] font-semibold uppercase text-slate-500">Contracts + Proofs</p>
                     <div className="mt-2 space-y-2">
                       <div className="text-[11px] text-slate-500">Contracts: {(catalog?.contracts?.vault || []).length}</div>
@@ -2881,7 +2884,7 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 p-4 text-xs dark:border-slate-700">
+                  <div className="rounded-2xl borderless-shadow p-4 text-xs">
                     <p className="text-[11px] font-semibold uppercase text-slate-500">Calls + Moderation</p>
                     <div className="mt-2 space-y-2">
                       <div className="text-[11px] text-slate-500">Call logs: {(catalog?.calls?.logs || []).length}</div>
@@ -2897,7 +2900,7 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 p-4 text-xs dark:border-slate-700">
+                  <div className="rounded-2xl borderless-shadow p-4 text-xs">
                     <p className="text-[11px] font-semibold uppercase text-slate-500">Content Review</p>
                     <div className="mt-2 space-y-2">
                       <div className="text-[11px] text-slate-500">Video queue: {(catalog?.content?.product_videos || []).length}</div>
@@ -2909,7 +2912,7 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 p-4 text-xs dark:border-slate-700">
+                  <div className="rounded-2xl borderless-shadow p-4 text-xs">
                     <p className="text-[11px] font-semibold uppercase text-slate-500">Support + Notifications</p>
                     <div className="mt-2 space-y-2">
                       <div className="text-[11px] text-slate-500">Tickets: {(catalog?.support?.tickets || []).length}</div>
@@ -2924,7 +2927,7 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 p-4 text-xs dark:border-slate-700">
+                  <div className="rounded-2xl borderless-shadow p-4 text-xs">
                     <p className="text-[11px] font-semibold uppercase text-slate-500">Analytics + Search</p>
                     <div className="mt-2 space-y-2">
                       <div className="text-[11px] text-slate-500">Funnel: {catalog?.analytics?.funnel?.signup || 0} → {catalog?.analytics?.funnel?.deal || 0}</div>
@@ -2943,7 +2946,7 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 p-4 text-xs dark:border-slate-700">
+                  <div className="rounded-2xl borderless-shadow p-4 text-xs">
                     <p className="text-[11px] font-semibold uppercase text-slate-500">AI + System Settings</p>
                     <div className="mt-2 space-y-2">
                       <div className="text-[11px] text-slate-500">Knowledge entries: {(catalog?.ai?.knowledge_entries || []).length}</div>
@@ -2956,7 +2959,7 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 p-4 text-xs dark:border-slate-700">
+                  <div className="rounded-2xl borderless-shadow p-4 text-xs">
                     <p className="text-[11px] font-semibold uppercase text-slate-500">Traffic + Email Segments</p>
                     <div className="mt-2 space-y-2">
                       <div className="text-[11px] text-slate-500">Clicks: {catalog?.traffic?.summary?.clicks || 0}</div>
@@ -2982,24 +2985,24 @@ export default function AdminPanel() {
                   </div>
                 </div>
                 <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 text-xs text-slate-600 dark:text-slate-300">
-                  <div className="rounded-2xl border border-slate-200 p-3 dark:border-slate-700">
+                  <div className="rounded-2xl borderless-shadow p-3">
                     <p className="text-[10px] uppercase text-slate-500">CPU</p>
                     <p className="text-sm font-semibold text-slate-900 dark:text-white">{infra?.cpu?.cores || '--'} cores</p>
                     <p>Load 1m: {infra?.cpu?.load_1m?.toFixed?.(2) || '--'}</p>
                   </div>
-                  <div className="rounded-2xl border border-slate-200 p-3 dark:border-slate-700">
+                  <div className="rounded-2xl borderless-shadow p-3">
                     <p className="text-[10px] uppercase text-slate-500">Memory</p>
                     <p className="text-sm font-semibold text-slate-900 dark:text-white">
                       {infra?.memory?.used_bytes ? formatNumber(Math.round(infra.memory.used_bytes / (1024 * 1024))) : '--'} MB used
                     </p>
                     <p>Free: {infra?.memory?.free_bytes ? formatNumber(Math.round(infra.memory.free_bytes / (1024 * 1024))) : '--'} MB</p>
                   </div>
-                  <div className="rounded-2xl border border-slate-200 p-3 dark:border-slate-700">
+                  <div className="rounded-2xl borderless-shadow p-3">
                     <p className="text-[10px] uppercase text-slate-500">Services</p>
                     <p className="text-sm font-semibold text-slate-900 dark:text-white">{formatNumber(infra?.services?.length)}</p>
                     <p>Processes: {formatNumber(infra?.processes?.length)}</p>
                   </div>
-                  <div className="rounded-2xl border border-slate-200 p-3 dark:border-slate-700">
+                  <div className="rounded-2xl borderless-shadow p-3">
                     <p className="text-[10px] uppercase text-slate-500">Storage + I/O</p>
                     <p className="text-sm font-semibold text-slate-900 dark:text-white">{formatNumber(infra?.storage?.length)} mounts</p>
                     <p>Disk IOPS: {infra?.io?.disk_iops ?? '--'}</p>
@@ -3020,7 +3023,7 @@ export default function AdminPanel() {
                     <button
                       type="button"
                       onClick={() => refreshInfraState()}
-                      className="rounded-full border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600"
+                      className="rounded-full borderless-shadow px-2 py-1 text-[10px] font-semibold text-slate-600"
                     >
                       Refresh
                     </button>
@@ -3032,7 +3035,7 @@ export default function AdminPanel() {
                         const [actionValue, portValue] = event.target.value.split(':')
                         setFirewallForm((prev) => ({ ...prev, action: actionValue, port: portValue || '', protocol: 'tcp' }))
                       }}
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                     >
                       <option value="allow:">Preset (select)</option>
                       <option value="allow:22">Allow SSH 22</option>
@@ -3045,12 +3048,12 @@ export default function AdminPanel() {
                         value={firewallForm.port}
                         onChange={(event) => setFirewallForm((prev) => ({ ...prev, port: event.target.value }))}
                         placeholder="Port"
-                        className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                        className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                       />
                       <select
                         value={firewallForm.protocol}
                         onChange={(event) => setFirewallForm((prev) => ({ ...prev, protocol: event.target.value }))}
-                        className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                        className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                       >
                         <option value="tcp">tcp</option>
                         <option value="udp">udp</option>
@@ -3060,7 +3063,7 @@ export default function AdminPanel() {
                       value={firewallForm.description}
                       onChange={(event) => setFirewallForm((prev) => ({ ...prev, description: event.target.value }))}
                       placeholder="Description"
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                     />
                     <div className="flex items-center gap-2">
                       <button
@@ -3074,7 +3077,7 @@ export default function AdminPanel() {
                   </div>
                   <div className="mt-4 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {(infraState?.firewall_rules || []).slice(0, 6).map((rule) => (
-                      <div key={rule.id} className="flex items-center justify-between rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={rule.id} className="flex items-center justify-between rounded-xl borderless-shadow px-2 py-1">
                         <span>{rule.action} {rule.port}/{rule.protocol}</span>
                         <button
                           type="button"
@@ -3098,7 +3101,7 @@ export default function AdminPanel() {
                     <select
                       value={packageForm.mode}
                       onChange={(event) => setPackageForm((prev) => ({ ...prev, mode: event.target.value, apply: event.target.value !== 'check' }))}
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                     >
                       <option value="check">Check updates (safe)</option>
                       <option value="security">Apply security updates</option>
@@ -3135,7 +3138,7 @@ export default function AdminPanel() {
                           setCronForm((prev) => ({ ...prev, schedule: value }))
                         }
                       }}
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                     >
                       <option value="">Preset (select)</option>
                       <option value="0 2 * * *">Daily backup at 2am</option>
@@ -3145,19 +3148,19 @@ export default function AdminPanel() {
                       value={cronForm.name}
                       onChange={(event) => setCronForm((prev) => ({ ...prev, name: event.target.value }))}
                       placeholder="Job name"
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                     />
                     <input
                       value={cronForm.schedule}
                       onChange={(event) => setCronForm((prev) => ({ ...prev, schedule: event.target.value }))}
                       placeholder="Cron schedule"
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                     />
                     <input
                       value={cronForm.command}
                       onChange={(event) => setCronForm((prev) => ({ ...prev, command: event.target.value }))}
                       placeholder="Command"
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                     />
                     <button
                       type="button"
@@ -3169,7 +3172,7 @@ export default function AdminPanel() {
                   </div>
                   <div className="mt-4 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {(infraState?.cron_jobs || []).slice(0, 4).map((job) => (
-                      <div key={job.id} className="flex items-center justify-between rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={job.id} className="flex items-center justify-between rounded-xl borderless-shadow px-2 py-1">
                         <span>{job.name} · {job.schedule}</span>
                         <button
                           type="button"
@@ -3197,21 +3200,21 @@ export default function AdminPanel() {
                     <button
                       type="button"
                       onClick={() => runInfraAction('log.collect', { level: 'info', message: 'Manual log snapshot' })}
-                      className="rounded-full border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600"
+                      className="rounded-full borderless-shadow px-2 py-1 text-[10px] font-semibold text-slate-600"
                     >
                       Collect logs
                     </button>
                   </div>
                   <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {(infraState?.logs || []).slice(0, 4).map((log) => (
-                      <div key={log.id} className="rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={log.id} className="rounded-xl borderless-shadow px-2 py-1">
                         {log.level || 'info'} · {log.message}
                       </div>
                     ))}
                     <button
                       type="button"
                       onClick={() => runInfraAction('process.scan_zombies')}
-                      className="rounded-full border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600"
+                      className="rounded-full borderless-shadow px-2 py-1 text-[10px] font-semibold text-slate-600"
                     >
                       Scan zombies
                     </button>
@@ -3231,7 +3234,7 @@ export default function AdminPanel() {
                       value={osUserForm.username}
                       onChange={(event) => setOsUserForm((prev) => ({ ...prev, username: event.target.value }))}
                       placeholder="Username"
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                     />
                     <button
                       type="button"
@@ -3244,25 +3247,25 @@ export default function AdminPanel() {
                       value={sshKeyForm.label}
                       onChange={(event) => setSshKeyForm((prev) => ({ ...prev, label: event.target.value }))}
                       placeholder="SSH key label"
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                     />
                     <input
                       value={sshKeyForm.fingerprint}
                       onChange={(event) => setSshKeyForm((prev) => ({ ...prev, fingerprint: event.target.value }))}
                       placeholder="Fingerprint"
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                     />
                     <button
                       type="button"
                       onClick={() => runInfraAction('ssh.key.add', sshKeyForm)}
-                      className="w-full rounded-full border border-slate-200 px-3 py-2 text-[11px] font-semibold text-slate-600"
+                      className="w-full rounded-full borderless-shadow px-3 py-2 text-[11px] font-semibold text-slate-600"
                     >
                       Add SSH key
                     </button>
                   </div>
                   <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {(infraState?.os_users || []).slice(0, 3).map((userRow) => (
-                      <div key={userRow.id} className="flex items-center justify-between rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={userRow.id} className="flex items-center justify-between rounded-xl borderless-shadow px-2 py-1">
                         <span>{userRow.username}</span>
                         <button
                           type="button"
@@ -3274,7 +3277,7 @@ export default function AdminPanel() {
                       </div>
                     ))}
                     {(infraState?.ssh_keys || []).slice(0, 2).map((key) => (
-                      <div key={key.id} className="flex items-center justify-between rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={key.id} className="flex items-center justify-between rounded-xl borderless-shadow px-2 py-1">
                         <span>{key.label}</span>
                         <button
                           type="button"
@@ -3298,7 +3301,7 @@ export default function AdminPanel() {
                       value={sslForm.domain}
                       onChange={(event) => setSslForm((prev) => ({ ...prev, domain: event.target.value }))}
                       placeholder="Domain"
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                     />
                     <button
                       type="button"
@@ -3311,12 +3314,12 @@ export default function AdminPanel() {
                       value={infraBackupForm.retention_days}
                       onChange={(event) => setInfraBackupForm((prev) => ({ ...prev, retention_days: event.target.value }))}
                       placeholder="Retention days"
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                     />
                     <button
                       type="button"
                       onClick={() => runInfraAction('backup.retention', { retention_days: infraBackupForm.retention_days })}
-                      className="w-full rounded-full border border-slate-200 px-3 py-2 text-[11px] font-semibold text-slate-600"
+                      className="w-full rounded-full borderless-shadow px-3 py-2 text-[11px] font-semibold text-slate-600"
                     >
                       Update retention
                     </button>
@@ -3324,12 +3327,12 @@ export default function AdminPanel() {
                       value={timeForm.timezone}
                       onChange={(event) => setTimeForm((prev) => ({ ...prev, timezone: event.target.value }))}
                       placeholder="Timezone (e.g. UTC)"
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                     />
                     <button
                       type="button"
                       onClick={() => runInfraAction('system.timezone.set', { timezone: timeForm.timezone })}
-                      className="w-full rounded-full border border-slate-200 px-3 py-2 text-[11px] font-semibold text-slate-600"
+                      className="w-full rounded-full borderless-shadow px-3 py-2 text-[11px] font-semibold text-slate-600"
                     >
                       Set timezone
                     </button>
@@ -3353,18 +3356,18 @@ export default function AdminPanel() {
                   </div>
                 </div>
                 <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 text-xs text-slate-600 dark:text-slate-300">
-                  <div className="rounded-2xl border border-slate-200 p-3 dark:border-slate-700">
+                  <div className="rounded-2xl borderless-shadow p-3">
                     <p className="text-[10px] uppercase text-slate-500">Devices</p>
                     <p className="text-sm font-semibold text-slate-900 dark:text-white">{formatNumber(network?.device_total)}</p>
                     <p>Up: {formatNumber(network?.device_up)} / Down: {formatNumber(network?.device_down)}</p>
                   </div>
-                  <div className="rounded-2xl border border-slate-200 p-3 dark:border-slate-700">
+                  <div className="rounded-2xl borderless-shadow p-3">
                     <p className="text-[10px] uppercase text-slate-500">Alerts</p>
                     <p className="text-sm font-semibold text-slate-900 dark:text-white">{formatNumber(network?.alert_count)}</p>
                     <p>Latency: {network?.traffic_summary?.latency_ms ?? '--'} ms</p>
                     <p>Jitter: {network?.traffic_summary?.jitter_ms ?? '--'} ms</p>
                   </div>
-                  <div className="rounded-2xl border border-slate-200 p-3 dark:border-slate-700">
+                  <div className="rounded-2xl borderless-shadow p-3">
                     <p className="text-[10px] uppercase text-slate-500">Bandwidth</p>
                     <p className="text-sm font-semibold text-slate-900 dark:text-white">{network?.traffic_summary?.bandwidth_mbps ?? '--'} Mbps</p>
                     <p>Loss: {network?.traffic_summary?.packet_loss_pct ?? '--'}%</p>
@@ -3384,14 +3387,14 @@ export default function AdminPanel() {
                     <button
                       type="button"
                       onClick={() => refreshNetworkInventory()}
-                      className="rounded-full border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600"
+                      className="rounded-full borderless-shadow px-2 py-1 text-[10px] font-semibold text-slate-600"
                     >
                       Refresh
                     </button>
                   </div>
                   <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {(networkInventory?.devices || []).slice(0, 6).map((device) => (
-                      <div key={device.id} className="flex items-center justify-between rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={device.id} className="flex items-center justify-between rounded-xl borderless-shadow px-2 py-1">
                         <span>{device.name || device.id} · {device.status}</span>
                         <button
                           type="button"
@@ -3415,25 +3418,25 @@ export default function AdminPanel() {
                       value={vlanForm.vlan_id}
                       onChange={(event) => setVlanForm((prev) => ({ ...prev, vlan_id: event.target.value }))}
                       placeholder="VLAN ID"
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                     />
                     <input
                       value={vlanForm.name}
                       onChange={(event) => setVlanForm((prev) => ({ ...prev, name: event.target.value }))}
                       placeholder="Name"
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                     />
                     <input
                       value={vlanForm.subnet}
                       onChange={(event) => setVlanForm((prev) => ({ ...prev, subnet: event.target.value }))}
                       placeholder="Subnet"
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                     />
                     <input
                       value={vlanForm.gateway}
                       onChange={(event) => setVlanForm((prev) => ({ ...prev, gateway: event.target.value }))}
                       placeholder="Gateway"
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                     />
                     <button
                       type="button"
@@ -3445,7 +3448,7 @@ export default function AdminPanel() {
                   </div>
                   <div className="mt-4 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {(networkInventory?.vlans || []).slice(0, 4).map((vlan) => (
-                      <div key={vlan.id} className="flex items-center justify-between rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={vlan.id} className="flex items-center justify-between rounded-xl borderless-shadow px-2 py-1">
                         <span>VLAN {vlan.id} · {vlan.subnet}</span>
                         <button
                           type="button"
@@ -3469,13 +3472,13 @@ export default function AdminPanel() {
                       value={ipamForm.ip}
                       onChange={(event) => setIpamForm((prev) => ({ ...prev, ip: event.target.value }))}
                       placeholder="IP address"
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                     />
                     <input
                       value={ipamForm.owner}
                       onChange={(event) => setIpamForm((prev) => ({ ...prev, owner: event.target.value }))}
                       placeholder="Owner"
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                     />
                     <button
                       type="button"
@@ -3488,19 +3491,19 @@ export default function AdminPanel() {
                       value={backupForm.device_id}
                       onChange={(event) => setBackupForm({ device_id: event.target.value })}
                       placeholder="Device ID for backup"
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-xs dark:border-slate-700 dark:bg-slate-950"
+                      className="rounded-lg borderless-shadow px-3 py-2 text-xs dark:bg-slate-950"
                     />
                     <button
                       type="button"
                       onClick={() => runNetworkAction('config.backup', backupForm)}
-                      className="w-full rounded-full border border-slate-200 px-3 py-2 text-[11px] font-semibold text-slate-600"
+                      className="w-full rounded-full borderless-shadow px-3 py-2 text-[11px] font-semibold text-slate-600"
                     >
                       Run config backup
                     </button>
                   </div>
                   <div className="mt-4 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {(networkInventory?.ipam_reservations || []).slice(0, 3).map((row) => (
-                      <div key={row.id} className="flex items-center justify-between rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={row.id} className="flex items-center justify-between rounded-xl borderless-shadow px-2 py-1">
                         <span>{row.ip} · {row.owner || 'reserved'}</span>
                         <button
                           type="button"
@@ -3528,7 +3531,7 @@ export default function AdminPanel() {
                   </div>
                   <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {(networkInventory?.ids_alerts || []).slice(0, 3).map((alert) => (
-                      <div key={alert.id} className="rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={alert.id} className="rounded-xl borderless-shadow px-2 py-1">
                         {alert.severity} · {alert.message}
                       </div>
                     ))}
@@ -3547,7 +3550,7 @@ export default function AdminPanel() {
                   </div>
                   <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {(networkInventory?.flow_stats || []).slice(0, 2).map((flow) => (
-                      <div key={flow.id} className="rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={flow.id} className="rounded-xl borderless-shadow px-2 py-1">
                         Flows: {flow.total_flows}
                       </div>
                     ))}
@@ -3568,7 +3571,7 @@ export default function AdminPanel() {
                   </div>
                   <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {(networkInventory?.clients || []).slice(0, 3).map((client) => (
-                      <div key={client.id} className="rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={client.id} className="rounded-xl borderless-shadow px-2 py-1">
                         {client.ip || client.mac} · {client.status || 'online'}
                       </div>
                     ))}
@@ -3594,7 +3597,7 @@ export default function AdminPanel() {
                     <button
                       type="button"
                       onClick={() => refreshServerAdminState()}
-                      className="rounded-full border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600"
+                      className="rounded-full borderless-shadow px-2 py-1 text-[10px] font-semibold text-slate-600"
                     >
                       Refresh
                     </button>
@@ -3614,7 +3617,7 @@ export default function AdminPanel() {
                   </div>
                   <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {(serverAdminState?.domains || []).slice(0, 3).map((domain) => (
-                      <div key={domain.id} className="rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={domain.id} className="rounded-xl borderless-shadow px-2 py-1">
                         {domain.domain} · {domain.status}
                       </div>
                     ))}
@@ -3632,7 +3635,7 @@ export default function AdminPanel() {
                   </div>
                   <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {(serverAdminState?.rbac_roles || []).slice(0, 3).map((role) => (
-                      <div key={role.id} className="rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={role.id} className="rounded-xl borderless-shadow px-2 py-1">
                         {role.name} · {role.permissions?.length || 0} perms
                       </div>
                     ))}
@@ -3655,7 +3658,7 @@ export default function AdminPanel() {
                     <button
                       type="button"
                       onClick={() => refreshIntegrationStatus()}
-                      className="rounded-full border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600"
+                      className="rounded-full borderless-shadow px-2 py-1 text-[10px] font-semibold text-slate-600"
                     >
                       Refresh
                     </button>
@@ -3698,14 +3701,14 @@ export default function AdminPanel() {
                     <button
                       type="button"
                       onClick={() => refreshCmsState()}
-                      className="rounded-full border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600"
+                      className="rounded-full borderless-shadow px-2 py-1 text-[10px] font-semibold text-slate-600"
                     >
                       Refresh
                     </button>
                   </div>
                   <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {(cmsState?.articles || []).slice(0, 3).map((article) => (
-                      <div key={article.id} className="rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={article.id} className="rounded-xl borderless-shadow px-2 py-1">
                         {article.title} · {article.status}
                       </div>
                     ))}
@@ -3742,7 +3745,7 @@ export default function AdminPanel() {
                   </div>
                   <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {(cmsState?.deployments || []).slice(0, 2).map((deploy) => (
-                      <div key={deploy.id} className="rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={deploy.id} className="rounded-xl borderless-shadow px-2 py-1">
                         {deploy.branch} · {deploy.status}
                       </div>
                     ))}
@@ -3766,7 +3769,7 @@ export default function AdminPanel() {
                     <button
                       type="button"
                       onClick={() => refreshSecurityState()}
-                      className="rounded-full border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600"
+                      className="rounded-full borderless-shadow px-2 py-1 text-[10px] font-semibold text-slate-600"
                     >
                       Refresh
                     </button>
@@ -3782,14 +3785,14 @@ export default function AdminPanel() {
                     <button
                       type="button"
                       onClick={() => runSecurityAction('security.zero_trust.toggle', { enabled: !securityState?.zero_trust?.enabled })}
-                      className="rounded-full border border-slate-200 px-3 py-1 text-[10px] font-semibold text-slate-600"
+                      className="rounded-full borderless-shadow px-3 py-1 text-[10px] font-semibold text-slate-600"
                     >
                       Toggle zero-trust
                     </button>
                     <button
                       type="button"
                       onClick={() => runSecurityAction('security.encryption.rotate')}
-                      className="rounded-full border border-slate-200 px-3 py-1 text-[10px] font-semibold text-slate-600"
+                      className="rounded-full borderless-shadow px-3 py-1 text-[10px] font-semibold text-slate-600"
                     >
                       Rotate keys
                     </button>
@@ -3803,7 +3806,7 @@ export default function AdminPanel() {
                   </div>
                   <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                     {(securityState?.incidents || []).slice(0, 3).map((incident) => (
-                      <div key={incident.id} className="rounded-xl border border-slate-200 px-2 py-1 dark:border-slate-700">
+                      <div key={incident.id} className="rounded-xl borderless-shadow px-2 py-1">
                         {incident.title} · {incident.status}
                       </div>
                     ))}
@@ -3843,17 +3846,17 @@ export default function AdminPanel() {
                         <p className="text-sm font-bold">{section.title}</p>
                         <p className="text-xs text-slate-500">{features.length} capabilities</p>
                       </div>
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${statusBadge('live')}`}>live</span>
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold${statusBadge('live')}`}>live</span>
                     </summary>
                     <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
                       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                         {features.map((item) => (
-                          <div key={item} className="rounded-xl border border-slate-200 px-3 py-2 text-[11px] text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                          <div key={item} className="rounded-xl borderless-shadow px-3 py-2 text-[11px] text-slate-600 dark:text-slate-300">
                             {item}
                           </div>
                         ))}
                       </div>
-                      <div className="rounded-2xl border border-slate-200 p-4 text-xs text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                      <div className="rounded-2xl borderless-shadow p-4 text-xs text-slate-600 dark:text-slate-300">
                         <p className="text-[10px] font-semibold uppercase text-slate-500">Live Metrics</p>
                         <div className="mt-2 space-y-2">
                           {metrics.length ? metrics.map((metric) => {
@@ -3885,14 +3888,14 @@ export default function AdminPanel() {
                 <button
                   type="button"
                   onClick={() => refreshVerificationQueue()}
-                  className="rounded-full border border-sky-500/30 bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-[#13171E]"
+                  className="rounded-full borderless-shadow bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-[#13171E]"
                 >
                   Refresh
                 </button>
               </div>
               <div className="mt-3 space-y-2 text-xs">
                 {verificationQueue.slice(0, 3).map((row) => (
-                  <div key={row.id || row.user_id} className="rounded-2xl border border-orange-500/20 px-3 py-2">
+                  <div key={row.id || row.user_id} className="rounded-2xl borderless-shadow px-3 py-2">
                     <p className="text-[11px] font-semibold">{row.user_name || row.user_email || row.user_id}</p>
                     <p className="text-[10px] text-slate-400">Doc: {row.doc_type || row.type || 'business'} · Status: {row.status || 'pending'}</p>
                   </div>
@@ -3912,14 +3915,14 @@ export default function AdminPanel() {
                 <button
                   type="button"
                   onClick={() => refreshDisputes()}
-                  className="rounded-full border border-sky-500/30 bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-[#13171E]"
+                  className="rounded-full borderless-shadow bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-[#13171E]"
                 >
                   Sync
                 </button>
               </div>
               <div className="mt-3 space-y-2 text-xs">
                 {disputes.slice(0, 3).map((dispute) => (
-                  <div key={dispute.id} className="rounded-2xl border border-orange-500/20 px-3 py-2">
+                  <div key={dispute.id} className="rounded-2xl borderless-shadow px-3 py-2">
                     <p className="text-[11px] font-semibold">{dispute.title || dispute.contract_id || 'Dispute'}</p>
                     <p className="text-[10px] text-slate-400">Status: {dispute.status || 'open'} · Priority: {dispute.priority || 'normal'}</p>
                   </div>
@@ -3939,14 +3942,14 @@ export default function AdminPanel() {
                 <button
                   type="button"
                   onClick={() => refreshAudit()}
-                  className="rounded-full border border-sky-500/30 bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-[#13171E]"
+                  className="rounded-full borderless-shadow bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-[#13171E]"
                 >
                   Refresh
                 </button>
               </div>
               <div className="mt-3 space-y-2 text-xs">
                 {audit.slice(0, 5).map((entry) => (
-                  <div key={entry.id || entry.at} className="rounded-2xl border border-orange-500/20 px-3 py-2">
+                  <div key={entry.id || entry.at} className="rounded-2xl borderless-shadow px-3 py-2">
                     <p className="text-[11px] font-semibold">{entry.action || 'Admin action'}</p>
                     <p className="text-[10px] text-slate-400">{entry.at ? new Date(entry.at).toLocaleString() : '--'} · {entry.actor || 'system'}</p>
                   </div>
@@ -3968,14 +3971,14 @@ export default function AdminPanel() {
                     <button
                       type="button"
                       onClick={() => refreshAudit()}
-                    className="rounded-full border border-sky-500/30 bg-black/40 px-3 py-1 text-xs font-semibold text-sky-100 hover:bg-[#13171E]"
+                    className="rounded-full borderless-shadow bg-black/40 px-3 py-1 text-xs font-semibold text-sky-100 hover:bg-[#13171E]"
                     >
                       Refresh log
                     </button>
                   </div>
                   <div className="mt-4 grid grid-cols-1 gap-2">
                     {audit.slice(0, 10).map((entry) => (
-                      <div key={entry.id} className="rounded-xl border border-slate-200 px-3 py-2 text-[11px] text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                      <div key={entry.id} className="rounded-xl borderless-shadow px-3 py-2 text-[11px] text-slate-600 dark:text-slate-300">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div className="font-semibold text-slate-900 dark:text-white">{entry.action || entry.path}</div>
                           <div>{entry.at ? new Date(entry.at).toLocaleString() : '--'}</div>

@@ -2,6 +2,7 @@ import crypto from 'crypto'
 import { readJson, writeJson } from '../utils/jsonStore.js'
 import { canViewAnalytics, canViewAnalyticsAdmin, canViewAnalyticsDashboard, forbiddenError, scopeRecordsForUser } from '../utils/permissions.js'
 import { getPlanForUser } from './entitlementService.js'
+import { getOrderCertificationSummary } from './orderCertificationService.js'
 
 const FILE = 'analytics.json'
 
@@ -672,6 +673,8 @@ export async function getPremiumInsights(user) {
     ]
 
     const signedContracts = myContracts.filter((c) => String(c.lifecycle_status || '').toLowerCase() === 'signed').length
+    const certification = await getOrderCertificationSummary(user.id)
+    const smartMatchSuccessRate = calcPercent(signedContracts, matchedReqIds.size || 0)
 
     return {
       role,
@@ -683,10 +686,16 @@ export async function getPremiumInsights(user) {
         contracts_signed: signedContracts,
         conversion_rate_pct: calcPercent(signedContracts, myRequests.length),
       },
+      smart_matching_success_rate: {
+        match_rate_pct: smartMatchSuccessRate,
+        matched_requests: matchedReqIds.size,
+        contracts_signed: signedContracts,
+      },
       buying_pattern_analysis: buyingPatternRows,
       order_completion_certification: {
-        status: signedContracts > 0 ? 'certified' : 'pending',
-        signed_contracts: signedContracts,
+        status: certification?.status || 'pending',
+        signed_contracts: certification?.signed_contracts ?? signedContracts,
+        issued_at: certification?.issued_at || null,
       },
       request_performance_insights: {
         open_requests: myRequests.filter((r) => String(r.status || '').toLowerCase() === 'open').length,
@@ -717,6 +726,7 @@ export async function getPremiumInsights(user) {
 
   const orgContracts = contracts.filter((c) => String(c.factory_id || '') === orgId || String(c.buyer_id || '') === orgId)
   const signedContracts = orgContracts.filter((c) => String(c.lifecycle_status || '').toLowerCase() === 'signed').length
+  const orgCertification = await getOrderCertificationSummary(orgId)
 
   const response = computeResponseTimesForOrg(orgMessages, orgMemberIds)
 
@@ -781,8 +791,9 @@ export async function getPremiumInsights(user) {
     lead_distribution: leadByAgent,
     buying_pattern_analysis: buyingPattern,
     order_completion_certification: {
-      status: signedContracts > 0 ? 'certified' : 'pending',
-      signed_contracts: signedContracts,
+      status: orgCertification?.status || 'pending',
+      signed_contracts: orgCertification?.signed_contracts ?? signedContracts,
+      issued_at: orgCertification?.issued_at || null,
     },
   }
 }

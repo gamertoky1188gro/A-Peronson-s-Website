@@ -170,6 +170,34 @@ body,
   --borderless-divider-y: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(255, 255, 255, 0.08);
 }
 
+.borderless-shadow {
+  box-shadow: var(--borderless-shadow);
+}
+
+.borderless-divider-b {
+  box-shadow: var(--borderless-divider);
+}
+
+.borderless-divider-t {
+  box-shadow: var(--borderless-divider-top);
+}
+
+.borderless-divider-l {
+  box-shadow: var(--borderless-divider-left);
+}
+
+.borderless-divider-r {
+  box-shadow: var(--borderless-divider-right);
+}
+
+.borderless-divider-x {
+  box-shadow: var(--borderless-divider-x);
+}
+
+.borderless-divider-y {
+  box-shadow: var(--borderless-divider-y);
+}
+
 :where(
   .border,
   .border-0,

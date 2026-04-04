@@ -74,7 +74,7 @@ function FileTypeBadge({ kind, isLight, ext }) {
   })()
 
   return (
-    <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl ${palette.bg} ${palette.text} text-[11px] font-extrabold tracking-wide`}>
+    <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl${palette.bg}${palette.text}text-[11px] font-extrabold tracking-wide`}>
       {label.slice(0, 4)}
     </div>
   )
@@ -233,9 +233,9 @@ export default function FileAttachmentCard({
   }, [bytes, ext, kind, pdfPreview.pages])
 
   const containerTone = (() => {
-    if (isOwn) return 'border-white/10 bg-black/20 text-white'
-    if (isLight) return 'border-slate-200 bg-slate-50 text-slate-900'
-    return 'border-white/10 bg-black/20 text-white'
+    if (isOwn) return 'bg-black/20 text-white'
+    if (isLight) return 'bg-slate-50 text-slate-900'
+    return 'bg-black/20 text-white'
   })()
 
   const previewBg = (() => {
@@ -244,7 +244,6 @@ export default function FileAttachmentCard({
     return 'bg-black/25'
   })()
 
-  const borderTone = isLight && !isOwn ? 'border-slate-200' : 'border-white/10'
   const buttonTone = isLight && !isOwn
     ? 'text-slate-700 hover:bg-slate-100'
     : 'text-white/90 hover:bg-white/10'
@@ -252,12 +251,12 @@ export default function FileAttachmentCard({
   const downloadName = safeDownloadName(name)
 
   return (
-    <div className={`w-full overflow-hidden rounded-2xl border ${containerTone}`}>
+    <div className={`w-full overflow-hidden rounded-2xl borderless-shadow${containerTone}`}>
       {kind === 'pdf' ? (
         <button
           type="button"
           onClick={() => onOpen?.()}
-          className={`block w-full ${previewBg}`}
+          className={`block w-full${previewBg}`}
           title="Open preview"
         >
           <div className="flex h-28 w-full items-center justify-center overflow-hidden">
@@ -281,7 +280,7 @@ export default function FileAttachmentCard({
         <button
           type="button"
           onClick={() => onOpen?.()}
-          className={`block w-full ${previewBg}`}
+          className={`block w-full${previewBg}`}
           title="Open preview"
         >
           <div className="max-h-28 overflow-hidden p-3 text-left">
@@ -301,7 +300,7 @@ export default function FileAttachmentCard({
       <button
         type="button"
         onClick={() => onOpen?.()}
-        className={`flex w-full items-center gap-3 px-3 py-3 text-left ${kind === 'file' ? '' : ''}`}
+        className={`flex w-full items-center gap-3 px-3 py-3 text-left${kind === 'file' ? '' : ''}`}
         title="Open preview"
       >
         <FileTypeBadge kind={kind} isLight={isLight && !isOwn} ext={ext} />
@@ -311,18 +310,18 @@ export default function FileAttachmentCard({
         </div>
       </button>
 
-      <div className={`grid grid-cols-2 border-t ${borderTone}`}>
+      <div className="grid grid-cols-2 borderless-divider-t">
         <button
           type="button"
           onClick={() => onOpen?.()}
-          className={`px-3 py-2 text-[12px] font-semibold transition-colors ${buttonTone}`}
+          className={`px-3 py-2 text-[12px] font-semibold transition-colors${buttonTone}`}
         >
           Open
         </button>
         <a
           href={url}
           download={downloadName}
-          className={`px-3 py-2 text-center text-[12px] font-semibold transition-colors ${buttonTone} border-l ${borderTone}`}
+          className={`px-3 py-2 text-center text-[12px] font-semibold transition-colors${buttonTone}borderless-divider-l`}
         >
           Save as...
         </a>

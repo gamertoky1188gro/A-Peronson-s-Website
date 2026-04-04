@@ -71,13 +71,11 @@ const CHAT_NAV_ITEMS = [
 
 const PANEL_STYLE = {
   background: 'rgb(16, 13, 34)',
-  border: 'none',
   boxShadow: '0 10px 40px rgba(0,0,0,0.45)',
 }
 
 const RIGHT_PANEL_STYLE = {
   background: '#100D22',
-  border: 'none',
   boxShadow: '0 10px 40px rgba(0,0,0,0.45)',
 }
 
@@ -1021,7 +1019,7 @@ export default function ChatInterface() {
           <button
             type="button"
             onClick={() => openAttachmentPreview(message?.attachment, attachmentUrl)}
-            className="block w-full overflow-hidden rounded-xl border border-slate-100 text-left transition-opacity hover:opacity-95 dark:border-transparent"
+            className="block w-full overflow-hidden rounded-xl borderless-shadow text-left transition-opacity hover:opacity-95"
             title="View image"
           >
             <img src={attachmentUrl} alt={message?.attachment?.name || 'Shared image'} className="max-h-64 w-full object-cover" />
@@ -1047,7 +1045,7 @@ export default function ChatInterface() {
           <button
             type="button"
             onClick={() => openAttachmentPreview(message?.attachment, attachmentUrl)}
-            className="relative block w-full overflow-hidden rounded-xl border border-slate-100 text-left dark:border-transparent"
+            className="relative block w-full overflow-hidden rounded-xl borderless-shadow text-left"
             title="View video"
           >
             <video src={attachmentUrl} muted playsInline preload="metadata" className="max-h-64 w-full object-cover" />
@@ -1090,7 +1088,7 @@ export default function ChatInterface() {
       return (
         <div className="space-y-2">
           <MarkdownMessage text={message.message} />
-          <a href={firstUrl} target="_blank" rel="noreferrer" className="block rounded-xl border border-slate-100 bg-slate-50 p-2 dark:border-transparent dark:bg-black/20">
+          <a href={firstUrl} target="_blank" rel="noreferrer" className="block rounded-xl borderless-shadow bg-slate-50 p-2 dark:bg-black/20">
             <div className="mb-2 h-24 overflow-hidden rounded-lg bg-slate-200 flex items-center justify-center text-xs text-slate-500 dark:bg-[#1f2448] dark:text-[#b8bfe8]">
               {meta.host}
             </div>
@@ -1357,11 +1355,7 @@ export default function ChatInterface() {
         .chat-interface-container *,
         .chat-interface-container *:before,
         .chat-interface-container *:after {
-          border: none !important;
           outline: none !important;
-        }
-        .chat-interface-container img {
-          border: none !important;
         }
         .chat-interface-container input::placeholder {
           color: ${isLight ? '#94a3b8' : '#7f86ae'} !important;
@@ -1390,7 +1384,6 @@ export default function ChatInterface() {
         .chat-markdown blockquote {
           margin: 0.35rem 0;
           padding-left: 0.75rem;
-          border: none;
           box-shadow: inset 3px 0 0 ${isLight ? '#cbd5e1' : '#2f295c'};
           color: ${isLight ? '#334155' : '#cdd2ff'};
           opacity: ${isLight ? 0.9 : 0.95};
@@ -1421,7 +1414,6 @@ export default function ChatInterface() {
           font-size: 12px;
         }
         .chat-markdown th, .chat-markdown td {
-          border: none;
           box-shadow: inset 0 0 0 1px ${isLight ? '#e2e8f0' : 'rgba(255,255,255,0.12)'};
           padding: 0.35rem 0.5rem;
         }
@@ -1433,7 +1425,6 @@ export default function ChatInterface() {
           accent-color: var(--gt-blue);
         }
         .chat-markdown hr {
-          border: none;
           height: 1px;
           box-shadow: inset 0 -1px 0 ${isLight ? '#e2e8f0' : 'rgba(255,255,255,0.12)'};
           margin: 0.5rem 0;
@@ -1458,7 +1449,7 @@ export default function ChatInterface() {
       />
       {callPromptThread ? (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#14122b] p-6 text-white shadow-2xl">
+          <div className="w-full max-w-sm rounded-2xl borderless-shadow bg-[#14122b] p-6 text-white shadow-2xl">
             <div className="flex items-center gap-4">
               {callPromptThread.avatar ? (
                 <img
@@ -1480,7 +1471,7 @@ export default function ChatInterface() {
             <div className="mt-6 flex items-center justify-between gap-3">
               <button
                 onClick={closeCallPrompt}
-                className="flex-1 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-300 hover:bg-red-500/20"
+                className="flex-1 rounded-xl borderless-shadow bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-300 hover:bg-red-500/20"
               >
                 Decline
               </button>
@@ -1495,10 +1486,10 @@ export default function ChatInterface() {
         </div>
       ) : null}
       <div className="grid h-full w-full grid-cols-1 gap-2 p-2 md:grid-cols-[62px_1fr] lg:grid-cols-[62px_minmax(260px,22vw)_1fr] xl:grid-cols-[62px_minmax(260px,20vw)_1fr_minmax(280px,22vw)]">
-        <aside className="hidden md:flex h-full rounded-[22px] p-2 flex-col items-center justify-between py-1" style={{ background: 'transparent', boxShadow: 'none', border: 'none' }}>
+        <aside className="hidden md:flex h-full rounded-[22px] p-2 flex-col items-center justify-between py-1" style={{ background: 'transparent', boxShadow: 'none' }}>
           <div className="space-y-2">
             <button
-              className={`mb-4 flex h-10 w-10 items-center justify-center rounded-[12px] border-none shadow-none text-lg transition-colors ${
+              className={`mb-4 flex h-10 w-10 items-center justify-center rounded-[12px] shadow-none text-lg transition-colors${
                 isLight ? 'bg-white text-orange-400 shadow-sm' : 'bg-[#171031] text-[#D4FF59]'
               }`}
               onClick={() => setThemeMode((value) => (value === 'light' ? 'dark' : 'light'))}
@@ -1513,7 +1504,7 @@ export default function ChatInterface() {
                 <Link
                   key={item.to}
                   to={item.to}
-                  className={`relative flex h-10 w-10 items-center justify-center rounded-[12px] transition-all ${
+                  className={`relative flex h-10 w-10 items-center justify-center rounded-[12px] transition-all${
                     isActive
                       ? (isLight ? 'bg-[var(--gt-blue)] text-white' : 'bg-[rgba(10,102,194,0.18)] text-[#D4FF59]')
                       : (isLight ? 'text-slate-400 hover:bg-white hover:text-[var(--gt-blue)]' : 'bg-[#171031] text-[#8f95bb] hover:text-white')
@@ -1535,7 +1526,7 @@ export default function ChatInterface() {
           </button>
         </aside>
 
-        <aside className="hidden lg:block rounded-[24px] p-5 overflow-hidden border border-slate-200/50 dark:border-none" style={{ background: theme.panelBg, boxShadow: theme.shadow }}>
+        <aside className="hidden lg:block rounded-[24px] p-5 overflow-hidden borderless-shadow" style={{ background: theme.panelBg, boxShadow: theme.shadow }}>
           <div className="mb-6">
             <h2 className="text-xl font-bold tracking-tight">Messages</h2>
             <p className="text-xs font-medium" style={{ color: theme.textMuted }}>{currentUser?.email || 'No email available'}</p>
@@ -1544,7 +1535,7 @@ export default function ChatInterface() {
           <div className="relative mb-6">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
-              className="h-11 w-full appearance-none rounded-[14px] border border-transparent pl-10 pr-11 text-[13px] outline-none transition-all focus:border-[rgba(10,102,194,0.5)]"
+              className="h-11 w-full appearance-none rounded-[14px] borderless-shadow pl-10 pr-11 text-[13px] outline-none transition-all"
               style={{ background: theme.inputBg, color: theme.textPrimary }}
               placeholder="Search conversations..."
               value={query}
@@ -1569,7 +1560,7 @@ export default function ChatInterface() {
                 return (
                   <button
                     key={thread.id}
-                    className={`group w-full rounded-[16px] px-3 py-3 text-left transition-all ${hasUnread && !isActive ? 'ring-1 ring-[var(--gt-blue)]/20' : ''}`}
+                    className={`group w-full rounded-[16px] px-3 py-3 text-left transition-all${hasUnread && !isActive ? 'ring-1 ring-[var(--gt-blue)]/20' : ''}`}
                     style={{ background: isActive ? theme.threadActiveBg : (hasUnread ? (isLight ? '#eef6ff' : '#1b1f3b') : 'transparent') }}
                     onClick={() => setActiveThreadId(thread.id)}
                   >
@@ -1578,7 +1569,7 @@ export default function ChatInterface() {
                         {thread.avatar ? (
                           <img src={avatarUrl(thread.avatar)} alt={threadName} className="h-11 w-11 rounded-full object-cover shadow-sm" />
                         ) : (
-                          <div className={`flex h-11 w-11 items-center justify-center rounded-full text-xs font-bold shadow-sm ${isActive ? 'bg-[var(--gt-blue)] text-white' : 'bg-slate-100 text-slate-500'}`}>{getInitials(threadName)}</div>
+                          <div className={`flex h-11 w-11 items-center justify-center rounded-full text-xs font-bold shadow-sm${isActive ? 'bg-[var(--gt-blue)] text-white' : 'bg-slate-100 text-slate-500'}`}>{getInitials(threadName)}</div>
                         )}
                         <span
                           className="absolute bottom-0 right-0 h-3 w-3 rounded-full"
@@ -1590,11 +1581,11 @@ export default function ChatInterface() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-1">
-                          <p className={`truncate text-[14px] font-semibold ${isActive ? 'text-[var(--gt-blue)]' : ''}`}>{threadName}</p>
+                          <p className={`truncate text-[14px] font-semibold${isActive ? 'text-[var(--gt-blue)]' : ''}`}>{threadName}</p>
                           <span className="flex-shrink-0 text-[10px] font-medium text-slate-400">{formatTime(thread.timestamp)}</span>
                         </div>
                         <div className="flex items-center justify-between gap-2">
-                          <p className={`truncate text-xs ${isActive ? 'text-slate-600' : hasUnread ? 'text-slate-700' : 'text-slate-400'}`}>{thread.last || 'No messages'}</p>
+                          <p className={`truncate text-xs${isActive ? 'text-slate-600' : hasUnread ? 'text-slate-700' : 'text-slate-400'}`}>{thread.last || 'No messages'}</p>
                           {hasUnread ? (
                             <span className="min-w-[18px] rounded-full bg-[var(--gt-blue)] px-2 py-0.5 text-[10px] font-bold text-white">
                               {thread.unread}
@@ -1609,10 +1600,10 @@ export default function ChatInterface() {
           </div>
         </aside>
 
-        <main className="rounded-[24px] p-0 flex flex-col h-full overflow-hidden border border-slate-200/50 dark:border-none" style={{ background: theme.panelBg, boxShadow: theme.shadow }}>
+        <main className="rounded-[24px] p-0 flex flex-col h-full overflow-hidden borderless-shadow" style={{ background: theme.panelBg, boxShadow: theme.shadow }}>
           {activeThread ? (
             <>
-              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800/50">
+              <div className="flex items-center justify-between px-6 py-4 borderless-divider-b">
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     {activeAvatar ? (
@@ -1646,7 +1637,7 @@ export default function ChatInterface() {
                   {isLockOwner ? (
                     <button
                       onClick={grantAccess}
-                      className="rounded-full border border-slate-200 px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800/60"
+                      className="rounded-full borderless-shadow px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
                       title="Grant access to another member"
                     >
                       Grant access
@@ -1655,7 +1646,7 @@ export default function ChatInterface() {
                   {(isLockOwner || isAdminUser) ? (
                     <button
                       onClick={transferAccess}
-                      className="rounded-full border border-slate-200 px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800/60"
+                      className="rounded-full borderless-shadow px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
                       title="Transfer this conversation to another agent"
                     >
                       Transfer
@@ -1678,7 +1669,7 @@ export default function ChatInterface() {
               </div>
 
               {!hasRecordedCall ? (
-                <div className="mx-6 mt-4 rounded-xl border border-amber-200/70 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900 dark:border-amber-400/20 dark:bg-amber-500/10 dark:text-amber-200">
+                <div className="mx-6 mt-4 rounded-xl borderless-shadow bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <span>
                       Video calls are recommended for trust. No recorded call exists yet for this conversation.
@@ -1696,7 +1687,7 @@ export default function ChatInterface() {
 
               <div className="flex-1 space-y-4 overflow-auto p-6 custom-scrollbar" style={{ background: isLight ? '#f8fafc' : 'transparent' }}>
                 <div className="flex justify-center mb-6">
-                  <span className="rounded-full bg-transparent border border-slate-200/60 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:border-slate-800 dark:text-slate-600">{todayLabel}</span>
+                  <span className="rounded-full bg-transparent borderless-shadow px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600">{todayLabel}</span>
                 </div>
                 {activeMessages.length > 0 ? (
                   activeMessages.map((message) => {
@@ -1707,13 +1698,13 @@ export default function ChatInterface() {
                     const isRead = Number.isFinite(readCutoff) && Number.isFinite(messageTs) && messageTs <= readCutoff
                     const showReadTick = !isOwn && isRead
                     return (
-                      <div key={message.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                      <div key={message.id} className={`flex${isOwn ? 'justify-end' : 'justify-start'}`}>
                         <div className={`group relative max-w-[80%] sm:max-w-[70%] rounded-[20px] px-4 py-3 text-[13.5px] shadow-sm transition-all ${
                           isOwn 
                             ? 'bg-[var(--gt-blue)] text-white rounded-br-none' 
                             : isBot
-                              ? `${isLight ? 'bg-[#EFF6FF] border border-[#BFDBFE]' : 'bg-[#0B1224] ring-1 ring-white/5'} rounded-bl-none`
-                              : `${isLight ? 'bg-white border border-slate-100' : 'bg-[#2a2744]'} rounded-bl-none`
+                              ? `${isLight ? 'bg-[#EFF6FF] ring-1 ring-[#BFDBFE]' : 'bg-[#0B1224] ring-1 ring-white/5'} rounded-bl-none`
+                              : `${isLight ? 'bg-white ring-1 ring-slate-200/70' : 'bg-[#2a2744]'} rounded-bl-none`
                         }`} style={!isOwn ? { color: theme.textPrimary } : undefined}>
                           {isBot ? (
                             <div className="mb-1 text-[10px] font-extrabold uppercase tracking-widest text-[var(--gt-blue)]">
@@ -1721,7 +1712,7 @@ export default function ChatInterface() {
                             </div>
                           ) : null}
                           {renderMessageBody(message, isOwn)}
-                          <div className={`mt-1 flex items-center gap-2 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-60 ${isOwn ? 'text-white' : 'text-slate-400'}`}>
+                          <div className={`mt-1 flex items-center gap-2 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-60${isOwn ? 'text-white' : 'text-slate-400'}`}>
                             <span>{formatTime(message.timestamp)}</span>
                             {showReadTick ? (
                               <span className="inline-flex items-center rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-600">
@@ -1738,7 +1729,7 @@ export default function ChatInterface() {
                 )}
               </div>
 
-              <div className="p-4 border-t border-slate-100 dark:border-slate-800/50">
+              <div className="p-4 borderless-divider-t">
                 {isLockRestricted ? (
                   <div className="mb-3 flex items-center justify-between gap-3 rounded-xl bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
                     <span>
@@ -1754,7 +1745,7 @@ export default function ChatInterface() {
                   </div>
                 ) : null}
                 {prequalNeedsInfo ? (
-                  <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-900 dark:border-amber-400/30 dark:bg-amber-500/10 dark:text-amber-200">
+                  <div className="mb-3 rounded-xl borderless-shadow bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span>
                         AI pre-qual flagged missing info. {prequal?.missing ? `Missing: ${prequal.missing}.` : 'Request more details before negotiating.'}
@@ -1825,11 +1816,11 @@ export default function ChatInterface() {
               </div>}
         </main>
 
-        <aside className="hidden xl:block rounded-[24px] p-6 h-full overflow-auto border border-slate-200/50 dark:border-none" style={{ background: theme.panelBg, boxShadow: theme.shadow }}>
+        <aside className="hidden xl:block rounded-[24px] p-6 h-full overflow-auto borderless-shadow" style={{ background: theme.panelBg, boxShadow: theme.shadow }}>
           {activeThread ? (
             <>
               <div className="mb-8 text-center">
-                <div className="mx-auto mb-4 h-24 w-24 rounded-full border-4 border-white shadow-md dark:border-slate-800">
+                <div className="mx-auto mb-4 h-24 w-24 rounded-full shadow-md">
                   {activeAvatar ? (
                     <img src={activeAvatar} alt={activeThreadDisplayName} className="h-full w-full rounded-full object-cover" />
                   ) : (
@@ -1841,18 +1832,18 @@ export default function ChatInterface() {
               </div>
 
               {leadLoading ? (
-                <div className="mb-6 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-[11px] text-slate-500 dark:border-slate-800 dark:bg-slate-800/30">
+                <div className="mb-6 rounded-2xl borderless-shadow bg-slate-50 p-3 text-[11px] text-slate-500 dark:bg-slate-800/30">
                   Loading AI pre-qualification summary...
                 </div>
               ) : prequal ? (
-                <div className="mb-6 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-[11px] text-slate-600 dark:border-slate-800 dark:bg-slate-800/30">
+                <div className="mb-6 rounded-2xl borderless-shadow bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-slate-800/30">
                   <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">AI Pre-Qual Summary</p>
                   <p className="mt-1">Score: <span className="font-semibold">{prequal.score ?? '--'}</span></p>
                   <p className="mt-1">Missing: {prequal.missing || 'None'}</p>
                 </div>
               ) : null}
 
-              <div className="mb-6 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-[11px] text-slate-600 dark:border-slate-800 dark:bg-slate-800/30">
+              <div className="mb-6 rounded-2xl borderless-shadow bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-slate-800/30">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">AI Conversation Summary</p>
                   <button
@@ -1877,7 +1868,7 @@ export default function ChatInterface() {
                 )}
               </div>
 
-              <div className="mb-6 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-[11px] text-slate-600 dark:border-slate-800 dark:bg-slate-800/30">
+              <div className="mb-6 rounded-2xl borderless-shadow bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-slate-800/30">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">AI Negotiation Helper</p>
                   <button
@@ -1923,7 +1914,7 @@ export default function ChatInterface() {
                   { id: 'sharedMedia', label: 'Media', count: sharedMedia.length, icon: Search },
                   { id: 'sharedPost', label: 'Posts', count: sharedPosts.length, icon: Home }
                 ].map((section) => (
-                  <div key={section.id} className="overflow-hidden rounded-[18px] border border-slate-100/50 dark:border-slate-800/50">
+                  <div key={section.id} className="overflow-hidden rounded-[18px] borderless-shadow">
                     <button 
                       className="flex w-full items-center justify-between p-4 text-xs font-bold uppercase tracking-wider transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50" 
                       style={{ background: isLight ? '#f8fafc' : '#101328', color: theme.textMuted }}
@@ -1946,7 +1937,7 @@ export default function ChatInterface() {
                                   key={item.id}
                                   type="button"
                                   onClick={() => openAttachmentPreview(item.attachment, url)}
-                                  className="flex w-full items-center gap-2 rounded-xl border border-slate-50 bg-slate-50/50 p-2.5 text-left text-[11px] font-medium transition-colors hover:border-[rgba(10,102,194,0.2)] dark:border-slate-800 dark:bg-slate-800/30"
+                                  className="flex w-full items-center gap-2 rounded-xl borderless-shadow bg-slate-50/50 p-2.5 text-left text-[11px] font-medium transition-colors dark:bg-slate-800/30"
                                   title="Preview"
                                 >
                                   <div className="h-6 w-6 rounded bg-white flex items-center justify-center shadow-xs dark:bg-slate-700"><Plus size={12} className="opacity-30" /></div>

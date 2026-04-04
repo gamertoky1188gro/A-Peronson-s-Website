@@ -195,7 +195,7 @@ export default function NotificationsCenter() {
                     type="button"
                     onClick={() => setTab(t.id)}
                     whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                    className={`relative inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ring-1 ${
+                    className={`relative inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ring-1${
                       active
                         ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
                         : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
@@ -244,7 +244,7 @@ export default function NotificationsCenter() {
               <div className="space-y-3">
                 {filteredItems.map((i) => (
                   <div key={i.id} className="relative overflow-hidden rounded-2xl bg-[#ffffff] p-4 ring-1 ring-slate-200/60 shadow-sm transition hover:bg-slate-50/70 dark:bg-slate-950/30 dark:ring-white/10 dark:hover:bg-white/5">
-                    <div className={`absolute left-0 top-0 h-full w-1 ${typeAccent(i.type)}`} />
+                    <div className={`absolute left-0 top-0 h-full w-1${typeAccent(i.type)}`} />
                     <div className="flex items-start justify-between gap-4 pl-3">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
@@ -274,7 +274,7 @@ export default function NotificationsCenter() {
                             <button
                               type="button"
                               onClick={() => respondPartnerRequest(i?.meta?.request_id || i.entity_id, 'reject', i.id)}
-                              className="rounded-full border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 text-center"
+                              className="rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 text-center"
                             >
                               Reject
                             </button>
@@ -295,7 +295,7 @@ export default function NotificationsCenter() {
                           </Link>
                         ) : null}
                         {!i.read ? (
-                          <button onClick={() => markRead(i.id)} className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                          <button onClick={() => markRead(i.id)} className="rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
                             Mark read
                           </button>
                         ) : null}
@@ -315,7 +315,7 @@ export default function NotificationsCenter() {
                 <button
                   type="button"
                   onClick={() => loadViews({ reset: true })}
-                  className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  className="rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                 >
                   Refresh
                 </button>
@@ -335,7 +335,7 @@ export default function NotificationsCenter() {
                       <button
                         type="button"
                         onClick={() => setQuickViewItem({ ...row.product, author: row.author })}
-                        className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                        className="rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                       >
                         Quick view
                       </button>
@@ -382,7 +382,7 @@ export default function NotificationsCenter() {
                   <button
                     type="button"
                     onClick={() => deleteAlert(a.id)}
-                    className="rounded-full border border-slate-200 p-2 hover:bg-rose-50"
+                    className="rounded-full borderless-shadow p-2 hover:bg-rose-50"
                     aria-label="Delete alert"
                     title="Delete alert"
                   >

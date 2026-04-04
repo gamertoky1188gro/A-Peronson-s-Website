@@ -32,7 +32,7 @@ import FeedItemCard from '../components/feed/FeedItemCard'
 import CommentsDrawer from '../components/feed/CommentsDrawer'
 import ReportModal from '../components/feed/ReportModal'
 import useLocalStorageState from '../hooks/useLocalStorageState'
-import { apiRequest, fetchCurrentUser, getCurrentUser, getToken } from '../lib/auth'
+import { apiRequest, fetchCurrentUser, getCurrentUser, getToken, hasEntitlement } from '../lib/auth'
 import { trackClientEvent } from '../lib/events'
 
 const Motion = motion
@@ -60,6 +60,10 @@ function normalizeFeedItem(raw) {
   const authorId = raw.buyer_id || raw.company_id || raw.author_id || ''
   const accountType = raw.company_role || (isBuyerRequest ? 'buyer' : 'factory')
   const rolePath = accountType === 'buying_house' ? 'buying-house' : (accountType === 'buyer' ? 'buyer' : 'factory')
+  const priorityUntil = raw.priority_until ? new Date(raw.priority_until).getTime() : 0
+  const priorityActive = raw.priority_active !== undefined
+    ? Boolean(raw.priority_active)
+    : (String(raw.priority_tier || '').toLowerCase() === 'priority' && (!priorityUntil || priorityUntil > Date.now()))
 
   return {
     id: raw.id,
@@ -86,6 +90,8 @@ function normalizeFeedItem(raw) {
     hasVideo: Boolean(raw.hasVideo || (!raw.video_restricted && raw.video_review_status === 'approved' && raw.video_url)),
     discussionActive: Boolean(raw.discussion_active),
     feedMetadata: raw.feed_metadata || {},
+    priorityActive,
+    certificationStatus: raw.order_certification_status || '',
   }
 }
 
@@ -175,6 +181,9 @@ export default function MainFeed() {
   const [reportBusy, setReportBusy] = useState(false)
   const [expressBusyId, setExpressBusyId] = useState('')
   const [claimedRequestId, setClaimedRequestId] = useState('')
+  const [earlyVerifiedFactories, setEarlyVerifiedFactories] = useState([])
+  const [earlyVerifiedError, setEarlyVerifiedError] = useState('')
+  const [earlyVerifiedLoading, setEarlyVerifiedLoading] = useState(false)
 
   const highlightKey = searchParams.get('item') || ''
   const sentinelRef = useRef(null)
@@ -184,6 +193,9 @@ export default function MainFeed() {
     const role = user?.role || ''
     return role === 'buying_house' || role === 'admin'
   }, [user?.role])
+
+  const isBuyer = String(user?.role || '').toLowerCase() === 'buyer'
+  const canEarlyAccess = hasEntitlement(user, 'early_access_verified_factories')
 
   const headerLabel = useMemo(() => {
     if (activeType === 'requests') return 'Buyer Requests'
@@ -268,6 +280,35 @@ export default function MainFeed() {
   useEffect(() => {
     loadUser()
   }, [loadUser])
+
+  useEffect(() => {
+    let alive = true
+    if (!token || !isBuyer) return undefined
+    if (!canEarlyAccess) {
+      setEarlyVerifiedFactories([])
+      setEarlyVerifiedError('')
+      return undefined
+    }
+    setEarlyVerifiedLoading(true)
+    apiRequest('/users/verified/early', { token })
+      .then((data) => {
+        if (!alive) return
+        setEarlyVerifiedFactories(Array.isArray(data?.items) ? data.items : [])
+        setEarlyVerifiedError('')
+      })
+      .catch((err) => {
+        if (!alive) return
+        setEarlyVerifiedFactories([])
+        setEarlyVerifiedError(err.message || 'Unable to load early verified factories')
+      })
+      .finally(() => {
+        if (!alive) return
+        setEarlyVerifiedLoading(false)
+      })
+    return () => {
+      alive = false
+    }
+  }, [token, isBuyer, canEarlyAccess])
 
   useEffect(() => {
     setItems([])
@@ -413,14 +454,14 @@ export default function MainFeed() {
               </div>
             </div>
 
-            <div className="mt-4 border-t border-slate-100 pt-4">
+            <div className="mt-4 borderless-divider-t pt-4">
               <p className="text-xs font-semibold text-slate-700 mb-2">Quick actions</p>
               <div className="flex flex-wrap gap-2">
                 {quickActions.map((a) => (
                   <Link
                     key={a.to}
                     to={a.to}
-                    className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                    className="rounded-full borderless-shadow bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                   >
                     {a.label}
                   </Link>
@@ -448,7 +489,7 @@ export default function MainFeed() {
           ) : null}
 
           {notice?.message ? (
-            <div className={`rounded-2xl p-4 text-sm ring-1 ${
+            <div className={`rounded-2xl p-4 text-sm ring-1${
               notice.type === 'error'
                 ? 'bg-rose-50 text-rose-800 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30'
                 : notice.type === 'success'
@@ -467,6 +508,51 @@ export default function MainFeed() {
                   </button>
                 ) : null}
               </div>
+            </div>
+          ) : null}
+
+          {isBuyer ? (
+            <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Early access: new verified factories</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Verified in the last 30 days</p>
+                </div>
+                {!canEarlyAccess ? (
+                  <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-200">
+                    Premium
+                  </span>
+                ) : null}
+              </div>
+              {!canEarlyAccess ? (
+                <div className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
+                  Unlock early access to newly verified factories with a Premium plan.
+                  <div className="mt-2">
+                    <Link to="/pricing" className="text-[11px] font-semibold text-[var(--gt-blue)] hover:underline">View Premium options</Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-3">
+                  {earlyVerifiedLoading ? <div className="text-xs text-slate-500">Loading early access list...</div> : null}
+                  {earlyVerifiedError ? <div className="text-xs text-rose-600">{earlyVerifiedError}</div> : null}
+                  {!earlyVerifiedLoading && !earlyVerifiedError ? (
+                    <div className="space-y-2">
+                      {earlyVerifiedFactories.length ? earlyVerifiedFactories.slice(0, 6).map((factory) => (
+                        <Link
+                          key={factory.id}
+                          to={`/factory/${encodeURIComponent(factory.id)}`}
+                          className="block rounded-xl bg-white px-3 py-2 text-left ring-1 ring-slate-200/70 transition hover:bg-slate-50 dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/8"
+                        >
+                          <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{factory.name || 'Factory'}</p>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{factory.country || '-'} · verified</p>
+                        </Link>
+                      )) : (
+                        <div className="text-xs text-slate-500 dark:text-slate-400">No new verified factories yet.</div>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
+              )}
             </div>
           ) : null}
 

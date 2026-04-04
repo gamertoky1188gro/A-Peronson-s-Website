@@ -190,7 +190,7 @@ export default function FloatingAssistant() {
 
       {/* Slide-in drawer panel (off-canvas). */}
       <div
-        className={`fixed top-0 right-0 h-full w-full md:w-[400px] bg-white shadow-2xl z-50 transform transition-transform duration-300 flex flex-col border-l border-gray-100 ${
+        className={`fixed top-0 right-0 h-full w-full md:w-[400px] bg-white shadow-2xl z-50 transform transition-transform duration-300 flex flex-col borderless-divider-l${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -201,7 +201,7 @@ export default function FloatingAssistant() {
             <div>
               <p className="font-bold tracking-tight">GarTex Assistant</p>
               <div className="flex items-center gap-1.5">
-                <span className={`w-2 h-2 rounded-full animate-pulse ${loading ? 'bg-amber-400' : 'bg-green-400'}`}></span>
+                <span className={`w-2 h-2 rounded-full animate-pulse${loading ? 'bg-amber-400' : 'bg-green-400'}`}></span>
                 <p className="text-[10px] uppercase tracking-wider text-sky-100 font-semibold">
                   {loading ? 'Thinking...' : 'Live Guidance'}
                 </p>
@@ -216,11 +216,11 @@ export default function FloatingAssistant() {
         {/* Transcript: scrollable list of chat bubbles. */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50">
           {messages.map((msg, i) => (
-            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
-              <div className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${
+            <div key={i} className={`flex${msg.role === 'user' ? 'justify-end' : 'justify-start'}animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+              <div className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed${
                 msg.role === 'user' 
                   ? 'bg-[#0A66C2] text-white rounded-tr-none shadow-blue-100 shadow-lg' 
-                  : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none shadow-sm'
+                  : 'bg-white text-gray-800 rounded-tl-none shadow-sm'
               }`}>
                 {msg.role === 'assistant' && msg.isNew ? (
                   <TypewriterText 
@@ -237,7 +237,7 @@ export default function FloatingAssistant() {
           {loading && (
             // Typing indicator bubble shown while awaiting server reply.
             <div className="flex justify-start animate-in fade-in duration-200">
-              <div className="bg-white border border-gray-200 p-4 rounded-2xl rounded-tl-none shadow-sm">
+              <div className="bg-white borderless-shadow p-4 rounded-2xl rounded-tl-none shadow-sm">
                 <div className="flex gap-1.5">
                   <div className="w-2 h-2 bg-gray-300 rounded-full animate-bounce [animation-duration:0.8s]"></div>
                   <div className="w-2 h-2 bg-gray-300 rounded-full animate-bounce [animation-duration:0.8s] [animation-delay:0.2s]"></div>
@@ -249,7 +249,7 @@ export default function FloatingAssistant() {
         </div>
 
         {/* Composer/footer: quick suggestions + input + send button. */}
-        <div className="p-4 border-t bg-white shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+        <div className="p-4 borderless-divider-t bg-white shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
           {messages.length < 3 && !loading && (
             // Quick suggestion chips appear early to guide first-time users.
             <div className="flex flex-wrap gap-2 mb-4 animate-in fade-in slide-in-from-bottom-1 duration-500">
@@ -257,7 +257,7 @@ export default function FloatingAssistant() {
                 <button 
                   key={i} 
                   onClick={() => handleSend(s)}
-                  className="text-[11px] bg-sky-50 text-[#0A66C2] border border-sky-100 px-3 py-1.5 rounded-full hover:bg-sky-100 transition-all hover:scale-105 active:scale-95"
+                  className="text-[11px] bg-sky-50 text-[#0A66C2] borderless-shadow px-3 py-1.5 rounded-full hover:bg-sky-100 transition-all hover:scale-105 active:scale-95"
                 >
                   {s}
                 </button>
@@ -272,7 +272,7 @@ export default function FloatingAssistant() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="Type your question..."
-                className="w-full px-4 py-2.5 bg-gray-100 border-none rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2] transition-all placeholder:text-gray-400"
+                className="w-full px-4 py-2.5 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2] transition-all placeholder:text-gray-400"
               />
             </div>
             <button

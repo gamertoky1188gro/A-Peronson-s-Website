@@ -212,14 +212,14 @@ export default function Login() {
               type="text"
               required
               placeholder="Enter your email or Agent ID"
-              className="w-full px-4 py-3 border rounded-lg"
+              className="w-full px-4 py-3 borderless-shadow rounded-lg"
             />
             <p className="mt-1 text-xs text-slate-500">Agents: Use your assigned Agent ID to login</p>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Password</label>
             {/* Password is required; actual auth validation happens server-side. */}
-            <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required className="w-full px-4 py-3 border rounded-lg" />
+            <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required className="w-full px-4 py-3 borderless-shadow rounded-lg" />
           </div>
 
           <div className="space-y-2">
@@ -255,7 +255,7 @@ export default function Login() {
             type="button"
             onClick={handlePasskeyLogin}
             disabled={passkeyLoading}
-            className="w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-700 disabled:opacity-70"
+            className="w-full px-4 py-3 rounded-lg borderless-shadow text-slate-700 disabled:opacity-70"
           >
             {passkeyLoading ? 'Opening passkey...' : 'Sign in with passkey'}
           </button>
@@ -263,7 +263,7 @@ export default function Login() {
             type="button"
             onClick={handlePasskeyEnroll}
             disabled={enrollLoading}
-            className="w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-700 disabled:opacity-70"
+            className="w-full px-4 py-3 rounded-lg borderless-shadow text-slate-700 disabled:opacity-70"
           >
             {enrollLoading ? 'Setting up passkey...' : 'Set up passkey (first time)'}
           </button>

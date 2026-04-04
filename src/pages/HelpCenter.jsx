@@ -185,7 +185,7 @@ const HELP_SECTIONS = [
   },
 ]
 
-function MotionItem({ index, className = '', children }) {
+function MotionItem({ index, className='', children }) {
   const reduceMotion = useReducedMotion()
   if (reduceMotion) return <div className={className}>{children}</div>
   return (
@@ -200,7 +200,7 @@ function MotionItem({ index, className = '', children }) {
   )
 }
 
-function Skeleton({ className = '' }) {
+function Skeleton({ className='' }) {
   return <div className={['skeleton', className].join(' ')} />
 }
 
@@ -223,11 +223,11 @@ function cardClassName({ glass = false } = {}) {
   return [
     'spotlight-card rounded-xl p-6',
     glass ? 'bg-white/70 backdrop-blur-md' : 'bg-[#ffffff]',
-    'border border-slate-200 shadow-sm',
+    'borderless-shadow',
     'transition duration-300 ease-out will-change-transform',
     'hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98]',
     'dark:bg-slate-900/40 dark:backdrop-blur-sm',
-    'dark:border-transparent dark:ring-1 dark:ring-slate-800/60 dark:shadow-none',
+    'dark:ring-1 dark:ring-slate-800/60 dark:shadow-none',
     'dark:hover:translate-y-0 dark:hover:shadow-none dark:hover:ring-blue-500/35',
   ].join(' ')
 }
@@ -408,7 +408,7 @@ export default function HelpCenter() {
               <MotionItem key={section.id} index={hubTiles.length + idx}>
                 <section id={section.id} className="scroll-mt-6">
                   <SpotlightCard className={cardClassName()}>
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800">
+                    <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
                       <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">{section.title}</h2>
                       {section.id === 'verification' ? <VerifiedBadge /> : null}
                     </div>
@@ -556,7 +556,7 @@ export default function HelpCenter() {
                     ) : null}
 
                     {section.footer ? (
-                      <p className="mt-5 border-t border-slate-200 pt-3 text-xs italic text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                      <p className="mt-5 borderless-divider-t pt-3 text-xs italic text-slate-500 dark:text-slate-400">
                         {section.footer}
                       </p>
                     ) : null}
@@ -568,7 +568,7 @@ export default function HelpCenter() {
             <MotionItem index={hubTiles.length + HELP_SECTIONS.length}>
               <section id="faq" className="scroll-mt-6">
                 <SpotlightCard className={cardClassName()}>
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800">
+                  <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
                     <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
                       10. Frequently Asked Questions (FAQ)
                     </h2>
@@ -612,7 +612,7 @@ export default function HelpCenter() {
                                 <span className="min-w-0 truncate">Q: {f.q}</span>
                                 <ChevronDown className="h-4 w-4 shrink-0 text-slate-500 transition-transform group-open:rotate-180 dark:text-slate-400" />
                               </summary>
-                              <p className="mt-3 border-l-2 border-blue-600/50 pl-4 text-sm text-slate-500 dark:border-blue-400/50 dark:text-slate-400">
+                              <p className="mt-3 pl-4 text-sm text-slate-500 dark:text-slate-400 borderless-shadow">
                                 A: {f.a}
                               </p>
                             </details>
@@ -629,7 +629,7 @@ export default function HelpCenter() {
               <MotionItem index={hubTiles.length + HELP_SECTIONS.length + 1}>
                 <section className="scroll-mt-6">
                   <SpotlightCard className={cardClassName({ glass: true })}>
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800">
+                    <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
                       <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
                         Admin: Manage Knowledge Base FAQ
                       </h2>

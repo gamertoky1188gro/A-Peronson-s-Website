@@ -80,6 +80,7 @@ export default function BuyerProfile() {
   const brandProfile = user?.profile || {}
   const hasBrandKit = Boolean(brandProfile.brand_name || brandProfile.brand_logo_url || brandProfile.brand_tagline || brandProfile.brand_website)
   const hasAccountManager = Boolean(brandProfile.account_manager_name || brandProfile.account_manager_email || brandProfile.account_manager_phone)
+  const isCertified = String(certification?.status || '').toLowerCase() === 'certified'
 
   const loadProfile = useCallback(async () => {
     if (!id) return
@@ -230,8 +231,13 @@ export default function BuyerProfile() {
                       Verified
                     </span>
                   ) : null}
+                  {isCertified ? (
+                    <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200">
+                      Certified
+                    </span>
+                  ) : null}
                   {isPremium ? (
-                    <span className="inline-flex items-center rounded-full bg-blue-500/15 px-2 py-0.5 text-[10px] font-semibold text-blue-700 ring-1 ring-blue-500/20 dark:text-blue-200">
+                    <span title="Boosted visibility enabled for Premium" className="inline-flex items-center rounded-full bg-blue-500/15 px-2 py-0.5 text-[10px] font-semibold text-blue-700 ring-1 ring-blue-500/20 dark:text-blue-200">
                       Premium Reach
                     </span>
                   ) : null}
@@ -312,13 +318,13 @@ export default function BuyerProfile() {
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
             className="rounded-2xl bg-[#ffffff] shadow-sm ring-1 ring-slate-200/60 overflow-hidden dark:bg-slate-900/50 dark:ring-slate-800"
           >
-            <div className="relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 border-b border-slate-200/60 dark:border-transparent dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
+            <div className="relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 borderless-divider-b dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
               {['overview', 'requests', 'reviews'].map((tab) => (
                 <button
                   key={tab}
                   type="button"
                   onClick={() => setActiveTab(tab)}
-                  className={`relative rounded-full px-3 py-2 text-xs font-semibold transition ring-1 active:scale-95 ${
+                  className={`relative rounded-full px-3 py-2 text-xs font-semibold transition ring-1 active:scale-95${
                     activeTab === tab
                       ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
                       : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
@@ -368,7 +374,7 @@ export default function BuyerProfile() {
                     </div>
                   ) : null}
 
-                  {hasAccountManager ? (
+                  {isPremium && hasAccountManager ? (
                     <div className="rounded-xl bg-slate-50/70 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
                       <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Dedicated Account Manager</p>
                       <div className="mt-2 text-sm text-slate-700 dark:text-slate-300">
@@ -427,7 +433,7 @@ export default function BuyerProfile() {
                   {viewerPerms.is_self || viewerPerms.is_admin ? (
                     <>
                       {requests.map((r) => (
-                        <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4 dark:bg-slate-900/50 dark:border-slate-800">
+                        <div key={r.id} className="rounded-2xl borderless-shadow bg-white p-4 dark:bg-slate-900/50">
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1">
                               <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{r.category || 'Request'}</p>
@@ -493,7 +499,7 @@ export default function BuyerProfile() {
                             <div className="flex flex-col gap-2">
                               <button
                                 type="button"
-                                className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50"
+                                className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50"
                                 onClick={async () => {
                                   const score = window.prompt('Update rating (1-5)', String(r.score || '5'))
                                   if (!score) return
@@ -510,7 +516,7 @@ export default function BuyerProfile() {
                               </button>
                               <button
                                 type="button"
-                                className="rounded-full border border-rose-200 px-3 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-50"
+                                className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-50"
                                 onClick={async () => {
                                   if (!window.confirm('Delete this review?')) return
                                   try {

@@ -427,7 +427,7 @@ export default function ProductManagement() {
   if (!canManage) {
     return (
       <div className="min-h-screen bg-slate-50 p-6">
-        <div className="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-200 p-6">
+        <div className="max-w-3xl mx-auto bg-white rounded-2xl borderless-shadow p-6">
           <p className="text-lg font-bold text-slate-900">Product Management</p>
           <p className="mt-2 text-sm text-slate-600">Your account does not have permission to manage products.</p>
         </div>
@@ -438,7 +438,7 @@ export default function ProductManagement() {
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 flex items-start justify-between gap-3">
+        <div className="bg-white rounded-2xl borderless-shadow p-4 flex items-start justify-between gap-3">
           <div>
             <p className="text-xl font-extrabold text-slate-900">Product Management</p>
             <p className="text-[11px] text-slate-500">Buying houses and factories can post products. Drafts stay private; published items go live after media review.</p>
@@ -452,22 +452,22 @@ export default function ProductManagement() {
           </button>
         </div>
 
-        {notice ? <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-sm text-emerald-800">{notice}</div> : null}
-        {error ? <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-sm text-rose-800">{error}</div> : null}
+        {notice ? <div className="bg-emerald-50 borderless-shadow rounded-2xl p-4 text-sm text-emerald-800">{notice}</div> : null}
+        {error ? <div className="bg-rose-50 borderless-shadow rounded-2xl p-4 text-sm text-rose-800">{error}</div> : null}
 
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600">
+        <div className="rounded-2xl borderless-shadow bg-slate-50 p-4 text-xs text-slate-600">
           <p className="text-sm font-semibold text-slate-800">Media & publishing help</p>
           <p className="mt-2">Upload product images/videos inside GarTexHub. Only internal /uploads/... URLs are allowed. Pending or rejected media stays hidden from buyers.</p>
           <p className="mt-1">Use Draft to keep items private while preparing your gallery; switch to Published when ready.</p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-4">
+        <div className="bg-white rounded-2xl borderless-shadow p-4">
           {loading ? <div className="text-sm text-slate-600">Loading...</div> : null}
           {!loading && !items.length ? <div className="text-sm text-slate-600">No products yet.</div> : null}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {items.map((p) => (
-              <div key={p.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+              <div key={p.id} className="rounded-2xl borderless-shadow bg-white p-4">
                 {p.cover_image_public_url ? (
                   <img src={p.cover_image_public_url} alt={p.title || 'Product'} className="h-32 w-full rounded-xl object-cover mb-3" />
                 ) : null}
@@ -479,7 +479,7 @@ export default function ProductManagement() {
                 <p className="mt-1 text-[11px] text-slate-500">Video status: {String(p.video_review_status || 'approved').replaceAll('_', ' ')}</p>
                 <p className="mt-1 text-[11px] text-slate-500">Content review: {String(p.content_review_status || 'approved').replaceAll('_', ' ')}</p>
                 {p.content_review_status === 'rejected' ? (
-                  <div className="mt-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-[11px] text-rose-700">
+                  <div className="mt-2 rounded-xl borderless-shadow bg-rose-50 p-3 text-[11px] text-rose-700">
                     <p className="font-semibold">Rejected</p>
                     <p className="mt-1">{p.content_review_reason || 'This product needs changes to meet content standards.'}</p>
                     <button
@@ -492,7 +492,7 @@ export default function ProductManagement() {
                   </div>
                 ) : null}
                 {p.content_review_status === 'pending_review' ? (
-                  <div className="mt-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-[11px] text-amber-700">
+                  <div className="mt-2 rounded-xl borderless-shadow bg-amber-50 p-3 text-[11px] text-amber-700">
                     Pending review. We will check this item shortly.
                   </div>
                 ) : null}
@@ -501,8 +501,8 @@ export default function ProductManagement() {
                 ) : null}
 
                 <div className="mt-3 flex gap-2">
-                  <button onClick={() => openEdit(p)} className="flex-1 rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">Edit</button>
-                  <button onClick={() => remove(p.id)} className="flex-1 rounded-full border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50">Delete</button>
+                  <button onClick={() => openEdit(p)} className="flex-1 rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">Edit</button>
+                  <button onClick={() => remove(p.id)} className="flex-1 rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50">Delete</button>
                 </div>
               </div>
             ))}
@@ -513,25 +513,25 @@ export default function ProductManagement() {
       {modalOpen ? (
         <div className="fixed inset-0 z-50">
           <button type="button" className="absolute inset-0 bg-black/40" onClick={() => setModalOpen(false)} aria-label="Close modal" />
-          <div className="absolute left-1/2 top-1/2 w-[92vw] max-w-2xl -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white border border-slate-200 shadow-2xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-200">
+          <div className="absolute left-1/2 top-1/2 w-[92vw] max-w-2xl -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white borderless-shadow shadow-2xl overflow-hidden">
+            <div className="px-5 py-4 borderless-divider-b">
               <p className="text-sm font-bold text-slate-900">{editing ? 'Edit product' : 'Create product'}</p>
               <p className="text-[11px] text-slate-500">No music uploads. Videos and images must be uploaded inside GarTexHub (internal /uploads/... only).</p>
             </div>
             <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-3">
-              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Title" value={form.title} onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))} />
-              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Industry (optional)" value={form.industry} onChange={(e) => setForm((prev) => ({ ...prev, industry: e.target.value }))} />
-              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Category (e.g. Shirts)" value={form.category} onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))} />
-              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Material (e.g. Cotton)" value={form.material} onChange={(e) => setForm((prev) => ({ ...prev, material: e.target.value }))} />
-              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="MOQ" value={form.moq} onChange={(e) => setForm((prev) => ({ ...prev, moq: e.target.value }))} />
-              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Price range (optional)" value={form.price_range} onChange={(e) => setForm((prev) => ({ ...prev, price_range: e.target.value }))} />
-              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Lead time (days)" value={form.lead_time_days} onChange={(e) => setForm((prev) => ({ ...prev, lead_time_days: e.target.value }))} />
-              <select className="rounded-xl border border-slate-200 px-3 py-2 text-sm" value={form.status} onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))}>
+              <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Title" value={form.title} onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))} />
+              <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Industry (optional)" value={form.industry} onChange={(e) => setForm((prev) => ({ ...prev, industry: e.target.value }))} />
+              <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Category (e.g. Shirts)" value={form.category} onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))} />
+              <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Material (e.g. Cotton)" value={form.material} onChange={(e) => setForm((prev) => ({ ...prev, material: e.target.value }))} />
+              <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="MOQ" value={form.moq} onChange={(e) => setForm((prev) => ({ ...prev, moq: e.target.value }))} />
+              <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Price range (optional)" value={form.price_range} onChange={(e) => setForm((prev) => ({ ...prev, price_range: e.target.value }))} />
+              <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Lead time (days)" value={form.lead_time_days} onChange={(e) => setForm((prev) => ({ ...prev, lead_time_days: e.target.value }))} />
+              <select className="rounded-xl borderless-shadow px-3 py-2 text-sm" value={form.status} onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))}>
                 <option value="published">Published (visible to buyers)</option>
                 <option value="draft">Draft (private)</option>
               </select>
-              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Video URL (internal /uploads/...)" value={form.video_url} onChange={(e) => setForm((prev) => ({ ...prev, video_url: e.target.value }))} />
-              <textarea className="md:col-span-2 rounded-xl border border-slate-200 px-3 py-2 text-sm min-h-[120px]" placeholder="Description" value={form.description} onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))} />
+              <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Video URL (internal /uploads/...)" value={form.video_url} onChange={(e) => setForm((prev) => ({ ...prev, video_url: e.target.value }))} />
+              <textarea className="md:col-span-2 rounded-xl borderless-shadow px-3 py-2 text-sm min-h-[120px]" placeholder="Description" value={form.description} onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))} />
               <div className="md:col-span-2">
                 <button
                   type="button"
@@ -543,16 +543,16 @@ export default function ProductManagement() {
               </div>
               {advancedOpen ? (
                 <>
-                  <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Fabric GSM (optional)" value={form.fabric_gsm} onChange={(e) => setForm((prev) => ({ ...prev, fabric_gsm: e.target.value }))} />
-                  <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Size range (optional)" value={form.size_range} onChange={(e) => setForm((prev) => ({ ...prev, size_range: e.target.value }))} />
-                  <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Color / Pantone (optional)" value={form.color_pantone} onChange={(e) => setForm((prev) => ({ ...prev, color_pantone: e.target.value }))} />
-                  <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Customization capabilities (optional)" value={form.customization_capabilities} onChange={(e) => setForm((prev) => ({ ...prev, customization_capabilities: e.target.value }))} />
-                  <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Sample available (yes/no)" value={form.sample_available} onChange={(e) => setForm((prev) => ({ ...prev, sample_available: e.target.value }))} />
-                  <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Sample lead time (days)" value={form.sample_lead_time_days} onChange={(e) => setForm((prev) => ({ ...prev, sample_lead_time_days: e.target.value }))} />
+                  <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Fabric GSM (optional)" value={form.fabric_gsm} onChange={(e) => setForm((prev) => ({ ...prev, fabric_gsm: e.target.value }))} />
+                  <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Size range (optional)" value={form.size_range} onChange={(e) => setForm((prev) => ({ ...prev, size_range: e.target.value }))} />
+                  <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Color / Pantone (optional)" value={form.color_pantone} onChange={(e) => setForm((prev) => ({ ...prev, color_pantone: e.target.value }))} />
+                  <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Customization capabilities (optional)" value={form.customization_capabilities} onChange={(e) => setForm((prev) => ({ ...prev, customization_capabilities: e.target.value }))} />
+                  <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Sample available (yes/no)" value={form.sample_available} onChange={(e) => setForm((prev) => ({ ...prev, sample_available: e.target.value }))} />
+                  <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Sample lead time (days)" value={form.sample_lead_time_days} onChange={(e) => setForm((prev) => ({ ...prev, sample_lead_time_days: e.target.value }))} />
                 </>
               ) : null}
 
-              <div className="md:col-span-2 rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+              <div className="md:col-span-2 rounded-xl borderless-shadow bg-slate-50 p-4 space-y-3">
                 <div>
                   <p className="text-xs font-semibold text-slate-700">Product video</p>
                   <p className="text-[11px] text-slate-500">Upload MP4/WEBM inside GarTexHub or paste an internal /uploads/... URL. External links are blocked.</p>
@@ -577,7 +577,7 @@ export default function ProductManagement() {
                         value={form.video_url}
                         onChange={(e) => setForm((prev) => ({ ...prev, video_url: e.target.value }))}
                         placeholder="/uploads/products/videos/..."
-                        className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                        className="flex-1 rounded-xl borderless-shadow px-3 py-2 text-xs"
                         disabled={videoBusy}
                       />
                       <button
@@ -592,7 +592,7 @@ export default function ProductManagement() {
                         type="button"
                         onClick={() => syncProductVideo('')}
                         disabled={videoBusy}
-                        className="rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 disabled:opacity-60"
+                        className="rounded-full borderless-shadow px-4 py-2 text-xs font-semibold text-slate-600 disabled:opacity-60"
                       >
                         Remove video
                       </button>
@@ -605,7 +605,7 @@ export default function ProductManagement() {
                 )}
               </div>
 
-              <div className="md:col-span-2 rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+              <div className="md:col-span-2 rounded-xl borderless-shadow bg-slate-50 p-4 space-y-3">
                 <div>
                   <p className="text-xs font-semibold text-slate-700">Product media</p>
                   <p className="text-[11px] text-slate-500">Upload images or register internal /uploads/... URLs. Pending/rejected media stays hidden from buyers.</p>
@@ -632,7 +632,7 @@ export default function ProductManagement() {
                         value={mediaUrl}
                         onChange={(e) => setMediaUrl(e.target.value)}
                         placeholder="/uploads/products/images/..."
-                        className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                        className="flex-1 rounded-xl borderless-shadow px-3 py-2 text-xs"
                         disabled={mediaBusy}
                       />
                       <button
@@ -649,7 +649,7 @@ export default function ProductManagement() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {mediaGallery.map((entry) => (
-                        <div key={entry.source_path || entry.url} className="rounded-xl border border-slate-200 bg-white p-2 space-y-2">
+                        <div key={entry.source_path || entry.url} className="rounded-xl borderless-shadow bg-white p-2 space-y-2">
                           {entry.url ? (
                             <img src={entry.url} alt="Product media" className="h-28 w-full rounded-lg object-cover" />
                           ) : (
@@ -663,7 +663,7 @@ export default function ProductManagement() {
                             <button
                               type="button"
                               onClick={() => handleSetCover(entry)}
-                              className={`rounded-full px-3 py-1 text-[10px] font-semibold ${
+                              className={`rounded-full px-3 py-1 text-[10px] font-semibold${
                                 form.cover_image_url === entry.source_path ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'
                               }`}
                             >
@@ -685,7 +685,7 @@ export default function ProductManagement() {
                 )}
               </div>
             </div>
-            <div className="px-5 py-4 border-t border-slate-200 bg-white flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="px-5 py-4 borderless-divider-t bg-white flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <label className="flex items-center gap-2 text-[11px] text-slate-600">
                 <input
                   type="checkbox"
@@ -696,7 +696,7 @@ export default function ProductManagement() {
                 I confirm this product media contains no music or prohibited instruments.
               </label>
               <div className="flex justify-end gap-2">
-                <button onClick={() => setModalOpen(false)} className="rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">Cancel</button>
+                <button onClick={() => setModalOpen(false)} className="rounded-full borderless-shadow px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">Cancel</button>
                 <button disabled={saving || !complianceChecked} onClick={save} className="rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182] disabled:opacity-60">
                   {saving ? 'Saving...' : 'Save'}
                 </button>

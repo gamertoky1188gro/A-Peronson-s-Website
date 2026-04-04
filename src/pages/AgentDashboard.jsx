@@ -77,12 +77,12 @@ export default function AgentDashboard() {
           {error ? <div className="bg-red-50 text-red-600 rounded-xl p-4">{error}</div> : null}
 
           <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-4">
-            <div className="flex items-center justify-between mb-3 border-b pb-3">
+            <div className="flex items-center justify-between mb-3 borderless-divider-b pb-3">
               <h3 className="font-semibold">Agent Activity</h3>
               <div className="flex gap-2">
-                <button onClick={() => setActiveTab('requests')} className={`px-3 py-1 rounded ${activeTab === 'requests' ? 'bg-[#0A66C2] text-white' : 'border'}`}>Requests</button>
-                <button onClick={() => setActiveTab('chats')} className={`px-3 py-1 rounded ${activeTab === 'chats' ? 'bg-[#0A66C2] text-white' : 'border'}`}>Chats</button>
-                <button onClick={() => setActiveTab('leads')} className={`px-3 py-1 rounded ${activeTab === 'leads' ? 'bg-[#0A66C2] text-white' : 'border'}`}>Leads</button>
+                <button onClick={() => setActiveTab('requests')} className={`px-3 py-1 rounded${activeTab === 'requests' ? 'bg-[#0A66C2] text-white' : 'borderless-shadow bg-white/70 text-slate-700'}`}>Requests</button>
+                <button onClick={() => setActiveTab('chats')} className={`px-3 py-1 rounded${activeTab === 'chats' ? 'bg-[#0A66C2] text-white' : 'borderless-shadow bg-white/70 text-slate-700'}`}>Chats</button>
+                <button onClick={() => setActiveTab('leads')} className={`px-3 py-1 rounded${activeTab === 'leads' ? 'bg-[#0A66C2] text-white' : 'borderless-shadow bg-white/70 text-slate-700'}`}>Leads</button>
               </div>
             </div>
 
@@ -104,7 +104,7 @@ export default function AgentDashboard() {
           </div>
 
           <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-4">
-            <div className="flex items-center justify-between mb-3 border-b pb-3">
+            <div className="flex items-center justify-between mb-3 borderless-divider-b pb-3">
               <h3 className="font-semibold">AI Suggested Reply</h3>
               <button
                 type="button"
@@ -120,14 +120,14 @@ export default function AgentDashboard() {
             <textarea
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
-              className="w-full border rounded px-3 py-2 text-sm mb-3"
+              className="w-full borderless-shadow rounded px-3 py-2 text-sm mb-3"
               rows={3}
               placeholder="Example: Reply to a buyer asking for MOQ and lead time."
             />
 
             {aiError ? <div className="text-xs text-rose-600 mb-2">{aiError}</div> : null}
             {aiSuggestion ? (
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm">
+              <div className="rounded-lg borderless-shadow bg-slate-50 p-3 text-sm">
                 <p className="whitespace-pre-wrap">{aiSuggestion}</p>
                 <button
                   type="button"

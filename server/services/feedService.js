@@ -3,6 +3,7 @@ import { listProducts } from './productService.js'
 import { readJson } from '../utils/jsonStore.js'
 import { trackEvent } from './analyticsService.js'
 import { logInfo } from '../utils/logger.js'
+import { getOrderCertificationMap } from './orderCertificationService.js'
 
 const CATEGORIES = ['Shirts', 'Knitwear', 'Denim', 'Women', 'Kids']
 
@@ -326,6 +327,7 @@ export async function getCombinedFeed({ unique = false, type = 'all', category =
   const requests = type === 'products' ? [] : await listRequirements({ status: 'open' })
   const products = type === 'requests' ? [] : await listProducts({ category })
   const users = await readJson('users.json')
+  const orderCertMap = await getOrderCertificationMap()
   const socialInteractions = await readJson('social_interactions.json')
   const boosts = await readJson('boosts.json')
   const ratingsStore = await readJson('ratings.json')
@@ -363,6 +365,7 @@ export async function getCombinedFeed({ unique = false, type = 'all', category =
   const ranked = combined.map((item) => {
     const authorId = getAuthorId(item)
     const author = users.find((u) => u.id === authorId) || null
+    const certification = authorId ? orderCertMap.get(String(authorId)) : null
     const profileCompleteness = computeProfileCompleteness(author)
     const authorItems = itemsByAuthor[authorId] || []
     const activityQuality = computeActivityQuality(authorItems.map((authorItem) => authorItem.id), socialInteractions)
@@ -400,6 +403,7 @@ export async function getCombinedFeed({ unique = false, type = 'all', category =
 
     return {
       ...item,
+      order_certification_status: certification?.status || '',
       discussion_active: discussionActive && viewerVerified,
       _ranking: {
         ranking_score: rankingScore,

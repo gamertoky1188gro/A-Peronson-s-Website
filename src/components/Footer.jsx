@@ -7,7 +7,7 @@ export default function Footer() {
 
   if (!user) {
     return (
-      <footer className="border-t border-slate-200 bg-white py-8 dark:border-slate-800 dark:bg-slate-950">
+      <footer className="borderless-divider-t bg-white py-8 dark:bg-slate-950">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-center gap-4 text-center">
             <div className="flex items-center gap-2">
@@ -28,7 +28,7 @@ export default function Footer() {
   }
 
   return (
-    <footer className="border-t border-slate-200 bg-white pt-12 pb-8 dark:border-slate-800 dark:bg-slate-950">
+    <footer className="borderless-divider-t bg-white pt-12 pb-8 dark:bg-slate-950">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Company Identity */}
@@ -85,7 +85,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-slate-200 pt-8 dark:border-slate-800">
+        <div className="mt-12 borderless-divider-t pt-8">
           <p className="text-center text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
             © 2026 GarTexHub. All Rights Reserved. GarTexHub is an independent B2B networking platform.<br />
             The platform does not directly process financial transactions. All recorded communications are subject to consent and compliance regulations.

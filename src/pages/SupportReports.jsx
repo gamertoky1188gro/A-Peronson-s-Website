@@ -7,7 +7,7 @@
     - Store submissions in the reports queue for admin review.
 */
 import React, { useEffect, useMemo, useState } from 'react'
-import { apiRequest, API_BASE, getCurrentUser, getToken } from '../lib/auth'
+import { apiRequest, API_BASE, getCurrentUser, getToken, hasEntitlement } from '../lib/auth'
 
 const CATEGORY_OPTIONS = [
   'Bug Report',
@@ -25,7 +25,8 @@ const PRIORITY_OPTIONS = ['Low', 'Medium', 'High', 'Urgent']
 export default function SupportReports() {
   const token = useMemo(() => getToken(), [])
   const sessionUser = getCurrentUser()
-  const isPremium = String(sessionUser?.subscription_status || '').toLowerCase() === 'premium'
+  const canPrioritySupport = hasEntitlement(sessionUser, 'dedicated_support')
+  const canDedicatedManager = hasEntitlement(sessionUser, 'dedicated_account_manager')
   const accountManager = sessionUser?.profile || {}
   const hasAccountManager = Boolean(accountManager.account_manager_name || accountManager.account_manager_email || accountManager.account_manager_phone)
   const [subject, setSubject] = useState('')
@@ -88,7 +89,7 @@ export default function SupportReports() {
           category,
           description,
           page_url: pageUrl,
-          ...(isPremium ? { priority } : {}),
+          ...(canPrioritySupport ? { priority } : {}),
           contact_email: contactEmail,
         },
       })
@@ -153,7 +154,7 @@ export default function SupportReports() {
           <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
             Report bugs, request features, or share any issue. We collect everything in one place so it can be tracked and resolved.
           </p>
-          {hasAccountManager ? (
+          {canDedicatedManager && hasAccountManager ? (
             <div className="mt-3 rounded-xl bg-slate-50 p-3 text-xs text-slate-600 ring-1 ring-slate-200/60">
               <div className="font-semibold text-slate-800">Dedicated account manager</div>
               <div>{accountManager.account_manager_name || 'Support manager'}</div>
@@ -167,7 +168,7 @@ export default function SupportReports() {
           <div>
             <label className="block text-sm font-medium">Subject</label>
             <input
-              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg borderless-shadow px-3 py-2 text-sm"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="Short summary of the issue"
@@ -178,7 +179,7 @@ export default function SupportReports() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium">Category</label>
-              <select className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" value={category} onChange={(e) => setCategory(e.target.value)}>
+              <select className="mt-1 w-full rounded-lg borderless-shadow px-3 py-2 text-sm" value={category} onChange={(e) => setCategory(e.target.value)}>
                 {CATEGORY_OPTIONS.map((option) => (
                   <option key={option} value={option}>{option}</option>
                 ))}
@@ -187,25 +188,27 @@ export default function SupportReports() {
             <div>
               <label className="block text-sm font-medium">Priority</label>
               <select
-                className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg borderless-shadow px-3 py-2 text-sm"
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
-                disabled={!isPremium}
+                disabled={!canPrioritySupport}
               >
                 {PRIORITY_OPTIONS.map((option) => (
                   <option key={option} value={option}>{option}</option>
                 ))}
               </select>
-              {!isPremium ? (
+              {canPrioritySupport ? (
+                <p className="mt-1 text-[11px] text-emerald-600">Premium Priority</p>
+              ) : (
                 <p className="mt-1 text-[11px] text-amber-600">Premium required for priority support.</p>
-              ) : null}
+              )}
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium">Description</label>
             <textarea
-              className="mt-1 w-full min-h-[140px] rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              className="mt-1 w-full min-h-[140px] rounded-lg borderless-shadow px-3 py-2 text-sm"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Write the full details here"
@@ -217,7 +220,7 @@ export default function SupportReports() {
             <div>
               <label className="block text-sm font-medium">Page URL (optional)</label>
               <input
-                className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg borderless-shadow px-3 py-2 text-sm"
                 value={pageUrl}
                 onChange={(e) => setPageUrl(e.target.value)}
                 placeholder="https://..."
@@ -226,7 +229,7 @@ export default function SupportReports() {
             <div>
               <label className="block text-sm font-medium">Contact Email (optional)</label>
               <input
-                className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg borderless-shadow px-3 py-2 text-sm"
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
                 placeholder="you@example.com"
@@ -238,7 +241,7 @@ export default function SupportReports() {
             <label className="block text-sm font-medium">Screenshot / File (optional)</label>
             <input
               type="file"
-              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg borderless-shadow px-3 py-2 text-sm"
               onChange={(e) => setAttachment(e.target.files?.[0] || null)}
             />
           </div>
@@ -272,8 +275,8 @@ export default function SupportReports() {
             <div className="text-sm text-slate-500">No tickets yet.</div>
           ) : null}
           <div className="space-y-4">
-            {tickets.map((ticket) => (
-              <div key={ticket.id} className="rounded-xl border border-slate-200 p-4">
+          {tickets.map((ticket) => (
+              <div key={ticket.id} className="rounded-xl borderless-shadow p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <div className="text-sm font-semibold">{ticket.subject || 'Support ticket'}</div>
@@ -284,6 +287,11 @@ export default function SupportReports() {
                     Resolve by {ticket.sla_resolution_due_at ? new Date(ticket.sla_resolution_due_at).toLocaleString() : '--'}
                   </div>
                 </div>
+                {canPrioritySupport && ticket.priority && String(ticket.priority).toLowerCase() !== 'standard' ? (
+                  <div className="mt-2 inline-flex items-center rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700 ring-1 ring-amber-200/70">
+                    Priority queue
+                  </div>
+                ) : null}
 
                 <div className="mt-3 flex items-center gap-2">
                   <button
@@ -309,7 +317,7 @@ export default function SupportReports() {
 
                 <div className="mt-3 flex items-center gap-2">
                   <input
-                    className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-xs"
+                    className="flex-1 rounded-lg borderless-shadow px-3 py-2 text-xs"
                     placeholder="Send a follow-up message"
                     value={messageDrafts[ticket.id] || ''}
                     onChange={(e) => setMessageDrafts((prev) => ({ ...prev, [ticket.id]: e.target.value }))}

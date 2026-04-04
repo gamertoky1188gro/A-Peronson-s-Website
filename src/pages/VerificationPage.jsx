@@ -67,8 +67,8 @@ function normalizeBuyerRegionFromCountry(country) {
 
 function statusChipClass(status) {
   // Visual chip class for the per-document status.
-  if (status === 'submitted') return 'bg-emerald-50 text-emerald-800 border-emerald-200'
-  return 'bg-rose-50 text-rose-800 border-rose-200'
+  if (status === 'submitted') return 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200'
+  return 'bg-rose-50 text-rose-800 ring-1 ring-rose-200'
 }
 
 export default function VerificationPage() {
@@ -262,7 +262,7 @@ export default function VerificationPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 space-y-6">
-      <header className="rounded-2xl border border-slate-200 bg-white p-5">
+      <header className="rounded-2xl borderless-shadow bg-white p-5">
         <h1 className="text-2xl font-bold">Verification Center</h1>
         <p className="text-sm text-slate-600 mt-1">Verification is subscription-based and renews monthly.</p>
         <p className="text-xs text-slate-500 mt-1">First month: $1.99 â€¢ Renewals: $6.99/month</p>
@@ -271,26 +271,26 @@ export default function VerificationPage() {
       </header>
 
       <section className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 md:col-span-2 space-y-4">
+        <div className="rounded-2xl borderless-shadow bg-white p-5 md:col-span-2 space-y-4">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-sm font-bold text-slate-900">Your requirements</p>
               <p className="text-[11px] text-slate-500">Role-based checklist. Uploading more proof increases credibility.</p>
             </div>
-            <div className={`rounded-full border px-3 py-1 text-xs font-bold ${verified ? 'bg-[#0A66C2]/10 text-[#0A66C2] border-[#0A66C2]/20' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>
+            <div className={`rounded-full borderless-shadow px-3 py-1 text-xs font-bold${verified ? 'bg-[#0A66C2]/10 text-[#0A66C2] ring-1 ring-[#0A66C2]/30' : 'bg-slate-50 text-slate-700 ring-1 ring-slate-200'}`}>
               {verified ? 'Verified' : 'Not verified'}
             </div>
           </div>
 
           {role === 'buyer' ? (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="rounded-xl borderless-shadow bg-slate-50 p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <label className="text-sm font-semibold text-slate-700" htmlFor="buyer-country">Buyer Country</label>
                 <select
                   id="buyer-country"
                   value={buyerCountry}
                   onChange={(e) => setBuyerCountry(e.target.value)}
-                  className="text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white"
+                  className="text-sm borderless-shadow rounded-xl px-3 py-2 bg-white"
                 >
                   <option value="">Select country</option>
                   {BUYER_COUNTRY_OPTIONS.map((country) => <option key={country} value={country}>{country}</option>)}
@@ -307,18 +307,18 @@ export default function VerificationPage() {
               const submitted = Boolean(documents?.[documentKey])
               const status = submitted ? 'submitted' : 'missing'
               return (
-                <div key={documentKey} className="rounded-2xl border border-slate-200 bg-white p-4 flex items-center justify-between gap-3">
+                <div key={documentKey} className="rounded-2xl borderless-shadow bg-white p-4 flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-slate-900 truncate">{LABELS[documentKey] || documentKey}</p>
                     <p className="text-[11px] text-slate-500 truncate">{submitted ? 'Submitted' : 'Missing'}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`rounded-full border px-3 py-1 text-xs font-bold ${statusChipClass(status)}`}>{status}</span>
+                    <span className={`rounded-full borderless-shadow px-3 py-1 text-xs font-bold${statusChipClass(status)}`}>{status}</span>
                     <button
                       type="button"
                       onClick={() => openPicker(documentKey)}
                       disabled={busyDoc === documentKey || (role === 'buyer' && !buyerCountry)}
-                      className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       {busyDoc === documentKey ? 'Uploading...' : 'Upload'}
                     </button>
@@ -328,7 +328,7 @@ export default function VerificationPage() {
             })}
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-2xl borderless-shadow bg-slate-50 p-4">
             <p className="text-sm font-bold text-slate-900">Optional licenses</p>
             <p className="mt-1 text-[11px] text-slate-500">Optional proofs can be added anytime. More proof = more trust.</p>
             <div className="mt-3 flex flex-col sm:flex-row gap-2">
@@ -336,7 +336,7 @@ export default function VerificationPage() {
                 value={optionalLicenseInput}
                 onChange={(e) => setOptionalLicenseInput(e.target.value)}
                 placeholder="e.g. OEKO-TEX, BSCI, WRAP..."
-                className="flex-1 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm"
+                className="flex-1 rounded-full borderless-shadow bg-white px-4 py-2 text-sm"
               />
               <button
                 type="button"
@@ -352,7 +352,7 @@ export default function VerificationPage() {
                   key={lic}
                   type="button"
                   onClick={() => removeOptionalLicense(lic)}
-                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-rose-50"
+                  className="rounded-full borderless-shadow bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-rose-50"
                   title="Remove"
                 >
                   {lic} ✕
@@ -366,20 +366,20 @@ export default function VerificationPage() {
           {error ? <div className="text-sm text-rose-700">{error}</div> : null}
         </div>
 
-        <aside className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3">
+        <aside className="rounded-2xl borderless-shadow bg-white p-5 space-y-3">
           <p className="text-sm font-bold text-slate-900">Credibility</p>
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-2xl borderless-shadow bg-slate-50 p-4">
             <p className="text-3xl font-extrabold text-slate-900">{credibilityScore}/100</p>
             <p className="mt-1 text-sm font-semibold text-slate-800">{credibilityBadge}</p>
             <p className="mt-2 text-xs text-slate-600">More licensing proof increases credibility and international trust.</p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-2xl borderless-shadow bg-slate-50 p-4">
             <p className="text-xs text-slate-500">Subscription</p>
             <p className="mt-1 text-sm font-semibold text-slate-900">{remainingDays > 0 ? 'Active' : 'Inactive'}</p>
             <p className="mt-1 text-[11px] text-slate-600">Verification approval requires an active verification subscription.</p>
             {remainingDays ? (
-              <p className={`mt-2 text-[11px] ${expiringSoon ? 'text-amber-700' : 'text-slate-600'}`}>
+              <p className={`mt-2 text-[11px]${expiringSoon ? 'text-amber-700' : 'text-slate-600'}`}>
                 Remaining: {remainingDays} day{remainingDays === 1 ? '' : 's'} {expiringSoon ? '(expiring soon)' : ''}
               </p>
             ) : null}
@@ -397,7 +397,7 @@ export default function VerificationPage() {
           <button
             type="button"
             onClick={loadStatus}
-            className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+            className="w-full rounded-full borderless-shadow bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
           >
             Refresh status
           </button>

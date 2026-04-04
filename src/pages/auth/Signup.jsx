@@ -120,15 +120,15 @@ export default function Signup() {
         <form className="mt-8 grid md:grid-cols-2 gap-4" onSubmit={handleSubmit}>
           <div>
             <label className="block text-sm font-medium mb-1 text-slate-700">Full Name</label>
-            <input className="w-full px-4 py-3 border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20" value={form.name} onChange={(e) => onChange('name', e.target.value)} required />
+            <input className="w-full px-4 py-3 borderless-shadow rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20" value={form.name} onChange={(e) => onChange('name', e.target.value)} required />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1 text-slate-700">Email</label>
-            <input type="email" className="w-full px-4 py-3 border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20" value={form.email} onChange={(e) => onChange('email', e.target.value)} required />
+            <input type="email" className="w-full px-4 py-3 borderless-shadow rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20" value={form.email} onChange={(e) => onChange('email', e.target.value)} required />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1 text-slate-700">Password</label>
-            <div className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
+            <div className="flex items-center gap-2 rounded-lg borderless-shadow px-3 py-2 focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
               <input
                 type={passwordVisible ? 'text' : 'password'}
                 className="w-full bg-transparent outline-none"
@@ -147,7 +147,7 @@ export default function Signup() {
           </div>
           <div>
             <label className="block text-sm font-medium mb-1 text-slate-700">Confirm Password</label>
-            <div className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
+            <div className="flex items-center gap-2 rounded-lg borderless-shadow px-3 py-2 focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
               <input
                 type={confirmVisible ? 'text' : 'password'}
                 className="w-full bg-transparent outline-none"
@@ -176,10 +176,10 @@ export default function Signup() {
                   key={option.value}
                   type="button"
                   onClick={() => onChange('primaryRole', option.value)}
-                  className={`rounded-lg border px-3 py-3 text-sm font-semibold transition ${
+                  className={`rounded-lg borderless-shadow px-3 py-3 text-sm font-semibold transition${
                     form.primaryRole === option.value
-                      ? 'border-[#0A66C2] bg-blue-50 text-[#0A66C2]'
-                      : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                      ? 'bg-blue-50 text-[#0A66C2] ring-1 ring-[#0A66C2]/40'
+                      : 'text-slate-600 hover:bg-slate-50'
                   }`}
                 >
                   {option.label}
@@ -191,7 +191,7 @@ export default function Signup() {
             <label className="block text-sm font-medium mb-1 text-slate-700">Country</label>
             <input
               list="country-options"
-              className="w-full px-4 py-3 border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20"
+              className="w-full px-4 py-3 borderless-shadow rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20"
               value={form.country}
               onChange={(e) => onChange('country', e.target.value)}
               required
@@ -204,7 +204,7 @@ export default function Signup() {
           </div>
           <div>
             <label className="block text-sm font-medium mb-1 text-slate-700">Organization Name</label>
-            <input className="w-full px-4 py-3 border rounded-lg border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20" value={form.organization} onChange={(e) => onChange('organization', e.target.value)} />
+            <input className="w-full px-4 py-3 borderless-shadow rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20" value={form.organization} onChange={(e) => onChange('organization', e.target.value)} />
           </div>
           {/* API error state (e.g. email already used). */}
           {error ? <p className="md:col-span-2 text-sm text-red-500">{error}</p> : null}
@@ -216,7 +216,7 @@ export default function Signup() {
             </button>
             <Link
               to="/login"
-              className="px-5 py-3 rounded-lg border border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 dark:border-slate-700 dark:text-slate-100 dark:bg-slate-900/60"
+              className="px-5 py-3 rounded-lg borderless-shadow text-slate-700 font-semibold hover:bg-slate-50 dark:text-slate-100 dark:bg-slate-900/60"
             >
               Already have an account? Login
             </Link>

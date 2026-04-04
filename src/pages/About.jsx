@@ -50,11 +50,11 @@ const fallbackAbout = {
   ],
 }
 
-function Skeleton({ className = '' }) {
+function Skeleton({ className='' }) {
   return <div className={['skeleton', className].join(' ')} />
 }
 
-function MotionItem({ index, className = '', children }) {
+function MotionItem({ index, className='', children }) {
   const reduceMotion = useReducedMotion()
   if (reduceMotion) return <div className={className}>{children}</div>
   return (
@@ -158,7 +158,7 @@ export default function About() {
                 'rounded-xl p-8',
                 'bg-white/60 backdrop-blur-[10px]',
                 'shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
-                'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+                'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
                 'transition duration-300 ease-out',
                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
                 'dark:hover:translate-y-0 dark:hover:shadow-none',
@@ -198,7 +198,7 @@ export default function About() {
               className={[
                 'rounded-xl p-7',
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
-                'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+                'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
                 'transition duration-300 ease-out',
                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
                 'dark:hover:translate-y-0 dark:hover:shadow-none',
@@ -254,7 +254,7 @@ export default function About() {
               className={[
                 'rounded-xl p-7',
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
-                'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+                'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
                 'transition duration-300 ease-out',
                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
                 'dark:hover:translate-y-0 dark:hover:shadow-none',
@@ -277,7 +277,7 @@ export default function About() {
               className={[
                 'rounded-xl p-7',
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
-                'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+                'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
                 'transition duration-300 ease-out',
                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
                 'dark:hover:translate-y-0 dark:hover:shadow-none',
@@ -296,7 +296,7 @@ export default function About() {
               className={[
                 'rounded-xl p-7',
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
-                'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+                'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
                 'transition duration-300 ease-out',
                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
                 'dark:hover:translate-y-0 dark:hover:shadow-none',
@@ -316,7 +316,7 @@ export default function About() {
                 'rounded-xl p-7',
                 'bg-white/60 backdrop-blur-[10px]',
                 'shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
-                'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+                'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
                 'transition duration-300 ease-out',
                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
                 'dark:hover:translate-y-0 dark:hover:shadow-none',
@@ -350,7 +350,7 @@ export default function About() {
               className={[
                 'rounded-xl p-7',
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
-                'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+                'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
                 'transition duration-300 ease-out',
                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
                 'dark:hover:translate-y-0 dark:hover:shadow-none',
@@ -382,7 +382,7 @@ export default function About() {
                 'needle-area rounded-xl p-7',
                 'bg-white/60 backdrop-blur-[10px]',
                 'shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
-                'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+                'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
                 'transition duration-300 ease-out',
                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
                 'dark:hover:translate-y-0 dark:hover:shadow-none',
@@ -450,7 +450,7 @@ export default function About() {
               className={[
                 'rounded-xl p-7',
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
-                'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+                'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
                 'transition duration-300 ease-out',
                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
                 'dark:hover:translate-y-0 dark:hover:shadow-none',
@@ -481,7 +481,7 @@ export default function About() {
               className={[
                 'rounded-xl p-7',
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
-                'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+                'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
                 'transition duration-300 ease-out',
                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
                 'dark:hover:translate-y-0 dark:hover:shadow-none',
@@ -501,7 +501,7 @@ export default function About() {
               className={[
                 'rounded-xl p-7',
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
-                'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+                'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
                 'transition duration-300 ease-out',
                 'hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(15,23,42,0.12)]',
                 'dark:hover:translate-y-0 dark:hover:shadow-none',
@@ -525,7 +525,7 @@ export default function About() {
                 'rounded-xl p-8',
                 'bg-white/60 backdrop-blur-[10px]',
                 'shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
-                'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+                'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
               ].join(' ')}
             >
               <h2 className="text-xl font-bold tracking-tight text-[#1E293B] dark:text-white">Contact & Legal Information</h2>
@@ -540,3 +540,4 @@ export default function About() {
     </div>
   )
 }
+

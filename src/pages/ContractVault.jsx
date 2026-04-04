@@ -176,8 +176,8 @@ function actionBlockers(user, contract) {
 
 function StepPill({ done, label }) {
   return (
-    <div className={`flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ring-1 ${done ? 'bg-[#E8F3FF] text-[#0A66C2] ring-[#BBD8FF]' : 'bg-white text-slate-600 ring-slate-200'}`}>
-      <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full ${done ? 'bg-[#0A66C2] text-white' : 'bg-slate-100 text-slate-500'}`}>
+    <div className={`flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ring-1${done ? 'bg-[#E8F3FF] text-[#0A66C2] ring-[#BBD8FF]' : 'bg-white text-slate-600 ring-slate-200'}`}>
+      <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full${done ? 'bg-[#0A66C2] text-white' : 'bg-slate-100 text-slate-500'}`}>
         {done ? '\u2713' : '\u2022'}
       </span>
       <span>{label}</span>
@@ -192,13 +192,13 @@ function ContractRow({ contract, active, onSelect }) {
     <button
       type="button"
       onClick={onSelect}
-      className={`w-full rounded-2xl p-4 text-left transition ring-1 ${active ? 'bg-indigo-50/60 text-slate-900 ring-indigo-200 shadow-sm dark:bg-white/5 dark:text-slate-100 dark:ring-[#38bdf8]/35' : 'bg-white text-slate-900 ring-slate-200/70 hover:bg-slate-50 dark:bg-slate-900/50 dark:text-slate-100 dark:ring-slate-800 dark:hover:bg-white/5'}`}
+      className={`w-full rounded-2xl p-4 text-left transition ring-1${active ? 'bg-indigo-50/60 text-slate-900 ring-indigo-200 shadow-sm dark:bg-white/5 dark:text-slate-100 dark:ring-[#38bdf8]/35' : 'bg-white text-slate-900 ring-slate-200/70 hover:bg-slate-50 dark:bg-slate-900/50 dark:text-slate-100 dark:ring-slate-800 dark:hover:bg-white/5'}`}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <div className="truncate text-sm font-semibold text-slate-900">{contract.contract_number || contract.id}</div>
-            <span className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${statusClass(status)}`}>
+            <span className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1${statusClass(status)}`}>
               {toLabel(status)}
             </span>
           </div>
@@ -645,12 +645,12 @@ export default function ContractVault() {
   }
 
   const detailPanel = selected ? (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5">
+    <div className="rounded-2xl borderless-shadow bg-white p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <div className="truncate text-lg font-bold text-slate-900">{selected.contract_number || selected.id}</div>
-            <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ${statusClass(selected.lifecycle_status || 'pending_signature')}`}>
+            <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1${statusClass(selected.lifecycle_status || 'pending_signature')}`}>
               {toLabel(selected.lifecycle_status || 'pending_signature')}
             </span>
           </div>
@@ -663,9 +663,9 @@ export default function ContractVault() {
         <Link to="/help" className="shrink-0 rounded-full bg-[#E8F3FF] px-3 py-1 text-xs font-semibold text-[#0A66C2] hover:bg-[#D9ECFF]">Help</Link>
       </div>
 
-      {actionError ? <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-semibold text-rose-700">{actionError}</div> : null}
+      {actionError ? <div className="mt-4 rounded-xl borderless-shadow bg-rose-50 p-3 text-sm font-semibold text-rose-700">{actionError}</div> : null}
       {!hasRecordedCall ? (
-        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-900">
+        <div className="mt-4 rounded-xl borderless-shadow bg-amber-50 p-3 text-sm font-semibold text-amber-900">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span>Video calls are recommended before finalizing contracts. No recorded call is linked to this contract yet.</span>
             <Link to="/chat" className="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white hover:bg-amber-500">
@@ -684,12 +684,12 @@ export default function ContractVault() {
       </div>
 
       <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="rounded-2xl borderless-shadow bg-white p-4">
           <div className="text-sm font-semibold text-slate-900">Signatures</div>
           <div className="mt-2 text-sm text-slate-700">Buyer: <span className="font-semibold">{selected.buyer_signature_state || 'pending'}</span> {selected.buyer_signed_at ? <span className="text-xs text-slate-500">({selected.buyer_signed_at})</span> : null}</div>
           <div className="mt-1 text-sm text-slate-700">Factory: <span className="font-semibold">{selected.factory_signature_state || 'pending'}</span> {selected.factory_signed_at ? <span className="text-xs text-slate-500">({selected.factory_signed_at})</span> : null}</div>
           {!hasAcceptedProof ? (
-            <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-900">
+            <div className="mt-3 rounded-lg borderless-shadow bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-900">
               Warning: No accepted payment proof yet. You may continue, but proof is strongly recommended for safety.
             </div>
           ) : null}
@@ -724,7 +724,7 @@ export default function ContractVault() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="rounded-2xl borderless-shadow bg-white p-4">
           <div className="text-sm font-semibold text-slate-900">Artifact (PDF)</div>
           <div className="mt-2 text-sm text-slate-700">Status: <span className="font-semibold">{selected.artifact?.status || 'draft'}</span></div>
           <div className="mt-1 text-xs text-slate-500">PDF generates automatically after both signatures.</div>
@@ -765,7 +765,7 @@ export default function ContractVault() {
         </div>
       </div>
 
-      <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900/50">
+      <div className="mt-5 rounded-2xl borderless-shadow bg-white p-4 dark:bg-slate-900/50">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="text-sm font-semibold text-slate-900">Banking references (optional)</div>
@@ -783,7 +783,7 @@ export default function ContractVault() {
         </div>
       </div>
 
-      <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900/50">
+      <div className="mt-5 rounded-2xl borderless-shadow bg-white p-4 dark:bg-slate-900/50">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="text-sm font-semibold text-slate-900">Payment proof workflow</div>
@@ -800,7 +800,7 @@ export default function ContractVault() {
           <select
             value={paymentForm.type}
             onChange={(e) => setPaymentForm((prev) => ({ ...prev, type: e.target.value }))}
-            className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
+            className="rounded-xl borderless-shadow px-3 py-2 text-sm"
           >
             <option value="bank_transfer">Bank transfer</option>
             <option value="lc">Letter of credit (LC)</option>
@@ -809,24 +809,24 @@ export default function ContractVault() {
 
           {paymentForm.type === 'bank_transfer' ? (
             <>
-              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Transaction reference" value={paymentForm.transaction_reference} onChange={(e) => setPaymentForm((p) => ({ ...p, transaction_reference: e.target.value }))} />
-              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Bank name" value={paymentForm.bank_name} onChange={(e) => setPaymentForm((p) => ({ ...p, bank_name: e.target.value }))} />
-              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Sender account name" value={paymentForm.sender_account_name} onChange={(e) => setPaymentForm((p) => ({ ...p, sender_account_name: e.target.value }))} />
-              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Receiver/company account name" value={paymentForm.receiver_account_name} onChange={(e) => setPaymentForm((p) => ({ ...p, receiver_account_name: e.target.value }))} />
-              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" type="date" value={paymentForm.transaction_date} onChange={(e) => setPaymentForm((p) => ({ ...p, transaction_date: e.target.value }))} />
+              <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Transaction reference" value={paymentForm.transaction_reference} onChange={(e) => setPaymentForm((p) => ({ ...p, transaction_reference: e.target.value }))} />
+              <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Bank name" value={paymentForm.bank_name} onChange={(e) => setPaymentForm((p) => ({ ...p, bank_name: e.target.value }))} />
+              <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Sender account name" value={paymentForm.sender_account_name} onChange={(e) => setPaymentForm((p) => ({ ...p, sender_account_name: e.target.value }))} />
+              <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Receiver/company account name" value={paymentForm.receiver_account_name} onChange={(e) => setPaymentForm((p) => ({ ...p, receiver_account_name: e.target.value }))} />
+              <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" type="date" value={paymentForm.transaction_date} onChange={(e) => setPaymentForm((p) => ({ ...p, transaction_date: e.target.value }))} />
               <div className="flex gap-2">
-                <input className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))} />
-                <input className="w-24 rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Currency" value={paymentForm.currency} onChange={(e) => setPaymentForm((p) => ({ ...p, currency: e.target.value }))} />
+                <input className="flex-1 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))} />
+                <input className="w-24 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Currency" value={paymentForm.currency} onChange={(e) => setPaymentForm((p) => ({ ...p, currency: e.target.value }))} />
               </div>
             </>
           ) : (
             <>
-              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="LC number" value={paymentForm.lc_number} onChange={(e) => setPaymentForm((p) => ({ ...p, lc_number: e.target.value }))} />
+              <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="LC number" value={paymentForm.lc_number} onChange={(e) => setPaymentForm((p) => ({ ...p, lc_number: e.target.value }))} />
               <div className="flex flex-wrap gap-2">
                 <select
                   value={paymentForm.lc_type}
                   onChange={(e) => setPaymentForm((p) => ({ ...p, lc_type: e.target.value }))}
-                  className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                  className="rounded-xl borderless-shadow px-3 py-2 text-sm"
                 >
                   <option value="sight">Sight LC</option>
                   <option value="usance">Usance LC</option>
@@ -836,7 +836,7 @@ export default function ContractVault() {
                     <select
                       value={paymentForm.usance_days}
                       onChange={(e) => setPaymentForm((p) => ({ ...p, usance_days: e.target.value }))}
-                      className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                      className="rounded-xl borderless-shadow px-3 py-2 text-sm"
                     >
                       <option value="30">30 days</option>
                       <option value="60">60 days</option>
@@ -846,7 +846,7 @@ export default function ContractVault() {
                     </select>
                     {String(paymentForm.usance_days) === 'custom' ? (
                       <input
-                        className="w-32 rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                        className="w-32 rounded-xl borderless-shadow px-3 py-2 text-sm"
                         placeholder="Days"
                         value={paymentForm.usance_custom_days}
                         onChange={(e) => setPaymentForm((p) => ({ ...p, usance_custom_days: e.target.value }))}
@@ -855,15 +855,15 @@ export default function ContractVault() {
                   </>
                 ) : null}
               </div>
-              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Issuing bank" value={paymentForm.issuing_bank} onChange={(e) => setPaymentForm((p) => ({ ...p, issuing_bank: e.target.value }))} />
-              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Advising bank" value={paymentForm.advising_bank} onChange={(e) => setPaymentForm((p) => ({ ...p, advising_bank: e.target.value }))} />
-              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Applicant name" value={paymentForm.applicant_name} onChange={(e) => setPaymentForm((p) => ({ ...p, applicant_name: e.target.value }))} />
-              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Beneficiary name" value={paymentForm.beneficiary_name} onChange={(e) => setPaymentForm((p) => ({ ...p, beneficiary_name: e.target.value }))} />
-              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" type="date" value={paymentForm.issue_date} onChange={(e) => setPaymentForm((p) => ({ ...p, issue_date: e.target.value }))} />
-              <input className="rounded-xl border border-slate-200 px-3 py-2 text-sm" type="date" value={paymentForm.expiry_date} onChange={(e) => setPaymentForm((p) => ({ ...p, expiry_date: e.target.value }))} />
+              <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Issuing bank" value={paymentForm.issuing_bank} onChange={(e) => setPaymentForm((p) => ({ ...p, issuing_bank: e.target.value }))} />
+              <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Advising bank" value={paymentForm.advising_bank} onChange={(e) => setPaymentForm((p) => ({ ...p, advising_bank: e.target.value }))} />
+              <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Applicant name" value={paymentForm.applicant_name} onChange={(e) => setPaymentForm((p) => ({ ...p, applicant_name: e.target.value }))} />
+              <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Beneficiary name" value={paymentForm.beneficiary_name} onChange={(e) => setPaymentForm((p) => ({ ...p, beneficiary_name: e.target.value }))} />
+              <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" type="date" value={paymentForm.issue_date} onChange={(e) => setPaymentForm((p) => ({ ...p, issue_date: e.target.value }))} />
+              <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" type="date" value={paymentForm.expiry_date} onChange={(e) => setPaymentForm((p) => ({ ...p, expiry_date: e.target.value }))} />
               <div className="flex gap-2">
-                <input className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))} />
-                <input className="w-24 rounded-xl border border-slate-200 px-3 py-2 text-sm" placeholder="Currency" value={paymentForm.currency} onChange={(e) => setPaymentForm((p) => ({ ...p, currency: e.target.value }))} />
+                <input className="flex-1 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))} />
+                <input className="w-24 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Currency" value={paymentForm.currency} onChange={(e) => setPaymentForm((p) => ({ ...p, currency: e.target.value }))} />
               </div>
             </>
           )}
@@ -896,7 +896,7 @@ export default function ContractVault() {
           {paymentProofs.map((proof) => {
             const proofDocUrl = resolveDownloadUrl(proof.document_url || '')
             return (
-            <div key={proof.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
+            <div key={proof.id} className="rounded-xl borderless-shadow bg-slate-50 p-3 text-xs text-slate-700">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="font-semibold">{String(proof.type || '').replace('_', ' ').toUpperCase()}</div>
                 <div className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-slate-600 ring-1 ring-slate-200">
@@ -945,7 +945,7 @@ export default function ContractVault() {
         </div>
       </div>
 
-      <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
+      <div className="mt-5 rounded-2xl borderless-shadow bg-white p-4">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Call recordings</div>
@@ -961,7 +961,7 @@ export default function ContractVault() {
             const url = resolveDownloadUrl(call.recording_url)
             const canPlay = Boolean(call.recording_status === 'available' && url)
             return (
-              <div key={call.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-black/20">
+              <div key={call.id} className="rounded-xl borderless-shadow bg-slate-50 p-3 dark:bg-black/20">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{safeDash(call.title) || 'Call session'}</div>
@@ -1003,7 +1003,7 @@ export default function ContractVault() {
         </div>
       </div>
 
-      <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
+      <div className="mt-5 rounded-2xl borderless-shadow bg-white p-4">
         <div className="text-sm font-semibold text-slate-900">Artifact audit</div>
         <div className="mt-3 grid grid-cols-1 gap-2 text-sm text-slate-700">
           <div>Status: {safeDash(selected.artifact?.status)}</div>
@@ -1019,7 +1019,7 @@ export default function ContractVault() {
         </div>
       </div>
 
-      <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
+      <div className="mt-5 rounded-2xl borderless-shadow bg-white p-4">
         <div className="flex items-center justify-between gap-4">
           <div className="text-sm font-semibold text-slate-900">Contract Audit Trail</div>
           <div className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600">Premium</div>
@@ -1027,13 +1027,13 @@ export default function ContractVault() {
         {auditLoading ? (
           <div className="mt-3 text-sm text-slate-600">Loading audit trail...</div>
         ) : auditError ? (
-          <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+          <div className="mt-3 rounded-lg borderless-shadow bg-amber-50 p-3 text-xs text-amber-800">
             {auditError}
           </div>
         ) : auditLog.length ? (
           <div className="mt-3 space-y-2 text-xs text-slate-600">
             {auditLog.map((entry) => (
-              <div key={entry.id || `${entry.timestamp}-${entry.note}`} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <div key={entry.id || `${entry.timestamp}-${entry.note}`} className="rounded-lg borderless-shadow bg-slate-50 p-3">
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-semibold text-slate-900">{entry.action || 'update'}</span>
                   <span>{entry.timestamp ? new Date(entry.timestamp).toLocaleString() : '\u2014'}</span>
@@ -1051,7 +1051,7 @@ export default function ContractVault() {
       </div>
     </div>
   ) : (
-    <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-600">
+    <div className="rounded-2xl borderless-shadow bg-white p-10 text-center text-sm text-slate-600">
       Select a contract to see details.
     </div>
   )
@@ -1080,7 +1080,7 @@ export default function ContractVault() {
         </div>
 
         {forbidden ? <AccessDeniedState message={error || 'Access denied.'} /> : null}
-        {!forbidden && error ? <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-semibold text-rose-700">{error}</div> : null}
+        {!forbidden && error ? <div className="mb-4 rounded-2xl borderless-shadow bg-rose-50 p-4 text-sm font-semibold text-rose-700">{error}</div> : null}
 
         {!forbidden ? (
           <div className="secure-grid grid grid-cols-1 gap-6 lg:grid-cols-12">
@@ -1118,7 +1118,7 @@ export default function ContractVault() {
                         type="button"
                         onClick={() => setStatusFilter(chip.key)}
                         whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                        className={`relative rounded-full px-3 py-1 text-xs font-semibold transition ring-1 ${
+                        className={`relative rounded-full px-3 py-1 text-xs font-semibold transition ring-1${
                           statusFilter === chip.key
                             ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
                             : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
@@ -1218,16 +1218,16 @@ export default function ContractVault() {
               </div>
 
               <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <input value={draftForm.title} onChange={(e) => setDraftForm((p) => ({ ...p, title: e.target.value }))} placeholder="Title" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2]" />
-                <input value={draftForm.buyer_name} onChange={(e) => setDraftForm((p) => ({ ...p, buyer_name: e.target.value }))} placeholder="Buyer name" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2]" />
-                <input value={draftForm.factory_name} onChange={(e) => setDraftForm((p) => ({ ...p, factory_name: e.target.value }))} placeholder="Factory name" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2]" />
-                <input value={draftForm.buyer_id} onChange={(e) => setDraftForm((p) => ({ ...p, buyer_id: e.target.value }))} placeholder="Buyer user ID" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2]" />
-                <input value={draftForm.factory_id} onChange={(e) => setDraftForm((p) => ({ ...p, factory_id: e.target.value }))} placeholder="Factory user ID" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2]" />
+                <input value={draftForm.title} onChange={(e) => setDraftForm((p) => ({ ...p, title: e.target.value }))} placeholder="Title" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
+                <input value={draftForm.buyer_name} onChange={(e) => setDraftForm((p) => ({ ...p, buyer_name: e.target.value }))} placeholder="Buyer name" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
+                <input value={draftForm.factory_name} onChange={(e) => setDraftForm((p) => ({ ...p, factory_name: e.target.value }))} placeholder="Factory name" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
+                <input value={draftForm.buyer_id} onChange={(e) => setDraftForm((p) => ({ ...p, buyer_id: e.target.value }))} placeholder="Buyer user ID" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
+                <input value={draftForm.factory_id} onChange={(e) => setDraftForm((p) => ({ ...p, factory_id: e.target.value }))} placeholder="Factory user ID" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
                 <div className="hidden sm:block" />
 
-                <input value={draftForm.bank_name} onChange={(e) => setDraftForm((p) => ({ ...p, bank_name: e.target.value }))} placeholder="Bank name (optional)" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2]" />
-                <input value={draftForm.beneficiary_name} onChange={(e) => setDraftForm((p) => ({ ...p, beneficiary_name: e.target.value }))} placeholder="Beneficiary name (optional)" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2]" />
-                <input value={draftForm.transaction_reference} onChange={(e) => setDraftForm((p) => ({ ...p, transaction_reference: e.target.value }))} placeholder="Transaction reference (optional)" className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0A66C2] sm:col-span-2" />
+                <input value={draftForm.bank_name} onChange={(e) => setDraftForm((p) => ({ ...p, bank_name: e.target.value }))} placeholder="Bank name (optional)" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
+                <input value={draftForm.beneficiary_name} onChange={(e) => setDraftForm((p) => ({ ...p, beneficiary_name: e.target.value }))} placeholder="Beneficiary name (optional)" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
+                <input value={draftForm.transaction_reference} onChange={(e) => setDraftForm((p) => ({ ...p, transaction_reference: e.target.value }))} placeholder="Transaction reference (optional)" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none sm:col-span-2" />
               </div>
 
               <div className="mt-6 flex items-center justify-end gap-2">
