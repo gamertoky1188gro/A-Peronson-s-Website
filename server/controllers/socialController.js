@@ -3,8 +3,19 @@ import { addAction, addComment, listInteractions } from '../services/socialServi
 export async function createComment(req, res) {
   const text = req.body?.text || ''
   if (!text.trim()) return res.status(400).json({ error: 'Comment text required' })
-  const row = await addComment(req.user, req.params.entityType, req.params.entityId, text)
-  return res.status(201).json(row)
+  try {
+    const row = await addComment(
+      req.user,
+      req.params.entityType,
+      req.params.entityId,
+      text,
+      req.body?.parent_id || ''
+    )
+    return res.status(201).json(row)
+  } catch (err) {
+    const status = err.status || 500
+    return res.status(status).json({ error: err.message || 'Unable to add comment' })
+  }
 }
 
 export async function createShare(req, res) {

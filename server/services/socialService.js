@@ -8,9 +8,13 @@ import { getRequirementById } from './requirementService.js'
 
 const FILE = 'social_interactions.json'
 
-export async function addComment(user, entityType, entityId, text) {
+export async function addComment(user, entityType, entityId, text, parentId = '') {
   const all = await readJson(FILE)
   let safeText = sanitizeString(text, 800)
+  const safeParentId = sanitizeString(parentId, 120)
+  let parent = null
+  let rootId = ''
+  let depth = 0
 
   try {
     const moderated = await moderateTextOrRedact({
@@ -24,6 +28,35 @@ export async function addComment(user, entityType, entityId, text) {
     // silent
   }
 
+  if (safeParentId) {
+    parent = all.find((row) => row.id === safeParentId && row.interaction_type === 'comment')
+    if (!parent) {
+      const err = new Error('Parent comment not found')
+      err.status = 400
+      throw err
+    }
+    if (parent.entity_type !== sanitizeString(entityType, 60) || parent.entity_id !== sanitizeString(entityId, 120)) {
+      const err = new Error('Parent comment must belong to the same entity')
+      err.status = 400
+      throw err
+    }
+
+    const visited = new Set()
+    let cursor = parent
+    while (cursor?.parent_id) {
+      if (visited.has(cursor.parent_id)) {
+        const err = new Error('Invalid parent chain detected')
+        err.status = 400
+        throw err
+      }
+      visited.add(cursor.parent_id)
+      cursor = all.find((row) => row.id === cursor.parent_id && row.interaction_type === 'comment')
+    }
+
+    rootId = parent.root_id || parent.id
+    depth = Math.max(Number(parent.depth || 0) + 1, 1)
+  }
+
   const row = {
     id: crypto.randomUUID(),
     interaction_type: 'comment',
@@ -33,7 +66,14 @@ export async function addComment(user, entityType, entityId, text) {
     actor_name: user.name,
     actor_verified: Boolean(user.verified),
     text: safeText,
+    parent_id: safeParentId || '',
+    root_id: rootId,
+    depth,
     created_at: new Date().toISOString(),
+  }
+  if (!row.root_id) {
+    row.root_id = row.id
+    row.depth = 0
   }
   all.push(row)
   await writeJson(FILE, all)
@@ -107,7 +147,22 @@ export async function addAction(user, entityType, entityId, action, reason = '')
 export async function listInteractions(entityType, entityId) {
   const all = await readJson(FILE)
   const rows = all.filter((x) => x.entity_type === entityType && x.entity_id === entityId)
-  const comments = rows.filter((x) => x.interaction_type === 'comment')
+  const comments = rows
+    .filter((x) => x.interaction_type === 'comment')
+    .map((comment) => {
+      if (!comment.parent_id) {
+        return {
+          ...comment,
+          root_id: comment.root_id || comment.id,
+          depth: Number.isFinite(Number(comment.depth)) ? Number(comment.depth) : 0,
+        }
+      }
+      return {
+        ...comment,
+        root_id: comment.root_id || comment.parent_id || comment.id,
+        depth: Number.isFinite(Number(comment.depth)) ? Number(comment.depth) : 1,
+      }
+    })
   return {
     comments,
     share_count: rows.filter((x) => x.interaction_type === 'share').length,
