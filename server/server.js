@@ -337,7 +337,10 @@ async function relayChatMessage(socket, payload) {
       source_id: payload?.source_id,
       source_label: payload?.source_label,
     })
-    for (const peer of room) {
+
+    const shouldBroadcast = String(created?.policy_status || 'delivered') === 'delivered'
+    const peers = shouldBroadcast ? [...room] : [socket]
+    for (const peer of peers) {
       sendWs(peer, {
         type: 'chat_message',
         match_id: matchId,
@@ -361,7 +364,14 @@ async function relayChatMessage(socket, payload) {
     }
   } catch (error) {
     logError('chat_message_failed', error)
-    sendWs(socket, { type: 'chat_error', error: 'Unable to send message' })
+    const policyReason = error?.policy?.reason || null
+    const retryAfter = Number(error?.policy?.retry_after_seconds || 0)
+    sendWs(socket, {
+      type: 'chat_error',
+      error: error?.message || 'Unable to send message',
+      reason: policyReason,
+      retry_after_seconds: retryAfter,
+    })
   }
 }
 

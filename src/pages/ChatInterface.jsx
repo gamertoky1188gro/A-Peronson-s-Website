@@ -118,6 +118,10 @@ function normalizeThreads(messages = [], currentUserId = '') {
         isFriendThread: String(message.match_id || '').startsWith('friend:'),
         friendRequestStatus: message.friend_request_status || null,
         friendRequestDirection: message.friend_request_direction || null,
+        policyStatus: message.policy_status || 'delivered',
+        policyPriority: message.policy_priority || null,
+        policyReason: message.policy_reason || '',
+        retryAfterSeconds: Number(message.retry_after_seconds || 0),
       })
       if (otherCandidate) {
         latestByOther.set(message.match_id, otherCandidate)
@@ -136,6 +140,10 @@ function normalizeThreads(messages = [], currentUserId = '') {
         friendRequestDirection: message.friend_request_direction || existing.friendRequestDirection || null,
         unread: Number(message.unread_count || existing.unread || 0),
         lastReadAt: message.last_read_at || existing.lastReadAt || null,
+        policyStatus: message.policy_status || existing.policyStatus || 'delivered',
+        policyPriority: message.policy_priority || existing.policyPriority || null,
+        policyReason: message.policy_reason || existing.policyReason || '',
+        retryAfterSeconds: Number(message.retry_after_seconds || existing.retryAfterSeconds || 0),
       })
     }
 
@@ -341,6 +349,7 @@ export default function ChatInterface() {
   const [, setChatConnectionStatus] = useState('offline')
   const [uploading, setUploading] = useState(false)
   const [uploadStatus, setUploadStatus] = useState('')
+  const [policyFeedback, setPolicyFeedback] = useState({ reason: '', retryAfter: 0 })
   const [callPromptThread, setCallPromptThread] = useState(null)
   const [previewAttachment, setPreviewAttachment] = useState(null)
   const [accordionState, setAccordionState] = useState({
@@ -803,6 +812,10 @@ export default function ChatInterface() {
 
         if (payload.type === 'chat_error') {
           setChatConnectionStatus('online')
+          const retryAfter = Number(payload.retry_after_seconds || 0)
+          if (payload.reason || retryAfter > 0) {
+            setPolicyFeedback({ reason: payload.reason || payload.error || 'policy_blocked', retryAfter })
+          }
           if (!String(payload.error || '').toLowerCase().includes('forbidden')) {
             setError(payload.error || 'Live messaging issue')
           }
@@ -1203,6 +1216,14 @@ export default function ChatInterface() {
     }
   }
 
+  useEffect(() => {
+    if (!policyFeedback.retryAfter || policyFeedback.retryAfter <= 0) return undefined
+    const timer = window.setInterval(() => {
+      setPolicyFeedback((prev) => ({ ...prev, retryAfter: Math.max(0, Number(prev.retryAfter || 0) - 1) }))
+    }, 1000)
+    return () => window.clearInterval(timer)
+  }, [policyFeedback.retryAfter])
+
   async function sendMessage() {
     const token = getToken()
     if (!token || !activeThread?.matchId) return
@@ -1283,9 +1304,13 @@ export default function ChatInterface() {
       }
 
       setDraftMessage('')
+      setPolicyFeedback({ reason: '', retryAfter: 0 })
       await loadInbox()
     } catch (err) {
       const msg = err.message || 'Unable to send message'
+      const retryAfter = Number(err?.details?.policy?.retry_after_seconds || err?.details?.retry_after_seconds || 0)
+      const reason = err?.details?.policy?.reason || err?.details?.reason || ''
+      if (reason || retryAfter > 0) setPolicyFeedback({ reason: reason || msg, retryAfter })
       if (msg.toLowerCase().includes('verified-only')) {
         setNotice({
           title: 'Verified suppliers only',
@@ -1595,7 +1620,15 @@ export default function ChatInterface() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-1">
                           <p className={`truncate text-[14px] font-semibold${isActive ? 'text-[var(--gt-blue)]' : ''}`}>{threadName}</p>
-                          <span className="flex-shrink-0 text-[10px] font-medium text-slate-400">{formatTime(thread.timestamp)}</span>
+                          <div className="ml-2 flex flex-shrink-0 items-center gap-1">
+                            {thread.policyStatus && thread.policyStatus !== 'delivered' ? (
+                              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-700">Queued</span>
+                            ) : null}
+                            {thread.policyPriority ? (
+                              <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[9px] font-bold text-indigo-700">{thread.policyPriority}</span>
+                            ) : null}
+                            <span className="text-[10px] font-medium text-slate-400">{formatTime(thread.timestamp)}</span>
+                          </div>
                         </div>
                         <div className="flex items-center justify-between gap-2">
                           <p className={`truncate text-xs${isActive ? 'text-slate-600' : hasUnread ? 'text-slate-700' : 'text-slate-400'}`}>{thread.last || 'No messages'}</p>
@@ -1727,6 +1760,14 @@ export default function ChatInterface() {
                           {renderMessageBody(message, isOwn)}
                           <div className={`mt-1 flex items-center gap-2 text-[10px] font-medium opacity-0 transition-opacity group-hover:opacity-60${isOwn ? 'text-white' : 'text-slate-400'}`}>
                             <span>{formatTime(message.timestamp)}</span>
+                            {message.policy_status && message.policy_status !== 'delivered' ? (
+                              <span className="inline-flex items-center rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-amber-600">
+                                {message.policy_status === 'needs_review' ? 'Needs review' : 'Queued'}
+                              </span>
+                            ) : null}
+                            {message.policy_priority ? (
+                              <span className="inline-flex items-center rounded-full bg-indigo-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-600">{message.policy_priority}</span>
+                            ) : null}
                             {showReadTick ? (
                               <span className="inline-flex items-center rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-600">
                                 ✓ Read
@@ -1816,6 +1857,11 @@ export default function ChatInterface() {
                     <SendHorizontal size={18} />
                   </button>
                 </div>
+                {policyFeedback.reason ? (
+                  <p className="mt-2 px-4 text-[11px] font-medium text-rose-500">
+                    Blocked: {policyFeedback.reason}{policyFeedback.retryAfter > 0 ? ` • Retry in ${policyFeedback.retryAfter}s` : ''}
+                  </p>
+                ) : null}
                 {uploadStatus || scheduleStatus ? (
                   <p className="mt-2 px-4 text-[11px] font-medium text-[var(--gt-blue)]">{uploadStatus || scheduleStatus}</p>
                 ) : null}
