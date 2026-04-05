@@ -38,6 +38,9 @@ export default function Insights() {
   const searchEventCount = platformAnalytics?.search_event_count ?? 0
   const searchDataReady = platformAnalytics?.search_data_ready ?? true
   const searchMinEvents = platformAnalytics?.search_min_events ?? 25
+  const scopeLevel = String(platformAnalytics?.scope_level || 'not_available')
+  const suppressedFields = Array.isArray(platformAnalytics?.suppressed_fields) ? platformAnalytics.suppressed_fields : []
+  const privacyThresholdApplied = Boolean(platformAnalytics?.privacy_threshold_applied)
   const premiumRole = premiumInsights?.role || ''
   const canExportAnalytics = currentUser?.capabilities?.leads?.export !== false
 
@@ -460,6 +463,13 @@ export default function Insights() {
 
             {platformAnalytics ? (
               <div className="mt-8 space-y-4">
+                <div className="rounded-2xl bg-blue-50 p-4 text-xs text-blue-900 ring-1 ring-blue-200 dark:bg-blue-500/10 dark:text-blue-200 dark:ring-blue-500/30">
+                  <div className="font-semibold uppercase tracking-[0.12em]">Scope: {scopeLevel.replace(/_/g, ' ')}</div>
+                  <div className="mt-1">
+                    Privacy thresholds: {privacyThresholdApplied ? 'applied' : 'not applied'}.
+                    {suppressedFields.length ? ` Suppressed controls: ${suppressedFields.join(', ')}.` : ' No suppressed slices in this snapshot.'}
+                  </div>
+                </div>
                 {!searchDataReady ? (
                   <div className="rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
                     Search trends are still warming up. We need more search activity to show reliable demand insights. Current events: {searchEventCount}/{searchMinEvents}. Showing proxy demand from buyer requests.
@@ -471,7 +481,8 @@ export default function Insights() {
                   <StatCard label="Top Categories" value={platformCategories.map((c) => c.label).slice(0, 3).join(', ') || '--'} />
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {scopeLevel !== 'platform_summary_aggregated' ? (
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Top Categories by Country</p>
                     <div className="mt-3 space-y-3 text-sm text-slate-700 dark:text-slate-300">
@@ -494,7 +505,12 @@ export default function Insights() {
                       )) : <div className="text-sm text-slate-500">No price-range data yet.</div>}
                     </div>
                   </div>
-                </div>
+                  </div>
+                ) : (
+                  <div className="rounded-2xl bg-slate-100 p-4 text-sm text-slate-600 dark:bg-slate-800/50 dark:text-slate-300">
+                    Detailed geography and segment breakdowns are hidden for this role. Switch to organization-scoped or admin scope for deeper cuts.
+                  </div>
+                )}
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">

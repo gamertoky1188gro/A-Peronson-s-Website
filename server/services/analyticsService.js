@@ -7,7 +7,12 @@ import { canViewAnalytics, canViewAnalyticsAdmin, canViewAnalyticsDashboard, for
 import { getPlanForUser } from './entitlementService.js'
 import { getOrderCertificationSummary } from './orderCertificationService.js'
 import { appendAuditLog } from '../utils/auditStore.js'
-import { checkAnalyticsAccessPolicy, getAnalyticsGovernanceConfig, sanitizePlatformAnalytics } from './analyticsGovernanceService.js'
+import {
+  assertNoUnauthorizedAnalyticsJoin,
+  checkAnalyticsAccessPolicy,
+  getAnalyticsGovernanceConfig,
+  sanitizePlatformAnalytics,
+} from './analyticsGovernanceService.js'
 
 const FILE = 'analytics.json'
 const SEARCH_TREND_MIN_EVENTS = 25
@@ -595,12 +600,17 @@ export async function getCompanyAnalytics(user) {
 }
 
 export async function getPlatformAnalytics(user) {
-  ensureAnalyticsAdminAccess(user)
+  return getPlatformAnalyticsAdmin(user, {})
+}
 
-  const governance = await getAnalyticsGovernanceConfig()
-  const viewPolicy = checkAnalyticsAccessPolicy(user, governance, { mode: 'view' })
-  if (!viewPolicy.allowed) throw forbiddenError('Analytics governance policy denied this request')
+function resolvePlatformOrgScopeId(user) {
+  const role = String(user?.role || '').toLowerCase()
+  if (role === 'agent') return String(user?.org_owner_id || '')
+  if (role === 'buyer' || role === 'factory' || role === 'buying_house') return String(user?.id || '')
+  return ''
+}
 
+async function buildPlatformAnalyticsSnapshot(governance) {
   const [requirements, users, events] = await Promise.all([
     readJson('requirements.json'),
     readJson('users.json'),
@@ -608,10 +618,6 @@ export async function getPlatformAnalytics(user) {
   ])
 
   const usersById = new Map((Array.isArray(users) ? users : []).map((u) => [String(u.id), u]))
-  const byCountry = {}
-  const globalCategories = {}
-  const priceBuckets = {}
-
   const retentionMs = Math.max(1, Number(governance.retention_days || 365)) * 24 * 60 * 60 * 1000
   const retentionCutoff = Date.now() - retentionMs
   const requirementsRows = (Array.isArray(requirements) ? requirements : []).filter((row) => {
@@ -622,6 +628,14 @@ export async function getPlatformAnalytics(user) {
     const createdAt = new Date(row?.created_at || '').getTime()
     return Number.isFinite(createdAt) && createdAt >= retentionCutoff
   })
+
+  return { usersById, requirementsRows, eventRows }
+}
+
+function buildRawPlatformReport(requirementsRows, eventRows, usersById) {
+  const byCountry = {}
+  const globalCategories = {}
+  const priceBuckets = {}
 
   for (const req of requirementsRows) {
     const buyer = usersById.get(String(req.buyer_id || ''))
@@ -665,8 +679,6 @@ export async function getPlatformAnalytics(user) {
 
   const searchEvents = eventRows.filter((e) => String(e.type || '') === 'search_run')
   const searchEventCount = searchEvents.length
-  const minEvents = await getSearchMinEvents()
-  const searchDataReady = searchEventCount >= minEvents
   const searchByCountry = {}
   const searchGlobal = {}
 
@@ -715,40 +727,159 @@ export async function getPlatformAnalytics(user) {
     return { label: cat, delta: current - previous, current, previous }
   }).sort((a, b) => b.delta - a.delta).slice(0, 6)
 
-  const searchDataSource = searchDataReady ? 'search_events' : 'proxy_requests'
-  const proxySearchByCountry = searchDataReady ? topSearchCategoriesByCountry : topCategoriesByCountry
-  const proxySearchGlobal = searchDataReady ? topSearchCategoriesGlobal : topCategoriesGlobal
-
-  const rawReport = {
+  return {
     totals: {
       buyer_requests: requirementsRows.length,
       repeat_buyer_rate: repeatBuyerRate,
     },
     search_event_count: searchEventCount,
-    search_min_events: minEvents,
-    search_data_ready: searchDataReady,
-    search_data_source: searchDataSource,
     top_categories_by_country: topCategoriesByCountry,
     top_categories_global: topCategoriesGlobal,
     monthly_demand_trend: toMonthlySeries(requirementsRows, 'created_at'),
     price_range_demand: priceRangeDemand,
-    top_search_categories_by_country: proxySearchByCountry,
-    top_search_categories_global: proxySearchGlobal,
+    top_search_categories_by_country: topSearchCategoriesByCountry,
+    top_search_categories_global: topSearchCategoriesGlobal,
     trending_search_categories: trendingCategories,
   }
+}
+
+function toGovernedResponse(report, { scopeLevel, suppression, privacyThresholdApplied }) {
+  return {
+    ...report,
+    scope_level: scopeLevel,
+    suppressed_fields: Object.keys(suppression || {}).filter((key) => {
+      if (key === 'noise_injected') return Boolean(suppression[key])
+      return Number(suppression[key] || 0) > 0
+    }),
+    privacy_threshold_applied: Boolean(privacyThresholdApplied),
+  }
+}
+
+export async function getPlatformAnalyticsSummary(user) {
+  ensureAnalyticsAccess(user)
+  const governance = await getAnalyticsGovernanceConfig()
+  const viewPolicy = checkAnalyticsAccessPolicy(user, governance, { mode: 'view' })
+  if (!viewPolicy.allowed) throw forbiddenError('Analytics governance policy denied this request')
+
+  const { usersById, requirementsRows, eventRows } = await buildPlatformAnalyticsSnapshot(governance)
+  const minEvents = await getSearchMinEvents()
+  const rawReport = buildRawPlatformReport(requirementsRows, eventRows, usersById)
+  rawReport.search_min_events = minEvents
+  rawReport.search_data_ready = rawReport.search_event_count >= minEvents
+  rawReport.search_data_source = rawReport.search_data_ready ? 'search_events' : 'proxy_requests'
+  rawReport.top_categories_by_country = []
+  rawReport.top_search_categories_by_country = []
 
   const { report, suppression } = sanitizePlatformAnalytics(rawReport, governance)
+  const response = toGovernedResponse(report, {
+    scopeLevel: 'platform_summary_aggregated',
+    suppression,
+    privacyThresholdApplied: governance.enabled,
+  })
 
   appendAuditLog({
     id: crypto.randomUUID(),
     at: new Date().toISOString(),
     actor_id: user?.id || null,
     actor_role: user?.role || null,
-    action: 'platform_analytics_requested',
-    path: '/analytics/platform',
+    action: 'platform_analytics_summary_requested',
+    path: '/analytics/platform/summary',
+    status: 200,
+    payload: { scope_level: response.scope_level, suppression_counts: suppression },
+  }).catch(() => null)
+
+  return response
+}
+
+export async function getPlatformAnalyticsSegment(user, options = {}) {
+  ensureAnalyticsAccess(user)
+  const governance = await getAnalyticsGovernanceConfig()
+  const viewPolicy = checkAnalyticsAccessPolicy(user, governance, { mode: 'view' })
+  if (!viewPolicy.allowed) throw forbiddenError('Analytics governance policy denied this request')
+
+  assertNoUnauthorizedAnalyticsJoin(options.dimensions || [])
+  const orgScopeId = resolvePlatformOrgScopeId(user)
+  const { usersById, requirementsRows, eventRows } = await buildPlatformAnalyticsSnapshot(governance)
+  const scopedRequirements = requirementsRows.filter((row) => {
+    if (!orgScopeId) return false
+    const buyerId = String(row?.buyer_id || '')
+    const assignedAgent = String(row?.assigned_agent_id || row?.agent_id || '')
+    return buyerId === orgScopeId || assignedAgent === orgScopeId
+  })
+  const scopedEvents = eventRows.filter((row) => {
+    if (!orgScopeId) return false
+    return String(row?.actor_id || '') === orgScopeId || String(row?.entity_id || '') === orgScopeId
+  })
+
+  const minEvents = await getSearchMinEvents()
+  const rawReport = buildRawPlatformReport(scopedRequirements, scopedEvents, usersById)
+  rawReport.search_min_events = minEvents
+  rawReport.search_data_ready = rawReport.search_event_count >= minEvents
+  rawReport.search_data_source = rawReport.search_data_ready ? 'search_events' : 'proxy_requests'
+  rawReport.org_scope = orgScopeId ? `org:${orgScopeId.slice(0, 6)}***` : 'org:unknown'
+
+  const { report, suppression } = sanitizePlatformAnalytics(rawReport, governance)
+  const response = toGovernedResponse(report, {
+    scopeLevel: 'platform_segment_org_anonymized',
+    suppression,
+    privacyThresholdApplied: governance.enabled,
+  })
+
+  appendAuditLog({
+    id: crypto.randomUUID(),
+    at: new Date().toISOString(),
+    actor_id: user?.id || null,
+    actor_role: user?.role || null,
+    action: 'platform_analytics_segment_requested',
+    path: '/analytics/platform/segment',
     status: 200,
     payload: {
-      requested_scope: 'platform',
+      scope_level: response.scope_level,
+      requested_dimensions: options.dimensions || [],
+      org_scope: rawReport.org_scope,
+      suppression_counts: suppression,
+    },
+  }).catch(() => null)
+
+  return response
+}
+
+export async function getPlatformAnalyticsAdmin(user, options = {}) {
+  ensureAnalyticsAdminAccess(user)
+
+  const governance = await getAnalyticsGovernanceConfig()
+  const viewPolicy = checkAnalyticsAccessPolicy(user, governance, { mode: 'view' })
+  if (!viewPolicy.allowed) throw forbiddenError('Analytics governance policy denied this request')
+
+  const { usersById, requirementsRows, eventRows } = await buildPlatformAnalyticsSnapshot(governance)
+  const rawReport = buildRawPlatformReport(requirementsRows, eventRows, usersById)
+  const minEvents = await getSearchMinEvents()
+  rawReport.search_min_events = minEvents
+  rawReport.search_data_ready = rawReport.search_event_count >= minEvents
+  rawReport.search_data_source = rawReport.search_data_ready ? 'search_events' : 'proxy_requests'
+  if (!rawReport.search_data_ready) {
+    rawReport.top_search_categories_by_country = rawReport.top_categories_by_country
+    rawReport.top_search_categories_global = rawReport.top_categories_global
+  }
+
+  const { report, suppression } = sanitizePlatformAnalytics(rawReport, governance)
+  const response = toGovernedResponse(report, {
+    scopeLevel: 'platform_admin_full_detail',
+    suppression,
+    privacyThresholdApplied: governance.enabled,
+  })
+
+  appendAuditLog({
+    id: crypto.randomUUID(),
+    at: new Date().toISOString(),
+    actor_id: user?.id || null,
+    actor_role: user?.role || null,
+    action: options.export ? 'platform_analytics_export_requested' : 'platform_analytics_admin_requested',
+    path: '/analytics/platform/admin',
+    status: 200,
+    payload: {
+      requested_scope: 'platform_admin',
+      export_requested: Boolean(options.export),
       governance_mode: viewPolicy.mode,
       governance_retention_days: governance.retention_days,
       governance_geo_granularity: governance.geo_granularity,
@@ -757,7 +888,7 @@ export async function getPlatformAnalytics(user) {
     },
   }).catch(() => null)
 
-  return report
+  return response
 }
 
 export async function getPremiumInsights(user) {

@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { checkAnalyticsAccessPolicy, sanitizePlatformAnalytics } from '../analyticsGovernanceService.js'
+import { assertNoUnauthorizedAnalyticsJoin, checkAnalyticsAccessPolicy, sanitizePlatformAnalytics } from '../analyticsGovernanceService.js'
 
 function baseReport() {
   return {
@@ -128,4 +128,18 @@ test('policy denies raw export when allow_raw_exports is disabled', () => {
 
   assert.equal(result.allowed, false)
   assert.equal(result.reason, 'analytics_export_denied')
+})
+
+test('blocks unauthorized analytics joins that can reveal identity', () => {
+  assert.throws(
+    () => assertNoUnauthorizedAnalyticsJoin(['country', 'category', 'month', 'price_bucket']),
+    /too specific|not allowed/i,
+  )
+})
+
+test('blocks direct re-identification dimensions', () => {
+  assert.throws(
+    () => assertNoUnauthorizedAnalyticsJoin(['country', 'email']),
+    /restricted/i,
+  )
 })

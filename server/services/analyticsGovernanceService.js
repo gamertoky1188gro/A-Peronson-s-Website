@@ -17,6 +17,7 @@ export const ALLOWED_ANALYTICS_DIMENSIONS = Object.freeze([
   'price_bucket',
   'month',
   'search_category',
+  'org_scope',
 ])
 
 export const DENIED_ANALYTICS_FIELDS = Object.freeze([
@@ -36,6 +37,18 @@ export const DENIED_ANALYTICS_FIELDS = Object.freeze([
   'longitude',
   'exact_lat',
   'exact_lng',
+  'org_member_ids',
+  'member_ids',
+])
+
+const HIGH_RISK_JOIN_DIMENSIONS = new Set([
+  'actor_id',
+  'user_id',
+  'buyer_id',
+  'email',
+  'phone',
+  'ip',
+  'country+category+month+price_bucket',
 ])
 
 export const SENSITIVE_BUCKETING_RULES = Object.freeze({
@@ -110,6 +123,58 @@ export function checkAnalyticsAccessPolicy(user, config = ANALYTICS_GOVERNANCE_D
     return { allowed: false, governance, mode, role, reason: deniedReason }
   }
   return { allowed: true, governance, mode, role }
+}
+
+export function assertNoUnauthorizedAnalyticsJoin(requestedDimensions = []) {
+  const dims = Array.isArray(requestedDimensions)
+    ? requestedDimensions.map((value) => String(value || '').trim().toLowerCase()).filter(Boolean)
+    : []
+  const unique = [...new Set(dims)]
+  const joined = unique.slice().sort().join('+')
+
+  if (HIGH_RISK_JOIN_DIMENSIONS.has(joined)) {
+    const error = new Error('Requested analytics join is not allowed by data governance policy')
+    error.status = 403
+    error.code = 'ANALYTICS_JOIN_BLOCKED'
+    throw error
+  }
+
+  const directBlocked = unique.find((dimension) => HIGH_RISK_JOIN_DIMENSIONS.has(dimension))
+  if (directBlocked) {
+    const error = new Error(`Requested dimension "${directBlocked}" is restricted`)
+    error.status = 403
+    error.code = 'ANALYTICS_DIMENSION_BLOCKED'
+    throw error
+  }
+
+  if (unique.length >= 4 && unique.includes('country') && unique.includes('category') && unique.includes('month')) {
+    const error = new Error('Requested analytics slice is too specific and risks re-identification')
+    error.status = 403
+    error.code = 'ANALYTICS_REIDENTIFICATION_BLOCKED'
+    throw error
+  }
+
+  return unique
+}
+
+function noiseForCount(count, seed) {
+  if (!Number.isFinite(count) || count <= 0) return 0
+  const hash = String(seed || 'seed')
+    .split('')
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  return (hash % 2 === 0) ? 1 : -1
+}
+
+function applyNoiseToLabeledRows(rows = [], governance, suppression, seedPrefix = 'row') {
+  return rows.map((row, index) => {
+    const count = Number(row?.count || 0)
+    const seed = `${seedPrefix}:${row?.label || row?.bucket || 'unknown'}:${index}`
+    const sparse = count > 0 && count < (governance.min_cohort_size * 2)
+    if (!sparse) return row
+    const noisy = Math.max(0, count + noiseForCount(count, seed))
+    if (noisy !== count) suppression.noise_injected = true
+    return { ...row, count: noisy }
+  })
 }
 
 function sanitizeCountry(country, granularity) {
@@ -245,7 +310,7 @@ export function sanitizePlatformAnalytics(raw = {}, config = ANALYTICS_GOVERNANC
     }
   }
 
-  const suppression = { suppressed_values: 0, suppressed_cohorts: 0 }
+  const suppression = { suppressed_values: 0, suppressed_cohorts: 0, noise_injected: false }
   const monthlyTrend = (Array.isArray(raw.monthly_demand_trend) ? raw.monthly_demand_trend : [])
     .map((entry) => ({
       month: bucketDate(entry?.month, governance.date_granularity) || 'unknown',
@@ -271,12 +336,35 @@ export function sanitizePlatformAnalytics(raw = {}, config = ANALYTICS_GOVERNANC
     search_data_ready: Boolean(raw?.search_data_ready),
     search_data_source: String(raw?.search_data_source || 'unknown'),
     top_categories_by_country: sanitizeCountryCategoryRows(raw?.top_categories_by_country, governance, suppression),
-    top_categories_global: suppressLabeledItems(raw?.top_categories_global, governance.min_cohort_size, suppression),
+    top_categories_global: applyNoiseToLabeledRows(
+      suppressLabeledItems(raw?.top_categories_global, governance.min_cohort_size, suppression),
+      governance,
+      suppression,
+      'top_categories_global',
+    ),
     monthly_demand_trend: monthlyTrend,
-    price_range_demand: priceRangeDemand,
+    price_range_demand: applyNoiseToLabeledRows(priceRangeDemand, governance, suppression, 'price_range_demand'),
     top_search_categories_by_country: sanitizeCountryCategoryRows(raw?.top_search_categories_by_country, governance, suppression),
-    top_search_categories_global: suppressLabeledItems(raw?.top_search_categories_global, governance.min_cohort_size, suppression),
-    trending_search_categories: suppressTrendItems(raw?.trending_search_categories, governance.min_cohort_size, suppression),
+    top_search_categories_global: applyNoiseToLabeledRows(
+      suppressLabeledItems(raw?.top_search_categories_global, governance.min_cohort_size, suppression),
+      governance,
+      suppression,
+      'top_search_categories_global',
+    ),
+    trending_search_categories: applyNoiseToLabeledRows(
+      suppressTrendItems(raw?.trending_search_categories, governance.min_cohort_size, suppression).map((row) => ({
+        ...row,
+        count: Number(row?.current || 0),
+      })),
+      governance,
+      suppression,
+      'trending_search_categories',
+    ).map((row) => ({
+      label: row.label,
+      current: row.count,
+      previous: Number(row.previous || 0),
+      delta: Number(row.count || 0) - Number(row.previous || 0),
+    })),
   }
 
   return {
