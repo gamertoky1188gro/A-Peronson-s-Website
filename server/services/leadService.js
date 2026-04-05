@@ -5,7 +5,7 @@ import { isCrmSqlEnabled, readLegacyJson } from '../utils/crmFallbackStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { forbiddenError, isAgent, isOwnerOrAdmin } from '../utils/permissions.js'
 import { getPlanForUser } from './entitlementService.js'
-import { trackEvent } from './analyticsService.js'
+import { trackEvent } from './eventTrackingService.js'
 
 const LEADS_FILE = 'leads.json'
 const NOTES_FILE = 'lead_notes.json'

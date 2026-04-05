@@ -1,7 +1,7 @@
 import { listRequirements } from './requirementService.js'
 import { listProducts } from './productService.js'
 import { readJson } from '../utils/jsonStore.js'
-import { trackEvent } from './analyticsService.js'
+import { trackEvent } from './eventTrackingService.js'
 import { logInfo } from '../utils/logger.js'
 import { getOrderCertificationMap } from './orderCertificationService.js'
 

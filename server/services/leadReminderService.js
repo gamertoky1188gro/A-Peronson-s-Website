@@ -3,7 +3,7 @@ import { readLegacyJson, isCrmSqlEnabled } from '../utils/crmFallbackStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { createNotification } from './notificationService.js'
 import { sendEmail } from './emailService.js'
-import { trackEvent } from './analyticsService.js'
+import { trackEvent } from './eventTrackingService.js'
 import { logError } from '../utils/logger.js'
 
 const REMINDERS_FILE = 'lead_reminders.json'

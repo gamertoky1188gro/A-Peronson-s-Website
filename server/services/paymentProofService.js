@@ -3,7 +3,7 @@ import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { canAccessContract } from '../utils/permissions.js'
 import { createNotification } from './notificationService.js'
-import { trackEvent } from './analyticsService.js'
+import { trackEvent } from './eventTrackingService.js'
 
 const FILE = 'payment_proofs.json'
 const DOCUMENTS_FILE = 'documents.json'

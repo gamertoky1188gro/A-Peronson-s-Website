@@ -2,7 +2,7 @@ import crypto from 'crypto'
 import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { debitWallet } from './walletService.js'
-import { trackEvent } from './analyticsService.js'
+import { trackEvent } from './eventTrackingService.js'
 
 const FILE = 'boosts.json'
 
