@@ -526,8 +526,11 @@ export async function searchProducts(req, res) {
       if (verifiedOnly && !p.author?.verified) return false
       if (moqRange && !matchesMoqRange(moqRange, p.moq)) return false
       if (priceRangeBase) {
-        if (Number.isFinite(Number(p.priceNormalizedBase))) {
-          if (!numberInsideRange(Number(p.priceNormalizedBase), priceRangeBase)) return false
+        const normalizedMin = Number.isFinite(Number(p.priceBaseMin)) ? Number(p.priceBaseMin) : Number(p.priceNormalizedBase)
+        const normalizedMax = Number.isFinite(Number(p.priceBaseMax)) ? Number(p.priceBaseMax) : Number(p.priceNormalizedBase)
+        if (Number.isFinite(normalizedMin) || Number.isFinite(normalizedMax)) {
+          const synthetic = `${Number.isFinite(normalizedMin) ? normalizedMin : ''}-${Number.isFinite(normalizedMax) ? normalizedMax : ''}`
+          if (!rangesOverlap(priceRangeBase, synthetic)) return false
         } else if (!rangesOverlap(priceRange, p.price_range || '')) return false
       }
       if (leadTimeMax !== null) {

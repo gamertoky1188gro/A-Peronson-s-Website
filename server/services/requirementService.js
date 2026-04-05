@@ -7,7 +7,7 @@ import { recordMilestone } from './ratingsService.js'
 import { moderateTextOrRedact } from './policyService.js'
 import { getPlanForUser } from './entitlementService.js'
 import { indexRequirement, deleteRequirementIndex } from './openSearchService.js'
-import { extractOriginalPrice, getBaseCurrency, normalizeMoney } from './currencyService.js'
+import { extractOriginalPrice, getBaseCurrency, normalizePriceRange } from './currencyService.js'
 
 const FILE = 'requirements.json'
 
@@ -241,10 +241,18 @@ export async function createRequirement(buyerId, payload) {
   const requirement = normalizeRequirement(buyerId, payload)
   const baseCurrency = await getBaseCurrency()
   const originalPrice = extractOriginalPrice(payload)
-  const normalizedPrice = await normalizeMoney(originalPrice.priceOriginal, originalPrice.currencyOriginal, baseCurrency)
-  requirement.priceOriginal = originalPrice.priceOriginal
-  requirement.currencyOriginal = originalPrice.currencyOriginal
-  requirement.priceNormalizedBase = normalizedPrice.amount
+  const normalizedPrice = await normalizePriceRange({
+    min: originalPrice.priceOriginalMin,
+    max: originalPrice.priceOriginalMax,
+    currency: originalPrice.currency,
+    baseCurrency,
+  })
+  requirement.currency = originalPrice.currency
+  requirement.priceOriginalMin = normalizedPrice.priceOriginalMin
+  requirement.priceOriginalMax = normalizedPrice.priceOriginalMax
+  requirement.priceBaseMin = normalizedPrice.priceBaseMin
+  requirement.priceBaseMax = normalizedPrice.priceBaseMax
+  requirement.priceNormalizedBase = normalizedPrice.priceBaseMin
   const plan = await getPlanForUser({ id: buyerId })
   if (plan === 'premium') {
     requirement.priority_tier = 'priority'
@@ -408,15 +416,24 @@ export async function updateRequirement(requirementId, patch, actor) {
 
   const baseCurrency = await getBaseCurrency()
   const originalPrice = extractOriginalPrice({
+    priceOriginalMin: patch.priceOriginalMin !== undefined ? patch.priceOriginalMin : previous.priceOriginalMin,
+    priceOriginalMax: patch.priceOriginalMax !== undefined ? patch.priceOriginalMax : previous.priceOriginalMax,
     priceOriginal: patch.priceOriginal !== undefined ? patch.priceOriginal : previous.priceOriginal,
-    currencyOriginal: patch.currencyOriginal !== undefined ? patch.currencyOriginal : previous.currencyOriginal,
-    currency: patch.currency !== undefined ? patch.currency : previous.currencyOriginal,
+    currency: patch.currency !== undefined ? patch.currency : (previous.currency || previous.currencyOriginal),
     price_range: next.price_range,
   })
-  const normalizedPrice = await normalizeMoney(originalPrice.priceOriginal, originalPrice.currencyOriginal, baseCurrency)
-  next.priceOriginal = originalPrice.priceOriginal
-  next.currencyOriginal = originalPrice.currencyOriginal
-  next.priceNormalizedBase = normalizedPrice.amount
+  const normalizedPrice = await normalizePriceRange({
+    min: originalPrice.priceOriginalMin,
+    max: originalPrice.priceOriginalMax,
+    currency: originalPrice.currency,
+    baseCurrency,
+  })
+  next.currency = originalPrice.currency
+  next.priceOriginalMin = normalizedPrice.priceOriginalMin
+  next.priceOriginalMax = normalizedPrice.priceOriginalMax
+  next.priceBaseMin = normalizedPrice.priceBaseMin
+  next.priceBaseMax = normalizedPrice.priceBaseMax
+  next.priceNormalizedBase = normalizedPrice.priceBaseMin
 
   assertRequiredFields({
     ...next,

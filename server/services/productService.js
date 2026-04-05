@@ -8,7 +8,7 @@ import { isAgent, isOwnerOrAdmin } from '../utils/permissions.js'
 import { getAdminConfig } from './adminConfigService.js'
 import { getPlanForUser } from './entitlementService.js'
 import { indexProduct, deleteProductIndex } from './openSearchService.js'
-import { extractOriginalPrice, getBaseCurrency, normalizeMoney } from './currencyService.js'
+import { extractOriginalPrice, getBaseCurrency, normalizePriceRange } from './currencyService.js'
 
 const FILE = 'company_products.json'
 const PROHIBITED_MEDIA_KEYWORDS = ['porn', 'explicit', 'nudity', 'violence', 'weapon', 'drugs', 'hate']
@@ -431,10 +431,18 @@ export async function createProduct(user, payload) {
 
   const baseCurrency = await getBaseCurrency()
   const originalPrice = extractOriginalPrice(payload)
-  const normalizedPrice = await normalizeMoney(originalPrice.priceOriginal, originalPrice.currencyOriginal, baseCurrency)
-  row.priceOriginal = originalPrice.priceOriginal
-  row.currencyOriginal = originalPrice.currencyOriginal
-  row.priceNormalizedBase = normalizedPrice.amount
+  const normalizedPrice = await normalizePriceRange({
+    min: originalPrice.priceOriginalMin,
+    max: originalPrice.priceOriginalMax,
+    currency: originalPrice.currency,
+    baseCurrency,
+  })
+  row.currency = originalPrice.currency
+  row.priceOriginalMin = normalizedPrice.priceOriginalMin
+  row.priceOriginalMax = normalizedPrice.priceOriginalMax
+  row.priceBaseMin = normalizedPrice.priceBaseMin
+  row.priceBaseMax = normalizedPrice.priceBaseMax
+  row.priceNormalizedBase = normalizedPrice.priceBaseMin
 
   // Trust & safety (project.md): strip outside-contact sharing / obscene content from descriptions.
   try {
@@ -611,15 +619,24 @@ export async function updateProductById(actor, productId, patch = {}) {
 
   const baseCurrency = await getBaseCurrency()
   const originalPrice = extractOriginalPrice({
+    priceOriginalMin: patch.priceOriginalMin !== undefined ? patch.priceOriginalMin : existing.priceOriginalMin,
+    priceOriginalMax: patch.priceOriginalMax !== undefined ? patch.priceOriginalMax : existing.priceOriginalMax,
     priceOriginal: patch.priceOriginal !== undefined ? patch.priceOriginal : existing.priceOriginal,
-    currencyOriginal: patch.currencyOriginal !== undefined ? patch.currencyOriginal : existing.currencyOriginal,
-    currency: patch.currency !== undefined ? patch.currency : existing.currencyOriginal,
+    currency: patch.currency !== undefined ? patch.currency : (existing.currency || existing.currencyOriginal),
     price_range: next.price_range,
   })
-  const normalizedPrice = await normalizeMoney(originalPrice.priceOriginal, originalPrice.currencyOriginal, baseCurrency)
-  next.priceOriginal = originalPrice.priceOriginal
-  next.currencyOriginal = originalPrice.currencyOriginal
-  next.priceNormalizedBase = normalizedPrice.amount
+  const normalizedPrice = await normalizePriceRange({
+    min: originalPrice.priceOriginalMin,
+    max: originalPrice.priceOriginalMax,
+    currency: originalPrice.currency,
+    baseCurrency,
+  })
+  next.currency = originalPrice.currency
+  next.priceOriginalMin = normalizedPrice.priceOriginalMin
+  next.priceOriginalMax = normalizedPrice.priceOriginalMax
+  next.priceBaseMin = normalizedPrice.priceBaseMin
+  next.priceBaseMax = normalizedPrice.priceBaseMax
+  next.priceNormalizedBase = normalizedPrice.priceBaseMin
 
   all[idx] = next
   await writeJson(FILE, all)
