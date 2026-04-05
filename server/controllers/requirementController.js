@@ -15,6 +15,7 @@ import { generateMatchesForRequirement, listMatchesForRequirement } from '../ser
 import { getOrderCertificationMap } from '../services/orderCertificationService.js'
 import { isOpenSearchConfigured, searchOpenSearch } from '../services/openSearchService.js'
 import { getBaseCurrency, normalizeMoney } from '../services/currencyService.js'
+import { recordJourneyEvent } from '../services/dealJourneyService.js'
 
 function redactRequirementForBuyer(requirement) {
   return {
@@ -119,7 +120,7 @@ function rangesOverlap(filterRange, valueRange) {
   return true
 }
 
-function numberInsideRange(value, rangeRaw) {
+function _numberInsideRange(value, rangeRaw) {
   const range = parseRange(rangeRaw)
   if (!Number.isFinite(value)) return false
   if (range.min !== null && value < range.min) return false
@@ -274,6 +275,10 @@ export async function getRequirements(req, res) {
 }
 
 export async function browseRequirements(req, res) {
+  await recordJourneyEvent('search_open', {
+    search_source: 'requirements_search',
+    requirement_id: req.query.requirement_id || req.query.id || '',
+  }, { actor_id: req.user.id }).catch(() => null)
   const [all, users] = await Promise.all([
     listRequirements({}),
     readJson('users.json'),

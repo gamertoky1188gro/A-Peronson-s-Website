@@ -1,5 +1,6 @@
 import { readJson, writeJson } from '../utils/jsonStore.js'
 import { trackTransition } from '../utils/metrics.js'
+import { recordJourneyEvent } from './dealJourneyService.js'
 
 const USERS_FILE = 'users.json'
 const MATCHES_FILE = 'matches.json'
@@ -42,6 +43,10 @@ export async function generateMatchesForRequirement(requirement) {
   const matches = await readJson(MATCHES_FILE)
   const withoutOld = matches.filter((m) => m.requirement_id !== requirement.id)
   await writeJson(MATCHES_FILE, [...withoutOld, ...ranked])
+
+  if (ranked.length > 0) {
+    await recordJourneyEvent('match_confirmed', { requirement_id: requirement.id }, { match_count: ranked.length }).catch(() => null)
+  }
 
   return ranked
 }

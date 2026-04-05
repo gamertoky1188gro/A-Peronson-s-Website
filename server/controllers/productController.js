@@ -18,6 +18,7 @@ import { getActiveBoostMap } from '../services/boostService.js'
 import { getOrderCertificationMap } from '../services/orderCertificationService.js'
 import { isOpenSearchConfigured, searchOpenSearch } from '../services/openSearchService.js'
 import { getBaseCurrency, normalizeMoney } from '../services/currencyService.js'
+import { recordJourneyEvent } from '../services/dealJourneyService.js'
 
 function parseNumber(value) {
   if (value === undefined || value === null) return null
@@ -93,7 +94,7 @@ function rangesOverlap(filterRange, valueRange) {
   return true
 }
 
-function numberInsideRange(value, rangeRaw) {
+function _numberInsideRange(value, rangeRaw) {
   const range = parseRange(rangeRaw)
   if (!Number.isFinite(value)) return false
   if (range.min !== null && value < range.min) return false
@@ -271,6 +272,10 @@ export async function getProducts(req, res) {
 }
 
 export async function searchProducts(req, res) {
+  await recordJourneyEvent('search_open', {
+    search_source: 'products_search',
+    product_id: req.query.product_id || req.query.id || '',
+  }, { actor_id: req.user.id }).catch(() => null)
   const plan = await getUserPlan(req.user.id)
   const priorityOnly = req.query.priorityOnly === 'true'
   if (priorityOnly) {

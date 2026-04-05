@@ -25,13 +25,14 @@
     - Tactile CTA feedback (active:scale-95).
 */
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 import { trackClientEvent } from '../lib/events'
 import { recordLeadSource } from '../lib/leadSource'
 import VerificationPanel from '../components/profile/VerificationPanel'
 import CrmSummaryPanel from '../components/profile/CrmSummaryPanel'
+import JourneyTimeline from '../components/journey/JourneyTimeline'
 
 const Motion = motion
 
@@ -56,6 +57,7 @@ function isBoostActive(boost) {
 export default function BuyerProfile() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const token = useMemo(() => getToken(), [])
   const currentUser = useMemo(() => getCurrentUser(), [])
 
@@ -72,6 +74,7 @@ export default function BuyerProfile() {
   const [loadingRequests, setLoadingRequests] = useState(false)
   const [profileBoost, setProfileBoost] = useState(null)
   const reduceMotion = useReducedMotion()
+  const journeyParams = useMemo(() => new URLSearchParams(location.search), [location.search])
 
   const user = profile?.user || null
   const verification = profile?.verification_summary || null
@@ -322,6 +325,12 @@ export default function BuyerProfile() {
 
         <main className="col-span-12 lg:col-span-8 space-y-4">
           <CrmSummaryPanel targetId={user.id} />
+          <JourneyTimeline
+            title="Journey Timeline"
+            matchId={journeyParams.get('match_id') || journeyParams.get('journey_match_id') || ''}
+            contractId={journeyParams.get('contract_id') || ''}
+            requirementId={journeyParams.get('requirement_id') || ''}
+          />
           <motion.div
             initial={reduceMotion ? false : { opacity: 0, y: 16 }}
             animate={reduceMotion ? false : { opacity: 1, y: 0 }}
