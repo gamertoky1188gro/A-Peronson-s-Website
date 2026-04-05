@@ -3,6 +3,46 @@
 
 **Access:** Protected (Login required). **Roles:** buyer, buying_house, factory, owner, admin, agent
 
+## IA + Control Map (2026-04 UX pass)
+
+### Top-level filter sections
+
+1. **Product**
+   - **Core (always visible):** Industry, MOQ range, Price per unit.
+   - **More filters:** Country and Verified only.
+   - **Advanced nested block:** Product attributes (fabric type, GSM, size range, color/pantone, customization, sample readiness, certifications, incoterms).
+2. **Supplier / Account**
+   - **Core (always visible):** Account type.
+   - **More filters:** Lead-time cap.
+   - **Advanced nested block:** Supplier/account attributes (payment terms, document readiness, audit, language support, capacity, processes, team/response buckets, export ports, geo distance, multi-factory handling).
+
+### Progressive disclosure model
+
+- Level 1: section core controls.
+- Level 2: section “More filters”.
+- Level 3: nested “Advanced block” within Product or Supplier/Account mode.
+
+### Presets and persistence
+
+- Presets: `buyer`, `buying_house`, `factory`.
+- Selected preset is persisted in local storage (`gt_search_selected_preset`).
+- Preset-specific filter payloads are saved locally (`gt_search_preset_<preset>`), and can also be saved server-side using search alerts.
+
+### Sticky active-filter rail
+
+- Active filter chips and a global **Clear all** action remain visible in a sticky area under category chips.
+
+### Telemetry
+
+- `search_filter_depth_opened`: records disclosure depth (1-3) and preset.
+- `search_filter_abandonment`: tracks abandonment when filters were changed but no search run occurred.
+- `search_preset_conversion`: tracks search conversion by selected preset.
+
+### UX cleanup decisions
+
+- Rare/secondary controls were moved behind section “More filters” and nested advanced blocks.
+- First interaction path now prioritizes high-signal, low-friction controls.
+
 ## 1) Purpose
 
 - **Why it exists:** See the route header comment in `src/pages/SearchResults.jsx`.
@@ -3927,4 +3967,3 @@
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
 {% endraw %}
-
