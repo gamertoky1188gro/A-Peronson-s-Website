@@ -30,6 +30,7 @@ import { createKnowledgeEntry, deleteKnowledgeEntry, updateKnowledgeEntry } from
 import { recordRefund } from './refundService.js'
 import { adminUpdateSupportTicket, createSupportTicket } from './supportTicketService.js'
 import { addOrderCertificationEvidence, approveOrderCertification, revokeOrderCertification } from './orderCertificationService.js'
+import { sendEmail } from './emailService.js'
 
 function toId(value, max = 120) {
   return sanitizeString(String(value || ''), max)
@@ -1837,6 +1838,21 @@ export async function performAdminAction(action, payload = {}, actor) {
     }
     const config = await updateAdminConfig({ search_limits: patch })
     return { ok: true, config }
+  }
+
+  if (name === 'email.test_send') {
+    const config = await getAdminConfig()
+    const emailConfig = config?.notifications?.email || {}
+    const recipient = sanitizeString(String(payload.to || payload.recipient || emailConfig.test_recipient || ''), 160)
+    if (!recipient) {
+      const err = new Error('Recipient email is required')
+      err.status = 400
+      throw err
+    }
+    const subject = sanitizeString(String(payload.subject || 'GarTexHub test email'), 200)
+    const body = sanitizeString(String(payload.message || 'This is a test email from GarTexHub.'), 2000)
+    const result = await sendEmail({ to: recipient, subject, text: body })
+    return { ok: true, result }
   }
 
   if (name === 'integrations.update') {

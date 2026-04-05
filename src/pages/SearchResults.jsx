@@ -34,6 +34,8 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { apiRequest, getCurrentUser, getToken, hasEntitlement } from '../lib/auth'
 import ProductQuickViewModal from '../components/products/ProductQuickViewModal'
 import { trackClientEvent } from '../lib/events'
+import { recordLeadSource } from '../lib/leadSource'
+import L from 'leaflet'
 
 const Motion = motion
 
@@ -50,6 +52,105 @@ const INDUSTRY_OPTIONS = [
 
 const GARMENT_CATEGORIES = ['Shirts', 'Pants', 'Jackets', 'Knitwear', 'Denim', 'Women', 'Kids']
 const TEXTILE_CATEGORIES = ['Woven', 'Knit', 'Denim', 'Non-woven', 'Yarn', 'Trim', 'Accessories']
+const FABRIC_TYPE_OPTIONS = ['Cotton', 'Polyester', 'Blend', 'Denim', 'Linen', 'Wool']
+const CERTIFICATION_OPTIONS = ['GOTS', 'OEKO-TEX', 'BSCI', 'WRAP', 'Sedex']
+const PROCESS_OPTIONS = ['Knit', 'Woven', 'Dyeing', 'Finishing', 'Embroidery', 'Printing']
+const LANGUAGE_OPTIONS = ['English', 'Bangla', 'Chinese', 'Spanish']
+const INCOTERM_OPTIONS = ['FOB', 'CIF', 'EXW', 'DDP']
+const PAYMENT_OPTIONS = ['LC', 'TT', 'Escrow', 'Bank Guarantee']
+const DOCUMENT_READY_OPTIONS = ['Export Docs', 'Lab Reports', 'Techpacks']
+const CUSTOMIZATION_OPTIONS = ['Techpack Accepted', 'Pattern Making', 'Embroidery']
+const SIZE_RANGE_OPTIONS = ['XS-XL', 'S-XXL', 'Custom']
+const EXPORT_PORT_OPTIONS = ['Chittagong', 'Dhaka', 'Shanghai', 'Shenzhen', 'Singapore']
+const YEARS_IN_BUSINESS_MIN_BUCKETS = [
+  { value: '', label: 'Any' },
+  { value: '1', label: '1+ yr' },
+  { value: '3', label: '3+ yr' },
+  { value: '5', label: '5+ yr' },
+  { value: '10', label: '10+ yr' },
+]
+const RESPONSE_TIME_MAX_BUCKETS = [
+  { value: '', label: 'Any' },
+  { value: '1', label: '≤ 1h' },
+  { value: '4', label: '≤ 4h' },
+  { value: '12', label: '≤ 12h' },
+  { value: '24', label: '≤ 24h' },
+  { value: '48', label: '≤ 48h' },
+]
+const TEAM_SEATS_MIN_BUCKETS = [
+  { value: '', label: 'Any' },
+  { value: '2', label: '2+' },
+  { value: '5', label: '5+' },
+  { value: '10', label: '10+' },
+  { value: '25', label: '25+' },
+]
+const SAMPLE_LEAD_TIME_MAX_DAYS = 45
+
+function parseCsvParam(value) {
+  return String(value || '')
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+}
+
+function toCsv(value) {
+  if (!value) return ''
+  if (Array.isArray(value)) return value.filter(Boolean).join(',')
+  return String(value || '')
+}
+
+function hasFilterValue(value) {
+  if (Array.isArray(value)) return value.length > 0
+  if (typeof value === 'boolean') return value
+  return String(value || '').trim().length > 0
+}
+
+function parseRangeValue(value) {
+  const raw = String(value || '').trim()
+  if (!raw || !raw.includes('-')) return { min: '', max: '' }
+  const [min, max] = raw.split('-').map((part) => part.trim())
+  return { min, max }
+}
+
+function rangeToString(min, max) {
+  const minVal = String(min || '').trim()
+  const maxVal = String(max || '').trim()
+  if (!minVal && !maxVal) return ''
+  if (!maxVal) return `${minVal}-`
+  if (!minVal) return `0-${maxVal}`
+  return `${minVal}-${maxVal}`
+}
+
+function mergeFacetCounts(a = {}, b = {}) {
+  const out = { ...(a || {}) }
+  Object.entries(b || {}).forEach(([key, counts]) => {
+    const bucket = out[key] || {}
+    Object.entries(counts || {}).forEach(([label, count]) => {
+      bucket[label] = (bucket[label] || 0) + Number(count || 0)
+    })
+    out[key] = bucket
+  })
+  return out
+}
+
+function getFacetCount(counts = {}, label = '') {
+  if (!counts || !label) return undefined
+  if (counts[label] !== undefined) return counts[label]
+  const lower = label.toLowerCase()
+  if (counts[lower] !== undefined) return counts[lower]
+  const matchKey = Object.keys(counts).find((key) => String(key).toLowerCase() === lower)
+  return matchKey ? counts[matchKey] : undefined
+}
+
+function hashString(value) {
+  let hash = 0
+  const text = String(value || '')
+  for (let i = 0; i < text.length; i += 1) {
+    hash = ((hash << 5) - hash) + text.charCodeAt(i)
+    hash |= 0
+  }
+  return Math.abs(hash).toString(36)
+}
 
 function roleToProfileRoute(role, id) {
   // Convert a company role -> correct profile route.
@@ -94,7 +195,7 @@ function buildQueryString({ q, category, filters, includeAdvanced, includePriori
   // Core filters are always free; advanced filters require premium.
   const params = new URLSearchParams()
   if (q) params.set('q', q)
-  if (category) params.set('category', category)
+  if (Array.isArray(category) ? category.length : category) params.set('category', toCsv(category))
   if (filters.industry) params.set('industry', filters.industry)
 
   // Core filters (always included if set)
@@ -108,27 +209,27 @@ function buildQueryString({ q, category, filters, includeAdvanced, includePriori
 
   // Advanced filters (premium only)
   if (includeAdvanced) {
-    if (filters.fabricType) params.set('fabricType', filters.fabricType)
+    if (hasFilterValue(filters.fabricType)) params.set('fabricType', toCsv(filters.fabricType))
     if (filters.gsmMin) params.set('gsmMin', filters.gsmMin)
     if (filters.gsmMax) params.set('gsmMax', filters.gsmMax)
     if (filters.sizeRange) params.set('sizeRange', filters.sizeRange)
-    if (filters.colorPantone) params.set('colorPantone', filters.colorPantone)
-    if (filters.customization) params.set('customization', filters.customization)
+    if (hasFilterValue(filters.colorPantone)) params.set('colorPantone', toCsv(filters.colorPantone))
+    if (hasFilterValue(filters.customization)) params.set('customization', toCsv(filters.customization))
     if (filters.sampleAvailable) params.set('sampleAvailable', 'true')
     if (filters.sampleLeadTime) params.set('sampleLeadTime', filters.sampleLeadTime)
-    if (filters.certifications) params.set('certifications', filters.certifications)
-    if (filters.incoterms) params.set('incoterms', filters.incoterms)
-    if (filters.paymentTerms) params.set('paymentTerms', filters.paymentTerms)
-    if (filters.documentReady) params.set('documentReady', filters.documentReady)
+    if (hasFilterValue(filters.certifications)) params.set('certifications', toCsv(filters.certifications))
+    if (hasFilterValue(filters.incoterms)) params.set('incoterms', toCsv(filters.incoterms))
+    if (hasFilterValue(filters.paymentTerms)) params.set('paymentTerms', toCsv(filters.paymentTerms))
+    if (hasFilterValue(filters.documentReady)) params.set('documentReady', toCsv(filters.documentReady))
     if (filters.auditDate) params.set('auditDate', filters.auditDate)
-    if (filters.languageSupport) params.set('languageSupport', filters.languageSupport)
+    if (hasFilterValue(filters.languageSupport)) params.set('languageSupport', toCsv(filters.languageSupport))
     if (filters.capacityMin) params.set('capacityMin', filters.capacityMin)
-    if (filters.processes) params.set('processes', filters.processes)
+    if (hasFilterValue(filters.processes)) params.set('processes', toCsv(filters.processes))
     if (filters.yearsInBusinessMin) params.set('yearsInBusinessMin', filters.yearsInBusinessMin)
     if (filters.responseTimeMax) params.set('responseTimeMax', filters.responseTimeMax)
     if (filters.teamSeatsMin) params.set('teamSeatsMin', filters.teamSeatsMin)
     if (filters.handlesMultipleFactories) params.set('handlesMultipleFactories', 'true')
-    if (filters.exportPort) params.set('exportPort', filters.exportPort)
+    if (hasFilterValue(filters.exportPort)) params.set('exportPort', toCsv(filters.exportPort))
     if (filters.distanceKm) params.set('distanceKm', filters.distanceKm)
     if (filters.locationLat) params.set('locationLat', filters.locationLat)
     if (filters.locationLng) params.set('locationLng', filters.locationLng)
@@ -167,6 +268,106 @@ function ResultSkeletonCard({ index }) {
   )
 }
 
+function ChipGroup({ options = [], values = [], onChange, disabled, counts = {} }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((option) => {
+        const selected = values.includes(option)
+        const count = getFacetCount(counts, option)
+        return (
+          <button
+            key={option}
+            type="button"
+            disabled={disabled}
+            onClick={() => {
+              if (disabled) return
+              if (selected) onChange(values.filter((entry) => entry !== option))
+              else onChange([...values, option])
+            }}
+            className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${
+              selected
+                ? ' bg-[var(--gt-blue)] text-white ring-transparent dark:bg-[var(--gt-blue)] dark:text-white'
+                : ' bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10'
+            } ${disabled ? 'opacity-50' : ''}`}
+          >
+            {option}
+            {Number.isFinite(Number(count)) ? (
+              <span className={`ml-1 text-[10px] ${selected ? 'text-white/80' : 'text-slate-400'}`}>({count})</span>
+            ) : null}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function BucketChips({ options = [], value = '', onChange, disabled }) {
+  const selectedValue = String(value || '')
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((option) => {
+        const optValue = String(option?.value ?? '')
+        const selected = selectedValue === optValue || (!selectedValue && !optValue)
+        return (
+          <button
+            key={`${optValue || 'any'}-${option.label}`}
+            type="button"
+            disabled={disabled}
+            onClick={() => {
+              if (disabled) return
+              const next = selected && optValue ? '' : optValue
+              onChange(next)
+            }}
+            className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${
+              selected
+                ? ' bg-[var(--gt-blue)] text-white ring-transparent dark:bg-[var(--gt-blue)] dark:text-white'
+                : ' bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10'
+            } ${disabled ? 'opacity-50' : ''}`}
+          >
+            {option.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function RangeSlider({ min = 0, max = 100, step = 1, valueMin = '', valueMax = '', onChange, suffix = '', disabled = false }) {
+  const minValue = valueMin === '' ? min : Number(valueMin)
+  const maxValue = valueMax === '' ? max : Number(valueMax)
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 text-[11px] text-slate-500">
+        <span>{Number.isFinite(minValue) ? minValue : min}{suffix}</span>
+        <div className="h-px flex-1 bg-slate-200" />
+        <span>{Number.isFinite(maxValue) ? maxValue : max}{suffix}</span>
+      </div>
+      <div className="flex items-center gap-3">
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={Number.isFinite(minValue) ? minValue : min}
+          onChange={(event) => onChange(String(event.target.value || ''), valueMax)}
+          disabled={disabled}
+          className="w-full"
+        />
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={Number.isFinite(maxValue) ? maxValue : max}
+          onChange={(event) => onChange(valueMin, String(event.target.value || ''))}
+          disabled={disabled}
+          className="w-full"
+        />
+      </div>
+    </div>
+  )
+}
+
 export default function SearchResults() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -184,7 +385,7 @@ export default function SearchResults() {
   // URL-serializable search state (project.md): allows sharing/saving searches.
   const [query, setQuery] = useState(() => searchParams.get('q') || '')
   const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'all')
-  const [category, setCategory] = useState(() => searchParams.get('category') || '')
+  const [category, setCategory] = useState(() => parseCsvParam(searchParams.get('category')))
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false)
   const [filterMode, setFilterMode] = useState('product')
@@ -193,6 +394,15 @@ export default function SearchResults() {
   const [autoSaveCandidate, setAutoSaveCandidate] = useState(null)
   const [earlyVerifiedFactories, setEarlyVerifiedFactories] = useState([])
   const [earlyVerifiedError, setEarlyVerifiedError] = useState('')
+  const [pantoneDraft, setPantoneDraft] = useState('')
+  const [locationLabel, setLocationLabel] = useState('')
+  const [geoQuery, setGeoQuery] = useState('')
+  const [geoResults, setGeoResults] = useState([])
+  const [geoLoading, setGeoLoading] = useState(false)
+  const [geoError, setGeoError] = useState('')
+  const [showMapPreview, setShowMapPreview] = useState(false)
+  const mapRef = useRef(null)
+  const mapInstanceRef = useRef(null)
   const [autoSaveAlertsEnabled] = useState(() => {
     const raw = sessionUser?.profile?.auto_save_search_alerts
     if (raw === undefined || raw === null || raw === '') return true
@@ -209,27 +419,27 @@ export default function SearchResults() {
     priorityOnly: searchParams.get('priorityOnly') === 'true',
     // Expanded filters (project.md)
     leadTimeMax: searchParams.get('leadTimeMax') || '',
-    fabricType: searchParams.get('fabricType') || '',
+    fabricType: parseCsvParam(searchParams.get('fabricType')),
     gsmMin: searchParams.get('gsmMin') || '',
     gsmMax: searchParams.get('gsmMax') || '',
     sizeRange: searchParams.get('sizeRange') || '',
-    colorPantone: searchParams.get('colorPantone') || '',
-    customization: searchParams.get('customization') || '',
+    colorPantone: parseCsvParam(searchParams.get('colorPantone')),
+    customization: parseCsvParam(searchParams.get('customization')),
     sampleAvailable: searchParams.get('sampleAvailable') === 'true',
     sampleLeadTime: searchParams.get('sampleLeadTime') || '',
-    certifications: searchParams.get('certifications') || '',
-    incoterms: searchParams.get('incoterms') || '',
-    paymentTerms: searchParams.get('paymentTerms') || '',
-    documentReady: searchParams.get('documentReady') || '',
+    certifications: parseCsvParam(searchParams.get('certifications')),
+    incoterms: parseCsvParam(searchParams.get('incoterms')),
+    paymentTerms: parseCsvParam(searchParams.get('paymentTerms')),
+    documentReady: parseCsvParam(searchParams.get('documentReady')),
     auditDate: searchParams.get('auditDate') || '',
-    languageSupport: searchParams.get('languageSupport') || '',
+    languageSupport: parseCsvParam(searchParams.get('languageSupport')),
     capacityMin: searchParams.get('capacityMin') || '',
-    processes: searchParams.get('processes') || '',
+    processes: parseCsvParam(searchParams.get('processes')),
     yearsInBusinessMin: searchParams.get('yearsInBusinessMin') || '',
     responseTimeMax: searchParams.get('responseTimeMax') || '',
     teamSeatsMin: searchParams.get('teamSeatsMin') || '',
     handlesMultipleFactories: searchParams.get('handlesMultipleFactories') === 'true',
-    exportPort: searchParams.get('exportPort') || '',
+    exportPort: parseCsvParam(searchParams.get('exportPort')),
     distanceKm: searchParams.get('distanceKm') || '',
     locationLat: searchParams.get('locationLat') || '',
     locationLng: searchParams.get('locationLng') || '',
@@ -278,17 +488,41 @@ export default function SearchResults() {
     return [...new Set([...GARMENT_CATEGORIES, ...TEXTILE_CATEGORIES])]
   }, [filters.industry])
 
+  const facetCounts = useMemo(() => ({
+    category: facets?.category || {},
+    fabricType: facets?.fabricType || facets?.fabric_type || {},
+    certifications: facets?.certifications || {},
+    processes: facets?.processes || {},
+    languageSupport: facets?.languageSupport || facets?.language_support || {},
+    incoterms: facets?.incoterms || {},
+    paymentTerms: facets?.paymentTerms || facets?.payment_terms || {},
+    documentReady: facets?.documentReady || facets?.document_ready || {},
+    exportPort: facets?.exportPort || facets?.export_ports || {},
+  }), [facets])
+
+  const moqRangeValues = useMemo(() => parseRangeValue(filters.moqRange), [filters.moqRange])
+  const priceRangeValues = useMemo(() => parseRangeValue(filters.priceRange), [filters.priceRange])
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [quotaMessage, setQuotaMessage] = useState('')
 
   const [requests, setRequests] = useState([])
   const [companies, setCompanies] = useState([])
+  const [requestsTotal, setRequestsTotal] = useState(0)
+  const [companiesTotal, setCompaniesTotal] = useState(0)
+  const [facets, setFacets] = useState({})
   const [ratingsByProfileKey, setRatingsByProfileKey] = useState({})
   const [recentViews, setRecentViews] = useState([])
   const [quickViewItem, setQuickViewItem] = useState(null)
 
-  const totalResults = requests.length + companies.length
+  const [estimateTotals, setEstimateTotals] = useState({ requests: null, companies: null })
+  const [estimateLoading, setEstimateLoading] = useState(false)
+  const [estimateError, setEstimateError] = useState('')
+  const estimateSeqRef = useRef(0)
+  const skipEstimateRef = useRef(false)
+
+  const totalResults = (Number(requestsTotal) || 0) + (Number(companiesTotal) || 0)
 
   const autoSearchRef = useRef(false)
   const filterTrackRef = useRef({ key: '', initialized: false })
@@ -304,7 +538,7 @@ export default function SearchResults() {
       await apiRequest('/search/alerts', {
         method: 'POST',
         token,
-        body: { query: candidate.query || 'saved-search', filters: { category: candidate.category, ...candidate.filters, auto: true } },
+        body: { query: candidate.query || 'saved-search', filters: { category: toCsv(candidate.category), ...candidate.filters, auto: true } },
       })
     } catch (err) {
       if (err?.status === 429) {
@@ -326,7 +560,7 @@ export default function SearchResults() {
     try {
       const qsUrl = buildQueryString({
         q,
-        category: category.trim(),
+        category,
         filters,
         includeAdvanced: hasAdvancedAccess,
         includePriority: Boolean(filters.priorityOnly),
@@ -335,14 +569,14 @@ export default function SearchResults() {
       const includePriorityCompanies = Boolean(filters.priorityOnly) && activeTab !== 'requests' && canPriorityAccessCompanies
       const qsRequests = buildQueryString({
         q,
-        category: category.trim(),
+        category,
         filters,
         includeAdvanced: hasAdvancedAccess,
         includePriority: includePriorityRequests,
       })
       const qsProducts = buildQueryString({
         q,
-        category: category.trim(),
+        category,
         filters,
         includeAdvanced: hasAdvancedAccess,
         includePriority: includePriorityCompanies,
@@ -360,15 +594,26 @@ export default function SearchResults() {
 
       const reqItems = Array.isArray(reqRes?.items) ? reqRes.items : []
       const prodItems = Array.isArray(prodRes?.items) ? prodRes.items : []
+      const reqTotal = Number.isFinite(Number(reqRes?.total)) ? Number(reqRes.total) : reqItems.length
+      const prodTotal = Number.isFinite(Number(prodRes?.total)) ? Number(prodRes.total) : prodItems.length
 
       setRequests(reqItems)
       setCompanies(prodItems)
+      setRequestsTotal(reqTotal)
+      setCompaniesTotal(prodTotal)
+
+      const reqFacets = reqRes?.facets || {}
+      const prodFacets = prodRes?.facets || {}
+      const mergedFacets = activeTab === 'requests'
+        ? reqFacets
+        : (activeTab === 'companies' ? prodFacets : mergeFacetCounts(reqFacets, prodFacets))
+      setFacets(mergedFacets || {})
 
       const mergedCapabilities = reqRes?.capabilities || prodRes?.capabilities || { filters: { advanced: false } }
       setCapabilities(mergedCapabilities)
 
-      const hasActiveFilters = Boolean(q) || Boolean(category.trim()) || Object.values(filters || {}).some((v) => (typeof v === 'boolean' ? v : String(v || '').trim()))
-      const candidate = hasActiveFilters ? { query: q, category: category.trim(), filters } : null
+      const hasActiveFilters = Boolean(q) || category.length > 0 || Object.values(filters || {}).some((v) => hasFilterValue(v))
+      const candidate = hasActiveFilters ? { query: q, category, filters } : null
       setAutoSaveCandidate(candidate)
       await autoSaveAlert(candidate)
 
@@ -385,15 +630,29 @@ export default function SearchResults() {
         entityId: activeTab,
         metadata: {
           query: q,
-          category: category.trim(),
-          filters: { ...filters, advanced: hasAdvancedAccess },
-          total_results: reqItems.length + prodItems.length,
+          categories: category,
+          category_primary: category[0] || '',
+          industry: filters.industry || '',
+          tab: activeTab,
+          advanced: hasAdvancedAccess,
+          total_results: reqTotal + prodTotal,
         },
       })
+
+      if (q || category.length > 0 || Object.values(filters || {}).some((v) => hasFilterValue(v))) {
+        const fingerprint = hashString(JSON.stringify({ q, category, filters, tab: activeTab }))
+        recordLeadSource({
+          type: 'search',
+          id: fingerprint,
+          label: q || category.join(', ') || 'Search',
+        })
+      }
     } catch (err) {
       setError(err.message || 'Search failed')
       setRequests([])
       setCompanies([])
+      setRequestsTotal(0)
+      setCompaniesTotal(0)
       if (err?.quota?.unlimited) {
         setQuotaMessage('Core searches are unlimited on your plan.')
       } else if (err?.quota?.remaining !== undefined) {
@@ -423,11 +682,12 @@ export default function SearchResults() {
 
     const hasUrlQuery = Boolean(
       (query && query.trim()) ||
-      (category && category.trim()) ||
-      Object.values(filters || {}).some((v) => (typeof v === 'boolean' ? v : String(v || '').trim())),
+      category.length > 0 ||
+      Object.values(filters || {}).some((v) => hasFilterValue(v)),
     )
 
     if (hasUrlQuery) {
+      skipEstimateRef.current = true
       runSearch()
     }
   }, [category, filters, query, runSearch])
@@ -440,10 +700,90 @@ export default function SearchResults() {
   }, [filters.priorityOnly, priorityAllowedForTab])
 
   useEffect(() => {
+    if (!token) return
+    if (skipEstimateRef.current) {
+      skipEstimateRef.current = false
+      return
+    }
+
+    const q = query.trim()
+    const hasActiveFilters = Boolean(
+      q ||
+      category.length > 0 ||
+      Object.values(filters || {}).some((v) => hasFilterValue(v)),
+    )
+
+    if (!hasActiveFilters) {
+      setEstimateTotals({ requests: null, companies: null })
+      setEstimateError('')
+      setEstimateLoading(false)
+      return
+    }
+
+    const seq = (estimateSeqRef.current += 1)
+    const includePriorityRequests = Boolean(filters.priorityOnly) && activeTab !== 'companies' && canPriorityAccessRequests
+    const includePriorityCompanies = Boolean(filters.priorityOnly) && activeTab !== 'requests' && canPriorityAccessCompanies
+
+    const timer = window.setTimeout(async () => {
+      setEstimateLoading(true)
+      setEstimateError('')
+      try {
+        const qsRequestsBase = buildQueryString({
+          q,
+          category,
+          filters,
+          includeAdvanced: hasAdvancedAccess,
+          includePriority: includePriorityRequests,
+        })
+        const qsProductsBase = buildQueryString({
+          q,
+          category,
+          filters,
+          includeAdvanced: hasAdvancedAccess,
+          includePriority: includePriorityCompanies,
+        })
+
+        const qsRequests = `${qsRequestsBase}${qsRequestsBase ? '&' : ''}estimateOnly=true`
+        const qsProducts = `${qsProductsBase}${qsProductsBase ? '&' : ''}estimateOnly=true`
+        const [reqRes, prodRes] = await Promise.all([
+          apiRequest(`/requirements/search?${qsRequests}`, { token }),
+          apiRequest(`/products/search?${qsProducts}`, { token }),
+        ])
+
+        if (estimateSeqRef.current !== seq) return
+
+        const reqTotal = Number.isFinite(Number(reqRes?.total)) ? Number(reqRes.total) : 0
+        const prodTotal = Number.isFinite(Number(prodRes?.total)) ? Number(prodRes.total) : 0
+        setEstimateTotals({ requests: reqTotal, companies: prodTotal })
+
+        const mergedCapabilities = reqRes?.capabilities || prodRes?.capabilities
+        if (mergedCapabilities) setCapabilities(mergedCapabilities)
+      } catch (err) {
+        if (estimateSeqRef.current !== seq) return
+        setEstimateTotals({ requests: null, companies: null })
+        setEstimateError(err.message || 'Unable to estimate results.')
+      } finally {
+        if (estimateSeqRef.current !== seq) return
+        setEstimateLoading(false)
+      }
+    }, 450)
+
+    return () => window.clearTimeout(timer)
+  }, [activeTab, canPriorityAccessCompanies, canPriorityAccessRequests, category, filters, hasAdvancedAccess, query, token])
+
+  useEffect(() => {
+    const activeAdvancedKeys = hasAdvancedAccess
+      ? ADVANCED_FILTER_KEYS.filter((key) => hasFilterValue(filters[key]))
+      : []
+    const activeCoreKeys = CORE_FILTER_KEYS.filter((key) => hasFilterValue(filters[key]))
     const payload = {
       query: query.trim(),
-      category: category.trim(),
-      filters: { ...filters, advanced: hasAdvancedAccess },
+      categories: category,
+      category_primary: category[0] || '',
+      industry: filters.industry || '',
+      tab: activeTab,
+      advanced: hasAdvancedAccess,
+      active_filter_keys: [...activeCoreKeys, ...activeAdvancedKeys],
     }
     const key = JSON.stringify(payload)
     if (!filterTrackRef.current.initialized) {
@@ -461,6 +801,46 @@ export default function SearchResults() {
     }, 600)
     return () => window.clearTimeout(timer)
   }, [activeTab, category, filters, hasAdvancedAccess, query])
+
+  useEffect(() => {
+    if (!geoQuery) {
+      setGeoResults([])
+      return
+    }
+    const timer = window.setTimeout(() => {
+      runGeoSearch(geoQuery)
+    }, 450)
+    return () => window.clearTimeout(timer)
+  }, [geoQuery])
+
+  useEffect(() => {
+    const lat = Number(filters.locationLat)
+    const lng = Number(filters.locationLng)
+    if (!showMapPreview) return
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return
+    if (!mapRef.current) return
+
+    if (!mapInstanceRef.current) {
+      mapInstanceRef.current = L.map(mapRef.current, {
+        center: [lat, lng],
+        zoom: 10,
+        zoomControl: false,
+        attributionControl: false,
+      })
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+      }).addTo(mapInstanceRef.current)
+    }
+
+    mapInstanceRef.current.setView([lat, lng], 10)
+    const marker = L.marker([lat, lng])
+    marker.addTo(mapInstanceRef.current)
+    return () => {
+      if (mapInstanceRef.current && marker) {
+        mapInstanceRef.current.removeLayer(marker)
+      }
+    }
+  }, [filters.locationLat, filters.locationLng, showMapPreview])
 
   const loadRecentViews = useCallback(async () => {
     try {
@@ -495,8 +875,79 @@ export default function SearchResults() {
     setFilters((prev) => ({ ...prev, [key]: value }))
   }
 
+  function toggleCategory(option) {
+    setCategory((prev) => {
+      if (prev.includes(option)) return prev.filter((entry) => entry !== option)
+      return [...prev, option]
+    })
+  }
+
+  function clearCategories() {
+    setCategory([])
+  }
+
   function updateCoreFilter(key, value) {
     setFilters((prev) => ({ ...prev, [key]: value }))
+  }
+
+  function updateRangeFilter(key, min, max) {
+    setFilters((prev) => ({ ...prev, [key]: rangeToString(min, max) }))
+  }
+
+  function addPantone(value) {
+    const cleaned = String(value || '').trim()
+    if (!cleaned) return
+    updateAdvancedFilter('colorPantone', [...new Set([...(filters.colorPantone || []), cleaned])])
+    setPantoneDraft('')
+  }
+
+  function removePantone(value) {
+    updateAdvancedFilter('colorPantone', (filters.colorPantone || []).filter((entry) => entry !== value))
+  }
+
+  async function runGeoSearch(term) {
+    const q = String(term || '').trim()
+    if (!q) {
+      setGeoResults([])
+      return
+    }
+    setGeoLoading(true)
+    setGeoError('')
+    try {
+      const data = await apiRequest(`/geo/search?q=${encodeURIComponent(q)}`)
+      setGeoResults(Array.isArray(data?.items) ? data.items : [])
+    } catch (err) {
+      setGeoResults([])
+      setGeoError(err.message || 'Unable to search location')
+    } finally {
+      setGeoLoading(false)
+    }
+  }
+
+  function selectGeoResult(result) {
+    if (!result) return
+    updateAdvancedFilter('locationLat', String(result.lat))
+    updateAdvancedFilter('locationLng', String(result.lng))
+    setLocationLabel(result.label || '')
+    setGeoQuery(result.label || '')
+    setGeoResults([])
+  }
+
+  function useCurrentLocation() {
+    if (!navigator.geolocation) {
+      setAlertFeedback('Geolocation is not available in this browser.')
+      return
+    }
+    navigator.geolocation.getCurrentPosition((position) => {
+      const lat = position.coords.latitude.toFixed(6)
+      const lng = position.coords.longitude.toFixed(6)
+      updateAdvancedFilter('locationLat', lat)
+      updateAdvancedFilter('locationLng', lng)
+      setLocationLabel('Current location')
+      setGeoQuery('Current location')
+    }, () => {
+      setAlertFeedback('Unable to access your location.')
+    })
   }
 
   function updatePriorityFilter(value) {
@@ -510,8 +961,8 @@ export default function SearchResults() {
   async function saveAlert(presetLabel = '') {
     setAlertFeedback('')
     const q = query.trim()
-    const hasFilters = Object.values(filters || {}).some((v) => (typeof v === 'boolean' ? v : String(v || '').trim()))
-    if (!q && !category && !hasFilters) {
+    const hasFilters = Object.values(filters || {}).some((v) => hasFilterValue(v))
+    if (!q && category.length === 0 && !hasFilters) {
       setAlertFeedback('Enter a query or select filters before saving.')
       return
     }
@@ -519,7 +970,7 @@ export default function SearchResults() {
       const result = await apiRequest('/search/alerts', {
         method: 'POST',
         token,
-        body: { query: q || 'saved-search', filters: { category, ...filters, preset: presetLabel } },
+        body: { query: q || 'saved-search', filters: { category: toCsv(category), ...filters, preset: presetLabel } },
       })
       setAlertFeedback(`Search saved. Remaining alert quota today: ${result?.quota?.remaining ?? '-'}`)
     } catch (err) {
@@ -545,9 +996,25 @@ export default function SearchResults() {
       }
       const preset = JSON.parse(raw)
       setQuery(preset?.query || '')
-      setCategory(preset?.category || '')
+      const presetCategory = Array.isArray(preset?.category)
+        ? preset.category
+        : parseCsvParam(preset?.category)
+      setCategory(presetCategory)
       if (preset?.filters) {
-        setFilters((prev) => ({ ...prev, ...preset.filters }))
+        setFilters((prev) => ({
+          ...prev,
+          ...preset.filters,
+          fabricType: Array.isArray(preset.filters.fabricType) ? preset.filters.fabricType : parseCsvParam(preset.filters.fabricType),
+          colorPantone: Array.isArray(preset.filters.colorPantone) ? preset.filters.colorPantone : parseCsvParam(preset.filters.colorPantone),
+          customization: Array.isArray(preset.filters.customization) ? preset.filters.customization : parseCsvParam(preset.filters.customization),
+          certifications: Array.isArray(preset.filters.certifications) ? preset.filters.certifications : parseCsvParam(preset.filters.certifications),
+          incoterms: Array.isArray(preset.filters.incoterms) ? preset.filters.incoterms : parseCsvParam(preset.filters.incoterms),
+          paymentTerms: Array.isArray(preset.filters.paymentTerms) ? preset.filters.paymentTerms : parseCsvParam(preset.filters.paymentTerms),
+          documentReady: Array.isArray(preset.filters.documentReady) ? preset.filters.documentReady : parseCsvParam(preset.filters.documentReady),
+          languageSupport: Array.isArray(preset.filters.languageSupport) ? preset.filters.languageSupport : parseCsvParam(preset.filters.languageSupport),
+          processes: Array.isArray(preset.filters.processes) ? preset.filters.processes : parseCsvParam(preset.filters.processes),
+          exportPort: Array.isArray(preset.filters.exportPort) ? preset.filters.exportPort : parseCsvParam(preset.filters.exportPort),
+        }))
       }
       setAlertFeedback(`Loaded ${presetKey.replace('_', ' ')} preset.`)
     } catch {
@@ -561,7 +1028,14 @@ export default function SearchResults() {
     setAutoSaveCandidate(null)
   }
 
-  function openChatNotice(name) {
+  function openChatNotice(name, leadSource) {
+    if (leadSource?.type && leadSource?.id) {
+      recordLeadSource({
+        type: leadSource.type,
+        id: leadSource.id,
+        label: leadSource.label || '',
+      })
+    }
     navigate('/chat', { state: { notice: `Contacting ${name}. If you are unverified, your first message may appear as a request.` } })
   }
 
@@ -632,8 +1106,8 @@ export default function SearchResults() {
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={() => setCategory('')}
-              className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${category ? 'bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50' : 'bg-[var(--gt-blue)] text-white ring-transparent'}`}
+              onClick={clearCategories}
+              className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${category.length ? ' bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50' : ' bg-[var(--gt-blue)] text-white ring-transparent'}`}
             >
               All categories
             </button>
@@ -641,13 +1115,34 @@ export default function SearchResults() {
               <button
                 key={option}
                 type="button"
-                onClick={() => setCategory(option)}
-                className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${category === option ? 'bg-[var(--gt-blue)] text-white ring-transparent' : 'bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50'}`}
+                onClick={() => toggleCategory(option)}
+                className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${category.includes(option) ? ' bg-[var(--gt-blue)] text-white ring-transparent' : ' bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50'}`}
               >
                 {option}
+                {Number.isFinite(Number(getFacetCount(facetCounts.category, option))) ? (
+                  <span className={`ml-1 text-[10px] ${category.includes(option) ? 'text-white/80' : 'text-slate-400'}`}>
+                    ({getFacetCount(facetCounts.category, option)})
+                  </span>
+                ) : null}
               </button>
             ))}
           </div>
+
+          {(estimateLoading || estimateError || estimateTotals.requests !== null || estimateTotals.companies !== null) ? (
+            <div className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
+              {estimateLoading ? 'Estimating results...' : estimateError ? (
+                <span className="text-rose-600">{estimateError}</span>
+              ) : (
+                <>
+                  {activeTab === 'requests'
+                    ? `Estimated buyer requests: ${estimateTotals.requests ?? 0}`
+                    : activeTab === 'companies'
+                      ? `Estimated companies: ${estimateTotals.companies ?? 0}`
+                      : `Estimated: ${(estimateTotals.requests ?? 0)} buyer requests · ${(estimateTotals.companies ?? 0)} companies (${(estimateTotals.requests ?? 0) + (estimateTotals.companies ?? 0)} total)`}
+                </>
+              )}
+            </div>
+          ) : null}
 
           {filtersOpen ? (
             <div className="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-3">
@@ -665,39 +1160,58 @@ export default function SearchResults() {
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>
-                  <select
-                    value={filters.moqRange}
-                    onChange={(e) => updateCoreFilter('moqRange', e.target.value)}
-                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                  >
-                    <option value="">{`MOQ: ${formatMoqRangeLabel('Any')}`}</option>
-                    <option value="0-100">MOQ: 0 - 100</option>
-                    <option value="101-300">MOQ: 101 - 300</option>
-                    <option value="301-1000">MOQ: 301 - 1000</option>
-                    <option value="1001-999999">MOQ: 1000+</option>
-                  </select>
-                  <input
-                    value={filters.priceRange}
-                    onChange={(e) => updateCoreFilter('priceRange', e.target.value)}
-                    placeholder="Price range (e.g. 5-10 USD)"
-                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                  />
+                  <div className="rounded-xl bg-white px-3 py-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                    <p className="text-[11px] font-semibold text-slate-500">MOQ range</p>
+                    <div className="mt-2">
+                      <RangeSlider
+                        min={0}
+                        max={5000}
+                        step={50}
+                        valueMin={moqRangeValues.min}
+                        valueMax={moqRangeValues.max}
+                        onChange={(min, max) => updateRangeFilter('moqRange', min, max)}
+                      />
+                    </div>
+                  </div>
+                  <div className="rounded-xl bg-white px-3 py-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                    <p className="text-[11px] font-semibold text-slate-500">Price per unit</p>
+                    <div className="mt-2">
+                      <RangeSlider
+                        min={0}
+                        max={200}
+                        step={1}
+                        valueMin={priceRangeValues.min}
+                        valueMax={priceRangeValues.max}
+                        onChange={(min, max) => updateRangeFilter('priceRange', min, max)}
+                        suffix=""
+                      />
+                    </div>
+                  </div>
                   <input
                     value={filters.country}
                     onChange={(e) => updateCoreFilter('country', e.target.value)}
                     placeholder="Country (e.g. Bangladesh)"
                     className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
                   />
-                  <select
-                    value={filters.orgType}
-                    onChange={(e) => updateCoreFilter('orgType', e.target.value)}
-                    className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                  >
-                    <option value="">Account type (Any)</option>
-                    <option value="buyer">Buyer</option>
-                    <option value="factory">Factory</option>
-                    <option value="buying_house">Buying House</option>
-                  </select>
+                  <div className="rounded-xl bg-white px-3 py-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                    <p className="text-[11px] font-semibold text-slate-500">Account type</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {['', 'buyer', 'factory', 'buying_house'].map((value) => {
+                        const label = value === '' ? 'Any' : (value === 'buying_house' ? 'Buying House' : value.charAt(0).toUpperCase() + value.slice(1))
+                        const active = filters.orgType === value
+                        return (
+                          <button
+                            key={value || 'any'}
+                            type="button"
+                            onClick={() => updateCoreFilter('orgType', value)}
+                            className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${active ? ' bg-[var(--gt-blue)] text-white ring-transparent' : ' bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50'}`}
+                          >
+                            {label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
                   <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
                     <input
                       type="checkbox"
@@ -736,7 +1250,7 @@ export default function SearchResults() {
                 </div>
               </div>
 
-              <div className={`rounded-2xl p-4 ring-1 shadow-sm${premiumLocked ? 'bg-amber-50 ring-amber-200 dark:bg-amber-500/10 dark:ring-amber-500/30' : 'bg-[#ffffff] ring-slate-200/70 dark:bg-slate-900/40 dark:ring-white/10'}`}>
+              <div className={`rounded-2xl p-4 ring-1 shadow-sm${premiumLocked ? ' bg-amber-50 ring-amber-200 dark:bg-amber-500/10 dark:ring-amber-500/30' : ' bg-[#ffffff] ring-slate-200/70 dark:bg-slate-900/40 dark:ring-white/10'}`}>
                 <div className="flex items-center justify-between gap-2">
                   <div>
                     <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Advanced filters</p>
@@ -772,50 +1286,95 @@ export default function SearchResults() {
 
                     {filterMode === 'product' ? (
                       <>
-                        <input
-                          value={filters.fabricType}
-                          onChange={(e) => updateAdvancedFilter('fabricType', e.target.value)}
-                          placeholder="Fabric type (e.g. Cotton)"
-                          disabled={premiumLocked}
-                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                        />
-                        <div className="grid grid-cols-2 gap-2">
-                          <input
-                            value={filters.gsmMin}
-                            onChange={(e) => updateAdvancedFilter('gsmMin', e.target.value)}
-                            placeholder="GSM min"
-                            disabled={premiumLocked}
-                            className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                          />
-                          <input
-                            value={filters.gsmMax}
-                            onChange={(e) => updateAdvancedFilter('gsmMax', e.target.value)}
-                            placeholder="GSM max"
-                            disabled={premiumLocked}
-                            className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                          />
+                        <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                          <p className="text-[11px] font-semibold text-slate-500">Fabric type</p>
+                          <div className="mt-2">
+                            <ChipGroup
+                              options={FABRIC_TYPE_OPTIONS}
+                              values={filters.fabricType}
+                              onChange={(values) => updateAdvancedFilter('fabricType', values)}
+                              disabled={premiumLocked}
+                              counts={facetCounts.fabricType}
+                            />
+                          </div>
                         </div>
-                        <input
+                        <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                          <p className="text-[11px] font-semibold text-slate-500">GSM / Weight</p>
+                          <div className="mt-2">
+                            <RangeSlider
+                              min={80}
+                              max={600}
+                              step={10}
+                              valueMin={filters.gsmMin}
+                              valueMax={filters.gsmMax}
+                              onChange={(min, max) => {
+                                updateAdvancedFilter('gsmMin', min)
+                                updateAdvancedFilter('gsmMax', max)
+                              }}
+                              disabled={premiumLocked}
+                            />
+                          </div>
+                        </div>
+                        <select
                           value={filters.sizeRange}
                           onChange={(e) => updateAdvancedFilter('sizeRange', e.target.value)}
-                          placeholder="Size range"
                           disabled={premiumLocked}
                           className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                        />
-                        <input
-                          value={filters.colorPantone}
-                          onChange={(e) => updateAdvancedFilter('colorPantone', e.target.value)}
-                          placeholder="Color / Pantone"
-                          disabled={premiumLocked}
-                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                        />
-                        <input
-                          value={filters.customization}
-                          onChange={(e) => updateAdvancedFilter('customization', e.target.value)}
-                          placeholder="Customization capability"
-                          disabled={premiumLocked}
-                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                        />
+                        >
+                          <option value="">Size range (Any)</option>
+                          {SIZE_RANGE_OPTIONS.map((option) => (
+                            <option key={option} value={option}>{option}</option>
+                          ))}
+                        </select>
+                        <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                          <p className="text-[11px] font-semibold text-slate-500">Color / Pantone</p>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {(filters.colorPantone || []).map((code) => (
+                              <button
+                                key={code}
+                                type="button"
+                                onClick={() => removePantone(code)}
+                                className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700"
+                              >
+                                {code} ×
+                              </button>
+                            ))}
+                          </div>
+                          <div className="mt-2 flex gap-2">
+                            <input
+                              value={pantoneDraft}
+                              onChange={(e) => setPantoneDraft(e.target.value)}
+                              placeholder="Add Pantone (e.g. 19-4052)"
+                              disabled={premiumLocked}
+                              className="flex-1 rounded-lg bg-white px-3 py-2 text-xs text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                              onKeyDown={(event) => {
+                                if (event.key === 'Enter') {
+                                  event.preventDefault()
+                                  addPantone(pantoneDraft)
+                                }
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => addPantone(pantoneDraft)}
+                              disabled={premiumLocked}
+                              className="rounded-lg bg-[var(--gt-blue)] px-3 py-2 text-[11px] font-semibold text-white disabled:opacity-60"
+                            >
+                              Add
+                            </button>
+                          </div>
+                        </div>
+                        <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                          <p className="text-[11px] font-semibold text-slate-500">Customization</p>
+                          <div className="mt-2">
+                            <ChipGroup
+                              options={CUSTOMIZATION_OPTIONS}
+                              values={filters.customization}
+                              onChange={(values) => updateAdvancedFilter('customization', values)}
+                              disabled={premiumLocked}
+                            />
+                          </div>
+                        </div>
                         <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
                           <input
                             type="checkbox"
@@ -826,108 +1385,193 @@ export default function SearchResults() {
                           />
                           Sample available
                         </label>
-                        <input
-                          value={filters.sampleLeadTime}
-                          onChange={(e) => updateAdvancedFilter('sampleLeadTime', e.target.value)}
-                          placeholder="Sample lead time (days)"
-                          disabled={premiumLocked}
-                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                        />
-                        <input
-                          value={filters.certifications}
-                          onChange={(e) => updateAdvancedFilter('certifications', e.target.value)}
-                          placeholder="Certifications (e.g. GOTS,BSCI)"
-                          disabled={premiumLocked}
-                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                        />
-                        <select
-                          value={filters.incoterms}
-                          onChange={(e) => updateAdvancedFilter('incoterms', e.target.value)}
-                          disabled={premiumLocked}
-                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                        >
-                          <option value="">Incoterms (Any)</option>
-                          <option value="FOB">FOB</option>
-                          <option value="CIF">CIF</option>
-                          <option value="EXW">EXW</option>
-                          <option value="DDP">DDP</option>
-                        </select>
+                        <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="text-[11px] font-semibold text-slate-500">Sample lead time (days)</p>
+                            <button
+                              type="button"
+                              onClick={() => updateAdvancedFilter('sampleLeadTime', '')}
+                              disabled={premiumLocked || !filters.sampleLeadTime}
+                              className="text-[10px] font-semibold text-slate-500 hover:text-slate-700 disabled:opacity-60 dark:text-slate-300 dark:hover:text-slate-200"
+                            >
+                              Clear
+                            </button>
+                          </div>
+                          <div className="mt-2 flex items-center gap-3">
+                            <input
+                              type="range"
+                              min="0"
+                              max={String(SAMPLE_LEAD_TIME_MAX_DAYS)}
+                              step="1"
+                              value={Number.isFinite(Number(filters.sampleLeadTime)) ? Number(filters.sampleLeadTime) : SAMPLE_LEAD_TIME_MAX_DAYS}
+                              onChange={(e) => updateAdvancedFilter('sampleLeadTime', e.target.value)}
+                              disabled={premiumLocked}
+                              className="w-full"
+                            />
+                            <input
+                              type="number"
+                              min="0"
+                              max={String(SAMPLE_LEAD_TIME_MAX_DAYS)}
+                              value={filters.sampleLeadTime}
+                              onChange={(e) => updateAdvancedFilter('sampleLeadTime', e.target.value)}
+                              placeholder="Any"
+                              disabled={premiumLocked}
+                              className="w-24 rounded-lg bg-white px-3 py-2 text-xs text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                            />
+                          </div>
+                          <div className="mt-1 text-[10px] text-slate-400">
+                            {filters.sampleLeadTime ? `Up to ${filters.sampleLeadTime} days` : 'Any (move slider to set)'}
+                          </div>
+                        </div>
+                        <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                          <p className="text-[11px] font-semibold text-slate-500">Certifications</p>
+                          <div className="mt-2">
+                            <ChipGroup
+                              options={CERTIFICATION_OPTIONS}
+                              values={filters.certifications}
+                              onChange={(values) => updateAdvancedFilter('certifications', values)}
+                              disabled={premiumLocked}
+                              counts={facetCounts.certifications}
+                            />
+                          </div>
+                        </div>
+                        <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                          <p className="text-[11px] font-semibold text-slate-500">Incoterms</p>
+                          <div className="mt-2">
+                            <ChipGroup
+                              options={INCOTERM_OPTIONS}
+                              values={filters.incoterms}
+                              onChange={(values) => updateAdvancedFilter('incoterms', values)}
+                              disabled={premiumLocked}
+                              counts={facetCounts.incoterms}
+                            />
+                          </div>
+                        </div>
                       </>
                     ) : (
                       <>
-                        <input
-                          value={filters.paymentTerms}
-                          onChange={(e) => updateAdvancedFilter('paymentTerms', e.target.value)}
-                          placeholder="Payment terms"
-                          disabled={premiumLocked}
-                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                        />
-                        <input
-                          value={filters.documentReady}
-                          onChange={(e) => updateAdvancedFilter('documentReady', e.target.value)}
-                          placeholder="Document readiness"
-                          disabled={premiumLocked}
-                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                        />
-                        <input
-                          value={filters.auditDate}
-                          onChange={(e) => updateAdvancedFilter('auditDate', e.target.value)}
-                          placeholder="Audit date"
-                          disabled={premiumLocked}
-                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                        />
-                        <input
-                          value={filters.languageSupport}
-                          onChange={(e) => updateAdvancedFilter('languageSupport', e.target.value)}
-                          placeholder="Language support"
-                          disabled={premiumLocked}
-                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                        />
-                        <input
-                          value={filters.capacityMin}
-                          onChange={(e) => updateAdvancedFilter('capacityMin', e.target.value)}
-                          placeholder="Min capacity / month"
-                          disabled={premiumLocked}
-                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                        />
-                        <input
-                          value={filters.processes}
-                          onChange={(e) => updateAdvancedFilter('processes', e.target.value)}
-                          placeholder="Main processes (e.g. knit, woven)"
-                          disabled={premiumLocked}
-                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                        />
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                          <p className="text-[11px] font-semibold text-slate-500">Payment terms</p>
+                          <div className="mt-2">
+                            <ChipGroup
+                              options={PAYMENT_OPTIONS}
+                              values={filters.paymentTerms}
+                              onChange={(values) => updateAdvancedFilter('paymentTerms', values)}
+                              disabled={premiumLocked}
+                              counts={facetCounts.paymentTerms}
+                            />
+                          </div>
+                        </div>
+                        <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                          <p className="text-[11px] font-semibold text-slate-500">Document readiness</p>
+                          <div className="mt-2">
+                            <ChipGroup
+                              options={DOCUMENT_READY_OPTIONS}
+                              values={filters.documentReady}
+                              onChange={(values) => updateAdvancedFilter('documentReady', values)}
+                              disabled={premiumLocked}
+                              counts={facetCounts.documentReady}
+                            />
+                          </div>
+                        </div>
+                        <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                          <p className="text-[11px] font-semibold text-slate-500">Last audit date</p>
                           <input
-                            value={filters.yearsInBusinessMin}
-                            onChange={(e) => updateAdvancedFilter('yearsInBusinessMin', e.target.value)}
-                            placeholder="Years in business (min)"
+                            type="date"
+                            value={filters.auditDate}
+                            onChange={(e) => updateAdvancedFilter('auditDate', e.target.value)}
                             disabled={premiumLocked}
-                            className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                          />
-                          <input
-                            value={filters.responseTimeMax}
-                            onChange={(e) => updateAdvancedFilter('responseTimeMax', e.target.value)}
-                            placeholder="Response time max (hours)"
-                            disabled={premiumLocked}
-                            className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                            className="mt-2 w-full rounded-lg bg-white px-3 py-2 text-xs text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
                           />
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <input
-                            value={filters.teamSeatsMin}
-                            onChange={(e) => updateAdvancedFilter('teamSeatsMin', e.target.value)}
-                            placeholder="Team seats (min)"
-                            disabled={premiumLocked}
-                            className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                          />
-                          <input
-                            value={filters.exportPort}
-                            onChange={(e) => updateAdvancedFilter('exportPort', e.target.value)}
-                            placeholder="Export ports (comma-separated)"
-                            disabled={premiumLocked}
-                            className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                          />
+                        <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                          <p className="text-[11px] font-semibold text-slate-500">Language support</p>
+                          <div className="mt-2">
+                            <ChipGroup
+                              options={LANGUAGE_OPTIONS}
+                              values={filters.languageSupport}
+                              onChange={(values) => updateAdvancedFilter('languageSupport', values)}
+                              disabled={premiumLocked}
+                              counts={facetCounts.languageSupport}
+                            />
+                          </div>
+                        </div>
+                        <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                          <p className="text-[11px] font-semibold text-slate-500">Production capacity (units/month)</p>
+                          <div className="mt-2 flex items-center gap-3">
+                            <input
+                              type="range"
+                              min="0"
+                              max="100000"
+                              step="500"
+                              value={Number(filters.capacityMin || 0)}
+                              onChange={(e) => updateAdvancedFilter('capacityMin', e.target.value)}
+                              disabled={premiumLocked}
+                              className="w-full"
+                            />
+                            <span className="text-[11px] font-semibold">{filters.capacityMin || 0}</span>
+                          </div>
+                        </div>
+                        <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                          <p className="text-[11px] font-semibold text-slate-500">Main processes</p>
+                          <div className="mt-2">
+                            <ChipGroup
+                              options={PROCESS_OPTIONS}
+                              values={filters.processes}
+                              onChange={(values) => updateAdvancedFilter('processes', values)}
+                              disabled={premiumLocked}
+                              counts={facetCounts.processes}
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                          <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                            <p className="text-[11px] font-semibold text-slate-500">Years in business (min)</p>
+                            <div className="mt-2">
+                              <BucketChips
+                                options={YEARS_IN_BUSINESS_MIN_BUCKETS}
+                                value={filters.yearsInBusinessMin}
+                                onChange={(value) => updateAdvancedFilter('yearsInBusinessMin', value)}
+                                disabled={premiumLocked}
+                              />
+                            </div>
+                          </div>
+                          <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                            <p className="text-[11px] font-semibold text-slate-500">Avg response time (max)</p>
+                            <div className="mt-2">
+                              <BucketChips
+                                options={RESPONSE_TIME_MAX_BUCKETS}
+                                value={filters.responseTimeMax}
+                                onChange={(value) => updateAdvancedFilter('responseTimeMax', value)}
+                                disabled={premiumLocked}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                          <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                            <p className="text-[11px] font-semibold text-slate-500">Team seats (min)</p>
+                            <div className="mt-2">
+                              <BucketChips
+                                options={TEAM_SEATS_MIN_BUCKETS}
+                                value={filters.teamSeatsMin}
+                                onChange={(value) => updateAdvancedFilter('teamSeatsMin', value)}
+                                disabled={premiumLocked}
+                              />
+                            </div>
+                          </div>
+                          <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                            <p className="text-[11px] font-semibold text-slate-500">Export ports</p>
+                            <div className="mt-2">
+                              <ChipGroup
+                                options={EXPORT_PORT_OPTIONS}
+                                values={filters.exportPort}
+                                onChange={(values) => updateAdvancedFilter('exportPort', values)}
+                                disabled={premiumLocked}
+                                counts={facetCounts.exportPort}
+                              />
+                            </div>
+                          </div>
                         </div>
                         <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
                           <input
@@ -939,29 +1583,75 @@ export default function SearchResults() {
                           />
                           Handles multiple factories
                         </label>
-                        <div className="grid grid-cols-2 gap-2">
-                          <input
-                            value={filters.locationLat}
-                            onChange={(e) => updateAdvancedFilter('locationLat', e.target.value)}
-                            placeholder="Location latitude"
-                            disabled={premiumLocked}
-                            className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                          />
-                          <input
-                            value={filters.locationLng}
-                            onChange={(e) => updateAdvancedFilter('locationLng', e.target.value)}
-                            placeholder="Location longitude"
-                            disabled={premiumLocked}
-                            className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                          />
+                        <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                          <p className="text-[11px] font-semibold text-slate-500">Location + radius</p>
+                          <div className="mt-2 flex gap-2">
+                            <input
+                              value={geoQuery}
+                              onChange={(e) => setGeoQuery(e.target.value)}
+                              placeholder="Search city or country"
+                              disabled={premiumLocked}
+                              className="flex-1 rounded-lg bg-white px-3 py-2 text-xs text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                            />
+                            <button
+                              type="button"
+                              onClick={useCurrentLocation}
+                              disabled={premiumLocked}
+                              className="rounded-lg bg-[var(--gt-blue)] px-3 py-2 text-[11px] font-semibold text-white disabled:opacity-60"
+                            >
+                              Use my location
+                            </button>
+                          </div>
+                          {geoLoading ? <div className="mt-2 text-[10px] text-slate-500">Searching locations...</div> : null}
+                          {geoError ? <div className="mt-2 text-[10px] text-rose-600">{geoError}</div> : null}
+                          {geoResults.length ? (
+                            <div className="mt-2 max-h-32 space-y-1 overflow-auto rounded-lg borderless-shadow bg-white p-2">
+                              {geoResults.map((result) => (
+                                <button
+                                  key={result.id}
+                                  type="button"
+                                  onClick={() => selectGeoResult(result)}
+                                  className="w-full text-left text-[11px] text-slate-700 hover:text-[var(--gt-blue)]"
+                                >
+                                  {result.label}
+                                </button>
+                              ))}
+                            </div>
+                          ) : null}
+                          {locationLabel ? (
+                            <div className="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-[11px] text-slate-600">
+                              Selected: {locationLabel}
+                            </div>
+                          ) : null}
+                          <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500">
+                            <span>Lat: {filters.locationLat || '--'} · Lng: {filters.locationLng || '--'}</span>
+                            <button
+                              type="button"
+                              onClick={() => setShowMapPreview((prev) => !prev)}
+                              className="text-[10px] font-semibold text-[var(--gt-blue)]"
+                            >
+                              {showMapPreview ? 'Hide map' : 'Show map'}
+                            </button>
+                          </div>
+                          <div className="mt-2 flex items-center gap-3">
+                            <input
+                              type="range"
+                              min="0"
+                              max="2000"
+                              step="50"
+                              value={Number(filters.distanceKm || 0)}
+                              onChange={(e) => updateAdvancedFilter('distanceKm', e.target.value)}
+                              disabled={premiumLocked}
+                              className="w-full"
+                            />
+                            <span className="text-[11px] font-semibold">{filters.distanceKm || 0}km</span>
+                          </div>
+                          {showMapPreview && filters.locationLat && filters.locationLng ? (
+                            <div className="mt-2 h-36 overflow-hidden rounded-lg borderless-shadow">
+                              <div ref={mapRef} className="h-full w-full" />
+                            </div>
+                          ) : null}
                         </div>
-                        <input
-                          value={filters.distanceKm}
-                          onChange={(e) => updateAdvancedFilter('distanceKm', e.target.value)}
-                          placeholder="Distance radius (km)"
-                          disabled={premiumLocked}
-                          className="rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                        />
                       </>
                     )}
                   </div>
@@ -974,7 +1664,7 @@ export default function SearchResults() {
                 <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Filter guidance</p>
                 <div className="mt-2 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                   <p>Supplier filters use profile data such as main processes, export ports, and years in business.</p>
-                  <p>Distance radius requires latitude/longitude from both sides. If a supplier has no coordinates, we fall back to country matching.</p>
+                  <p>Distance radius uses coordinates. Use “Use my location” to fill lat/lng quickly. If a supplier has no coordinates, we fall back to country matching.</p>
                   <p>Premium filters are optional. Core filters always remain free and unlimited.</p>
                 </div>
               </div>
@@ -1018,7 +1708,7 @@ export default function SearchResults() {
               {TAB_OPTIONS.map((t) => {
                 const Icon = t.icon
                 const active = activeTab === t.id
-                const count = t.id === 'requests' ? requests.length : t.id === 'companies' ? companies.length : totalResults
+                const count = t.id === 'requests' ? requestsTotal : t.id === 'companies' ? companiesTotal : totalResults
                 return (
                   <motion.button
                     key={t.id}
@@ -1158,7 +1848,11 @@ export default function SearchResults() {
                               </Link>
                               <button
                                 type="button"
-                                onClick={() => openChatNotice(author.name || 'buyer')}
+                                onClick={() => openChatNotice(author.name || 'buyer', {
+                                  type: 'buyer_request',
+                                  id: r.id,
+                                  label: r.title || r.category || 'Buyer request',
+                                })}
                                 className="rounded-full bg-[var(--gt-blue)] px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95"
                               >
                                 Contact
@@ -1242,7 +1936,11 @@ export default function SearchResults() {
                               </button>
                               <button
                                 type="button"
-                                onClick={() => openChatNotice(author.name || 'company')}
+                                onClick={() => openChatNotice(author.name || 'company', {
+                                  type: 'product',
+                                  id: p.id,
+                                  label: p.title || 'Product',
+                                })}
                                 className="rounded-full bg-[var(--gt-blue)] px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95"
                               >
                                 Contact

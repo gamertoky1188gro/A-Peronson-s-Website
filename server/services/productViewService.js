@@ -42,7 +42,7 @@ function publicAuthor(user) {
   }
 }
 
-export async function recordView(userId, productId, { windowMinutes = 10 } = {}) {
+export async function recordView(userId, productId, { windowMinutes = 10, geo = null } = {}) {
   const viewerId = sanitizeString(String(userId || ''), 120)
   const pid = sanitizeString(String(productId || ''), 120)
   if (!viewerId || !pid) return 'not_found'
@@ -75,7 +75,19 @@ export async function recordView(userId, productId, { windowMinutes = 10 } = {})
   }
 
   await writeJson(FILE, all)
-  await trackEvent({ type: 'product_viewed', actor_id: viewerId, entity_id: pid })
+  await trackEvent({
+    type: 'product_viewed',
+    actor_id: viewerId,
+    entity_id: pid,
+    metadata: geo && typeof geo === 'object'
+      ? {
+        country: geo.country || '',
+        city: geo.city || '',
+        lat: geo.lat ?? null,
+        lng: geo.lng ?? null,
+      }
+      : {},
+  })
   return { ok: true, deduped: false }
 }
 
@@ -125,4 +137,3 @@ export async function listMyProductViews(userId, { cursor = 0, limit = 10 } = {}
     items,
   }
 }
-

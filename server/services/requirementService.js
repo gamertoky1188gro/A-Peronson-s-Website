@@ -6,6 +6,7 @@ import { createNotification, emitNotificationsForEntity } from './notificationSe
 import { recordMilestone } from './ratingsService.js'
 import { moderateTextOrRedact } from './policyService.js'
 import { getPlanForUser } from './entitlementService.js'
+import { indexRequirement, deleteRequirementIndex } from './openSearchService.js'
 
 const FILE = 'requirements.json'
 
@@ -268,6 +269,13 @@ export async function createRequirement(buyerId, payload) {
 
   requirements.push(requirement)
   await writeJson(FILE, requirements)
+  try {
+    const users = await readJson('users.json')
+    const author = users.find((u) => String(u.id) === String(buyerId)) || null
+    await indexRequirement(requirement, { ...(author || {}), ...(author?.profile || {}) })
+  } catch {
+    // ignore index failures
+  }
   const isDraft = String(requirement.status || '').toLowerCase() === 'draft'
   if (!isDraft) {
     await emitNotificationsForEntity('buyer_request', requirement)
@@ -418,6 +426,13 @@ export async function updateRequirement(requirementId, patch, actor) {
 
   requirements[idx] = next
   await writeJson(FILE, requirements)
+  try {
+    const users = await readJson('users.json')
+    const author = users.find((u) => String(u.id) === String(next.buyer_id)) || actor
+    await indexRequirement(next, { ...(author || {}), ...(author?.profile || {}) })
+  } catch {
+    // ignore index failures
+  }
   // project.md: smart notifications trigger when new matching buyer requests appear.
   // Emit on updates as well so edited requests can match saved alerts.
   await emitNotificationsForEntity('buyer_request', next)
@@ -444,5 +459,10 @@ export async function removeRequirement(requirementId, actor) {
   if (actor.role === 'buyer' && target.buyer_id !== actor.id) return 'forbidden'
   const next = requirements.filter((r) => r.id !== requirementId)
   await writeJson(FILE, next)
+  try {
+    await deleteRequirementIndex(requirementId)
+  } catch {
+    // ignore index failures
+  }
   return true
 }

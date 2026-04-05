@@ -13,6 +13,7 @@ import { handleControllerError } from '../utils/permissions.js'
 import { ensureEntitlement } from '../services/entitlementService.js'
 import { generateMatchesForRequirement, listMatchesForRequirement } from '../services/matchingService.js'
 import { getOrderCertificationMap } from '../services/orderCertificationService.js'
+import { isOpenSearchConfigured, searchOpenSearch } from '../services/openSearchService.js'
 
 function redactRequirementForBuyer(requirement) {
   return {
@@ -352,6 +353,12 @@ export async function searchRequirements(req, res) {
   if (priorityOnly) {
     await ensureEntitlement(req.user, 'buyer_request_priority_access', 'Premium plan required for priority buyer requests.')
   }
+
+  const estimateOnly = String(req.query.estimateOnly || '').toLowerCase() === 'true'
+  const cursor = Number.isFinite(Number(req.query.cursor)) ? Math.max(0, Math.floor(Number(req.query.cursor))) : 0
+  const limitRaw = Number.isFinite(Number(req.query.limit)) ? Math.floor(Number(req.query.limit)) : 50
+  const limit = estimateOnly ? 0 : Math.min(50, Math.max(1, limitRaw))
+
   const advancedFilters = extractUsedAdvancedFilters(req.query)
   const quotaPreview = advancedFilters.length > 0
     ? await getQuotaSnapshot(req.user.id, 'requirements_search', plan)
@@ -367,25 +374,26 @@ export async function searchRequirements(req, res) {
     }))
   }
 
-  const quotaUse = advancedFilters.length > 0
-    ? await consumeQuota(req.user.id, 'requirements_search', plan)
-    : { allowed: true, quota: { action: 'requirements_search', plan, unlimited: true } }
-  if (advancedFilters.length > 0 && !quotaUse.allowed) {
-    return res.status(429).json(buildLimitError({
-      code: 'limit_reached',
-      message: 'Daily requirement search limit reached',
-      quota: quotaUse.quota,
-    }))
+  let quotaUse = { allowed: true, quota: { action: 'requirements_search', plan, unlimited: true } }
+  if (advancedFilters.length > 0) {
+    if (quotaPreview && quotaPreview.remaining <= 0) {
+      return res.status(429).json(buildLimitError({
+        code: 'limit_reached',
+        message: 'Daily requirement search limit reached',
+        quota: quotaPreview,
+      }))
+    }
+    quotaUse = estimateOnly
+      ? { allowed: true, quota: quotaPreview }
+      : await consumeQuota(req.user.id, 'requirements_search', plan)
+    if (!quotaUse.allowed) {
+      return res.status(429).json(buildLimitError({
+        code: 'limit_reached',
+        message: 'Daily requirement search limit reached',
+        quota: quotaUse.quota,
+      }))
+    }
   }
-
-  const all = await listRequirements({})
-  const [users, messages, orderCertMap] = await Promise.all([
-    readJson('users.json'),
-    readJson('messages.json'),
-    getOrderCertificationMap(),
-  ])
-  const usersById = new Map(users.map((u) => [u.id, u]))
-  const responseTimeByOwner = buildResponseTimeByOwner(messages, users)
 
   const q = String(req.query.q || '').trim()
   const searchTokens = buildSearchTokens(q)
@@ -395,15 +403,16 @@ export async function searchRequirements(req, res) {
   const verifiedOnly = req.query.verifiedOnly === 'true'
   const moqRange = String(req.query.moqRange || '').trim()
   const priceRange = String(req.query.priceRange || '').trim()
-  const wantedIncoterms = String(req.query.incoterms || '').trim().toLowerCase()
-  const wantedPaymentTerms = String(req.query.paymentTerms || '').trim().toLowerCase()
-  const wantedDocumentReady = String(req.query.documentReady || '').trim().toLowerCase()
+  const wantedCategories = parseList(req.query.category)
+  const wantedIncoterms = parseList(req.query.incoterms)
+  const wantedPaymentTerms = parseList(req.query.paymentTerms)
+  const wantedDocumentReady = parseList(req.query.documentReady)
   const wantedAuditDate = String(req.query.auditDate || '').trim().toLowerCase()
-  const wantedLanguage = String(req.query.languageSupport || '').trim().toLowerCase()
-  const wantedFabricType = String(req.query.fabricType || '').trim().toLowerCase()
+  const wantedLanguage = parseList(req.query.languageSupport)
+  const wantedFabricTypes = parseList(req.query.fabricType)
   const wantedSizeRange = String(req.query.sizeRange || '').trim().toLowerCase()
-  const wantedColorPantone = String(req.query.colorPantone || '').trim().toLowerCase()
-  const wantedCustomization = String(req.query.customization || '').trim().toLowerCase()
+  const wantedColorPantone = parseList(req.query.colorPantone)
+  const wantedCustomization = parseList(req.query.customization)
   const sampleAvailable = req.query.sampleAvailable === 'true'
   const sampleLeadTimeMax = parseNumber(req.query.sampleLeadTime)
   const wantedCertificationsRaw = String(req.query.certifications || '').trim()
@@ -426,6 +435,84 @@ export async function searchRequirements(req, res) {
   const locationLat = parseCoordinate(req.query.locationLat)
   const locationLng = parseCoordinate(req.query.locationLng)
   const distanceFilterActive = distanceKm !== null && locationLat !== null && locationLng !== null
+
+  const openSearchReady = await isOpenSearchConfigured()
+  const openSearchResult = openSearchReady
+    ? await searchOpenSearch({
+      index: 'requirements',
+      query: q,
+      cursor,
+      limit,
+      estimateOnly,
+      filters: {
+        industry: wantedIndustry,
+        country: wantedCountry,
+        orgType: wantedOrgType,
+        verifiedOnly,
+        category: wantedCategories,
+        moqRange,
+        priceRange,
+        leadTimeMax,
+        gsmMin,
+        gsmMax,
+        capacityMin,
+        yearsInBusinessMin,
+        responseTimeMax,
+        teamSeatsMin,
+        ...(handlesMultipleFactoriesFilter === null ? {} : { handlesMultipleFactories: handlesMultipleFactoriesFilter }),
+        fabricType: wantedFabricTypes,
+        certifications: wantedCertifications,
+        incoterms: wantedIncoterms,
+        paymentTerms: wantedPaymentTerms,
+        documentReady: wantedDocumentReady,
+        languageSupport: wantedLanguage,
+        processes,
+        exportPort: exportPorts,
+        auditDate: wantedAuditDate,
+        sizeRange: wantedSizeRange,
+        colorPantone: wantedColorPantone,
+        customization: wantedCustomization,
+        sampleAvailable,
+        sampleLeadTimeMax,
+        locationLat,
+        locationLng,
+        distanceKm,
+      },
+    })
+    : null
+  const openSearchIds = Array.isArray(openSearchResult?.ids) ? openSearchResult.ids.map(String) : []
+  const openSearchIdSet = openSearchIds.length ? new Set(openSearchIds) : null
+  const engine = openSearchResult?.engine || 'fallback_json'
+
+  if (estimateOnly && engine === 'opensearch') {
+    const resolvedFacets = openSearchResult?.facets
+      ? { ...openSearchResult.facets, category: openSearchResult.facets.category || openSearchResult.facets.categories || {} }
+      : {}
+    return res.json({
+      engine,
+      cursor,
+      limit,
+      total: Number(openSearchResult?.total || 0),
+      next_cursor: null,
+      items: [],
+      facets: resolvedFacets,
+      ...(openSearchResult?.error_code ? { error_code: openSearchResult.error_code } : {}),
+      ...buildSearchAccessPayload({
+        action: 'requirements_search',
+        plan,
+        quota: quotaUse.quota,
+      }),
+    })
+  }
+
+  const all = await listRequirements({})
+  const [users, messages, orderCertMap] = await Promise.all([
+    readJson('users.json'),
+    readJson('messages.json'),
+    getOrderCertificationMap(),
+  ])
+  const usersById = new Map(users.map((u) => [u.id, u]))
+  const responseTimeByOwner = buildResponseTimeByOwner(messages, users)
 
   const viewerPremium = plan === 'premium'
   const viewerRole = String(req.user?.role || '').toLowerCase()
@@ -470,13 +557,21 @@ export async function searchRequirements(req, res) {
     })
     .filter((r) => (enforcePriorityAccess ? !r.priority_active : true))
     .filter((r) => {
+      if (openSearchIdSet) {
+        if (!openSearchIdSet.has(String(r.id))) return false
+        if (priorityOnly && !r.priority_active) return false
+        return true
+      }
       if (priorityOnly && !r.priority_active) return false
       if (searchTokens.length) {
         const searchText = normalizeSearchText(`${r.category} ${r.product} ${r.material} ${r.custom_description} ${r.title} ${r.color_pantone || ''} ${r.size_range || ''}`)
         const hit = searchTokens.every((token) => searchText.includes(token))
         if (!hit) return false
       }
-      if (req.query.category && String(r.category).toLowerCase() !== String(req.query.category).toLowerCase()) return false
+      if (wantedCategories.length > 0) {
+        const categoryValue = String(r.category || r.product || '').toLowerCase()
+        if (!wantedCategories.includes(categoryValue)) return false
+      }
       if (wantedIndustry) {
         const reqIndustry = String(r.industry || '').toLowerCase()
         const buyerIndustry = String(r.author?.industry || '').toLowerCase()
@@ -487,7 +582,11 @@ export async function searchRequirements(req, res) {
       if (verifiedOnly && !r.author?.verified) return false
       if (moqRange && !matchesMoqRange(moqRange, r.moq || r.quantity)) return false
       if (priceRange && !rangesOverlap(priceRange, r.price_range || '')) return false
-      if (wantedIncoterms && String(r.incoterms || '').toLowerCase() !== wantedIncoterms) return false
+      if (wantedIncoterms.length > 0) {
+        const incoterm = String(r.incoterms || '').toLowerCase()
+        const hit = wantedIncoterms.some((term) => incoterm.includes(term))
+        if (!hit) return false
+      }
       if (wantedCertifications.length > 0) {
         const required = Array.isArray(r.certifications_required) ? r.certifications_required.map((c) => String(c).toLowerCase()) : []
         const hit = wantedCertifications.some((c) => required.includes(c))
@@ -507,14 +606,38 @@ export async function searchRequirements(req, res) {
         const cap = parseNumber(r.capacity_min || '')
         if (cap === null || cap < capacityMin) return false
       }
-      if (wantedPaymentTerms && String(r.payment_terms || '').toLowerCase() !== wantedPaymentTerms) return false
-      if (wantedDocumentReady && String(r.document_ready || '').toLowerCase() !== wantedDocumentReady) return false
+      if (wantedPaymentTerms.length > 0) {
+        const payment = String(r.payment_terms || '').toLowerCase()
+        const hit = wantedPaymentTerms.some((term) => payment.includes(term))
+        if (!hit) return false
+      }
+      if (wantedDocumentReady.length > 0) {
+        const doc = String(r.document_ready || '').toLowerCase()
+        const hit = wantedDocumentReady.some((term) => doc.includes(term))
+        if (!hit) return false
+      }
       if (wantedAuditDate && String(r.audit_date || '').toLowerCase() !== wantedAuditDate) return false
-      if (wantedLanguage && String(r.language_support || '').toLowerCase() !== wantedLanguage) return false
-      if (wantedFabricType && !String(r.material || '').toLowerCase().includes(wantedFabricType)) return false
+      if (wantedLanguage.length > 0) {
+        const lang = String(r.language_support || '').toLowerCase()
+        const hit = wantedLanguage.some((term) => lang.includes(term))
+        if (!hit) return false
+      }
+      if (wantedFabricTypes.length > 0) {
+        const material = String(r.material || '').toLowerCase()
+        const hit = wantedFabricTypes.some((fabric) => material.includes(fabric))
+        if (!hit) return false
+      }
       if (wantedSizeRange && !String(r.size_range || '').toLowerCase().includes(wantedSizeRange)) return false
-      if (wantedColorPantone && !String(r.color_pantone || '').toLowerCase().includes(wantedColorPantone)) return false
-      if (wantedCustomization && !String(r.customization_capabilities || '').toLowerCase().includes(wantedCustomization)) return false
+      if (wantedColorPantone.length > 0) {
+        const color = String(r.color_pantone || '').toLowerCase()
+        const hit = wantedColorPantone.some((code) => color.includes(code))
+        if (!hit) return false
+      }
+      if (wantedCustomization.length > 0) {
+        const customization = String(r.customization_capabilities || '').toLowerCase()
+        const hit = wantedCustomization.some((entry) => customization.includes(entry))
+        if (!hit) return false
+      }
       if (sampleAvailable) {
         const available = String(r.sample_available || '').toLowerCase()
         if (!(available === 'true' || available === 'yes' || r.sample_lead_time_days || r.sample_timeline)) return false
@@ -582,12 +705,45 @@ export async function searchRequirements(req, res) {
     return row
   })
 
-  const facets = results.reduce((acc, row) => {
+  const orderedResults = (() => {
+    if (!openSearchIdSet) return items
+    const byId = new Map(items.map((row) => [String(row.id), row]))
+    return openSearchIds.map((id) => byId.get(String(id))).filter(Boolean)
+  })()
+
+  const totalMatched = engine === 'opensearch' ? Number(openSearchResult?.total || 0) : orderedResults.length
+  const pagedItems = engine === 'opensearch'
+    ? orderedResults
+    : orderedResults.slice(cursor, cursor + limit)
+  const nextCursor = estimateOnly
+    ? null
+    : (engine === 'opensearch'
+        ? (cursor + openSearchIds.length < totalMatched ? cursor + openSearchIds.length : null)
+        : (cursor + pagedItems.length < totalMatched ? cursor + pagedItems.length : null))
+
+  const facets = orderedResults.reduce((acc, row) => {
     const category = String(row.category || 'Other')
     const country = String(row.author?.country || 'Unknown')
     acc.categories[category] = (acc.categories[category] || 0) + 1
     acc.countries[country] = (acc.countries[country] || 0) + 1
     acc.verified[row.author?.verified ? 'verified' : 'unverified'] += 1
+    const fabric = String(row.material || '').trim()
+    if (fabric) acc.fabricType[fabric] = (acc.fabricType[fabric] || 0) + 1
+    const certifications = Array.isArray(row.certifications) ? row.certifications : []
+    certifications.forEach((cert) => {
+      const key = String(cert || 'Other')
+      acc.certifications[key] = (acc.certifications[key] || 0) + 1
+    })
+    const incoterm = String(row.incoterms || row.shipping_terms || '').trim()
+    if (incoterm) acc.incoterms[incoterm] = (acc.incoterms[incoterm] || 0) + 1
+    const payment = String(row.payment_terms || '').trim()
+    if (payment) acc.paymentTerms[payment] = (acc.paymentTerms[payment] || 0) + 1
+    const documentReady = String(row.document_ready || '').trim()
+    if (documentReady) acc.documentReady[documentReady] = (acc.documentReady[documentReady] || 0) + 1
+    const language = String(row.language_support || '').trim()
+    if (language) acc.languageSupport[language] = (acc.languageSupport[language] || 0) + 1
+    const customization = String(row.customization_capabilities || '').trim()
+    if (customization) acc.customization[customization] = (acc.customization[customization] || 0) + 1
     const processesList = Array.isArray(row.author?.main_processes) ? row.author.main_processes : []
     processesList.forEach((proc) => {
       const key = String(proc || 'Other')
@@ -617,17 +773,35 @@ export async function searchRequirements(req, res) {
     years_in_business: {},
     team_seats: {},
     handles_multiple_factories: {},
+    fabricType: {},
+    certifications: {},
+    incoterms: {},
+    paymentTerms: {},
+    documentReady: {},
+    languageSupport: {},
+    customization: {},
   })
 
   const cappedFacets = {
     ...facets,
+    category: facets.categories || facets.category || {},
     processes: topFacetEntries(facets.processes, 8),
     export_ports: topFacetEntries(facets.export_ports, 8),
   }
 
+  const resolvedFacets = openSearchResult?.facets
+    ? { ...openSearchResult.facets, category: openSearchResult.facets.category || openSearchResult.facets.categories || {} }
+    : cappedFacets
+
   return res.json({
-    items,
-    facets: cappedFacets,
+    engine,
+    cursor,
+    limit,
+    total: totalMatched,
+    next_cursor: nextCursor,
+    items: pagedItems,
+    facets: resolvedFacets,
+    ...(openSearchResult?.error_code ? { error_code: openSearchResult.error_code } : {}),
     ...buildSearchAccessPayload({
       action: 'requirements_search',
       plan,

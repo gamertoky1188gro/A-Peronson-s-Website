@@ -10,11 +10,13 @@ import {
 } from '../services/searchAccessService.js'
 import { readJson } from '../utils/jsonStore.js'
 import { listMyProductViews, recordView } from '../services/productViewService.js'
+import { extractClientIp, locateIp } from '../services/geoService.js'
 import { findUserById } from '../services/userService.js'
 import { handleControllerError } from '../utils/permissions.js'
 import { ensureEntitlement } from '../services/entitlementService.js'
 import { getActiveBoostMap } from '../services/boostService.js'
 import { getOrderCertificationMap } from '../services/orderCertificationService.js'
+import { isOpenSearchConfigured, searchOpenSearch } from '../services/openSearchService.js'
 
 function parseNumber(value) {
   if (value === undefined || value === null) return null
@@ -265,6 +267,12 @@ export async function searchProducts(req, res) {
   if (priorityOnly) {
     await ensureEntitlement(req.user, 'priority_search_ranking', 'Premium plan required for priority search filter.')
   }
+
+  const estimateOnly = String(req.query.estimateOnly || '').toLowerCase() === 'true'
+  const cursor = Number.isFinite(Number(req.query.cursor)) ? Math.max(0, Math.floor(Number(req.query.cursor))) : 0
+  const limitRaw = Number.isFinite(Number(req.query.limit)) ? Math.floor(Number(req.query.limit)) : 50
+  const limit = estimateOnly ? 0 : Math.min(50, Math.max(1, limitRaw))
+
   const advancedFilters = extractUsedAdvancedFilters(req.query)
   const quotaPreview = advancedFilters.length > 0
     ? await getQuotaSnapshot(req.user.id, 'products_search', plan)
@@ -280,26 +288,26 @@ export async function searchProducts(req, res) {
     }))
   }
 
-  const quotaUse = advancedFilters.length > 0
-    ? await consumeQuota(req.user.id, 'products_search', plan)
-    : { allowed: true, quota: { action: 'products_search', plan, unlimited: true } }
-  if (advancedFilters.length > 0 && !quotaUse.allowed) {
-    return res.status(429).json(buildLimitError({
-      code: 'limit_reached',
-      message: 'Daily product search limit reached',
-      quota: quotaUse.quota,
-    }))
+  let quotaUse = { allowed: true, quota: { action: 'products_search', plan, unlimited: true } }
+  if (advancedFilters.length > 0) {
+    if (quotaPreview && quotaPreview.remaining <= 0) {
+      return res.status(429).json(buildLimitError({
+        code: 'limit_reached',
+        message: 'Daily product search limit reached',
+        quota: quotaPreview,
+      }))
+    }
+    quotaUse = estimateOnly
+      ? { allowed: true, quota: quotaPreview }
+      : await consumeQuota(req.user.id, 'products_search', plan)
+    if (!quotaUse.allowed) {
+      return res.status(429).json(buildLimitError({
+        code: 'limit_reached',
+        message: 'Daily product search limit reached',
+        quota: quotaUse.quota,
+      }))
+    }
   }
-
-  const all = await listProducts({})
-  const [users, messages, boostMap, orderCertMap] = await Promise.all([
-    readJson('users.json'),
-    readJson('messages.json'),
-    getActiveBoostMap('feed'),
-    getOrderCertificationMap(),
-  ])
-  const usersById = new Map(users.map((u) => [u.id, u]))
-  const responseTimeByOwner = buildResponseTimeByOwner(messages, users)
 
   const q = String(req.query.q || '').trim()
   const searchTokens = buildSearchTokens(q)
@@ -309,6 +317,7 @@ export async function searchProducts(req, res) {
   const verifiedOnly = req.query.verifiedOnly === 'true'
   const moqRange = String(req.query.moqRange || '').trim()
   const priceRange = String(req.query.priceRange || '').trim()
+  const wantedCategories = parseList(req.query.category)
   const wantedCertificationsRaw = String(req.query.certifications || '').trim()
   const wantedCertifications = wantedCertificationsRaw
     ? wantedCertificationsRaw.split(',').map((c) => c.trim().toLowerCase()).filter(Boolean)
@@ -317,17 +326,17 @@ export async function searchProducts(req, res) {
   const capacityMin = parseNumber(req.query.capacityMin)
   const gsmMin = parseNumber(req.query.gsmMin)
   const gsmMax = parseNumber(req.query.gsmMax)
-  const wantedFabricType = String(req.query.fabricType || '').trim().toLowerCase()
+  const wantedFabricTypes = parseList(req.query.fabricType)
   const wantedSizeRange = String(req.query.sizeRange || '').trim().toLowerCase()
-  const wantedColorPantone = String(req.query.colorPantone || '').trim().toLowerCase()
-  const wantedCustomization = String(req.query.customization || '').trim().toLowerCase()
+  const wantedColorPantone = parseList(req.query.colorPantone)
+  const wantedCustomization = parseList(req.query.customization)
   const sampleAvailable = req.query.sampleAvailable === 'true'
   const sampleLeadTimeMax = parseNumber(req.query.sampleLeadTime)
-  const wantedPaymentTerms = String(req.query.paymentTerms || '').trim().toLowerCase()
-  const wantedDocumentReady = String(req.query.documentReady || '').trim().toLowerCase()
+  const wantedPaymentTerms = parseList(req.query.paymentTerms)
+  const wantedDocumentReady = parseList(req.query.documentReady)
   const wantedAuditDate = String(req.query.auditDate || '').trim().toLowerCase()
-  const wantedLanguage = String(req.query.languageSupport || '').trim().toLowerCase()
-  const wantedIncoterms = String(req.query.incoterms || '').trim().toLowerCase()
+  const wantedLanguage = parseList(req.query.languageSupport)
+  const wantedIncoterms = parseList(req.query.incoterms)
   const processes = parseList(req.query.processes)
   const yearsInBusinessMin = parseNumber(req.query.yearsInBusinessMin)
   const responseTimeMax = parseNumber(req.query.responseTimeMax)
@@ -340,6 +349,85 @@ export async function searchProducts(req, res) {
   const locationLat = parseCoordinate(req.query.locationLat)
   const locationLng = parseCoordinate(req.query.locationLng)
   const distanceFilterActive = distanceKm !== null && locationLat !== null && locationLng !== null
+
+  const openSearchReady = await isOpenSearchConfigured()
+  const openSearchResult = openSearchReady
+    ? await searchOpenSearch({
+      index: 'products',
+      query: q,
+      cursor,
+      limit,
+      estimateOnly,
+      filters: {
+        industry: wantedIndustry,
+        country: wantedCountry,
+        orgType: wantedOrgType,
+        verifiedOnly,
+        category: wantedCategories,
+        moqRange,
+        priceRange,
+        leadTimeMax,
+        gsmMin,
+        gsmMax,
+        capacityMin,
+        yearsInBusinessMin,
+        responseTimeMax,
+        teamSeatsMin,
+        ...(handlesMultipleFactoriesFilter === null ? {} : { handlesMultipleFactories: handlesMultipleFactoriesFilter }),
+        fabricType: wantedFabricTypes,
+        certifications: wantedCertifications,
+        incoterms: wantedIncoterms,
+        paymentTerms: wantedPaymentTerms,
+        documentReady: wantedDocumentReady,
+        languageSupport: wantedLanguage,
+        processes,
+        exportPort: exportPorts,
+        auditDate: wantedAuditDate,
+        sizeRange: wantedSizeRange,
+        colorPantone: wantedColorPantone,
+        customization: wantedCustomization,
+        sampleAvailable,
+        sampleLeadTimeMax,
+        locationLat,
+        locationLng,
+        distanceKm,
+      },
+    })
+    : null
+  const openSearchIds = Array.isArray(openSearchResult?.ids) ? openSearchResult.ids.map(String) : []
+  const openSearchIdSet = openSearchIds.length ? new Set(openSearchIds) : null
+  const engine = openSearchResult?.engine || 'fallback_json'
+
+  if (estimateOnly && engine === 'opensearch') {
+    const resolvedFacets = openSearchResult?.facets
+      ? { ...openSearchResult.facets, category: openSearchResult.facets.category || openSearchResult.facets.categories || {} }
+      : {}
+    return res.json({
+      engine,
+      cursor,
+      limit,
+      total: Number(openSearchResult?.total || 0),
+      next_cursor: null,
+      items: [],
+      facets: resolvedFacets,
+      ...(openSearchResult?.error_code ? { error_code: openSearchResult.error_code } : {}),
+      ...buildSearchAccessPayload({
+        action: 'products_search',
+        plan,
+        quota: quotaUse.quota,
+      }),
+    })
+  }
+
+  const all = await listProducts({})
+  const [users, messages, boostMap, orderCertMap] = await Promise.all([
+    readJson('users.json'),
+    readJson('messages.json'),
+    getActiveBoostMap('feed'),
+    getOrderCertificationMap(),
+  ])
+  const usersById = new Map(users.map((u) => [u.id, u]))
+  const responseTimeByOwner = buildResponseTimeByOwner(messages, users)
 
   const results = all
     .map((p) => {
@@ -390,13 +478,21 @@ export async function searchProducts(req, res) {
       }
     })
     .filter((p) => {
+      if (openSearchIdSet) {
+        if (!openSearchIdSet.has(String(p.id))) return false
+        if (priorityOnly && !p.priority_active) return false
+        return true
+      }
       if (priorityOnly && !p.priority_active) return false
       if (searchTokens.length) {
         const searchText = normalizeSearchText(`${p.title} ${p.category} ${p.material} ${p.description} ${p.color_pantone || ''} ${p.size_range || ''}`)
         const hit = searchTokens.every((token) => searchText.includes(token))
         if (!hit) return false
       }
-      if (req.query.category && String(p.category).toLowerCase() !== String(req.query.category).toLowerCase()) return false
+      if (wantedCategories.length > 0) {
+        const categoryValue = String(p.category || '').toLowerCase()
+        if (!wantedCategories.includes(categoryValue)) return false
+      }
       if (wantedIndustry) {
         const productIndustry = String(p.industry || '').toLowerCase()
         const authorIndustry = String(p.author?.industry || '').toLowerCase()
@@ -426,10 +522,22 @@ export async function searchProducts(req, res) {
         const hit = wantedCertifications.some((c) => authorCerts.includes(c))
         if (!hit) return false
       }
-      if (wantedFabricType && !String(p.material || '').toLowerCase().includes(wantedFabricType)) return false
+      if (wantedFabricTypes.length > 0) {
+        const material = String(p.material || '').toLowerCase()
+        const hit = wantedFabricTypes.some((fabric) => material.includes(fabric))
+        if (!hit) return false
+      }
       if (wantedSizeRange && !String(p.size_range || '').toLowerCase().includes(wantedSizeRange)) return false
-      if (wantedColorPantone && !String(p.color_pantone || '').toLowerCase().includes(wantedColorPantone)) return false
-      if (wantedCustomization && !String(p.customization_capabilities || '').toLowerCase().includes(wantedCustomization)) return false
+      if (wantedColorPantone.length > 0) {
+        const color = String(p.color_pantone || '').toLowerCase()
+        const hit = wantedColorPantone.some((code) => color.includes(code))
+        if (!hit) return false
+      }
+      if (wantedCustomization.length > 0) {
+        const customization = String(p.customization_capabilities || '').toLowerCase()
+        const hit = wantedCustomization.some((entry) => customization.includes(entry))
+        if (!hit) return false
+      }
       if (sampleAvailable) {
         const available = String(p.sample_available || '').toLowerCase()
         if (!(available === 'true' || available === 'yes' || p.sample_lead_time_days)) return false
@@ -438,11 +546,27 @@ export async function searchProducts(req, res) {
         const sampleLead = parseNumber(p.sample_lead_time_days || '')
         if (sampleLead === null || sampleLead > sampleLeadTimeMax) return false
       }
-      if (wantedPaymentTerms && String(p.author?.payment_terms || '').toLowerCase() !== wantedPaymentTerms) return false
-      if (wantedDocumentReady && String(p.author?.document_ready || '').toLowerCase() !== wantedDocumentReady) return false
+      if (wantedPaymentTerms.length > 0) {
+        const payment = String(p.author?.payment_terms || '').toLowerCase()
+        const hit = wantedPaymentTerms.some((term) => payment.includes(term))
+        if (!hit) return false
+      }
+      if (wantedDocumentReady.length > 0) {
+        const doc = String(p.author?.document_ready || '').toLowerCase()
+        const hit = wantedDocumentReady.some((term) => doc.includes(term))
+        if (!hit) return false
+      }
       if (wantedAuditDate && String(p.author?.audit_date || '').toLowerCase() !== wantedAuditDate) return false
-      if (wantedLanguage && String(p.author?.language_support || '').toLowerCase() !== wantedLanguage) return false
-      if (wantedIncoterms && String(p.author?.incoterms || '').toLowerCase() !== wantedIncoterms) return false
+      if (wantedLanguage.length > 0) {
+        const lang = String(p.author?.language_support || '').toLowerCase()
+        const hit = wantedLanguage.some((term) => lang.includes(term))
+        if (!hit) return false
+      }
+      if (wantedIncoterms.length > 0) {
+        const incoterm = String(p.author?.incoterms || '').toLowerCase()
+        const hit = wantedIncoterms.some((term) => incoterm.includes(term))
+        if (!hit) return false
+      }
       if (processes.length > 0) {
         const authorProcesses = Array.isArray(p.author?.main_processes)
           ? p.author.main_processes.map((proc) => String(proc).toLowerCase())
@@ -494,12 +618,43 @@ export async function searchProducts(req, res) {
       return 0
     })
 
-  const facets = sortedResults.reduce((acc, row) => {
+  const orderedResults = (() => {
+    if (!openSearchIdSet) return sortedResults
+    const byId = new Map(sortedResults.map((row) => [String(row.id), row]))
+    return openSearchIds.map((id) => byId.get(String(id))).filter(Boolean)
+  })()
+
+  const totalMatched = engine === 'opensearch' ? Number(openSearchResult?.total || 0) : orderedResults.length
+  const pagedItems = engine === 'opensearch'
+    ? orderedResults
+    : orderedResults.slice(cursor, cursor + limit)
+  const nextCursor = estimateOnly
+    ? null
+    : (engine === 'opensearch'
+        ? (cursor + openSearchIds.length < totalMatched ? cursor + openSearchIds.length : null)
+        : (cursor + pagedItems.length < totalMatched ? cursor + pagedItems.length : null))
+
+  const facets = orderedResults.reduce((acc, row) => {
     const category = String(row.category || 'Other')
     const country = String(row.author?.country || 'Unknown')
     acc.categories[category] = (acc.categories[category] || 0) + 1
     acc.countries[country] = (acc.countries[country] || 0) + 1
     acc.verified[row.author?.verified ? 'verified' : 'unverified'] += 1
+    const material = String(row.material || '').trim()
+    if (material) acc.fabricType[material] = (acc.fabricType[material] || 0) + 1
+    const certifications = Array.isArray(row.author?.certifications) ? row.author.certifications : []
+    certifications.forEach((cert) => {
+      const key = String(cert || 'Other')
+      acc.certifications[key] = (acc.certifications[key] || 0) + 1
+    })
+    const incoterm = String(row.author?.incoterms || '').trim()
+    if (incoterm) acc.incoterms[incoterm] = (acc.incoterms[incoterm] || 0) + 1
+    const payment = String(row.author?.payment_terms || '').trim()
+    if (payment) acc.paymentTerms[payment] = (acc.paymentTerms[payment] || 0) + 1
+    const documentReady = String(row.author?.document_ready || '').trim()
+    if (documentReady) acc.documentReady[documentReady] = (acc.documentReady[documentReady] || 0) + 1
+    const language = String(row.author?.language_support || '').trim()
+    if (language) acc.languageSupport[language] = (acc.languageSupport[language] || 0) + 1
     const processesList = Array.isArray(row.author?.main_processes) ? row.author.main_processes : []
     processesList.forEach((proc) => {
       const key = String(proc || 'Other')
@@ -529,17 +684,34 @@ export async function searchProducts(req, res) {
     years_in_business: {},
     team_seats: {},
     handles_multiple_factories: {},
+    fabricType: {},
+    certifications: {},
+    incoterms: {},
+    paymentTerms: {},
+    documentReady: {},
+    languageSupport: {},
   })
 
   const cappedFacets = {
     ...facets,
+    category: facets.categories || facets.category || {},
     processes: topFacetEntries(facets.processes, 8),
     export_ports: topFacetEntries(facets.export_ports, 8),
   }
 
+  const resolvedFacets = openSearchResult?.facets
+    ? { ...openSearchResult.facets, category: openSearchResult.facets.category || openSearchResult.facets.categories || {} }
+    : cappedFacets
+
   return res.json({
-    items: sortedResults,
-    facets: cappedFacets,
+    engine,
+    cursor,
+    limit,
+    total: totalMatched,
+    next_cursor: nextCursor,
+    items: pagedItems,
+    facets: resolvedFacets,
+    ...(openSearchResult?.error_code ? { error_code: openSearchResult.error_code } : {}),
     ...buildSearchAccessPayload({
       action: 'products_search',
       plan,
@@ -565,7 +737,9 @@ export async function deleteProduct(req, res) {
 }
 
 export async function recordProductView(req, res) {
-  const result = await recordView(req.user.id, req.params.productId, { windowMinutes: 10 })
+  const ip = extractClientIp(req)
+  const geo = ip ? await locateIp(ip) : null
+  const result = await recordView(req.user.id, req.params.productId, { windowMinutes: 10, geo })
   if (result === 'not_found') return res.status(404).json({ error: 'Product not found' })
   return res.status(201).json(result)
 }

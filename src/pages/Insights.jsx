@@ -35,6 +35,10 @@ export default function Insights() {
   const platformSearchGlobal = Array.isArray(platformAnalytics?.top_search_categories_global) ? platformAnalytics.top_search_categories_global : []
   const platformSearchByCountry = Array.isArray(platformAnalytics?.top_search_categories_by_country) ? platformAnalytics.top_search_categories_by_country : []
   const platformTrending = Array.isArray(platformAnalytics?.trending_search_categories) ? platformAnalytics.trending_search_categories : []
+  const searchEventCount = platformAnalytics?.search_event_count ?? 0
+  const searchDataReady = platformAnalytics?.search_data_ready ?? true
+  const searchMinEvents = platformAnalytics?.search_min_events ?? 25
+  const searchDataSource = platformAnalytics?.search_data_source || 'search_events'
   const premiumRole = premiumInsights?.role || ''
 
   useEffect(() => {
@@ -310,6 +314,27 @@ export default function Insights() {
                       </div>
                     ))}
                   </div>
+                    <div className="mt-3 rounded-xl borderless-shadow p-3">
+                    <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Agent Outcomes</p>
+                    <div className="mt-2 space-y-2 text-xs text-slate-700 dark:text-slate-300">
+                      <div className="grid grid-cols-6 gap-2 text-[10px] uppercase tracking-widest text-slate-400">
+                        <span className="col-span-2">Agent</span>
+                        <span className="text-right">Assigned</span>
+                        <span className="text-right">Closed</span>
+                        <span className="text-right">Confirmed</span>
+                        <span className="text-right">Converted</span>
+                      </div>
+                      {premiumInsights.agent_performance_analytics.map((agent) => (
+                        <div key={`${agent.agent_id}-outcomes`} className="grid grid-cols-6 gap-2 rounded-lg borderless-shadow px-3 py-2">
+                          <span className="col-span-2 truncate">{agent.name || agent.agent_id}</span>
+                          <span className="text-right">{agent.assigned_leads ?? 0}</span>
+                          <span className="text-right">{agent.closed_leads ?? 0}</span>
+                          <span className="text-right">{agent.orders_confirmed ?? 0}</span>
+                          <span className="text-right">{agent.conversions ?? 0}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               ) : null}
 
@@ -419,8 +444,11 @@ export default function Insights() {
                   <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Top Lead Sources</p>
                   <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
                     {leadSources.length ? leadSources.map((row) => (
-                      <div key={row.label} className="flex items-center justify-between rounded-lg borderless-shadow px-3 py-2">
-                        <span className="truncate">{row.label}</span>
+                      <div key={`${row.source_type || row.label}-${row.source_id || row.label}`} className="flex items-center justify-between rounded-lg borderless-shadow px-3 py-2">
+                        <div className="min-w-0">
+                          <span className="block truncate">{row.label}</span>
+                          {row.source_type ? <span className="text-[10px] text-slate-400">{row.source_type.replace(/_/g, ' ')}</span> : null}
+                        </div>
                         <span className="text-xs font-semibold">{row.count}</span>
                       </div>
                     )) : <div className="text-sm text-slate-500">No lead source data yet.</div>}
@@ -431,6 +459,11 @@ export default function Insights() {
 
             {platformAnalytics ? (
               <div className="mt-8 space-y-4">
+                {!searchDataReady ? (
+                  <div className="rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
+                    Search trends are still warming up. We need more search activity to show reliable demand insights. Current events: {searchEventCount}/{searchMinEvents}. Showing proxy demand from buyer requests.
+                  </div>
+                ) : null}
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <StatCard label="Total Buyer Requests" value={platformTotals.buyer_requests ?? 0} />
                   <StatCard label="Repeat Buyer Rate" value={`${platformTotals.repeat_buyer_rate ?? 0}%`} />

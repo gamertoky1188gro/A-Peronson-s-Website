@@ -6,9 +6,30 @@ import { upsertSubscription } from './subscriptionService.js'
 import { getAdminConfig } from './adminConfigService.js'
 import { creditWallet, redeemCouponForUser } from './walletService.js'
 import { getPlanForUser } from './entitlementService.js'
+import { reindexOrg } from './openSearchService.js'
 
 const FILE = 'users.json'
 const CONNECTION_FILE = 'user_connections.json'
+
+const OPENSEARCH_REINDEX_PROFILE_KEYS = new Set([
+  'country',
+  'industry',
+  'certifications',
+  'monthly_capacity',
+  'lead_time_days',
+  'payment_terms',
+  'document_ready',
+  'audit_date',
+  'language_support',
+  'incoterms',
+  'main_processes',
+  'years_in_business',
+  'handles_multiple_factories',
+  'team_seats',
+  'export_ports',
+  'location_lat',
+  'location_lng',
+])
 
 function cleanUser(user) {
   const { password_hash: _passwordHash, passkeys, ...safe } = user
@@ -365,6 +386,18 @@ export async function updateProfile(userId, profilePatch) {
 
   users[index] = { ...current, profile: nextProfile }
   await writeJson(FILE, users)
+
+  const patchedKeys = new Set(patchEntries.map(([key]) => key))
+  const shouldReindex = [...patchedKeys].some((key) => OPENSEARCH_REINDEX_PROFILE_KEYS.has(key))
+  if (shouldReindex) {
+    const orgId = current.role === 'agent' && current.org_owner_id ? String(current.org_owner_id) : String(current.id)
+    try {
+      await reindexOrg(orgId)
+    } catch {
+      // ignore index failures
+    }
+  }
+
   return cleanUser(users[index])
 }
 
@@ -374,6 +407,13 @@ export async function setUserVerification(userId, verified) {
   if (index < 0) return null
   users[index].verified = Boolean(verified)
   await writeJson(FILE, users)
+  const updated = users[index]
+  const orgId = updated.role === 'agent' && updated.org_owner_id ? String(updated.org_owner_id) : String(updated.id)
+  try {
+    await reindexOrg(orgId)
+  } catch {
+    // ignore index failures
+  }
   return cleanUser(users[index])
 }
 
@@ -447,6 +487,25 @@ export async function adminUpdateUser(userId, patch = {}) {
 
   users[index] = next
   await writeJson(FILE, users)
+
+  const roleChanged = String(current.role || '').toLowerCase() !== String(nextRole || '').toLowerCase()
+  const verifiedChanged = Boolean(current.verified) !== Boolean(nextVerified)
+  const ownerChanged = String(current.org_owner_id || '') !== String(nextOrgOwnerId || '')
+  if (roleChanged || verifiedChanged || ownerChanged) {
+    const touched = new Set()
+    const currentOrgId = current.role === 'agent' && current.org_owner_id ? String(current.org_owner_id) : String(current.id)
+    const nextOrgId = nextRole === 'agent' && nextOrgOwnerId ? String(nextOrgOwnerId) : String(next.id)
+    if (currentOrgId) touched.add(currentOrgId)
+    if (nextOrgId) touched.add(nextOrgId)
+    for (const orgId of touched) {
+      try {
+        await reindexOrg(orgId)
+      } catch {
+        // ignore index failures
+      }
+    }
+  }
+
   return cleanUser(next)
 }
 

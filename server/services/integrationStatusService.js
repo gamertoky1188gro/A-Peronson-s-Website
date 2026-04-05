@@ -1,6 +1,8 @@
 import { exec } from 'child_process'
 import util from 'util'
 import { getAdminConfig } from './adminConfigService.js'
+import { getOpenSearchStatus, ensureOpenSearchIndices, reindexAll as opensearchReindexAll, reindexOrg as opensearchReindexOrg } from './openSearchService.js'
+import { getEmailDeliveryStatus } from './emailService.js'
 
 const execAsync = util.promisify(exec)
 const EXEC_ENABLED = ['true', '1', 'yes'].includes(String(process.env.ADMIN_EXEC_ENABLED || '').toLowerCase())
@@ -47,6 +49,11 @@ async function detectInstallerSource() {
 export async function getIntegrationStatus() {
   const config = await getAdminConfig()
   const installer = await detectInstallerSource()
+  const emailStatus = await getEmailDeliveryStatus()
+  const opensearchConfig = config?.integrations?.opensearch || {}
+  const opensearchUrl = String(opensearchConfig?.url || '')
+  const opensearchEnabled = Boolean(opensearchConfig?.enabled)
+  const opensearchUrlSet = isConfigured(opensearchUrl)
 
   return {
     signature: {
@@ -92,16 +99,48 @@ export async function getIntegrationStatus() {
       provider: process.env.REGISTRAR_PROVIDER || '',
       configured: isConfigured(process.env.REGISTRAR_API_TOKEN),
     },
+    opensearch: {
+      enabled: opensearchEnabled,
+      url_set: opensearchUrlSet,
+      configured: Boolean(opensearchEnabled && opensearchUrlSet),
+      index_prefix: String(opensearchConfig?.index_prefix || ''),
+    },
+    email_notifications: emailStatus,
   }
 }
 
 export async function runIntegrationAction(action = '', payload = {}) {
-  const status = await getIntegrationStatus()
+  const safeAction = String(action || '').trim()
+  const data = payload && typeof payload === 'object' ? payload : {}
+
+  if (!safeAction) return { ok: false, action: safeAction, error: 'action_required' }
+
+  if (safeAction === 'opensearch.test_connection') {
+    const status = await getOpenSearchStatus()
+    return { ok: Boolean(status?.reachable), action: safeAction, status }
+  }
+
+  if (safeAction === 'opensearch.ensure_indices') {
+    const result = await ensureOpenSearchIndices()
+    return { ok: Boolean(result?.ok), action: safeAction, result }
+  }
+
+  if (safeAction === 'opensearch.reindex_all') {
+    const reset = data.reset === true || String(data.reset || '').toLowerCase() === 'true'
+    const result = await opensearchReindexAll({ reset })
+    return { ok: Boolean(result?.ok), action: safeAction, result }
+  }
+
+  if (safeAction === 'opensearch.reindex_org') {
+    const orgId = String(data.org_id || data.orgId || '').trim()
+    const result = await opensearchReindexOrg(orgId)
+    return { ok: Boolean(result?.ok), action: safeAction, result }
+  }
+
   return {
     ok: false,
-    action,
-    status,
-    message: 'Skeleton only: wire provider credentials to enable execution.',
-    payload,
+    action: safeAction,
+    error: 'unsupported_action',
+    status: await getIntegrationStatus(),
   }
 }

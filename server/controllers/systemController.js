@@ -69,6 +69,20 @@ export async function systemHome(req, res) {
   return res.json({
     ok: true,
     hero: {
+      headline: 'Where global buyers, factories, and buying houses connect with clarity',
+      subheadline: 'A focused B2B sourcing workflow platform for garments and textiles. Post requests, showcase products, connect quickly, and move from first contact to contract in one place.',
+      value_props: [
+        'Structured buyer request system',
+        'Factory product visibility engine',
+        'Buying house team-based workflow',
+        'AI-assisted communication + verification',
+      ],
+      trust_points: [
+        'Organization-based verification',
+        'Digital signature + PDF contract record',
+        'Audit-ready activity history',
+        'Controlled communication flow',
+      ],
       buyerRequest: null,
       verifiedFactories: {
         title: 'Verified factories',
@@ -118,6 +132,70 @@ export async function systemHome(req, res) {
         status: 'Idle',
         note: 'Live request locks will appear here once teams start claiming leads.',
       },
+    },
+    marketing: {
+      sections: [
+        {
+          id: 'positioning',
+          eyebrow: 'Positioning',
+          title: 'Not just a marketplace — a sourcing workflow network',
+          description: 'GarTexHub brings discovery, matching, communication, verification, and deal confirmation into one structured workflow for garments and textiles.',
+          bullets: [
+            'Low-noise sourcing (less spam, more relevance)',
+            'Structured buyer requests + comparable supplier responses',
+            'AI-assisted early communication to save time',
+            'From first contact to PDF contract on one platform',
+          ],
+        },
+        {
+          id: 'buyers',
+          eyebrow: 'For Buyers',
+          title: 'Post clear requirements. Get structured replies.',
+          description: 'Buyers can search Bangladesh-centric but global-facing suppliers, post detailed sourcing requests, and keep every agreement documented.',
+          bullets: [
+            'Structured buyer request posting',
+            'Fast supplier comparison + clearer requirements',
+            'Reduced irrelevant communication',
+            'Contract history + audit-ready records',
+          ],
+        },
+        {
+          id: 'factories',
+          eyebrow: 'For Factories',
+          title: 'Show products + capabilities. Receive better leads.',
+          description: 'Factories showcase products, highlight operational capabilities, and respond faster with AI assistance — while boosting trust through verification.',
+          bullets: [
+            'Product posts with specs, media, and capacity highlights',
+            'Clearer inquiries (less back-and-forth)',
+            'AI-assisted responses for repeated questions',
+            'Verification + visibility signals that build trust',
+          ],
+        },
+        {
+          id: 'buying-houses',
+          eyebrow: 'For Buying Houses',
+          title: 'Team workflow, lead assignment, and coordination',
+          description: 'Buying houses run sourcing as an organization: multiple agent logins, lead distribution, and coordinated communication across multiple factories.',
+          bullets: [
+            'Team seats + sub-accounts',
+            'Lead assignment + internal CRM timeline',
+            'Multi-factory coordination in one inbox',
+            'Enterprise analytics (agent outcomes + conversions)',
+          ],
+        },
+        {
+          id: 'trust',
+          eyebrow: 'Trust',
+          title: 'Verified and documented by design',
+          description: 'GarTexHub increases trust with organization-based verification, controlled communication flow, and secure contract records.',
+          bullets: [
+            'Organization-based verification',
+            'Controlled communication to reduce spam',
+            'Digital signature + PDF contract record',
+            'Activity history and audit trail',
+          ],
+        },
+      ],
     },
   })
 }

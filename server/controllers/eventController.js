@@ -1,4 +1,5 @@
 import { trackEvent } from '../services/analyticsService.js'
+import { extractClientIp, locateIp } from '../services/geoService.js'
 import { sanitizeString } from '../utils/validators.js'
 
 function sanitizeMetadata(meta) {
@@ -12,6 +13,15 @@ function sanitizeMetadata(meta) {
     if (typeof value === 'string') out[safeKey] = sanitizeString(value, 240)
     else if (typeof value === 'number' && Number.isFinite(value)) out[safeKey] = value
     else if (typeof value === 'boolean') out[safeKey] = value
+    else if (Array.isArray(value)) {
+      const cleaned = value
+        .filter((item) => typeof item === 'string')
+        .map((item) => sanitizeString(item, 120))
+        .map((item) => String(item || '').trim())
+        .filter(Boolean)
+        .slice(0, 25)
+      if (cleaned.length) out[safeKey] = cleaned
+    }
   }
 
   return out
@@ -50,16 +60,26 @@ export async function postEvent(req, res) {
   const entityId = sanitizeString(String(req.body?.entity_id || req.body?.entityId || ''), 160)
   const clientId = sanitizeString(String(req.body?.client_id || req.body?.clientId || ''), 120)
   const metadata = sanitizeMetadata(req.body?.metadata)
-  const country = sanitizeString(
+  let country = sanitizeString(
     String(req.body?.country || metadata.country || countryFromHeaders(req) || ''),
     60,
   )
+
+  let geo = null
+  if (!country) {
+    const ip = extractClientIp(req)
+    geo = await locateIp(ip)
+    if (geo?.country) country = sanitizeString(geo.country, 60)
+  }
 
   const enrichedMeta = {
     ...metadata,
     ...(entityType ? { entity_type: entityType } : {}),
     ...(clientId ? { client_id: clientId } : {}),
     ...(country ? { country } : {}),
+    ...(geo?.city ? { city: sanitizeString(geo.city, 80) } : {}),
+    ...(geo?.lat ? { lat: geo.lat } : {}),
+    ...(geo?.lng ? { lng: geo.lng } : {}),
     // Keep these short to avoid logging sensitive data.
     user_agent: sanitizeString(String(req.headers['user-agent'] || ''), 180),
   }

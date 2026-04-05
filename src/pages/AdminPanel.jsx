@@ -136,6 +136,7 @@ const ACTION_GROUPS = [
     actions: [
       { id: 'users.export_emails', label: 'Export email list', route: '/admin/actions', fields: [] },
       { id: 'notification.broadcast', label: 'Broadcast announcement', route: '/admin/actions', fields: [{ key: 'title', label: 'Title' }, { key: 'message', label: 'Message' }, { key: 'roles', label: 'Target roles (comma)' }, { key: 'premium_only', label: 'Premium only (true/false)' }, { key: 'verified_only', label: 'Verified only (true/false)' }] },
+      { id: 'email.test_send', label: 'Send test email', route: '/admin/actions', fields: [{ key: 'to', label: 'Recipient email' }] },
       { id: 'partner.force_accept', label: 'Force accept partner request', route: '/admin/actions', fields: [{ key: 'request_id', label: 'Request ID' }] },
       { id: 'partner.force_reject', label: 'Force reject partner request', route: '/admin/actions', fields: [{ key: 'request_id', label: 'Request ID' }] },
       { id: 'partner.force_cancel', label: 'Force cancel partner request', route: '/admin/actions', fields: [{ key: 'request_id', label: 'Request ID' }] },
@@ -442,6 +443,32 @@ export default function AdminPanel() {
   const [supportFilters, setSupportFilters] = useState({ status: 'all', priority: 'all', assigned_to: '' })
   const [moderationPending, setModerationPending] = useState([])
   const [moderationRejected, setModerationRejected] = useState([])
+  const [emailConfig, setEmailConfig] = useState({
+    enabled: false,
+    provider: 'smtp',
+    from_name: 'GarTexHub',
+    from_email: '',
+    test_recipient: '',
+  })
+  const [emailConfigBusy, setEmailConfigBusy] = useState(false)
+  const [emailConfigNotice, setEmailConfigNotice] = useState('')
+  const [emailConfigError, setEmailConfigError] = useState('')
+  const [openSearchConfig, setOpenSearchConfig] = useState({
+    enabled: false,
+    url: '',
+    username: '',
+    password: '',
+    index_prefix: 'gartexhub_',
+    timeout_ms: 3000,
+    verify_tls: true,
+  })
+  const [openSearchStatus, setOpenSearchStatus] = useState(null)
+  const [openSearchOrgId, setOpenSearchOrgId] = useState('')
+  const [openSearchReset, setOpenSearchReset] = useState(false)
+  const [openSearchConfigBusy, setOpenSearchConfigBusy] = useState(false)
+  const [openSearchActionBusy, setOpenSearchActionBusy] = useState('')
+  const [openSearchNotice, setOpenSearchNotice] = useState('')
+  const [openSearchError, setOpenSearchError] = useState('')
   const [clothingRulesForm, setClothingRulesForm] = useState({
     forbidden_terms: '',
     flag_terms: '',
@@ -537,17 +564,48 @@ export default function AdminPanel() {
   }, [activeCategory])
 
   useEffect(() => {
+    if (activeCategory !== 'server-admin') return
+    if (!isOwner) return
+    refreshOpenSearchStatus()
+  }, [activeCategory, isOwner])
+
+  useEffect(() => {
     const rules = master?.config?.moderation?.clothing_rules
-    if (!rules) return
-    setClothingRulesForm({
-      forbidden_terms: listToTextarea(rules.forbidden_terms),
-      flag_terms: listToTextarea(rules.flag_terms),
-      allowed_terms: listToTextarea(rules.allowed_terms),
-      context_exceptions: listToTextarea(rules.context_exceptions),
-      reason_rejected: rules?.reason_templates?.rejected || '',
-      reason_pending: rules?.reason_templates?.pending_review || '',
-      reason_fix: rules?.reason_templates?.fix_guidance || '',
-    })
+    if (rules) {
+      setClothingRulesForm({
+        forbidden_terms: listToTextarea(rules.forbidden_terms),
+        flag_terms: listToTextarea(rules.flag_terms),
+        allowed_terms: listToTextarea(rules.allowed_terms),
+        context_exceptions: listToTextarea(rules.context_exceptions),
+        reason_rejected: rules?.reason_templates?.rejected || '',
+        reason_pending: rules?.reason_templates?.pending_review || '',
+        reason_fix: rules?.reason_templates?.fix_guidance || '',
+      })
+    }
+
+    const email = master?.config?.notifications?.email
+    if (email) {
+      setEmailConfig({
+        enabled: Boolean(email.enabled),
+        provider: email.provider || 'smtp',
+        from_name: email.from_name || 'GarTexHub',
+        from_email: email.from_email || '',
+        test_recipient: email.test_recipient || '',
+      })
+    }
+
+    const opensearch = master?.config?.integrations?.opensearch
+    if (opensearch) {
+      setOpenSearchConfig({
+        enabled: Boolean(opensearch.enabled),
+        url: opensearch.url || '',
+        username: opensearch.username || '',
+        password: opensearch.password || '',
+        index_prefix: opensearch.index_prefix || 'gartexhub_',
+        timeout_ms: Number(opensearch.timeout_ms || 3000),
+        verify_tls: opensearch.verify_tls !== false,
+      })
+    }
   }, [master?.config])
 
   const buildAdminHeaders = useCallback(({ stepUp = false } = {}) => {
@@ -996,6 +1054,132 @@ export default function AdminPanel() {
     }
   }
 
+  async function saveEmailConfig() {
+    const token = getToken()
+    if (!token) return
+    setEmailConfigBusy(true)
+    setEmailConfigNotice('')
+    setEmailConfigError('')
+    try {
+      const patch = {
+        notifications: {
+          email: {
+            enabled: Boolean(emailConfig.enabled),
+            provider: emailConfig.provider || 'smtp',
+            from_name: String(emailConfig.from_name || '').trim(),
+            from_email: String(emailConfig.from_email || '').trim(),
+            test_recipient: String(emailConfig.test_recipient || '').trim(),
+          },
+        },
+      }
+      const updated = await apiRequest('/admin/config', {
+        method: 'PATCH',
+        token,
+        headers: buildAdminHeaders({ stepUp: true }),
+        body: patch,
+      })
+      setMaster((prev) => (prev ? { ...prev, config: updated } : prev))
+      setEmailConfigNotice('Email configuration saved.')
+    } catch (err) {
+      setEmailConfigError(err.message || 'Unable to update email settings.')
+    } finally {
+      setEmailConfigBusy(false)
+    }
+  }
+
+  async function saveOpenSearchConfig() {
+    const token = getToken()
+    if (!token) return
+    setOpenSearchConfigBusy(true)
+    setOpenSearchNotice('')
+    setOpenSearchError('')
+    try {
+      const patch = {
+        integrations: {
+          opensearch: {
+            enabled: Boolean(openSearchConfig.enabled),
+            url: String(openSearchConfig.url || '').trim(),
+            username: String(openSearchConfig.username || '').trim(),
+            password: String(openSearchConfig.password || ''),
+            index_prefix: String(openSearchConfig.index_prefix || '').trim(),
+            timeout_ms: Math.max(500, Math.min(60000, Number(openSearchConfig.timeout_ms || 3000))),
+            verify_tls: Boolean(openSearchConfig.verify_tls),
+          },
+        },
+      }
+      const updated = await apiRequest('/admin/config', {
+        method: 'PATCH',
+        token,
+        headers: buildAdminHeaders({ stepUp: true }),
+        body: patch,
+      })
+      setMaster((prev) => (prev ? { ...prev, config: updated } : prev))
+      setOpenSearchNotice('OpenSearch configuration saved.')
+      await refreshIntegrationStatus()
+      await refreshOpenSearchStatus()
+    } catch (err) {
+      setOpenSearchError(err.message || 'Unable to update OpenSearch settings.')
+    } finally {
+      setOpenSearchConfigBusy(false)
+    }
+  }
+
+  async function runOpenSearchAction(action, payload = {}) {
+    const token = getToken()
+    if (!token) return
+    const safeAction = String(action || '').trim()
+    if (!safeAction) return
+    setOpenSearchActionBusy(safeAction)
+    setOpenSearchNotice('')
+    setOpenSearchError('')
+    try {
+      const result = await apiRequest('/admin/integrations/actions', {
+        method: 'POST',
+        token,
+        headers: buildAdminHeaders({ stepUp: true }),
+        body: {
+          action: safeAction,
+          payload,
+        },
+      })
+      if (!result?.ok) throw new Error(result?.error || result?.result?.error || 'OpenSearch action failed.')
+
+      const detail = result?.result || result?.status || null
+      const suffix = (detail?.products !== undefined || detail?.requirements !== undefined)
+        ? ` (${detail?.products ?? 0} products, ${detail?.requirements ?? 0} requirements)`
+        : ''
+      setOpenSearchNotice(`${safeAction.replace('opensearch.', '').replace(/_/g, ' ')} ok${suffix}`)
+      await refreshIntegrationStatus()
+      await refreshOpenSearchStatus()
+    } catch (err) {
+      setOpenSearchError(err.message || 'OpenSearch action failed.')
+    } finally {
+      setOpenSearchActionBusy('')
+    }
+  }
+
+  async function sendEmailTest() {
+    const token = getToken()
+    if (!token) return
+    setEmailConfigNotice('')
+    setEmailConfigError('')
+    try {
+      const result = await apiRequest('/admin/actions', {
+        method: 'POST',
+        token,
+        headers: buildAdminHeaders({ stepUp: true }),
+        body: {
+          action: 'email.test_send',
+          to: emailConfig.test_recipient,
+        },
+      })
+      const status = result?.result?.status || 'queued'
+      setEmailConfigNotice(`Test email sent (${status}).`)
+    } catch (err) {
+      setEmailConfigError(err.message || 'Unable to send test email.')
+    }
+  }
+
   async function resolveReportAdmin(reportId, action = 'reviewed') {
     const token = getToken()
     if (!token || !reportId) return
@@ -1107,6 +1291,14 @@ export default function AdminPanel() {
     const headers = buildAdminHeaders()
     const data = await apiRequest('/admin/integrations/status', { token, headers })
     setIntegrationStatus(data || null)
+  }
+
+  async function refreshOpenSearchStatus() {
+    const token = getToken()
+    if (!token) return
+    const headers = buildAdminHeaders()
+    const data = await apiRequest('/admin/integrations/opensearch/status', { token, headers })
+    setOpenSearchStatus(data || null)
   }
 
   async function refreshSignups() {
@@ -3685,6 +3877,234 @@ export default function AdminPanel() {
                     ) : (
                       <div className="text-[11px] text-slate-500">phpMyAdmin: not configured</div>
                     )}
+                  </div>
+                </div>
+
+                <div className="admin-card admin-sweep rounded-3xl p-6">
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-bold">OpenSearch</p>
+                      <p className="text-xs text-slate-500">Faceted search engine + fast estimates.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => refreshOpenSearchStatus()}
+                      className="rounded-full borderless-shadow px-2 py-1 text-[10px] font-semibold text-slate-600"
+                    >
+                      Refresh
+                    </button>
+                  </div>
+
+                  <div className="mt-3 space-y-1 text-[11px] text-slate-600 dark:text-slate-300">
+                    <div className="text-[11px] text-slate-500">
+                      Enabled: {openSearchConfig.enabled ? 'On' : 'Off'} Â· Configured: {openSearchStatus?.configured ? 'yes' : 'no'} Â· Reachable: {openSearchStatus?.reachable ? 'yes' : 'no'}
+                    </div>
+                    {openSearchStatus?.indices ? (
+                      <div className="text-[11px] text-slate-500">
+                        Products: {openSearchStatus.indices.products?.exists ? 'ok' : 'missing'} ({openSearchStatus.indices.products?.count ?? 0}) Â·
+                        Requirements: {openSearchStatus.indices.requirements?.exists ? 'ok' : 'missing'} ({openSearchStatus.indices.requirements?.count ?? 0})
+                      </div>
+                    ) : null}
+                    {openSearchStatus?.last_ok_at ? (
+                      <div className="text-[11px] text-slate-500">Last OK: {openSearchStatus.last_ok_at}</div>
+                    ) : null}
+                    {openSearchStatus?.last_error ? (
+                      <div className="text-[11px] text-rose-600">Last error: {openSearchStatus.last_error}</div>
+                    ) : null}
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-1 gap-2 text-[11px] text-slate-600 dark:text-slate-300">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={openSearchConfig.enabled}
+                        onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, enabled: e.target.checked }))}
+                        className="h-4 w-4"
+                      />
+                      Enable OpenSearch
+                    </label>
+                    <input
+                      value={openSearchConfig.url}
+                      onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, url: e.target.value }))}
+                      placeholder="OpenSearch URL (e.g. http://localhost:9200)"
+                      className="rounded-xl borderless-shadow bg-white px-3 py-2 text-[11px] text-slate-700"
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        value={openSearchConfig.username}
+                        onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, username: e.target.value }))}
+                        placeholder="Username (optional)"
+                        className="rounded-xl borderless-shadow bg-white px-3 py-2 text-[11px] text-slate-700"
+                      />
+                      <input
+                        type="password"
+                        value={openSearchConfig.password}
+                        onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, password: e.target.value }))}
+                        placeholder="Password (optional)"
+                        className="rounded-xl borderless-shadow bg-white px-3 py-2 text-[11px] text-slate-700"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        value={openSearchConfig.index_prefix}
+                        onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, index_prefix: e.target.value }))}
+                        placeholder="Index prefix"
+                        className="rounded-xl borderless-shadow bg-white px-3 py-2 text-[11px] text-slate-700"
+                      />
+                      <input
+                        type="number"
+                        value={openSearchConfig.timeout_ms}
+                        onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, timeout_ms: e.target.value }))}
+                        placeholder="Timeout (ms)"
+                        className="rounded-xl borderless-shadow bg-white px-3 py-2 text-[11px] text-slate-700"
+                      />
+                    </div>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={openSearchConfig.verify_tls}
+                        onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, verify_tls: e.target.checked }))}
+                        className="h-4 w-4"
+                      />
+                      Verify TLS certificate
+                    </label>
+
+                    {openSearchNotice ? <div className="text-[11px] text-emerald-600">{openSearchNotice}</div> : null}
+                    {openSearchError ? <div className="text-[11px] text-rose-600">{openSearchError}</div> : null}
+
+                    <div className="mt-1 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={saveOpenSearchConfig}
+                        disabled={openSearchConfigBusy}
+                        className="rounded-full borderless-shadow px-3 py-1 text-[10px] font-semibold text-slate-600 disabled:opacity-60"
+                      >
+                        {openSearchConfigBusy ? 'Saving...' : 'Save settings'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => runOpenSearchAction('opensearch.test_connection')}
+                        disabled={Boolean(openSearchActionBusy)}
+                        className="rounded-full borderless-shadow px-3 py-1 text-[10px] font-semibold text-slate-600 disabled:opacity-60"
+                      >
+                        {openSearchActionBusy === 'opensearch.test_connection' ? 'Testing...' : 'Test connection'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => runOpenSearchAction('opensearch.ensure_indices')}
+                        disabled={Boolean(openSearchActionBusy)}
+                        className="rounded-full borderless-shadow px-3 py-1 text-[10px] font-semibold text-slate-600 disabled:opacity-60"
+                      >
+                        Ensure indices
+                      </button>
+                    </div>
+
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      <label className="flex items-center gap-2 text-[10px] text-slate-500">
+                        <input
+                          type="checkbox"
+                          checked={openSearchReset}
+                          onChange={(e) => setOpenSearchReset(e.target.checked)}
+                          className="h-3 w-3"
+                        />
+                        Reset
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => runOpenSearchAction('opensearch.reindex_all', { reset: openSearchReset })}
+                        disabled={Boolean(openSearchActionBusy)}
+                        className="rounded-full borderless-shadow px-3 py-1 text-[10px] font-semibold text-slate-600 disabled:opacity-60"
+                      >
+                        Reindex all
+                      </button>
+                    </div>
+
+                    <div className="mt-1 flex flex-wrap gap-2">
+                      <input
+                        value={openSearchOrgId}
+                        onChange={(e) => setOpenSearchOrgId(e.target.value)}
+                        placeholder="Org ID (reindex org)"
+                        className="flex-1 rounded-xl borderless-shadow bg-white px-3 py-2 text-[11px] text-slate-700"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => runOpenSearchAction('opensearch.reindex_org', { org_id: openSearchOrgId })}
+                        disabled={Boolean(openSearchActionBusy) || !String(openSearchOrgId || '').trim()}
+                        className="rounded-full borderless-shadow px-3 py-1 text-[10px] font-semibold text-slate-600 disabled:opacity-60"
+                      >
+                        Reindex org
+                      </button>
+                    </div>
+
+                    <div className="text-[10px] text-slate-400">
+                      Save settings → Ensure indices → Reindex (all or org). Search uses OpenSearch only when enabled + reachable.
+                    </div>
+                  </div>
+                </div>
+
+                <div className="admin-card admin-sweep rounded-3xl p-6">
+                  <div>
+                    <p className="text-sm font-bold">Email Notifications</p>
+                    <p className="text-xs text-slate-500">SMTP or Gmail API delivery for reminders.</p>
+                  </div>
+                  <div className="mt-3 grid grid-cols-1 gap-2 text-[11px] text-slate-600 dark:text-slate-300">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={emailConfig.enabled}
+                        onChange={(e) => setEmailConfig((prev) => ({ ...prev, enabled: e.target.checked }))}
+                        className="h-4 w-4"
+                      />
+                      Enabled
+                    </label>
+                    <select
+                      value={emailConfig.provider}
+                      onChange={(e) => setEmailConfig((prev) => ({ ...prev, provider: e.target.value }))}
+                      className="rounded-xl borderless-shadow bg-white px-3 py-2 text-[11px] text-slate-700"
+                    >
+                      <option value="smtp">SMTP</option>
+                      <option value="gmail_api">Gmail API</option>
+                    </select>
+                    <input
+                      value={emailConfig.from_name}
+                      onChange={(e) => setEmailConfig((prev) => ({ ...prev, from_name: e.target.value }))}
+                      placeholder="From name"
+                      className="rounded-xl borderless-shadow bg-white px-3 py-2 text-[11px] text-slate-700"
+                    />
+                    <input
+                      value={emailConfig.from_email}
+                      onChange={(e) => setEmailConfig((prev) => ({ ...prev, from_email: e.target.value }))}
+                      placeholder="From email"
+                      className="rounded-xl borderless-shadow bg-white px-3 py-2 text-[11px] text-slate-700"
+                    />
+                    <input
+                      value={emailConfig.test_recipient}
+                      onChange={(e) => setEmailConfig((prev) => ({ ...prev, test_recipient: e.target.value }))}
+                      placeholder="Test recipient"
+                      className="rounded-xl borderless-shadow bg-white px-3 py-2 text-[11px] text-slate-700"
+                    />
+                    {emailConfigNotice ? <div className="text-[11px] text-emerald-600">{emailConfigNotice}</div> : null}
+                    {emailConfigError ? <div className="text-[11px] text-rose-600">{emailConfigError}</div> : null}
+                    <div className="mt-1 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={saveEmailConfig}
+                        disabled={emailConfigBusy}
+                        className="rounded-full borderless-shadow px-3 py-1 text-[10px] font-semibold text-slate-600 disabled:opacity-60"
+                      >
+                        {emailConfigBusy ? 'Saving...' : 'Save settings'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={sendEmailTest}
+                        className="rounded-full borderless-shadow px-3 py-1 text-[10px] font-semibold text-slate-600"
+                      >
+                        Send test
+                      </button>
+                    </div>
+                    <div className="text-[10px] text-slate-400">
+                      Secrets remain in env vars. If provider is not configured, email is skipped silently.
+                    </div>
                   </div>
                 </div>
               </div>

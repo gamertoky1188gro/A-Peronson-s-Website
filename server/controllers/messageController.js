@@ -20,7 +20,18 @@ export async function sendMessage(req, res) {
   if (!allowed) return res.status(403).json({ error: 'Only connected friends can message in this thread' })
 
   try {
-    const msg = await postMessage(req.params.matchId, req.user.id, req.body?.message || '', req.body?.type || 'text')
+    const msg = await postMessage(
+      req.params.matchId,
+      req.user.id,
+      req.body?.message || '',
+      req.body?.type || 'text',
+      null,
+      {
+        source_type: req.body?.source_type,
+        source_id: req.body?.source_id,
+        source_label: req.body?.source_label,
+      },
+    )
     let botReply = null
     try {
       const result = await maybeGenerateBotReply({ match_id: req.params.matchId, sender_id: req.user.id, message: req.body?.message || '' })
@@ -102,6 +113,10 @@ export async function uploadMessageAttachment(req, res) {
       url: publicUrl,
       mime_type: mime,
       size: file.size,
+    }, {
+      source_type: req.body?.source_type,
+      source_id: req.body?.source_id,
+      source_label: req.body?.source_label,
     })
 
     let botReply = null

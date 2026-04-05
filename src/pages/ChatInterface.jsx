@@ -48,6 +48,7 @@ import {
 } from 'lucide-react'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 import { trackClientEvent } from '../lib/events'
+import { consumeLeadSource } from '../lib/leadSource'
 import AttachmentPreviewModal from '../components/chat/AttachmentPreviewModal'
 import MarkdownMessage from '../components/chat/MarkdownMessage'
 import FileAttachmentCard from '../components/chat/FileAttachmentCard'
@@ -959,9 +960,13 @@ export default function ChatInterface() {
     setUploading(true)
     setUploadStatus('Uploading file...')
     try {
+      const leadSource = consumeLeadSource()
       const formData = new FormData()
       formData.append('file', file)
       formData.append('message', draftMessage.trim())
+      if (leadSource?.type) formData.append('source_type', leadSource.type)
+      if (leadSource?.id) formData.append('source_id', leadSource.id)
+      if (leadSource?.label) formData.append('source_label', leadSource.label)
 
       const apiBase = import.meta.env.VITE_API_URL || '/api'
       const response = await fetch(`${apiBase}/messages/${encodeURIComponent(activeThread.matchId)}/upload`, {
@@ -1217,6 +1222,12 @@ export default function ChatInterface() {
     }
 
     try {
+      const leadSource = consumeLeadSource()
+      const sourcePayload = leadSource?.type ? {
+        source_type: leadSource.type,
+        source_id: leadSource.id,
+        source_label: leadSource.label,
+      } : {}
       // Optimistic local append of the user's message so UI feels instant.
       // The server will still be the source of truth after `loadInbox()`.
       if (isLiveMessagingEnabled && wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -1226,6 +1237,7 @@ export default function ChatInterface() {
           token,
           message: content,
           message_type: 'text',
+          ...sourcePayload,
         }))
       } else {
         const created = await apiRequest(`/messages/${activeThread.matchId}`, {
@@ -1234,6 +1246,7 @@ export default function ChatInterface() {
           body: {
             message: content,
             type: 'text',
+            ...sourcePayload,
           },
         })
         setMessagesByThread((previous) => ({

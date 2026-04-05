@@ -7,6 +7,7 @@ import { moderateTextOrRedact } from './policyService.js'
 import { isAgent, isOwnerOrAdmin } from '../utils/permissions.js'
 import { getAdminConfig } from './adminConfigService.js'
 import { getPlanForUser } from './entitlementService.js'
+import { indexProduct, deleteProductIndex } from './openSearchService.js'
 
 const FILE = 'company_products.json'
 const PROHIBITED_MEDIA_KEYWORDS = ['porn', 'explicit', 'nudity', 'violence', 'weapon', 'drugs', 'hate']
@@ -445,6 +446,11 @@ export async function createProduct(user, payload) {
   row.description = description
   all.push(row)
   await writeJson(FILE, all)
+  try {
+    await indexProduct(row, { ...(ownerUser || {}), ...(ownerUser?.profile || {}) })
+  } catch {
+    // ignore index failures
+  }
   await trackEvent({ type: 'product_created', actor_id: user.id, entity_id: row.id })
   if (status === 'published') {
     await trackEvent({ type: 'product_published', actor_id: user.id, entity_id: row.id })
@@ -597,6 +603,11 @@ export async function updateProductById(actor, productId, patch = {}) {
 
   all[idx] = next
   await writeJson(FILE, all)
+  try {
+    await indexProduct(next, { ...(ownerRecord || {}), ...(ownerRecord?.profile || {}) })
+  } catch {
+    // ignore index failures
+  }
   await trackEvent({ type: 'product_updated', actor_id: actor.id, entity_id: next.id })
   if ((patch.image_urls !== undefined || patch.imageUrls !== undefined || patch.cover_image_url !== undefined || patch.coverImageUrl !== undefined) && syncedCover.image_urls.length) {
     await trackEvent({ type: 'product_media_updated', actor_id: actor.id, entity_id: next.id })
@@ -638,6 +649,11 @@ export async function removeProduct(actor, productId) {
   if (!canMutateProduct(actor, existing)) return 'forbidden'
   const next = all.filter((p) => String(p.id) !== id)
   await writeJson(FILE, next)
+  try {
+    await deleteProductIndex(id)
+  } catch {
+    // ignore index failures
+  }
   await trackEvent({ type: 'product_deleted', actor_id: actor.id, entity_id: id })
   return true
 }

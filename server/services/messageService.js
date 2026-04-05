@@ -259,7 +259,7 @@ function applyFriendThreadMeta(message, fallbackFriend, currentUserId) {
   }
 }
 
-export async function postMessage(matchId, senderId, message, type = 'text', attachment = null) {
+export async function postMessage(matchId, senderId, message, type = 'text', attachment = null, options = {}) {
   const messages = await readJson(FILE)
   const users = await readJson(USERS_FILE)
   const usersById = buildUsersById(users)
@@ -337,7 +337,14 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
   // CRM (project.md): Every inquiry/message becomes a lead for Buying House / Factory org accounts.
   // Best-effort: never block the message if lead upsert fails.
   try {
-    await upsertLeadFromMessage({ match_id: matchId, sender_id: senderId, timestamp: entry.timestamp })
+    await upsertLeadFromMessage({
+      match_id: matchId,
+      sender_id: senderId,
+      timestamp: entry.timestamp,
+      source_type: options?.source_type,
+      source_id: options?.source_id,
+      source_label: options?.source_label,
+    })
   } catch {
     // silent
   }

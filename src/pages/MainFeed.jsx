@@ -34,6 +34,7 @@ import ReportModal from '../components/feed/ReportModal'
 import useLocalStorageState from '../hooks/useLocalStorageState'
 import { apiRequest, fetchCurrentUser, getCurrentUser, getToken, hasEntitlement } from '../lib/auth'
 import { trackClientEvent } from '../lib/events'
+import { recordLeadSource } from '../lib/leadSource'
 
 const Motion = motion
 
@@ -50,6 +51,17 @@ function formatRelativeTime(value) {
   if (diffHours < 24) return `${diffHours}h ago`
   const diffDays = Math.floor(diffHours / 24)
   return `${diffDays}d ago`
+}
+
+function buildFeedLeadLabel(item) {
+  const title = String(item?.title || '').trim()
+  if (title) return title
+  const category = String(item?.category || '').trim()
+  if (category) return category
+  const content = String(item?.content || '').replace(/\s+/g, ' ').trim()
+  if (content) return content.slice(0, 80)
+  const author = String(item?.author?.name || '').trim()
+  return author ? `${author} update` : 'Feed post'
 }
 
 function normalizeFeedItem(raw) {
@@ -351,7 +363,19 @@ export default function MainFeed() {
     }
   }
 
-  function handleMessage() {
+  function handleMessage(item = null) {
+    if (item?.id) {
+      const sourceType = item.entityType === 'buyer_request'
+        ? 'buyer_request'
+        : (item.entityType === 'product' || item.entityType === 'company_product')
+          ? 'product'
+          : 'feed_post'
+      recordLeadSource({
+        type: sourceType,
+        id: item.id,
+        label: buildFeedLeadLabel(item),
+      })
+    }
     navigate('/chat', {
       state: {
         notice: 'Open chat from inbox. If you are unverified, your first message may appear as a message request.',

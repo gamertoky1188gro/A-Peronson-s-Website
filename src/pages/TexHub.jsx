@@ -218,13 +218,27 @@ function SkeletonLine({ className='' }) {
 
 export default function TexHub() {
   const initialHome = useMemo(
-    () => ({
-      hero: {
-        buyerRequest: {
-          label: 'Buyer Request',
-          title: 'No live buyer requests yet',
-          badge: 'Live',
-          fields: [],
+      () => ({
+        hero: {
+          headline: 'Where global buyers, factories, and buying houses connect with clarity',
+          subheadline: 'A focused B2B sourcing workflow platform for garments and textiles. Post requests, showcase products, connect quickly, and move from first contact to contract in one place.',
+          value_props: [
+            'Structured buyer request system',
+            'Factory product visibility engine',
+            'Buying house team-based workflow',
+            'AI-assisted communication + verification',
+          ],
+          trust_points: [
+            'Organization-based verification',
+            'Digital signature + PDF contract record',
+            'Audit-ready activity history',
+            'Controlled communication flow',
+          ],
+          buyerRequest: {
+            label: 'Buyer Request',
+            title: 'No live buyer requests yet',
+            badge: 'Live',
+            fields: [],
         },
         verifiedFactories: {
           title: 'Verified factories',
@@ -266,6 +280,9 @@ export default function TexHub() {
           status: 'Idle',
           note: 'Live request locks will appear here once teams start claiming leads.',
         },
+      },
+      marketing: {
+        sections: [],
       },
     }),
     [],
@@ -313,7 +330,11 @@ export default function TexHub() {
 
   const heroBuyerRequest = home?.hero?.buyerRequest || initialHome.hero.buyerRequest
   const heroFactories = home?.hero?.verifiedFactories || initialHome.hero.verifiedFactories
+  const heroHeadline = home?.hero?.headline || initialHome.hero.headline
+  const heroSubheadline = home?.hero?.subheadline || initialHome.hero.subheadline
+  const heroValueProps = Array.isArray(home?.hero?.value_props) ? home.hero.value_props : initialHome.hero.value_props
   const bento = home?.bento || initialHome.bento
+  const marketingSections = Array.isArray(home?.marketing?.sections) ? home.marketing.sections : (initialHome?.marketing?.sections || [])
 
   const bentoView = useMemo(() => {
     // Derived bento data based on the current `mode` toggle.
@@ -367,13 +388,12 @@ export default function TexHub() {
               <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_18px_rgba(16,185,129,0.6)]" />
               Clean Tech sourcing for garments & textiles
             </div>
-            <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-[#1E293B] sm:text-5xl dark:text-white">
-              <AnimatedHeroHeading text="Where global buyers, factories, and buying houses connect" />
-            </h1>
-            <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#475569] dark:text-slate-400">
-              A structured, low-noise B2B platform for buyer requests, verified factories, partner networks, and secure
-              contracts -- built for real teams.
-            </p>
+              <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-[#1E293B] sm:text-5xl dark:text-white">
+                <AnimatedHeroHeading text={heroHeadline} />
+              </h1>
+              <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#475569] dark:text-slate-400">
+                {heroSubheadline}
+              </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <MagneticLinkButton
@@ -506,16 +526,15 @@ export default function TexHub() {
             <Surface className="relative p-8">
               <div className="pointer-events-none absolute -inset-28 hidden dark:block bg-[radial-gradient(closest-side,rgba(59,130,246,0.10),transparent_70%)]" />
               <div className="relative z-10">
-              <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Problem</h3>
-              <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                Typical marketplaces are loud and unstructured -- teams lose time, trust, and context.
-              </p>
-              <ul className="mt-5 space-y-2 text-sm text-[#334155] dark:text-slate-300">
-                <li>Noise from random listings</li>
-                <li>Unstructured buyer requirements</li>
-                <li>Weak verification signals</li>
-                <li>Internal lead conflicts in buying houses</li>
-              </ul>
+                <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Why GarTexHub</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+                  A sourcing workflow network built only for garments and textiles: low noise, structured requests, and trust by design.
+                </p>
+                <ul className="mt-5 space-y-2 text-sm text-[#334155] dark:text-slate-300">
+                  {(heroValueProps || []).slice(0, 4).map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
               </div>
             </Surface>
             <Surface className="relative p-8">
@@ -566,6 +585,43 @@ export default function TexHub() {
             </Surface>
           </div>
         </div>
+
+        {marketingSections.length ? (
+          <div className="mt-16">
+            <div className="flex flex-col items-center text-center">
+              <h3 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Why GarTexHub</h3>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+                Clear positioning and a structured sourcing workflow -- built only for garments & textile.
+              </p>
+            </div>
+
+            <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 dark:gap-px">
+              {marketingSections.map((section, idx) => (
+                <BentoMotion key={section.id || section.title || String(idx)} index={idx} className="md:col-span-1">
+                  <Surface className="p-7">
+                    {section.eyebrow ? (
+                      <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">{section.eyebrow}</p>
+                    ) : null}
+                    <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{section.title}</h4>
+                    {section.description ? (
+                      <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">{section.description}</p>
+                    ) : null}
+                    {Array.isArray(section.bullets) && section.bullets.length ? (
+                      <ul className="mt-4 space-y-2 text-sm text-[#334155] dark:text-slate-300">
+                        {section.bullets.map((bullet) => (
+                          <li key={bullet} className="flex items-start gap-2">
+                            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500/90" />
+                            <span className="leading-relaxed">{bullet}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </Surface>
+                </BentoMotion>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         <div className="mt-16">
           <div className="flex flex-col items-center text-center">

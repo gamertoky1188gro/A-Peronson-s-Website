@@ -31,7 +31,7 @@ import { adminCatalogOverview } from '../controllers/adminCatalogController.js'
 import { getServerAdminStateController, serverAdminActionController } from '../controllers/serverAdminController.js'
 import { getCmsStateController, cmsActionController } from '../controllers/cmsController.js'
 import { getSecurityStateController, securityActionController } from '../controllers/securityController.js'
-import { integrationActionController, integrationStatusController } from '../controllers/integrationController.js'
+import { integrationActionController, integrationEmailStatusController, integrationOpenSearchStatusController, integrationStatusController } from '../controllers/integrationController.js'
 import {
   approveOrderCertificationAdmin,
   attachOrderCertificationEvidenceAdmin,
@@ -119,6 +119,8 @@ router.post('/cms/actions', requireAuth, requireAdminSecurity, requireAdminStepU
 router.get('/security/state', requireAuth, requireAdminSecurity, adminAuditLogger(), getSecurityStateController)
 router.post('/security/actions', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), securityActionController)
 router.get('/integrations/status', requireAuth, requireAdminSecurity, adminAuditLogger(), integrationStatusController)
+router.get('/integrations/opensearch/status', requireAuth, requireAdminSecurity, adminAuditLogger(), integrationOpenSearchStatusController)
+router.get('/integrations/email/status', requireAuth, requireAdminSecurity, adminAuditLogger(), integrationEmailStatusController)
 router.post('/integrations/actions', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), integrationActionController)
 
 router.get('/master', requireAuth, requireAdminSecurity, adminAuditLogger(), adminMasterOverviewController)

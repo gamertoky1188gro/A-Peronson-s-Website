@@ -177,7 +177,7 @@ export default function FeedItemCard({
           ) : (
             <button
               type="button"
-              onClick={onMessage}
+              onClick={() => onMessage?.(item)}
               className="rounded-full bg-[var(--gt-blue)] px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-[var(--gt-blue-hover)] active:scale-95 inline-flex items-center gap-2"
             >
               <MessageCircle size={16} /> Message

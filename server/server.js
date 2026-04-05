@@ -35,6 +35,7 @@ import profileRoutes from './routes/profileRoutes.js'
 import chatbotRoutes from './routes/chatbotRoutes.js'
 import walletRoutes from './routes/walletRoutes.js'
 import boostRoutes from './routes/boostRoutes.js'
+import geoRoutes from './routes/geoRoutes.js'
 import industryRoutes from './routes/industryRoutes.js'
 import paymentProofRoutes from './routes/paymentProofRoutes.js'
 import couponRoutes from './routes/couponRoutes.js'
@@ -58,6 +59,7 @@ import { consumePendingInvites, enqueuePendingInvites } from './utils/pendingInv
 import { ensureDatabaseConnection, closeDatabaseConnection } from './utils/db.js'
 import { revokeExpiredVerifications } from './services/verificationService.js'
 import { enforcePartnerFreeTierLimits } from './services/partnerNetworkService.js'
+import { runLeadReminderSweep } from './services/leadReminderService.js'
 
 const app = express()
 const PORT = process.env.PORT || 4000
@@ -113,6 +115,7 @@ app.use('/api/profiles', profileRoutes)
 app.use('/api/chatbot', chatbotRoutes)
 app.use('/api/wallet', walletRoutes)
 app.use('/api/boosts', boostRoutes)
+app.use('/api/geo', geoRoutes)
 app.use('/api/industry', industryRoutes)
 app.use('/api/payment-proofs', paymentProofRoutes)
 app.use('/api/coupons', couponRoutes)
@@ -315,7 +318,11 @@ async function relayChatMessage(socket, payload) {
   if (!messageText) return
 
   try {
-    const created = await postMessage(matchId, socket.userId, messageText, payload?.message_type || 'text')
+    const created = await postMessage(matchId, socket.userId, messageText, payload?.message_type || 'text', null, {
+      source_type: payload?.source_type,
+      source_id: payload?.source_id,
+      source_label: payload?.source_label,
+    })
     for (const peer of room) {
       sendWs(peer, {
         type: 'chat_message',
@@ -591,10 +598,15 @@ async function start() {
   // Verification renewals: keep badges in sync with subscription validity.
   revokeExpiredVerifications().catch((error) => logError('verification_expiry_check_failed', error))
   enforcePartnerFreeTierLimits().catch((error) => logError('partner_limit_check_failed', error))
+  runLeadReminderSweep().catch((error) => logError('lead_reminder_sweep_failed', error))
   setInterval(() => {
     revokeExpiredVerifications().catch((error) => logError('verification_expiry_check_failed', error))
     enforcePartnerFreeTierLimits().catch((error) => logError('partner_limit_check_failed', error))
   }, 6 * 60 * 60 * 1000)
+
+  setInterval(() => {
+    runLeadReminderSweep().catch((error) => logError('lead_reminder_sweep_failed', error))
+  }, 5 * 60 * 1000)
   server.listen(PORT, () => {
     logInfo(`Verification MVP API running on http://localhost:${PORT}`)
   })

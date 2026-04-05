@@ -29,6 +29,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 import { trackClientEvent } from '../lib/events'
+import { recordLeadSource } from '../lib/leadSource'
 import VerificationPanel from '../components/profile/VerificationPanel'
 import CrmSummaryPanel from '../components/profile/CrmSummaryPanel'
 
@@ -193,6 +194,13 @@ export default function BuyerProfile() {
   }
 
   function contact() {
+    if (id) {
+      recordLeadSource({
+        type: 'direct',
+        id: `profile:${id}`,
+        label: `Profile: ${user?.name || 'buyer'}`,
+      })
+    }
     navigate('/chat', { state: { notice: `Contacting ${user?.name || 'buyer'}. If you are unverified, your first message may appear as a request.` } })
   }
 

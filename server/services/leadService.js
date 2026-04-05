@@ -66,6 +66,21 @@ function actorOrgOwnerId(actor) {
   return sanitizeString(actor.id || '', 120)
 }
 
+const LEAD_SOURCE_TYPES = new Set([
+  'buyer_request',
+  'product',
+  'feed_post',
+  'search',
+  'direct',
+  'message',
+])
+
+function normalizeLeadSourceType(value, fallback = '') {
+  const normalized = sanitizeString(String(value || ''), 40).toLowerCase().replace(/\s+/g, '_')
+  if (LEAD_SOURCE_TYPES.has(normalized)) return normalized
+  return fallback
+}
+
 function canAccessLead(actor, lead) {
   if (!actor || !lead) return false
   if (isOwnerOrAdmin(actor)) return true
@@ -110,7 +125,7 @@ function pickCounterparty({ buyerId, supplierId, orgOwnerId, friendPair }) {
   return buyerId || supplierId || ''
 }
 
-export async function upsertLeadFromMessage({ match_id, sender_id, timestamp }) {
+export async function upsertLeadFromMessage({ match_id, sender_id, timestamp, source_type, source_id, source_label }) {
   const matchId = sanitizeString(match_id || '', 240)
   const senderId = sanitizeString(sender_id || '', 120)
   if (!matchId) return null
@@ -123,8 +138,13 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp }) 
   const marketplace = friendPair ? null : parseMarketplaceMatchId(matchId)
   const buyerId = marketplace ? await resolveBuyerId(marketplace.requirementId) : ''
   const supplierId = marketplace ? marketplace.supplierId : ''
-  const leadSourceType = marketplace ? 'buyer_request' : (friendPair ? 'direct' : 'message')
-  const leadSourceId = marketplace?.requirementId || matchId || ''
+  const derivedSourceType = marketplace ? 'buyer_request' : (friendPair ? 'direct' : 'message')
+  const derivedSourceId = marketplace?.requirementId || matchId || ''
+  const overrideSourceType = normalizeLeadSourceType(source_type, '')
+  const overrideSourceId = sanitizeString(source_id || '', 200)
+  const overrideSourceLabel = sanitizeString(source_label || '', 160)
+  const leadSourceType = overrideSourceType || derivedSourceType
+  const leadSourceId = overrideSourceId || derivedSourceId
 
   const orgTargets = new Map()
 
@@ -209,10 +229,19 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp }) 
         assigned_agent_id: extras.assigned_agent_id || current.assigned_agent_id || autoAssignedAgent || '',
         source_type: current.source_type || leadSourceType,
         source_id: current.source_id || leadSourceId,
+        source_label: current.source_label || overrideSourceLabel || '',
         last_interaction_at: interactionAt,
         updated_at: now,
       }
       updated.push(leads[existingIndex])
+      if (!current.source_type && leadSourceType) {
+        await trackEvent({
+          type: 'lead_source_attached',
+          actor_id: senderId || orgId,
+          entity_id: current.id,
+          metadata: { source_type: leadSourceType, source_id: leadSourceId },
+        })
+      }
       continue
     }
 
@@ -224,6 +253,7 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp }) 
       source: 'message',
       source_type: leadSourceType,
       source_id: leadSourceId,
+      source_label: overrideSourceLabel || '',
       status: 'new',
       assigned_agent_id: extras.assigned_agent_id || autoAssignedAgent || '',
       created_at: now,
@@ -234,6 +264,14 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp }) 
     leads.push(row)
     updated.push(row)
     await trackEvent({ type: 'lead_created', actor_id: senderId || orgId, entity_id: row.id, metadata: { source_type: leadSourceType, source_id: leadSourceId } })
+    if (leadSourceType) {
+      await trackEvent({
+        type: 'lead_source_attached',
+        actor_id: senderId || orgId,
+        entity_id: row.id,
+        metadata: { source_type: leadSourceType, source_id: leadSourceId },
+      })
+    }
   }
 
   await writeJson(LEADS_FILE, leads)

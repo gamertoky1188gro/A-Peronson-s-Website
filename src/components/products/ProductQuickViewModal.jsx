@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiRequest, getCurrentUser, getToken } from '../../lib/auth'
+import { recordLeadSource } from '../../lib/leadSource'
 
 function roleToProfileRoute(role, id) {
   if (!id) return '/feed'
@@ -76,6 +77,13 @@ export default function ProductQuickViewModal({ open, onClose, item, onViewed })
 
   function contact() {
     const name = author?.name || 'company'
+    if (productId) {
+      recordLeadSource({
+        type: 'product',
+        id: productId,
+        label: item?.title || item?.product?.title || 'Product',
+      })
+    }
     navigate('/chat', { state: { notice: `Contacting ${name}. If you are unverified, your first message may appear as a request.` } })
     handleClose()
   }

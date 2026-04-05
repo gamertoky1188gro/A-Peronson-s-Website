@@ -42,10 +42,29 @@ const DEFAULT_CONFIG = {
     webhooks: [],
     api_keys: [],
     crm_exports: [],
+    opensearch: {
+      enabled: false,
+      url: '',
+      username: '',
+      password: '',
+      index_prefix: 'gartexhub_',
+      timeout_ms: 3000,
+      verify_tls: true,
+    },
   },
   notifications: {
     templates: [],
     monthly_summary_enabled: true,
+    email: {
+      enabled: false,
+      provider: 'smtp',
+      from_name: 'GarTexHub',
+      from_email: '',
+      test_recipient: '',
+    },
+  },
+  analytics: {
+    search_min_events: 25,
   },
   support: {
     sla_targets: {

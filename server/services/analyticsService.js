@@ -1,10 +1,22 @@
 import crypto from 'crypto'
 import { readJson, writeJson } from '../utils/jsonStore.js'
+import { getAdminConfig } from './adminConfigService.js'
 import { canViewAnalytics, canViewAnalyticsAdmin, canViewAnalyticsDashboard, forbiddenError, scopeRecordsForUser } from '../utils/permissions.js'
 import { getPlanForUser } from './entitlementService.js'
 import { getOrderCertificationSummary } from './orderCertificationService.js'
 
 const FILE = 'analytics.json'
+const SEARCH_TREND_MIN_EVENTS = 25
+
+async function getSearchMinEvents() {
+  try {
+    const config = await getAdminConfig()
+    const raw = Number(config?.analytics?.search_min_events)
+    return Number.isFinite(raw) && raw > 0 ? raw : SEARCH_TREND_MIN_EVENTS
+  } catch {
+    return SEARCH_TREND_MIN_EVENTS
+  }
+}
 
 export async function trackEvent({ type, actor_id, entity_id, metadata = {} }) {
   const all = await readJson(FILE)
@@ -413,7 +425,7 @@ export async function getCompanyAnalytics(user) {
   ensureAnalyticsDashboardAccess(user)
   const plan = await getPlanForUser(user)
 
-  const [events, products, productViews, messages, documents, users, leads] = await Promise.all([
+  const [events, products, productViews, messages, documents, users, leads, requirements] = await Promise.all([
     readJson(FILE),
     readJson('company_products.json'),
     readJson('product_views.json'),
@@ -421,6 +433,7 @@ export async function getCompanyAnalytics(user) {
     readJson('documents.json'),
     readJson('users.json'),
     readJson('leads.json'),
+    readJson('requirements.json'),
   ])
 
   const actorRole = String(user?.role || '').toLowerCase()
@@ -528,15 +541,46 @@ export async function getCompanyAnalytics(user) {
     : 0
 
   const leadRows = (Array.isArray(leads) ? leads : []).filter((l) => String(l.org_owner_id || '') === orgOwnerId)
-  const leadSources = leadRows.reduce((acc, lead) => {
-    const label = String(lead.source_type || 'message')
-    acc[label] = (acc[label] || 0) + 1
-    return acc
-  }, {})
-  const topLeadSources = Object.entries(leadSources)
-    .sort((a, b) => b[1] - a[1])
+  const requirementById = new Map((Array.isArray(requirements) ? requirements : []).map((r) => [String(r.id), r]))
+  const leadSources = new Map()
+  for (const lead of leadRows) {
+    const sourceType = String(lead.source_type || 'message')
+    const sourceId = String(lead.source_id || '')
+    const key = `${sourceType}:${sourceId || 'unknown'}`
+    const existing = leadSources.get(key) || {
+      source_type: sourceType,
+      source_id: sourceId,
+      label: String(lead.source_label || ''),
+      count: 0,
+    }
+    existing.count += 1
+    if (!existing.label && lead.source_label) existing.label = String(lead.source_label)
+    leadSources.set(key, existing)
+  }
+
+  const topLeadSources = [...leadSources.values()]
+    .map((entry) => {
+      let label = entry.label
+      if (!label) {
+        if (entry.source_type === 'product') {
+          label = productById.get(String(entry.source_id))?.title || 'Product'
+        } else if (entry.source_type === 'buyer_request') {
+          const req = requirementById.get(String(entry.source_id))
+          label = req?.title || req?.category || 'Buyer request'
+        } else if (entry.source_type === 'search') {
+          label = `Search ${entry.source_id || ''}`.trim()
+        } else if (entry.source_type === 'feed_post') {
+          label = 'Feed post'
+        } else if (entry.source_type === 'direct') {
+          label = 'Direct message'
+        } else {
+          label = entry.source_type.replace(/_/g, ' ')
+        }
+      }
+      return { ...entry, label }
+    })
+    .sort((a, b) => b.count - a.count)
     .slice(0, 5)
-    .map(([label, count]) => ({ label, count }))
 
   return {
     totals: {
@@ -613,12 +657,18 @@ export async function getPlatformAnalytics(user) {
   const repeatBuyerRate = calcPercent(repeatBuyers, buyers.length)
 
   const searchEvents = eventRows.filter((e) => String(e.type || '') === 'search_run')
+  const searchEventCount = searchEvents.length
+  const minEvents = await getSearchMinEvents()
+  const searchDataReady = searchEventCount >= minEvents
   const searchByCountry = {}
   const searchGlobal = {}
 
   searchEvents.forEach((event) => {
-    const country = String(event?.metadata?.country || 'Unknown')
-    const category = String(event?.metadata?.category || event?.metadata?.filters?.category || 'Other')
+    const meta = event?.metadata || {}
+    const country = String(meta.country || 'Unknown')
+    const categories = Array.isArray(meta.categories) ? meta.categories : []
+    const rawCategory = String(meta.category_primary || categories[0] || meta.category || '')
+    const category = rawCategory.trim() || 'Other'
     if (!searchByCountry[country]) searchByCountry[country] = {}
     searchByCountry[country][category] = (searchByCountry[country][category] || 0) + 1
     searchGlobal[category] = (searchGlobal[category] || 0) + 1
@@ -643,7 +693,10 @@ export async function getPlatformAnalytics(user) {
   const trendBuckets = { current: {}, previous: {} }
   searchEvents.forEach((event) => {
     const ts = new Date(event.created_at || '').getTime()
-    const category = String(event?.metadata?.category || event?.metadata?.filters?.category || 'Other')
+    const meta = event?.metadata || {}
+    const categories = Array.isArray(meta.categories) ? meta.categories : []
+    const rawCategory = String(meta.category_primary || categories[0] || meta.category || '')
+    const category = rawCategory.trim() || 'Other'
     if (!Number.isFinite(ts)) return
     if (ts >= last30) trendBuckets.current[category] = (trendBuckets.current[category] || 0) + 1
     else if (ts >= prev30) trendBuckets.previous[category] = (trendBuckets.previous[category] || 0) + 1
@@ -655,17 +708,25 @@ export async function getPlatformAnalytics(user) {
     return { label: cat, delta: current - previous, current, previous }
   }).sort((a, b) => b.delta - a.delta).slice(0, 6)
 
+  const searchDataSource = searchDataReady ? 'search_events' : 'proxy_requests'
+  const proxySearchByCountry = searchDataReady ? topSearchCategoriesByCountry : topCategoriesByCountry
+  const proxySearchGlobal = searchDataReady ? topSearchCategoriesGlobal : topCategoriesGlobal
+
   return {
     totals: {
       buyer_requests: requirementsRows.length,
       repeat_buyer_rate: repeatBuyerRate,
     },
+    search_event_count: searchEventCount,
+    search_min_events: minEvents,
+    search_data_ready: searchDataReady,
+    search_data_source: searchDataSource,
     top_categories_by_country: topCategoriesByCountry,
     top_categories_global: topCategoriesGlobal,
     monthly_demand_trend: toMonthlySeries(requirementsRows, 'created_at'),
     price_range_demand: priceRangeDemand,
-    top_search_categories_by_country: topSearchCategoriesByCountry,
-    top_search_categories_global: topSearchCategoriesGlobal,
+    top_search_categories_by_country: proxySearchByCountry,
+    top_search_categories_global: proxySearchGlobal,
     trending_search_categories: trendingCategories,
   }
 }
