@@ -1,4 +1,6 @@
 import { readJson } from '../utils/jsonStore.js'
+import prisma from '../utils/prisma.js'
+import { isCrmSqlEnabled, readLegacyJson } from '../utils/crmFallbackStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { isOwnerOrAdmin } from '../utils/permissions.js'
 
@@ -11,6 +13,21 @@ function buildOrgMemberIds(users = [], orgId = '') {
   })
   return members
 }
+const CRM_SQL_ENABLED = isCrmSqlEnabled()
+
+async function readStore(fileName) {
+  if (CRM_SQL_ENABLED) {
+    switch (fileName) {
+      case 'users.json': return prisma.user.findMany()
+      case 'messages.json': return prisma.message.findMany()
+      case 'call_sessions.json': return prisma.callSession.findMany()
+      case 'documents.json': return prisma.document.findMany()
+      case 'leads.json': return prisma.lead.findMany()
+      default: return readJson(fileName)
+    }
+  }
+  return readLegacyJson(fileName)
+}
 
 function canViewCrm(actor, targetUser) {
   if (!actor || !targetUser) return false
@@ -19,25 +36,6 @@ function canViewCrm(actor, targetUser) {
   if (actorId && actorId === String(targetUser.id || '')) return true
   if (actor.role === 'agent' && String(actor.org_owner_id || '') === String(targetUser.id || '')) return true
   return false
-}
-
-function compactThreadSummary(messages = []) {
-  const byMatch = new Map()
-  messages.forEach((msg) => {
-    const matchId = String(msg.match_id || '')
-    if (!matchId) return
-    if (!byMatch.has(matchId)) {
-      byMatch.set(matchId, { match_id: matchId, last_message_at: msg.timestamp || msg.created_at || '', message_count: 0 })
-    }
-    const entry = byMatch.get(matchId)
-    entry.message_count += 1
-    const ts = String(msg.timestamp || msg.created_at || '')
-    if (!entry.last_message_at || ts > entry.last_message_at) {
-      entry.last_message_at = ts
-    }
-  })
-  return [...byMatch.values()]
-    .sort((a, b) => String(b.last_message_at || '').localeCompare(String(a.last_message_at || '')))
 }
 
 function parseMarketplaceMatchId(matchId = '') {
@@ -100,11 +98,11 @@ export async function getCrmProfileSummary(actor, targetId, options = {}) {
   if (!safeTarget) return { error: 'Target id required' }
 
   const [users, messages, calls, documents, leads] = await Promise.all([
-    readJson('users.json'),
-    readJson('messages.json'),
-    readJson('call_sessions.json'),
-    readJson('documents.json'),
-    readJson('leads.json'),
+    readStore('users.json'),
+    readStore('messages.json'),
+    readStore('call_sessions.json'),
+    readStore('documents.json'),
+    readStore('leads.json'),
   ])
 
   const targetUser = (Array.isArray(users) ? users : []).find((u) => String(u.id) === safeTarget) || null
@@ -238,11 +236,11 @@ export async function getCrmRelationshipTimeline(actor, counterpartyId, options 
   if (!actorOrgId) return { error: 'forbidden' }
 
   const [users, messages, calls, documents, leads] = await Promise.all([
-    readJson('users.json'),
-    readJson('messages.json'),
-    readJson('call_sessions.json'),
-    readJson('documents.json'),
-    readJson('leads.json'),
+    readStore('users.json'),
+    readStore('messages.json'),
+    readStore('call_sessions.json'),
+    readStore('documents.json'),
+    readStore('leads.json'),
   ])
 
   const allUsers = Array.isArray(users) ? users : []
