@@ -60,13 +60,14 @@ import { ensureDatabaseConnection, closeDatabaseConnection } from './utils/db.js
 import { revokeExpiredVerifications } from './services/verificationService.js'
 import { enforcePartnerFreeTierLimits } from './services/partnerNetworkService.js'
 import { runLeadReminderSweep } from './services/leadReminderService.js'
-import { refreshRates } from './services/currencyService.js'
+import { getFxHealth, refreshRates } from './services/currencyService.js'
 import { startEventQualityReporter } from './services/eventIngestionService.js'
 
 const app = express()
 const PORT = process.env.PORT || 4000
 
 const FX_REFRESH_INTERVAL_MS = 60 * 60 * 1000
+refreshRates().catch(() => null)
 setInterval(() => {
   refreshRates().catch(() => null)
 }, FX_REFRESH_INTERVAL_MS).unref()
@@ -92,7 +93,11 @@ if (serveDist && fs.existsSync(distRoot)) {
 app.use('/api', requestLogger({ timeoutMs: Number(process.env.REQUEST_TIMEOUT_MS || 45000) }))
 
 app.get('/api/health', (req, res) => {
-  res.json({ ok: true, service: 'textile-trust-verification-mvp' })
+  res.json({
+    ok: true,
+    service: 'textile-trust-verification-mvp',
+    fx: getFxHealth(),
+  })
 })
 app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)

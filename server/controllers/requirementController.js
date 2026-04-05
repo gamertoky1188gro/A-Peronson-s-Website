@@ -605,8 +605,11 @@ export async function searchRequirements(req, res) {
       if (verifiedOnly && !r.author?.verified) return false
       if (moqRange && !matchesMoqRange(moqRange, r.moq || r.quantity)) return false
       if (priceRangeBase) {
-        if (Number.isFinite(Number(r.priceNormalizedBase))) {
-          if (!numberInsideRange(Number(r.priceNormalizedBase), priceRangeBase)) return false
+        const normalizedMin = Number.isFinite(Number(r.priceBaseMin)) ? Number(r.priceBaseMin) : Number(r.priceNormalizedBase)
+        const normalizedMax = Number.isFinite(Number(r.priceBaseMax)) ? Number(r.priceBaseMax) : Number(r.priceNormalizedBase)
+        if (Number.isFinite(normalizedMin) || Number.isFinite(normalizedMax)) {
+          const synthetic = `${Number.isFinite(normalizedMin) ? normalizedMin : ''}-${Number.isFinite(normalizedMax) ? normalizedMax : ''}`
+          if (!rangesOverlap(priceRangeBase, synthetic)) return false
         } else if (!rangesOverlap(priceRange, r.price_range || '')) return false
       }
       if (wantedIncoterms.length > 0) {

@@ -150,8 +150,6 @@ function productMappings() {
       sample_available: { type: 'boolean' },
       sample_lead_time_days: { type: 'double' },
       moq_value: { type: 'double' },
-      price_min: { type: 'double' },
-      price_max: { type: 'double' },
       price_base_min: { type: 'double' },
       price_base_max: { type: 'double' },
       base_currency: { type: 'keyword' },
@@ -194,8 +192,6 @@ function requirementMappings() {
       sample_lead_time_days: { type: 'double' },
       capacity_min: { type: 'double' },
       moq_value: { type: 'double' },
-      price_min: { type: 'double' },
-      price_max: { type: 'double' },
       price_base_min: { type: 'double' },
       price_base_max: { type: 'double' },
       base_currency: { type: 'keyword' },
@@ -321,15 +317,15 @@ async function buildResponseTimeByOwner() {
 }
 
 async function buildProductDoc(product, author = {}, responseMap = null) {
-  const priceRange = parseRangeValue(product.price_range || '')
   const baseCurrency = await getBaseCurrency()
-  const originalCurrency = normalizeKeyword(product.currencyOriginal || product.currency || baseCurrency).toUpperCase()
-  const priceBaseMin = priceRange.min !== null
-    ? (await normalizeMoney(priceRange.min, originalCurrency, baseCurrency)).amount
-    : (Number.isFinite(Number(product.priceNormalizedBase)) ? Number(product.priceNormalizedBase) : null)
-  const priceBaseMax = priceRange.max !== null
-    ? (await normalizeMoney(priceRange.max, originalCurrency, baseCurrency)).amount
-    : (Number.isFinite(Number(product.priceNormalizedBase)) ? Number(product.priceNormalizedBase) : null)
+  const priceRange = parseRangeValue(product.price_range || '')
+  const originalCurrency = normalizeKeyword(product.currency || product.currencyOriginal || baseCurrency).toUpperCase()
+  const priceBaseMin = Number.isFinite(Number(product.priceBaseMin))
+    ? Number(product.priceBaseMin)
+    : (priceRange.min !== null ? (await normalizeMoney(priceRange.min, originalCurrency, baseCurrency)).amount : Number(product.priceNormalizedBase) || null)
+  const priceBaseMax = Number.isFinite(Number(product.priceBaseMax))
+    ? Number(product.priceBaseMax)
+    : (priceRange.max !== null ? (await normalizeMoney(priceRange.max, originalCurrency, baseCurrency)).amount : Number(product.priceNormalizedBase) || null)
   const moqValue = parseNumberLike(product.moq)
   const leadTime = parseNumberLike(product.lead_time_days || author.lead_time_days)
   const fabricGsm = parseNumberLike(product.fabric_gsm)
@@ -355,8 +351,6 @@ async function buildProductDoc(product, author = {}, responseMap = null) {
     sample_available: sampleAvailable,
     sample_lead_time_days: sampleLead,
     moq_value: moqValue,
-    price_min: priceRange.min,
-    price_max: priceRange.max,
     price_base_min: priceBaseMin,
     price_base_max: priceBaseMax,
     base_currency: baseCurrency,
@@ -391,15 +385,15 @@ function shouldIndexProduct(product) {
 }
 
 async function buildRequirementDoc(req, author = {}, responseMap = null) {
-  const priceRange = parseRangeValue(req.price_range || req.target_price || '')
   const baseCurrency = await getBaseCurrency()
-  const originalCurrency = normalizeKeyword(req.currencyOriginal || req.currency || baseCurrency).toUpperCase()
-  const priceBaseMin = priceRange.min !== null
-    ? (await normalizeMoney(priceRange.min, originalCurrency, baseCurrency)).amount
-    : (Number.isFinite(Number(req.priceNormalizedBase)) ? Number(req.priceNormalizedBase) : null)
-  const priceBaseMax = priceRange.max !== null
-    ? (await normalizeMoney(priceRange.max, originalCurrency, baseCurrency)).amount
-    : (Number.isFinite(Number(req.priceNormalizedBase)) ? Number(req.priceNormalizedBase) : null)
+  const priceRange = parseRangeValue(req.price_range || req.target_price || '')
+  const originalCurrency = normalizeKeyword(req.currency || req.currencyOriginal || baseCurrency).toUpperCase()
+  const priceBaseMin = Number.isFinite(Number(req.priceBaseMin))
+    ? Number(req.priceBaseMin)
+    : (priceRange.min !== null ? (await normalizeMoney(priceRange.min, originalCurrency, baseCurrency)).amount : Number(req.priceNormalizedBase) || null)
+  const priceBaseMax = Number.isFinite(Number(req.priceBaseMax))
+    ? Number(req.priceBaseMax)
+    : (priceRange.max !== null ? (await normalizeMoney(priceRange.max, originalCurrency, baseCurrency)).amount : Number(req.priceNormalizedBase) || null)
   const moqValue = parseNumberLike(req.moq || req.quantity)
   const leadTime = parseNumberLike(req.timeline_days || req.delivery_timeline || '')
   const fabricGsm = parseNumberLike(req.fabric_gsm)
@@ -427,8 +421,6 @@ async function buildRequirementDoc(req, author = {}, responseMap = null) {
     sample_lead_time_days: sampleLead,
     capacity_min: capacityMin,
     moq_value: moqValue,
-    price_min: priceRange.min,
-    price_max: priceRange.max,
     price_base_min: priceBaseMin,
     price_base_max: priceBaseMax,
     base_currency: baseCurrency,

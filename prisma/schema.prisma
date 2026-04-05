@@ -99,8 +99,11 @@ model Requirement {
   quantity               String?
   moq                    String?
   price_range            String?
-  priceOriginal          Float?
-  currencyOriginal       String?
+  currency               String?
+  priceOriginalMin       Float?
+  priceOriginalMax       Float?
+  priceBaseMin           Float?
+  priceBaseMax           Float?
   priceNormalizedBase    Float?
   material               String?
   fabric_gsm             String?
@@ -149,8 +152,11 @@ model Product {
   material               String?
   moq                    String?
   price_range            String?
-  priceOriginal          Float?
-  currencyOriginal       String?
+  currency               String?
+  priceOriginalMin       Float?
+  priceOriginalMax       Float?
+  priceBaseMin           Float?
+  priceBaseMax           Float?
   priceNormalizedBase    Float?
   lead_time_days         String?
   fabric_gsm             String?
@@ -192,10 +198,10 @@ model FxRate {
 }
 
 model CurrencyConfig {
-  id                   String @id @default("default")
-  defaultBaseCurrency  String @default("USD")
-  staleThresholdHours  Int    @default(24)
-  updatedAt            DateTime @updatedAt
+  id                     String   @id @default("default")
+  baseCurrency           String   @default("USD")
+  staleToleranceMinutes  Int      @default(1440)
+  updatedAt              DateTime @updatedAt
 
   @@map("currency_config")
 }

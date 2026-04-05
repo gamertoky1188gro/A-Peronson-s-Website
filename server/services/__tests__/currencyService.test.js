@@ -5,7 +5,7 @@ import { getRate, normalizeMoney } from '../currencyService.js'
 
 function withMockedPrisma({ currencyConfig, fxRate, upsertImpl } = {}) {
   prisma.currencyConfig = {
-    findFirst: async () => currencyConfig || { defaultBaseCurrency: 'USD', staleThresholdHours: 24 },
+    findFirst: async () => currencyConfig || { baseCurrency: 'USD', staleToleranceMinutes: 1440 },
   }
   prisma.fxRate = {
     findUnique: async () => fxRate || null,
@@ -13,7 +13,7 @@ function withMockedPrisma({ currencyConfig, fxRate, upsertImpl } = {}) {
   }
 }
 
-test('normalizeMoney converts from quote currency to base currency using latest FX', async () => {
+test('normalizeMoney converts from quote currency to base currency using live FX', async () => {
   withMockedPrisma({ fxRate: null })
   const originalFetch = global.fetch
   global.fetch = async () => ({
@@ -28,14 +28,15 @@ test('normalizeMoney converts from quote currency to base currency using latest 
   assert.equal(converted.currency_base, 'USD')
   assert.equal(converted.currency_from, 'EUR')
   assert.equal(converted.fx_stale, false)
+  assert.equal(converted.warning, null)
 
   global.fetch = originalFetch
 })
 
-test('getRate falls back to stale cached rate when provider fails', async () => {
+test('getRate marks cached entry stale when expired', async () => {
   withMockedPrisma({
     fxRate: {
-      rate: 0.9,
+      rate: 0.92,
       source: 'cached',
       fetchedAt: new Date('2026-03-01T00:00:00.000Z'),
       expiresAt: new Date('2026-03-02T00:00:00.000Z'),
@@ -44,13 +45,30 @@ test('getRate falls back to stale cached rate when provider fails', async () => 
 
   const originalFetch = global.fetch
   global.fetch = async () => {
-    throw new Error('network_down')
+    throw new Error('provider_down')
   }
 
   const rate = await getRate('USD', 'GBP')
-  assert.equal(rate.rate, 0.9)
+  assert.equal(rate.rate, 0.92)
   assert.equal(rate.fx_stale, true)
   assert.equal(rate.stale, true)
+  assert.equal(rate.warning?.code, 'fx_provider_unavailable_stale_rate')
+
+  global.fetch = originalFetch
+})
+
+test('normalizeMoney returns unavailable warning when no cache and provider fails', async () => {
+  withMockedPrisma({ fxRate: null })
+
+  const originalFetch = global.fetch
+  global.fetch = async () => {
+    throw new Error('network_down')
+  }
+
+  const converted = await normalizeMoney(50, 'NOK', 'USD')
+  assert.equal(converted.amount, null)
+  assert.equal(converted.fx_stale, true)
+  assert.equal(converted.warning?.code, 'fx_rate_unavailable')
 
   global.fetch = originalFetch
 })

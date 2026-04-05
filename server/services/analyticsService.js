@@ -126,6 +126,15 @@ function bucketNormalizedPrice(value) {
   return '50+'
 }
 
+function normalizedPriceForBucket(row = {}) {
+  const min = Number(row?.priceBaseMin)
+  const max = Number(row?.priceBaseMax)
+  if (Number.isFinite(min)) return min
+  if (Number.isFinite(max)) return max
+  const legacy = Number(row?.priceNormalizedBase)
+  return Number.isFinite(legacy) ? legacy : null
+}
+
 function parseMatchId(matchId = '') {
   const parts = String(matchId || '').split(':')
   if (parts.length !== 2) return null
@@ -623,7 +632,7 @@ export async function getPlatformAnalytics(user) {
     byCountry[country][category] = (byCountry[country][category] || 0) + 1
     globalCategories[category] = (globalCategories[category] || 0) + 1
 
-    const bucket = bucketNormalizedPrice(req.priceNormalizedBase)
+    const bucket = bucketNormalizedPrice(normalizedPriceForBucket(req))
     priceBuckets[bucket] = (priceBuckets[bucket] || 0) + 1
   }
 
@@ -793,7 +802,7 @@ export async function getPremiumInsights(user) {
     }, {})
 
     const priceBuckets = myRequests.reduce((acc, r) => {
-      const bucket = bucketNormalizedPrice(r.priceNormalizedBase)
+      const bucket = bucketNormalizedPrice(normalizedPriceForBucket(r))
       acc[bucket] = (acc[bucket] || 0) + 1
       return acc
     }, {})
