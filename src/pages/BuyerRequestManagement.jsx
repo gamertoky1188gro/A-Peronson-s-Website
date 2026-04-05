@@ -256,6 +256,9 @@ export default function BuyerRequestManagement() {
   const [smartMatches, setSmartMatches] = useState({})
   const [smartMatchLoading, setSmartMatchLoading] = useState('')
   const [smartMatchError, setSmartMatchError] = useState({})
+  const [aiParsing, setAiParsing] = useState(false)
+  const [aiParseWarnings, setAiParseWarnings] = useState([])
+  const [aiParseFeedback, setAiParseFeedback] = useState('')
 
   const [editingId, setEditingId] = useState('')
   const [editForm, setEditForm] = useState(EMPTY_FORM)
@@ -424,6 +427,54 @@ export default function BuyerRequestManagement() {
 
   async function saveDraft() {
     await createRequest('draft')
+  }
+
+  async function parseDescriptionWithAi() {
+    if (!token) return
+    if (!form.customDescription.trim()) {
+      setAiParseFeedback('Please enter request text in Custom description first.')
+      return
+    }
+    setAiParsing(true)
+    setAiParseWarnings([])
+    setAiParseFeedback('')
+    try {
+      const response = await apiRequest('/ai/requirements/extract', {
+        method: 'POST',
+        token,
+        body: { text: form.customDescription },
+      })
+      const extracted = response?.requirements || {}
+      const missing = Array.isArray(extracted.missing_fields) ? extracted.missing_fields : []
+      setAiParseWarnings(missing)
+
+      const timelineDays = extracted?.timeline?.normalized_days
+      const priceMin = extracted?.price?.min
+      const priceMax = extracted?.price?.max
+      const priceCurrency = extracted?.price?.currency || 'USD'
+
+      setForm((prev) => ({
+        ...prev,
+        targetFobPrice: Number.isFinite(priceMin)
+          ? `${priceCurrency} ${priceMin}${Number.isFinite(priceMax) && priceMax !== priceMin ? `-${priceMax}` : ''}`
+          : prev.targetFobPrice,
+        targetPrice: Number.isFinite(priceMin)
+          ? `${priceCurrency} ${priceMin}${Number.isFinite(priceMax) && priceMax !== priceMin ? `-${priceMax}` : ''}`
+          : prev.targetPrice,
+        fabricComposition: extracted?.fabric?.composition || extracted?.fabric?.material || prev.fabricComposition,
+        fiberComposition: extracted?.fabric?.composition || extracted?.fabric?.material || prev.fiberComposition,
+        fabricWeightGsm: Number.isFinite(extracted?.fabric?.gsm) ? String(extracted.fabric.gsm) : prev.fabricWeightGsm,
+        complianceNotes: extracted?.compliance?.notes || prev.complianceNotes,
+        leadTimeRequired: Number.isFinite(timelineDays) ? `${timelineDays} days` : prev.leadTimeRequired,
+      }))
+
+      const confidence = Number(response?.confidence || 0)
+      setAiParseFeedback(`AI parsed your text (confidence ${Math.round(confidence * 100)}%).`)
+    } catch (err) {
+      setAiParseFeedback(err.message || 'AI parsing failed.')
+    } finally {
+      setAiParsing(false)
+    }
   }
 
   function startEditing(req) {
@@ -1029,6 +1080,22 @@ export default function BuyerRequestManagement() {
 
                 <Field label="Custom description" hint="Use this for extra notes, design details, or negotiation context.">
                   <textarea className="w-full min-h-[140px] rounded-lg borderless-shadow px-3 py-2" value={form.customDescription} onChange={(e) => setForm({ ...form, customDescription: e.target.value })} />
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={parseDescriptionWithAi}
+                      disabled={aiParsing || !form.customDescription.trim()}
+                      className="rounded-lg bg-slate-900 px-3 py-1 text-xs font-semibold text-white disabled:opacity-50"
+                    >
+                      {aiParsing ? 'Parsing...' : 'AI parse my text'}
+                    </button>
+                    {aiParseFeedback ? <span className="text-xs text-slate-600">{aiParseFeedback}</span> : null}
+                  </div>
+                  {aiParseWarnings.length ? (
+                    <div className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                      Missing data confidence warning: {aiParseWarnings.join(', ')}
+                    </div>
+                  ) : null}
                 </Field>
 
             </div>
@@ -1399,8 +1466,6 @@ export default function BuyerRequestManagement() {
     </div>
   )
 }
-
-
 
 
 

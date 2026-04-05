@@ -45,6 +45,7 @@ import infraRoutes from './routes/infraRoutes.js'
 import networkRoutes from './routes/networkRoutes.js'
 import certificationRoutes from './routes/certificationRoutes.js'
 import crmRoutes from './routes/crmRoutes.js'
+import aiRoutes from './routes/aiRoutes.js'
 import { requestLogger } from './middleware/requestLogger.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { logInfo, logError } from './utils/logger.js'
@@ -137,6 +138,7 @@ app.use('/api/support', supportRoutes)
 app.use('/api/reports', reportRoutes)
 app.use('/api/certifications', certificationRoutes)
 app.use('/api/crm', crmRoutes)
+app.use('/api/ai', aiRoutes)
 app.use('/api/infra', infraRoutes)
 app.use('/api/network', networkRoutes)
 app.use(errorHandler)
