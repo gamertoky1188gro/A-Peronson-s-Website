@@ -88,6 +88,7 @@ export async function apiRequest(path, { method = 'GET', token = '', body, signa
     }
     const error = new Error(data.error || 'Request failed')
     error.status = res.status
+    error.details = data
     throw error
   }
   return data

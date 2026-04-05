@@ -147,6 +147,10 @@ const FILE_HANDLERS = {
   'coupon_codes.json': tableHandler('couponCode', ['id']),
   'coupon_redemptions.json': tableHandler('couponRedemption', ['id']),
   'message_reads.json': tableHandler('messageRead', ['match_id', 'user_id'], 'match_id_user_id'),
+  'message_queue.json': tableHandler('messageQueue', ['id']),
+  'message_policy_decisions.json': tableHandler('messagePolicyDecision', ['id']),
+  'sender_reputation.json': tableHandler('senderReputation', ['id']),
+  'communication_policy_configs.json': tableHandler('communicationPolicyConfig', ['id']),
 }
 
 const ratingsHandler = {

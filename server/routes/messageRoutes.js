@@ -11,6 +11,10 @@ import {
   sendFriendDirectMessage,
   sendMessage,
   uploadMessageAttachment,
+  listPolicyReviewQueue,
+  markPolicyFalsePositive,
+  updatePolicyConfig,
+  weeklyPolicyDecisionQualityReport,
 } from '../controllers/messageController.js'
 
 const router = Router()
@@ -33,6 +37,11 @@ router.get('/inbox', requireAuth, inbox)
 router.post('/requests/:threadId/accept', requireAuth, acceptRequest)
 router.post('/requests/:threadId/reject', requireAuth, rejectRequest)
 router.post('/friend/:userId', requireAuth, sendFriendDirectMessage)
+
+router.get('/policy/review-queue', requireAuth, listPolicyReviewQueue)
+router.post('/policy/review-queue/:decisionId/false-positive', requireAuth, markPolicyFalsePositive)
+router.get('/policy/reports/weekly-decision-quality', requireAuth, weeklyPolicyDecisionQualityReport)
+router.put('/policy/config', requireAuth, updatePolicyConfig)
 router.post('/:matchId/read', requireAuth, markRead)
 router.post('/:matchId/upload', requireAuth, upload.single('file'), uploadMessageAttachment)
 router.post('/:matchId', requireAuth, sendMessage)

@@ -13,6 +13,12 @@ import {
   tieredInbox,
 } from '../services/messageService.js'
 import { maybeGenerateBotReply } from '../services/chatbotService.js'
+import {
+  getWeeklyDecisionQualityReport,
+  listPolicyFalsePositiveCandidates,
+  markPolicyDecisionFalsePositive,
+  upsertCommunicationPolicyConfig,
+} from '../services/communicationPolicyService.js'
 import { readJson } from '../utils/jsonStore.js'
 
 export async function sendMessage(req, res) {
@@ -45,6 +51,9 @@ export async function sendMessage(req, res) {
       error: error.message || 'Unable to send message',
       code: error.code || undefined,
       lock: error.lock || undefined,
+      reason: error?.policy?.reason || undefined,
+      retry_after_seconds: Number(error?.policy?.retry_after_seconds || 0) || undefined,
+      policy: error?.policy || undefined,
     })
   }
 }
@@ -129,7 +138,12 @@ export async function uploadMessageAttachment(req, res) {
 
     return res.status(201).json({ ...created, bot_reply: botReply })
   } catch (error) {
-    return res.status(error.status || 400).json({ error: error.message || 'Unable to send message attachment' })
+    return res.status(error.status || 400).json({
+      error: error.message || 'Unable to send message attachment',
+      reason: error?.policy?.reason || undefined,
+      retry_after_seconds: Number(error?.policy?.retry_after_seconds || 0) || undefined,
+      policy: error?.policy || undefined,
+    })
   }
 }
 
@@ -160,4 +174,47 @@ export async function acceptRequest(req, res) {
 export async function rejectRequest(req, res) {
   const request = await rejectMessageRequest(req.params.threadId, req.user.id)
   return res.json({ ok: true, request })
+}
+
+
+export async function updatePolicyConfig(req, res) {
+  const role = String(req.user?.role || '').toLowerCase()
+  if (!['admin', 'owner'].includes(role)) return res.status(403).json({ error: 'Only admins can update communication policy config' })
+
+  try {
+    const updated = await upsertCommunicationPolicyConfig({
+      scope: req.body?.scope || 'global',
+      org_id: req.body?.org_id || null,
+      config: req.body?.config || {},
+      actor_id: req.user?.id || '',
+    })
+    return res.json({ ok: true, config: updated })
+  } catch (error) {
+    return res.status(error.status || 400).json({ error: error.message || 'Unable to update policy config' })
+  }
+}
+
+export async function listPolicyReviewQueue(req, res) {
+  const role = String(req.user?.role || '').toLowerCase()
+  if (!['admin', 'owner'].includes(role)) return res.status(403).json({ error: 'Only admins can access policy review queue' })
+
+  const rows = await listPolicyFalsePositiveCandidates()
+  return res.json({ rows })
+}
+
+export async function markPolicyFalsePositive(req, res) {
+  const role = String(req.user?.role || '').toLowerCase()
+  if (!['admin', 'owner'].includes(role)) return res.status(403).json({ error: 'Only admins can mark false positives' })
+
+  const updated = await markPolicyDecisionFalsePositive(req.params.decisionId, req.user.id, req.body?.notes || '')
+  if (!updated) return res.status(404).json({ error: 'Decision not found' })
+  return res.json({ ok: true, decision: updated })
+}
+
+export async function weeklyPolicyDecisionQualityReport(req, res) {
+  const role = String(req.user?.role || '').toLowerCase()
+  if (!['admin', 'owner'].includes(role)) return res.status(403).json({ error: 'Only admins can access policy quality reports' })
+
+  const report = await getWeeklyDecisionQualityReport()
+  return res.json(report)
 }

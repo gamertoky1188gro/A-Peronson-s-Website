@@ -13,6 +13,7 @@ import { upsertLeadFromMessage } from './leadService.js'
 import { assertMessagingAllowed, moderateTextOrRedactWithContext } from './policyService.js'
 import { getRequirementById } from './requirementService.js'
 import { autoSummarizeMatch, resolveOrgOwnerFromMatch } from './aiConversationService.js'
+import { attachMessageToQueue, evaluateMessagePolicy } from './communicationPolicyService.js'
 
 const FILE = 'messages.json'
 const USERS_FILE = 'users.json'
@@ -286,6 +287,12 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
     timestamp: new Date().toISOString(),
     type,
     attachment: safeAttachment && safeAttachment.url ? safeAttachment : null,
+    policy_status: 'delivered',
+    policy_reason: 'policy_allow',
+    policy_priority: null,
+    retry_after_seconds: 0,
+    requires_human_review: false,
+    queue_id: null,
   }
 
   const sender = users.find((u) => u.id === senderId)
@@ -316,6 +323,38 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
 
   await enforceConversationLock(matchId, sender)
 
+  const policyResult = await evaluateMessagePolicy({
+    sender,
+    matchId,
+    text: sanitizeString(message, 2000),
+    type,
+    orgId: sender?.org_owner_id || sender?.id || '',
+  })
+
+  if (policyResult.action === 'reject') {
+    const err = new Error(policyResult.rejection_message || 'Message rejected by communication policy')
+    err.status = 429
+    err.code = 'POLICY_REJECTED'
+    err.policy = policyResult
+    throw err
+  }
+
+  if (policyResult.action === 'delayed_queue') {
+    entry.policy_status = 'queued'
+    entry.policy_reason = policyResult.reason
+    entry.policy_priority = policyResult?.decision?.queue_priority_label || null
+    entry.retry_after_seconds = Number(policyResult.retry_after_seconds || 0)
+    entry.queue_id = policyResult?.queue?.id || null
+  }
+
+  if (policyResult.action === 'require_human_review') {
+    entry.policy_status = 'needs_review'
+    entry.policy_reason = policyResult.reason
+    entry.policy_priority = policyResult?.decision?.queue_priority_label || null
+    entry.requires_human_review = true
+    entry.queue_id = policyResult?.queue?.id || null
+  }
+
   const recentContext = messages
     .filter((m) => String(m.match_id || '') === String(matchId || ''))
     .slice(-5)
@@ -333,6 +372,10 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
   entry.moderated = Boolean(moderation.moderated)
   entry.moderation_reason = moderation.reason || ''
   messages.push(entry)
+
+  if (entry.queue_id) {
+    await attachMessageToQueue(entry.queue_id, entry.id)
+  }
 
   if (!sender?.verified) {
     upsertRequestState(messageRequests, matchId, { status: 'pending', acted_by: null, acted_at: null })
