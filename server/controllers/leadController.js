@@ -1,4 +1,6 @@
 import { addLeadNote, addLeadReminder, getLeadById, getLeadByMatch, listLeads, updateLead } from '../services/leadService.js'
+import { ACTIONS, authorize } from '../services/authorizationService.js'
+import { handleControllerError } from '../utils/permissions.js'
 
 export async function getLeads(req, res) {
   const items = await listLeads(req.user)
@@ -18,9 +20,19 @@ export async function getLeadForMatch(req, res) {
 }
 
 export async function patchLead(req, res) {
-  const updated = await updateLead(req.user, req.params.leadId, req.body || {})
-  if (!updated) return res.status(404).json({ error: 'Lead not found' })
-  return res.json(updated)
+  try {
+    const patch = req.body || {}
+    if (patch.assigned_agent_id !== undefined) {
+      await authorize(req.user, ACTIONS.LEADS_ASSIGN, { lead_id: req.params.leadId })
+    } else {
+      await authorize(req.user, ACTIONS.ANALYTICS_VIEW_AGENT, { lead_id: req.params.leadId })
+    }
+    const updated = await updateLead(req.user, req.params.leadId, patch)
+    if (!updated) return res.status(404).json({ error: 'Lead not found' })
+    return res.json(updated)
+  } catch (error) {
+    return handleControllerError(res, error)
+  }
 }
 
 export async function postLeadNote(req, res) {

@@ -17,17 +17,27 @@ import {
 } from '../services/userService.js'
 import { getEntitlements } from '../services/entitlementService.js'
 import { ensureEntitlement } from '../services/entitlementService.js'
+import { ACTIONS, authorize, buildCapabilityPayload } from '../services/authorizationService.js'
 
 export async function me(req, res) {
   const user = await findUserById(req.user.id)
   if (!user) return res.status(404).json({ error: 'User not found' })
   const { password_hash: _passwordHash, ...safeUser } = user
   const entitlements = await getEntitlements(user)
-  return res.json({ ...safeUser, entitlements })
+  const capabilities = buildCapabilityPayload(user)
+  return res.json({ ...safeUser, entitlements, capabilities })
 }
 
 export async function updateMyProfile(req, res) {
-  const user = await updateProfile(req.user.id, req.body || {})
+  const actor = await findUserById(req.user.id)
+  if (!actor) return res.status(404).json({ error: 'User not found' })
+  const profilePatch = req.body || {}
+  const orgSettingFields = ['brand_logo_url', 'brand_cover_url', 'brand_color', 'brand_accent', 'brand_tagline', 'brand_website', 'brand_name', 'account_manager_name', 'account_manager_email', 'account_manager_phone']
+  const touchesOrgSettings = Object.keys(profilePatch).some((field) => orgSettingFields.includes(field))
+  if (touchesOrgSettings) {
+    await authorize(actor, ACTIONS.ORG_SETTINGS_MANAGE, { section: 'branding', org_id: actor.org_owner_id || actor.id })
+  }
+  const user = await updateProfile(req.user.id, profilePatch)
   if (!user) return res.status(404).json({ error: 'User not found' })
   return res.json(user)
 }

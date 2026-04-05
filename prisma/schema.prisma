@@ -688,3 +688,73 @@ model AppState {
 
   @@map("app_state")
 }
+
+model OrgSeat {
+  id            String   @id
+  org_id        String
+  member_id     String
+  status        String   @default("active")
+  role_id       String?
+  team          String?
+  sub_team      String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime?
+
+  @@unique([org_id, member_id], name: "org_id_member_id")
+  @@map("org_seats")
+}
+
+model OrgRole {
+  id          String   @id
+  org_id      String
+  code        String
+  name        String
+  description String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime?
+
+  @@unique([org_id, code], name: "org_id_role_code")
+  @@map("org_roles")
+}
+
+model OrgPermission {
+  id          String   @id
+  role_id     String
+  module      String
+  action      String
+  allow       Boolean  @default(true)
+  created_at  DateTime @default(now())
+
+  @@unique([role_id, module, action], name: "role_module_action")
+  @@map("org_permissions")
+}
+
+model OrgPolicy {
+  id          String   @id
+  org_id      String
+  code        String
+  description String?
+  config      Json?
+  active      Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime?
+
+  @@unique([org_id, code], name: "org_id_policy_code")
+  @@map("org_policies")
+}
+
+model OrgMembershipAudit {
+  id               String   @id
+  org_id           String
+  actor_id         String
+  member_id        String?
+  action           String
+  decision         String
+  policy_id        String?
+  reason           String?
+  resource_context Json?
+  created_at       DateTime @default(now())
+
+  @@index([org_id, created_at])
+  @@map("org_membership_audit")
+}

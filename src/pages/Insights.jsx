@@ -38,8 +38,8 @@ export default function Insights() {
   const searchEventCount = platformAnalytics?.search_event_count ?? 0
   const searchDataReady = platformAnalytics?.search_data_ready ?? true
   const searchMinEvents = platformAnalytics?.search_min_events ?? 25
-  const searchDataSource = platformAnalytics?.search_data_source || 'search_events'
   const premiumRole = premiumInsights?.role || ''
+  const canExportAnalytics = currentUser?.capabilities?.leads?.export !== false
 
   useEffect(() => {
     const role = String(premiumRole || '').toLowerCase()
@@ -175,9 +175,10 @@ export default function Insights() {
                   </div>
 
                   <div className="mt-4 flex gap-2">
-                    <button className="px-3 py-2 rounded ring-1 ring-slate-200/70 dark:ring-slate-800">Export CSV</button>
-                    <button className="px-3 py-2 rounded ring-1 ring-slate-200/70 dark:ring-slate-800">Download PDF Report</button>
+                    <button className="px-3 py-2 rounded ring-1 ring-slate-200/70 dark:ring-slate-800 disabled:opacity-50" disabled={!canExportAnalytics}>Export CSV</button>
+                    <button className="px-3 py-2 rounded ring-1 ring-slate-200/70 dark:ring-slate-800 disabled:opacity-50" disabled={!canExportAnalytics}>Download PDF Report</button>
                   </div>
+                  {!canExportAnalytics ? <p className="mt-2 text-xs text-slate-500">Export is disabled by organization policy.</p> : null}
                 </>
               )}
             </div>
@@ -551,5 +552,3 @@ export default function Insights() {
     </div>
   )
 }
-
-

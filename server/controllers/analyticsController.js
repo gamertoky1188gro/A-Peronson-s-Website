@@ -4,6 +4,7 @@ import { findUserById } from '../services/userService.js'
 import { ensureEntitlement } from '../services/entitlementService.js'
 import { readJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
+import { ACTIONS, authorize } from '../services/authorizationService.js'
 
 function isOwnerOrAdmin(user) {
   return ['owner', 'admin'].includes(String(user?.role || '').toLowerCase())
@@ -36,6 +37,7 @@ export async function analyticsDashboard(req, res) {
 export async function analyticsCompany(req, res) {
   try {
     const actor = req.user?.role === 'agent' ? await findUserById(req.user.id) : req.user
+    await authorize(actor, ACTIONS.ANALYTICS_VIEW_ORG, { scope: 'company' })
     const report = await getCompanyAnalytics(actor)
     return res.json(report)
   } catch (error) {
@@ -45,6 +47,7 @@ export async function analyticsCompany(req, res) {
 
 export async function analyticsPlatform(req, res) {
   try {
+    await authorize(req.user, ACTIONS.ANALYTICS_VIEW_ORG, { scope: 'platform' })
     const report = await getPlatformAnalytics(req.user)
     return res.json(report)
   } catch (error) {
@@ -55,6 +58,7 @@ export async function analyticsPlatform(req, res) {
 export async function analyticsPremium(req, res) {
   try {
     const actor = req.user?.role === 'agent' ? await findUserById(req.user.id) : req.user
+    await authorize(actor, ACTIONS.ANALYTICS_VIEW_AGENT, { scope: 'premium' })
     const insights = await getPremiumInsights(actor)
     return res.json(insights)
   } catch (error) {
