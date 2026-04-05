@@ -70,7 +70,9 @@ const DEFAULT_CONFIG = {
       min_cohort_size: 10,
       geo_granularity: 'country',
       retention_days: 365,
+      allow_raw_exports: false,
       export_allowed_roles: ['admin', 'owner'],
+      view_allowed_roles: ['admin', 'owner'],
     },
   },
   support: {
