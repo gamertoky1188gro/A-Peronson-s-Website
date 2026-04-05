@@ -127,6 +127,7 @@ const FILE_HANDLERS = {
   'leads.json': tableHandler('lead', ['id']),
   'lead_notes.json': tableHandler('leadNote', ['id']),
   'lead_reminders.json': tableHandler('leadReminder', ['id']),
+  'interaction_logs.json': tableHandler('interactionLog', ['id']),
   'analytics.json': tableHandler('analyticsEvent', ['id']),
   'boosts.json': tableHandler('boost', ['id']),
   'product_views.json': tableHandler('productView', ['id']),

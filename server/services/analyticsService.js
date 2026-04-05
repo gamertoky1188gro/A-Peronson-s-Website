@@ -1,5 +1,7 @@
 import crypto from 'crypto'
-import { readJson, writeJson } from '../utils/jsonStore.js'
+import { readJson } from '../utils/jsonStore.js'
+import prisma from '../utils/prisma.js'
+import { isCrmSqlEnabled, readLegacyJson } from '../utils/crmFallbackStore.js'
 import { getAdminConfig } from './adminConfigService.js'
 import { canViewAnalytics, canViewAnalyticsAdmin, canViewAnalyticsDashboard, forbiddenError, scopeRecordsForUser } from '../utils/permissions.js'
 import { getPlanForUser } from './entitlementService.js'
@@ -7,6 +9,7 @@ import { getOrderCertificationSummary } from './orderCertificationService.js'
 
 const FILE = 'analytics.json'
 const SEARCH_TREND_MIN_EVENTS = 25
+const CRM_SQL_ENABLED = isCrmSqlEnabled()
 
 async function getSearchMinEvents() {
   try {
@@ -19,16 +22,20 @@ async function getSearchMinEvents() {
 }
 
 export async function trackEvent({ type, actor_id, entity_id, metadata = {} }) {
-  const all = await readJson(FILE)
-  all.push({
-    id: crypto.randomUUID(),
-    type,
-    actor_id,
-    entity_id,
-    metadata,
-    created_at: new Date().toISOString(),
-  })
-  await writeJson(FILE, all)
+  if (CRM_SQL_ENABLED) {
+    await prisma.analyticsEvent.create({
+      data: {
+        id: crypto.randomUUID(),
+        type,
+        actor_id: actor_id || null,
+        entity_id: entity_id || null,
+        metadata,
+        created_at: new Date(),
+      },
+    })
+    return
+  }
+  // Legacy fallback is intentionally read-only during the verification window.
 }
 
 function ensureAnalyticsAccess(user) {
@@ -60,7 +67,7 @@ function scopeAnalyticsRecords(user, records, idFields) {
 
 export async function getAnalyticsSummary(user) {
   ensureAnalyticsAccess(user)
-  const all = await readJson(FILE)
+  const all = CRM_SQL_ENABLED ? await prisma.analyticsEvent.findMany() : await readLegacyJson(FILE)
   const scoped = scopeAnalyticsRecords(user, all, ['actor_id', 'entity_id'])
   const byType = scoped.reduce((acc, e) => {
     acc[e.type] = (acc[e.type] || 0) + 1
@@ -932,4 +939,3 @@ export async function getPremiumInsights(user) {
     },
   }
 }
-

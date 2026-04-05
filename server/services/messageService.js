@@ -1,5 +1,6 @@
 import crypto from 'crypto'
 import { readJson, writeJson } from '../utils/jsonStore.js'
+import { isCrmSqlEnabled, readLegacyJson } from '../utils/crmFallbackStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { trackTransition } from '../utils/metrics.js'
 import {
@@ -18,6 +19,12 @@ const USERS_FILE = 'users.json'
 const MESSAGE_REQUESTS_FILE = 'message_requests.json'
 const CONVERSATION_LOCKS_FILE = 'conversation_locks.json'
 const MESSAGE_READS_FILE = 'message_reads.json'
+const CRM_SQL_ENABLED = isCrmSqlEnabled()
+
+async function readStore(fileName) {
+  if (CRM_SQL_ENABLED) return readJson(fileName)
+  return readLegacyJson(fileName)
+}
 
 function buildUsersById(users = []) {
   return new Map((Array.isArray(users) ? users : []).map((user) => [user.id, user]))
@@ -75,7 +82,7 @@ export async function listFriendMatchIdsForUser(userId) {
   const connections = await listFriendConnectionsForUser(userId)
   const ids = new Set(connections.map((row) => row.match_id).filter(Boolean))
 
-  const messages = await readJson(FILE)
+  const messages = await readStore(FILE)
   messages
     .map((row) => row.match_id)
     .filter((matchId) => {
@@ -127,7 +134,7 @@ async function enforceConversationLock(matchId, sender) {
   const requirement = await getRequirementById(requestId)
   if (requirement && String(requirement.buyer_id || '') === String(sender.id || '')) return null
 
-  const locks = await readJson(CONVERSATION_LOCKS_FILE)
+  const locks = await readStore(CONVERSATION_LOCKS_FILE)
   const existing = locks.find((lock) => lock.request_id === requestId)
   const allowed = existing
     ? [...new Set([...(Array.isArray(existing.allowed_users) ? existing.allowed_users : []), ...(Array.isArray(existing.allowed_agents) ? existing.allowed_agents : [])])]
@@ -260,10 +267,10 @@ function applyFriendThreadMeta(message, fallbackFriend, currentUserId) {
 }
 
 export async function postMessage(matchId, senderId, message, type = 'text', attachment = null, options = {}) {
-  const messages = await readJson(FILE)
-  const users = await readJson(USERS_FILE)
+  const messages = await readStore(FILE)
+  const users = await readStore(USERS_FILE)
   const usersById = buildUsersById(users)
-  const messageRequests = await readJson(MESSAGE_REQUESTS_FILE)
+  const messageRequests = await readStore(MESSAGE_REQUESTS_FILE)
   const safeAttachment = attachment ? {
     name: sanitizeString(attachment?.name, 220),
     url: sanitizeString(attachment?.url, 600),
@@ -364,8 +371,8 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
 }
 
 export async function listMessagesByMatch(matchId) {
-  const messages = await readJson(FILE)
-  const users = await readJson(USERS_FILE)
+  const messages = await readStore(FILE)
+  const users = await readStore(USERS_FILE)
   const usersById = buildUsersById(users)
   return messages
     .filter((m) => m.match_id === matchId)
@@ -373,12 +380,12 @@ export async function listMessagesByMatch(matchId) {
 }
 
 export async function tieredInbox(matchIds, currentUserId) {
-  const users = await readJson(USERS_FILE)
+  const users = await readStore(USERS_FILE)
   const usersById = buildUsersById(users)
-  const messages = await readJson(FILE)
-  const messageRequests = await readJson(MESSAGE_REQUESTS_FILE)
-  const conversationLocks = await readJson(CONVERSATION_LOCKS_FILE)
-  const messageReads = await readJson(MESSAGE_READS_FILE)
+  const messages = await readStore(FILE)
+  const messageRequests = await readStore(MESSAGE_REQUESTS_FILE)
+  const conversationLocks = await readStore(CONVERSATION_LOCKS_FILE)
+  const messageReads = await readStore(MESSAGE_READS_FILE)
   const lockByRequestId = new Map(conversationLocks.map((lock) => [lock.request_id, lock]))
   const readByMatch = buildReadMap(messageReads, currentUserId)
 
@@ -455,7 +462,7 @@ export async function markThreadRead(matchId, userId) {
     throw err
   }
 
-  const rows = await readJson(MESSAGE_READS_FILE)
+  const rows = await readStore(MESSAGE_READS_FILE)
   const nextRows = Array.isArray(rows) ? rows : []
   const now = new Date().toISOString()
   const idx = nextRows.findIndex((row) => String(row.match_id) === safeMatchId && String(row.user_id) === String(userId))
@@ -477,7 +484,7 @@ export async function markThreadRead(matchId, userId) {
 }
 
 async function updateRequestStatus(threadId, status, actedBy) {
-  const messageRequests = await readJson(MESSAGE_REQUESTS_FILE)
+  const messageRequests = await readStore(MESSAGE_REQUESTS_FILE)
   const actedAt = new Date().toISOString()
   const request = upsertRequestState(messageRequests, threadId, {
     status,

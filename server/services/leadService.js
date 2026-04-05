@@ -1,5 +1,7 @@
 import crypto from 'crypto'
 import { readJson, writeJson } from '../utils/jsonStore.js'
+import prisma from '../utils/prisma.js'
+import { isCrmSqlEnabled, readLegacyJson } from '../utils/crmFallbackStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { forbiddenError, isAgent, isOwnerOrAdmin } from '../utils/permissions.js'
 import { getPlanForUser } from './entitlementService.js'
@@ -10,6 +12,14 @@ const NOTES_FILE = 'lead_notes.json'
 const REMINDERS_FILE = 'lead_reminders.json'
 const USERS_FILE = 'users.json'
 const REQUIREMENTS_FILE = 'requirements.json'
+const CRM_SQL_ENABLED = isCrmSqlEnabled()
+
+async function readStore(fileName) {
+  if (CRM_SQL_ENABLED) {
+    return readJson(fileName)
+  }
+  return readLegacyJson(fileName)
+}
 
 const LEAD_STATUSES = new Set([
   'new',
@@ -55,7 +65,7 @@ function parseMarketplaceMatchId(matchId = '') {
 
 async function resolveBuyerId(requirementId) {
   if (!requirementId) return ''
-  const requirements = await readJson(REQUIREMENTS_FILE)
+  const requirements = await readStore(REQUIREMENTS_FILE)
   const requirement = requirements.find((row) => String(row?.id || '') === String(requirementId)) || null
   return sanitizeString(requirement?.buyer_id || requirement?.buyerId || '', 120)
 }
@@ -130,7 +140,7 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp, so
   const senderId = sanitizeString(sender_id || '', 120)
   if (!matchId) return null
 
-  const users = await readJson(USERS_FILE)
+  const users = await readStore(USERS_FILE)
   const usersById = new Map(users.map((u) => [u.id, u]))
   const sender = usersById.get(senderId) || null
 
@@ -177,7 +187,7 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp, so
 
   if (orgTargets.size === 0) return null
 
-  const leads = await readJson(LEADS_FILE)
+  const leads = await readStore(LEADS_FILE)
   const now = new Date().toISOString()
   const interactionAt = sanitizeString(timestamp || now, 64) || now
   const updated = []
@@ -284,7 +294,7 @@ export async function markLeadConvertedFromContract({ buyerId, factoryId, contra
   const safeContract = sanitizeString(String(contractId || ''), 120)
   if (!safeBuyer || !safeFactory || !safeContract) return []
 
-  const leads = await readJson(LEADS_FILE)
+  const leads = await readStore(LEADS_FILE)
   let touched = false
   const now = new Date().toISOString()
   const updated = []
@@ -314,7 +324,24 @@ export async function markLeadConvertedFromContract({ buyerId, factoryId, contra
 }
 
 export async function listLeads(actor) {
-  const leads = await readJson(LEADS_FILE)
+  if (CRM_SQL_ENABLED) {
+    if (isOwnerOrAdmin(actor)) {
+      return prisma.lead.findMany({ orderBy: { updated_at: 'desc' } })
+    }
+    const orgId = actorOrgOwnerId(actor)
+    if (isAgent(actor)) {
+      return prisma.lead.findMany({
+        where: { org_owner_id: orgId, assigned_agent_id: String(actor.id || '') },
+        orderBy: { updated_at: 'desc' },
+      })
+    }
+    return prisma.lead.findMany({
+      where: { org_owner_id: orgId },
+      orderBy: { updated_at: 'desc' },
+    })
+  }
+
+  const leads = await readStore(LEADS_FILE)
   if (isOwnerOrAdmin(actor)) return leads.sort((a, b) => String(b.updated_at || '').localeCompare(String(a.updated_at || '')))
 
   const orgId = actorOrgOwnerId(actor)
@@ -331,7 +358,21 @@ export async function listLeads(actor) {
 
 export async function getLeadById(actor, leadId) {
   const id = sanitizeString(String(leadId || ''), 120)
-  const leads = await readJson(LEADS_FILE)
+  if (CRM_SQL_ENABLED) {
+    const actorOrgId = actorOrgOwnerId(actor)
+    const lead = await prisma.lead.findFirst({
+      where: isOwnerOrAdmin(actor) ? { id } : { id, org_owner_id: actorOrgId },
+    })
+    if (!lead) return null
+    ensureLeadAccess(actor, lead)
+    const [notes, reminders] = await Promise.all([
+      prisma.leadNote.findMany({ where: { lead_id: id }, orderBy: { created_at: 'desc' } }),
+      prisma.leadReminder.findMany({ where: { lead_id: id }, orderBy: { remind_at: 'asc' } }),
+    ])
+    return { ...lead, notes, reminders }
+  }
+
+  const leads = await readStore(LEADS_FILE)
   const lead = leads.find((row) => String(row.id) === id) || null
   if (!lead) return null
   ensureLeadAccess(actor, lead)
@@ -347,8 +388,21 @@ export async function getLeadById(actor, leadId) {
 export async function getLeadByMatch(actor, matchId) {
   const id = sanitizeString(String(matchId || ''), 160)
   if (!id) return null
+  if (CRM_SQL_ENABLED) {
+    const actorOrgId = actorOrgOwnerId(actor)
+    const lead = await prisma.lead.findFirst({
+      where: isOwnerOrAdmin(actor) ? { match_id: id } : { match_id: id, org_owner_id: actorOrgId },
+    })
+    if (!lead) return null
+    ensureLeadAccess(actor, lead)
+    const [notes, reminders] = await Promise.all([
+      prisma.leadNote.findMany({ where: { lead_id: String(lead.id) }, orderBy: { created_at: 'desc' } }),
+      prisma.leadReminder.findMany({ where: { lead_id: String(lead.id) }, orderBy: { remind_at: 'asc' } }),
+    ])
+    return { ...lead, notes, reminders }
+  }
 
-  const leads = await readJson(LEADS_FILE)
+  const leads = await readStore(LEADS_FILE)
   const lead = leads.find((row) => String(row.match_id || '') === id) || null
   if (!lead) return null
   ensureLeadAccess(actor, lead)
@@ -363,7 +417,35 @@ export async function getLeadByMatch(actor, matchId) {
 
 export async function updateLead(actor, leadId, patch = {}) {
   const id = sanitizeString(String(leadId || ''), 120)
-  const leads = await readJson(LEADS_FILE)
+  if (CRM_SQL_ENABLED) {
+    const actorOrgId = actorOrgOwnerId(actor)
+    const current = await prisma.lead.findFirst({
+      where: isOwnerOrAdmin(actor) ? { id } : { id, org_owner_id: actorOrgId },
+    })
+    if (!current) return null
+    ensureLeadWriteAccess(actor, current)
+
+    const assignedAgentId = patch.assigned_agent_id !== undefined
+      ? sanitizeString(String(patch.assigned_agent_id || ''), 120) || null
+      : current.assigned_agent_id
+    if (!isAgent(actor) && assignedAgentId) {
+      const assignedAgent = await prisma.user.findFirst({
+        where: { id: assignedAgentId, role: 'agent', org_owner_id: current.org_owner_id },
+      })
+      if (!assignedAgent) throw forbiddenError()
+    }
+
+    return prisma.lead.update({
+      where: { id },
+      data: {
+        status: patch.status !== undefined ? normalizeStatus(patch.status, current.status || 'new') : current.status,
+        ...(isAgent(actor) ? {} : { assigned_agent_id: assignedAgentId }),
+        updated_at: new Date(),
+      },
+    })
+  }
+
+  const leads = await readStore(LEADS_FILE)
   const idx = leads.findIndex((row) => String(row.id) === id)
   if (idx < 0) return null
 
@@ -385,12 +467,32 @@ export async function updateLead(actor, leadId, patch = {}) {
 
 export async function addLeadNote(actor, leadId, noteText) {
   const id = sanitizeString(String(leadId || ''), 120)
-  const leads = await readJson(LEADS_FILE)
+  if (CRM_SQL_ENABLED) {
+    const actorOrgId = actorOrgOwnerId(actor)
+    const lead = await prisma.lead.findFirst({
+      where: isOwnerOrAdmin(actor) ? { id } : { id, org_owner_id: actorOrgId },
+    })
+    if (!lead) return null
+    ensureLeadWriteAccess(actor, lead)
+
+    return prisma.leadNote.create({
+      data: {
+        id: crypto.randomUUID(),
+        lead_id: id,
+        org_owner_id: lead.org_owner_id,
+        author_id: String(actor.id || ''),
+        note: sanitizeString(String(noteText || ''), 1600),
+        created_at: new Date(),
+      },
+    })
+  }
+
+  const leads = await readStore(LEADS_FILE)
   const lead = leads.find((row) => String(row.id) === id) || null
   if (!lead) return null
   ensureLeadWriteAccess(actor, lead)
 
-  const notes = await readJson(NOTES_FILE)
+  const notes = await readStore(NOTES_FILE)
   const row = {
     id: crypto.randomUUID(),
     lead_id: id,
@@ -406,7 +508,32 @@ export async function addLeadNote(actor, leadId, noteText) {
 
 export async function addLeadReminder(actor, leadId, payload = {}) {
   const id = sanitizeString(String(leadId || ''), 120)
-  const leads = await readJson(LEADS_FILE)
+  if (CRM_SQL_ENABLED) {
+    const actorOrgId = actorOrgOwnerId(actor)
+    const lead = await prisma.lead.findFirst({
+      where: isOwnerOrAdmin(actor) ? { id } : { id, org_owner_id: actorOrgId },
+    })
+    if (!lead) return null
+    ensureLeadWriteAccess(actor, lead)
+
+    const remindAtRaw = payload?.remind_at ? new Date(payload.remind_at) : new Date(Date.now() + 24 * 60 * 60 * 1000)
+    const remindAt = Number.isNaN(remindAtRaw.getTime()) ? new Date(Date.now() + 24 * 60 * 60 * 1000) : remindAtRaw
+
+    return prisma.leadReminder.create({
+      data: {
+        id: crypto.randomUUID(),
+        lead_id: id,
+        org_owner_id: lead.org_owner_id,
+        created_by: String(actor.id || ''),
+        remind_at: remindAt,
+        message: sanitizeString(String(payload?.message || 'Follow up'), 240),
+        done: false,
+        created_at: new Date(),
+      },
+    })
+  }
+
+  const leads = await readStore(LEADS_FILE)
   const lead = leads.find((row) => String(row.id) === id) || null
   if (!lead) return null
   ensureLeadWriteAccess(actor, lead)
@@ -414,7 +541,7 @@ export async function addLeadReminder(actor, leadId, payload = {}) {
   const remindAtRaw = payload?.remind_at ? new Date(payload.remind_at) : new Date(Date.now() + 24 * 60 * 60 * 1000)
   const remindAt = Number.isNaN(remindAtRaw.getTime()) ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : remindAtRaw.toISOString()
 
-  const reminders = await readJson(REMINDERS_FILE)
+  const reminders = await readStore(REMINDERS_FILE)
   const row = {
     id: crypto.randomUUID(),
     lead_id: id,
@@ -437,13 +564,13 @@ export async function addLeadNoteForMatch({ matchId, orgOwnerId, note, authorId 
   const safeAuthor = sanitizeString(String(authorId || 'system'), 120)
   if (!safeMatchId || !safeOrgId || !safeNote) return null
 
-  const leads = await readJson(LEADS_FILE)
+  const leads = await readStore(LEADS_FILE)
   const lead = leads.find((row) =>
     String(row.match_id || '') === safeMatchId && String(row.org_owner_id || '') === safeOrgId
   ) || null
   if (!lead) return null
 
-  const notes = await readJson(NOTES_FILE)
+  const notes = await readStore(NOTES_FILE)
   const row = {
     id: crypto.randomUUID(),
     lead_id: lead.id,

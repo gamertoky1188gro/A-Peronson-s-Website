@@ -1,4 +1,5 @@
-import { readJson, writeJson } from '../utils/jsonStore.js'
+import prisma from '../utils/prisma.js'
+import { readLegacyJson, isCrmSqlEnabled } from '../utils/crmFallbackStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { createNotification } from './notificationService.js'
 import { sendEmail } from './emailService.js'
@@ -8,6 +9,7 @@ import { logError } from '../utils/logger.js'
 const REMINDERS_FILE = 'lead_reminders.json'
 const LEADS_FILE = 'leads.json'
 const USERS_FILE = 'users.json'
+const CRM_SQL_ENABLED = isCrmSqlEnabled()
 
 let sweepActive = false
 
@@ -31,11 +33,17 @@ export async function runLeadReminderSweep() {
   sweepActive = true
 
   try {
-    const [reminders, leads, users] = await Promise.all([
-      readJson(REMINDERS_FILE),
-      readJson(LEADS_FILE),
-      readJson(USERS_FILE),
-    ])
+    const [reminders, leads, users] = CRM_SQL_ENABLED
+      ? await Promise.all([
+        prisma.leadReminder.findMany(),
+        prisma.lead.findMany(),
+        prisma.user.findMany(),
+      ])
+      : await Promise.all([
+        readLegacyJson(REMINDERS_FILE),
+        readLegacyJson(LEADS_FILE),
+        readLegacyJson(USERS_FILE),
+      ])
 
     const reminderRows = Array.isArray(reminders) ? reminders : []
     const leadRows = Array.isArray(leads) ? leads : []
@@ -99,8 +107,18 @@ export async function runLeadReminderSweep() {
       }
     })
 
-    if (processed > 0) {
-      await writeJson(REMINDERS_FILE, nextReminders)
+    if (processed > 0 && CRM_SQL_ENABLED) {
+      await prisma.$transaction(
+        nextReminders
+          .filter((row) => row?.id)
+          .map((row) => prisma.leadReminder.update({
+            where: { id: row.id },
+            data: {
+              done: Boolean(row.done),
+              notified_at: row.notified_at ? new Date(row.notified_at) : null,
+            },
+          })),
+      )
     }
 
     return { ok: true, processed }
