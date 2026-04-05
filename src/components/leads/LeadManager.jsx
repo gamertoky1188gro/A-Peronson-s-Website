@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { apiRequest, getToken } from '../../lib/auth'
+import { apiRequest, getCurrentUser, getToken } from '../../lib/auth'
 
 const STATUS_OPTIONS = [
   { key: 'new', label: 'New' },
@@ -20,6 +20,7 @@ function formatDate(value) {
 
 export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true }) {
   const token = useMemo(() => getToken(), [])
+  const canAssignLeads = Boolean(getCurrentUser()?.capabilities?.leads?.assign)
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -263,7 +264,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true 
                 <div className="rounded-lg bg-slate-50 p-3">
                   <p className="text-xs uppercase tracking-widest text-slate-500">Assigned agent</p>
                   <p className="mt-1 text-sm font-medium">{assignedAgent?.name || selected?.assigned_agent_id || 'Unassigned'}</p>
-                  {!allowAssign ? null : (
+                  {!allowAssign || !canAssignLeads ? null : (
                     <button
                       type="button"
                       onClick={() => updateLead({ assigned_agent_id: window.prompt('Assign to agent id (user id)', selected?.assigned_agent_id || '') || '' })}
@@ -273,6 +274,9 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true 
                       Assign
                     </button>
                   )}
+                  {allowAssign && !canAssignLeads ? (
+                    <p className="mt-2 text-xs text-slate-500">Lead assignment is restricted by your role policy.</p>
+                  ) : null}
                 </div>
                 <div className="rounded-lg bg-slate-50 p-3">
                   <p className="text-xs uppercase tracking-widest text-slate-500">Updated</p>
@@ -340,5 +344,4 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true 
     </div>
   )
 }
-
 

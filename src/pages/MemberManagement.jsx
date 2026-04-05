@@ -36,6 +36,7 @@ function createBlankMatrix(sections = []) {
 export default function MemberManagement() {
   const sessionUser = getCurrentUser()
   const canTeamAccess = hasEntitlement(sessionUser, 'team_access_management')
+  const canManageMembers = sessionUser?.capabilities?.members?.manage !== false
   const [search, setSearch] = useState('')
   const [members, setMembers] = useState([])
   const [constraints, setConstraints] = useState({
@@ -188,15 +189,15 @@ export default function MemberManagement() {
             <h1 className="text-2xl font-bold">Member Management</h1>
             <p className="text-sm text-[#5A5A5A]">Manage sub-accounts and permissions</p>
           </div>
-          <button className="px-4 py-2 bg-[#0A66C2] text-white rounded-md" onClick={() => setShowCreate(true)}>+ Add New Member</button>
+          <button className="px-4 py-2 bg-[#0A66C2] text-white rounded-md disabled:opacity-50" onClick={() => setShowCreate(true)} disabled={!canManageMembers}>+ Add New Member</button>
         </div>
 
         {!!error && <div className="mb-3 text-sm text-red-700 bg-red-50 borderless-shadow rounded p-2">{error}</div>}
         {!!success && <div className="mb-3 text-sm text-green-700 bg-green-50 borderless-shadow rounded p-2">{success}</div>}
 
-        {forbidden ? <AccessDeniedState message="You do not have permission to manage members for this organization." /> : null}
+        {forbidden || !canManageMembers ? <AccessDeniedState message="You do not have permission to manage members for this organization." /> : null}
 
-        {forbidden ? null : (
+        {forbidden || !canManageMembers ? null : (
           <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-sm borderless-shadow p-4">
             <div className="mb-4 flex items-center gap-3">
               <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search members" className="px-3 py-2 borderless-shadow rounded w-64" />
@@ -415,4 +416,3 @@ function MemberEditor({ member, constraints, getConflictMessage, onSave, canTeam
     </div>
   )
 }
-
