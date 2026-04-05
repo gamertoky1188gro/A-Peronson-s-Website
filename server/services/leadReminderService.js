@@ -9,7 +9,7 @@ import { logError } from '../utils/logger.js'
 const REMINDERS_FILE = 'lead_reminders.json'
 const LEADS_FILE = 'leads.json'
 const USERS_FILE = 'users.json'
-const CRM_SQL_ENABLED = isCrmSqlEnabled()
+const USE_SQL_CRM = isCrmSqlEnabled()
 
 let sweepActive = false
 
@@ -33,7 +33,7 @@ export async function runLeadReminderSweep() {
   sweepActive = true
 
   try {
-    const [reminders, leads, users] = CRM_SQL_ENABLED
+    const [reminders, leads, users] = USE_SQL_CRM
       ? await Promise.all([
         prisma.leadReminder.findMany(),
         prisma.lead.findMany(),
@@ -107,7 +107,7 @@ export async function runLeadReminderSweep() {
       }
     })
 
-    if (processed > 0 && CRM_SQL_ENABLED) {
+    if (processed > 0 && USE_SQL_CRM) {
       await prisma.$transaction(
         nextReminders
           .filter((row) => row?.id)

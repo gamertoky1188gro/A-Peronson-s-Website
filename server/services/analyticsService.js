@@ -11,7 +11,7 @@ import { getAnalyticsGovernanceConfig, sanitizePlatformAnalytics } from './analy
 
 const FILE = 'analytics.json'
 const SEARCH_TREND_MIN_EVENTS = 25
-const CRM_SQL_ENABLED = isCrmSqlEnabled()
+const USE_SQL_CRM = isCrmSqlEnabled()
 
 async function getSearchMinEvents() {
   try {
@@ -24,7 +24,7 @@ async function getSearchMinEvents() {
 }
 
 export async function trackEvent({ type, actor_id, entity_id, metadata = {} }) {
-  if (CRM_SQL_ENABLED) {
+  if (USE_SQL_CRM) {
     await prisma.analyticsEvent.create({
       data: {
         id: crypto.randomUUID(),
@@ -69,7 +69,7 @@ function scopeAnalyticsRecords(user, records, idFields) {
 
 export async function getAnalyticsSummary(user) {
   ensureAnalyticsAccess(user)
-  const all = CRM_SQL_ENABLED ? await prisma.analyticsEvent.findMany() : await readLegacyJson(FILE)
+  const all = USE_SQL_CRM ? await prisma.analyticsEvent.findMany() : await readLegacyJson(FILE)
   const scoped = scopeAnalyticsRecords(user, all, ['actor_id', 'entity_id'])
   const byType = scoped.reduce((acc, e) => {
     acc[e.type] = (acc[e.type] || 0) + 1

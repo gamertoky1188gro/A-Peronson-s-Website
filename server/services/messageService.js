@@ -19,10 +19,10 @@ const USERS_FILE = 'users.json'
 const MESSAGE_REQUESTS_FILE = 'message_requests.json'
 const CONVERSATION_LOCKS_FILE = 'conversation_locks.json'
 const MESSAGE_READS_FILE = 'message_reads.json'
-const CRM_SQL_ENABLED = isCrmSqlEnabled()
+const USE_SQL_CRM = isCrmSqlEnabled()
 
 async function readStore(fileName) {
-  if (CRM_SQL_ENABLED) return readJson(fileName)
+  if (USE_SQL_CRM) return readJson(fileName)
   return readLegacyJson(fileName)
 }
 
