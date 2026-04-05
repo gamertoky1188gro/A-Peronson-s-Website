@@ -2,6 +2,7 @@ import crypto from 'crypto'
 import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { recordMilestone } from './ratingsService.js'
+import { recordJourneyEvent } from './dealJourneyService.js'
 
 const FILE = 'call_sessions.json'
 const RECORDING_VIEWS_FILE = 'call_recording_views.json'
@@ -113,6 +114,12 @@ export async function createScheduledCallSession(userId, payload = {}) {
 
   calls.push(row)
   await writeJson(FILE, calls)
+  await recordJourneyEvent('call_scheduled', {
+    match_id: row.match_id,
+    chat_thread_id: row.context?.chat_thread_id || row.match_id,
+    contract_id: row.contract_id,
+    call_id: row.id,
+  }, { actor_id: userId, scheduled_for: row.scheduled_for }).catch(() => null)
   return row
 }
 
@@ -221,6 +228,12 @@ export async function markRecording(callId, userId, payload = {}) {
   await writeJson(FILE, calls)
 
   if (shouldComplete) {
+    await recordJourneyEvent('call_completed', {
+      match_id: call.match_id,
+      chat_thread_id: call.context?.chat_thread_id || call.match_id,
+      contract_id: call.contract_id,
+      call_id: call.id,
+    }, { actor_id: userId, recording_status: recordingStatus }).catch(() => null)
     const participants = normalizeParticipantIds(call.participant_ids, call.created_by).filter((id) => id !== userId)
     await Promise.all(participants.map((counterpartyId) => recordMilestone({
       profileKey: `user:${userId}`,

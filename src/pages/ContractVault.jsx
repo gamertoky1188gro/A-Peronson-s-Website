@@ -30,6 +30,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import AccessDeniedState from '../components/AccessDeniedState'
 import { API_BASE, apiRequest, getCurrentUser, getToken } from '../lib/auth'
 import { trackClientEvent } from '../lib/events'
+import JourneyTimeline from '../components/journey/JourneyTimeline'
 
 const Motion = motion
 
@@ -664,6 +665,14 @@ export default function ContractVault() {
       </div>
 
       {actionError ? <div className="mt-4 rounded-xl borderless-shadow bg-rose-50 p-3 text-sm font-semibold text-rose-700">{actionError}</div> : null}
+      <div className="mt-4">
+        <JourneyTimeline title="Journey Timeline" contractId={selected.id} />
+      </div>
+      {selected.requirement_id ? (
+        <div className="mt-2">
+          <Link to={`/search?requirementId=${encodeURIComponent(selected.requirement_id)}`} className="text-xs font-semibold text-[#0A66C2] hover:underline">Open source requirement</Link>
+        </div>
+      ) : null}
       {!hasRecordedCall ? (
         <div className="mt-4 rounded-xl borderless-shadow bg-amber-50 p-3 text-sm font-semibold text-amber-900">
           <div className="flex flex-wrap items-center justify-between gap-3">

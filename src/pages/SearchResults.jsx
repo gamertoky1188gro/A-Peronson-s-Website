@@ -1123,7 +1123,7 @@ export default function SearchResults() {
     setAutoSaveCandidate(null)
   }
 
-  function openChatNotice(name, leadSource) {
+  function openChatNotice(name, leadSource, journeyContext = {}) {
     if (leadSource?.type && leadSource?.id) {
       recordLeadSource({
         type: leadSource.type,
@@ -1131,7 +1131,13 @@ export default function SearchResults() {
         label: leadSource.label || '',
       })
     }
-    navigate('/chat', { state: { notice: `Contacting ${name}. If you are unverified, your first message may appear as a request.` } })
+    const params = new URLSearchParams()
+    params.set('journey_source', 'search')
+    if (journeyContext?.matchId) params.set('match_id', journeyContext.matchId)
+    if (journeyContext?.productId) params.set('product_id', journeyContext.productId)
+    if (journeyContext?.requirementId) params.set('requirement_id', journeyContext.requirementId)
+    const query = params.toString()
+    navigate(`/chat${query ? `?${query}` : ''}`, { state: { notice: `Contacting ${name}. If you are unverified, your first message may appear as a request.` } })
   }
 
   const activeFilterChips = useMemo(() => {
@@ -2015,7 +2021,7 @@ export default function SearchResults() {
                                   type: 'buyer_request',
                                   id: r.id,
                                   label: r.title || r.category || 'Buyer request',
-                                })}
+                                }, { requirementId: r.id })}
                                 className="rounded-full bg-[var(--gt-blue)] px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95"
                               >
                                 Contact
@@ -2103,7 +2109,7 @@ export default function SearchResults() {
                                   type: 'product',
                                   id: p.id,
                                   label: p.title || 'Product',
-                                })}
+                                }, { productId: p.id })}
                                 className="rounded-full bg-[var(--gt-blue)] px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95"
                               >
                                 Contact

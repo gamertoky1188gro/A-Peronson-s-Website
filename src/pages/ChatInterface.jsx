@@ -52,6 +52,7 @@ import { consumeLeadSource } from '../lib/leadSource'
 import AttachmentPreviewModal from '../components/chat/AttachmentPreviewModal'
 import MarkdownMessage from '../components/chat/MarkdownMessage'
 import FileAttachmentCard from '../components/chat/FileAttachmentCard'
+import JourneyTimeline from '../components/journey/JourneyTimeline'
 
 const WS_BASE = (() => {
   if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL
@@ -419,7 +420,11 @@ export default function ChatInterface() {
       pendingMatchIdRef.current = String(location.state.matchId)
       navigate(location.pathname, { replace: true, state: {} })
     }
-  }, [location.state, location.pathname, navigate])
+
+    const params = new URLSearchParams(location.search || '')
+    const matchId = params.get('match_id')
+    if (matchId) pendingMatchIdRef.current = String(matchId)
+  }, [location.state, location.pathname, location.search, navigate])
 
   const loadInbox = useCallback(async () => {
 
@@ -1603,6 +1608,7 @@ export default function ChatInterface() {
                     onClick={() => setActiveThreadId(thread.id)}
                   >
                     <div className="flex items-center gap-3">
+                  <Link to={activeThread?.matchId ? `/contracts?journey_match_id=${encodeURIComponent(activeThread.matchId)}` : '/contracts'} className="rounded-full bg-[#E8F3FF] px-3 py-1 text-[11px] font-semibold text-[#0A66C2] hover:bg-[#D9ECFF]">Contract draft</Link>
                       <div className="relative flex-shrink-0">
                         {thread.avatar ? (
                           <img src={avatarUrl(thread.avatar)} alt={threadName} className="h-11 w-11 rounded-full object-cover shadow-sm" />
@@ -1680,6 +1686,7 @@ export default function ChatInterface() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
+                  <Link to={activeThread?.matchId ? `/contracts?journey_match_id=${encodeURIComponent(activeThread.matchId)}` : '/contracts'} className="rounded-full bg-[#E8F3FF] px-3 py-1 text-[11px] font-semibold text-[#0A66C2] hover:bg-[#D9ECFF]">Contract draft</Link>
                   {isLockOwner ? (
                     <button
                       onClick={grantAccess}
@@ -1712,6 +1719,10 @@ export default function ChatInterface() {
                     <EllipsisVertical size={16} />
                   </button>
                 </div>
+              </div>
+
+              <div className="px-6 pb-3">
+                <JourneyTimeline title="Journey Timeline" matchId={activeThread?.matchId || ''} />
               </div>
 
               {!hasRecordedCall ? (
