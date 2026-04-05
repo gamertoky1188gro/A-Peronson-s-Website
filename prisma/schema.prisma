@@ -37,6 +37,14 @@ model User {
   updated_at                 DateTime?
   password_reset_at          DateTime?
 
+  ownedLeads                Lead[]           @relation("LeadOrgOwner")
+  assignedLeads             Lead[]           @relation("LeadAssignedAgent")
+  counterpartyLeads         Lead[]           @relation("LeadCounterpartyUser")
+  leadNotes                 LeadNote[]       @relation("LeadNoteAuthor")
+  leadRemindersCreated      LeadReminder[]   @relation("LeadReminderCreator")
+  crmInteractionsOwned      InteractionLog[] @relation("InteractionOrgOwner")
+  crmInteractionsActor      InteractionLog[] @relation("InteractionActor")
+
   @@map("users")
 }
 
@@ -193,15 +201,16 @@ model CurrencyConfig {
 }
 
 model Message {
-  id                String   @id
+  id                String           @id
   match_id          String
   sender_id         String
-  message           String?  @db.Text
-  timestamp         DateTime @default(now())
+  message           String?          @db.Text
+  timestamp         DateTime         @default(now())
   type              String?
   attachment        Json?
   moderated         Boolean?
   moderation_reason String?
+  interactions      InteractionLog[]
 
   @@map("messages")
 }
@@ -312,23 +321,24 @@ model PartnerRequest {
 }
 
 model CallSession {
-  id               String   @id
-  created_by       String
-  match_id         String?
-  title            String?
-  scheduled_for    DateTime?
-  duration_minutes Int?
-  participant_ids  Json?
-  status           String?
-  recording_url    String?
-  recording_status String?
-  contract_id      String?
+  id                String           @id
+  created_by        String
+  match_id          String?
+  title             String?
+  scheduled_for     DateTime?
+  duration_minutes  Int?
+  participant_ids   Json?
+  status            String?
+  recording_url     String?
+  recording_status  String?
+  contract_id       String?
   security_audit_id String?
-  context          Json?
-  created_at       DateTime @default(now())
-  started_at       DateTime?
-  ended_at         DateTime?
-  audit_trail      Json?
+  context           Json?
+  created_at        DateTime         @default(now())
+  started_at        DateTime?
+  ended_at          DateTime?
+  audit_trail       Json?
+  interactions      InteractionLog[]
 
   @@map("call_sessions")
 }
@@ -377,22 +387,29 @@ model Document {
 }
 
 model Lead {
-  id                   String   @id
-  org_owner_id         String
-  match_id             String
-  counterparty_id      String?
-  source               String?
-  source_type          String?
-  source_id            String?
-  source_label         String?
-  status               String?
-  assigned_agent_id    String?
-  conversion_at        DateTime?
-  created_at           DateTime @default(now())
-  updated_at           DateTime?
-  last_interaction_at  DateTime?
+  id                  String           @id
+  org_owner_id        String
+  match_id            String
+  counterparty_id     String?
+  source              String?
+  source_type         String?
+  source_id           String?
+  source_label        String?
+  status              String?
+  assigned_agent_id   String?
+  conversion_at       DateTime?
+  created_at          DateTime         @default(now())
+  updated_at          DateTime?
+  last_interaction_at DateTime?
+  orgOwner            User             @relation("LeadOrgOwner", fields: [org_owner_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  assignedAgent       User?            @relation("LeadAssignedAgent", fields: [assigned_agent_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  counterpartyUser    User?            @relation("LeadCounterpartyUser", fields: [counterparty_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  notes               LeadNote[]
+  reminders           LeadReminder[]
+  interactions        InteractionLog[]
 
-  @@index([org_owner_id, assigned_agent_id, counterparty_id, match_id, status, updated_at])
+  @@index([org_owner_id, status, updated_at])
+  @@index([assigned_agent_id, updated_at])
   @@map("leads")
 }
 
@@ -403,6 +420,8 @@ model LeadNote {
   author_id    String
   note         String?
   created_at   DateTime @default(now())
+  lead         Lead     @relation(fields: [lead_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  author       User     @relation("LeadNoteAuthor", fields: [author_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   @@index([lead_id, created_at])
   @@map("lead_notes")
@@ -418,26 +437,54 @@ model LeadReminder {
   done         Boolean  @default(false)
   notified_at  DateTime?
   created_at   DateTime @default(now())
+  lead         Lead     @relation(fields: [lead_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  creator      User     @relation("LeadReminderCreator", fields: [created_by], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   @@index([lead_id, remind_at, done])
   @@map("lead_reminders")
 }
 
 model InteractionLog {
-  id               String   @id
+  id               String      @id
   org_owner_id     String
   actor_id         String?
   channel          String?
   interaction_type String
   entity_type      String?
   entity_id        String?
+  lead_id          String?
+  message_id       String?
+  call_session_id  String?
+  event_log_id     String?
   match_id         String?
   metadata         Json?
   occurred_at      DateTime
-  created_at       DateTime @default(now())
+  created_at       DateTime    @default(now())
+  orgOwner         User        @relation("InteractionOrgOwner", fields: [org_owner_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  actor            User?       @relation("InteractionActor", fields: [actor_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  lead             Lead?       @relation(fields: [lead_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  message          Message?    @relation(fields: [message_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  callSession      CallSession? @relation(fields: [call_session_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  eventLog         EventLog?   @relation(fields: [event_log_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@index([org_owner_id, interaction_type, occurred_at])
   @@map("interaction_logs")
+}
+
+model EventLog {
+  id           String           @id
+  org_owner_id String
+  actor_id     String?
+  event_type   String
+  entity_type  String?
+  entity_id    String?
+  payload      Json?
+  occurred_at  DateTime
+  created_at   DateTime         @default(now())
+  interactions InteractionLog[]
+
+  @@index([org_owner_id, event_type, occurred_at])
+  @@map("event_logs")
 }
 
 model AnalyticsEvent {

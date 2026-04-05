@@ -4,9 +4,19 @@ import path from 'node:path'
 const ROOT = process.cwd()
 const LEGACY_DB_DIR = path.join(ROOT, 'server', 'database')
 
+function normalizeFlag(raw, fallback = true) {
+  if (raw === undefined || raw === null || raw === '') return fallback
+  const value = String(raw).toLowerCase().trim()
+  return !['0', 'false', 'no', 'off'].includes(value)
+}
+
+// Temporary rollout flag.
+// Prefer USE_SQL_CRM, but preserve backward compatibility with CRM_SQL_ENABLED.
 export function isCrmSqlEnabled() {
-  const raw = String(process.env.CRM_SQL_ENABLED ?? 'true').toLowerCase().trim()
-  return !['0', 'false', 'no', 'off'].includes(raw)
+  if (process.env.USE_SQL_CRM !== undefined) {
+    return normalizeFlag(process.env.USE_SQL_CRM, true)
+  }
+  return normalizeFlag(process.env.CRM_SQL_ENABLED, true)
 }
 
 export async function readLegacyJson(fileName) {

@@ -126,6 +126,39 @@ async function migrateLeadReminders(reminders) {
   }
 }
 
+
+async function migrateEventLogs(eventLogs) {
+  for (const eventLog of eventLogs) {
+    const id = sanitizeId(eventLog.id, 'event_log')
+    const orgOwnerId = String(eventLog.org_owner_id || eventLog.actor_id || '')
+    if (!orgOwnerId) continue
+
+    await prisma.eventLog.upsert({
+      where: { id },
+      update: {
+        org_owner_id: orgOwnerId,
+        actor_id: String(eventLog.actor_id || '') || null,
+        event_type: String(eventLog.event_type || eventLog.type || 'event'),
+        entity_type: String(eventLog.entity_type || '') || null,
+        entity_id: String(eventLog.entity_id || '') || null,
+        payload: eventLog.payload || eventLog.metadata || {},
+        occurred_at: toIso(eventLog.occurred_at || eventLog.created_at, new Date().toISOString()),
+      },
+      create: {
+        id,
+        org_owner_id: orgOwnerId,
+        actor_id: String(eventLog.actor_id || '') || null,
+        event_type: String(eventLog.event_type || eventLog.type || 'event'),
+        entity_type: String(eventLog.entity_type || '') || null,
+        entity_id: String(eventLog.entity_id || '') || null,
+        payload: eventLog.payload || eventLog.metadata || {},
+        occurred_at: toIso(eventLog.occurred_at || eventLog.created_at, new Date().toISOString()),
+        created_at: toIso(eventLog.created_at, new Date().toISOString()),
+      },
+    })
+  }
+}
+
 async function migrateInteractions(messages, calls) {
   for (const message of messages) {
     const id = sanitizeId(message.id, 'il_msg')
@@ -143,6 +176,7 @@ async function migrateInteractions(messages, calls) {
         entity_type: 'message',
         entity_id: String(message.id || ''),
         match_id: matchId || null,
+        message_id: String(message.id || '') || null,
         metadata: {
           type: message.type || 'text',
           has_attachment: Boolean(message.attachment),
@@ -158,6 +192,7 @@ async function migrateInteractions(messages, calls) {
         entity_type: 'message',
         entity_id: String(message.id || ''),
         match_id: matchId || null,
+        message_id: String(message.id || '') || null,
         metadata: {
           type: message.type || 'text',
           has_attachment: Boolean(message.attachment),
@@ -181,6 +216,7 @@ async function migrateInteractions(messages, calls) {
         entity_type: 'call_session',
         entity_id: String(call.id || ''),
         match_id: String(call.match_id || call?.context?.chat_thread_id || '') || null,
+        call_session_id: String(call.id || '') || null,
         metadata: {
           status: call.status || null,
           duration_minutes: call.duration_minutes || null,
@@ -196,6 +232,7 @@ async function migrateInteractions(messages, calls) {
         entity_type: 'call_session',
         entity_id: String(call.id || ''),
         match_id: String(call.match_id || call?.context?.chat_thread_id || '') || null,
+        call_session_id: String(call.id || '') || null,
         metadata: {
           status: call.status || null,
           duration_minutes: call.duration_minutes || null,
@@ -207,12 +244,13 @@ async function migrateInteractions(messages, calls) {
 }
 
 async function main() {
-  const [leads, notes, reminders, messages, callSessions] = await Promise.all([
+  const [leads, notes, reminders, messages, callSessions, eventLogs] = await Promise.all([
     readLegacyJson('leads.json'),
     readLegacyJson('lead_notes.json'),
     readLegacyJson('lead_reminders.json'),
     readLegacyJson('messages.json'),
     readLegacyJson('call_sessions.json'),
+    readLegacyJson('event_logs.json'),
   ])
 
   console.log('Legacy rows found:', {
@@ -221,11 +259,13 @@ async function main() {
     lead_reminders: reminders.length,
     messages: messages.length,
     call_sessions: callSessions.length,
+    event_logs: eventLogs.length,
   })
 
   await migrateLeads(leads)
   await migrateLeadNotes(notes)
   await migrateLeadReminders(reminders)
+  await migrateEventLogs(eventLogs)
   await migrateInteractions(messages, callSessions)
 
   console.log('CRM JSON → SQL migration complete.')

@@ -12,10 +12,10 @@ const NOTES_FILE = 'lead_notes.json'
 const REMINDERS_FILE = 'lead_reminders.json'
 const USERS_FILE = 'users.json'
 const REQUIREMENTS_FILE = 'requirements.json'
-const CRM_SQL_ENABLED = isCrmSqlEnabled()
+const USE_SQL_CRM = isCrmSqlEnabled()
 
 async function readStore(fileName) {
-  if (CRM_SQL_ENABLED) {
+  if (USE_SQL_CRM) {
     return readJson(fileName)
   }
   return readLegacyJson(fileName)
@@ -324,7 +324,7 @@ export async function markLeadConvertedFromContract({ buyerId, factoryId, contra
 }
 
 export async function listLeads(actor) {
-  if (CRM_SQL_ENABLED) {
+  if (USE_SQL_CRM) {
     if (isOwnerOrAdmin(actor)) {
       return prisma.lead.findMany({ orderBy: { updated_at: 'desc' } })
     }
@@ -358,7 +358,7 @@ export async function listLeads(actor) {
 
 export async function getLeadById(actor, leadId) {
   const id = sanitizeString(String(leadId || ''), 120)
-  if (CRM_SQL_ENABLED) {
+  if (USE_SQL_CRM) {
     const actorOrgId = actorOrgOwnerId(actor)
     const lead = await prisma.lead.findFirst({
       where: isOwnerOrAdmin(actor) ? { id } : { id, org_owner_id: actorOrgId },
@@ -388,7 +388,7 @@ export async function getLeadById(actor, leadId) {
 export async function getLeadByMatch(actor, matchId) {
   const id = sanitizeString(String(matchId || ''), 160)
   if (!id) return null
-  if (CRM_SQL_ENABLED) {
+  if (USE_SQL_CRM) {
     const actorOrgId = actorOrgOwnerId(actor)
     const lead = await prisma.lead.findFirst({
       where: isOwnerOrAdmin(actor) ? { match_id: id } : { match_id: id, org_owner_id: actorOrgId },
@@ -417,7 +417,7 @@ export async function getLeadByMatch(actor, matchId) {
 
 export async function updateLead(actor, leadId, patch = {}) {
   const id = sanitizeString(String(leadId || ''), 120)
-  if (CRM_SQL_ENABLED) {
+  if (USE_SQL_CRM) {
     const actorOrgId = actorOrgOwnerId(actor)
     const current = await prisma.lead.findFirst({
       where: isOwnerOrAdmin(actor) ? { id } : { id, org_owner_id: actorOrgId },
@@ -467,7 +467,7 @@ export async function updateLead(actor, leadId, patch = {}) {
 
 export async function addLeadNote(actor, leadId, noteText) {
   const id = sanitizeString(String(leadId || ''), 120)
-  if (CRM_SQL_ENABLED) {
+  if (USE_SQL_CRM) {
     const actorOrgId = actorOrgOwnerId(actor)
     const lead = await prisma.lead.findFirst({
       where: isOwnerOrAdmin(actor) ? { id } : { id, org_owner_id: actorOrgId },
@@ -508,7 +508,7 @@ export async function addLeadNote(actor, leadId, noteText) {
 
 export async function addLeadReminder(actor, leadId, payload = {}) {
   const id = sanitizeString(String(leadId || ''), 120)
-  if (CRM_SQL_ENABLED) {
+  if (USE_SQL_CRM) {
     const actorOrgId = actorOrgOwnerId(actor)
     const lead = await prisma.lead.findFirst({
       where: isOwnerOrAdmin(actor) ? { id } : { id, org_owner_id: actorOrgId },

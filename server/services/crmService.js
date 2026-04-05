@@ -13,10 +13,10 @@ function buildOrgMemberIds(users = [], orgId = '') {
   })
   return members
 }
-const CRM_SQL_ENABLED = isCrmSqlEnabled()
+const USE_SQL_CRM = isCrmSqlEnabled()
 
 async function readStore(fileName) {
-  if (CRM_SQL_ENABLED) {
+  if (USE_SQL_CRM) {
     switch (fileName) {
       case 'users.json': return prisma.user.findMany()
       case 'messages.json': return prisma.message.findMany()
