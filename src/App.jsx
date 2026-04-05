@@ -33,6 +33,7 @@ import IndustryPage from './pages/IndustryPage'
 import RatingFeedback from './pages/RatingFeedback'
 import SupportReports from './pages/SupportReports'
 import AdminPanel from './pages/AdminPanel'
+import AdminGovernance from './pages/AdminGovernance'
 import FloatingAssistant from './components/FloatingAssistant'
 import Footer from './components/Footer'
 import AccessDenied from './pages/AccessDenied'
@@ -99,6 +100,7 @@ function AppRoutes() {
       <Route path="/owner" element={<ProtectedRoute roles={OWNER_ROLES}><OwnerDashboard /></ProtectedRoute>} />
       <Route path="/agent" element={<ProtectedRoute roles={['buying_house', 'owner', 'admin', 'agent']}><AgentDashboard /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute roles={['owner', 'admin']}><AdminPanel /></ProtectedRoute>} />
+      <Route path="/admin/governance" element={<ProtectedRoute roles={['owner', 'admin']}><AdminGovernance /></ProtectedRoute>} />
 
       <Route path="/mvp" element={<MvpDashboard />} />
       <Route path="*" element={<Navigate to="/" replace />} />
