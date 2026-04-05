@@ -7,7 +7,7 @@ import { canViewAnalytics, canViewAnalyticsAdmin, canViewAnalyticsDashboard, for
 import { getPlanForUser } from './entitlementService.js'
 import { getOrderCertificationSummary } from './orderCertificationService.js'
 import { appendAuditLog } from '../utils/auditStore.js'
-import { getAnalyticsGovernanceConfig, sanitizePlatformAnalytics } from './analyticsGovernanceService.js'
+import { checkAnalyticsAccessPolicy, getAnalyticsGovernanceConfig, sanitizePlatformAnalytics } from './analyticsGovernanceService.js'
 
 const FILE = 'analytics.json'
 const SEARCH_TREND_MIN_EVENTS = 25
@@ -588,6 +588,10 @@ export async function getCompanyAnalytics(user) {
 export async function getPlatformAnalytics(user) {
   ensureAnalyticsAdminAccess(user)
 
+  const governance = await getAnalyticsGovernanceConfig()
+  const viewPolicy = checkAnalyticsAccessPolicy(user, governance, { mode: 'view' })
+  if (!viewPolicy.allowed) throw forbiddenError('Analytics governance policy denied this request')
+
   const [requirements, users, events] = await Promise.all([
     readJson('requirements.json'),
     readJson('users.json'),
@@ -599,8 +603,16 @@ export async function getPlatformAnalytics(user) {
   const globalCategories = {}
   const priceBuckets = {}
 
-  const requirementsRows = Array.isArray(requirements) ? requirements : []
-  const eventRows = Array.isArray(events) ? events : []
+  const retentionMs = Math.max(1, Number(governance.retention_days || 365)) * 24 * 60 * 60 * 1000
+  const retentionCutoff = Date.now() - retentionMs
+  const requirementsRows = (Array.isArray(requirements) ? requirements : []).filter((row) => {
+    const createdAt = new Date(row?.created_at || '').getTime()
+    return Number.isFinite(createdAt) && createdAt >= retentionCutoff
+  })
+  const eventRows = (Array.isArray(events) ? events : []).filter((row) => {
+    const createdAt = new Date(row?.created_at || '').getTime()
+    return Number.isFinite(createdAt) && createdAt >= retentionCutoff
+  })
 
   for (const req of requirementsRows) {
     const buyer = usersById.get(String(req.buyer_id || ''))
@@ -716,7 +728,6 @@ export async function getPlatformAnalytics(user) {
     trending_search_categories: trendingCategories,
   }
 
-  const governance = await getAnalyticsGovernanceConfig()
   const { report, suppression } = sanitizePlatformAnalytics(rawReport, governance)
 
   appendAuditLog({
@@ -729,6 +740,10 @@ export async function getPlatformAnalytics(user) {
     status: 200,
     payload: {
       requested_scope: 'platform',
+      governance_mode: viewPolicy.mode,
+      governance_retention_days: governance.retention_days,
+      governance_geo_granularity: governance.geo_granularity,
+      governance_min_cohort_size: governance.min_cohort_size,
       suppression_counts: suppression,
     },
   }).catch(() => null)

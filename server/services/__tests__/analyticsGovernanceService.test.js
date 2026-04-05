@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { sanitizePlatformAnalytics } from '../analyticsGovernanceService.js'
+import { checkAnalyticsAccessPolicy, sanitizePlatformAnalytics } from '../analyticsGovernanceService.js'
 
 function baseReport() {
   return {
@@ -57,7 +57,16 @@ test('suppresses cohorts below min cohort size', () => {
 })
 
 test('strips denied identifier fields from nested metadata', () => {
-  const { report } = sanitizePlatformAnalytics(baseReport(), {
+  const reportWithLocation = baseReport()
+  reportWithLocation.metadata = {
+    actor_id: 'user-1',
+    raw_ip: '10.10.10.10',
+    exact_lat: 23.8103,
+    exact_lng: 90.4125,
+    ip_country: 'BD',
+  }
+
+  const { report } = sanitizePlatformAnalytics(reportWithLocation, {
     enabled: true,
     min_cohort_size: 2,
   })
@@ -65,6 +74,9 @@ test('strips denied identifier fields from nested metadata', () => {
   assert.ok(!('metadata' in report) || !('actor_id' in (report.metadata || {})))
   assert.equal(JSON.stringify(report).includes('raw_ip'), false)
   assert.equal(JSON.stringify(report).includes('actor_id'), false)
+  assert.equal(JSON.stringify(report).includes('exact_lat'), false)
+  assert.equal(JSON.stringify(report).includes('exact_lng'), false)
+  assert.equal(JSON.stringify(report).includes('ip_country'), false)
 })
 
 test('keeps stable output schema under suppression', () => {
@@ -93,4 +105,27 @@ test('keeps stable output schema under suppression', () => {
   assert.equal(Array.isArray(report.top_categories_by_country), true)
   assert.equal(Array.isArray(report.trending_search_categories), true)
   assert.equal(report.top_categories_by_country[0].country, 'insufficient_data')
+})
+
+test('policy denies non-admin view access when governance allows only admin and owner roles', () => {
+  const result = checkAnalyticsAccessPolicy({ id: 'agent-1', role: 'agent' }, {
+    enabled: true,
+    min_cohort_size: 10,
+    geo_granularity: 'country',
+    view_allowed_roles: ['admin', 'owner'],
+  }, { mode: 'view' })
+
+  assert.equal(result.allowed, false)
+  assert.equal(result.reason, 'analytics_view_denied')
+})
+
+test('policy denies raw export when allow_raw_exports is disabled', () => {
+  const result = checkAnalyticsAccessPolicy({ id: 'admin-1', role: 'admin' }, {
+    enabled: true,
+    allow_raw_exports: false,
+    export_allowed_roles: ['admin', 'owner'],
+  }, { mode: 'export' })
+
+  assert.equal(result.allowed, false)
+  assert.equal(result.reason, 'analytics_export_denied')
 })

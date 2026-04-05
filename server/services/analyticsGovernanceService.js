@@ -5,7 +5,9 @@ export const ANALYTICS_GOVERNANCE_DEFAULTS = Object.freeze({
   min_cohort_size: 10,
   geo_granularity: 'country',
   retention_days: 365,
+  allow_raw_exports: false,
   export_allowed_roles: ['admin', 'owner'],
+  view_allowed_roles: ['admin', 'owner'],
   date_granularity: 'month',
 })
 
@@ -25,6 +27,9 @@ export const DENIED_ANALYTICS_FIELDS = Object.freeze([
   'phone',
   'ip',
   'raw_ip',
+  'ip_country',
+  'ip_region',
+  'ip_city',
   'lat',
   'lng',
   'latitude',
@@ -66,9 +71,13 @@ function normalizeGovernanceConfig(config = {}) {
       ? geo
       : ANALYTICS_GOVERNANCE_DEFAULTS.geo_granularity,
     retention_days: Number.isFinite(retentionDays) && retentionDays > 0 ? Math.floor(retentionDays) : ANALYTICS_GOVERNANCE_DEFAULTS.retention_days,
+    allow_raw_exports: Boolean(candidate.allow_raw_exports),
     export_allowed_roles: Array.isArray(candidate.export_allowed_roles) && candidate.export_allowed_roles.length
       ? candidate.export_allowed_roles.map((role) => String(role || '').toLowerCase()).filter(Boolean)
       : ANALYTICS_GOVERNANCE_DEFAULTS.export_allowed_roles,
+    view_allowed_roles: Array.isArray(candidate.view_allowed_roles) && candidate.view_allowed_roles.length
+      ? candidate.view_allowed_roles.map((role) => String(role || '').toLowerCase()).filter(Boolean)
+      : ANALYTICS_GOVERNANCE_DEFAULTS.view_allowed_roles,
     date_granularity: SENSITIVE_BUCKETING_RULES.date.levels.includes(date)
       ? date
       : ANALYTICS_GOVERNANCE_DEFAULTS.date_granularity,
@@ -78,6 +87,29 @@ function normalizeGovernanceConfig(config = {}) {
 export async function getAnalyticsGovernanceConfig() {
   const config = await getAdminConfig()
   return normalizeGovernanceConfig(config?.analytics?.governance)
+}
+
+export function checkAnalyticsAccessPolicy(user, config = ANALYTICS_GOVERNANCE_DEFAULTS, { mode = 'view' } = {}) {
+  const governance = normalizeGovernanceConfig(config)
+  const role = String(user?.role || '').toLowerCase()
+  const deniedReason = mode === 'export' ? 'analytics_export_denied' : 'analytics_view_denied'
+
+  if (!governance.enabled) return { allowed: true, governance, mode, role }
+
+  if (mode === 'export') {
+    if (!governance.allow_raw_exports) {
+      return { allowed: false, governance, mode, role, reason: deniedReason }
+    }
+    if (!governance.export_allowed_roles.includes(role)) {
+      return { allowed: false, governance, mode, role, reason: deniedReason }
+    }
+    return { allowed: true, governance, mode, role }
+  }
+
+  if (!governance.view_allowed_roles.includes(role)) {
+    return { allowed: false, governance, mode, role, reason: deniedReason }
+  }
+  return { allowed: true, governance, mode, role }
 }
 
 function sanitizeCountry(country, granularity) {
