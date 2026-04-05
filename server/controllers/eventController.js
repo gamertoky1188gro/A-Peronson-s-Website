@@ -1,4 +1,4 @@
-import { trackEvent } from '../services/analyticsService.js'
+import { ingestEvent } from '../services/eventIngestionService.js'
 import { extractClientIp, locateIp } from '../services/geoService.js'
 import { sanitizeString } from '../utils/validators.js'
 
@@ -84,12 +84,27 @@ export async function postEvent(req, res) {
     user_agent: sanitizeString(String(req.headers['user-agent'] || ''), 180),
   }
 
-  await trackEvent({
+  const allowUnknownTypes = String(process.env.EVENTS_ALLOW_UNKNOWN_TYPES || '').toLowerCase() === 'true'
+  const result = await ingestEvent({
     type,
     actor_id: buildActorId(req, clientId),
     entity_id: entityId || (entityType ? `type:${entityType}` : ''),
     metadata: enrichedMeta,
-  })
+    context: {
+      actorType: req.user?.id ? 'user' : 'anonymous',
+      orgOwnerId: sanitizeString(String(req.user?.org_owner_id || req.user?.id || ''), 120) || 'unknown',
+      entityType: entityType || 'unknown',
+      entityId: entityId || 'unknown',
+      sourceModule: 'web_client',
+      sessionId: sanitizeString(String(metadata.session_id || ''), 180) || 'unknown',
+    },
+  }, { allowUnknownTypes, sourceModule: 'event_controller' })
 
-  return res.status(201).json({ ok: true })
+  if (!result.accepted) {
+    if (result.reason === 'unknown_event_type') return res.status(400).json({ error: 'Unknown event type' })
+    if (result.reason === 'duplicate_event') return res.status(202).json({ ok: true, deduped: true })
+    return res.status(400).json({ error: 'Event validation failed', reason: result.reason })
+  }
+
+  return res.status(201).json({ ok: true, schema_version: result.schema_version })
 }

@@ -1,7 +1,7 @@
 import crypto from 'crypto'
 import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
-import { trackEvent } from './analyticsService.js'
+import { trackEvent } from './eventTrackingService.js'
 import { createNotification, emitNotificationsForEntity } from './notificationService.js'
 import { moderateTextOrRedact } from './policyService.js'
 import { isAgent, isOwnerOrAdmin } from '../utils/permissions.js'

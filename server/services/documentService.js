@@ -5,7 +5,7 @@ import { readJson, writeJson } from '../utils/jsonStore.js'
 import { readLocalJson } from '../utils/localStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { canAccessContract, canManagePartnerNetwork, canModifyContract, isAgent, isOwnerOrAdmin, scopeRecordsForUser } from '../utils/permissions.js'
-import { trackEvent } from './analyticsService.js'
+import { trackEvent } from './eventTrackingService.js'
 import { ensureCertificationForContract } from './certificationService.js'
 import { markLeadConvertedFromContract } from './leadService.js'
 

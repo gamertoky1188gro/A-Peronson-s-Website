@@ -61,6 +61,7 @@ import { revokeExpiredVerifications } from './services/verificationService.js'
 import { enforcePartnerFreeTierLimits } from './services/partnerNetworkService.js'
 import { runLeadReminderSweep } from './services/leadReminderService.js'
 import { refreshRates } from './services/currencyService.js'
+import { startEventQualityReporter } from './services/eventIngestionService.js'
 
 const app = express()
 const PORT = process.env.PORT || 4000
@@ -69,6 +70,8 @@ const FX_REFRESH_INTERVAL_MS = 60 * 60 * 1000
 setInterval(() => {
   refreshRates().catch(() => null)
 }, FX_REFRESH_INTERVAL_MS).unref()
+
+startEventQualityReporter()
 
 app.use(cors())
 app.use(express.json({ limit: '5mb' }))
