@@ -6,6 +6,8 @@ import { getAdminConfig } from './adminConfigService.js'
 import { canViewAnalytics, canViewAnalyticsAdmin, canViewAnalyticsDashboard, forbiddenError, scopeRecordsForUser } from '../utils/permissions.js'
 import { getPlanForUser } from './entitlementService.js'
 import { getOrderCertificationSummary } from './orderCertificationService.js'
+import { appendAuditLog } from '../utils/auditStore.js'
+import { getAnalyticsGovernanceConfig, sanitizePlatformAnalytics } from './analyticsGovernanceService.js'
 
 const FILE = 'analytics.json'
 const SEARCH_TREND_MIN_EVENTS = 25
@@ -719,7 +721,7 @@ export async function getPlatformAnalytics(user) {
   const proxySearchByCountry = searchDataReady ? topSearchCategoriesByCountry : topCategoriesByCountry
   const proxySearchGlobal = searchDataReady ? topSearchCategoriesGlobal : topCategoriesGlobal
 
-  return {
+  const rawReport = {
     totals: {
       buyer_requests: requirementsRows.length,
       repeat_buyer_rate: repeatBuyerRate,
@@ -736,6 +738,25 @@ export async function getPlatformAnalytics(user) {
     top_search_categories_global: proxySearchGlobal,
     trending_search_categories: trendingCategories,
   }
+
+  const governance = await getAnalyticsGovernanceConfig()
+  const { report, suppression } = sanitizePlatformAnalytics(rawReport, governance)
+
+  appendAuditLog({
+    id: crypto.randomUUID(),
+    at: new Date().toISOString(),
+    actor_id: user?.id || null,
+    actor_role: user?.role || null,
+    action: 'platform_analytics_requested',
+    path: '/analytics/platform',
+    status: 200,
+    payload: {
+      requested_scope: 'platform',
+      suppression_counts: suppression,
+    },
+  }).catch(() => null)
+
+  return report
 }
 
 export async function getPremiumInsights(user) {
