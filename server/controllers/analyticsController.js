@@ -1,4 +1,12 @@
-import { getAnalyticsSummary, getCompanyAnalytics, getDashboardAnalytics, getPlatformAnalytics, getPremiumInsights } from '../services/analyticsService.js'
+import {
+  getAnalyticsSummary,
+  getCompanyAnalytics,
+  getDashboardAnalytics,
+  getPlatformAnalyticsAdmin,
+  getPlatformAnalyticsSegment,
+  getPlatformAnalyticsSummary,
+  getPremiumInsights,
+} from '../services/analyticsService.js'
 import { handleControllerError } from '../utils/permissions.js'
 import { findUserById } from '../services/userService.js'
 import { ensureEntitlement } from '../services/entitlementService.js'
@@ -45,10 +53,34 @@ export async function analyticsCompany(req, res) {
   }
 }
 
-export async function analyticsPlatform(req, res) {
+export async function analyticsPlatformSummary(req, res) {
   try {
-    await authorize(req.user, ACTIONS.ANALYTICS_VIEW_ORG, { scope: 'platform' })
-    const report = await getPlatformAnalytics(req.user)
+    await authorize(req.user, ACTIONS.ANALYTICS_VIEW_ORG, { scope: 'platform_summary' })
+    const report = await getPlatformAnalyticsSummary(req.user)
+    return res.json(report)
+  } catch (error) {
+    return handleError(res, error)
+  }
+}
+
+export async function analyticsPlatformSegment(req, res) {
+  try {
+    await authorize(req.user, ACTIONS.ANALYTICS_VIEW_ORG, { scope: 'platform_segment' })
+    const dimensions = String(req.query?.dimensions || '')
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean)
+    const report = await getPlatformAnalyticsSegment(req.user, { dimensions })
+    return res.json(report)
+  } catch (error) {
+    return handleError(res, error)
+  }
+}
+
+export async function analyticsPlatformAdmin(req, res) {
+  try {
+    await authorize(req.user, ACTIONS.ANALYTICS_VIEW_ORG, { scope: 'platform_admin' })
+    const report = await getPlatformAnalyticsAdmin(req.user, { export: req.query?.export === 'true' })
     return res.json(report)
   } catch (error) {
     return handleError(res, error)

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { apiRequest, getToken } from '../lib/auth'
+import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 
 const ENTERPRISE_PLANS = new Set(['premium', 'enterprise'])
 
@@ -30,6 +30,8 @@ export default function useAnalyticsDashboard() {
         if (!alive) return
         setDashboard(dashboardData)
         setSubscription(subscriptionData)
+        const currentUser = getCurrentUser()
+        const role = String(currentUser?.role || '').toLowerCase()
 
         apiRequest('/analytics/company', { token })
           .then((data) => {
@@ -41,14 +43,24 @@ export default function useAnalyticsDashboard() {
             setCompanyAnalytics(null)
           })
 
-        apiRequest('/analytics/platform', { token })
+        const platformPath = ['owner', 'admin'].includes(role)
+          ? '/analytics/platform/admin'
+          : '/analytics/platform/segment'
+        apiRequest(platformPath, { token })
           .then((data) => {
             if (!alive) return
             setPlatformAnalytics(data)
           })
-          .catch(() => {
+          .catch(async () => {
             if (!alive) return
-            setPlatformAnalytics(null)
+            try {
+              const fallback = await apiRequest('/analytics/platform/summary', { token })
+              if (!alive) return
+              setPlatformAnalytics(fallback)
+            } catch {
+              if (!alive) return
+              setPlatformAnalytics(null)
+            }
           })
 
         apiRequest('/analytics/premium', { token })
