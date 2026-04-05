@@ -12,6 +12,10 @@ export default function AgentDashboard() {
   const [aiSuggestion, setAiSuggestion] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState('')
+  const [aiChecklist, setAiChecklist] = useState([])
+  const [aiExtractedRequirements, setAiExtractedRequirements] = useState({})
+  const [approvalState, setApprovalState] = useState(null)
+  const [sendState, setSendState] = useState(null)
   const [queueSummary, setQueueSummary] = useState({ queue: [] })
 
   async function generateAiReply() {
@@ -22,11 +26,15 @@ export default function AgentDashboard() {
     }
     setAiLoading(true)
     setAiError('')
+    setApprovalState(null)
+    setSendState(null)
     try {
       const prompt = aiPrompt.trim() || 'Draft a short, professional reply for a textile sourcing conversation. Ask for missing MOQ, price range, and lead time if needed.'
-      const res = await apiRequest('/assistant/ask', { method: 'POST', token, body: { question: prompt } })
-      const reply = String(res?.matched_answer || res?.answer || '').trim()
+      const res = await apiRequest('/ai/reply/draft', { method: 'POST', token, body: { text: prompt } })
+      const reply = String(res?.draft || '').trim()
       setAiSuggestion(reply)
+      setAiChecklist(Array.isArray(res?.checklist) ? res.checklist : [])
+      setAiExtractedRequirements(res?.requirements || {})
       if (!aiPrompt.trim()) setAiPrompt(prompt)
     } catch (err) {
       setAiError(err.message || 'Unable to generate suggestion')
@@ -42,6 +50,52 @@ export default function AgentDashboard() {
       setAiError('Copied to clipboard.')
     } catch {
       setAiError('Copy failed.')
+    }
+  }
+
+  async function approveSuggestion() {
+    const token = getToken()
+    if (!token || !aiSuggestion) return
+    setAiLoading(true)
+    setAiError('')
+    try {
+      const res = await apiRequest('/ai/reply/approve', {
+        method: 'POST',
+        token,
+        body: {
+          draft: aiSuggestion,
+          extracted_requirements: aiExtractedRequirements,
+        },
+      })
+      setApprovalState(res)
+      if (!res?.approved) setAiError(res?.reason || 'Approval blocked by guardrails.')
+    } catch (err) {
+      setAiError(err.message || 'Unable to approve suggestion.')
+    } finally {
+      setAiLoading(false)
+    }
+  }
+
+  async function sendSuggestion() {
+    const token = getToken()
+    if (!token || !aiSuggestion) return
+    setAiLoading(true)
+    setAiError('')
+    try {
+      const res = await apiRequest('/ai/reply/send', {
+        method: 'POST',
+        token,
+        body: {
+          draft: aiSuggestion,
+          approval: approvalState || {},
+        },
+      })
+      setSendState(res)
+      if (!res?.sent) setAiError(res?.message || 'Send failed.')
+    } catch (err) {
+      setAiError(err.message || 'Unable to send suggestion.')
+    } finally {
+      setAiLoading(false)
     }
   }
 
@@ -148,14 +202,24 @@ export default function AgentDashboard() {
             {aiError ? <div className="text-xs text-rose-600 mb-2">{aiError}</div> : null}
             {aiSuggestion ? (
               <div className="rounded-lg borderless-shadow bg-slate-50 p-3 text-sm">
-                <p className="whitespace-pre-wrap">{aiSuggestion}</p>
-                <button
-                  type="button"
-                  onClick={copySuggestion}
-                  className="mt-2 text-xs font-semibold text-[#0A66C2] hover:underline"
-                >
-                  Copy suggestion
-                </button>
+                <textarea
+                  className="w-full rounded borderless-shadow bg-white px-2 py-2 whitespace-pre-wrap"
+                  rows={6}
+                  value={aiSuggestion}
+                  onChange={(e) => setAiSuggestion(e.target.value)}
+                />
+                {aiChecklist.length ? (
+                  <div className="mt-2 rounded bg-amber-50 px-2 py-2 text-xs text-amber-700">
+                    Missing-info checklist: {aiChecklist.join(', ')}
+                  </div>
+                ) : null}
+                <div className="mt-2 flex flex-wrap items-center gap-3">
+                  <button type="button" onClick={copySuggestion} className="text-xs font-semibold text-[#0A66C2] hover:underline">Copy suggestion</button>
+                  <button type="button" onClick={approveSuggestion} className="rounded bg-slate-900 px-2 py-1 text-xs font-semibold text-white">Approve draft</button>
+                  <button type="button" onClick={sendSuggestion} className="rounded bg-[#0A66C2] px-2 py-1 text-xs font-semibold text-white">One-click send</button>
+                </div>
+                {approvalState?.status ? <div className="mt-2 text-xs text-slate-600">Approval: {approvalState.status}</div> : null}
+                {sendState?.status ? <div className="mt-1 text-xs text-slate-600">Send status: {sendState.status}</div> : null}
               </div>
             ) : (
               <div className="text-sm text-slate-500">No suggestion yet.</div>

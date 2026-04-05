@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gartexhub.local/schemas/requirements-extraction.json",
+  "title": "CanonicalExtractedRequirements",
+  "type": "object",
+  "required": ["moq", "timeline", "price", "fabric", "compliance"],
+  "properties": {
+    "moq": {
+      "type": ["object", "null"],
+      "required": ["value", "unit", "raw"],
+      "properties": {
+        "value": { "type": "number", "minimum": 1 },
+        "unit": { "type": "string", "enum": ["pcs", "pieces", "units", "sets"] },
+        "raw": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false,
+      "x-normalization": [
+        "Convert unit aliases to canonical units (pcs, pieces, units, sets).",
+        "Trim whitespace and keep only one raw source span."
+      ]
+    },
+    "timeline": {
+      "type": ["object", "null"],
+      "required": ["value", "unit", "normalized_days", "raw"],
+      "properties": {
+        "value": { "type": "number", "minimum": 1 },
+        "unit": { "type": "string", "enum": ["day", "days", "week", "weeks"] },
+        "normalized_days": { "type": "number", "minimum": 1 },
+        "raw": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false,
+      "x-normalization": [
+        "Normalize timeline to integer day count in normalized_days.",
+        "weeks => value * 7."
+      ]
+    },
+    "price": {
+      "type": ["object", "null"],
+      "required": ["min", "max", "currency", "unit", "raw"],
+      "properties": {
+        "min": { "type": "number", "minimum": 0 },
+        "max": { "type": "number", "minimum": 0 },
+        "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+        "unit": { "type": "string" },
+        "raw": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false,
+      "x-normalization": [
+        "Normalize currency symbols ($, €, £) to ISO code.",
+        "If single value is provided, set min=max=value."
+      ]
+    },
+    "fabric": {
+      "type": ["object", "null"],
+      "required": ["material", "composition", "gsm", "raw"],
+      "properties": {
+        "material": { "type": ["string", "null"] },
+        "composition": { "type": "string" },
+        "gsm": { "type": ["number", "null"], "minimum": 1 },
+        "raw": { "type": "string" }
+      },
+      "additionalProperties": false,
+      "x-normalization": [
+        "Lowercase material names and trim composition string.",
+        "Parse numeric GSM when present (e.g. 180 gsm => 180)."
+      ]
+    },
+    "compliance": {
+      "type": ["object", "null"],
+      "required": ["certifications", "notes", "raw"],
+      "properties": {
+        "certifications": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "notes": { "type": "string" },
+        "raw": { "type": "string" }
+      },
+      "additionalProperties": false,
+      "x-normalization": [
+        "Map certification aliases to canonical names (e.g. Oekotex => OEKO-TEX).",
+        "Sort certifications alphabetically for deterministic output."
+      ]
+    },
+    "missing_fields": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["moq", "timeline", "price", "fabric", "compliance"]
+      },
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": false,
+  "x-validation-rules": [
+    "price.min must be <= price.max.",
+    "timeline.normalized_days must be computed whenever timeline exists.",
+    "All root required keys must exist, and may be null when not extractable."
+  ],
+  "x-optional-fields": ["missing_fields"]
+}

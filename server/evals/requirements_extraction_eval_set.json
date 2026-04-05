@@ -1,0 +1,41 @@
+[
+  {
+    "id": "garments-basic",
+    "category": "garments",
+    "text": "Need 5000 pcs men's polo shirts in 100% cotton 180 gsm. Target price USD 4.5-5.2 FOB. Lead time 45 days. Compliance: BSCI and WRAP.",
+    "expected": {
+      "moq": 5000,
+      "timeline_days": 45,
+      "price_min": 4.5,
+      "price_max": 5.2,
+      "fabric_material": "cotton",
+      "certifications": ["BSCI", "WRAP"]
+    }
+  },
+  {
+    "id": "textile-fabric-roll",
+    "category": "textile",
+    "text": "MOQ 1200 units. Fabric polyester 220 gsm. Budget $2.2 to 2.8. delivery in 6 weeks. Need OEKO-TEX.",
+    "expected": {
+      "moq": 1200,
+      "timeline_days": 42,
+      "price_min": 2.2,
+      "price_max": 2.8,
+      "fabric_material": "polyester",
+      "certifications": ["OEKO-TEX"]
+    }
+  },
+  {
+    "id": "sweater-wool",
+    "category": "garments",
+    "text": "Looking for 3000 pcs wool blend sweaters, target FOB EUR 8.5, lead time 60 days, SA8000 requested.",
+    "expected": {
+      "moq": 3000,
+      "timeline_days": 60,
+      "price_min": 8.5,
+      "price_max": 8.5,
+      "fabric_material": "wool",
+      "certifications": ["SA8000"]
+    }
+  }
+]
