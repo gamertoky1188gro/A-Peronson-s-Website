@@ -91,6 +91,9 @@ model Requirement {
   quantity               String?
   moq                    String?
   price_range            String?
+  priceOriginal          Float?
+  currencyOriginal       String?
+  priceNormalizedBase    Float?
   material               String?
   fabric_gsm             String?
   timeline_days          String?
@@ -138,6 +141,9 @@ model Product {
   material               String?
   moq                    String?
   price_range            String?
+  priceOriginal          Float?
+  currencyOriginal       String?
+  priceNormalizedBase    Float?
   lead_time_days         String?
   fabric_gsm             String?
   size_range             String?
@@ -161,6 +167,29 @@ model Product {
   updated_at             DateTime?
 
   @@map("company_products")
+}
+
+model FxRate {
+  id        String   @id @default(cuid())
+  base      String
+  quote     String
+  rate      Float
+  source    String
+  fetchedAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@unique([base, quote], name: "fx_base_quote")
+  @@index([expiresAt])
+  @@map("fx_rates")
+}
+
+model CurrencyConfig {
+  id                   String @id @default("default")
+  defaultBaseCurrency  String @default("USD")
+  staleThresholdHours  Int    @default(24)
+  updatedAt            DateTime @updatedAt
+
+  @@map("currency_config")
 }
 
 model Message {

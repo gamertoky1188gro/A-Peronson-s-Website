@@ -1,6 +1,7 @@
 import { Client } from '@opensearch-project/opensearch'
 import { getAdminConfig } from './adminConfigService.js'
 import { readJson } from '../utils/jsonStore.js'
+import { getBaseCurrency, normalizeMoney } from './currencyService.js'
 
 const CONFIG_TTL_MS = 15000
 const RESPONSE_CACHE_TTL_MS = 10 * 60 * 1000
@@ -151,6 +152,9 @@ function productMappings() {
       moq_value: { type: 'double' },
       price_min: { type: 'double' },
       price_max: { type: 'double' },
+      price_base_min: { type: 'double' },
+      price_base_max: { type: 'double' },
+      base_currency: { type: 'keyword' },
       lead_time_days: { type: 'double' },
       fabric_gsm: { type: 'double' },
       created_at: { type: 'date' },
@@ -192,6 +196,9 @@ function requirementMappings() {
       moq_value: { type: 'double' },
       price_min: { type: 'double' },
       price_max: { type: 'double' },
+      price_base_min: { type: 'double' },
+      price_base_max: { type: 'double' },
+      base_currency: { type: 'keyword' },
       lead_time_days: { type: 'double' },
       fabric_gsm: { type: 'double' },
       created_at: { type: 'date' },
@@ -315,6 +322,14 @@ async function buildResponseTimeByOwner() {
 
 async function buildProductDoc(product, author = {}, responseMap = null) {
   const priceRange = parseRangeValue(product.price_range || '')
+  const baseCurrency = await getBaseCurrency()
+  const originalCurrency = normalizeKeyword(product.currencyOriginal || product.currency || baseCurrency).toUpperCase()
+  const priceBaseMin = priceRange.min !== null
+    ? (await normalizeMoney(priceRange.min, originalCurrency, baseCurrency)).amount
+    : (Number.isFinite(Number(product.priceNormalizedBase)) ? Number(product.priceNormalizedBase) : null)
+  const priceBaseMax = priceRange.max !== null
+    ? (await normalizeMoney(priceRange.max, originalCurrency, baseCurrency)).amount
+    : (Number.isFinite(Number(product.priceNormalizedBase)) ? Number(product.priceNormalizedBase) : null)
   const moqValue = parseNumberLike(product.moq)
   const leadTime = parseNumberLike(product.lead_time_days || author.lead_time_days)
   const fabricGsm = parseNumberLike(product.fabric_gsm)
@@ -342,6 +357,9 @@ async function buildProductDoc(product, author = {}, responseMap = null) {
     moq_value: moqValue,
     price_min: priceRange.min,
     price_max: priceRange.max,
+    price_base_min: priceBaseMin,
+    price_base_max: priceBaseMax,
+    base_currency: baseCurrency,
     lead_time_days: leadTime,
     fabric_gsm: fabricGsm,
     created_at: product.created_at || new Date().toISOString(),
@@ -374,6 +392,14 @@ function shouldIndexProduct(product) {
 
 async function buildRequirementDoc(req, author = {}, responseMap = null) {
   const priceRange = parseRangeValue(req.price_range || req.target_price || '')
+  const baseCurrency = await getBaseCurrency()
+  const originalCurrency = normalizeKeyword(req.currencyOriginal || req.currency || baseCurrency).toUpperCase()
+  const priceBaseMin = priceRange.min !== null
+    ? (await normalizeMoney(priceRange.min, originalCurrency, baseCurrency)).amount
+    : (Number.isFinite(Number(req.priceNormalizedBase)) ? Number(req.priceNormalizedBase) : null)
+  const priceBaseMax = priceRange.max !== null
+    ? (await normalizeMoney(priceRange.max, originalCurrency, baseCurrency)).amount
+    : (Number.isFinite(Number(req.priceNormalizedBase)) ? Number(req.priceNormalizedBase) : null)
   const moqValue = parseNumberLike(req.moq || req.quantity)
   const leadTime = parseNumberLike(req.timeline_days || req.delivery_timeline || '')
   const fabricGsm = parseNumberLike(req.fabric_gsm)
@@ -403,6 +429,9 @@ async function buildRequirementDoc(req, author = {}, responseMap = null) {
     moq_value: moqValue,
     price_min: priceRange.min,
     price_max: priceRange.max,
+    price_base_min: priceBaseMin,
+    price_base_max: priceBaseMax,
+    base_currency: baseCurrency,
     lead_time_days: leadTime,
     fabric_gsm: fabricGsm,
     created_at: req.created_at || new Date().toISOString(),
@@ -568,9 +597,9 @@ export async function searchOpenSearch({
   const moqFilter = buildRangeFilter('moq_value', moqRange)
   if (moqFilter) filter.push(moqFilter)
 
-  const priceRange = parseRangeValue(filters.priceRange)
-  const priceMinFilter = buildRangeFilter('price_min', priceRange)
-  const priceMaxFilter = buildRangeFilter('price_max', priceRange)
+  const priceRange = parseRangeValue(filters.priceRangeBase || filters.priceRange)
+  const priceMinFilter = buildRangeFilter('price_base_min', priceRange)
+  const priceMaxFilter = buildRangeFilter('price_base_max', priceRange)
   if (priceMinFilter) filter.push(priceMinFilter)
   if (priceMaxFilter) filter.push(priceMaxFilter)
 

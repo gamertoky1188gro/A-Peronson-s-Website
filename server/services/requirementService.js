@@ -7,6 +7,7 @@ import { recordMilestone } from './ratingsService.js'
 import { moderateTextOrRedact } from './policyService.js'
 import { getPlanForUser } from './entitlementService.js'
 import { indexRequirement, deleteRequirementIndex } from './openSearchService.js'
+import { extractOriginalPrice, getBaseCurrency, normalizeMoney } from './currencyService.js'
 
 const FILE = 'requirements.json'
 
@@ -238,6 +239,12 @@ function normalizeRequirement(buyerId, payload) {
 export async function createRequirement(buyerId, payload) {
   const requirements = await readJson(FILE)
   const requirement = normalizeRequirement(buyerId, payload)
+  const baseCurrency = await getBaseCurrency()
+  const originalPrice = extractOriginalPrice(payload)
+  const normalizedPrice = await normalizeMoney(originalPrice.priceOriginal, originalPrice.currencyOriginal, baseCurrency)
+  requirement.priceOriginal = originalPrice.priceOriginal
+  requirement.currencyOriginal = originalPrice.currencyOriginal
+  requirement.priceNormalizedBase = normalizedPrice.amount
   const plan = await getPlanForUser({ id: buyerId })
   if (plan === 'premium') {
     requirement.priority_tier = 'priority'
@@ -398,6 +405,18 @@ export async function updateRequirement(requirementId, patch, actor) {
     priority_tier: patch.priority_tier !== undefined ? sanitizeString(patch.priority_tier || '', 40) : (previous.priority_tier || ''),
     priority_until: patch.priority_until !== undefined ? normalizeDate(patch.priority_until) : (previous.priority_until || null),
   }
+
+  const baseCurrency = await getBaseCurrency()
+  const originalPrice = extractOriginalPrice({
+    priceOriginal: patch.priceOriginal !== undefined ? patch.priceOriginal : previous.priceOriginal,
+    currencyOriginal: patch.currencyOriginal !== undefined ? patch.currencyOriginal : previous.currencyOriginal,
+    currency: patch.currency !== undefined ? patch.currency : previous.currencyOriginal,
+    price_range: next.price_range,
+  })
+  const normalizedPrice = await normalizeMoney(originalPrice.priceOriginal, originalPrice.currencyOriginal, baseCurrency)
+  next.priceOriginal = originalPrice.priceOriginal
+  next.currencyOriginal = originalPrice.currencyOriginal
+  next.priceNormalizedBase = normalizedPrice.amount
 
   assertRequiredFields({
     ...next,

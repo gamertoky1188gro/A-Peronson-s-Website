@@ -116,9 +116,9 @@ function safeNumber(value) {
   return Number.isFinite(n) ? n : null
 }
 
-function bucketPrice(value) {
-  const n = safeNumber(value)
-  if (n === null) return 'unknown'
+function bucketNormalizedPrice(value) {
+  const n = Number(value)
+  if (!Number.isFinite(n) || n < 0) return 'unknown'
   if (n <= 5) return '0-5'
   if (n <= 10) return '5-10'
   if (n <= 20) return '10-20'
@@ -160,29 +160,6 @@ function computeResponseTimesForOrg(messages = [], orgMemberIds = new Set()) {
 
   const avg = responseTimes.length ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length : 0
   return { avg_hours: avg, formatted: formatHours(avg) }
-}
-
-function parseNumericRange(value) {
-  const raw = String(value || '')
-  if (!raw) return { min: null, max: null }
-  const matches = raw.match(/\d+(\.\d+)?/g)
-  if (!matches || matches.length === 0) return { min: null, max: null }
-  const nums = matches.map((n) => Number(n)).filter((n) => Number.isFinite(n))
-  if (!nums.length) return { min: null, max: null }
-  const min = nums[0] ?? null
-  const max = nums[1] ?? nums[0] ?? null
-  return { min, max }
-}
-
-function bucketPriceRange(value) {
-  const { min, max } = parseNumericRange(value)
-  const ref = min ?? max
-  if (ref === null || !Number.isFinite(ref)) return 'unknown'
-  if (ref <= 5) return '0-5'
-  if (ref <= 10) return '5-10'
-  if (ref <= 20) return '10-20'
-  if (ref <= 50) return '20-50'
-  return '50+'
 }
 
 export async function getDashboardAnalytics(user) {
@@ -634,7 +611,7 @@ export async function getPlatformAnalytics(user) {
     byCountry[country][category] = (byCountry[country][category] || 0) + 1
     globalCategories[category] = (globalCategories[category] || 0) + 1
 
-    const bucket = bucketPriceRange(req.price_range || req.priceRange || '')
+    const bucket = bucketNormalizedPrice(req.priceNormalizedBase)
     priceBuckets[bucket] = (priceBuckets[bucket] || 0) + 1
   }
 
@@ -801,7 +778,7 @@ export async function getPremiumInsights(user) {
     }, {})
 
     const priceBuckets = myRequests.reduce((acc, r) => {
-      const bucket = bucketPrice(r.price_range || '')
+      const bucket = bucketNormalizedPrice(r.priceNormalizedBase)
       acc[bucket] = (acc[bucket] || 0) + 1
       return acc
     }, {})

@@ -14,6 +14,7 @@ import { ensureEntitlement } from '../services/entitlementService.js'
 import { generateMatchesForRequirement, listMatchesForRequirement } from '../services/matchingService.js'
 import { getOrderCertificationMap } from '../services/orderCertificationService.js'
 import { isOpenSearchConfigured, searchOpenSearch } from '../services/openSearchService.js'
+import { getBaseCurrency, normalizeMoney } from '../services/currencyService.js'
 
 function redactRequirementForBuyer(requirement) {
   return {
@@ -115,6 +116,14 @@ function rangesOverlap(filterRange, valueRange) {
 
   if (fMin !== null && vMax !== null && vMax < fMin) return false
   if (fMax !== null && vMin !== null && vMin > fMax) return false
+  return true
+}
+
+function numberInsideRange(value, rangeRaw) {
+  const range = parseRange(rangeRaw)
+  if (!Number.isFinite(value)) return false
+  if (range.min !== null && value < range.min) return false
+  if (range.max !== null && value > range.max) return false
   return true
 }
 
@@ -403,6 +412,7 @@ export async function searchRequirements(req, res) {
   const verifiedOnly = req.query.verifiedOnly === 'true'
   const moqRange = String(req.query.moqRange || '').trim()
   const priceRange = String(req.query.priceRange || '').trim()
+  const priceCurrency = String(req.query.priceCurrency || req.query.currency || '').trim().toUpperCase()
   const wantedCategories = parseList(req.query.category)
   const wantedIncoterms = parseList(req.query.incoterms)
   const wantedPaymentTerms = parseList(req.query.paymentTerms)
@@ -435,6 +445,19 @@ export async function searchRequirements(req, res) {
   const locationLat = parseCoordinate(req.query.locationLat)
   const locationLng = parseCoordinate(req.query.locationLng)
   const distanceFilterActive = distanceKm !== null && locationLat !== null && locationLng !== null
+  const baseCurrency = await getBaseCurrency()
+  let fxStale = false
+  let priceRangeBase = ''
+  if (priceRange) {
+    const parsed = parseRange(priceRange)
+    const fromCurrency = priceCurrency || baseCurrency
+    const minConv = parsed.min === null ? { amount: null, fx_stale: false } : await normalizeMoney(parsed.min, fromCurrency, baseCurrency)
+    const maxConv = parsed.max === null ? { amount: null, fx_stale: false } : await normalizeMoney(parsed.max, fromCurrency, baseCurrency)
+    fxStale = Boolean(minConv.fx_stale || maxConv.fx_stale || (parsed.min !== null && minConv.amount === null) || (parsed.max !== null && maxConv.amount === null))
+    const minText = minConv.amount !== null ? String(minConv.amount) : ''
+    const maxText = maxConv.amount !== null ? String(maxConv.amount) : ''
+    priceRangeBase = [minText, maxText].filter((v, idx) => v || idx === 0).join('-')
+  }
 
   const openSearchReady = await isOpenSearchConfigured()
   const openSearchResult = openSearchReady
@@ -451,7 +474,7 @@ export async function searchRequirements(req, res) {
         verifiedOnly,
         category: wantedCategories,
         moqRange,
-        priceRange,
+        priceRangeBase: priceRangeBase || priceRange,
         leadTimeMax,
         gsmMin,
         gsmMax,
@@ -581,7 +604,11 @@ export async function searchRequirements(req, res) {
       if (wantedCountry && String(r.author?.country || '').toLowerCase() !== wantedCountry) return false
       if (verifiedOnly && !r.author?.verified) return false
       if (moqRange && !matchesMoqRange(moqRange, r.moq || r.quantity)) return false
-      if (priceRange && !rangesOverlap(priceRange, r.price_range || '')) return false
+      if (priceRangeBase) {
+        if (Number.isFinite(Number(r.priceNormalizedBase))) {
+          if (!numberInsideRange(Number(r.priceNormalizedBase), priceRangeBase)) return false
+        } else if (!rangesOverlap(priceRange, r.price_range || '')) return false
+      }
       if (wantedIncoterms.length > 0) {
         const incoterm = String(r.incoterms || '').toLowerCase()
         const hit = wantedIncoterms.some((term) => incoterm.includes(term))
@@ -807,5 +834,10 @@ export async function searchRequirements(req, res) {
       plan,
       quota: quotaUse.quota,
     }),
+    fx: {
+      base_currency: baseCurrency,
+      filter_currency: priceCurrency || baseCurrency,
+      fx_stale: fxStale,
+    },
   })
 }
