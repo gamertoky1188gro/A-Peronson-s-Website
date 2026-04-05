@@ -12,6 +12,7 @@ export default function AgentDashboard() {
   const [aiSuggestion, setAiSuggestion] = useState('')
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState('')
+  const [queueSummary, setQueueSummary] = useState({ queue: [] })
 
   async function generateAiReply() {
     const token = getToken()
@@ -41,6 +42,17 @@ export default function AgentDashboard() {
       setAiError('Copied to clipboard.')
     } catch {
       setAiError('Copy failed.')
+    }
+  }
+
+  async function refreshQueueSummary() {
+    const token = getToken()
+    if (!token) return
+    try {
+      const queueData = await apiRequest('/org/operations/queue', { token })
+      setQueueSummary({ queue: queueData?.queue || [] })
+    } catch {
+      setQueueSummary({ queue: [] })
     }
   }
 
@@ -99,7 +111,15 @@ export default function AgentDashboard() {
                 <div className="text-sm text-[#5A5A5A]">Partner factories connected: {totals.partner_network ?? 0}</div>
               </div>
             ) : (
-              <LeadManager title="My Leads (CRM)" allowAssign={false} />
+              <div className="space-y-3">
+                <div className="rounded-lg bg-slate-50 p-3 text-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <p>Queue ownership: <strong>{queueSummary.queue.length}</strong> leads</p>
+                    <button type="button" className="text-xs px-2 py-1 rounded bg-white borderless-shadow" onClick={refreshQueueSummary}>Refresh queue</button>
+                  </div>
+                </div>
+                <LeadManager title="My Leads (CRM)" allowAssign={false} showOperations />
+              </div>
             )}
           </div>
 
@@ -147,4 +167,3 @@ export default function AgentDashboard() {
     </div>
   )
 }
-

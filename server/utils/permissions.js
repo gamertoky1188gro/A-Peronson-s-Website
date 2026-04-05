@@ -48,6 +48,21 @@ export function canManageMembers(user) {
   return MEMBER_MANAGER_ROLES.has(user?.role)
 }
 
+export function canManageOrgPolicies(user) {
+  if (isOwnerOrAdmin(user)) return true
+  return Boolean(user?.permission_matrix?.org_operations?.policy_admin)
+}
+
+export function canManageOrgQueue(user) {
+  if (isOwnerOrAdmin(user)) return true
+  return Boolean(user?.permission_matrix?.org_operations?.queue_manager)
+}
+
+export function canManageLeadAssignments(user) {
+  if (isOwnerOrAdmin(user)) return true
+  return Boolean(user?.permission_matrix?.org_operations?.assignment_manager)
+}
+
 export function canViewAnalytics(user) {
   return isOwnerOrAdmin(user) || hasRole(user, 'buying_house', 'factory', 'buyer', 'agent')
 }
