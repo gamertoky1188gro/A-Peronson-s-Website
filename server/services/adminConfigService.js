@@ -65,6 +65,13 @@ const DEFAULT_CONFIG = {
   },
   analytics: {
     search_min_events: 25,
+    governance: {
+      enabled: true,
+      min_cohort_size: 10,
+      geo_granularity: 'country',
+      retention_days: 365,
+      export_allowed_roles: ['admin', 'owner'],
+    },
   },
   support: {
     sla_targets: {
