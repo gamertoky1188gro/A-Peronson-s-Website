@@ -10,6 +10,7 @@ import { trackEvent } from './eventTrackingService.js'
 const LEADS_FILE = 'leads.json'
 const NOTES_FILE = 'lead_notes.json'
 const REMINDERS_FILE = 'lead_reminders.json'
+const ASSIGNMENTS_FILE = 'lead_assignments.json'
 const USERS_FILE = 'users.json'
 const REQUIREMENTS_FILE = 'requirements.json'
 const USE_SQL_CRM = isCrmSqlEnabled()
@@ -435,7 +436,7 @@ export async function updateLead(actor, leadId, patch = {}) {
       if (!assignedAgent) throw forbiddenError()
     }
 
-    return prisma.lead.update({
+    const updated = await prisma.lead.update({
       where: { id },
       data: {
         status: patch.status !== undefined ? normalizeStatus(patch.status, current.status || 'new') : current.status,
@@ -443,6 +444,31 @@ export async function updateLead(actor, leadId, patch = {}) {
         updated_at: new Date(),
       },
     })
+    if (!isAgent(actor) && patch.assigned_agent_id !== undefined && String(current.assigned_agent_id || '') !== String(updated.assigned_agent_id || '')) {
+      const now = new Date()
+      await prisma.leadAssignment.create({
+        data: {
+          id: crypto.randomUUID(),
+          lead_id: updated.id,
+          org_owner_id: updated.org_owner_id,
+          assigned_by: String(actor.id || ''),
+          assigned_to: updated.assigned_agent_id || null,
+          previous_assignee: current.assigned_agent_id || null,
+          reason: sanitizeString(String(patch.assignment_reason || 'manual_assignment'), 180) || 'manual_assignment',
+          assigned_at: now,
+          created_at: now,
+        },
+      })
+      await trackEvent({
+        type: 'lead_reassigned',
+        actor_id: String(actor.id || ''),
+        entity_id: updated.id,
+        entityType: 'lead',
+        metadata: { org_owner_id: updated.org_owner_id, assigned_to: updated.assigned_agent_id || '' },
+        allowUnknownTypes: true,
+      })
+    }
+    return updated
   }
 
   const leads = await readStore(LEADS_FILE)
@@ -462,6 +488,29 @@ export async function updateLead(actor, leadId, patch = {}) {
 
   leads[idx] = next
   await writeJson(LEADS_FILE, leads)
+  if (!isAgent(actor) && patch.assigned_agent_id !== undefined && String(current.assigned_agent_id || '') !== String(next.assigned_agent_id || '')) {
+    const assignments = await readStore(ASSIGNMENTS_FILE)
+    assignments.push({
+      id: crypto.randomUUID(),
+      lead_id: next.id,
+      org_owner_id: next.org_owner_id,
+      assigned_by: String(actor.id || ''),
+      assigned_to: next.assigned_agent_id || '',
+      previous_assignee: current.assigned_agent_id || '',
+      reason: sanitizeString(String(patch.assignment_reason || 'manual_assignment'), 180) || 'manual_assignment',
+      assigned_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+    })
+    await writeJson(ASSIGNMENTS_FILE, assignments)
+    await trackEvent({
+      type: 'lead_reassigned',
+      actor_id: String(actor.id || ''),
+      entity_id: next.id,
+      entityType: 'lead',
+      metadata: { org_owner_id: next.org_owner_id, assigned_to: next.assigned_agent_id || '' },
+      allowUnknownTypes: true,
+    })
+  }
   return next
 }
 

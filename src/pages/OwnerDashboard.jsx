@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import useAnalyticsDashboard from '../hooks/useAnalyticsDashboard'
 import LeadManager from '../components/leads/LeadManager'
+import { apiRequest, getToken } from '../lib/auth'
 
 function SeriesList({ title, items }) {
   return (
@@ -26,8 +27,17 @@ function SeriesList({ title, items }) {
 export default function OwnerDashboard() {
   const [active, setActive] = useState('home')
   const { dashboard, subscription, isEnterprise, loading, error } = useAnalyticsDashboard()
+  const [policy, setPolicy] = useState(null)
 
   const totals = dashboard?.totals || {}
+
+  useEffect(() => {
+    const token = getToken()
+    if (!token) return
+    apiRequest('/org/operations/policies', { token })
+      .then(setPolicy)
+      .catch(() => null)
+  }, [])
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-500 dark:bg-[#020617] dark:text-slate-100">
@@ -71,7 +81,19 @@ export default function OwnerDashboard() {
           {active === 'requests' && <div className="bg-white rounded-xl shadow-md p-4"><h3 className="font-semibold mb-2">Buyer Requests</h3><p className="text-sm text-[#5A5A5A]">Total: {totals.buyer_requests ?? 0} | Open: {totals.open_buyer_requests ?? 0}</p></div>}
           {active === 'chats' && <div className="bg-white rounded-xl shadow-md p-4"><h3 className="font-semibold mb-2">Chats</h3><p className="text-sm text-[#5A5A5A]">Active chat threads: {totals.chats ?? 0}. Messages sent: {totals.messages ?? 0}.</p></div>}
           {active === 'network' && <div className="bg-white rounded-xl shadow-md p-4"><h3 className="font-semibold mb-2">Partner Network</h3><p className="text-sm text-[#5A5A5A]">Connected factory partners: {totals.partner_network ?? 0}. Total factory profiles: {totals.factories ?? 0}.</p></div>}
-          {active === 'leads' && <LeadManager title="Leads (CRM)" allowAssign />}
+          {active === 'leads' && (
+            <div className="space-y-4">
+              {policy ? (
+                <div className="bg-white rounded-xl shadow-md p-4 text-sm text-slate-700">
+                  <h3 className="font-semibold mb-2">Org Operations Policy</h3>
+                  <p>Assignment strategy: <strong>{policy.assignment_strategy}</strong></p>
+                  <p>SLA response target: <strong>{policy?.sla_targets?.response_minutes} min</strong></p>
+                  <p>Escalation breach window: <strong>{policy?.escalation_windows?.breach_minutes} min</strong></p>
+                </div>
+              ) : null}
+              <LeadManager title="Leads (CRM)" allowAssign showOperations />
+            </div>
+          )}
           {active === 'contracts' && <div className="bg-white rounded-xl shadow-md p-4"><h3 className="font-semibold mb-2">Contracts Vault</h3><p className="text-sm text-[#5A5A5A]">Contracts uploaded: {totals.contracts ?? 0}. Total documents: {totals.documents ?? 0}.</p></div>}
 
           {active === 'insights' && (
@@ -91,4 +113,3 @@ export default function OwnerDashboard() {
     </div>
   )
 }
-
