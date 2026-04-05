@@ -8,6 +8,7 @@ import { isAgent, isOwnerOrAdmin } from '../utils/permissions.js'
 import { getAdminConfig } from './adminConfigService.js'
 import { getPlanForUser } from './entitlementService.js'
 import { indexProduct, deleteProductIndex } from './openSearchService.js'
+import { extractOriginalPrice, getBaseCurrency, normalizeMoney } from './currencyService.js'
 
 const FILE = 'company_products.json'
 const PROHIBITED_MEDIA_KEYWORDS = ['porn', 'explicit', 'nudity', 'violence', 'weapon', 'drugs', 'hate']
@@ -428,6 +429,13 @@ export async function createProduct(user, payload) {
     created_at: new Date().toISOString(),
   }
 
+  const baseCurrency = await getBaseCurrency()
+  const originalPrice = extractOriginalPrice(payload)
+  const normalizedPrice = await normalizeMoney(originalPrice.priceOriginal, originalPrice.currencyOriginal, baseCurrency)
+  row.priceOriginal = originalPrice.priceOriginal
+  row.currencyOriginal = originalPrice.currencyOriginal
+  row.priceNormalizedBase = normalizedPrice.amount
+
   // Trust & safety (project.md): strip outside-contact sharing / obscene content from descriptions.
   try {
     const moderated = await moderateTextOrRedact({
@@ -600,6 +608,18 @@ export async function updateProductById(actor, productId, patch = {}) {
     content_reviewed_by: 'system',
     updated_at: new Date().toISOString(),
   }
+
+  const baseCurrency = await getBaseCurrency()
+  const originalPrice = extractOriginalPrice({
+    priceOriginal: patch.priceOriginal !== undefined ? patch.priceOriginal : existing.priceOriginal,
+    currencyOriginal: patch.currencyOriginal !== undefined ? patch.currencyOriginal : existing.currencyOriginal,
+    currency: patch.currency !== undefined ? patch.currency : existing.currencyOriginal,
+    price_range: next.price_range,
+  })
+  const normalizedPrice = await normalizeMoney(originalPrice.priceOriginal, originalPrice.currencyOriginal, baseCurrency)
+  next.priceOriginal = originalPrice.priceOriginal
+  next.currencyOriginal = originalPrice.currencyOriginal
+  next.priceNormalizedBase = normalizedPrice.amount
 
   all[idx] = next
   await writeJson(FILE, all)
