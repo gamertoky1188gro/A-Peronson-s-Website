@@ -62,6 +62,21 @@ import {
   listWalletLedgerAdmin,
   listWalletHistoryAdmin,
 } from '../controllers/adminOpsController.js'
+import {
+  applyGovernanceEnforcementController,
+  createGovernancePolicyVersionController,
+  evaluateTrustController,
+  fileGovernanceAppealController,
+  generateGovernanceMonthlyReportController,
+  listGovernanceEnforcementHistoryController,
+  listGovernancePoliciesController,
+  listGovernanceTemplateController,
+  resolveGovernanceAppealController,
+  saveGovernanceTemplateController,
+  simulateGovernancePolicyController,
+  trustSignalsController,
+  upsertGovernancePolicyController,
+} from '../controllers/governanceController.js'
 
 const router = Router()
 
@@ -122,6 +137,20 @@ router.get('/integrations/status', requireAuth, requireAdminSecurity, adminAudit
 router.get('/integrations/opensearch/status', requireAuth, requireAdminSecurity, adminAuditLogger(), integrationOpenSearchStatusController)
 router.get('/integrations/email/status', requireAuth, requireAdminSecurity, adminAuditLogger(), integrationEmailStatusController)
 router.post('/integrations/actions', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), integrationActionController)
+
+router.get('/governance/policies', requireAuth, requireAdminSecurity, adminAuditLogger(), listGovernancePoliciesController)
+router.post('/governance/policies', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), upsertGovernancePolicyController)
+router.post('/governance/policy-versions', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), createGovernancePolicyVersionController)
+router.post('/governance/simulate', requireAuth, requireAdminSecurity, adminAuditLogger(), simulateGovernancePolicyController)
+router.get('/governance/trust/signals', requireAuth, requireAdminSecurity, adminAuditLogger(), trustSignalsController)
+router.post('/governance/trust/evaluate', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), evaluateTrustController)
+router.post('/governance/enforcement/apply', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), applyGovernanceEnforcementController)
+router.get('/governance/enforcement/history', requireAuth, requireAdminSecurity, adminAuditLogger(), listGovernanceEnforcementHistoryController)
+router.get('/governance/templates', requireAuth, requireAdminSecurity, adminAuditLogger(), listGovernanceTemplateController)
+router.post('/governance/templates', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), saveGovernanceTemplateController)
+router.post('/governance/appeals', requireAuth, adminAuditLogger(), fileGovernanceAppealController)
+router.post('/governance/appeals/resolve', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), resolveGovernanceAppealController)
+router.post('/governance/reports/monthly', requireAuth, requireAdminSecurity, adminAuditLogger(), generateGovernanceMonthlyReportController)
 
 router.get('/master', requireAuth, requireAdminSecurity, adminAuditLogger(), adminMasterOverviewController)
 router.post('/actions', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger({

@@ -931,3 +931,145 @@ model OrgMembershipAudit {
   @@index([org_id, created_at])
   @@map("org_membership_audit")
 }
+
+model PolicyDefinition {
+  id          String   @id
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  created_by  String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime?
+  versions    PolicyVersion[]
+
+  @@map("policy_definitions")
+}
+
+model PolicyVersion {
+  id                   String   @id
+  policy_definition_id String
+  version              Int
+  status               String   @default("draft")
+  effective_from       DateTime
+  effective_to         DateTime?
+  rules                Json?
+  created_by           String?
+  created_at           DateTime @default(now())
+  updated_at           DateTime?
+  policy               PolicyDefinition @relation(fields: [policy_definition_id], references: [id], onDelete: Cascade)
+  scopes               PolicyRuleScope[]
+
+  @@unique([policy_definition_id, version], name: "policy_definition_version")
+  @@index([effective_from, effective_to])
+  @@map("policy_versions")
+}
+
+model PolicyRuleScope {
+  id                String   @id
+  policy_version_id String
+  scope_type        String
+  scope_value       String
+  created_at        DateTime @default(now())
+  policy_version    PolicyVersion @relation(fields: [policy_version_id], references: [id], onDelete: Cascade)
+
+  @@index([scope_type, scope_value])
+  @@map("policy_rule_scopes")
+}
+
+model TrustRiskEvaluation {
+  id                   String   @id
+  user_id              String
+  role                 String?
+  trust_score          Float
+  verification_recency Float
+  dispute_history      Float
+  suspicious_messaging Float
+  contract_breach      Float
+  decision             String?
+  signals              Json?
+  created_at           DateTime @default(now())
+
+  @@index([user_id, created_at])
+  @@map("trust_risk_evaluations")
+}
+
+model GovernanceEnforcement {
+  id                   String   @id
+  user_id              String
+  evaluation_id        String?
+  policy_definition_id String?
+  policy_version_id    String?
+  action               String
+  reason               String?
+  status               String   @default("applied")
+  metadata             Json?
+  expires_at           DateTime?
+  created_by           String?
+  created_at           DateTime @default(now())
+  updated_at           DateTime?
+
+  @@index([user_id, created_at])
+  @@index([action, created_at])
+  @@map("governance_enforcements")
+}
+
+model GovernanceManualReviewQueue {
+  id             String   @id
+  enforcement_id String?
+  user_id        String
+  status         String   @default("open")
+  priority       String   @default("normal")
+  reason         String?
+  payload        Json?
+  assigned_to    String?
+  resolved_at    DateTime?
+  created_at     DateTime @default(now())
+  updated_at     DateTime?
+
+  @@index([status, priority])
+  @@index([user_id, created_at])
+  @@map("governance_manual_review_queue")
+}
+
+model GovernanceNotificationTemplate {
+  id           String   @id
+  template_key String   @unique
+  channel      String   @default("in_app")
+  subject      String
+  body         String
+  active       Boolean  @default(true)
+  created_by   String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime?
+
+  @@map("governance_notification_templates")
+}
+
+model GovernanceAppeal {
+  id             String   @id
+  enforcement_id String
+  user_id        String
+  status         String   @default("submitted")
+  reason         String
+  outcome        String?
+  outcome_notes  String?
+  reviewed_by    String?
+  reviewed_at    DateTime?
+  created_at     DateTime @default(now())
+  updated_at     DateTime?
+
+  @@index([enforcement_id, status])
+  @@index([user_id, created_at])
+  @@map("governance_appeals")
+}
+
+model GovernanceMonthlyReport {
+  id         String   @id
+  month      String   @unique
+  metrics    Json
+  created_by String?
+  created_at DateTime @default(now())
+
+  @@map("governance_monthly_reports")
+}
