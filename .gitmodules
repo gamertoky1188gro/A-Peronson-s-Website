@@ -1,0 +1,3 @@
+[submodule "codex-transcript-viewer"]
+	path = codex-transcript-viewer
+	url = https://github.com/masonc15/codex-transcript-viewer.git
