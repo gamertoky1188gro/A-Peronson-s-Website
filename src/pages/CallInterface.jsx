@@ -43,6 +43,7 @@ import {
 import { API_BASE, apiRequest, getCurrentUser, getToken } from '../lib/auth'
 import { trackClientEvent } from '../lib/events'
 import MarkdownMessage from '../components/chat/MarkdownMessage'
+import JourneyTimeline from '../components/JourneyTimeline'
 
 const WS_BASE = (() => {
   if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL
@@ -536,10 +537,24 @@ export default function CallInterface() {
     if (!token || !callId) return
     try {
       await apiRequest(`/calls/${callId}/start`, { method: 'POST', token })
+      if (effectiveMatchId) {
+        const journey = await apiRequest('/workflow/journeys', {
+          method: 'POST',
+          token,
+          body: { match_id: effectiveMatchId, initial_state: 'discovered' },
+        })
+        if (journey?.id) {
+          await apiRequest(`/workflow/journeys/${encodeURIComponent(journey.id)}/transition`, {
+            method: 'POST',
+            token,
+            body: { to_state: 'negotiating', event_type: 'call_joined' },
+          })
+        }
+      }
     } catch {
       // no-op
     }
-  }, [callId])
+  }, [callId, effectiveMatchId])
 
   const loadParticipants = useCallback(async () => {
     const token = getToken()
@@ -1438,6 +1453,16 @@ export default function CallInterface() {
     if (token && callId) {
       try {
         await apiRequest(`/calls/${callId}/end`, { method: 'POST', token })
+        if (effectiveMatchId) {
+          const journey = await apiRequest(`/workflow/journeys/by-match/${encodeURIComponent(effectiveMatchId)}`, { token })
+          if (journey?.id) {
+            await apiRequest(`/workflow/journeys/${encodeURIComponent(journey.id)}/transition`, {
+              method: 'POST',
+              token,
+              body: { to_state: 'negotiating', event_type: 'call_ended' },
+            })
+          }
+        }
       } catch {
         // ignore
       }
@@ -1781,6 +1806,9 @@ export default function CallInterface() {
                 ) : null}
               </div>
             </div>
+            <div className="borderless-divider-b bg-white/30 p-3 dark:bg-white/5">
+              <JourneyTimeline title="Journey Timeline" matchId={effectiveMatchId || ''} />
+            </div>
 
           <div ref={chatScrollRef} className="flex-1 overflow-y-auto bg-slate-50/60 p-5 space-y-6 dark:bg-black/20 scrollbar-hide">
             {sortedChatMessages.length > 0 ? sortedChatMessages.map((msg) => {
@@ -1878,5 +1906,3 @@ export default function CallInterface() {
     </div>
   )
 }
-
-

@@ -720,6 +720,42 @@ model Match {
   @@map("matches")
 }
 
+model WorkflowJourney {
+  id             String   @id
+  match_id       String?
+  requirement_id String?
+  product_id     String?
+  contract_id    String?
+  current_state  String
+  created_at     DateTime @default(now())
+  updated_at     DateTime?
+
+  transitions    WorkflowTransition[]
+
+  @@index([match_id])
+  @@map("workflow_journeys")
+}
+
+model WorkflowTransition {
+  id            String   @id
+  journey_id    String
+  from_state    String
+  to_state      String
+  event_type    String
+  actor_id      String?
+  source        String?
+  metadata      Json?
+  accepted      Boolean  @default(true)
+  error_code    String?
+  error_message String?
+  created_at    DateTime @default(now())
+
+  journey WorkflowJourney @relation(fields: [journey_id], references: [id], onDelete: Cascade)
+
+  @@index([journey_id, created_at])
+  @@map("workflow_transitions")
+}
+
 model MetricTransition {
   id             String   @id
   requirement_id String?

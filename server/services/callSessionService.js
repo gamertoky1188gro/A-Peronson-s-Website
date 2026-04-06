@@ -2,7 +2,7 @@ import crypto from 'crypto'
 import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { recordMilestone } from './ratingsService.js'
-import { recordJourneyEvent } from './dealJourneyService.js'
+import { recordWorkflowEvent } from './workflowLifecycleService.js'
 
 const FILE = 'call_sessions.json'
 const RECORDING_VIEWS_FILE = 'call_recording_views.json'
@@ -114,7 +114,7 @@ export async function createScheduledCallSession(userId, payload = {}) {
 
   calls.push(row)
   await writeJson(FILE, calls)
-  await recordJourneyEvent('call_scheduled', {
+  await recordWorkflowEvent('call_scheduled', {
     match_id: row.match_id,
     chat_thread_id: row.context?.chat_thread_id || row.match_id,
     contract_id: row.contract_id,
@@ -140,6 +140,10 @@ export async function startCallSession(callId, userId) {
   }
   calls[idx] = next
   await writeJson(FILE, calls)
+  await recordWorkflowEvent('call_joined', {
+    match_id: next.match_id,
+    contract_id: next.contract_id,
+  }, { actor_id: userId, source: 'calls.start' }).catch(() => null)
 
   return next
 }
@@ -167,6 +171,10 @@ export async function endCallSession(callId, userId, endReason = '') {
   }
   calls[idx] = next
   await writeJson(FILE, calls)
+  await recordWorkflowEvent('call_ended', {
+    match_id: next.match_id,
+    contract_id: next.contract_id,
+  }, { actor_id: userId, source: 'calls.end' }).catch(() => null)
 
   return next
 }
@@ -228,7 +236,7 @@ export async function markRecording(callId, userId, payload = {}) {
   await writeJson(FILE, calls)
 
   if (shouldComplete) {
-    await recordJourneyEvent('call_completed', {
+    await recordWorkflowEvent('call_ended', {
       match_id: call.match_id,
       chat_thread_id: call.context?.chat_thread_id || call.match_id,
       contract_id: call.contract_id,

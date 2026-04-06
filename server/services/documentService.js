@@ -8,7 +8,7 @@ import { canAccessContract, canManagePartnerNetwork, canModifyContract, isAgent,
 import { trackEvent } from './eventTrackingService.js'
 import { ensureCertificationForContract } from './certificationService.js'
 import { markLeadConvertedFromContract } from './leadService.js'
-import { recordJourneyEvent } from './dealJourneyService.js'
+import { recordWorkflowEvent } from './workflowLifecycleService.js'
 
 const FILE = 'documents.json'
 const CONTRACT_AUDIT_FILE = 'contract_audit.json'
@@ -405,7 +405,7 @@ export async function createDraftContract(actor, payload = {}) {
   docs.push(contract)
   await writeJson(FILE, docs)
   await trackEvent({ type: 'contract_created', actor_id: actor.id, entity_id: contract.id })
-  await recordJourneyEvent('contract_draft', {
+  await recordWorkflowEvent('contract_created', {
     contract_id: contract.id,
     requirement_id: payload.requirement_id,
     product_id: payload.product_id,
@@ -497,7 +497,7 @@ export async function updateContractSignatures(contractId, patch = {}, actor) {
     await trackEvent({ type: 'contract_signed', actor_id: actor.id, entity_id: next.id })
     await ensureCertificationForContract(next)
     await markLeadConvertedFromContract({ buyerId: next.buyer_id, factoryId: next.factory_id, contractId: next.id })
-    await recordJourneyEvent('contract_signed', { contract_id: next.id }, { actor_id: actor.id }).catch(() => null)
+    await recordWorkflowEvent('contract_signed', { contract_id: next.id }, { actor_id: actor.id }).catch(() => null)
   }
   return { ...presentContractForActor(next, actor), payment_proof_ok: paymentProofOk }
 }
