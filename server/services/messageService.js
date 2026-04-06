@@ -332,15 +332,15 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
     orgId: sender?.org_owner_id || sender?.id || '',
   })
 
-  if (policyResult.action === 'reject') {
+  if (policyResult.action === 'soft_block' || policyResult.action === 'hard_block') {
     const err = new Error(policyResult.rejection_message || 'Message rejected by communication policy')
     err.status = 429
-    err.code = 'POLICY_REJECTED'
+    err.code = policyResult.action === 'hard_block' ? 'POLICY_HARD_BLOCK' : 'POLICY_SOFT_BLOCK'
     err.policy = policyResult
     throw err
   }
 
-  if (policyResult.action === 'delayed_queue') {
+  if (policyResult.action === 'queue') {
     entry.policy_status = 'queued'
     entry.policy_reason = policyResult.reason
     entry.policy_priority = policyResult?.decision?.queue_priority_label || null
@@ -348,13 +348,6 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
     entry.queue_id = policyResult?.queue?.id || null
   }
 
-  if (policyResult.action === 'require_human_review') {
-    entry.policy_status = 'needs_review'
-    entry.policy_reason = policyResult.reason
-    entry.policy_priority = policyResult?.decision?.queue_priority_label || null
-    entry.requires_human_review = true
-    entry.queue_id = policyResult?.queue?.id || null
-  }
 
   const recentContext = messages
     .filter((m) => String(m.match_id || '') === String(matchId || ''))

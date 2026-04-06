@@ -443,6 +443,12 @@ export default function AdminPanel() {
   const [supportFilters, setSupportFilters] = useState({ status: 'all', priority: 'all', assigned_to: '' })
   const [moderationPending, setModerationPending] = useState([])
   const [moderationRejected, setModerationRejected] = useState([])
+  const [policyQueueItems, setPolicyQueueItems] = useState([])
+  const [policyReviewRows, setPolicyReviewRows] = useState([])
+  const [policyMetrics, setPolicyMetrics] = useState(null)
+  const [reputationSenderId, setReputationSenderId] = useState('')
+  const [reputationDelta, setReputationDelta] = useState('0')
+
   const [emailConfig, setEmailConfig] = useState({
     enabled: false,
     provider: 'smtp',
@@ -561,6 +567,7 @@ export default function AdminPanel() {
     refreshSupportTickets()
     refreshModerationQueues()
     refreshReportQueues()
+    refreshMessagePolicyOps()
   }, [activeCategory])
 
   useEffect(() => {
@@ -1015,6 +1022,28 @@ export default function AdminPanel() {
     setSystemReports(Array.isArray(systemData?.items) ? systemData.items : [])
     setProductAppealReports(Array.isArray(appealData?.items) ? appealData.items : [])
     setContentReports(Array.isArray(contentData?.items) ? contentData.items : [])
+  }
+
+
+  async function refreshMessagePolicyOps() {
+    const token = getToken()
+    if (!token) return
+    const headers = buildAdminHeaders()
+    try {
+      const [queueData, reviewData, metricsData] = await Promise.all([
+        apiRequest('/messages/policy/queue-inspector?status=queued', { token, headers }),
+        apiRequest('/messages/policy/review-queue', { token, headers }),
+        apiRequest('/messages/policy/reports/weekly-decision-quality', { token, headers }),
+      ])
+      setPolicyQueueItems(Array.isArray(queueData?.rows) ? queueData.rows : [])
+      setPolicyReviewRows(Array.isArray(reviewData?.rows) ? reviewData.rows : [])
+      setPolicyMetrics(metricsData || null)
+    } catch (err) {
+      setPolicyQueueItems([])
+      setPolicyReviewRows([])
+      setPolicyMetrics(null)
+      setError(err.message || 'Failed to load communication policy queues')
+    }
   }
 
   async function saveClothingRules() {
@@ -2627,6 +2656,96 @@ export default function AdminPanel() {
                       {!moderationRejected.length ? <p className="text-[11px] text-slate-500">No rejected products.</p> : null}
                     </div>
                   </div>
+                  </div>
+                </div>
+              ) : null}
+
+
+
+              {activeCategory === 'platform' ? (
+                <div className="admin-card admin-sweep rounded-3xl p-6">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-bold">Communication Policy Queue Inspector</p>
+                      <p className="text-xs text-slate-500">Inspect queued messages, mark false positives, and adjust sender reputation.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => refreshMessagePolicyOps()}
+                      className="rounded-full borderless-shadow px-3 py-1 text-xs font-semibold text-slate-600"
+                    >
+                      Refresh policy queue
+                    </button>
+                  </div>
+                  <div className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-3 text-xs">
+                    <div className="rounded-2xl borderless-shadow p-4 lg:col-span-2">
+                      <p className="text-[11px] font-semibold uppercase text-slate-500">Queued Items</p>
+                      <div className="mt-2 space-y-2">
+                        {policyQueueItems.slice(0, 8).map((row) => (
+                          <div key={row.id} className="rounded-xl borderless-shadow px-3 py-2">
+                            <p className="text-[11px] text-slate-500">{row.match_id} · {row.sender_id}</p>
+                            <p className="text-sm font-semibold text-slate-900">{row.queue_priority_label || row.queue_rank} ({row.queue_score})</p>
+                            <p className="text-[11px] text-slate-500">Reason: {row.policy_reason}</p>
+                          </div>
+                        ))}
+                        {!policyQueueItems.length ? <p className="text-[11px] text-slate-500">No queued policy items.</p> : null}
+                      </div>
+                    </div>
+                    <div className="rounded-2xl borderless-shadow p-4">
+                      <p className="text-[11px] font-semibold uppercase text-slate-500">Metrics</p>
+                      <div className="mt-2 space-y-1 text-[11px] text-slate-600">
+                        <p>Blocked rate: {Number(policyMetrics?.policy_metrics?.blocked_rate || 0).toFixed(4)}</p>
+                        <p>Queue→Sent: {Number(policyMetrics?.policy_metrics?.queued_to_sent_conversion || 0).toFixed(4)}</p>
+                        <p>False-positive ratio: {Number(policyMetrics?.policy_metrics?.spam_false_positive_ratio || 0).toFixed(4)}</p>
+                      </div>
+                      <p className="mt-3 text-[11px] font-semibold uppercase text-slate-500">Sender reputation adjustment</p>
+                      <div className="mt-2 flex flex-col gap-2">
+                        <input className="rounded-xl borderless-shadow px-3 py-2" placeholder="Sender ID" value={reputationSenderId} onChange={(e) => setReputationSenderId(e.target.value)} />
+                        <input className="rounded-xl borderless-shadow px-3 py-2" placeholder="Delta (e.g., -5 or 4)" value={reputationDelta} onChange={(e) => setReputationDelta(e.target.value)} />
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!reputationSenderId.trim()) return
+                            await apiRequest(`/messages/policy/reputation/${encodeURIComponent(reputationSenderId.trim())}/adjust`, {
+                              method: 'POST',
+                              token: getToken(),
+                              headers: buildAdminHeaders({ stepUp: true }),
+                              body: { delta: Number(reputationDelta || 0), notes: 'Admin panel adjustment' },
+                            })
+                            await refreshMessagePolicyOps()
+                          }}
+                          className="rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold text-white"
+                        >
+                          Apply adjustment
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 rounded-2xl borderless-shadow p-4 text-xs">
+                    <p className="text-[11px] font-semibold uppercase text-slate-500">False-positive override candidates</p>
+                    <div className="mt-2 space-y-2">
+                      {policyReviewRows.slice(0, 6).map((row) => (
+                        <div key={row.id} className="rounded-xl borderless-shadow px-3 py-2">
+                          <p className="text-[11px] text-slate-500">{row.sender_id} · {row.action} · spam {Number(row.spam_score || 0).toFixed(3)}</p>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              await apiRequest(`/messages/policy/review-queue/${encodeURIComponent(row.id)}/false-positive`, {
+                                method: 'POST',
+                                token: getToken(),
+                                headers: buildAdminHeaders({ stepUp: true }),
+                                body: { notes: 'Admin override: false positive' },
+                              })
+                              await refreshMessagePolicyOps()
+                            }}
+                            className="mt-1 rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
+                          >
+                            Mark false-positive
+                          </button>
+                        </div>
+                      ))}
+                      {!policyReviewRows.length ? <p className="text-[11px] text-slate-500">No candidates.</p> : null}
+                    </div>
                   </div>
                 </div>
               ) : null}

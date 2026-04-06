@@ -14,7 +14,10 @@ import {
 } from '../services/messageService.js'
 import { maybeGenerateBotReply } from '../services/chatbotService.js'
 import {
+  adjustSenderReputation,
+  getCommunicationPolicyConfig,
   getWeeklyDecisionQualityReport,
+  listMessageQueueItems,
   listPolicyFalsePositiveCandidates,
   markPolicyDecisionFalsePositive,
   upsertCommunicationPolicyConfig,
@@ -177,6 +180,16 @@ export async function rejectRequest(req, res) {
 }
 
 
+
+export async function getPolicyConfig(req, res) {
+  const role = String(req.user?.role || '').toLowerCase()
+  if (!['admin', 'owner', 'buying_house', 'factory'].includes(role)) return res.status(403).json({ error: 'Only org managers can access communication policy config' })
+
+  const orgId = String(req.query?.org_id || req.user?.org_owner_id || req.user?.id || '')
+  const config = await getCommunicationPolicyConfig({ org_id: orgId })
+  return res.json({ config })
+}
+
 export async function updatePolicyConfig(req, res) {
   const role = String(req.user?.role || '').toLowerCase()
   if (!['admin', 'owner'].includes(role)) return res.status(403).json({ error: 'Only admins can update communication policy config' })
@@ -209,6 +222,25 @@ export async function markPolicyFalsePositive(req, res) {
   const updated = await markPolicyDecisionFalsePositive(req.params.decisionId, req.user.id, req.body?.notes || '')
   if (!updated) return res.status(404).json({ error: 'Decision not found' })
   return res.json({ ok: true, decision: updated })
+}
+
+
+export async function listMessagePolicyQueueInspector(req, res) {
+  const role = String(req.user?.role || '').toLowerCase()
+  if (!['admin', 'owner'].includes(role)) return res.status(403).json({ error: 'Only admins can access policy queue inspector' })
+
+  const rows = await listMessageQueueItems({ status: req.query?.status || '' })
+  return res.json({ rows })
+}
+
+export async function updateSenderReputation(req, res) {
+  const role = String(req.user?.role || '').toLowerCase()
+  if (!['admin', 'owner'].includes(role)) return res.status(403).json({ error: 'Only admins can adjust sender reputation' })
+
+  const delta = Number(req.body?.delta || 0)
+  const updated = await adjustSenderReputation(req.params.senderId, delta, req.user?.id || '', req.body?.notes || '')
+  if (!updated) return res.status(404).json({ error: 'Sender not found' })
+  return res.json({ ok: true, reputation: updated })
 }
 
 export async function weeklyPolicyDecisionQualityReport(req, res) {

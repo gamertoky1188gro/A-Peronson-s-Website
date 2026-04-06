@@ -77,6 +77,12 @@ export default function OrgSettings() {
   const [autoReplyTone, setAutoReplyTone] = useState('professional')
   const [autoReplyQualification, setAutoReplyQualification] = useState('')
   const [autoReplyFeedback, setAutoReplyFeedback] = useState('')
+  const [policyMessageCaps, setPolicyMessageCaps] = useState('12')
+  const [policyWindowMinutes, setPolicyWindowMinutes] = useState('15')
+  const [policyCooldownSeconds, setPolicyCooldownSeconds] = useState('30')
+  const [policyPremiumMultiplier, setPolicyPremiumMultiplier] = useState('1.2')
+  const [policyVerifiedMultiplier, setPolicyVerifiedMultiplier] = useState('1.3')
+  const [policyStrictnessMode, setPolicyStrictnessMode] = useState('balanced')
   const [loadingAutoReply, setLoadingAutoReply] = useState(false)
   const [autoSaveSearchAlerts, setAutoSaveSearchAlerts] = useState(() => {
     const raw = currentUser?.profile?.auto_save_search_alerts
@@ -185,6 +191,24 @@ export default function OrgSettings() {
       setPasskeys([])
     }
   }, [])
+
+
+  const loadCommunicationPolicy = useCallback(async () => {
+    const token = getToken()
+    if (!token || !currentUser?.id) return
+    try {
+      const data = await apiRequest(`/messages/policy/config?org_id=${encodeURIComponent(currentUser.id)}`, { token })
+      const policy = data?.config || {}
+      setPolicyMessageCaps(String(policy?.message_caps?.outbound_per_window || 12))
+      setPolicyWindowMinutes(String(policy?.message_caps?.window_minutes || 15))
+      setPolicyCooldownSeconds(String(policy?.message_caps?.cooldown_seconds || 30))
+      setPolicyPremiumMultiplier(String(policy?.priority_multipliers?.premium || 1.2))
+      setPolicyVerifiedMultiplier(String(policy?.priority_multipliers?.verified || 1.3))
+      setPolicyStrictnessMode(String(policy?.strictness_mode || 'balanced'))
+    } catch {
+      // ignore policy bootstrap errors
+    }
+  }, [currentUser?.id])
 
   const loadChatbotSettings = useCallback(async () => {
     const token = getToken()
@@ -371,6 +395,26 @@ export default function OrgSettings() {
       })
       // Keep local session user aligned with server profile changes.
       saveSession(updated, token)
+      await apiRequest('/messages/policy/config', {
+        method: 'PUT',
+        token,
+        body: {
+          scope: 'org',
+          org_id: currentUser?.id,
+          config: {
+            message_caps: {
+              outbound_per_window: Number(policyMessageCaps || 12),
+              window_minutes: Number(policyWindowMinutes || 15),
+              cooldown_seconds: Number(policyCooldownSeconds || 30),
+            },
+            priority_multipliers: {
+              premium: Number(policyPremiumMultiplier || 1.2),
+              verified: Number(policyVerifiedMultiplier || 1.3),
+            },
+            strictness_mode: policyStrictnessMode || 'balanced',
+          },
+        },
+      })
       setBillingFeedback('Settings updated')
     } catch (err) {
       setBillingFeedback(err.message || 'Unable to save settings')
@@ -488,8 +532,9 @@ export default function OrgSettings() {
   useEffect(() => {
     if (tab === 'general') {
       loadChatbotSettings()
+      loadCommunicationPolicy()
     }
-  }, [loadChatbotSettings, tab])
+  }, [loadChatbotSettings, loadCommunicationPolicy, tab])
 
   async function purchaseBoost() {
     const token = getToken()
@@ -677,6 +722,27 @@ export default function OrgSettings() {
                   </div>
                 </div>
 
+
+
+                <div className="mt-6 rounded-xl borderless-shadow bg-slate-50 p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-slate-800">Communication Policy Controls</p>
+                    <span className="text-[11px] text-slate-500">Org-level controls</span>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500">Configure message caps, premium/verified priority multipliers, and strictness mode.</p>
+                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input className="w-full borderless-shadow px-3 py-2 rounded" placeholder="Message cap per window" value={policyMessageCaps} onChange={(e) => setPolicyMessageCaps(e.target.value)} />
+                    <input className="w-full borderless-shadow px-3 py-2 rounded" placeholder="Window (minutes)" value={policyWindowMinutes} onChange={(e) => setPolicyWindowMinutes(e.target.value)} />
+                    <input className="w-full borderless-shadow px-3 py-2 rounded" placeholder="Cooldown (seconds)" value={policyCooldownSeconds} onChange={(e) => setPolicyCooldownSeconds(e.target.value)} />
+                    <select className="w-full borderless-shadow px-3 py-2 rounded" value={policyStrictnessMode} onChange={(e) => setPolicyStrictnessMode(e.target.value)}>
+                      <option value="relaxed">Relaxed</option>
+                      <option value="balanced">Balanced</option>
+                      <option value="strict">Strict</option>
+                    </select>
+                    <input className="w-full borderless-shadow px-3 py-2 rounded" placeholder="Premium multiplier" value={policyPremiumMultiplier} onChange={(e) => setPolicyPremiumMultiplier(e.target.value)} />
+                    <input className="w-full borderless-shadow px-3 py-2 rounded" placeholder="Verified multiplier" value={policyVerifiedMultiplier} onChange={(e) => setPolicyVerifiedMultiplier(e.target.value)} />
+                  </div>
+                </div>
                 <div className="mt-6 rounded-xl borderless-shadow bg-slate-50 p-4">
                   <p className="text-sm font-semibold text-slate-800">Supplier profile (factory / buying house)</p>
                   <p className="mt-1 text-xs text-slate-500">These fields power advanced supplier filters (processes, response speed, distance, and team capacity).</p>

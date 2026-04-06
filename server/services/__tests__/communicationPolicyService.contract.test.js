@@ -5,13 +5,10 @@ import { evaluatePolicyContract } from '../communicationPolicyService.js'
 
 function baseConfig() {
   return {
-    max_outreach_per_window: 3,
-    outreach_window_minutes: 15,
-    cooldown_seconds: 45,
-    premium_boost: 20,
-    verified_boost: 30,
-    keyword_risk_threshold_soft: 0.4,
-    keyword_risk_threshold_hard: 0.75,
+    message_caps: { outbound_per_window: 3, window_minutes: 15, cooldown_seconds: 45 },
+    priority_multipliers: { premium: 1.2, verified: 1.3 },
+    strictness_mode: 'balanced',
+    spam_thresholds: { queue: 0.4, hard_block: 0.75 },
   }
 }
 
@@ -38,11 +35,11 @@ test('verified sender is delayed (not rejected) on burst frequency limits', () =
     text: 'new outreach',
     messages,
     config,
-    trustScore: 55,
+    reputationScore: 55,
   })
 
-  assert.equal(result.action, 'delayed_queue')
-  assert.equal(result.reason, 'frequency_limit_boosted')
+  assert.equal(result.action, 'soft_block')
+  assert.equal(result.reason, 'rate_limit_exceeded')
 })
 
 test('premium sender gets delayed queue while free sender gets reject under same burst', () => {
@@ -59,7 +56,7 @@ test('premium sender gets delayed queue while free sender gets reject under same
     text: 'premium burst',
     messages,
     config,
-    trustScore: 55,
+    reputationScore: 55,
   })
 
   const free = evaluatePolicyContract({
@@ -68,12 +65,12 @@ test('premium sender gets delayed queue while free sender gets reject under same
     text: 'free burst',
     messages,
     config,
-    trustScore: 55,
+    reputationScore: 55,
   })
 
-  assert.equal(premium.action, 'delayed_queue')
-  assert.equal(free.action, 'reject')
-  assert.equal(free.reason, 'frequency_limit')
+  assert.equal(premium.action, 'soft_block')
+  assert.equal(free.action, 'soft_block')
+  assert.equal(free.reason, 'rate_limit_exceeded')
 })
 
 test('new user burst behavior rejects after cap for unverified free users', () => {
@@ -90,11 +87,11 @@ test('new user burst behavior rejects after cap for unverified free users', () =
     text: 'another message in same window',
     messages,
     config,
-    trustScore: 30,
+    reputationScore: 30,
   })
 
-  assert.equal(result.action, 'reject')
-  assert.equal(result.reason, 'frequency_limit')
+  assert.equal(result.action, 'soft_block')
+  assert.equal(result.reason, 'rate_limit_exceeded')
   assert.equal(result.retryAfterSeconds, 45)
 })
 
@@ -106,9 +103,9 @@ test('multilingual spam patterns trigger human review', () => {
     text: 'বিনামূল্যে অফার! এখন যোগাযোগ করুন telegram t.me/example 免费点击',
     messages: [],
     config,
-    trustScore: 40,
+    reputationScore: 40,
   })
 
-  assert.equal(result.action, 'require_human_review')
-  assert.equal(result.reason, 'keyword_risk_hard')
+  assert.equal(result.action, 'hard_block')
+  assert.equal(result.reason, 'spam_hard_block')
 })
