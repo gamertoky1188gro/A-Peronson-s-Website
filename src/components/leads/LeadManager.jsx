@@ -24,6 +24,15 @@ function statusBadgeClass(status = '') {
   return 'bg-emerald-100 text-emerald-700'
 }
 
+function formatCountdown(deadlineAt) {
+  if (!deadlineAt) return 'No SLA'
+  const deadline = new Date(deadlineAt).getTime()
+  if (Number.isNaN(deadline)) return 'No SLA'
+  const deltaMinutes = Math.floor((deadline - Date.now()) / 60000)
+  if (deltaMinutes >= 0) return `${deltaMinutes}m left`
+  return `${Math.abs(deltaMinutes)}m overdue`
+}
+
 export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true, showOperations = true }) {
   const token = useMemo(() => getToken(), [])
   const canAssignLeads = Boolean(getCurrentUser()?.capabilities?.leads?.assign)
@@ -36,7 +45,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
   const [lookup, setLookup] = useState({})
   const [noteDraft, setNoteDraft] = useState('')
   const [saving, setSaving] = useState(false)
-  const [queueMeta, setQueueMeta] = useState({ queue: [], team_queues: [], assignments: [], agent_capacity: [] })
+  const [queueMeta, setQueueMeta] = useState({ queue: [], team_queues: [], assignments: [], agent_capacity: [], escalations: [], workload: [] })
 
   const loadLeads = useCallback(async () => {
     if (!token) return
@@ -48,16 +57,22 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
       let operationsQueue = []
       if (showOperations) {
         try {
-          const queueData = await apiRequest('/org/operations/queue', { token })
+          const [queueData, escalationsData, workloadData] = await Promise.all([
+            apiRequest('/org/ops/queue', { token }),
+            apiRequest('/org/ops/escalations', { token }).catch(() => ({ items: [] })),
+            apiRequest('/org/ops/workload', { token }).catch(() => ({ items: [] })),
+          ])
           operationsQueue = Array.isArray(queueData?.queue) ? queueData.queue : []
           setQueueMeta({
             queue: operationsQueue,
             team_queues: queueData?.team_queues || [],
             assignments: queueData?.assignments || [],
             agent_capacity: queueData?.agent_capacity || [],
+            escalations: escalationsData?.items || [],
+            workload: workloadData?.items || [],
           })
         } catch {
-          setQueueMeta({ queue: [], team_queues: [], assignments: [], agent_capacity: [] })
+          setQueueMeta({ queue: [], team_queues: [], assignments: [], agent_capacity: [], escalations: [], workload: [] })
         }
       }
 
@@ -177,7 +192,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
     setSaving(true)
     setError('')
     try {
-      await apiRequest('/org/operations/rebalance', { method: 'POST', token, body: { strategy: 'least_loaded' } })
+      await apiRequest('/org/ops/rebalance', { method: 'POST', token, body: { strategy: 'least_loaded' } })
       await loadLeads()
       if (selectedId) await loadLeadDetail(selectedId)
     } catch (err) {
@@ -193,7 +208,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
     setSaving(true)
     setError('')
     try {
-      const updated = await apiRequest(`/org/operations/escalate/${encodeURIComponent(leadId)}`, {
+      const updated = await apiRequest(`/org/ops/escalate/${encodeURIComponent(leadId)}`, {
         method: 'POST',
         token,
         body: { reason },
@@ -207,6 +222,34 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
       setSaving(false)
     }
   }
+
+  async function resolveEscalation(leadId) {
+    if (!token || !leadId) return
+    setSaving(true)
+    setError('')
+    try {
+      await apiRequest(`/org/ops/escalations/${encodeURIComponent(leadId)}/resolve`, {
+        method: 'POST',
+        token,
+        body: { resolution_note: 'Resolved from CRM dashboard' },
+      })
+      await loadLeads()
+    } catch (err) {
+      setError(err.message || 'Failed to resolve escalation')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const selectedAssignments = useMemo(() => (
+    (queueMeta.assignments || [])
+      .filter((row) => String(row.lead_id || '') === String(selectedId || ''))
+      .slice(0, 8)
+  ), [queueMeta.assignments, selectedId])
+
+  const selectedEscalation = useMemo(() => (
+    (queueMeta.escalations || []).find((row) => String(row.lead_id || '') === String(selectedId || '') && !row.resolved_at)
+  ), [queueMeta.escalations, selectedId])
 
   const selectedCounterparty = selected?.counterparty_id ? lookup[selected.counterparty_id] : null
   const assignedAgent = selected?.assigned_agent_id ? lookup[selected.assigned_agent_id] : null
@@ -274,9 +317,9 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                     <span className="text-[11px] uppercase tracking-widest text-slate-500">{(lead.status || 'new').replace(/_/g, ' ')}</span>
                   </div>
                   <div className="mt-1 flex items-center gap-2">
-                    {lead?.sla?.status ? (
-                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${statusBadgeClass(lead.sla.status)}`}>
-                        SLA {lead.sla.status}
+                    {lead?.sla?.status || lead?.sla?.deadline_at ? (
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${statusBadgeClass(lead?.sla?.status || 'healthy')}`}>
+                        SLA {lead?.sla?.status || 'active'} · {formatCountdown(lead?.sla?.deadline_at)}
                       </span>
                     ) : null}
                     {lead?.queue_owner_id ? (
@@ -359,11 +402,15 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                   {!allowAssign || !canAssignLeads ? null : (
                     <button
                       type="button"
-                      onClick={() => updateLead({ assigned_agent_id: window.prompt('Assign to agent id (user id)', selected?.assigned_agent_id || '') || '' })}
+                      onClick={() => {
+                        const assignedAgentId = window.prompt('Assign/reassign to agent id (user id)', selected?.assigned_agent_id || '') || ''
+                        const assignmentReason = window.prompt('Assignment reason (audit trail)', 'manual_reassignment') || 'manual_reassignment'
+                        updateLead({ assigned_agent_id: assignedAgentId, assignment_reason: assignmentReason })
+                      }}
                       className="mt-2 text-sm text-[var(--gt-blue)] hover:underline"
                       disabled={saving}
                     >
-                      Assign
+                      Assign / Reassign
                     </button>
                   )}
                   {allowAssign && !canAssignLeads ? (
@@ -373,10 +420,20 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                 <div className="rounded-lg bg-slate-50 p-3">
                   <p className="text-xs uppercase tracking-widest text-slate-500">Updated</p>
                   <p className="mt-1 text-sm font-medium">{formatDate(selected?.updated_at || '') || '--'}</p>
-                  {selected?.sla?.status ? (
-                    <p className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${statusBadgeClass(selected.sla.status)}`}>
-                      SLA {selected.sla.status}
+                  {selected?.sla?.status || selected?.sla?.deadline_at ? (
+                    <p className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${statusBadgeClass(selected?.sla?.status || 'healthy')}`}>
+                      SLA {selected?.sla?.status || 'active'} · {formatCountdown(selected?.sla?.deadline_at)}
                     </p>
+                  ) : null}
+                  {selectedEscalation ? (
+                    <button
+                      type="button"
+                      onClick={() => resolveEscalation(selectedId)}
+                      className="mt-2 text-xs rounded bg-emerald-600 px-2 py-1 text-white"
+                      disabled={saving}
+                    >
+                      Resolve escalation
+                    </button>
                   ) : null}
                   {selected?.queue_owner_id ? (
                     <p className="mt-1 text-xs text-slate-600">Queue owner: {lookup[selected.queue_owner_id]?.name || selected.queue_owner_id}</p>
@@ -401,6 +458,15 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                         <div key={queue.agent_id} className="rounded-md borderless-shadow px-2 py-1 text-xs">
                           <div className="font-medium">{queue.agent_name || queue.agent_id}</div>
                           <div className="text-slate-500">Load: {queue.current_load} leads</div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="mt-3 text-xs uppercase tracking-widest text-slate-500">Escalation queue</p>
+                    <div className="mt-2 space-y-1">
+                      {(queueMeta.escalations || []).slice(0, 5).map((item) => (
+                        <div key={item.id} className="rounded-md borderless-shadow px-2 py-1 text-xs flex items-center justify-between gap-2">
+                          <span className="truncate">Lead {item.lead_id} · {item.reason}</span>
+                          <span className="text-slate-500">{formatDate(item.triggered_at)}</span>
                         </div>
                       ))}
                     </div>
@@ -437,6 +503,19 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
               </div>
 
               <div className="mt-5">
+                {selectedAssignments.length ? (
+                  <div className="mb-4">
+                    <p className="text-xs uppercase tracking-widest text-slate-500">Assignment audit trail</p>
+                    <div className="mt-2 space-y-1">
+                      {selectedAssignments.map((item) => (
+                        <div key={item.id} className="rounded-lg borderless-shadow px-3 py-2 text-xs">
+                          <span className="font-medium">{item.reason || 'assignment'}</span>
+                          <span className="text-slate-500"> · {formatDate(item.assigned_at || item.created_at)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
                 <p className="text-xs uppercase tracking-widest text-slate-500">Reminders</p>
                 <div className="mt-2 space-y-2">
                   {(selected?.reminders || []).length === 0 ? <div className="text-sm text-slate-500">No reminders yet.</div> : null}

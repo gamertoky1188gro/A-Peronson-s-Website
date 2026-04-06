@@ -499,6 +499,8 @@ model Lead {
   reminders           LeadReminder[]
   interactions        InteractionLog[]
   assignments         LeadAssignment[]
+  slaTimers           LeadSlaTimer[]
+  escalations         LeadEscalation[]
 
   @@index([org_owner_id, status, updated_at])
   @@index([assigned_agent_id, updated_at])
@@ -534,6 +536,75 @@ model AgentCapacity {
 
   @@unique([org_owner_id, agent_id], name: "agent_capacity_org_owner_id_agent_id")
   @@map("agent_capacity")
+}
+
+model OrgOpsPolicy {
+  id                  String   @id
+  org_owner_id        String
+  assignment_strategy String   @default("least_loaded")
+  sla_targets         Json?
+  escalation_rules    Json?
+  workload_caps       Json?
+  round_robin_index   Int      @default(0)
+  active              Boolean  @default(true)
+  created_at          DateTime @default(now())
+  updated_at          DateTime?
+
+  @@unique([org_owner_id], name: "org_ops_policy_org_owner_id")
+  @@map("org_ops_policies")
+}
+
+model LeadSlaTimer {
+  id                   String   @id
+  lead_id              String
+  org_owner_id         String
+  stage                String
+  target_minutes       Int
+  deadline_at          DateTime
+  breached_at          DateTime?
+  resolved_at          DateTime?
+  created_at           DateTime @default(now())
+  updated_at           DateTime?
+  lead                 Lead     @relation(fields: [lead_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([lead_id, stage], name: "lead_sla_timers_lead_id_stage")
+  @@index([org_owner_id, deadline_at])
+  @@map("lead_sla_timers")
+}
+
+model LeadEscalation {
+  id                String   @id
+  lead_id           String
+  org_owner_id      String
+  sla_timer_id      String?
+  severity          String?
+  reason            String
+  triggered_by      String?
+  triggered_at      DateTime @default(now())
+  resolved_at       DateTime?
+  resolved_by       String?
+  resolution_note   String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime?
+  lead              Lead     @relation(fields: [lead_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([org_owner_id, triggered_at])
+  @@index([lead_id, resolved_at])
+  @@map("lead_escalations")
+}
+
+model AgentWorkload {
+  id                  String   @id
+  org_owner_id        String
+  agent_id            String
+  active_leads        Int      @default(0)
+  capped_max_leads    Int      @default(10)
+  last_assigned_at    DateTime?
+  updated_at          DateTime @default(now())
+
+  @@unique([org_owner_id, agent_id], name: "agent_workloads_org_owner_id_agent_id")
+  @@index([org_owner_id, active_leads])
+  @@map("agent_workloads")
 }
 
 model LeadNote {

@@ -28,14 +28,24 @@ export default function OwnerDashboard() {
   const [active, setActive] = useState('home')
   const { dashboard, subscription, isEnterprise, loading, error } = useAnalyticsDashboard()
   const [policy, setPolicy] = useState(null)
+  const [opsEscalations, setOpsEscalations] = useState([])
+  const [opsWorkload, setOpsWorkload] = useState([])
 
   const totals = dashboard?.totals || {}
 
   useEffect(() => {
     const token = getToken()
     if (!token) return
-    apiRequest('/org/operations/policies', { token })
-      .then(setPolicy)
+    Promise.all([
+      apiRequest('/org/ops/policies', { token }).catch(() => null),
+      apiRequest('/org/ops/escalations', { token }).catch(() => ({ items: [] })),
+      apiRequest('/org/ops/workload', { token }).catch(() => ({ items: [] })),
+    ])
+      .then(([policyRes, escalationsRes, workloadRes]) => {
+        setPolicy(policyRes)
+        setOpsEscalations(escalationsRes?.items || [])
+        setOpsWorkload(workloadRes?.items || [])
+      })
       .catch(() => null)
   }, [])
 
@@ -87,10 +97,30 @@ export default function OwnerDashboard() {
                 <div className="bg-white rounded-xl shadow-md p-4 text-sm text-slate-700">
                   <h3 className="font-semibold mb-2">Org Operations Policy</h3>
                   <p>Assignment strategy: <strong>{policy.assignment_strategy}</strong></p>
-                  <p>SLA response target: <strong>{policy?.sla_targets?.response_minutes} min</strong></p>
-                  <p>Escalation breach window: <strong>{policy?.escalation_windows?.breach_minutes} min</strong></p>
+                  <p>SLA target for new leads: <strong>{policy?.sla_targets_by_stage?.new} min</strong></p>
+                  <p>Escalation breach window: <strong>{policy?.escalation_rules?.time_based?.breach_minutes} min</strong></p>
                 </div>
               ) : null}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="bg-white rounded-xl shadow-md p-4 text-sm">
+                  <h4 className="font-semibold mb-2">Escalation Queue</h4>
+                  {(opsEscalations || []).slice(0, 6).map((item) => (
+                    <div key={item.id} className="py-1 border-b border-slate-100">
+                      Lead <strong>{item.lead_id}</strong> · {item.reason}
+                    </div>
+                  ))}
+                  {!opsEscalations.length ? <div className="text-slate-500">No active escalations.</div> : null}
+                </div>
+                <div className="bg-white rounded-xl shadow-md p-4 text-sm">
+                  <h4 className="font-semibold mb-2">Agent Workload</h4>
+                  {(opsWorkload || []).slice(0, 6).map((item) => (
+                    <div key={item.id} className="py-1 border-b border-slate-100">
+                      {item.agent_name}: {item.active_leads}/{item.capped_max_leads} ({item.utilization_pct}%)
+                    </div>
+                  ))}
+                  {!opsWorkload.length ? <div className="text-slate-500">No workload records.</div> : null}
+                </div>
+              </div>
               <LeadManager title="Leads (CRM)" allowAssign showOperations />
             </div>
           )}
