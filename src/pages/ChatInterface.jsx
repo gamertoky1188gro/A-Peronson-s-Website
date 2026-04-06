@@ -52,7 +52,7 @@ import { consumeLeadSource } from '../lib/leadSource'
 import AttachmentPreviewModal from '../components/chat/AttachmentPreviewModal'
 import MarkdownMessage from '../components/chat/MarkdownMessage'
 import FileAttachmentCard from '../components/chat/FileAttachmentCard'
-import JourneyTimeline from '../components/journey/JourneyTimeline'
+import JourneyTimeline from '../components/JourneyTimeline'
 
 const WS_BASE = (() => {
   if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL

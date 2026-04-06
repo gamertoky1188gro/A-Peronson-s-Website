@@ -32,7 +32,7 @@ import { trackClientEvent } from '../lib/events'
 import { recordLeadSource } from '../lib/leadSource'
 import VerificationPanel from '../components/profile/VerificationPanel'
 import CrmSummaryPanel from '../components/profile/CrmSummaryPanel'
-import JourneyTimeline from '../components/journey/JourneyTimeline'
+import JourneyTimeline from '../components/JourneyTimeline'
 
 const Motion = motion
 

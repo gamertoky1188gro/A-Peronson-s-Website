@@ -47,6 +47,7 @@ import certificationRoutes from './routes/certificationRoutes.js'
 import crmRoutes from './routes/crmRoutes.js'
 import aiRoutes from './routes/aiRoutes.js'
 import dealJourneyRoutes from './routes/dealJourneyRoutes.js'
+import workflowLifecycleRoutes from './routes/workflowLifecycleRoutes.js'
 import { requestLogger } from './middleware/requestLogger.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { logInfo, logError } from './utils/logger.js'
@@ -55,6 +56,7 @@ import { maybeGenerateBotReply } from './services/chatbotService.js'
 import jwt from 'jsonwebtoken'
 import { canAccessMatch, listMessagesByMatch, postMessage } from './services/messageService.js'
 import { getCallSession } from './services/callSessionService.js'
+import { recordWorkflowEvent } from './services/workflowLifecycleService.js'
 import { setUserOnline, setUserOffline, touchUser } from './services/presenceService.js'
 import { readJson } from './utils/jsonStore.js'
 import { consumePendingInvites, enqueuePendingInvites } from './utils/pendingInvites.js'
@@ -141,6 +143,7 @@ app.use('/api/certifications', certificationRoutes)
 app.use('/api/crm', crmRoutes)
 app.use('/api/ai', aiRoutes)
 app.use('/api/deal-journeys', dealJourneyRoutes)
+app.use('/api/workflow', workflowLifecycleRoutes)
 app.use('/api/infra', infraRoutes)
 app.use('/api/network', networkRoutes)
 app.use(errorHandler)
@@ -296,6 +299,11 @@ async function joinChatRoom(socket, payload) {
   room.add(socket)
   socket.chatRoomId = matchId
   touchUser(user.id)
+  await recordWorkflowEvent('chat_started', {
+    match_id: matchId,
+    requirement_id: payload?.requirement_id,
+    product_id: payload?.product_id,
+  }, { actor_id: user.id, source: 'ws.join_chat_room' }).catch(() => null)
 
   const history = await listMessagesByMatch(matchId)
   sendWs(socket, {
@@ -351,6 +359,11 @@ async function relayChatMessage(socket, payload) {
         message: created,
       })
     }
+
+
+    await recordWorkflowEvent('chat_message_sent', {
+      match_id: matchId,
+    }, { actor_id: socket.userId, source: 'ws.chat_message' }).catch(() => null)
 
     try {
       const botResult = await maybeGenerateBotReply({ match_id: matchId, sender_id: socket.userId, message: messageText })

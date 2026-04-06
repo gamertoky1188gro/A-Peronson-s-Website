@@ -15,7 +15,7 @@ import { generateMatchesForRequirement, listMatchesForRequirement } from '../ser
 import { getOrderCertificationMap } from '../services/orderCertificationService.js'
 import { isOpenSearchConfigured, searchOpenSearch } from '../services/openSearchService.js'
 import { getBaseCurrency, normalizeMoney } from '../services/currencyService.js'
-import { recordJourneyEvent } from '../services/dealJourneyService.js'
+import { recordWorkflowEvent } from '../services/workflowLifecycleService.js'
 
 function redactRequirementForBuyer(requirement) {
   return {
@@ -275,7 +275,7 @@ export async function getRequirements(req, res) {
 }
 
 export async function browseRequirements(req, res) {
-  await recordJourneyEvent('search_open', {
+  await recordWorkflowEvent('search_open', {
     search_source: 'requirements_search',
     requirement_id: req.query.requirement_id || req.query.id || '',
   }, { actor_id: req.user.id }).catch(() => null)

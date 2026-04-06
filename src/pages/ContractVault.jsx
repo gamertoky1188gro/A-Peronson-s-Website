@@ -25,12 +25,12 @@
     - Skeleton shimmer for list/detail while loading.
 */
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import AccessDeniedState from '../components/AccessDeniedState'
 import { API_BASE, apiRequest, getCurrentUser, getToken } from '../lib/auth'
 import { trackClientEvent } from '../lib/events'
-import JourneyTimeline from '../components/journey/JourneyTimeline'
+import JourneyTimeline from '../components/JourneyTimeline'
 
 const Motion = motion
 
@@ -244,6 +244,8 @@ function Drawer({ open, onClose, children }) {
 }
 
 export default function ContractVault() {
+  const location = useLocation()
+  const journeyParams = useMemo(() => new URLSearchParams(location.search), [location.search])
   const currentUser = useMemo(() => getCurrentUser(), [])
   const reduceMotion = useReducedMotion()
   const [loadingContracts, setLoadingContracts] = useState(true)
@@ -666,7 +668,7 @@ export default function ContractVault() {
 
       {actionError ? <div className="mt-4 rounded-xl borderless-shadow bg-rose-50 p-3 text-sm font-semibold text-rose-700">{actionError}</div> : null}
       <div className="mt-4">
-        <JourneyTimeline title="Journey Timeline" contractId={selected.id} />
+        <JourneyTimeline title="Journey Timeline" matchId={selected.match_id || journeyParams.get('journey_match_id') || journeyParams.get('match_id') || ''} />
       </div>
       {selected.requirement_id ? (
         <div className="mt-2">
@@ -1257,4 +1259,3 @@ export default function ContractVault() {
     </div>
   )
 }
-

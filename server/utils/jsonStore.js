@@ -140,6 +140,8 @@ const FILE_HANDLERS = {
   'social_interactions.json': tableHandler('socialInteraction', ['id']),
   'user_connections.json': tableHandler('userConnection', ['id']),
   'matches.json': tableHandler('match', ['requirement_id', 'factory_id'], 'requirement_id_factory_id'),
+  'workflow_journeys.json': tableHandler('workflowJourney', ['id']),
+  'workflow_transitions.json': tableHandler('workflowTransition', ['id']),
   'metrics.json': tableHandler('metricTransition', ['id']),
   'assistant_knowledge.json': tableHandler('assistantKnowledge', ['id']),
   'payment_proofs.json': tableHandler('paymentProof', ['id']),

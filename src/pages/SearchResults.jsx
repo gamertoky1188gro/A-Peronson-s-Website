@@ -1136,6 +1136,32 @@ export default function SearchResults() {
     if (journeyContext?.matchId) params.set('match_id', journeyContext.matchId)
     if (journeyContext?.productId) params.set('product_id', journeyContext.productId)
     if (journeyContext?.requirementId) params.set('requirement_id', journeyContext.requirementId)
+    const token = getToken()
+    if (token) {
+      apiRequest('/workflow/journeys', {
+        method: 'POST',
+        token,
+        body: {
+          match_id: journeyContext?.matchId || '',
+          requirement_id: journeyContext?.requirementId || '',
+          product_id: journeyContext?.productId || '',
+          initial_state: 'discovered',
+        },
+      })
+        .then((journey) => {
+          if (!journey?.id) return null
+          return apiRequest(`/workflow/journeys/${encodeURIComponent(journey.id)}/transition`, {
+            method: 'POST',
+            token,
+            body: {
+              to_state: 'matched',
+              event_type: 'match_confirmed',
+              metadata: { source: 'search_results_contact' },
+            },
+          })
+        })
+        .catch(() => null)
+    }
     const query = params.toString()
     navigate(`/chat${query ? `?${query}` : ''}`, { state: { notice: `Contacting ${name}. If you are unverified, your first message may appear as a request.` } })
   }

@@ -14,7 +14,7 @@ import { assertMessagingAllowed, moderateTextOrRedactWithContext } from './polic
 import { getRequirementById } from './requirementService.js'
 import { autoSummarizeMatch, resolveOrgOwnerFromMatch } from './aiConversationService.js'
 import { attachMessageToQueue, evaluateMessagePolicy } from './communicationPolicyService.js'
-import { recordJourneyEvent } from './dealJourneyService.js'
+import { recordWorkflowEvent } from './workflowLifecycleService.js'
 
 const FILE = 'messages.json'
 const USERS_FILE = 'users.json'
@@ -402,7 +402,7 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
 
   await trackTransition(matchId, 'matched', 'first_message_sent', { sender_id: senderId })
 
-  await recordJourneyEvent('message_start', { match_id: matchId, chat_thread_id: matchId }, { sender_id: senderId }).catch(() => null)
+  await recordWorkflowEvent('chat_message_sent', { match_id: matchId, chat_thread_id: matchId }, { sender_id: senderId }).catch(() => null)
 
   try {
     const orgOwnerId = await resolveOrgOwnerFromMatch(matchId, senderId)
