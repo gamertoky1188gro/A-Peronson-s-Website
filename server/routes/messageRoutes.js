@@ -6,14 +6,17 @@ import {
   acceptRequest,
   getMessages,
   inbox,
+  getPolicyConfig,
   markRead,
   rejectRequest,
   sendFriendDirectMessage,
   sendMessage,
   uploadMessageAttachment,
   listPolicyReviewQueue,
+  listMessagePolicyQueueInspector,
   markPolicyFalsePositive,
   updatePolicyConfig,
+  updateSenderReputation,
   weeklyPolicyDecisionQualityReport,
 } from '../controllers/messageController.js'
 
@@ -38,8 +41,11 @@ router.post('/requests/:threadId/accept', requireAuth, acceptRequest)
 router.post('/requests/:threadId/reject', requireAuth, rejectRequest)
 router.post('/friend/:userId', requireAuth, sendFriendDirectMessage)
 
+router.get('/policy/config', requireAuth, getPolicyConfig)
 router.get('/policy/review-queue', requireAuth, listPolicyReviewQueue)
+router.get('/policy/queue-inspector', requireAuth, listMessagePolicyQueueInspector)
 router.post('/policy/review-queue/:decisionId/false-positive', requireAuth, markPolicyFalsePositive)
+router.post('/policy/reputation/:senderId/adjust', requireAuth, updateSenderReputation)
 router.get('/policy/reports/weekly-decision-quality', requireAuth, weeklyPolicyDecisionQualityReport)
 router.put('/policy/config', requireAuth, updatePolicyConfig)
 router.post('/:matchId/read', requireAuth, markRead)

@@ -350,7 +350,8 @@ async function relayChatMessage(socket, payload) {
       source_label: payload?.source_label,
     })
 
-    const shouldBroadcast = String(created?.policy_status || 'delivered') === 'delivered'
+    const policyStatus = String(created?.policy_status || 'delivered')
+    const shouldBroadcast = policyStatus === 'delivered'
     const peers = shouldBroadcast ? [...room] : [socket]
     for (const peer of peers) {
       sendWs(peer, {
@@ -360,6 +361,16 @@ async function relayChatMessage(socket, payload) {
       })
     }
 
+    if (!shouldBroadcast) {
+      sendWs(socket, {
+        type: 'chat_policy_status',
+        match_id: matchId,
+        status: policyStatus,
+        reason: created?.policy_reason || null,
+        queue_rank: created?.policy_priority || null,
+        retry_after_seconds: Number(created?.retry_after_seconds || 0),
+      })
+    }
 
     await recordWorkflowEvent('chat_message_sent', {
       match_id: matchId,

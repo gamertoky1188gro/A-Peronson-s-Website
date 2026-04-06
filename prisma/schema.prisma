@@ -315,6 +315,68 @@ model CommunicationPolicyConfig {
   @@map("communication_policy_configs")
 }
 
+
+model MessageQueueItem {
+  id                    String   @id
+  message_id            String?
+  match_id              String
+  sender_id             String
+  org_id                String?
+  queue_status          String
+  queue_rank            String
+  queue_score           Int
+  queue_priority_label  String?
+  policy_reason         String?
+  retry_after_seconds   Int?
+  requires_human_review Boolean  @default(false)
+  metadata              Json?
+  created_at            DateTime @default(now())
+  updated_at            DateTime?
+
+  @@map("message_queue_items")
+}
+
+model MessagePolicyLog {
+  id                             String   @id
+  queue_id                       String?
+  sender_id                      String
+  org_id                         String?
+  match_id                       String
+  action                         String
+  reason                         String
+  reputation_score               Float
+  spam_score                     Float
+  frequency_count                Int
+  first_response_priority        Boolean  @default(false)
+  queue_rank                     String?
+  queue_score                    Int?
+  queue_priority_label           String?
+  premium_verified_priority_score Float?
+  retry_after_seconds            Int?
+  moderation_flag                Boolean  @default(false)
+  false_positive                 Boolean  @default(false)
+  reviewer_id                    String?
+  reviewer_notes                 String?
+  created_at                     DateTime @default(now())
+  updated_at                     DateTime?
+
+  @@map("message_policy_logs")
+}
+
+model CommunicationLimit {
+  id                   String   @id
+  scope                String
+  org_id               String?
+  message_caps         Json
+  priority_multipliers Json
+  strictness_mode      String
+  spam_thresholds      Json?
+  updated_by           String?
+  updated_at           DateTime?
+
+  @@map("communication_limits")
+}
+
 model Notification {
   id         String   @id
   user_id    String
