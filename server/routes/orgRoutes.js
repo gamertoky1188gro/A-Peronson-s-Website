@@ -6,5 +6,6 @@ const router = Router()
 
 router.use('/members', memberRoutes)
 router.use('/operations', orgOperationsRoutes)
+router.use('/ops', orgOperationsRoutes)
 
 export default router

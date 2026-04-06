@@ -6,6 +6,7 @@ import { sanitizeString } from '../utils/validators.js'
 import { forbiddenError, isAgent, isOwnerOrAdmin } from '../utils/permissions.js'
 import { getPlanForUser } from './entitlementService.js'
 import { trackEvent } from './eventTrackingService.js'
+import { applyLeadOpsOnCreateOrUpdate, evaluateAndEscalateLeadIfBreached } from './enterpriseOpsService.js'
 
 const LEADS_FILE = 'leads.json'
 const NOTES_FILE = 'lead_notes.json'
@@ -234,7 +235,7 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp, so
 
     if (existingIndex >= 0) {
       const current = leads[existingIndex]
-      leads[existingIndex] = {
+      const nextLead = {
         ...current,
         counterparty_id: current.counterparty_id || counterpartyId,
         assigned_agent_id: extras.assigned_agent_id || current.assigned_agent_id || autoAssignedAgent || '',
@@ -244,6 +245,11 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp, so
         last_interaction_at: interactionAt,
         updated_at: now,
       }
+      leads[existingIndex] = await applyLeadOpsOnCreateOrUpdate({
+        actor: sender || { id: orgId, org_owner_id: orgId, role: 'owner' },
+        lead: nextLead,
+        trigger: 'update',
+      })
       updated.push(leads[existingIndex])
       if (!current.source_type && leadSourceType) {
         await trackEvent({
@@ -256,7 +262,7 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp, so
       continue
     }
 
-    const row = {
+    const baseRow = {
       id: crypto.randomUUID(),
       org_owner_id: orgId,
       match_id: matchId,
@@ -272,6 +278,11 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp, so
       last_interaction_at: interactionAt,
       conversion_at: '',
     }
+    const row = await applyLeadOpsOnCreateOrUpdate({
+      actor: sender || { id: orgId, org_owner_id: orgId, role: 'owner' },
+      lead: baseRow,
+      trigger: 'create',
+    })
     leads.push(row)
     updated.push(row)
     await trackEvent({ type: 'lead_created', actor_id: senderId || orgId, entity_id: row.id, metadata: { source_type: leadSourceType, source_id: leadSourceId } })
@@ -286,6 +297,10 @@ export async function upsertLeadFromMessage({ match_id, sender_id, timestamp, so
   }
 
   await writeJson(LEADS_FILE, leads)
+  await Promise.all(updated.map((lead) => evaluateAndEscalateLeadIfBreached({
+    actor: sender || { id: lead.org_owner_id, org_owner_id: lead.org_owner_id, role: 'owner' },
+    lead,
+  })))
   return updated
 }
 
@@ -436,7 +451,7 @@ export async function updateLead(actor, leadId, patch = {}) {
       if (!assignedAgent) throw forbiddenError()
     }
 
-    const updated = await prisma.lead.update({
+    let updated = await prisma.lead.update({
       where: { id },
       data: {
         status: patch.status !== undefined ? normalizeStatus(patch.status, current.status || 'new') : current.status,
@@ -444,6 +459,15 @@ export async function updateLead(actor, leadId, patch = {}) {
         updated_at: new Date(),
       },
     })
+    const opsLead = await applyLeadOpsOnCreateOrUpdate({ actor, lead: updated, trigger: 'update' })
+    if (String(updated.assigned_agent_id || '') !== String(opsLead.assigned_agent_id || '')) {
+      updated = await prisma.lead.update({
+        where: { id },
+        data: { assigned_agent_id: opsLead.assigned_agent_id || null, updated_at: new Date() },
+      })
+    } else {
+      updated = opsLead
+    }
     if (!isAgent(actor) && patch.assigned_agent_id !== undefined && String(current.assigned_agent_id || '') !== String(updated.assigned_agent_id || '')) {
       const now = new Date()
       await prisma.leadAssignment.create({
@@ -468,6 +492,7 @@ export async function updateLead(actor, leadId, patch = {}) {
         allowUnknownTypes: true,
       })
     }
+    await evaluateAndEscalateLeadIfBreached({ actor, lead: updated })
     return updated
   }
 
@@ -478,13 +503,14 @@ export async function updateLead(actor, leadId, patch = {}) {
   const current = leads[idx]
   ensureLeadWriteAccess(actor, current)
 
-  const next = {
+  let next = {
     ...current,
     status: patch.status !== undefined ? normalizeStatus(patch.status, current.status) : current.status,
     // Main accounts can assign leads to an agent; agents cannot reassign.
     ...(isAgent(actor) ? {} : { assigned_agent_id: patch.assigned_agent_id !== undefined ? sanitizeString(String(patch.assigned_agent_id || ''), 120) : current.assigned_agent_id }),
     updated_at: new Date().toISOString(),
   }
+  next = await applyLeadOpsOnCreateOrUpdate({ actor, lead: next, trigger: 'update' })
 
   leads[idx] = next
   await writeJson(LEADS_FILE, leads)
@@ -511,6 +537,7 @@ export async function updateLead(actor, leadId, patch = {}) {
       allowUnknownTypes: true,
     })
   }
+  await evaluateAndEscalateLeadIfBreached({ actor, lead: next })
   return next
 }
 

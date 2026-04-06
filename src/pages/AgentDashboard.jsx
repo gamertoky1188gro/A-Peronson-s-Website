@@ -103,10 +103,18 @@ export default function AgentDashboard() {
     const token = getToken()
     if (!token) return
     try {
-      const queueData = await apiRequest('/org/operations/queue', { token })
-      setQueueSummary({ queue: queueData?.queue || [] })
+      const [queueData, escalationData, workloadData] = await Promise.all([
+        apiRequest('/org/ops/queue', { token }),
+        apiRequest('/org/ops/escalations', { token }).catch(() => ({ items: [] })),
+        apiRequest('/org/ops/workload', { token }).catch(() => ({ items: [] })),
+      ])
+      setQueueSummary({
+        queue: queueData?.queue || [],
+        escalations: escalationData?.items || [],
+        workload: workloadData?.items || [],
+      })
     } catch {
-      setQueueSummary({ queue: [] })
+      setQueueSummary({ queue: [], escalations: [], workload: [] })
     }
   }
 
@@ -171,6 +179,8 @@ export default function AgentDashboard() {
                     <p>Queue ownership: <strong>{queueSummary.queue.length}</strong> leads</p>
                     <button type="button" className="text-xs px-2 py-1 rounded bg-white borderless-shadow" onClick={refreshQueueSummary}>Refresh queue</button>
                   </div>
+                  <div className="mt-2 text-xs text-slate-600">Escalations pending: {queueSummary?.escalations?.filter((item) => !item.resolved_at).length || 0}</div>
+                  <div className="mt-1 text-xs text-slate-600">My workload rows: {queueSummary?.workload?.length || 0}</div>
                 </div>
                 <LeadManager title="My Leads (CRM)" allowAssign={false} showOperations />
               </div>
