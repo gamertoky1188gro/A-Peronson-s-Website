@@ -1,5 +1,11 @@
 import prisma from './prisma.js'
 
+const _mem = new Map()
+
+function isTestEnv() {
+  return process.env.NODE_ENV === 'test'
+}
+
 const locks = new Map()
 
 function withLock(fileName, action) {
@@ -131,6 +137,7 @@ const FILE_HANDLERS = {
   'event_logs.json': tableHandler('eventLog', ['id']),
   'org_policies.json': tableHandler('orgPolicy', ['id']),
   'org_ops_policies.json': tableHandler('orgOpsPolicy', ['id']),
+  'org_ai_settings.json': tableHandler('orgAiSetting', ['org_owner_id']),
   'lead_assignments.json': tableHandler('leadAssignment', ['id']),
   'lead_sla_timers.json': tableHandler('leadSlaTimer', ['id']),
   'lead_escalations.json': tableHandler('leadEscalation', ['id']),
@@ -195,12 +202,19 @@ const ratingsHandler = {
 FILE_HANDLERS['ratings.json'] = ratingsHandler
 
 export async function readJson(fileName) {
+  if (isTestEnv()) {
+    return _mem.get(fileName) || []
+  }
   const handler = FILE_HANDLERS[fileName]
   if (!handler) return []
   return handler.read()
 }
 
 export async function writeJson(fileName, data) {
+  if (isTestEnv()) {
+    _mem.set(fileName, data)
+    return data
+  }
   return withLock(fileName, async () => {
     const handler = FILE_HANDLERS[fileName]
     if (!handler) return data
@@ -210,6 +224,12 @@ export async function writeJson(fileName, data) {
 }
 
 export async function updateJson(fileName, updater) {
+  if (isTestEnv()) {
+    const existing = _mem.get(fileName) || []
+    const next = await updater(existing)
+    _mem.set(fileName, next)
+    return next
+  }
   return withLock(fileName, async () => {
     const existing = await readJson(fileName)
     const next = await updater(existing)

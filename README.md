@@ -257,3 +257,27 @@ sudo systemctl reload nginx
 - If you use HTTPS, add a `listen 443 ssl;` block with certificates.
 - Update `server_name` to your domain.
 - If your frontend is static (built in `dist/`), use a static file server or `root` + `try_files` instead of proxying to 5173.
+
+## Reindex & CI
+
+- Reindex OpenSearch (local):
+
+```bash
+# Start OpenSearch with Docker Compose
+docker-compose up -d opensearch
+
+# Create indices and index sample documents
+npm run ci:reindex
+```
+
+- Run the API-level smoke test (verifies roleSeats filtering works):
+
+```bash
+npm run ci:smoke
+```
+
+- Run full CI steps locally (reindex + tests + smoke):
+
+```bash
+npm run ci:full
+```

@@ -791,6 +791,82 @@ export async function getPlatformAnalyticsSummary(user) {
   return response
 }
 
+export async function getPlatformOverview(user) {
+  // Lightweight anonymized overview for all authenticated roles.
+  const governance = await getAnalyticsGovernanceConfig()
+  const { usersById, requirementsRows, eventRows } = await buildPlatformAnalyticsSnapshot(governance)
+  const rawReport = buildRawPlatformReport(requirementsRows, eventRows, usersById)
+
+  const { report, suppression } = sanitizePlatformAnalytics(rawReport, governance)
+  const response = toGovernedResponse(report, {
+    scopeLevel: 'platform_overview_aggregated',
+    suppression,
+    privacyThresholdApplied: governance.enabled,
+  })
+
+  appendAuditLog({
+    id: crypto.randomUUID(),
+    at: new Date().toISOString(),
+    actor_id: user?.id || null,
+    actor_role: user?.role || null,
+    action: 'platform_analytics_overview_requested',
+    path: '/analytics/platform/overview',
+    status: 200,
+    payload: { scope_level: response.scope_level, suppression_counts: suppression },
+  }).catch(() => null)
+
+  return response
+}
+
+export async function getPlatformTrends(user, options = {}) {
+  // Role-scoped trends; non-admins get org-scoped anonymized trends only.
+  const governance = await getAnalyticsGovernanceConfig()
+  const role = String(user?.role || '').toLowerCase()
+  const isAdmin = role === 'admin' || role === 'owner'
+
+  const orgScopeId = resolvePlatformOrgScopeId(user)
+  if (!isAdmin && !orgScopeId) {
+    // only admins/owners may request global trends
+    const err = new Error('Forbidden: trends require org scope or admin role')
+    err.status = 403
+    throw err
+  }
+
+  assertNoUnauthorizedAnalyticsJoin(options.dimensions || [])
+  const { usersById, requirementsRows, eventRows } = await buildPlatformAnalyticsSnapshot(governance)
+
+  const scopedRequirements = orgScopeId
+    ? requirementsRows.filter((row) => String(row?.buyer_id || '') === orgScopeId || String(row?.assigned_agent_id || row?.agent_id || '') === orgScopeId)
+    : requirementsRows
+
+  const scopedEvents = orgScopeId
+    ? eventRows.filter((row) => String(row?.actor_id || '') === orgScopeId || String(row?.entity_id || '') === orgScopeId)
+    : eventRows
+
+  const rawReport = buildRawPlatformReport(scopedRequirements, scopedEvents, usersById)
+  rawReport.org_scope = orgScopeId ? `org:${orgScopeId.slice(0, 6)}***` : 'org:global'
+
+  const { report, suppression } = sanitizePlatformAnalytics(rawReport, governance)
+  const response = toGovernedResponse(report, {
+    scopeLevel: orgScopeId ? 'platform_trends_org_anonymized' : 'platform_trends_global_anonymized',
+    suppression,
+    privacyThresholdApplied: governance.enabled,
+  })
+
+  appendAuditLog({
+    id: crypto.randomUUID(),
+    at: new Date().toISOString(),
+    actor_id: user?.id || null,
+    actor_role: user?.role || null,
+    action: 'platform_analytics_trends_requested',
+    path: '/analytics/platform/trends',
+    status: 200,
+    payload: { scope_level: response.scope_level, requested_dimensions: options.dimensions || [], org_scope: rawReport.org_scope, suppression_counts: suppression },
+  }).catch(() => null)
+
+  return response
+}
+
 export async function getPlatformAnalyticsSegment(user, options = {}) {
   ensureAnalyticsAccess(user)
   const governance = await getAnalyticsGovernanceConfig()

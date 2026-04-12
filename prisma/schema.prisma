@@ -798,6 +798,21 @@ model Report {
   @@map("reports")
 }
 
+
+model OrgAiSetting {
+  id                          String   @id @default(cuid())
+  org_owner_id                String   @unique
+  auto_reply_enabled          Boolean  @default(false)
+  auto_reply_rate_limit_per_hour Int    @default(20)
+  allow_numeric_commitments   Boolean  @default(false)
+  ai_handoff_threshold        Float?   
+  ai_hallucination_threshold  Float?
+  created_at                  DateTime @default(now())
+  updated_at                  DateTime?
+
+  @@map("org_ai_settings")
+}
+
 model PolicyViolation {
   id                       String   @id
   actor_id                 String

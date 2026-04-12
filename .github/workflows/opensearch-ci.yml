@@ -1,0 +1,39 @@
+name: OpenSearch CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  opensearch-test:
+    runs-on: ubuntu-latest
+    services:
+      opensearch:
+        image: opensearchproject/opensearch:2.13.1
+        options: >-
+          --health-cmd="curl -sS http://localhost:9200/_cluster/health || exit 1" \
+          --health-interval=10s --health-timeout=5s --health-retries=30
+        ports:
+          - 9200:9200
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: npm ci
+      - name: Wait for OpenSearch
+        run: |
+          for i in {1..30}; do
+            if curl -sS http://localhost:9200/_cluster/health | grep -q '"status"'; then
+              echo "OpenSearch ready"
+              break
+            fi
+            sleep 2
+          done
+      - name: Run tests
+        run: npm test --silent

@@ -6,7 +6,7 @@
     - Collect bug reports, feature requests, account issues, and general feedback.
     - Store submissions in the reports queue for admin review.
 */
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import { apiRequest, API_BASE, getCurrentUser, getToken, hasEntitlement } from '../lib/auth'
 
 const CATEGORY_OPTIONS = [
@@ -44,7 +44,7 @@ export default function SupportReports() {
   const [messagesByTicket, setMessagesByTicket] = useState({})
   const [messageDrafts, setMessageDrafts] = useState({})
 
-  async function loadTickets() {
+  const loadTickets = useCallback(async () => {
     if (!token) return
     setTicketsLoading(true)
     try {
@@ -55,7 +55,7 @@ export default function SupportReports() {
     } finally {
       setTicketsLoading(false)
     }
-  }
+  }, [token])
 
   async function loadMessages(ticketId) {
     if (!token || !ticketId) return
@@ -69,7 +69,7 @@ export default function SupportReports() {
 
   useEffect(() => {
     loadTickets()
-  }, [token])
+  }, [loadTickets])
 
   async function submitReport(e) {
     e.preventDefault()

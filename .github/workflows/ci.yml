@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start OpenSearch (docker-compose)
+        run: |
+          docker-compose up -d opensearch
+
+      - name: Wait for OpenSearch
+        run: |
+          for i in {1..30}; do
+            if curl -sS http://localhost:9200 >/dev/null 2>&1; then
+              echo "OpenSearch is up"
+              break
+            fi
+            echo "Waiting for OpenSearch..."
+            sleep 2
+          done
+
+      - name: Reindex sample data
+        run: npm run ci:reindex
+
+      - name: Run unit tests
+        run: npm test --silent
+
+      - name: Run smoke tests
+        run: npm run ci:smoke

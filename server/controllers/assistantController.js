@@ -5,6 +5,7 @@ import {
   listKnowledge,
   updateKnowledgeEntry,
 } from '../services/assistantService.js'
+import aiOrchestration from '../services/aiOrchestrationService.js'
 import {
   autoSummarizeMatch,
   generateConversationSummary,
@@ -135,6 +136,45 @@ export async function getNegotiationHelper(req, res) {
       guidance: helper.guidance || '',
       suggested_reply: helper.suggested_reply || '',
     })
+  } catch (error) {
+    return handleControllerError(res, error)
+  }
+}
+
+export async function postExtractRequirement(req, res) {
+  try {
+    const text = String(req.body?.text || '')
+    if (!text) return res.status(400).json({ error: 'text is required' })
+    const orgId = orgIdFromUser(req.user)
+    const result = await aiOrchestration.extractRequirementFromText(text, orgId)
+    return res.json(result)
+  } catch (error) {
+    return handleControllerError(res, error)
+  }
+}
+
+export async function postGenerateFirstResponse(req, res) {
+  try {
+    const { extracted, match_id } = req.body || {}
+    if (!extracted) return res.status(400).json({ error: 'extracted fields are required' })
+    const orgId = orgIdFromUser(req.user)
+    const draft = aiOrchestration.generateDraftResponse(extracted, [])
+    const validation = await aiOrchestration.validateDraftResponse(draft, extracted, null, orgId)
+    if (match_id) await aiOrchestration.persistAiMetadataForMatch(match_id, validation)
+    return res.json({ draft, meta: validation })
+  } catch (error) {
+    return handleControllerError(res, error)
+  }
+}
+
+export async function postValidateResponse(req, res) {
+  try {
+    const { draft, extracted, threshold = 0.6, match_id } = req.body || {}
+    if (!draft || !extracted) return res.status(400).json({ error: 'draft and extracted are required' })
+    const orgId = orgIdFromUser(req.user)
+    const result = await aiOrchestration.validateDraftResponse(draft, extracted, threshold, orgId)
+    if (match_id) await aiOrchestration.persistAiMetadataForMatch(match_id, result)
+    return res.json(result)
   } catch (error) {
     return handleControllerError(res, error)
   }

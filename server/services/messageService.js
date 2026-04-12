@@ -13,6 +13,7 @@ import { upsertLeadFromMessage } from './leadService.js'
 import { assertMessagingAllowed, moderateTextOrRedactWithContext } from './policyService.js'
 import { getRequirementById } from './requirementService.js'
 import { autoSummarizeMatch, resolveOrgOwnerFromMatch } from './aiConversationService.js'
+import { getOrgAiSettings } from './orgAiService.js'
 import { attachMessageToQueue, evaluateMessagePolicy } from './communicationPolicyService.js'
 import { recordWorkflowEvent } from './workflowLifecycleService.js'
 
@@ -297,6 +298,34 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
   }
 
   const sender = users.find((u) => u.id === senderId)
+  // Enforce per-org AI auto-reply settings for messages originating from AI flows
+  const sourceLabel = String(options?.source_label || '')
+  if (sourceLabel.startsWith('ai:')) {
+    try {
+      const orgOwnerId = await resolveOrgOwnerFromMatch(matchId, senderId) || ''
+      if (orgOwnerId) {
+        const orgSettings = await getOrgAiSettings(orgOwnerId)
+        if (!orgSettings.auto_reply_enabled) {
+          const err = new Error('Auto-reply disabled by organization settings.')
+          err.status = 403
+          err.code = 'AI_AUTO_REPLY_DISABLED'
+          throw err
+        }
+
+        const cutoff = Date.now() - (60 * 60 * 1000)
+        const recent = (Array.isArray(messages) ? messages : []).filter((m) => String(m.sender_id || '') === String(senderId) && new Date(m.timestamp || 0).getTime() >= cutoff)
+        if (recent.length >= Number(orgSettings.auto_reply_rate_limit_per_hour || 20)) {
+          const err = new Error('Auto-reply rate limit exceeded for this organization.')
+          err.status = 429
+          err.code = 'AI_AUTO_REPLY_RATE_LIMIT'
+          throw err
+        }
+      }
+    } catch (e) {
+      throw e
+    }
+  }
+
   assertMessagingAllowed(sender)
 
   if (!String(matchId || '').startsWith('friend:')) {

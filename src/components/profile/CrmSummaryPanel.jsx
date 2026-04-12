@@ -51,7 +51,7 @@ export default function CrmSummaryPanel({ targetId }) {
     return () => {
       alive = false
     }
-  }, [targetId, token])
+  }, [targetId, token, actorOrgId])
 
   if (!data && !error) return null
   if (!data) return null

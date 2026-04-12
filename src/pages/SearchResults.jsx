@@ -29,7 +29,7 @@
 */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { Briefcase, Building2, Filter, LayoutGrid, Bell, Search as SearchIcon } from 'lucide-react'
+import { Briefcase, Building2, Filter, LayoutGrid, Bell, Share2, Search as SearchIcon } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { apiRequest, getCurrentUser, getToken, hasEntitlement } from '../lib/auth'
 import ProductQuickViewModal from '../components/products/ProductQuickViewModal'
@@ -86,6 +86,13 @@ const TEAM_SEATS_MIN_BUCKETS = [
   { value: '25', label: '25+' },
 ]
 const SAMPLE_LEAD_TIME_MAX_DAYS = 45
+const MOQ_BUCKETS = [
+  { value: '', label: 'Any' },
+  { value: '1-100', label: '1–100' },
+  { value: '101-1000', label: '101–1,000' },
+  { value: '1001-', label: '1001+' },
+]
+const CURRENCY_OPTIONS = ['USD', 'EUR', 'CNY', 'BDT', 'GBP']
 const PRESET_STORAGE_KEY = 'gt_search_selected_preset'
 const PRESET_KEYS = ['buyer', 'buying_house', 'factory']
 
@@ -99,6 +106,7 @@ function createDefaultFilters(searchParams) {
     industry: searchParams.get('industry') || '',
     moqRange: searchParams.get('moqRange') || '',
     priceRange: searchParams.get('priceRange') || '',
+    priceCurrency: searchParams.get('priceCurrency') || '',
     country: searchParams.get('country') || '',
     verifiedOnly: searchParams.get('verifiedOnly') === 'true',
     orgType: searchParams.get('orgType') || '',
@@ -108,6 +116,7 @@ function createDefaultFilters(searchParams) {
     gsmMin: searchParams.get('gsmMin') || '',
     gsmMax: searchParams.get('gsmMax') || '',
     sizeRange: searchParams.get('sizeRange') || '',
+    sizeRangeCustom: searchParams.get('sizeRangeCustom') || '',
     colorPantone: parseCsvParam(searchParams.get('colorPantone')),
     customization: parseCsvParam(searchParams.get('customization')),
     sampleAvailable: searchParams.get('sampleAvailable') === 'true',
@@ -117,6 +126,11 @@ function createDefaultFilters(searchParams) {
     paymentTerms: parseCsvParam(searchParams.get('paymentTerms')),
     documentReady: parseCsvParam(searchParams.get('documentReady')),
     auditDate: searchParams.get('auditDate') || '',
+      auditScoreMin: searchParams.get('auditScoreMin') || '',
+      hasPermissionMatrix: searchParams.get('hasPermissionMatrix') === 'true',
+      permissionSection: searchParams.get('permissionSection') || '',
+        permissionSectionEdit: searchParams.get('permissionSectionEdit') === 'true',
+        roleSeats: parseRoleSeatsParam(searchParams.get('roleSeats')),
     languageSupport: parseCsvParam(searchParams.get('languageSupport')),
     capacityMin: searchParams.get('capacityMin') || '',
     processes: parseCsvParam(searchParams.get('processes')),
@@ -136,6 +150,27 @@ function parseCsvParam(value) {
     .split(',')
     .map((entry) => entry.trim())
     .filter(Boolean)
+}
+
+function parseRoleSeatsParam(value) {
+  const raw = String(value || '').trim()
+  if (!raw) return []
+  return raw
+    .split(',')
+    .map((part) => {
+      const [roleRaw, seatsRaw] = String(part || '').split(':').map((s) => (s || '').trim())
+      if (!roleRaw) return null
+      return { role: roleRaw, seats: seatsRaw || '' }
+    })
+    .filter(Boolean)
+}
+
+function serializeRoleSeats(entries) {
+  if (!Array.isArray(entries) || !entries.length) return ''
+  return entries
+    .filter((e) => e && e.role)
+    .map((e) => `${e.role}:${String(e.seats || '')}`)
+    .join(',')
 }
 
 function toCsv(value) {
@@ -219,6 +254,7 @@ function buildQueryString({ q, category, filters, includeAdvanced, includePriori
   // Core filters (always included if set)
   if (filters.moqRange) params.set('moqRange', filters.moqRange)
   if (filters.priceRange) params.set('priceRange', filters.priceRange)
+  if (filters.priceCurrency) params.set('priceCurrency', filters.priceCurrency)
   if (filters.country) params.set('country', filters.country)
   if (filters.verifiedOnly) params.set('verifiedOnly', 'true')
   if (filters.orgType) params.set('orgType', filters.orgType)
@@ -231,6 +267,7 @@ function buildQueryString({ q, category, filters, includeAdvanced, includePriori
     if (filters.gsmMin) params.set('gsmMin', filters.gsmMin)
     if (filters.gsmMax) params.set('gsmMax', filters.gsmMax)
     if (filters.sizeRange) params.set('sizeRange', filters.sizeRange)
+    if (filters.sizeRange === 'Custom' && filters.sizeRangeCustom) params.set('sizeRangeCustom', filters.sizeRangeCustom)
     if (hasFilterValue(filters.colorPantone)) params.set('colorPantone', toCsv(filters.colorPantone))
     if (hasFilterValue(filters.customization)) params.set('customization', toCsv(filters.customization))
     if (filters.sampleAvailable) params.set('sampleAvailable', 'true')
@@ -240,12 +277,20 @@ function buildQueryString({ q, category, filters, includeAdvanced, includePriori
     if (hasFilterValue(filters.paymentTerms)) params.set('paymentTerms', toCsv(filters.paymentTerms))
     if (hasFilterValue(filters.documentReady)) params.set('documentReady', toCsv(filters.documentReady))
     if (filters.auditDate) params.set('auditDate', filters.auditDate)
+    if (filters.auditScoreMin) params.set('auditScoreMin', filters.auditScoreMin)
+    if (filters.hasPermissionMatrix) params.set('hasPermissionMatrix', 'true')
+      if (filters.permissionSection) params.set('permissionSection', filters.permissionSection)
+      if (filters.permissionSectionEdit) params.set('permissionSectionEdit', 'true')
     if (hasFilterValue(filters.languageSupport)) params.set('languageSupport', toCsv(filters.languageSupport))
     if (filters.capacityMin) params.set('capacityMin', filters.capacityMin)
     if (hasFilterValue(filters.processes)) params.set('processes', toCsv(filters.processes))
     if (filters.yearsInBusinessMin) params.set('yearsInBusinessMin', filters.yearsInBusinessMin)
     if (filters.responseTimeMax) params.set('responseTimeMax', filters.responseTimeMax)
     if (filters.teamSeatsMin) params.set('teamSeatsMin', filters.teamSeatsMin)
+    if (filters.roleSeats && Array.isArray(filters.roleSeats) && filters.roleSeats.length) {
+      const rs = serializeRoleSeats(filters.roleSeats)
+      if (rs) params.set('roleSeats', rs)
+    }
     if (filters.handlesMultipleFactories) params.set('handlesMultipleFactories', 'true')
     if (hasFilterValue(filters.exportPort)) params.set('exportPort', toCsv(filters.exportPort))
     if (filters.distanceKm) params.set('distanceKm', filters.distanceKm)
@@ -345,15 +390,18 @@ function BucketChips({ options = [], value = '', onChange, disabled }) {
   )
 }
 
-function RangeSlider({ min = 0, max = 100, step = 1, valueMin = '', valueMax = '', onChange, suffix = '', disabled = false }) {
+function RangeSlider({ min = 0, max = 100, step = 1, valueMin = '', valueMax = '', onChange, suffix = '', disabled = false, formatValue }) {
   const minValue = valueMin === '' ? min : Number(valueMin)
   const maxValue = valueMax === '' ? max : Number(valueMax)
+  const format = typeof formatValue === 'function'
+    ? formatValue
+    : (v) => `${v}${suffix}`
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 text-[11px] text-slate-500">
-        <span>{Number.isFinite(minValue) ? minValue : min}{suffix}</span>
+        <span>{Number.isFinite(minValue) ? format(minValue) : format(min)}</span>
         <div className="h-px flex-1 bg-slate-200" />
-        <span>{Number.isFinite(maxValue) ? maxValue : max}{suffix}</span>
+        <span>{Number.isFinite(maxValue) ? format(maxValue) : format(max)}</span>
       </div>
       <div className="flex items-center gap-3">
         <input
@@ -411,9 +459,14 @@ export default function SearchResults() {
   const [upgradePrompt, setUpgradePrompt] = useState('')
   const [alertFeedback, setAlertFeedback] = useState('')
   const [autoSaveCandidate, setAutoSaveCandidate] = useState(null)
+  const [managePresetsOpen, setManagePresetsOpen] = useState(false)
+  const [serverPresets, setServerPresets] = useState([])
+  const [serverPresetsLoading, setServerPresetsLoading] = useState(false)
   const [earlyVerifiedFactories, setEarlyVerifiedFactories] = useState([])
   const [earlyVerifiedError, setEarlyVerifiedError] = useState('')
   const [pantoneDraft, setPantoneDraft] = useState('')
+  const [roleSeatDraftRole, setRoleSeatDraftRole] = useState('')
+  const [roleSeatDraftSeats, setRoleSeatDraftSeats] = useState('')
   const [locationLabel, setLocationLabel] = useState('')
   const [geoQuery, setGeoQuery] = useState('')
   const [geoResults, setGeoResults] = useState([])
@@ -512,6 +565,16 @@ export default function SearchResults() {
 
   const moqRangeValues = useMemo(() => parseRangeValue(filters.moqRange), [filters.moqRange])
   const priceRangeValues = useMemo(() => parseRangeValue(filters.priceRange), [filters.priceRange])
+
+  const priceFormatter = useMemo(() => {
+    const curr = String(filters.priceCurrency || 'USD')
+    try {
+      const nf = new Intl.NumberFormat(undefined, { style: 'currency', currency: curr, maximumFractionDigits: 2 })
+      return (v) => nf.format(Number(v || 0))
+    } catch (err) {
+      return (v) => `${curr} ${v}`
+    }
+  }, [filters.priceCurrency])
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -684,7 +747,7 @@ export default function SearchResults() {
     } finally {
       setLoading(false)
     }
-  }, [activePreset, activeTab, autoSaveAlert, category, filters, hasAdvancedAccess, query, setSearchParams, token])
+  }, [activePreset, activeTab, autoSaveAlert, category, filters, hasAdvancedAccess, query, setSearchParams, token, canPriorityAccessCompanies, canPriorityAccessRequests])
 
   useEffect(() => {
     const handler = (e) => {
@@ -975,6 +1038,18 @@ export default function SearchResults() {
     setPantoneDraft('')
   }
 
+  function addRoleSeat() {
+    const role = String(roleSeatDraftRole || '').trim()
+    if (!role) return
+    const seats = String(roleSeatDraftSeats || '').trim()
+    const existing = Array.isArray(filters.roleSeats) ? (filters.roleSeats || []) : []
+    const next = existing.filter((e) => String(e?.role || '').toLowerCase() !== role.toLowerCase())
+    next.push({ role, seats })
+    updateAdvancedFilter('roleSeats', next)
+    setRoleSeatDraftRole('')
+    setRoleSeatDraftSeats('')
+  }
+
   function removePantone(value) {
     updateAdvancedFilter('colorPantone', (filters.colorPantone || []).filter((entry) => entry !== value))
   }
@@ -1061,6 +1136,87 @@ export default function SearchResults() {
     }
   }
 
+  function getShareUrl() {
+    try {
+      const qs = buildQueryString({
+        q: query.trim(),
+        category,
+        filters,
+        includeAdvanced: hasAdvancedAccess,
+        includePriority: Boolean(filters.priorityOnly),
+      })
+      const params = new URLSearchParams(qs)
+      if (activeTab) params.set('tab', activeTab)
+      return `${window.location.origin}/search?${params.toString()}`
+    } catch (err) {
+      return `${window.location.origin}/search`
+    }
+  }
+
+  async function handleShareClick() {
+    const url = getShareUrl()
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url)
+        setAlertFeedback('Share link copied to clipboard.')
+      } else {
+        // fallback
+        // eslint-disable-next-line no-alert
+        window.prompt('Copy this link', url)
+      }
+    } catch (err) {
+      setAlertFeedback(`Unable to copy link. ${url}`)
+    }
+  }
+
+  function listLocalPresets() {
+    try {
+      return PRESET_KEYS.map((k) => {
+        const raw = localStorage.getItem(`gt_search_preset_${k}`)
+        if (!raw) return null
+        try { return { key: k, data: JSON.parse(raw) } } catch { return null }
+      }).filter(Boolean)
+    } catch {
+      return []
+    }
+  }
+
+  function deleteLocalPreset(presetKey) {
+    try {
+      localStorage.removeItem(`gt_search_preset_${presetKey}`)
+      if (localStorage.getItem(PRESET_STORAGE_KEY) === presetKey) localStorage.removeItem(PRESET_STORAGE_KEY)
+      setAlertFeedback('Preset deleted.')
+      setManagePresetsOpen(false)
+    } catch {
+      // ignore
+    }
+  }
+
+  async function shareLocalPreset(preset) {
+    try {
+      const payload = preset?.data || {}
+      const qs = buildQueryString({
+        q: payload.query || '',
+        category: payload.category || [],
+        filters: payload.filters || {},
+        includeAdvanced: hasAdvancedAccess,
+        includePriority: Boolean(payload?.filters?.priorityOnly),
+      })
+      const params = new URLSearchParams(qs)
+      if (activeTab) params.set('tab', activeTab)
+      const url = `${window.location.origin}/search?${params.toString()}`
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url)
+        setAlertFeedback('Preset link copied to clipboard.')
+      } else {
+        // eslint-disable-next-line no-alert
+        window.prompt('Copy this preset link', url)
+      }
+    } catch (err) {
+      setAlertFeedback('Unable to copy preset link.')
+    }
+  }
+
   function savePresetLocal(presetKey) {
     try {
       const payload = { query, category, filters }
@@ -1123,6 +1279,131 @@ export default function SearchResults() {
     setAutoSaveCandidate(null)
   }
 
+  async function fetchServerPresets() {
+    if (!token) {
+      setServerPresets([])
+      return
+    }
+    setServerPresetsLoading(true)
+    try {
+      const data = await apiRequest('/presets', { token })
+      setServerPresets(Array.isArray(data?.items) ? data.items : [])
+    } catch (err) {
+      setServerPresets([])
+    } finally {
+      setServerPresetsLoading(false)
+    }
+  }
+
+  async function createServerPresetFromCurrent(name, shared = false) {
+    if (!token) {
+      setAlertFeedback('Login required to save presets.')
+      return null
+    }
+    try {
+      const payload = { name: String(name || 'Preset'), filters: { query, category, ...filters }, shared: Boolean(shared) }
+      await apiRequest('/presets', { method: 'POST', token, body: payload })
+      await fetchServerPresets()
+      setAlertFeedback('Preset saved to server.')
+      return true
+    } catch (err) {
+      setAlertFeedback(err.message || 'Unable to save preset to server.')
+      return null
+    }
+  }
+
+  async function createServerPresetFromLocal(presetKey) {
+    try {
+      const raw = localStorage.getItem(`gt_search_preset_${presetKey}`)
+      if (!raw) {
+        setAlertFeedback('Local preset not found')
+        return null
+      }
+      const parsed = JSON.parse(raw)
+      if (!token) {
+        setAlertFeedback('Login required to save presets.')
+        return null
+      }
+      const payload = { name: `${presetKey.replace('_', ' ')} preset`, filters: { query: parsed.query || '', category: parsed.category || [], ...parsed.filters }, shared: false }
+      await apiRequest('/presets', { method: 'POST', token, body: payload })
+      await fetchServerPresets()
+      setAlertFeedback('Local preset copied to server.')
+      return true
+    } catch (err) {
+      setAlertFeedback(err.message || 'Unable to copy preset to server.')
+      return null
+    }
+  }
+
+  function applyServerPreset(preset) {
+    try {
+      const data = preset?.filters || {}
+      setQuery(data.query || '')
+      const presetCategory = Array.isArray(data.category) ? data.category : parseCsvParam(data.category)
+      setCategory(presetCategory)
+      if (data) {
+        setFilters((prev) => ({
+          ...prev,
+          ...data,
+          fabricType: Array.isArray(data.fabricType) ? data.fabricType : parseCsvParam(data.fabricType),
+          colorPantone: Array.isArray(data.colorPantone) ? data.colorPantone : parseCsvParam(data.colorPantone),
+          customization: Array.isArray(data.customization) ? data.customization : parseCsvParam(data.customization),
+          certifications: Array.isArray(data.certifications) ? data.certifications : parseCsvParam(data.certifications),
+          incoterms: Array.isArray(data.incoterms) ? data.incoterms : parseCsvParam(data.incoterms),
+          paymentTerms: Array.isArray(data.paymentTerms) ? data.paymentTerms : parseCsvParam(data.paymentTerms),
+          documentReady: Array.isArray(data.documentReady) ? data.documentReady : parseCsvParam(data.documentReady),
+          languageSupport: Array.isArray(data.languageSupport) ? data.languageSupport : parseCsvParam(data.languageSupport),
+          processes: Array.isArray(data.processes) ? data.processes : parseCsvParam(data.processes),
+          exportPort: Array.isArray(data.exportPort) ? data.exportPort : parseCsvParam(data.exportPort),
+        }))
+      }
+      setActivePreset(preset?.name || '')
+      setAlertFeedback(`Loaded preset "${preset?.name || ''}"`)
+    } catch {
+      setAlertFeedback('Unable to load preset.')
+    }
+  }
+
+  async function updateServerPreset(presetId) {
+    if (!token) {
+      setAlertFeedback('Login required.')
+      return null
+    }
+    try {
+      const name = window.prompt('Rename preset (leave blank to keep current name)', '')
+      if (name === null) return null
+      const body = { name: name || undefined, filters: { query, category, ...filters } }
+      await apiRequest(`/presets/${encodeURIComponent(presetId)}`, { method: 'PATCH', token, body })
+      await fetchServerPresets()
+      setAlertFeedback('Preset updated.')
+      return true
+    } catch (err) {
+      setAlertFeedback(err.message || 'Unable to update preset.')
+      return null
+    }
+  }
+
+  async function deleteServerPreset(presetId) {
+    if (!token) {
+      setAlertFeedback('Login required.')
+      return false
+    }
+    try {
+      await apiRequest(`/presets/${encodeURIComponent(presetId)}`, { method: 'DELETE', token })
+      await fetchServerPresets()
+      setAlertFeedback('Preset deleted.')
+      return true
+    } catch (err) {
+      setAlertFeedback(err.message || 'Unable to delete preset.')
+      return false
+    }
+  }
+
+  useEffect(() => {
+    if (!managePresetsOpen) return
+    fetchServerPresets().catch(() => null)
+  }, [managePresetsOpen])
+
   function openChatNotice(name, leadSource, journeyContext = {}) {
     if (leadSource?.type && leadSource?.id) {
       recordLeadSource({
@@ -1172,11 +1453,29 @@ export default function SearchResults() {
     if (category.length) chips.push({ key: 'category', label: `Category: ${category.join(', ')}`, onRemove: clearCategories })
     if (filters.industry) chips.push({ key: 'industry', label: `Industry: ${filters.industry}`, onRemove: () => updateCoreFilter('industry', '') })
     if (filters.country) chips.push({ key: 'country', label: `Country: ${filters.country}`, onRemove: () => updateCoreFilter('country', '') })
+    if (filters.incoterms && Array.isArray(filters.incoterms) && filters.incoterms.length) chips.push({ key: 'incoterms', label: `Incoterms: ${filters.incoterms.join(', ')}`, onRemove: () => updateCoreFilter('incoterms', []) })
     if (filters.verifiedOnly) chips.push({ key: 'verifiedOnly', label: 'Verified only', onRemove: () => updateCoreFilter('verifiedOnly', false) })
     if (filters.orgType) chips.push({ key: 'orgType', label: `Account: ${filters.orgType.replace('_', ' ')}`, onRemove: () => updateCoreFilter('orgType', '') })
     if (filters.priorityOnly) chips.push({ key: 'priorityOnly', label: 'Priority only', onRemove: () => setFilters((prev) => ({ ...prev, priorityOnly: false })) })
+    if (filters.priceRange) {
+      const pr = priceRangeValues || { min: '', max: '' }
+      const minLabel = pr.min ? priceFormatter(pr.min) : ''
+      const maxLabel = pr.max ? priceFormatter(pr.max) : ''
+      const label = `Price: ${minLabel}${(minLabel && maxLabel) ? ` - ${maxLabel}` : ''}`
+      chips.push({ key: 'priceRange', label, onRemove: () => updateCoreFilter('priceRange', '') })
+    }
+    if (filters.auditScoreMin) chips.push({ key: 'auditScoreMin', label: `Audit score ≥ ${filters.auditScoreMin}`, onRemove: () => updateAdvancedFilter('auditScoreMin', '') })
+    if (filters.hasPermissionMatrix) chips.push({ key: 'hasPermissionMatrix', label: 'Role-based access', onRemove: () => updateAdvancedFilter('hasPermissionMatrix', false) })
+    if (filters.permissionSection) chips.push({ key: 'permissionSection', label: `Permission: ${filters.permissionSection}${filters.permissionSectionEdit ? ' (edit)' : ''}`, onRemove: () => { updateAdvancedFilter('permissionSection', ''); updateAdvancedFilter('permissionSectionEdit', false) } })
+    if (filters.roleSeats && Array.isArray(filters.roleSeats) && filters.roleSeats.length) {
+      (filters.roleSeats || []).forEach((entry) => {
+        if (!entry || !entry.role) return
+        const label = `${entry.role}: ${entry.seats || '0'} seats`
+        chips.push({ key: `roleSeats-${entry.role}`, label, onRemove: () => updateAdvancedFilter('roleSeats', (filters.roleSeats || []).filter((e) => e.role !== entry.role)) })
+      })
+    }
     return chips
-  }, [category, filters.country, filters.industry, filters.orgType, filters.priorityOnly, filters.verifiedOnly, query])
+  }, [category, filters.country, filters.industry, filters.orgType, filters.priorityOnly, filters.verifiedOnly, query, filters.priceRange, priceFormatter, priceRangeValues])
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
@@ -1209,6 +1508,14 @@ export default function SearchResults() {
               >
                 <Bell size={16} />
                 Save search
+              </button>
+              <button
+                type="button"
+                onClick={handleShareClick}
+                className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200/70 transition hover:bg-white active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
+              >
+                <Share2 size={16} />
+                Share
               </button>
               <Link
                 to="/notifications"
@@ -1324,6 +1631,23 @@ export default function SearchResults() {
                   <div className="rounded-xl bg-white px-3 py-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
                     <p className="text-[11px] font-semibold text-slate-500">MOQ range</p>
                     <div className="mt-2">
+                      <BucketChips
+                        options={MOQ_BUCKETS}
+                        value={filters.moqRange}
+                        onChange={(val) => {
+                          // BucketChips returns a value like "min-max" or '' for Any
+                          if (!val) updateRangeFilter('moqRange', '', '')
+                          else {
+                            const parts = String(val).split('-')
+                            const min = parts[0] || ''
+                            const max = parts[1] === undefined ? '' : parts[1]
+                            updateRangeFilter('moqRange', min, max)
+                          }
+                        }}
+                        disabled={false}
+                      />
+                    </div>
+                    <div className="mt-3">
                       <RangeSlider
                         min={0}
                         max={5000}
@@ -1336,15 +1660,40 @@ export default function SearchResults() {
                   </div>
                   <div className="rounded-xl bg-white px-3 py-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
                     <p className="text-[11px] font-semibold text-slate-500">Price per unit</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <select
+                        value={filters.priceCurrency || ''}
+                        onChange={(e) => updateCoreFilter('priceCurrency', e.target.value)}
+                        className="w-28 rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                      >
+                        <option value="">Currency</option>
+                        {CURRENCY_OPTIONS.map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                      <div className="flex-1">
+                        <RangeSlider
+                          min={0}
+                          max={200}
+                          step={1}
+                          valueMin={priceRangeValues.min}
+                          valueMax={priceRangeValues.max}
+                          onChange={(min, max) => updateRangeFilter('priceRange', min, max)}
+                          suffix=""
+                          formatValue={priceFormatter}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded-xl bg-white px-3 py-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                    <p className="text-[11px] font-semibold text-slate-500">Incoterms</p>
                     <div className="mt-2">
-                      <RangeSlider
-                        min={0}
-                        max={200}
-                        step={1}
-                        valueMin={priceRangeValues.min}
-                        valueMax={priceRangeValues.max}
-                        onChange={(min, max) => updateRangeFilter('priceRange', min, max)}
-                        suffix=""
+                      <ChipGroup
+                        options={INCOTERM_OPTIONS}
+                        values={filters.incoterms || []}
+                        onChange={(values) => updateCoreFilter('incoterms', values)}
+                        disabled={false}
+                        counts={facetCounts.incoterms}
                       />
                     </div>
                   </div>
@@ -1518,6 +1867,17 @@ export default function SearchResults() {
                             <option key={option} value={option}>{option}</option>
                           ))}
                         </select>
+                        {filters.sizeRange === 'Custom' ? (
+                          <div className="mt-2">
+                            <input
+                              value={filters.sizeRangeCustom || ''}
+                              onChange={(e) => updateAdvancedFilter('sizeRangeCustom', e.target.value)}
+                              placeholder="Custom sizes (e.g. Chest:32-40; Waist:28-36)"
+                              disabled={premiumLocked}
+                              className="w-full rounded-lg bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                            />
+                          </div>
+                        ) : null}
                         <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
                           <p className="text-[11px] font-semibold text-slate-500">Color / Pantone</p>
                           <div className="mt-2 flex flex-wrap gap-2">
@@ -1558,13 +1918,27 @@ export default function SearchResults() {
                         </div>
                         <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
                           <p className="text-[11px] font-semibold text-slate-500">Customization</p>
-                          <div className="mt-2">
-                            <ChipGroup
-                              options={CUSTOMIZATION_OPTIONS}
-                              values={filters.customization}
-                              onChange={(values) => updateAdvancedFilter('customization', values)}
-                              disabled={premiumLocked}
-                            />
+                          <div className="mt-2 space-y-2">
+                            {CUSTOMIZATION_OPTIONS.map((opt) => {
+                              const checked = Array.isArray(filters.customization) && filters.customization.includes(opt)
+                              return (
+                                <label key={opt} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
+                                  <input
+                                    type="checkbox"
+                                    checked={checked}
+                                    disabled={premiumLocked}
+                                    onChange={() => {
+                                      const next = checked
+                                        ? (filters.customization || []).filter((c) => c !== opt)
+                                        : [...(filters.customization || []), opt]
+                                      updateAdvancedFilter('customization', next)
+                                    }}
+                                    className="h-4 w-4"
+                                  />
+                                  {opt}
+                                </label>
+                              )
+                            })}
                           </div>
                         </div>
                         <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
@@ -1679,6 +2053,44 @@ export default function SearchResults() {
                           />
                         </div>
                         <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="text-[11px] font-semibold text-slate-500">Audit score (min)</p>
+                            <button
+                              type="button"
+                              onClick={() => updateAdvancedFilter('auditScoreMin', '')}
+                              disabled={premiumLocked || !filters.auditScoreMin}
+                              className="text-[10px] font-semibold text-slate-500 hover:text-slate-700 disabled:opacity-60"
+                            >
+                              Clear
+                            </button>
+                          </div>
+                          <div className="mt-2 flex items-center gap-3">
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              step="1"
+                              value={Number(filters.auditScoreMin || 0)}
+                              onChange={(e) => updateAdvancedFilter('auditScoreMin', e.target.value)}
+                              disabled={premiumLocked}
+                              className="w-full"
+                            />
+                            <input
+                              type="number"
+                              min="0"
+                              max="100"
+                              value={filters.auditScoreMin}
+                              onChange={(e) => updateAdvancedFilter('auditScoreMin', e.target.value)}
+                              placeholder="Any"
+                              disabled={premiumLocked}
+                              className="w-24 rounded-lg bg-white px-3 py-2 text-xs text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                            />
+                          </div>
+                          <div className="mt-1 text-[10px] text-slate-400">
+                            {filters.auditScoreMin ? `Min score: ${filters.auditScoreMin}` : 'Any (move slider to set)'}
+                          </div>
+                        </div>
+                        <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
                           <p className="text-[11px] font-semibold text-slate-500">Language support</p>
                           <div className="mt-2">
                             <ChipGroup
@@ -1752,6 +2164,95 @@ export default function SearchResults() {
                                 onChange={(value) => updateAdvancedFilter('teamSeatsMin', value)}
                                 disabled={premiumLocked}
                               />
+                            </div>
+                          </div>
+                          <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
+                            <input
+                              type="checkbox"
+                              checked={Boolean(filters.hasPermissionMatrix)}
+                              onChange={(e) => updateAdvancedFilter('hasPermissionMatrix', e.target.checked)}
+                              disabled={premiumLocked}
+                              className="h-4 w-4"
+                            />
+                            Has role-based access (permission matrix)
+                          </label>
+                          <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                            <p className="text-[11px] font-semibold text-slate-500">Permission area</p>
+                            <select
+                              value={filters.permissionSection || ''}
+                              onChange={(e) => updateAdvancedFilter('permissionSection', e.target.value)}
+                              disabled={premiumLocked}
+                              className="mt-2 w-full rounded-lg bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                            >
+                              <option value="">Any (permission)</option>
+                              <option value="requests">Requests</option>
+                              <option value="products">Products</option>
+                              <option value="analytics">Analytics</option>
+                              <option value="members">Members</option>
+                              <option value="documents">Documents</option>
+                            </select>
+                            <label className="mt-2 flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
+                              <input
+                                type="checkbox"
+                                checked={Boolean(filters.permissionSectionEdit)}
+                                onChange={(e) => updateAdvancedFilter('permissionSectionEdit', e.target.checked)}
+                                disabled={premiumLocked}
+                                className="h-4 w-4"
+                              />
+                              Require edit access
+                            </label>
+                          </div>
+                          <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                            <p className="text-[11px] font-semibold text-slate-500">Role seats</p>
+                            <div className="mt-2">
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  placeholder="Role (e.g., manager)"
+                                  value={roleSeatDraftRole}
+                                  onChange={(e) => setRoleSeatDraftRole(e.target.value)}
+                                  disabled={premiumLocked}
+                                  className="flex-1 rounded-lg bg-white px-3 py-2 text-xs text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                                />
+                                <input
+                                  type="number"
+                                  min="0"
+                                  placeholder="Seats"
+                                  value={roleSeatDraftSeats}
+                                  onChange={(e) => setRoleSeatDraftSeats(e.target.value)}
+                                  disabled={premiumLocked}
+                                  className="w-24 rounded-lg bg-white px-3 py-2 text-xs text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={addRoleSeat}
+                                  disabled={premiumLocked || !roleSeatDraftRole}
+                                  className="rounded-lg bg-[var(--gt-blue)] px-3 py-2 text-[11px] font-semibold text-white disabled:opacity-60"
+                                >
+                                  Add
+                                </button>
+                              </div>
+                              <div className="mt-2 space-y-1">
+                                {Array.isArray(filters.roleSeats) && filters.roleSeats.length ? (
+                                  filters.roleSeats.map((entry) => (
+                                    <div key={entry.role} className="flex items-center justify-between">
+                                      <div className="text-[11px] text-slate-700">{entry.role}: {entry.seats || 0} seats</div>
+                                      <div>
+                                        <button
+                                          type="button"
+                                          onClick={() => updateAdvancedFilter('roleSeats', (filters.roleSeats || []).filter((e) => e.role !== entry.role))}
+                                          disabled={premiumLocked}
+                                          className="rounded-full px-2 py-1 text-[11px] font-semibold text-rose-600 ring-1 ring-rose-200/30"
+                                        >
+                                          Remove
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div className="text-[11px] text-slate-400">No role seat filters</div>
+                                )}
+                              </div>
                             </div>
                           </div>
                           <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
@@ -1879,6 +2380,60 @@ export default function SearchResults() {
                     <button type="button" onClick={() => applyPreset('buying_house')} className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">Buying house</button>
                     <button type="button" onClick={() => applyPreset('factory')} className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">Factory</button>
                   </div>
+                </div>
+
+                <div className="mt-3">
+                  <button type="button" onClick={() => setManagePresetsOpen((p) => !p)} className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Manage presets</button>
+                  {managePresetsOpen ? (
+                    <div className="mt-2 space-y-2">
+                      {listLocalPresets().length ? listLocalPresets().map((p) => (
+                        <div key={p.key} className="flex items-center justify-between gap-2 rounded-xl bg-white p-2 ring-1 ring-slate-200/70">
+                          <div className="min-w-0 text-xs text-slate-700">{p.key.replace('_', ' ')} preset</div>
+                          <div className="flex gap-2">
+                            <button type="button" onClick={() => applyPreset(p.key)} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Load</button>
+                            <button type="button" onClick={() => shareLocalPreset(p)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Share</button>
+                            <button type="button" onClick={() => createServerPresetFromLocal(p.key)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Copy to server</button>
+                            <button type="button" onClick={() => deleteLocalPreset(p.key)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-rose-600 ring-1 ring-rose-200/30">Delete</button>
+                          </div>
+                        </div>
+                      )) : (
+                        <div className="text-xs text-slate-500">No local presets saved. Use the preset buttons above to save one.</div>
+                      )}
+
+                      <div className="pt-2 border-t" />
+
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500">Server presets</p>
+                        <div className="mt-2 space-y-2">
+                          {serverPresetsLoading ? (
+                            <div className="text-xs text-slate-500">Loading server presets...</div>
+                          ) : (serverPresets.length ? serverPresets.map((sp) => (
+                            <div key={sp.id} className="flex items-center justify-between gap-2 rounded-xl bg-white p-2 ring-1 ring-slate-200/70">
+                              <div className="min-w-0 text-xs text-slate-700">{sp.name}{String(sp.owner_id) === String(sessionUser?.id) ? ' (you)' : ''}</div>
+                              <div className="flex gap-2">
+                                <button type="button" onClick={() => applyServerPreset(sp)} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Load</button>
+                                {String(sp.owner_id) === String(sessionUser?.id) ? (
+                                  <>
+                                    <button type="button" onClick={() => updateServerPreset(sp.id)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Save</button>
+                                    <button type="button" onClick={() => deleteServerPreset(sp.id)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-rose-600 ring-1 ring-rose-200/30">Delete</button>
+                                  </>
+                                ) : null}
+                              </div>
+                            </div>
+                          )) : (
+                            <div className="text-xs text-slate-500">No server presets. Save your current search to create one.</div>
+                          ))}
+
+                          <div className="mt-2">
+                            <button type="button" onClick={() => {
+                              const name = window.prompt('Preset name')
+                              if (name) createServerPresetFromCurrent(name)
+                            }} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Save current as server preset</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
 
                 {autoSaveCandidate ? (

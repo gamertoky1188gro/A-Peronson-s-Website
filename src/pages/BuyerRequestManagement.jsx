@@ -1,6 +1,7 @@
 ﻿import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiRequest, getCurrentUser, getToken, API_BASE, hasEntitlement } from '../lib/auth'
+import { mapExtractedToForm } from '../lib/aiPrefill'
 
 // Roles allowed by router:
 // - buyer: create requests + see own requests + browse redacted summaries
@@ -448,25 +449,39 @@ export default function BuyerRequestManagement() {
       const missing = Array.isArray(extracted.missing_fields) ? extracted.missing_fields : []
       setAiParseWarnings(missing)
 
-      const timelineDays = extracted?.timeline?.normalized_days
-      const priceMin = extracted?.price?.min
-      const priceMax = extracted?.price?.max
-      const priceCurrency = extracted?.price?.currency || 'USD'
+      // Use central prefill mapper and merge only non-empty values
+      try {
+        const mapped = mapExtractedToForm(extracted)
+        const sanitized = Object.entries(mapped).reduce((acc, [k, v]) => {
+          if (v === undefined || v === null) return acc
+          if (typeof v === 'string' && v.trim() === '') return acc
+          if (Array.isArray(v) && v.length === 0) return acc
+          acc[k] = v
+          return acc
+        }, {})
+        setForm((prev) => ({ ...prev, ...sanitized }))
+      } catch (err) {
+        // Fallback: keep previous behavior if mapper fails
+        const timelineDays = extracted?.timeline?.normalized_days
+        const priceMin = extracted?.price?.min
+        const priceMax = extracted?.price?.max
+        const priceCurrency = extracted?.price?.currency || 'USD'
 
-      setForm((prev) => ({
-        ...prev,
-        targetFobPrice: Number.isFinite(priceMin)
-          ? `${priceCurrency} ${priceMin}${Number.isFinite(priceMax) && priceMax !== priceMin ? `-${priceMax}` : ''}`
-          : prev.targetFobPrice,
-        targetPrice: Number.isFinite(priceMin)
-          ? `${priceCurrency} ${priceMin}${Number.isFinite(priceMax) && priceMax !== priceMin ? `-${priceMax}` : ''}`
-          : prev.targetPrice,
-        fabricComposition: extracted?.fabric?.composition || extracted?.fabric?.material || prev.fabricComposition,
-        fiberComposition: extracted?.fabric?.composition || extracted?.fabric?.material || prev.fiberComposition,
-        fabricWeightGsm: Number.isFinite(extracted?.fabric?.gsm) ? String(extracted.fabric.gsm) : prev.fabricWeightGsm,
-        complianceNotes: extracted?.compliance?.notes || prev.complianceNotes,
-        leadTimeRequired: Number.isFinite(timelineDays) ? `${timelineDays} days` : prev.leadTimeRequired,
-      }))
+        setForm((prev) => ({
+          ...prev,
+          targetFobPrice: Number.isFinite(priceMin)
+            ? `${priceCurrency} ${priceMin}${Number.isFinite(priceMax) && priceMax !== priceMin ? `-${priceMax}` : ''}`
+            : prev.targetFobPrice,
+          targetPrice: Number.isFinite(priceMin)
+            ? `${priceCurrency} ${priceMin}${Number.isFinite(priceMax) && priceMax !== priceMin ? `-${priceMax}` : ''}`
+            : prev.targetPrice,
+          fabricComposition: extracted?.fabric?.composition || extracted?.fabric?.material || prev.fabricComposition,
+          fiberComposition: extracted?.fabric?.composition || extracted?.fabric?.material || prev.fiberComposition,
+          fabricWeightGsm: Number.isFinite(extracted?.fabric?.gsm) ? String(extracted.fabric.gsm) : prev.fabricWeightGsm,
+          complianceNotes: extracted?.compliance?.notes || prev.complianceNotes,
+          leadTimeRequired: Number.isFinite(timelineDays) ? `${timelineDays} days` : prev.leadTimeRequired,
+        }))
+      }
 
       const confidence = Number(response?.confidence || 0)
       setAiParseFeedback(`AI parsed your text (confidence ${Math.round(confidence * 100)}%).`)
