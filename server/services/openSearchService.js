@@ -172,6 +172,7 @@ function productMappings() {
       handles_multiple_factories: { type: 'boolean' },
       avg_response_hours: { type: 'double' },
       audit_date: { type: 'keyword' },
+      role_seats: { type: 'object' },
       location: { type: 'geo_point' },
     },
   }
@@ -213,6 +214,7 @@ function requirementMappings() {
       team_seats: { type: 'double' },
       handles_multiple_factories: { type: 'boolean' },
       avg_response_hours: { type: 'double' },
+      role_seats: { type: 'object' },
       location: { type: 'geo_point' },
     },
   }
@@ -338,7 +340,6 @@ async function buildProductDoc(product, author = {}, responseMap = null) {
   const responseTimes = responseMap || await buildResponseTimeByOwner()
   const ownerId = String(author.id || '')
   const avgResponse = responseTimes.has(ownerId) ? responseTimes.get(ownerId) : null
-
   return {
     id: product.id,
     title: product.title || '',
@@ -373,6 +374,18 @@ async function buildProductDoc(product, author = {}, responseMap = null) {
     handles_multiple_factories: Boolean(author.handles_multiple_factories),
     avg_response_hours: avgResponse,
     audit_date: normalizeKeyword(author.audit_date),
+    // normalize role seats (flatten keys to lowercase numbers when possible)
+    role_seats: (() => {
+      const raw = author.role_seats || author.roleSeats || (author.permission_matrix && author.permission_matrix.members && author.permission_matrix.members.seats) || null
+      if (!raw || typeof raw !== 'object') return null
+      const mapped = {}
+      Object.entries(raw).forEach(([k, v]) => {
+        const key = String(k || '').toLowerCase()
+        const n = parseNumberLike(v)
+        mapped[key] = n !== null ? n : v
+      })
+      return mapped
+    })(),
     location: buildGeoPoint(author.location_lat, author.location_lng),
   }
 }
@@ -407,7 +420,6 @@ async function buildRequirementDoc(req, author = {}, responseMap = null) {
   const responseTimes = responseMap || await buildResponseTimeByOwner()
   const ownerId = String(author.id || '')
   const avgResponse = responseTimes.has(ownerId) ? responseTimes.get(ownerId) : null
-
   return {
     id: req.id,
     title: req.title || '',
@@ -442,6 +454,18 @@ async function buildRequirementDoc(req, author = {}, responseMap = null) {
     team_seats: parseNumberLike(author.team_seats),
     handles_multiple_factories: Boolean(author.handles_multiple_factories),
     avg_response_hours: avgResponse,
+    // normalize role seats (flatten keys to lowercase numbers when possible)
+    role_seats: (() => {
+      const raw = author.role_seats || author.roleSeats || (author.permission_matrix && author.permission_matrix.members && author.permission_matrix.members.seats) || null
+      if (!raw || typeof raw !== 'object') return null
+      const mapped = {}
+      Object.entries(raw).forEach(([k, v]) => {
+        const key = String(k || '').toLowerCase()
+        const n = parseNumberLike(v)
+        mapped[key] = n !== null ? n : v
+      })
+      return mapped
+    })(),
     location: buildGeoPoint(author.location_lat, author.location_lng),
   }
 }
@@ -609,6 +633,29 @@ export async function searchOpenSearch({
   if (filters.responseTimeMax) filter.push({ range: { avg_response_hours: { lte: Number(filters.responseTimeMax) } } })
   if (filters.handlesMultipleFactories !== undefined && filters.handlesMultipleFactories !== null) {
     addTermFilter(filter, 'handles_multiple_factories', Boolean(filters.handlesMultipleFactories))
+  }
+
+  // roleSeats filter: accepts a comma-separated list like "manager:2,admin:1"
+  if (filters.roleSeats) {
+    const raw = String(filters.roleSeats || '').trim()
+    if (raw) {
+      for (const part of raw.split(',')) {
+        const [roleRaw, seatsRaw] = String(part || '').split(':').map((s) => (s || '').trim())
+        if (!roleRaw) continue
+        const roleKey = String(roleRaw || '').toLowerCase()
+        const minSeats = parseNumberLike(seatsRaw)
+        if (minSeats === null) continue
+        // Match documents where role_seats.<roleKey> >= minSeats OR team_seats >= minSeats
+        filter.push({
+          bool: {
+            should: [
+              { range: { [`role_seats.${roleKey}`]: { gte: minSeats } } },
+              { range: { team_seats: { gte: minSeats } } },
+            ],
+          },
+        })
+      }
+    }
   }
   if (filters.sampleAvailable) addTermFilter(filter, 'sample_available', true)
   if (filters.sampleLeadTimeMax !== undefined && filters.sampleLeadTimeMax !== null && String(filters.sampleLeadTimeMax).trim() !== '') {

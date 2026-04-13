@@ -14,6 +14,7 @@ import systemRoutes from './routes/systemRoutes.js'
 import notificationRoutes from './routes/notificationRoutes.js'
 import socialRoutes from './routes/socialRoutes.js'
 import searchRoutes from './routes/searchRoutes.js'
+import presetsRoutes from './routes/presetsRoutes.js'
 import verificationRoutes from './routes/verificationRoutes.js'
 import subscriptionRoutes from './routes/subscriptionRoutes.js'
 import feedRoutes from './routes/feedRoutes.js'
@@ -25,6 +26,7 @@ import analyticsRoutes from './routes/analyticsRoutes.js'
 import eventRoutes from './routes/eventRoutes.js'
 import messageRoutes from './routes/messageRoutes.js'
 import partnerNetworkRoutes from './routes/partnerNetworkRoutes.js'
+import agentSubIdRoutes from './routes/agentSubIdRoutes.js'
 import callSessionRoutes from './routes/callSessionRoutes.js'
 import leadRoutes from './routes/leadRoutes.js'
 import memberRoutes from './routes/memberRoutes.js'
@@ -46,6 +48,9 @@ import networkRoutes from './routes/networkRoutes.js'
 import certificationRoutes from './routes/certificationRoutes.js'
 import crmRoutes from './routes/crmRoutes.js'
 import aiRoutes from './routes/aiRoutes.js'
+import exportRoutes from './routes/exportRoutes.js'
+import devRoutes from './routes/devRoutes.js'
+import { startEsignWebhookRetryWorker } from './services/esignRetryService.js'
 import dealJourneyRoutes from './routes/dealJourneyRoutes.js'
 import workflowLifecycleRoutes from './routes/workflowLifecycleRoutes.js'
 import { requestLogger } from './middleware/requestLogger.js'
@@ -123,7 +128,9 @@ app.use('/api/system', systemRoutes)
 app.use('/api/notifications', notificationRoutes)
 app.use('/api/social', socialRoutes)
 app.use('/api/search', searchRoutes)
+app.use('/api/presets', presetsRoutes)
 app.use('/api/partners', partnerNetworkRoutes)
+app.use('/api/agents/subids', agentSubIdRoutes)
 app.use('/api/calls', callSessionRoutes)
 app.use('/api/org', orgRoutes)
 app.use('/api/members', memberRoutes)
@@ -146,6 +153,8 @@ app.use('/api/deal-journeys', dealJourneyRoutes)
 app.use('/api/workflow', workflowLifecycleRoutes)
 app.use('/api/infra', infraRoutes)
 app.use('/api/network', networkRoutes)
+app.use('/api/exports', exportRoutes)
+app.use('/api/dev', devRoutes)
 app.use(errorHandler)
 
 if (serveDist && fs.existsSync(distRoot)) {
@@ -662,6 +671,12 @@ async function start() {
   server.listen(PORT, () => {
     logInfo(`Verification MVP API running on http://localhost:${PORT}`)
   })
+
+  try {
+    startEsignWebhookRetryWorker()
+  } catch (err) {
+    logError('start_esign_retry_worker_failed', err)
+  }
 }
 
 start().catch((error) => {

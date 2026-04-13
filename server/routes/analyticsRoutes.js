@@ -6,6 +6,8 @@ import {
   analyticsPlatformAdmin,
   analyticsPlatformSegment,
   analyticsPlatformSummary,
+  analyticsPlatformOverview,
+  analyticsPlatformTrends,
   analyticsPremium,
   analyticsSummary,
   analyticsViewers,
@@ -16,6 +18,8 @@ const router = Router()
 router.get('/summary', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory', 'buyer', 'agent'), analyticsSummary)
 router.get('/dashboard', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory', 'buyer', 'agent'), analyticsDashboard)
 router.get('/company', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory', 'agent'), analyticsCompany)
+router.get('/platform/overview', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory', 'buyer', 'agent'), analyticsPlatformOverview)
+router.get('/platform/trends', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory', 'buyer', 'agent'), analyticsPlatformTrends)
 router.get('/platform/summary', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory', 'buyer', 'agent'), analyticsPlatformSummary)
 router.get('/platform/segment', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory', 'buyer', 'agent'), analyticsPlatformSegment)
 router.get('/platform/admin', requireAuth, allowRoles('owner', 'admin'), analyticsPlatformAdmin)

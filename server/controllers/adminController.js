@@ -3,6 +3,9 @@ import { sanitizeString } from '../utils/validators.js'
 import { createNotification } from '../services/notificationService.js'
 import { listReports, resolveReport } from '../services/reportService.js'
 import { adminAssignSupportTicket, adminUpdateSupportTicket, buildSupportTicketSummary, listSupportTicketsAdmin } from '../services/supportTicketService.js'
+import { readLocalJson, updateLocalJson } from '../utils/localStore.js'
+import { handleSignCallback } from '../services/eSignService.js'
+import { logInfo, logError } from '../utils/logger.js'
 
 function toPublicFileUrl(filePath = '') {
   if (!filePath) return ''
@@ -256,4 +259,43 @@ export async function assignAccountManager(req, res) {
   rows[idx] = { ...rows[idx], profile }
   await writeJson('users.json', rows)
   return res.json({ ok: true, user_id: rows[idx].id, profile })
+}
+
+// E-sign webhook failure admin helpers
+export async function listEsignFailures(req, res) {
+  const items = await readLocalJson('esign_webhook_failures', [])
+  return res.json({ items: Array.isArray(items) ? items : [] })
+}
+
+export async function retryEsignFailure(req, res) {
+  const id = String(req.params.id || '').trim()
+  const list = await readLocalJson('esign_webhook_failures', [])
+  const idx = Array.isArray(list) ? list.findIndex((it) => String(it.id) === id) : -1
+  if (idx < 0) return res.status(404).json({ error: 'not_found' })
+  const item = list[idx]
+  try {
+    await handleSignCallback(item.contractId, item.payload)
+    const next = list.filter((it) => String(it.id) !== id)
+    await updateLocalJson('esign_webhook_failures', () => next, [])
+    logInfo('admin_esign_retry_success', { id: item.id, contractId: item.contractId })
+    return res.json({ ok: true })
+  } catch (err) {
+    item.attempts = Number(item.attempts || 0) + 1
+    item.lastAttemptAt = Date.now()
+    item.lastError = String(err?.message || err)
+    const next = list.map((it) => (String(it.id) === id ? item : it))
+    await updateLocalJson('esign_webhook_failures', () => next, [])
+    logError('admin_esign_retry_failed', { id: item.id, contractId: item.contractId, error: item.lastError })
+    return res.status(500).json({ ok: false, error: 'retry_failed', message: item.lastError })
+  }
+}
+
+export async function deleteEsignFailure(req, res) {
+  const id = String(req.params.id || '').trim()
+  const list = await readLocalJson('esign_webhook_failures', [])
+  const next = Array.isArray(list) ? list.filter((it) => String(it.id) !== id) : []
+  if (next.length === (Array.isArray(list) ? list.length : 0)) return res.status(404).json({ error: 'not_found' })
+  await updateLocalJson('esign_webhook_failures', () => next, [])
+  logInfo('admin_esign_failure_deleted', { id })
+  return res.json({ ok: true })
 }

@@ -222,6 +222,8 @@ export default function TexHub() {
         hero: {
           headline: 'Where global buyers, factories, and buying houses connect with clarity',
           subheadline: 'A focused B2B sourcing workflow platform for garments and textiles. Post requests, showcase products, connect quickly, and move from first contact to contract in one place.',
+          short_description: 'A focused B2B platform for Bangladesh-centric but global-facing garments and textile sourcing.',
+          presentation_rule: 'Strategic presentation rule: GartexHub must be presented in a way that makes business workflow stronger, more transparent, more efficient, and more trusted. It cannot be marketed with a destructive message against any group.',
           value_props: [
             'Structured buyer request system',
             'Factory product visibility engine',
@@ -332,6 +334,8 @@ export default function TexHub() {
   const heroFactories = home?.hero?.verifiedFactories || initialHome.hero.verifiedFactories
   const heroHeadline = home?.hero?.headline || initialHome.hero.headline
   const heroSubheadline = home?.hero?.subheadline || initialHome.hero.subheadline
+  const heroShortDescription = home?.hero?.short_description || initialHome.hero.short_description
+  const heroPresentation = home?.hero?.presentation_rule || initialHome.hero.presentation_rule
   const heroValueProps = Array.isArray(home?.hero?.value_props) ? home.hero.value_props : initialHome.hero.value_props
   const bento = home?.bento || initialHome.bento
   const marketingSections = Array.isArray(home?.marketing?.sections) ? home.marketing.sections : (initialHome?.marketing?.sections || [])
@@ -394,6 +398,14 @@ export default function TexHub() {
               <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#475569] dark:text-slate-400">
                 {heroSubheadline}
               </p>
+              <p className="mt-3 max-w-xl text-sm font-medium text-[#334155] dark:text-slate-300">
+                {heroShortDescription}
+              </p>
+              {heroPresentation ? (
+                <p className="mt-2 max-w-xl text-xs italic text-[#64748B] dark:text-slate-400">
+                  {heroPresentation}
+                </p>
+              ) : null}
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <MagneticLinkButton

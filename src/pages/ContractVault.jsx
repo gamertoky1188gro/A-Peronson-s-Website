@@ -731,6 +731,31 @@ export default function ContractVault() {
               >
                 Factory sign
               </button>
+            <button
+              type="button"
+              disabled={saving}
+              onClick={async () => {
+                if (!selected?.id) return
+                setSaving(true)
+                setActionError('')
+                try {
+                  const token = getToken()
+                  const res = await apiRequest(`/documents/contracts/${selected.id}/sign-session`, { method: 'POST', token })
+                  if (res?.signing_url) {
+                    window.open(res.signing_url, '_blank')
+                  } else {
+                    setActionError('Unable to create sign session')
+                  }
+                } catch (err) {
+                  setActionError(err.message || 'Unable to create sign session')
+                } finally {
+                  setSaving(false)
+                }
+              }}
+              className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50 disabled:bg-slate-50 disabled:text-slate-400"
+            >
+              Start e-sign session
+            </button>
             {selectedActionBlockers.factorySign ? <div className="text-xs text-amber-700">{selectedActionBlockers.factorySign}</div> : null}
           </div>
         </div>

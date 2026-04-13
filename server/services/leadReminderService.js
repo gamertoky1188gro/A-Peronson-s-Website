@@ -1,5 +1,6 @@
 import prisma from '../utils/prisma.js'
 import { readLegacyJson, isCrmSqlEnabled } from '../utils/crmFallbackStore.js'
+import { readJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
 import { createNotification } from './notificationService.js'
 import { sendEmail } from './emailService.js'
@@ -9,7 +10,7 @@ import { logError } from '../utils/logger.js'
 const REMINDERS_FILE = 'lead_reminders.json'
 const LEADS_FILE = 'leads.json'
 const USERS_FILE = 'users.json'
-const USE_SQL_CRM = isCrmSqlEnabled()
+// Evaluate CRM mode at runtime inside the sweep to respect test-time env changes.
 
 let sweepActive = false
 
@@ -33,17 +34,27 @@ export async function runLeadReminderSweep() {
   sweepActive = true
 
   try {
-    const [reminders, leads, users] = USE_SQL_CRM
-      ? await Promise.all([
-        prisma.leadReminder.findMany(),
-        prisma.lead.findMany(),
-        prisma.user.findMany(),
-      ])
-      : await Promise.all([
-        readLegacyJson(REMINDERS_FILE),
-        readLegacyJson(LEADS_FILE),
-        readLegacyJson(USERS_FILE),
-      ])
+    let reminders
+    let leads
+    let users
+
+      const useSql = isCrmSqlEnabled()
+      let reader
+      if (!useSql) {
+        reader = process.env.NODE_ENV === 'test' ? readJson : readLegacyJson
+      }
+
+      [reminders, leads, users] = useSql
+        ? await Promise.all([
+          prisma.leadReminder.findMany(),
+          prisma.lead.findMany(),
+          prisma.user.findMany(),
+        ])
+        : await Promise.all([
+          reader(REMINDERS_FILE),
+          reader(LEADS_FILE),
+          reader(USERS_FILE),
+        ])
 
     const reminderRows = Array.isArray(reminders) ? reminders : []
     const leadRows = Array.isArray(leads) ? leads : []
@@ -53,6 +64,8 @@ export async function runLeadReminderSweep() {
 
     const now = Date.now()
     let processed = 0
+
+    const sideEffects = []
 
     const nextReminders = reminderRows.map((reminder) => {
       const remindAt = new Date(reminder.remind_at || '').getTime()
@@ -66,7 +79,7 @@ export async function runLeadReminderSweep() {
       const message = sanitizeString(String(reminder.message || 'Follow up'), 200)
 
       recipients.forEach((recipientId) => {
-        createNotification(recipientId, {
+        sideEffects.push(createNotification(recipientId, {
           type: 'lead_reminder_due',
           entity_type: 'lead',
           entity_id: reminder.lead_id,
@@ -75,19 +88,19 @@ export async function runLeadReminderSweep() {
             lead_id: reminder.lead_id,
             remind_at: reminder.remind_at,
           },
-        }).catch(() => {})
+        }))
 
         const user = usersById.get(String(recipientId))
         if (user?.email) {
-          sendEmail({
+          sideEffects.push(sendEmail({
             to: user.email,
             subject: 'GarTexHub reminder',
             text: `${label}\n\nReminder: ${message}\nDue: ${reminder.remind_at}`,
-          }).catch(() => {})
+          }))
         }
       })
 
-      trackEvent({
+      sideEffects.push(trackEvent({
         type: 'lead_reminder_due',
         actor_id: reminder.created_by || reminder.org_owner_id || null,
         entity_id: reminder.lead_id,
@@ -96,7 +109,7 @@ export async function runLeadReminderSweep() {
           lead_id: reminder.lead_id,
           recipients,
         },
-      }).catch(() => {})
+      }))
 
       processed += 1
       return {
@@ -107,7 +120,7 @@ export async function runLeadReminderSweep() {
       }
     })
 
-    if (processed > 0 && USE_SQL_CRM) {
+      if (processed > 0 && useSql) {
       await prisma.$transaction(
         nextReminders
           .filter((row) => row?.id)
@@ -119,6 +132,14 @@ export async function runLeadReminderSweep() {
             },
           })),
       )
+    }
+
+    if (sideEffects.length) {
+      try {
+        await Promise.allSettled(sideEffects)
+      } catch (e) {
+        // swallow - we don't want side effect failures to break the sweep
+      }
     }
 
     return { ok: true, processed }

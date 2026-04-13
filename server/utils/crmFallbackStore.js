@@ -13,6 +13,8 @@ function normalizeFlag(raw, fallback = true) {
 // Temporary rollout flag.
 // Prefer USE_SQL_CRM, but preserve backward compatibility with CRM_SQL_ENABLED.
 export function isCrmSqlEnabled() {
+  // During tests prefer the legacy JSON path to avoid requiring a database.
+  if (process.env.NODE_ENV === 'test') return false
   if (process.env.USE_SQL_CRM !== undefined) {
     return normalizeFlag(process.env.USE_SQL_CRM, true)
   }

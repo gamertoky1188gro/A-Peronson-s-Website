@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AI Requirement Extraction Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "product_type": { "type": "string" },
+    "category": { "type": "string" },
+    "moq": { "type": ["integer", "string", "null"] },
+    "target_price": { "type": ["number", "string", "null"] },
+    "timeline": { "type": ["string", "null"] },
+    "incoterm": { "type": ["string", "null"] },
+    "certifications": { "type": ["array", "null"], "items": { "type": "string" } },
+    "notes": { "type": ["string", "null"] }
+  },
+  "required": ["product_type"]
+}

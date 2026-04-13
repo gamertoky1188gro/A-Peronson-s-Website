@@ -5,6 +5,8 @@ import {
   getPlatformAnalyticsAdmin,
   getPlatformAnalyticsSegment,
   getPlatformAnalyticsSummary,
+  getPlatformOverview,
+  getPlatformTrends,
   getPremiumInsights,
 } from '../services/analyticsService.js'
 import { handleControllerError } from '../utils/permissions.js'
@@ -57,6 +59,29 @@ export async function analyticsPlatformSummary(req, res) {
   try {
     await authorize(req.user, ACTIONS.ANALYTICS_VIEW_ORG, { scope: 'platform_summary' })
     const report = await getPlatformAnalyticsSummary(req.user)
+    return res.json(report)
+  } catch (error) {
+    return handleError(res, error)
+  }
+}
+
+export async function analyticsPlatformOverview(req, res) {
+  try {
+    // overview is available to all authenticated roles but must be anonymized
+    const report = await getPlatformOverview(req.user)
+    return res.json(report)
+  } catch (error) {
+    return handleError(res, error)
+  }
+}
+
+export async function analyticsPlatformTrends(req, res) {
+  try {
+    const dims = String(req.query?.dimensions || '')
+      .split(',')
+      .map((v) => v.trim())
+      .filter(Boolean)
+    const report = await getPlatformTrends(req.user, { dimensions: dims })
     return res.json(report)
   } catch (error) {
     return handleError(res, error)

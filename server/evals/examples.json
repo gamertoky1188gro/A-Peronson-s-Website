@@ -1,0 +1,10 @@
+[
+  {
+    "text": "Looking for 1000 cotton t-shirts, MOQ 1000, target price $2.5 per piece, delivery in 6 weeks, EXW, need Oeko-Tex.",
+    "fields": { "product_type": "t-shirt", "category": "t-shirt", "moq": 1000, "target_price": 2.5, "timeline": "6 weeks", "incoterm": "EXW", "certifications": ["Oeko-Tex"] }
+  },
+  {
+    "text": "Need woven denim jeans, MOQ 500, budget around $15, ship CIF, timeline 2 months.",
+    "fields": { "product_type": "jeans", "category": "jeans", "moq": 500, "target_price": 15, "timeline": "2 months", "incoterm": "CIF" }
+  }
+]

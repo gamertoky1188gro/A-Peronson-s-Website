@@ -3,6 +3,9 @@ import { allowRoles, requireAuth } from '../middleware/auth.js'
 import {
   askAssistant,
   askAssistantPublic,
+  postExtractRequirement,
+  postGenerateFirstResponse,
+  postValidateResponse,
   createAssistantKnowledge,
   getConversationSummary,
   getAssistantKnowledge,
@@ -15,6 +18,9 @@ const router = Router()
 
 router.post('/ask', requireAuth, askAssistant)
 router.post('/ask-public', askAssistantPublic)
+router.post('/extract-requirement', requireAuth, postExtractRequirement)
+router.post('/generate-first-response', requireAuth, postGenerateFirstResponse)
+router.post('/validate-response', requireAuth, postValidateResponse)
 router.post('/conversation-summary', requireAuth, getConversationSummary)
 router.post('/negotiation', requireAuth, getNegotiationHelper)
 router.get('/knowledge', requireAuth, getAssistantKnowledge)

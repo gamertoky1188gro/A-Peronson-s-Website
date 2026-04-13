@@ -568,13 +568,13 @@ export default function AdminPanel() {
     refreshModerationQueues()
     refreshReportQueues()
     refreshMessagePolicyOps()
-  }, [activeCategory])
+  }, [activeCategory, refreshSupportTickets, refreshModerationQueues, refreshReportQueues, refreshMessagePolicyOps])
 
   useEffect(() => {
     if (activeCategory !== 'server-admin') return
     if (!isOwner) return
     refreshOpenSearchStatus()
-  }, [activeCategory, isOwner])
+  }, [activeCategory, isOwner, refreshOpenSearchStatus])
 
   useEffect(() => {
     const rules = master?.config?.moderation?.clothing_rules
@@ -976,7 +976,7 @@ export default function AdminPanel() {
     setDisputes(Array.isArray(data?.items) ? data.items : [])
   }
 
-  async function refreshSupportTickets() {
+  const refreshSupportTickets = useCallback(async () => {
     const token = getToken()
     if (!token) return
     setSupportLoading(true)
@@ -996,9 +996,9 @@ export default function AdminPanel() {
     } finally {
       setSupportLoading(false)
     }
-  }
+  }, [buildAdminHeaders, supportFilters])
 
-  async function refreshModerationQueues() {
+  const refreshModerationQueues = useCallback(async () => {
     const token = getToken()
     if (!token) return
     const headers = buildAdminHeaders()
@@ -1008,9 +1008,9 @@ export default function AdminPanel() {
     ])
     setModerationPending(Array.isArray(pendingData?.items) ? pendingData.items : [])
     setModerationRejected(Array.isArray(rejectedData?.items) ? rejectedData.items : [])
-  }
+  }, [buildAdminHeaders])
 
-  async function refreshReportQueues() {
+  const refreshReportQueues = useCallback(async () => {
     const token = getToken()
     if (!token) return
     const headers = buildAdminHeaders()
@@ -1022,10 +1022,10 @@ export default function AdminPanel() {
     setSystemReports(Array.isArray(systemData?.items) ? systemData.items : [])
     setProductAppealReports(Array.isArray(appealData?.items) ? appealData.items : [])
     setContentReports(Array.isArray(contentData?.items) ? contentData.items : [])
-  }
+  }, [buildAdminHeaders])
 
 
-  async function refreshMessagePolicyOps() {
+  const refreshMessagePolicyOps = useCallback(async () => {
     const token = getToken()
     if (!token) return
     const headers = buildAdminHeaders()
@@ -1044,7 +1044,7 @@ export default function AdminPanel() {
       setPolicyMetrics(null)
       setError(err.message || 'Failed to load communication policy queues')
     }
-  }
+  }, [buildAdminHeaders])
 
   async function saveClothingRules() {
     const token = getToken()
@@ -1322,13 +1322,13 @@ export default function AdminPanel() {
     setIntegrationStatus(data || null)
   }
 
-  async function refreshOpenSearchStatus() {
+  const refreshOpenSearchStatus = useCallback(async () => {
     const token = getToken()
     if (!token) return
     const headers = buildAdminHeaders()
     const data = await apiRequest('/admin/integrations/opensearch/status', { token, headers })
     setOpenSearchStatus(data || null)
-  }
+  }, [buildAdminHeaders])
 
   async function refreshSignups() {
     const token = getToken()

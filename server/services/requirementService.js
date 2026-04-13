@@ -181,6 +181,7 @@ function normalizeRequirement(buyerId, payload) {
   const normalized = {
     id: crypto.randomUUID(),
     buyer_id: buyerId,
+    match_id: sanitizeString(payload.match_id || payload.matchId || '', 240),
     title,
     request_type: requestType,
     verified_only: Boolean(payload.verified_only),
@@ -412,6 +413,7 @@ export async function updateRequirement(requirementId, patch, actor) {
     assigned_by: assignmentChanged ? sanitizeString(actor.id || '', 120) : sanitizeString(previous.assigned_by || '', 120),
     priority_tier: patch.priority_tier !== undefined ? sanitizeString(patch.priority_tier || '', 40) : (previous.priority_tier || ''),
     priority_until: patch.priority_until !== undefined ? normalizeDate(patch.priority_until) : (previous.priority_until || null),
+    match_id: patch.match_id !== undefined ? sanitizeString(patch.match_id || '', 240) : previous.match_id,
   }
 
   const baseCurrency = await getBaseCurrency()

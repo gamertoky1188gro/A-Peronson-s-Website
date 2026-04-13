@@ -225,6 +225,33 @@ function bucketTeamSeats(value) {
   return '20+'
 }
 
+function computeAuditScore(company = {}, certification = null) {
+  const profile = company?.profile || {}
+  const certs = Array.isArray(profile?.certifications) ? profile.certifications : []
+  let score = 0
+  // Certifications contribute up to 60 points
+  score += Math.min(certs.length * 20, 60)
+
+  // Recent audit date boosts score
+  const rawAudit = String(profile?.audit_date || company?.audit_date || '').trim()
+  if (rawAudit) {
+    const ts = Date.parse(rawAudit)
+    if (!Number.isNaN(ts)) {
+      const days = (Date.now() - ts) / (1000 * 60 * 60 * 24)
+      if (days <= 365) score += 30
+      else if (days <= 730) score += 15
+    }
+  }
+
+  // Order certification adds modest bump
+  const certStatus = String(certification?.status || company?.order_certification_status || '').toLowerCase()
+  if (certStatus === 'certified') score += 10
+
+  if (score > 100) score = 100
+  if (score <= 0) return null
+  return Math.round(score)
+}
+
 function topFacetEntries(counts = {}, limit = 8) {
   return Object.fromEntries(
     Object.entries(counts)
@@ -360,6 +387,24 @@ export async function searchProducts(req, res) {
     ? parseBoolean(req.query.handlesMultipleFactories)
     : null
   const exportPorts = parseList(req.query.exportPort)
+  const hasPermissionMatrixFilter = req.query.hasPermissionMatrix !== undefined
+    ? parseBoolean(req.query.hasPermissionMatrix)
+    : null
+  const auditScoreMin = parseNumber(req.query.auditScoreMin)
+  const permissionSection = String(req.query.permissionSection || '').trim().toLowerCase()
+  const permissionSectionEdit = req.query.permissionSectionEdit !== undefined
+    ? parseBoolean(req.query.permissionSectionEdit)
+    : null
+  const roleSeatsRaw = String(req.query.roleSeats || '').trim()
+  const roleSeatsMap = {}
+  if (roleSeatsRaw) {
+    for (const part of roleSeatsRaw.split(',')) {
+      const [roleRaw, seatsRaw] = String(part || '').split(':').map((s) => (s || '').trim())
+      if (!roleRaw) continue
+      const n = parseNumber(seatsRaw)
+      if (n !== null) roleSeatsMap[String(roleRaw).toLowerCase()] = n
+    }
+  }
   const distanceKm = parseNumber(req.query.distanceKm)
   const locationLat = parseCoordinate(req.query.locationLat)
   const locationLng = parseCoordinate(req.query.locationLng)
@@ -402,6 +447,11 @@ export async function searchProducts(req, res) {
         responseTimeMax,
         teamSeatsMin,
         ...(handlesMultipleFactoriesFilter === null ? {} : { handlesMultipleFactories: handlesMultipleFactoriesFilter }),
+        ...(hasPermissionMatrixFilter === null ? {} : { hasPermissionMatrix: hasPermissionMatrixFilter }),
+        ...(auditScoreMin === null ? {} : { auditScoreMin }),
+        ...(permissionSection ? { permissionSection } : {}),
+        ...(permissionSectionEdit === null ? {} : { permissionSectionEdit }),
+        ...(roleSeatsRaw ? { roleSeats: roleSeatsRaw } : {}),
         fabricType: wantedFabricTypes,
         certifications: wantedCertifications,
         incoterms: wantedIncoterms,
@@ -497,6 +547,10 @@ export async function searchProducts(req, res) {
           location_lng: profile?.location_lng ?? '',
           avg_response_hours: responseTimeByOwner.get(String(company.id)) ?? null,
           order_certification_status: certification?.status || '',
+          permission_matrix: profile?.permission_matrix || company?.permission_matrix || null,
+          has_permission_matrix: Boolean(profile?.permission_matrix || company?.permission_matrix),
+          role_seats: profile?.role_seats || profile?.roleSeats || (profile?.permission_matrix?.members?.seats || null),
+          audit_score: computeAuditScore(company, certification),
         } : { id: p.company_id, name: 'Unknown company', role: 'factory', verified: false, country: '' },
         profile_key: `user:${p.company_id}`,
         priority_score: priorityScore,
@@ -617,8 +671,44 @@ export async function searchProducts(req, res) {
         const seats = parseNumber(p.author?.team_seats || '')
         if (seats === null || seats < teamSeatsMin) return false
       }
+      if (roleSeatsMap && Object.keys(roleSeatsMap).length) {
+        const profileRoleSeats = p.author?.role_seats || p.author?.roleSeats || {}
+        const permMemberSeats = p.author?.permission_matrix?.members?.seats || null
+        for (const [roleKey, minSeats] of Object.entries(roleSeatsMap)) {
+          let ownerSeats = null
+          if (profileRoleSeats && profileRoleSeats[roleKey] !== undefined) {
+            ownerSeats = parseNumber(profileRoleSeats[roleKey])
+          } else if (permMemberSeats && permMemberSeats[roleKey] !== undefined) {
+            ownerSeats = parseNumber(permMemberSeats[roleKey])
+          } else {
+            ownerSeats = parseNumber(p.author?.team_seats || '')
+          }
+          if (!Number.isFinite(ownerSeats) || ownerSeats < minSeats) return false
+        }
+      }
       if (handlesMultipleFactoriesFilter !== null) {
         if (Boolean(p.author?.handles_multiple_factories) !== handlesMultipleFactoriesFilter) return false
+      }
+      if (hasPermissionMatrixFilter !== null) {
+        const hasPerm = Boolean(p.author?.has_permission_matrix)
+        if (hasPermissionMatrixFilter !== hasPerm) return false
+      }
+      if (permissionSection) {
+        const pm = p.author?.permission_matrix || null
+        const sec = pm && pm[permissionSection] ? pm[permissionSection] : null
+        const hasView = Boolean(sec && sec.view)
+        const hasEdit = Boolean(sec && sec.edit)
+        if (permissionSectionEdit === null) {
+          if (!hasView && !hasEdit) return false
+        } else if (permissionSectionEdit === true) {
+          if (!hasEdit) return false
+        } else if (permissionSectionEdit === false) {
+          if (!hasView) return false
+        }
+      }
+      if (auditScoreMin !== null) {
+        const score = Number(p.author?.audit_score)
+        if (!Number.isFinite(score) || score < auditScoreMin) return false
       }
       if (exportPorts.length > 0) {
         const authorPorts = Array.isArray(p.author?.export_ports)

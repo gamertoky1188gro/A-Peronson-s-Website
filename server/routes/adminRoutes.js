@@ -25,6 +25,7 @@ import {
   verificationAudit,
   violationsAudit,
 } from '../controllers/adminController.js'
+import { listEsignFailures, retryEsignFailure, deleteEsignFailure } from '../controllers/adminController.js'
 import { listModerationProducts, updateModerationProduct } from '../controllers/moderationController.js'
 import { adminAction as adminActionController, adminAuditLog as adminAuditLogController, adminDataExport as adminDataExportController, adminEmailExport as adminEmailExportController, adminGetConfig as adminGetConfigController, adminMasterOverview as adminMasterOverviewController, adminUpdateConfig as adminUpdateConfigController } from '../controllers/adminMasterController.js'
 import { adminCatalogOverview } from '../controllers/adminCatalogController.js'
@@ -162,5 +163,9 @@ router.patch('/config', requireAuth, requireAdminSecurity, requireAdminStepUp, a
 router.get('/emails/export', requireAuth, requireAdminSecurity, requireDualExportApproval, adminAuditLogger(), adminEmailExportController)
 router.get('/emails/segments/export', requireAuth, requireAdminSecurity, requireDualExportApproval, adminAuditLogger(), exportEmailSegmentAdmin)
 router.get('/exports/run', requireAuth, requireAdminSecurity, requireDualExportApproval, adminAuditLogger(), adminDataExportController)
+
+router.get('/esign-failures', requireAuth, requireAdminSecurity, adminAuditLogger(), listEsignFailures)
+router.post('/esign-failures/:id/retry', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), retryEsignFailure)
+router.delete('/esign-failures/:id', requireAuth, requireAdminSecurity, requireAdminStepUp, adminAuditLogger(), deleteEsignFailure)
 
 export default router

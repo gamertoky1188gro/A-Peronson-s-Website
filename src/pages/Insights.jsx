@@ -43,6 +43,8 @@ export default function Insights() {
   const privacyThresholdApplied = Boolean(platformAnalytics?.privacy_threshold_applied)
   const premiumRole = premiumInsights?.role || ''
   const canExportAnalytics = currentUser?.capabilities?.leads?.export !== false
+  const [exportLoading, setExportLoading] = useState(false)
+  const [exportError, setExportError] = useState('')
 
   useEffect(() => {
     const role = String(premiumRole || '').toLowerCase()
@@ -75,6 +77,101 @@ export default function Insights() {
 
     loadViewers()
   }, [premiumRole, currentUser?.id, companyAnalytics?.top_products])
+
+  // Helpers for exporting sanitized analytics
+  function downloadBlob(content, mimeType, filename) {
+    const blob = new Blob([content], { type: mimeType })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  }
+
+  function renderCsvFromReport(report = {}) {
+    const lines = []
+    // Totals
+    lines.push('# Totals')
+    lines.push('metric,value')
+    const totals = report.totals || {}
+    Object.keys(totals).forEach((k) => lines.push(`${k},${String(totals[k] ?? '')}`))
+    lines.push('')
+
+    // Monthly demand trend
+    if (Array.isArray(report.monthly_demand_trend)) {
+      lines.push('# Monthly Demand Trend')
+      lines.push('month,count')
+      report.monthly_demand_trend.forEach((r) => lines.push(`${r.month || ''},${Number(r.count || 0)}`))
+      lines.push('')
+    }
+
+    // Top categories global
+    if (Array.isArray(report.top_categories_global)) {
+      lines.push('# Top Categories (Global)')
+      lines.push('category,count')
+      report.top_categories_global.forEach((r) => lines.push(`${r.label || ''},${Number(r.count || 0)}`))
+      lines.push('')
+    }
+
+    // Price range demand
+    if (Array.isArray(report.price_range_demand)) {
+      lines.push('# Price Range Demand')
+      lines.push('bucket,count')
+      report.price_range_demand.forEach((r) => lines.push(`${r.bucket || ''},${Number(r.count || 0)}`))
+      lines.push('')
+    }
+
+    // Top search categories
+    if (Array.isArray(report.top_search_categories_global)) {
+      lines.push('# Top Search Categories (Global)')
+      lines.push('label,count')
+      report.top_search_categories_global.forEach((r) => lines.push(`${r.label || ''},${Number(r.count || 0)}`))
+      lines.push('')
+    }
+
+    // Top categories by country
+    if (Array.isArray(report.top_categories_by_country)) {
+      lines.push('# Top Categories By Country')
+      lines.push('country,category,count')
+      report.top_categories_by_country.forEach((c) => {
+        const country = c.country || ''
+        const categories = Array.isArray(c.categories) ? c.categories : []
+        categories.forEach((cat) => lines.push(`${country},${cat.label || ''},${Number(cat.count || 0)}`))
+      })
+      lines.push('')
+    }
+
+    return lines.join('\n')
+  }
+
+  function renderHtmlReport(report = {}) {
+    const escape = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    let html = `<html><head><meta charset="utf-8"><title>Analytics Export</title></head><body style="font-family:system-ui,Arial,Helvetica,sans-serif;padding:24px;">`;
+    html += `<h1>Analytics Export</h1>`
+    html += `<h2>Totals</h2><ul>`
+    const totals = report.totals || {}
+    Object.keys(totals).forEach((k) => { html += `<li><strong>${escape(k)}:</strong> ${escape(totals[k])}</li>` })
+    html += `</ul>`
+
+    if (Array.isArray(report.monthly_demand_trend)) {
+      html += `<h2>Monthly Demand Trend</h2><table border="1" cellpadding="6" cellspacing="0"><tr><th>Month</th><th>Count</th></tr>`
+      report.monthly_demand_trend.forEach((r) => { html += `<tr><td>${escape(r.month)}</td><td>${escape(r.count)}</td></tr>` })
+      html += `</table>`
+    }
+
+    if (Array.isArray(report.top_categories_global)) {
+      html += `<h2>Top Categories (Global)</h2><ul>`
+      report.top_categories_global.forEach((r) => { html += `<li>${escape(r.label)} — ${escape(r.count)}</li>` })
+      html += `</ul>`
+    }
+
+    html += `<p>Generated at ${new Date().toISOString()}</p>`
+    html += `</body></html>`
+    return html
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-500 dark:bg-[#020617] dark:text-slate-100">
@@ -177,11 +274,58 @@ export default function Insights() {
                     ))}
                   </div>
 
-                  <div className="mt-4 flex gap-2">
-                    <button className="px-3 py-2 rounded ring-1 ring-slate-200/70 dark:ring-slate-800 disabled:opacity-50" disabled={!canExportAnalytics}>Export CSV</button>
-                    <button className="px-3 py-2 rounded ring-1 ring-slate-200/70 dark:ring-slate-800 disabled:opacity-50" disabled={!canExportAnalytics}>Download PDF Report</button>
-                  </div>
-                  {!canExportAnalytics ? <p className="mt-2 text-xs text-slate-500">Export is disabled by organization policy.</p> : null}
+                    <div className="mt-4 flex gap-2">
+                      <button
+                        className="px-3 py-2 rounded ring-1 ring-slate-200/70 dark:ring-slate-800 disabled:opacity-50"
+                        disabled={!canExportAnalytics || scopeLevel !== 'platform_admin_full_detail' || exportLoading}
+                        title={!canExportAnalytics ? 'Export disabled by policy' : scopeLevel !== 'platform_admin_full_detail' ? 'Export restricted to admin full-platform view' : 'Export CSV'}
+                        onClick={async () => {
+                          if (!canExportAnalytics || scopeLevel !== 'platform_admin_full_detail') return
+                          setExportError('')
+                          setExportLoading(true)
+                          try {
+                            const token = getToken()
+                            const resp = await apiRequest('/export/analytics', { method: 'POST', token })
+                            const report = resp?.report || {}
+                            const csv = renderCsvFromReport(report)
+                            downloadBlob(csv, 'text/csv;charset=utf-8;', `analytics_export_${Date.now()}.csv`)
+                          } catch (err) {
+                            setExportError(err?.message || String(err))
+                          } finally {
+                            setExportLoading(false)
+                          }
+                        }}
+                      >
+                        {exportLoading ? 'Exporting...' : 'Export CSV'}
+                      </button>
+                      <button
+                        className="px-3 py-2 rounded ring-1 ring-slate-200/70 dark:ring-slate-800 disabled:opacity-50"
+                        disabled={!canExportAnalytics || scopeLevel !== 'platform_admin_full_detail' || exportLoading}
+                        title={!canExportAnalytics ? 'Export disabled by policy' : scopeLevel !== 'platform_admin_full_detail' ? 'Export restricted to admin full-platform view' : 'Download PDF Report'}
+                        onClick={async () => {
+                          if (!canExportAnalytics || scopeLevel !== 'platform_admin_full_detail') return
+                          setExportError('')
+                          setExportLoading(true)
+                          try {
+                            const token = getToken()
+                            const resp = await apiRequest('/export/analytics', { method: 'POST', token })
+                            const report = resp?.report || {}
+                            const html = renderHtmlReport(report)
+                            const blob = new Blob([html], { type: 'text/html' })
+                            const url = URL.createObjectURL(blob)
+                            window.open(url, '_blank')
+                          } catch (err) {
+                            setExportError(err?.message || String(err))
+                          } finally {
+                            setExportLoading(false)
+                          }
+                        }}
+                      >
+                        {exportLoading ? 'Preparing...' : 'Download PDF Report'}
+                      </button>
+                    </div>
+                    {exportError ? <p className="mt-2 text-xs text-rose-600">{exportError}</p> : null}
+                    {!canExportAnalytics ? <p className="mt-2 text-xs text-slate-500">Export is disabled by organization policy.</p> : null}
                 </>
               )}
             </div>
@@ -465,9 +609,14 @@ export default function Insights() {
               <div className="mt-8 space-y-4">
                 <div className="rounded-2xl bg-blue-50 p-4 text-xs text-blue-900 ring-1 ring-blue-200 dark:bg-blue-500/10 dark:text-blue-200 dark:ring-blue-500/30">
                   <div className="font-semibold uppercase tracking-[0.12em]">Scope: {scopeLevel.replace(/_/g, ' ')}</div>
-                  <div className="mt-1">
-                    Privacy thresholds: {privacyThresholdApplied ? 'applied' : 'not applied'}.
-                    {suppressedFields.length ? ` Suppressed controls: ${suppressedFields.join(', ')}.` : ' No suppressed slices in this snapshot.'}
+                  <div className="mt-1 flex items-center gap-2">
+                    <div>
+                      Privacy thresholds: {privacyThresholdApplied ? 'applied' : 'not applied'}.
+                      {suppressedFields.length ? ` Suppressed controls: ${suppressedFields.join(', ')}.` : ' No suppressed slices in this snapshot.'}
+                    </div>
+                    {privacyThresholdApplied ? (
+                      <div className="text-[11px] text-slate-500" title="Anonymized platform data: identifiers removed/suppressed according to privacy policy">ℹ️ Anonymized platform data</div>
+                    ) : null}
                   </div>
                 </div>
                 {!searchDataReady ? (

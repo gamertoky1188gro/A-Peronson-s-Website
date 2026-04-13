@@ -251,6 +251,27 @@ function bucketTeamSeats(value) {
   return '20+'
 }
 
+function computeAuditScore(company = {}, certification = null) {
+  const profile = company?.profile || {}
+  const certs = Array.isArray(profile?.certifications) ? profile.certifications : []
+  let score = 0
+  score += Math.min(certs.length * 20, 60)
+  const rawAudit = String(profile?.audit_date || company?.audit_date || '').trim()
+  if (rawAudit) {
+    const ts = Date.parse(rawAudit)
+    if (!Number.isNaN(ts)) {
+      const days = (Date.now() - ts) / (1000 * 60 * 60 * 24)
+      if (days <= 365) score += 30
+      else if (days <= 730) score += 15
+    }
+  }
+  const certStatus = String(certification?.status || company?.order_certification_status || '').toLowerCase()
+  if (certStatus === 'certified') score += 10
+  if (score > 100) score = 100
+  if (score <= 0) return null
+  return Math.round(score)
+}
+
 function topFacetEntries(counts = {}, limit = 8) {
   return Object.fromEntries(
     Object.entries(counts)
@@ -446,6 +467,24 @@ export async function searchRequirements(req, res) {
     ? parseBoolean(req.query.handlesMultipleFactories)
     : null
   const exportPorts = parseList(req.query.exportPort)
+  const hasPermissionMatrixFilter = req.query.hasPermissionMatrix !== undefined
+    ? parseBoolean(req.query.hasPermissionMatrix)
+    : null
+  const auditScoreMin = parseNumber(req.query.auditScoreMin)
+  const permissionSection = String(req.query.permissionSection || '').trim().toLowerCase()
+  const permissionSectionEdit = req.query.permissionSectionEdit !== undefined
+    ? parseBoolean(req.query.permissionSectionEdit)
+    : null
+  const roleSeatsRaw = String(req.query.roleSeats || '').trim()
+  const roleSeatsMap = {}
+  if (roleSeatsRaw) {
+    for (const part of roleSeatsRaw.split(',')) {
+      const [roleRaw, seatsRaw] = String(part || '').split(':').map((s) => (s || '').trim())
+      if (!roleRaw) continue
+      const n = parseNumber(seatsRaw)
+      if (n !== null) roleSeatsMap[String(roleRaw).toLowerCase()] = n
+    }
+  }
   const distanceKm = parseNumber(req.query.distanceKm)
   const locationLat = parseCoordinate(req.query.locationLat)
   const locationLng = parseCoordinate(req.query.locationLng)
@@ -488,6 +527,11 @@ export async function searchRequirements(req, res) {
         responseTimeMax,
         teamSeatsMin,
         ...(handlesMultipleFactoriesFilter === null ? {} : { handlesMultipleFactories: handlesMultipleFactoriesFilter }),
+        ...(hasPermissionMatrixFilter === null ? {} : { hasPermissionMatrix: hasPermissionMatrixFilter }),
+        ...(auditScoreMin === null ? {} : { auditScoreMin }),
+        ...(permissionSection ? { permissionSection } : {}),
+        ...(permissionSectionEdit === null ? {} : { permissionSectionEdit }),
+        ...(roleSeatsRaw ? { roleSeats: roleSeatsRaw } : {}),
         fabricType: wantedFabricTypes,
         certifications: wantedCertifications,
         incoterms: wantedIncoterms,
@@ -572,11 +616,15 @@ export async function searchRequirements(req, res) {
           years_in_business: profile?.years_in_business || '',
           handles_multiple_factories: Boolean(profile?.handles_multiple_factories),
           team_seats: profile?.team_seats || '',
+          role_seats: profile?.role_seats || profile?.roleSeats || (profile?.permission_matrix?.members?.seats || null),
           export_ports: Array.isArray(profile?.export_ports) ? profile.export_ports : [],
           location_lat: profile?.location_lat ?? '',
           location_lng: profile?.location_lng ?? '',
           avg_response_hours: responseTimeByOwner.get(String(buyer.id)) ?? null,
           order_certification_status: certification?.status || '',
+          permission_matrix: profile?.permission_matrix || buyer?.permission_matrix || null,
+          has_permission_matrix: Boolean(profile?.permission_matrix || buyer?.permission_matrix),
+          audit_score: computeAuditScore(buyer, certification),
         } : { id: r.buyer_id, name: 'Unknown buyer', role: 'buyer', verified: false, country: '' },
         profile_key: `user:${r.buyer_id}`,
         priority_score: (buyerPremium ? 2 : 0) + (buyer?.verified ? 0.5 : 0),
@@ -696,8 +744,44 @@ export async function searchRequirements(req, res) {
         const seats = parseNumber(r.author?.team_seats || '')
         if (seats === null || seats < teamSeatsMin) return false
       }
+      if (roleSeatsMap && Object.keys(roleSeatsMap).length) {
+        const profileRoleSeats = r.author?.role_seats || r.author?.roleSeats || {}
+        const permMemberSeats = r.author?.permission_matrix?.members?.seats || null
+        for (const [roleKey, minSeats] of Object.entries(roleSeatsMap)) {
+          let ownerSeats = null
+          if (profileRoleSeats && profileRoleSeats[roleKey] !== undefined) {
+            ownerSeats = parseNumber(profileRoleSeats[roleKey])
+          } else if (permMemberSeats && permMemberSeats[roleKey] !== undefined) {
+            ownerSeats = parseNumber(permMemberSeats[roleKey])
+          } else {
+            ownerSeats = parseNumber(r.author?.team_seats || '')
+          }
+          if (!Number.isFinite(ownerSeats) || ownerSeats < minSeats) return false
+        }
+      }
       if (handlesMultipleFactoriesFilter !== null) {
         if (Boolean(r.author?.handles_multiple_factories) !== handlesMultipleFactoriesFilter) return false
+      }
+      if (hasPermissionMatrixFilter !== null) {
+        const hasPerm = Boolean(r.author?.has_permission_matrix)
+        if (hasPermissionMatrixFilter !== hasPerm) return false
+      }
+      if (permissionSection) {
+        const pm = r.author?.permission_matrix || null
+        const sec = pm && pm[permissionSection] ? pm[permissionSection] : null
+        const hasView = Boolean(sec && sec.view)
+        const hasEdit = Boolean(sec && sec.edit)
+        if (permissionSectionEdit === null) {
+          if (!hasView && !hasEdit) return false
+        } else if (permissionSectionEdit === true) {
+          if (!hasEdit) return false
+        } else if (permissionSectionEdit === false) {
+          if (!hasView) return false
+        }
+      }
+      if (auditScoreMin !== null) {
+        const score = Number(r.author?.audit_score)
+        if (!Number.isFinite(score) || score < auditScoreMin) return false
       }
       if (exportPorts.length > 0) {
         const authorPorts = Array.isArray(r.author?.export_ports)
