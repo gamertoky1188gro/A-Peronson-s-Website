@@ -170,5 +170,91 @@
     },
     "prev_hash": "f37218ca11ffb9bba3b53180c69c5c3b74fd44bb3fc9766392a7676621282bfc",
     "hash": "2f4c11718ceea20e39b574ce07313a8aa28c68cc5be2fbe4770bb3304569250d"
+  },
+  {
+    "id": "50b65d04-d81e-4182-a8d7-43522211eff6",
+    "at": "2026-04-13T04:01:44.120Z",
+    "actor_id": "owner-test",
+    "actor_role": "owner",
+    "action": "platform_analytics_overview_requested",
+    "path": "/analytics/platform/overview",
+    "status": 200,
+    "payload": {
+      "scope_level": "platform_overview_aggregated",
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "2f4c11718ceea20e39b574ce07313a8aa28c68cc5be2fbe4770bb3304569250d",
+    "hash": "560fcdb291356b38d579abe86a63c1060a7dc4b1855d3eb483293ff3869f1693"
+  },
+  {
+    "id": "ff78a556-ba9a-4637-a27c-17b580dbfdde",
+    "at": "2026-04-13T04:01:44.374Z",
+    "actor_id": "owner-test",
+    "actor_role": "owner",
+    "action": "platform_analytics_trends_requested",
+    "path": "/analytics/platform/trends",
+    "status": 200,
+    "payload": {
+      "scope_level": "platform_trends_global_anonymized",
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
+      "org_scope": "org:global",
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "560fcdb291356b38d579abe86a63c1060a7dc4b1855d3eb483293ff3869f1693",
+    "hash": "15989fb6fbbd3373ce90d57d8c06f68abc1dc2c9b8076d211415afae2638bf07"
+  },
+  {
+    "id": "aa3130f7-d896-412a-839a-33919aa362e5",
+    "at": "2026-04-13T04:04:33.367Z",
+    "actor_id": "owner-test",
+    "actor_role": "owner",
+    "action": "platform_analytics_overview_requested",
+    "path": "/analytics/platform/overview",
+    "status": 200,
+    "payload": {
+      "scope_level": "platform_overview_aggregated",
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "15989fb6fbbd3373ce90d57d8c06f68abc1dc2c9b8076d211415afae2638bf07",
+    "hash": "f458160611c54c25194bdb5acb0902199dccbff47df7783153c44692c7daf0a0"
+  },
+  {
+    "id": "8563ec49-7e38-4e40-9736-68864f69ebeb",
+    "at": "2026-04-13T04:04:33.617Z",
+    "actor_id": "owner-test",
+    "actor_role": "owner",
+    "action": "platform_analytics_trends_requested",
+    "path": "/analytics/platform/trends",
+    "status": 200,
+    "payload": {
+      "scope_level": "platform_trends_global_anonymized",
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
+      "org_scope": "org:global",
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "f458160611c54c25194bdb5acb0902199dccbff47df7783153c44692c7daf0a0",
+    "hash": "2a1d7ce114016d08cbf702811126f4aa39bcc8c533995b3651ab5778edabc5e7"
   }
 ]

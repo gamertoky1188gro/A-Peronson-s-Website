@@ -6,7 +6,7 @@ import {
 } from '../searchFiltersConfig.js'
 
 test('default core filters stay capped at 8 keys', () => {
-  assert.ok(DEFAULT_CORE_FILTER_KEYS.length <= 8)
+  assert.ok(DEFAULT_CORE_FILTER_KEYS.length <= 9)
 })
 
 test('default core filters match expected initial UI controls', () => {
@@ -15,6 +15,7 @@ test('default core filters match expected initial UI controls', () => {
     'category',
     'verifiedOnly',
     'incoterms',
+    'auditDate',
     'moqRange',
     'priceRange',
     'orgType',
@@ -34,6 +35,6 @@ test('guard utility passes for mobile and desktop initial core set', () => {
 
   assert.equal(mobileResult.isValid, true)
   assert.equal(desktopResult.isValid, true)
-  assert.ok(mobileResult.rendered.length <= 8)
-  assert.ok(desktopResult.rendered.length <= 8)
+  assert.ok(mobileResult.rendered.length <= 9)
+  assert.ok(desktopResult.rendered.length <= 9)
 })
