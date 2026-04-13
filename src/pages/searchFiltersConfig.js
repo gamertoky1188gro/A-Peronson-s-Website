@@ -3,7 +3,6 @@ export const DEFAULT_CORE_FILTER_KEYS = [
   'category',
   'verifiedOnly',
   'incoterms',
-  'auditDate',
   'moqRange',
   'priceRange',
   'orgType',
@@ -11,6 +10,7 @@ export const DEFAULT_CORE_FILTER_KEYS = [
 ]
 
 export const ADVANCED_FILTER_KEYS = [
+  'auditDate',
   'priorityOnly',
   'fabricType',
   'gsmMin',

@@ -258,7 +258,6 @@ function buildQueryString({ q, category, filters, includeAdvanced, includePriori
   if (filters.country) params.set('country', filters.country)
   if (filters.verifiedOnly) params.set('verifiedOnly', 'true')
   if (filters.orgType) params.set('orgType', filters.orgType)
-  if (filters.auditDate) params.set('auditDate', filters.auditDate)
   if (filters.leadTimeMax) params.set('leadTimeMax', filters.leadTimeMax)
   if (includePriority && filters.priorityOnly) params.set('priorityOnly', 'true')
 
@@ -278,6 +277,7 @@ function buildQueryString({ q, category, filters, includeAdvanced, includePriori
     if (hasFilterValue(filters.paymentTerms)) params.set('paymentTerms', toCsv(filters.paymentTerms))
     if (hasFilterValue(filters.documentReady)) params.set('documentReady', toCsv(filters.documentReady))
     if (filters.auditScoreMin) params.set('auditScoreMin', filters.auditScoreMin)
+    if (filters.auditDate) params.set('auditDate', filters.auditDate)
     if (filters.hasPermissionMatrix) params.set('hasPermissionMatrix', 'true')
       if (filters.permissionSection) params.set('permissionSection', filters.permissionSection)
       if (filters.permissionSectionEdit) params.set('permissionSectionEdit', 'true')
@@ -1454,7 +1454,7 @@ export default function SearchResults() {
     if (filters.industry) chips.push({ key: 'industry', label: `Industry: ${filters.industry}`, onRemove: () => updateCoreFilter('industry', '') })
     if (filters.country) chips.push({ key: 'country', label: `Country: ${filters.country}`, onRemove: () => updateCoreFilter('country', '') })
     if (filters.incoterms && Array.isArray(filters.incoterms) && filters.incoterms.length) chips.push({ key: 'incoterms', label: `Incoterms: ${filters.incoterms.join(', ')}`, onRemove: () => updateCoreFilter('incoterms', []) })
-    if (filters.auditDate) chips.push({ key: 'auditDate', label: `Last audit: ${filters.auditDate}`, onRemove: () => updateCoreFilter('auditDate', '') })
+    if (filters.auditDate) chips.push({ key: 'auditDate', label: `Last audit: ${filters.auditDate}`, onRemove: () => updateAdvancedFilter('auditDate', '') })
     if (filters.verifiedOnly) chips.push({ key: 'verifiedOnly', label: 'Verified only', onRemove: () => updateCoreFilter('verifiedOnly', false) })
     if (filters.orgType) chips.push({ key: 'orgType', label: `Account: ${filters.orgType.replace('_', ' ')}`, onRemove: () => updateCoreFilter('orgType', '') })
     if (filters.priorityOnly) chips.push({ key: 'priorityOnly', label: 'Priority only', onRemove: () => setFilters((prev) => ({ ...prev, priorityOnly: false })) })
@@ -1697,15 +1697,6 @@ export default function SearchResults() {
                         counts={facetCounts.incoterms}
                       />
                     </div>
-                  </div>
-                  <div className="rounded-xl bg-white px-3 py-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
-                    <p className="text-[11px] font-semibold text-slate-500">Last audit date</p>
-                    <input
-                      type="date"
-                      value={filters.auditDate}
-                      onChange={(e) => updateCoreFilter('auditDate', e.target.value)}
-                      className="mt-2 w-full rounded-lg bg-white px-3 py-2 text-xs text-slate-800 ring-1 ring-slate-200/70 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
-                    />
                   </div>
                   <button
                     type="button"
@@ -2010,6 +2001,16 @@ export default function SearchResults() {
                               counts={facetCounts.certifications}
                             />
                           </div>
+                        </div>
+                        <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+                          <p className="text-[11px] font-semibold text-slate-500">Last audit date</p>
+                          <input
+                            type="date"
+                            value={filters.auditDate}
+                            onChange={(e) => updateAdvancedFilter('auditDate', e.target.value)}
+                            disabled={premiumLocked}
+                            className="mt-2 w-full rounded-lg bg-white px-3 py-2 text-xs text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+                          />
                         </div>
                         <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
                           <p className="text-[11px] font-semibold text-slate-500">Incoterms</p>

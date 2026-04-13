@@ -15,7 +15,6 @@ test('default core filters match expected initial UI controls', () => {
     'category',
     'verifiedOnly',
     'incoterms',
-    'auditDate',
     'moqRange',
     'priceRange',
     'orgType',

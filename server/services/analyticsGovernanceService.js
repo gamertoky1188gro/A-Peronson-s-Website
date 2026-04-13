@@ -317,6 +317,40 @@ export function sanitizePlatformAnalytics(raw = {}, config = ANALYTICS_GOVERNANC
       count: Number(entry?.count || 0),
     }))
 
+  function sanitizeMonthlyByLabelRows(rows = []) {
+    if (!Array.isArray(rows)) return []
+    const out = []
+    for (const row of rows) {
+      const series = Array.isArray(row?.series) ? row.series : []
+      const total = series.reduce((s, e) => s + Number(e?.count || 0), 0)
+      if (total > 0 && total < governance.min_cohort_size) {
+        suppression.suppressed_cohorts += 1
+        out.push({ label: 'insufficient_data', series: [{ month: 'insufficient_data', count: total }] })
+        continue
+      }
+
+      const buckets = {}
+      for (const s of series) {
+        const monthKey = bucketDate(s?.month, governance.date_granularity) || 'unknown'
+        buckets[monthKey] = (buckets[monthKey] || 0) + Number(s?.count || 0)
+      }
+
+      const seriesArray = Object.entries(buckets)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([month, count]) => ({ month, count }))
+
+      const noisy = applyNoiseToLabeledRows(
+        seriesArray.map((r) => ({ label: r.month, count: r.count })),
+        governance,
+        suppression,
+        `monthly:${String(row?.label || 'unknown')}`,
+      ).map((r) => ({ month: r.label, count: r.count }))
+
+      out.push({ label: String(row?.label || 'unknown'), series: noisy })
+    }
+    return out
+  }
+
   const priceRangeDemand = suppressLabeledItems(
     (Array.isArray(raw.price_range_demand) ? raw.price_range_demand : []).map((row) => ({
       label: toPriceBucket(row?.bucket),
@@ -343,6 +377,8 @@ export function sanitizePlatformAnalytics(raw = {}, config = ANALYTICS_GOVERNANC
       'top_categories_global',
     ),
     monthly_demand_trend: monthlyTrend,
+    monthly_demand_by_category: sanitizeMonthlyByLabelRows(raw?.monthly_demand_by_category),
+    monthly_demand_by_product: sanitizeMonthlyByLabelRows(raw?.monthly_demand_by_product),
     price_range_demand: applyNoiseToLabeledRows(priceRangeDemand, governance, suppression, 'price_range_demand'),
     top_search_categories_by_country: sanitizeCountryCategoryRows(raw?.top_search_categories_by_country, governance, suppression),
     top_search_categories_global: applyNoiseToLabeledRows(
