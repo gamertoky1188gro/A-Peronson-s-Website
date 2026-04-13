@@ -27,14 +27,12 @@ export function mapExtractedToForm(extracted = {}) {
     // map to the client form keys where possible
     requestType: typeof extracted.product_type === 'string' && /textile/i.test(extracted.product_type) ? 'textile' : '',
     title: extracted.title || '',
-    // keep client-facing category key too
-    category: extracted.category || extracted.sub_category || '',
+    // keep client-facing category key too (already set above)
     subCategory: extracted.sub_category || '',
     materialType: extracted.material_type || extracted.material || '',
     totalQuantity: extracted.quantity !== undefined && extracted.quantity !== null ? String(extracted.quantity) : '',
     quantity: extracted.quantity !== undefined && extracted.quantity !== null ? String(extracted.quantity) : moq,
     unit: extracted.unit || '',
-    moq,
     targetFobPrice: priceStr,
     targetPrice: priceStr,
     fabricComposition: extracted?.fabric?.composition || extracted?.material || '',

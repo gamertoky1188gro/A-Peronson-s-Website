@@ -1,5 +1,5 @@
 import crypto from 'crypto'
-import { updateJson, readJson } from '../utils/jsonStore.js'
+import { updateJson } from '../utils/jsonStore.js'
 import { sanitizePlatformAnalytics, getAnalyticsGovernanceConfig, checkAnalyticsAccessPolicy } from './analyticsGovernanceService.js'
 import { sanitizeString } from '../utils/validators.js'
 
@@ -27,7 +27,6 @@ export async function exportAnalytics(user = {}, rawPayload = {}) {
     })
   } catch (e) {
     // best-effort: don't fail export on audit write error
-    // eslint-disable-next-line no-console
     console.debug('audit write failed', e?.message || e)
   }
 
@@ -60,7 +59,6 @@ export async function exportAnalytics(user = {}, rawPayload = {}) {
     })
   } catch (e) {
     // swallow
-    // eslint-disable-next-line no-console
     console.debug('audit finalize failed', e?.message || e)
   }
 

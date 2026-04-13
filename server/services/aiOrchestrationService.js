@@ -52,8 +52,8 @@ export async function orchestrateRequirementExtraction({ text = '' } = {}, orgOw
       if (orgSettings && typeof orgSettings.ai_handoff_threshold === 'number') confidenceThreshold = orgSettings.ai_handoff_threshold
       if (orgSettings && typeof orgSettings.ai_hallucination_threshold === 'number') hallucinationThreshold = orgSettings.ai_hallucination_threshold
     }
-  } catch (e) {
-    // ignore and fall back to defaults
+  } catch {
+    void 0
   }
 
   const hallucinationFlag = Boolean(halluc && (halluc.score || 0) >= hallucinationThreshold)
@@ -104,8 +104,8 @@ export async function validateDraftResponse(draftText = '', extracted = {}, thre
           effectiveThreshold = orgSettings.ai_handoff_threshold
         }
       }
-    } catch (e) {
-      // ignore and fall back
+    } catch {
+      void 0
     }
     if (effectiveThreshold === null) effectiveThreshold = DEFAULT_CONFIDENCE_THRESHOLD
   }
@@ -116,7 +116,7 @@ export async function validateDraftResponse(draftText = '', extracted = {}, thre
       const orgSettings = await getOrgAiSettings(orgOwnerId)
       if (orgSettings && typeof orgSettings.ai_hallucination_threshold === 'number') hallucinationThreshold = orgSettings.ai_hallucination_threshold
     }
-  } catch (e) {}
+  } catch { void 0 }
 
   const hallucinationFlag = Boolean(halluc && (halluc.score || 0) >= hallucinationThreshold)
   const verificationFlag = verification?.verified === false

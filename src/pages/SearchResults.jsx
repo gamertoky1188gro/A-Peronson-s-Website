@@ -571,7 +571,7 @@ export default function SearchResults() {
     try {
       const nf = new Intl.NumberFormat(undefined, { style: 'currency', currency: curr, maximumFractionDigits: 2 })
       return (v) => nf.format(Number(v || 0))
-    } catch (err) {
+    } catch {
       return (v) => `${curr} ${v}`
     }
   }, [filters.priceCurrency])
@@ -1148,7 +1148,7 @@ export default function SearchResults() {
       const params = new URLSearchParams(qs)
       if (activeTab) params.set('tab', activeTab)
       return `${window.location.origin}/search?${params.toString()}`
-    } catch (err) {
+    } catch {
       return `${window.location.origin}/search`
     }
   }
@@ -1161,10 +1161,9 @@ export default function SearchResults() {
         setAlertFeedback('Share link copied to clipboard.')
       } else {
         // fallback
-        // eslint-disable-next-line no-alert
         window.prompt('Copy this link', url)
       }
-    } catch (err) {
+    } catch {
       setAlertFeedback(`Unable to copy link. ${url}`)
     }
   }
@@ -1209,10 +1208,9 @@ export default function SearchResults() {
         await navigator.clipboard.writeText(url)
         setAlertFeedback('Preset link copied to clipboard.')
       } else {
-        // eslint-disable-next-line no-alert
         window.prompt('Copy this preset link', url)
       }
-    } catch (err) {
+    } catch {
       setAlertFeedback('Unable to copy preset link.')
     }
   }
@@ -1279,7 +1277,7 @@ export default function SearchResults() {
     setAutoSaveCandidate(null)
   }
 
-  async function fetchServerPresets() {
+  const fetchServerPresets = useCallback(async () => {
     if (!token) {
       setServerPresets([])
       return
@@ -1288,12 +1286,12 @@ export default function SearchResults() {
     try {
       const data = await apiRequest('/presets', { token })
       setServerPresets(Array.isArray(data?.items) ? data.items : [])
-    } catch (err) {
+    } catch {
       setServerPresets([])
     } finally {
       setServerPresetsLoading(false)
     }
-  }
+  }, [token])
 
   async function createServerPresetFromCurrent(name, shared = false) {
     if (!token) {
@@ -1402,7 +1400,7 @@ export default function SearchResults() {
   useEffect(() => {
     if (!managePresetsOpen) return
     fetchServerPresets().catch(() => null)
-  }, [managePresetsOpen])
+  }, [managePresetsOpen, fetchServerPresets])
 
   function openChatNotice(name, leadSource, journeyContext = {}) {
     if (leadSource?.type && leadSource?.id) {
@@ -1451,32 +1449,32 @@ export default function SearchResults() {
     const chips = []
     if (query.trim()) chips.push({ key: 'query', label: `Query: ${query.trim()}`, onRemove: () => setQuery('') })
     if (category.length) chips.push({ key: 'category', label: `Category: ${category.join(', ')}`, onRemove: clearCategories })
-    if (filters.industry) chips.push({ key: 'industry', label: `Industry: ${filters.industry}`, onRemove: () => updateCoreFilter('industry', '') })
-    if (filters.country) chips.push({ key: 'country', label: `Country: ${filters.country}`, onRemove: () => updateCoreFilter('country', '') })
-    if (filters.incoterms && Array.isArray(filters.incoterms) && filters.incoterms.length) chips.push({ key: 'incoterms', label: `Incoterms: ${filters.incoterms.join(', ')}`, onRemove: () => updateCoreFilter('incoterms', []) })
-    if (filters.auditDate) chips.push({ key: 'auditDate', label: `Last audit: ${filters.auditDate}`, onRemove: () => updateAdvancedFilter('auditDate', '') })
-    if (filters.verifiedOnly) chips.push({ key: 'verifiedOnly', label: 'Verified only', onRemove: () => updateCoreFilter('verifiedOnly', false) })
-    if (filters.orgType) chips.push({ key: 'orgType', label: `Account: ${filters.orgType.replace('_', ' ')}`, onRemove: () => updateCoreFilter('orgType', '') })
+    if (filters.industry) chips.push({ key: 'industry', label: `Industry: ${filters.industry}`, onRemove: () => setFilters((prev) => ({ ...prev, industry: '' })) })
+    if (filters.country) chips.push({ key: 'country', label: `Country: ${filters.country}`, onRemove: () => setFilters((prev) => ({ ...prev, country: '' })) })
+    if (filters.incoterms && Array.isArray(filters.incoterms) && filters.incoterms.length) chips.push({ key: 'incoterms', label: `Incoterms: ${filters.incoterms.join(', ')}`, onRemove: () => setFilters((prev) => ({ ...prev, incoterms: [] })) })
+    if (filters.auditDate) chips.push({ key: 'auditDate', label: `Last audit: ${filters.auditDate}`, onRemove: () => setFilters((prev) => ({ ...prev, auditDate: '' })) })
+    if (filters.verifiedOnly) chips.push({ key: 'verifiedOnly', label: 'Verified only', onRemove: () => setFilters((prev) => ({ ...prev, verifiedOnly: false })) })
+    if (filters.orgType) chips.push({ key: 'orgType', label: `Account: ${filters.orgType.replace('_', ' ')}`, onRemove: () => setFilters((prev) => ({ ...prev, orgType: '' })) })
     if (filters.priorityOnly) chips.push({ key: 'priorityOnly', label: 'Priority only', onRemove: () => setFilters((prev) => ({ ...prev, priorityOnly: false })) })
     if (filters.priceRange) {
       const pr = priceRangeValues || { min: '', max: '' }
       const minLabel = pr.min ? priceFormatter(pr.min) : ''
       const maxLabel = pr.max ? priceFormatter(pr.max) : ''
       const label = `Price: ${minLabel}${(minLabel && maxLabel) ? ` - ${maxLabel}` : ''}`
-      chips.push({ key: 'priceRange', label, onRemove: () => updateCoreFilter('priceRange', '') })
+      chips.push({ key: 'priceRange', label, onRemove: () => setFilters((prev) => ({ ...prev, priceRange: '' })) })
     }
-    if (filters.auditScoreMin) chips.push({ key: 'auditScoreMin', label: `Audit score ≥ ${filters.auditScoreMin}`, onRemove: () => updateAdvancedFilter('auditScoreMin', '') })
-    if (filters.hasPermissionMatrix) chips.push({ key: 'hasPermissionMatrix', label: 'Role-based access', onRemove: () => updateAdvancedFilter('hasPermissionMatrix', false) })
-    if (filters.permissionSection) chips.push({ key: 'permissionSection', label: `Permission: ${filters.permissionSection}${filters.permissionSectionEdit ? ' (edit)' : ''}`, onRemove: () => { updateAdvancedFilter('permissionSection', ''); updateAdvancedFilter('permissionSectionEdit', false) } })
+    if (filters.auditScoreMin) chips.push({ key: 'auditScoreMin', label: `Audit score ≥ ${filters.auditScoreMin}`, onRemove: () => setFilters((prev) => ({ ...prev, auditScoreMin: '' })) })
+    if (filters.hasPermissionMatrix) chips.push({ key: 'hasPermissionMatrix', label: 'Role-based access', onRemove: () => setFilters((prev) => ({ ...prev, hasPermissionMatrix: false })) })
+    if (filters.permissionSection) chips.push({ key: 'permissionSection', label: `Permission: ${filters.permissionSection}${filters.permissionSectionEdit ? ' (edit)' : ''}`, onRemove: () => setFilters((prev) => ({ ...prev, permissionSection: '', permissionSectionEdit: false })) })
     if (filters.roleSeats && Array.isArray(filters.roleSeats) && filters.roleSeats.length) {
       (filters.roleSeats || []).forEach((entry) => {
         if (!entry || !entry.role) return
         const label = `${entry.role}: ${entry.seats || '0'} seats`
-        chips.push({ key: `roleSeats-${entry.role}`, label, onRemove: () => updateAdvancedFilter('roleSeats', (filters.roleSeats || []).filter((e) => e.role !== entry.role)) })
+        chips.push({ key: `roleSeats-${entry.role}`, label, onRemove: () => setFilters((prev) => ({ ...prev, roleSeats: (prev.roleSeats || []).filter((e) => e.role !== entry.role) })) })
       })
     }
     return chips
-  }, [category, filters.country, filters.industry, filters.orgType, filters.priorityOnly, filters.verifiedOnly, query, filters.priceRange, priceFormatter, priceRangeValues])
+  }, [category, filters, priceFormatter, priceRangeValues, query])
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">

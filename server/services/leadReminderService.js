@@ -137,8 +137,8 @@ export async function runLeadReminderSweep() {
     if (sideEffects.length) {
       try {
         await Promise.allSettled(sideEffects)
-      } catch (e) {
-        // swallow - we don't want side effect failures to break the sweep
+      } catch {
+        void 0
       }
     }
 

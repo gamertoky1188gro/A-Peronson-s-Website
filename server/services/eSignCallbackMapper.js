@@ -5,7 +5,7 @@
  * HelloSign, DocuSign, Adobe Sign, etc.). If mapping can't be determined, an
  * empty object is returned so the original payload is preserved.
  */
-export function normalizeProviderWebhook(rawPayload = {}, headers = {}) {
+export function normalizeProviderWebhook(rawPayload = {}) {
   const payload = rawPayload || {}
 
   // If already in our internal shape, pass through

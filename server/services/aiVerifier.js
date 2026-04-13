@@ -13,8 +13,8 @@ export async function verifyExtraction(extracted = {}, orgOwnerId = null) {
         const orgSettings = await getOrgAiSettings(orgOwnerId)
         if (orgSettings && orgSettings.ai_verifier_url) verifierUrl = orgSettings.ai_verifier_url
         if (orgSettings && orgSettings.ai_verifier_api_key) apiKey = orgSettings.ai_verifier_api_key
-      } catch (e) {
-        // ignore and fall back to env
+      } catch {
+        void 0
       }
     }
 
@@ -67,7 +67,7 @@ export async function verifyExtraction(extracted = {}, orgOwnerId = null) {
     const verified = Boolean(extracted && extracted.product_type)
     const score = verified ? 1 : 0
     return { verified, score, notes: verified ? 'Basic rule: product_type present' : 'Missing product_type' }
-  } catch (err) {
+  } catch {
     return { verified: false, score: 0, notes: 'verifier_error' }
   }
 }

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { renderContractPdfBuffer } from '../documentService.js'
 
-export async function createDropboxSignSession({ contractId, contract, actor, token }) {
+export async function createDropboxSignSession({ contractId, contract, token }) {
   const base = (process.env.ESIGN_PROVIDER_URL || '').replace(/\/+$/, '')
   if (!base) throw new Error('ESIGN_PROVIDER_URL is not configured for Dropbox Sign')
 

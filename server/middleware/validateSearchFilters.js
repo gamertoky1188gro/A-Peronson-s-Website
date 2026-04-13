@@ -56,8 +56,7 @@ export function validateFiltersMiddleware(req, res, next) {
   try {
     const data = fs.readFileSync(SCHEMA_PATH, 'utf8')
     schema = JSON.parse(data)
-  } catch (err) {
-    // if schema missing, allow through
+  } catch {
     return next()
   }
 

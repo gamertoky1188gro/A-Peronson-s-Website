@@ -445,8 +445,8 @@ async function appendContractAudit(contractId, actorId, action, metadata = {}) {
         return arr
       }, [])
     }
-  } catch (err) {
-    // non-fatal
+  } catch {
+    void 0
   }
 }
 

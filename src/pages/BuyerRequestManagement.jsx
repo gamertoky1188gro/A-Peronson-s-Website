@@ -460,7 +460,7 @@ export default function BuyerRequestManagement() {
           return acc
         }, {})
         setForm((prev) => ({ ...prev, ...sanitized }))
-      } catch (err) {
+      } catch {
         // Fallback: keep previous behavior if mapper fails
         const timelineDays = extracted?.timeline?.normalized_days
         const priceMin = extracted?.price?.min

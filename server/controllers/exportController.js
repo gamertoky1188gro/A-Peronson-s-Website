@@ -11,7 +11,6 @@ export async function exportAnalytics(req, res) {
 
     // Read raw analytics payload and apply governance sanitization
     const raw = await readJson('analytics.json')
-    const payload = { raw, generated_at: new Date().toISOString() }
 
     const adminConfig = await getAdminConfig()
     const sanitized = sanitizePlatformAnalytics({ monthly_demand_trend: raw || [], price_range_demand: [], top_categories_global: [] }, adminConfig?.analytics)

@@ -301,28 +301,24 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
   // Enforce per-org AI auto-reply settings for messages originating from AI flows
   const sourceLabel = String(options?.source_label || '')
   if (sourceLabel.startsWith('ai:')) {
-    try {
-      const orgOwnerId = await resolveOrgOwnerFromMatch(matchId, senderId) || ''
-      if (orgOwnerId) {
-        const orgSettings = await getOrgAiSettings(orgOwnerId)
-        if (!orgSettings.auto_reply_enabled) {
-          const err = new Error('Auto-reply disabled by organization settings.')
-          err.status = 403
-          err.code = 'AI_AUTO_REPLY_DISABLED'
-          throw err
-        }
-
-        const cutoff = Date.now() - (60 * 60 * 1000)
-        const recent = (Array.isArray(messages) ? messages : []).filter((m) => String(m.sender_id || '') === String(senderId) && new Date(m.timestamp || 0).getTime() >= cutoff)
-        if (recent.length >= Number(orgSettings.auto_reply_rate_limit_per_hour || 20)) {
-          const err = new Error('Auto-reply rate limit exceeded for this organization.')
-          err.status = 429
-          err.code = 'AI_AUTO_REPLY_RATE_LIMIT'
-          throw err
-        }
+    const orgOwnerId = await resolveOrgOwnerFromMatch(matchId, senderId) || ''
+    if (orgOwnerId) {
+      const orgSettings = await getOrgAiSettings(orgOwnerId)
+      if (!orgSettings.auto_reply_enabled) {
+        const err = new Error('Auto-reply disabled by organization settings.')
+        err.status = 403
+        err.code = 'AI_AUTO_REPLY_DISABLED'
+        throw err
       }
-    } catch (e) {
-      throw e
+
+      const cutoff = Date.now() - (60 * 60 * 1000)
+      const recent = (Array.isArray(messages) ? messages : []).filter((m) => String(m.sender_id || '') === String(senderId) && new Date(m.timestamp || 0).getTime() >= cutoff)
+      if (recent.length >= Number(orgSettings.auto_reply_rate_limit_per_hour || 20)) {
+        const err = new Error('Auto-reply rate limit exceeded for this organization.')
+        err.status = 429
+        err.code = 'AI_AUTO_REPLY_RATE_LIMIT'
+        throw err
+      }
     }
   }
 
@@ -419,7 +415,7 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
       source_label: options?.source_label,
     })
   } catch {
-    // silent
+    void 0
   }
 
   await trackTransition(matchId, 'matched', 'first_message_sent', { sender_id: senderId })
@@ -432,7 +428,7 @@ export async function postMessage(matchId, senderId, message, type = 'text', att
       autoSummarizeMatch({ matchId, orgOwnerId }).catch(() => {})
     }
   } catch {
-    // silent
+    void 0
   }
 
   return enrichMessage(entry, usersById)

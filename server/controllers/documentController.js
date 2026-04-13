@@ -12,7 +12,7 @@ import {
 import { createSignSession, handleSignCallback } from '../services/eSignService.js'
 import { normalizeProviderWebhook } from '../services/eSignCallbackMapper.js'
 import crypto from 'crypto'
-import { readLocalJson, updateLocalJson } from '../utils/localStore.js'
+import { updateLocalJson } from '../utils/localStore.js'
 import { deny, handleControllerError } from '../utils/permissions.js'
 import { ensureEntitlement } from '../services/entitlementService.js'
 import { logInfo, logError } from '../utils/logger.js'
@@ -119,7 +119,7 @@ export async function createContractSignCallback(req, res) {
     try {
       logInfo('esign_webhook_received', { contractId: req.params.contractId, hasSignature: Boolean(signatureHeader), hasSecret: Boolean(incomingSecretHeader) })
     } catch {
-      // ignore logging errors
+      void 0
     }
 
     if (secret) {
@@ -154,7 +154,7 @@ export async function createContractSignCallback(req, res) {
             if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
               return res.status(403).json({ error: 'Invalid signature' })
             }
-          } catch (e) {
+          } catch {
             return res.status(403).json({ error: 'Invalid signature format' })
           }
 
@@ -208,7 +208,7 @@ export async function createContractSignCallback(req, res) {
         payload = { ...payload, ...normalized }
       }
     } catch {
-      // ignore mapping errors and use raw payload
+      void 0
     }
 
     try {
@@ -221,7 +221,7 @@ export async function createContractSignCallback(req, res) {
           artifact_status: updated?.artifact?.status,
         })
       } catch {
-        // silent
+        void 0
       }
       return res.json({ ok: true, contract: updated })
     } catch (innerErr) {
@@ -229,12 +229,12 @@ export async function createContractSignCallback(req, res) {
       try {
         await recordFailedWebhook({ contractId, payload, headers: { signature: signatureHeader || null }, error: innerErr?.message || String(innerErr) })
       } catch (recErr) {
-        try { logError('esign_webhook_record_failed', recErr) } catch {}
+        try { logError('esign_webhook_record_failed', recErr) } catch { void 0 }
       }
       throw innerErr
     }
   } catch (error) {
-    try { logError('esign_webhook_processing_error', error) } catch {}
+    try { logError('esign_webhook_processing_error', error) } catch { void 0 }
     return handleControllerError(res, error)
   }
 }
