@@ -10,6 +10,7 @@ export const DEFAULT_CORE_FILTER_KEYS = [
 ]
 
 export const ADVANCED_FILTER_KEYS = [
+  'auditDate',
   'priorityOnly',
   'fabricType',
   'gsmMin',
@@ -23,7 +24,6 @@ export const ADVANCED_FILTER_KEYS = [
   'incoterms',
   'paymentTerms',
   'documentReady',
-  'auditDate',
   'auditScoreMin',
   'languageSupport',
   'capacityMin',

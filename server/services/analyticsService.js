@@ -727,6 +727,31 @@ function buildRawPlatformReport(requirementsRows, eventRows, usersById) {
     return { label: cat, delta: current - previous, current, previous }
   }).sort((a, b) => b.delta - a.delta).slice(0, 6)
 
+  // --- Monthly demand series by category and by top products ---
+  const monthly_demand_by_category = topCategoriesGlobal.map((c) => {
+    const label = String(c.label || 'Other')
+    const rows = (requirementsRows || []).filter((r) => String(r.category || r.product || 'Other') === label)
+    return { label, series: toMonthlySeries(rows, 'created_at') }
+  })
+
+  const productCounts = (requirementsRows || []).reduce((acc, r) => {
+    const p = String(r.product || r.product_name || r.product_id || '').trim()
+    if (!p) return acc
+    acc[p] = (acc[p] || 0) + 1
+    return acc
+  }, {})
+
+  const topProductsGlobal = Object.entries(productCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([label, count]) => ({ label, count }))
+
+  const monthly_demand_by_product = topProductsGlobal.map((p) => {
+    const label = String(p.label || 'unknown')
+    const rows = (requirementsRows || []).filter((r) => String(r.product || r.product_name || r.product_id || '') === label)
+    return { label, series: toMonthlySeries(rows, 'created_at') }
+  })
+
   return {
     totals: {
       buyer_requests: requirementsRows.length,
@@ -736,6 +761,8 @@ function buildRawPlatformReport(requirementsRows, eventRows, usersById) {
     top_categories_by_country: topCategoriesByCountry,
     top_categories_global: topCategoriesGlobal,
     monthly_demand_trend: toMonthlySeries(requirementsRows, 'created_at'),
+    monthly_demand_by_category,
+    monthly_demand_by_product,
     price_range_demand: priceRangeDemand,
     top_search_categories_by_country: topSearchCategoriesByCountry,
     top_search_categories_global: topSearchCategoriesGlobal,
