@@ -1,6 +1,7 @@
 import {
   createMember,
   deactivateOrRemoveMember,
+  getMember,
   getMemberConstraints,
   listMembers,
   resetMemberPassword,
@@ -49,6 +50,18 @@ export async function listOrgMembers(req, res) {
     const members = await listMembers(orgOwnerIdFromUser(req.user))
     const constraints = await getMemberConstraints(req.user)
     return res.json({ members, constraints })
+  } catch (error) {
+    return handleError(res, error)
+  }
+}
+
+export async function getOrgMember(req, res) {
+  if (!canManageMembers(req.user)) return deny(res)
+  try {
+    await authorize(req.user, ACTIONS.MEMBERS_MANAGE, { org_id: orgOwnerIdFromUser(req.user), member_id: req.params.memberId })
+    const member = await getMember(orgOwnerIdFromUser(req.user), req.params.memberId)
+    if (!member) return res.status(404).json({ error: 'Member not found' })
+    return res.json({ member })
   } catch (error) {
     return handleError(res, error)
   }

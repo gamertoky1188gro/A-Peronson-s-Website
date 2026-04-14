@@ -10,13 +10,11 @@ export default function CountryAutocomplete({
   maxResults = 8,
   exclude = [],
 }) {
-  const [query, setQuery] = useState(value || '')
+  const query = value || ''
   const [open, setOpen] = useState(false)
   const [focused, setFocused] = useState(-1)
   const rootRef = useRef(null)
   const optionRefs = useRef([])
-
-  useEffect(() => setQuery(value || ''), [value])
 
   const normalized = (q) => String(q || '').trim().toLowerCase()
 
@@ -49,7 +47,6 @@ export default function CountryAutocomplete({
 
   function selectOption(opt) {
     onChange(opt)
-    setQuery(opt)
     setOpen(false)
     setFocused(-1)
   }
@@ -102,7 +99,7 @@ export default function CountryAutocomplete({
         autoComplete="off"
         value={query}
         onChange={(e) => {
-          setQuery(e.target.value)
+          onChange(e.target.value)
           setOpen(true)
           setFocused(-1)
         }}

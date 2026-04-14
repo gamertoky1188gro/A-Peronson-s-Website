@@ -3,6 +3,7 @@ import { allowRoles, requireAuth } from '../middleware/auth.js'
 import {
   createOrgMember,
   deactivateOrRemoveOrgMember,
+  getOrgMember,
   listOrgMembers,
   patchMemberPermissions,
   postMemberPasswordReset,
@@ -12,6 +13,7 @@ import {
 const router = Router()
 
 router.get('/', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory'), listOrgMembers)
+router.get('/:memberId', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory'), getOrgMember)
 router.post('/', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory'), createOrgMember)
 router.put('/:memberId', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory'), putOrgMember)
 router.patch('/:memberId/permissions', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory'), patchMemberPermissions)

@@ -72,6 +72,7 @@ export default function FloatingAssistant() {
   // - socketRef: WebSocket instance reused across renders
   const scrollRef = useRef(null)
   const socketRef = useRef(null)
+  const requestCounterRef = useRef(0)
 
   // Initialize WebSocket connection
   useEffect(() => {
@@ -150,7 +151,8 @@ export default function FloatingAssistant() {
     if (!text.trim() || loading) return
 
     // Add the user's message to transcript immediately for snappy UX.
-    const requestId = `req_${Date.now()}_${Math.random().toString(36).slice(2,9)}`
+    requestCounterRef.current += 1
+    const requestId = `req_${requestCounterRef.current}`
     const userMsg = { role: 'user', text, request_id: requestId, isNew: false }
     setMessages(prev => [...prev, userMsg])
     setInput('')

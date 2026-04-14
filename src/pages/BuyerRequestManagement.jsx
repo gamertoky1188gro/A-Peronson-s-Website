@@ -9,6 +9,7 @@ import { getBuyerRequestErrorStep, getBuyerRequestStepErrors, getBuyerRequestSub
 // - buying_house/admin: manage lead queue + assign requests to agents
 
 const EMPTY_FORM = {
+  orderType: 'main_order',
   requestType: '',
   title: '',
   industry: '',
@@ -77,6 +78,7 @@ function formToPayload(form) {
   const quantity = isTextile ? form.quantity : form.totalQuantity
 
   return {
+    order_type: form.orderType || 'main_order',
     request_type: form.requestType || 'garments',
     title: form.title,
     industry: form.industry,
@@ -145,6 +147,7 @@ function requirementToForm(req) {
   const specs = req?.specs && typeof req.specs === 'object' ? req.specs : {}
   return {
     ...EMPTY_FORM,
+    orderType: req.order_type || 'main_order',
     requestType: req.request_type || 'garments',
     title: req.title || '',
     industry: req.industry || '',
@@ -443,7 +446,10 @@ export default function BuyerRequestManagement() {
           return
         }
       }
-      const created = await apiRequest('/requirements', { method: 'POST', token, body: { ...formToPayload(form), status: statusOverride } })
+      const nextStatus = statusOverride === 'draft'
+        ? 'draft'
+        : (form.orderType === 'sample_order' ? 'sample_requested' : 'open')
+      const created = await apiRequest('/requirements', { method: 'POST', token, body: { ...formToPayload(form), status: nextStatus } })
       if (created?.id && pendingAttachments.length) {
         for (const attachment of pendingAttachments) {
           if (!attachment?.file) continue
@@ -571,6 +577,48 @@ export default function BuyerRequestManagement() {
     }
   }
 
+  async function updateRequestStatus(requirementId, nextStatus) {
+    if (!token || !requirementId) return
+    setSaving(true)
+    setError('')
+    setSuccess('')
+    try {
+      await apiRequest(`/requirements/${encodeURIComponent(requirementId)}`, {
+        method: 'PATCH',
+        token,
+        body: { status: nextStatus },
+      })
+      setSuccess('Request status updated.')
+      await loadRequests()
+      await loadBrowse()
+    } catch (err) {
+      setError(err.message || 'Failed to update request status.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function convertToMainOrder(requirementId) {
+    if (!token || !requirementId) return
+    setSaving(true)
+    setError('')
+    setSuccess('')
+    try {
+      await apiRequest(`/requirements/${encodeURIComponent(requirementId)}`, {
+        method: 'PATCH',
+        token,
+        body: { order_type: 'main_order', status: 'open' },
+      })
+      setSuccess('Converted to Main Order.')
+      await loadRequests()
+      await loadBrowse()
+    } catch (err) {
+      setError(err.message || 'Failed to convert order.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   async function deleteRequest(id) {
     if (!token || !id) return
     setSaving(true)
@@ -624,12 +672,16 @@ export default function BuyerRequestManagement() {
   const myRequests = useMemo(() => {
     if (role === 'buyer') return requests
     // Buying house/admin: we show all open requests in the lead queue by default.
-    return requests.filter((r) => String(r.status || 'open').toLowerCase() === 'open')
+    return requests.filter((r) => {
+      const status = String(r.status || 'open').toLowerCase()
+      return ['open', 'sample_requested', 'sample_sent', 'sample_approved'].includes(status)
+    })
   }, [requests, role])
 
   const previewRows = useMemo(() => {
     const rows = [
       { label: 'Request type', value: form.requestType || 'garments' },
+      { label: 'Order type', value: form.orderType === 'sample_order' ? 'Sample Order' : 'Main Order' },
       { label: 'Title', value: form.title },
       { label: 'Category', value: isTextile ? form.subCategory : form.category },
       { label: 'Industry', value: form.industry },
@@ -745,6 +797,16 @@ export default function BuyerRequestManagement() {
             <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-slate-900">Request type</h3>
                 <p className="text-sm text-slate-600">Select the buyer request type so we can show the correct fields.</p>
+                <Field label="Order type" hint="Sample order starts with sample-status flow. Main order goes directly to normal flow.">
+                  <select
+                    className="w-full rounded-lg borderless-shadow px-3 py-2"
+                    value={form.orderType}
+                    onChange={(e) => setForm({ ...form, orderType: e.target.value })}
+                  >
+                    <option value="sample_order">Sample Order</option>
+                    <option value="main_order">Main Order</option>
+                  </select>
+                </Field>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <button
                     type="button"
@@ -1309,6 +1371,16 @@ export default function BuyerRequestManagement() {
                       <Field label="Title">
                         <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} />
                       </Field>
+                      <Field label="Order type">
+                        <select
+                          className="w-full rounded-lg borderless-shadow px-3 py-2"
+                          value={editForm.orderType}
+                          onChange={(e) => setEditForm({ ...editForm, orderType: e.target.value })}
+                        >
+                          <option value="sample_order">Sample Order</option>
+                          <option value="main_order">Main Order</option>
+                        </select>
+                      </Field>
                       <Field label="Category">
                         <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={editForm.category} onChange={(e) => setEditForm({ ...editForm, category: e.target.value })} />
                       </Field>
@@ -1363,6 +1435,7 @@ export default function BuyerRequestManagement() {
                           </span>
                         </div>
                         <div className="mt-1 text-xs text-slate-500">
+                          <span className="mr-2">Type: {r.order_type === 'sample_order' ? 'Sample Order' : 'Main Order'}</span>
                           Qty {r.quantity || '--'} - {r.material || '--'} - Target {r.target_market || '--'} - Delivery {r.delivery_timeline || r.timeline_days || '--'}
                         </div>
                       </div>
@@ -1386,6 +1459,28 @@ export default function BuyerRequestManagement() {
                         </button>
                       </div>
                     </div>
+
+                    {r.order_type === 'sample_order' ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <select
+                          className="rounded-lg borderless-shadow px-2 py-2 text-xs"
+                          value={String(r.status || 'sample_requested')}
+                          onChange={(e) => updateRequestStatus(r.id, e.target.value)}
+                        >
+                          <option value="sample_requested">Sample Requested</option>
+                          <option value="sample_sent">Sample Sent</option>
+                          <option value="sample_approved">Sample Approved</option>
+                          <option value="sample_rejected">Sample Rejected</option>
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => convertToMainOrder(r.id)}
+                          className="rounded-full bg-(--gt-blue) px-3 py-2 text-xs font-semibold text-white hover:bg-(--gt-blue-hover)"
+                        >
+                          Convert to Main Order
+                        </button>
+                      </div>
+                    ) : null}
 
                     {!canSmartMatch ? (
                       <div className="rounded-xl bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-200/70">

@@ -178,6 +178,12 @@ export async function listMembers(orgOwnerId) {
   return agents.map(cleanAgent)
 }
 
+export async function getMember(orgOwnerId, memberId) {
+  const agents = await listAgentsForOrg(orgOwnerId)
+  const found = agents.find((row) => String(row.id) === String(memberId))
+  return found ? cleanAgent(found) : null
+}
+
 async function assertFreePlanMemberLimit(orgOwnerId, allAgents, currentAgent = null, nextStatus = 'active', orgOwnerRecord = null) {
   const plan = orgOwnerRecord ? await getPlanForUser(orgOwnerRecord) : (await getSubscription(orgOwnerId))?.plan === 'premium' ? 'premium' : 'free'
   if (plan !== 'free') return

@@ -167,6 +167,9 @@ function normalizeRequirement(buyerId, payload) {
     match_id: sanitizeString(payload.match_id || payload.matchId || '', 240),
     title,
     request_type: requestType,
+    order_type: sanitizeString(payload.order_type || payload.orderType || 'main_order', 40).toLowerCase() === 'sample_order'
+      ? 'sample_order'
+      : 'main_order',
     verified_only: Boolean(payload.verified_only),
     specs,
     custom_fields: customFields,
@@ -345,6 +348,9 @@ export async function updateRequirement(requirementId, patch, actor) {
     ...previous,
     title: patch.title !== undefined ? sanitizeString(patch.title, 160) : (previous.title || ''),
     request_type: nextRequestType,
+    order_type: patch.order_type !== undefined || patch.orderType !== undefined
+      ? (sanitizeString(patch.order_type || patch.orderType || 'main_order', 40).toLowerCase() === 'sample_order' ? 'sample_order' : 'main_order')
+      : (sanitizeString(previous.order_type || 'main_order', 40).toLowerCase() === 'sample_order' ? 'sample_order' : 'main_order'),
     verified_only: patch.verified_only !== undefined ? Boolean(patch.verified_only) : Boolean(previous.verified_only),
     specs: mergedSpecs,
     custom_fields: mergedCustomFields,
