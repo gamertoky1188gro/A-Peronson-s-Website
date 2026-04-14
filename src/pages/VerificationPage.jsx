@@ -24,7 +24,7 @@
 */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { API_BASE, apiRequest, getCurrentUser, getToken } from '../lib/auth'
-import { BUYER_COUNTRY_OPTIONS, isEuCountry } from '../../shared/config/geo.js'
+import { BUYER_COUNTRY_OPTIONS, EU_COUNTRIES, isEuCountry } from '../../shared/config/geo.js'
 
 const LABELS = {
   // Human-readable labels for backend document keys.
@@ -298,6 +298,14 @@ export default function VerificationPage() {
                 {savingCountry ? <span className="text-xs text-slate-500">Saving...</span> : null}
                 <span className="text-xs text-slate-600">Region: <span className="font-semibold">{buyerRegion}</span></span>
               </div>
+              <p className="mt-2 text-xs text-slate-600">
+                EU buyers need: <span className="font-semibold">Business Registration + VAT Number + EORI + Bank proof</span>.
+                USA buyers need: <span className="font-semibold">Business Registration + EIN + IOR + Bank proof</span>.
+              </p>
+              <details className="mt-2 rounded-lg bg-white px-3 py-2 text-xs text-slate-600">
+                <summary className="cursor-pointer font-semibold text-slate-700">Show EU country list</summary>
+                <p className="mt-2 leading-relaxed">{EU_COUNTRIES.join(', ')}</p>
+              </details>
               {!buyerCountry ? <p className="mt-2 text-xs text-rose-700">Buyer country is required before completing buyer verification.</p> : null}
             </div>
           ) : null}
@@ -408,4 +416,3 @@ export default function VerificationPage() {
     </div>
   )
 }
-

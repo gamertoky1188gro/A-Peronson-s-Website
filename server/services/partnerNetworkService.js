@@ -69,6 +69,23 @@ export async function getPartnerNetwork(user, { status } = {}) {
   }
 }
 
+export async function getIncomingPartnerRequests(user) {
+  if (!canViewPartnerNetwork(user)) {
+    const err = new Error('Forbidden')
+    err.status = 403
+    throw err
+  }
+
+  const [requests, users] = await Promise.all([readJson(FILE), listUsers()])
+  const usersById = new Map(users.map((u) => [u.id, u]))
+  const incoming = requests
+    .filter((row) => String(row.target_id || '') === String(user.id) && String(row.status || '') === 'pending')
+    .map((row) => mapWithCounterparty(row, user, usersById))
+    .sort((a, b) => String(b.updated_at || '').localeCompare(String(a.updated_at || '')))
+
+  return { requests: incoming }
+}
+
 export async function sendPartnerRequest(user, targetAccountId) {
   if (!canManagePartnerNetwork(user)) {
     const err = new Error('Forbidden')
@@ -252,6 +269,50 @@ export async function updatePartnerRequestStatus(user, requestId, action) {
   }
 
   return updatedRow
+}
+
+export async function removePartnerConnection(user, connectionId) {
+  if (!canManagePartnerNetwork(user) && !isOwnerOrAdmin(user)) {
+    const err = new Error('Forbidden')
+    err.status = 403
+    throw err
+  }
+
+  let removed = null
+  await updateJson(FILE, (rows) => {
+    const index = rows.findIndex((row) => String(row.id) === String(connectionId))
+    if (index < 0) {
+      const err = new Error('Connection not found')
+      err.status = 404
+      throw err
+    }
+    const current = rows[index]
+    if (String(current.status || '') !== 'connected') {
+      const err = new Error('Only connected rows can be removed')
+      err.status = 400
+      throw err
+    }
+
+    if (!isOwnerOrAdmin(user)) {
+      const mine = String(current.requester_id || '') === String(user.id) || String(current.target_id || '') === String(user.id)
+      if (!mine) {
+        const err = new Error('You can only remove your own partner connections')
+        err.status = 403
+        throw err
+      }
+    }
+
+    removed = {
+      ...current,
+      status: 'cancelled',
+      disconnected_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    rows[index] = removed
+    return rows
+  })
+
+  return removed
 }
 
 export async function enforcePartnerFreeTierLimits() {

@@ -1,4 +1,10 @@
-import { getPartnerNetwork, sendPartnerRequest, updatePartnerRequestStatus } from '../services/partnerNetworkService.js'
+import {
+  getIncomingPartnerRequests,
+  getPartnerNetwork,
+  removePartnerConnection,
+  sendPartnerRequest,
+  updatePartnerRequestStatus,
+} from '../services/partnerNetworkService.js'
 
 function handleError(res, error) {
   const status = Number(error?.status) || 500
@@ -27,6 +33,15 @@ export async function createPartnerRequest(req, res) {
   }
 }
 
+export async function listIncomingPartnerRequests(req, res) {
+  try {
+    const data = await getIncomingPartnerRequests(req.user)
+    return res.json(data)
+  } catch (error) {
+    return handleError(res, error)
+  }
+}
+
 async function handleStatusAction(req, res, action) {
   try {
     const row = await updatePartnerRequestStatus(req.user, req.params.requestId, action)
@@ -46,4 +61,13 @@ export async function rejectPartnerRequest(req, res) {
 
 export async function cancelPartnerRequest(req, res) {
   return handleStatusAction(req, res, 'cancel')
+}
+
+export async function deletePartnerConnection(req, res) {
+  try {
+    const row = await removePartnerConnection(req.user, req.params.connectionId)
+    return res.json({ connection: row })
+  } catch (error) {
+    return handleError(res, error)
+  }
 }

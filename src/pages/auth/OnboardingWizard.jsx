@@ -112,9 +112,8 @@ export default function OnboardingWizard() {
         if (profileImage) {
           try {
             // simple URL validation
-            // eslint-disable-next-line no-new
             new URL(profileImage)
-          } catch (e) {
+          } catch {
             setError('Please enter a valid image URL or leave it blank.')
             return false
           }
