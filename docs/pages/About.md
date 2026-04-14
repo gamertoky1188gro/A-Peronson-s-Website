@@ -1,4 +1,3 @@
-{% raw %}
 # About - Route `/about`
 
 **Access:** Public
@@ -27,41 +26,59 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 ### 3.1 Custom CSS utilities referenced by this page (App.css / index.css)
 
 - `.nav-glass` definitions:
-  - `src/App.css:615`
+  - `src/App.css:897`
 - `.spotlight-card` definitions:
-  - `src/App.css:267`
+  - `src/App.css:550`
 - `.skeleton` definitions:
-  - `src/App.css:583`
+  - `src/App.css:865`
 - `.neo-page` definitions:
-  - `src/App.css:108`
+  - `src/App.css:115`
 - `.neo-panel` definitions:
-  - `src/App.css:116`
+  - `src/App.css:123`
 - `.cyberpunk-page` definitions:
-  - `src/App.css:109`
+  - `src/App.css:116`
 - `.cyberpunk-card` definitions:
-  - `src/App.css:110`
+  - `src/App.css:117`
 - `.assistant-orb-btn` definitions:
-  - `src/App.css:518`
+  - `src/App.css:801`
 - `.legal-weave` definitions:
-  - `src/App.css:366`
+  - `src/App.css:649`
 - `.signature-draw` definitions:
-  - `src/App.css:401`
+  - `src/App.css:684`
 - `.verified-shimmer` definitions:
-  - `src/App.css:434`
+  - `src/App.css:717`
 - `.verified-pulse` definitions:
-  - `src/App.css:293`
+  - `src/App.css:576`
 - `.conic-beam` definitions:
-  - `src/App.css:302`
+  - `src/App.css:585`
 
 ### 3.2 Every className block (with grouped explanations)
 
-#### `src/pages/About.jsx:52`
+#### `src/pages/About.jsx:53`
+
+```jsx
+function Skeleton({ className='' }) {
+  return <div className={['skeleton', className].join(' ')} />
+}
+
+```
+**Raw class strings detected (best effort):**
+
+- `skeleton`
+- ` `
+
+**Utility breakdown (grouped):**
+
+- **Other:**
+  - `skeleton` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/About.jsx:54`
 
 ```jsx
   return <div className={['skeleton', className].join(' ')} />
 }
 
-function MotionItem({ index, className = '', children }) {
+function MotionItem({ index, className='', children }) {
 ```
 **Raw class strings detected (best effort):**
 
@@ -76,6 +93,21 @@ function MotionItem({ index, className = '', children }) {
 #### `src/pages/About.jsx:57`
 
 ```jsx
+function MotionItem({ index, className='', children }) {
+  const reduceMotion = useReducedMotion()
+  if (reduceMotion) return <div className={className}>{children}</div>
+  return (
+```
+**Raw class strings detected (best effort):**
+
+- _(dynamic className; inspect the snippet above)_
+
+**Utility breakdown (grouped):**
+
+
+#### `src/pages/About.jsx:59`
+
+```jsx
   if (reduceMotion) return <div className={className}>{children}</div>
   return (
     <motion.div
@@ -88,7 +120,7 @@ function MotionItem({ index, className = '', children }) {
 **Utility breakdown (grouped):**
 
 
-#### `src/pages/About.jsx:60`
+#### `src/pages/About.jsx:62`
 
 ```jsx
       className={className}
@@ -103,7 +135,7 @@ function MotionItem({ index, className = '', children }) {
 **Utility breakdown (grouped):**
 
 
-#### `src/pages/About.jsx:73`
+#### `src/pages/About.jsx:75`
 
 ```jsx
       className={[
@@ -140,7 +172,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:text-emerald-200` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_0_28px_rgba(16,185,129,0.14)]` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:80`
+#### `src/pages/About.jsx:82`
 
 ```jsx
       <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 shadow-[0_0_14px_rgba(5,150,105,0.55)] dark:bg-emerald-400 dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]" />
@@ -166,7 +198,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:bg-emerald-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:90`
+#### `src/pages/About.jsx:92`
 
 ```jsx
       <span className="inline-flex items-center rounded-full bg-sky-500/10 px-2.5 py-1 text-[11px] font-semibold text-sky-700 shadow-[0_0_0_1px_rgba(56,189,248,0.18)] dark:bg-sky-400/10 dark:text-sky-200">
@@ -199,7 +231,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:bg-sky-400/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-sky-200` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:96`
+#### `src/pages/About.jsx:98`
 
 ```jsx
     <span className="inline-flex items-center rounded-full bg-rose-500/10 px-2.5 py-1 text-[11px] font-semibold text-rose-700 shadow-[0_0_0_1px_rgba(244,63,94,0.18)] dark:bg-rose-400/10 dark:text-rose-200">
@@ -232,7 +264,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:bg-rose-400/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-rose-200` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:150`
+#### `src/pages/About.jsx:152`
 
 ```jsx
     <div className="weave-bg relative min-h-screen overflow-x-hidden bg-[#F8FAFC] text-[#1E293B] dark:bg-[#0F172A] dark:text-[#F1F5F9]">
@@ -274,7 +306,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:bg-[#0F172A]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-[#F1F5F9]` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:151`
+#### `src/pages/About.jsx:153`
 
 ```jsx
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
@@ -305,7 +337,7 @@ function MotionItem({ index, className = '', children }) {
   - `lg:grid-cols-12` — Variant prefix (responsive, dark, or interaction state).
   - `lg:col-span-8` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:152`
+#### `src/pages/About.jsx:154`
 
 ```jsx
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
@@ -329,7 +361,7 @@ function MotionItem({ index, className = '', children }) {
   - `lg:grid-cols-12` — Variant prefix (responsive, dark, or interaction state).
   - `lg:col-span-8` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:153`
+#### `src/pages/About.jsx:155`
 
 ```jsx
           <MotionItem index={0} className="lg:col-span-8">
@@ -351,7 +383,7 @@ function MotionItem({ index, className = '', children }) {
 - **Responsive variants:**
   - `lg:col-span-8` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:155`
+#### `src/pages/About.jsx:157`
 
 ```jsx
               className={[
@@ -376,11 +408,11 @@ function MotionItem({ index, className = '', children }) {
   - `rounded-xl` — Corner radius.
   - `shadow-[0_10px_40px_rgba(15,23,42,0.08)]` — Drop shadow depth (elevation).
 
-#### `src/pages/About.jsx:165`
+#### `src/pages/About.jsx:167`
 
 ```jsx
               <h1 className="text-4xl font-extrabold tracking-tight text-[#1E293B] dark:text-[#F1F5F9] sm:text-5xl">
-                About GarTexHub
+                About GarTexHub - Show notifications
               </h1>
               <p className="mt-3 text-lg italic text-[#475569] dark:text-slate-300">
 ```
@@ -408,7 +440,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:text-[#F1F5F9]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:168`
+#### `src/pages/About.jsx:170`
 
 ```jsx
               <p className="mt-3 text-lg italic text-[#475569] dark:text-slate-300">
@@ -438,7 +470,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:171`
+#### `src/pages/About.jsx:173`
 
 ```jsx
               <p className="mt-5 max-w-3xl text-[15px] leading-relaxed text-[#475569] dark:text-slate-300">
@@ -464,7 +496,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:177`
+#### `src/pages/About.jsx:179`
 
 ```jsx
               <div className="mt-7 flex flex-wrap gap-3">
@@ -511,7 +543,7 @@ function MotionItem({ index, className = '', children }) {
   - `/verification` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `liquid-btn` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/About.jsx:180`
+#### `src/pages/About.jsx:182`
 
 ```jsx
                   className="liquid-btn inline-flex items-center justify-center rounded-md bg-[#0F172A] px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(15,23,42,0.20)] transition hover:brightness-105 dark:bg-sky-500/15 dark:text-sky-100 dark:shadow-none"
@@ -551,7 +583,7 @@ function MotionItem({ index, className = '', children }) {
 - **Other:**
   - `liquid-btn` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/About.jsx:186`
+#### `src/pages/About.jsx:188`
 
 ```jsx
                   className="liquid-btn inline-flex items-center justify-center rounded-md bg-white/70 px-5 py-3 text-sm font-semibold text-[#1E293B] shadow-[0_10px_26px_rgba(15,23,42,0.10)] transition hover:bg-white dark:bg-white/10 dark:text-white dark:shadow-none"
@@ -591,7 +623,7 @@ function MotionItem({ index, className = '', children }) {
 - **Other:**
   - `liquid-btn` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/About.jsx:194`
+#### `src/pages/About.jsx:196`
 
 ```jsx
           <MotionItem index={1} className="lg:col-span-4">
@@ -613,19 +645,19 @@ function MotionItem({ index, className = '', children }) {
 - **Responsive variants:**
   - `lg:col-span-4` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:196`
+#### `src/pages/About.jsx:198`
 
 ```jsx
               className={[
                 'rounded-xl p-7',
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
-                'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+                'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-7`
 - `bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]`
-- `dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none`
+- `dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none`
 
 **Utility breakdown (grouped):**
 
@@ -638,11 +670,11 @@ function MotionItem({ index, className = '', children }) {
   - `shadow-[0_10px_40px_rgba(15,23,42,0.08)]` — Drop shadow depth (elevation).
 - **Dark mode variants:**
   - `dark:bg-[rgba(30,41,59,0.80)]` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-slate-700/50` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-none` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:205`
+#### `src/pages/About.jsx:207`
 
 ```jsx
               <div className="flex items-center justify-between">
@@ -674,7 +706,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:text-[#F1F5F9]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-emerald-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:206`
+#### `src/pages/About.jsx:208`
 
 ```jsx
                 <p className="text-sm font-semibold text-[#1E293B] dark:text-[#F1F5F9]">Trust indicators</p>
@@ -702,7 +734,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:text-[#F1F5F9]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-emerald-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:207`
+#### `src/pages/About.jsx:209`
 
 ```jsx
                 <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
@@ -724,10 +756,10 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-emerald-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:211`
+#### `src/pages/About.jsx:213`
 
 ```jsx
-                <p className="mt-3 text-xs text-[#64748B] dark:text-slate-300">Live data unavailable — showing defaults.</p>
+                <p className="mt-3 text-xs text-[#64748B] dark:text-slate-300">Live data unavailable -- showing defaults.</p>
               ) : null}
 
               <div className="mt-5 grid gap-3">
@@ -752,7 +784,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:214`
+#### `src/pages/About.jsx:216`
 
 ```jsx
               <div className="mt-5 grid gap-3">
@@ -776,7 +808,7 @@ function MotionItem({ index, className = '', children }) {
 - **Borders / rings / shadows:**
   - `rounded-lg` — Corner radius.
 
-#### `src/pages/About.jsx:217`
+#### `src/pages/About.jsx:219`
 
 ```jsx
                     <Skeleton className="h-14 rounded-lg" />
@@ -795,7 +827,7 @@ function MotionItem({ index, className = '', children }) {
 - **Borders / rings / shadows:**
   - `rounded-lg` — Corner radius.
 
-#### `src/pages/About.jsx:218`
+#### `src/pages/About.jsx:220`
 
 ```jsx
                     <Skeleton className="h-14 rounded-lg" />
@@ -814,7 +846,7 @@ function MotionItem({ index, className = '', children }) {
 - **Borders / rings / shadows:**
   - `rounded-lg` — Corner radius.
 
-#### `src/pages/About.jsx:219`
+#### `src/pages/About.jsx:221`
 
 ```jsx
                     <Skeleton className="h-14 rounded-lg" />
@@ -833,7 +865,7 @@ function MotionItem({ index, className = '', children }) {
 - **Borders / rings / shadows:**
   - `rounded-lg` — Corner radius.
 
-#### `src/pages/About.jsx:220`
+#### `src/pages/About.jsx:222`
 
 ```jsx
                     <Skeleton className="h-14 rounded-lg" />
@@ -854,7 +886,7 @@ function MotionItem({ index, className = '', children }) {
 - **Borders / rings / shadows:**
   - `rounded-lg` — Corner radius.
 
-#### `src/pages/About.jsx:230`
+#### `src/pages/About.jsx:232`
 
 ```jsx
                       className="grid gap-3"
@@ -877,7 +909,7 @@ function MotionItem({ index, className = '', children }) {
   - `Verified` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `factories` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/About.jsx:238`
+#### `src/pages/About.jsx:240`
 
 ```jsx
                         <div key={item.label} className="flex items-center justify-between rounded-lg bg-slate-900/4 px-4 py-3 dark:bg-white/5">
@@ -919,7 +951,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:239`
+#### `src/pages/About.jsx:241`
 
 ```jsx
                           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#64748B] dark:text-slate-300">{item.label}</p>
@@ -949,7 +981,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:240`
+#### `src/pages/About.jsx:242`
 
 ```jsx
                           <p className="text-lg font-extrabold tracking-tight text-[#1E293B] dark:text-white">{item.value}</p>
@@ -972,7 +1004,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:250`
+#### `src/pages/About.jsx:252`
 
 ```jsx
           <MotionItem index={2} className="lg:col-span-12">
@@ -994,19 +1026,19 @@ function MotionItem({ index, className = '', children }) {
 - **Responsive variants:**
   - `lg:col-span-12` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:252`
+#### `src/pages/About.jsx:254`
 
 ```jsx
               className={[
                 'rounded-xl p-7',
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
-                'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+                'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-7`
 - `bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]`
-- `dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none`
+- `dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none`
 
 **Utility breakdown (grouped):**
 
@@ -1019,11 +1051,11 @@ function MotionItem({ index, className = '', children }) {
   - `shadow-[0_10px_40px_rgba(15,23,42,0.08)]` — Drop shadow depth (elevation).
 - **Dark mode variants:**
   - `dark:bg-[rgba(30,41,59,0.80)]` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-slate-700/50` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-none` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:261`
+#### `src/pages/About.jsx:263`
 
 ```jsx
               <h2 className="text-xl font-bold tracking-tight text-[#1E293B] dark:text-white">Why GarTexHub Exists</h2>
@@ -1053,7 +1085,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:262`
+#### `src/pages/About.jsx:264`
 
 ```jsx
               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
@@ -1077,7 +1109,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:266`
+#### `src/pages/About.jsx:268`
 
 ```jsx
               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
@@ -1101,7 +1133,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:273`
+#### `src/pages/About.jsx:275`
 
 ```jsx
           <MotionItem index={3} className="lg:col-span-4">
@@ -1123,19 +1155,19 @@ function MotionItem({ index, className = '', children }) {
 - **Responsive variants:**
   - `lg:col-span-4` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:275`
+#### `src/pages/About.jsx:277`
 
 ```jsx
               className={[
                 'rounded-xl p-7',
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
-                'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+                'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-7`
 - `bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]`
-- `dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none`
+- `dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none`
 
 **Utility breakdown (grouped):**
 
@@ -1148,11 +1180,11 @@ function MotionItem({ index, className = '', children }) {
   - `shadow-[0_10px_40px_rgba(15,23,42,0.08)]` — Drop shadow depth (elevation).
 - **Dark mode variants:**
   - `dark:bg-[rgba(30,41,59,0.80)]` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-slate-700/50` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-none` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:284`
+#### `src/pages/About.jsx:286`
 
 ```jsx
               <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Mission</h2>
@@ -1182,7 +1214,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:285`
+#### `src/pages/About.jsx:287`
 
 ```jsx
               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
@@ -1206,7 +1238,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:292`
+#### `src/pages/About.jsx:294`
 
 ```jsx
           <MotionItem index={4} className="lg:col-span-4">
@@ -1228,19 +1260,19 @@ function MotionItem({ index, className = '', children }) {
 - **Responsive variants:**
   - `lg:col-span-4` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:294`
+#### `src/pages/About.jsx:296`
 
 ```jsx
               className={[
                 'rounded-xl p-7',
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
-                'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+                'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-7`
 - `bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]`
-- `dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none`
+- `dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none`
 
 **Utility breakdown (grouped):**
 
@@ -1253,11 +1285,11 @@ function MotionItem({ index, className = '', children }) {
   - `shadow-[0_10px_40px_rgba(15,23,42,0.08)]` — Drop shadow depth (elevation).
 - **Dark mode variants:**
   - `dark:bg-[rgba(30,41,59,0.80)]` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-slate-700/50` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-none` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:303`
+#### `src/pages/About.jsx:305`
 
 ```jsx
               <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Vision</h2>
@@ -1287,7 +1319,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:304`
+#### `src/pages/About.jsx:306`
 
 ```jsx
               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
@@ -1311,7 +1343,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:311`
+#### `src/pages/About.jsx:313`
 
 ```jsx
           <MotionItem index={5} className="lg:col-span-4 lg:row-span-2">
@@ -1334,7 +1366,7 @@ function MotionItem({ index, className = '', children }) {
   - `lg:col-span-4` — Variant prefix (responsive, dark, or interaction state).
   - `lg:row-span-2` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:313`
+#### `src/pages/About.jsx:315`
 
 ```jsx
               className={[
@@ -1359,7 +1391,7 @@ function MotionItem({ index, className = '', children }) {
   - `rounded-xl` — Corner radius.
   - `shadow-[0_10px_40px_rgba(15,23,42,0.08)]` — Drop shadow depth (elevation).
 
-#### `src/pages/About.jsx:323`
+#### `src/pages/About.jsx:325`
 
 ```jsx
               <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">How the Platform Works</h2>
@@ -1386,13 +1418,13 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:325`
+#### `src/pages/About.jsx:327`
 
 ```jsx
               <ul className="mt-6 space-y-4">
                 {howItWorks.map((step, idx) => (
                   <motion.li
-                    // eslint-disable-next-line react/no-array-index-key
+                    key={`${step}-${idx}`}
 ```
 **Raw class strings detected (best effort):**
 
@@ -1404,7 +1436,7 @@ function MotionItem({ index, className = '', children }) {
   - `mt-6` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `space-y-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/About.jsx:333`
+#### `src/pages/About.jsx:334`
 
 ```jsx
                     className="flex gap-3"
@@ -1443,7 +1475,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:bg-emerald-500/12` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-emerald-200` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:335`
+#### `src/pages/About.jsx:336`
 
 ```jsx
                     <span className="mt-1 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600/10 text-emerald-700 shadow-[0_0_0_1px_rgba(5,150,105,0.18)] dark:bg-emerald-500/12 dark:text-emerald-200">
@@ -1479,7 +1511,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:bg-emerald-500/12` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-emerald-200` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:336`
+#### `src/pages/About.jsx:337`
 
 ```jsx
                       <Check className="h-4 w-4" />
@@ -1505,7 +1537,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:339`
+#### `src/pages/About.jsx:340`
 
 ```jsx
                       <p className="text-sm leading-relaxed text-[#475569] dark:text-slate-300">{step}</p>
@@ -1527,7 +1559,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:347`
+#### `src/pages/About.jsx:348`
 
 ```jsx
           <MotionItem index={6} className="lg:col-span-8">
@@ -1549,19 +1581,19 @@ function MotionItem({ index, className = '', children }) {
 - **Responsive variants:**
   - `lg:col-span-8` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:349`
+#### `src/pages/About.jsx:350`
 
 ```jsx
               className={[
                 'rounded-xl p-7',
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
-                'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+                'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-7`
 - `bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]`
-- `dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none`
+- `dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none`
 
 **Utility breakdown (grouped):**
 
@@ -1574,11 +1606,11 @@ function MotionItem({ index, className = '', children }) {
   - `shadow-[0_10px_40px_rgba(15,23,42,0.08)]` — Drop shadow depth (elevation).
 - **Dark mode variants:**
   - `dark:bg-[rgba(30,41,59,0.80)]` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-slate-700/50` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-none` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:358`
+#### `src/pages/About.jsx:359`
 
 ```jsx
               <div className="flex flex-wrap items-center justify-between gap-4">
@@ -1609,7 +1641,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:360`
+#### `src/pages/About.jsx:361`
 
 ```jsx
                   <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Verification & Trust</h2>
@@ -1636,7 +1668,7 @@ function MotionItem({ index, className = '', children }) {
   - `Verification` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `green` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/About.jsx:365`
+#### `src/pages/About.jsx:366`
 
 ```jsx
               <p className="mt-4 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
@@ -1660,7 +1692,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:369`
+#### `src/pages/About.jsx:370`
 
 ```jsx
               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
@@ -1684,7 +1716,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:372`
+#### `src/pages/About.jsx:373`
 
 ```jsx
               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
@@ -1708,7 +1740,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:378`
+#### `src/pages/About.jsx:379`
 
 ```jsx
           <MotionItem index={7} className="lg:col-span-7">
@@ -1732,7 +1764,7 @@ function MotionItem({ index, className = '', children }) {
 - **Other:**
   - `needle-area` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/About.jsx:380`
+#### `src/pages/About.jsx:381`
 
 ```jsx
               className={[
@@ -1759,7 +1791,7 @@ function MotionItem({ index, className = '', children }) {
 - **Other:**
   - `needle-area` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/About.jsx:391`
+#### `src/pages/About.jsx:392`
 
 ```jsx
               <span className="needle-cursor" />
@@ -1794,7 +1826,7 @@ function MotionItem({ index, className = '', children }) {
 - **Other:**
   - `needle-cursor` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/About.jsx:392`
+#### `src/pages/About.jsx:393`
 
 ```jsx
               <div className="flex items-center justify-between gap-3">
@@ -1832,13 +1864,13 @@ function MotionItem({ index, className = '', children }) {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:393`
+#### `src/pages/About.jsx:394`
 
 ```jsx
                 <div className="min-w-0">
                   <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Verified documents</h2>
                   <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
-                    Skeleton loads into audit-ready details — verified signals stay prominent.
+                    Skeleton loads into audit-ready details -- verified signals stay prominent.
 ```
 **Raw class strings detected (best effort):**
 
@@ -1865,12 +1897,12 @@ function MotionItem({ index, className = '', children }) {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:394`
+#### `src/pages/About.jsx:395`
 
 ```jsx
                   <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Verified documents</h2>
                   <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
-                    Skeleton loads into audit-ready details — verified signals stay prominent.
+                    Skeleton loads into audit-ready details -- verified signals stay prominent.
                   </p>
 ```
 **Raw class strings detected (best effort):**
@@ -1895,11 +1927,11 @@ function MotionItem({ index, className = '', children }) {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:395`
+#### `src/pages/About.jsx:396`
 
 ```jsx
                   <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
-                    Skeleton loads into audit-ready details — verified signals stay prominent.
+                    Skeleton loads into audit-ready details -- verified signals stay prominent.
                   </p>
                 </div>
 ```
@@ -1919,7 +1951,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:399`
+#### `src/pages/About.jsx:400`
 
 ```jsx
                 <FileText className="h-5 w-5 text-[#0F172A]/70 dark:text-slate-200" />
@@ -1946,7 +1978,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:402`
+#### `src/pages/About.jsx:403`
 
 ```jsx
               <div className="mt-6 grid gap-3">
@@ -1970,7 +2002,7 @@ function MotionItem({ index, className = '', children }) {
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
 
-#### `src/pages/About.jsx:405`
+#### `src/pages/About.jsx:406`
 
 ```jsx
                     <Skeleton className="h-12 rounded-xl" />
@@ -1989,7 +2021,7 @@ function MotionItem({ index, className = '', children }) {
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
 
-#### `src/pages/About.jsx:406`
+#### `src/pages/About.jsx:407`
 
 ```jsx
                     <Skeleton className="h-12 rounded-xl" />
@@ -2008,7 +2040,7 @@ function MotionItem({ index, className = '', children }) {
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
 
-#### `src/pages/About.jsx:407`
+#### `src/pages/About.jsx:408`
 
 ```jsx
                     <Skeleton className="h-12 rounded-xl" />
@@ -2027,7 +2059,7 @@ function MotionItem({ index, className = '', children }) {
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
 
-#### `src/pages/About.jsx:408`
+#### `src/pages/About.jsx:409`
 
 ```jsx
                     <Skeleton className="h-12 rounded-xl" />
@@ -2048,7 +2080,7 @@ function MotionItem({ index, className = '', children }) {
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
 
-#### `src/pages/About.jsx:418`
+#### `src/pages/About.jsx:419`
 
 ```jsx
                       className="grid gap-3"
@@ -2067,7 +2099,7 @@ function MotionItem({ index, className = '', children }) {
 - **Spacing:**
   - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/About.jsx:423`
+#### `src/pages/About.jsx:424`
 
 ```jsx
                           className={[
@@ -2104,7 +2136,7 @@ function MotionItem({ index, className = '', children }) {
 - **Other:**
   - `group` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/About.jsx:431`
+#### `src/pages/About.jsx:432`
 
 ```jsx
                           <div className="min-w-0">
@@ -2136,7 +2168,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:432`
+#### `src/pages/About.jsx:433`
 
 ```jsx
                             <p className="truncate text-sm font-semibold text-[#1E293B] dark:text-white">{doc.name}</p>
@@ -2170,7 +2202,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:433`
+#### `src/pages/About.jsx:434`
 
 ```jsx
                             <p className="mt-1 text-xs text-[#64748B] dark:text-slate-300">Updated {doc.updatedAt}</p>
@@ -2198,7 +2230,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:435`
+#### `src/pages/About.jsx:436`
 
 ```jsx
                           <div className="flex items-center gap-2">
@@ -2218,7 +2250,7 @@ function MotionItem({ index, className = '', children }) {
 - **Spacing:**
   - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/About.jsx:447`
+#### `src/pages/About.jsx:448`
 
 ```jsx
           <MotionItem index={8} className="lg:col-span-5">
@@ -2240,19 +2272,19 @@ function MotionItem({ index, className = '', children }) {
 - **Responsive variants:**
   - `lg:col-span-5` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:449`
+#### `src/pages/About.jsx:450`
 
 ```jsx
               className={[
                 'rounded-xl p-7',
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
-                'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+                'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-7`
 - `bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]`
-- `dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none`
+- `dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none`
 
 **Utility breakdown (grouped):**
 
@@ -2265,11 +2297,11 @@ function MotionItem({ index, className = '', children }) {
   - `shadow-[0_10px_40px_rgba(15,23,42,0.08)]` — Drop shadow depth (elevation).
 - **Dark mode variants:**
   - `dark:bg-[rgba(30,41,59,0.80)]` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-slate-700/50` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-none` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:458`
+#### `src/pages/About.jsx:459`
 
 ```jsx
               <div className="flex items-center justify-between gap-3">
@@ -2312,7 +2344,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:bg-white/8` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:459`
+#### `src/pages/About.jsx:460`
 
 ```jsx
                 <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Digital Bridge</h2>
@@ -2349,7 +2381,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:bg-white/8` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:460`
+#### `src/pages/About.jsx:461`
 
 ```jsx
                 <span className="rounded-full bg-[#0F172A]/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#475569] dark:bg-white/8 dark:text-slate-300">
@@ -2380,7 +2412,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:bg-white/8` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:464`
+#### `src/pages/About.jsx:465`
 
 ```jsx
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
@@ -2418,7 +2450,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:via-emerald-500/8` — Variant prefix (responsive, dark, or interaction state).
   - `dark:to-indigo-500/12` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:467`
+#### `src/pages/About.jsx:468`
 
 ```jsx
               <div className="mt-6 overflow-hidden rounded-xl bg-gradient-to-br from-sky-500/10 via-emerald-500/6 to-indigo-500/10 p-5 dark:from-sky-500/12 dark:via-emerald-500/8 dark:to-indigo-500/12">
@@ -2462,7 +2494,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:to-indigo-500/12` — Variant prefix (responsive, dark, or interaction state).
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:468`
+#### `src/pages/About.jsx:469`
 
 ```jsx
                 <div className="h-32 rounded-lg bg-white/55 backdrop-blur-md dark:bg-white/5" />
@@ -2494,7 +2526,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:469`
+#### `src/pages/About.jsx:470`
 
 ```jsx
                 <div className="mt-4 grid grid-cols-3 gap-2">
@@ -2524,7 +2556,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:470`
+#### `src/pages/About.jsx:471`
 
 ```jsx
                   <div className="h-8 rounded-lg bg-white/55 backdrop-blur-md dark:bg-white/5" />
@@ -2548,7 +2580,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:471`
+#### `src/pages/About.jsx:472`
 
 ```jsx
                   <div className="h-8 rounded-lg bg-white/55 backdrop-blur-md dark:bg-white/5" />
@@ -2572,7 +2604,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:472`
+#### `src/pages/About.jsx:473`
 
 ```jsx
                   <div className="h-8 rounded-lg bg-white/55 backdrop-blur-md dark:bg-white/5" />
@@ -2596,7 +2628,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:478`
+#### `src/pages/About.jsx:479`
 
 ```jsx
           <MotionItem index={9} className="lg:col-span-6">
@@ -2618,19 +2650,19 @@ function MotionItem({ index, className = '', children }) {
 - **Responsive variants:**
   - `lg:col-span-6` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:480`
+#### `src/pages/About.jsx:481`
 
 ```jsx
               className={[
                 'rounded-xl p-7',
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
-                'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+                'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-7`
 - `bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]`
-- `dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none`
+- `dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none`
 
 **Utility breakdown (grouped):**
 
@@ -2643,11 +2675,11 @@ function MotionItem({ index, className = '', children }) {
   - `shadow-[0_10px_40px_rgba(15,23,42,0.08)]` — Drop shadow depth (elevation).
 - **Dark mode variants:**
   - `dark:bg-[rgba(30,41,59,0.80)]` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-slate-700/50` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-none` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:489`
+#### `src/pages/About.jsx:490`
 
 ```jsx
               <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Industry Focus</h2>
@@ -2677,7 +2709,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:490`
+#### `src/pages/About.jsx:491`
 
 ```jsx
               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
@@ -2701,7 +2733,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:498`
+#### `src/pages/About.jsx:499`
 
 ```jsx
           <MotionItem index={10} className="lg:col-span-6">
@@ -2723,19 +2755,19 @@ function MotionItem({ index, className = '', children }) {
 - **Responsive variants:**
   - `lg:col-span-6` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:500`
+#### `src/pages/About.jsx:501`
 
 ```jsx
               className={[
                 'rounded-xl p-7',
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
-                'dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none',
+                'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-7`
 - `bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]`
-- `dark:bg-[rgba(30,41,59,0.80)] dark:border dark:border-slate-700/50 dark:shadow-none`
+- `dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none`
 
 **Utility breakdown (grouped):**
 
@@ -2748,11 +2780,11 @@ function MotionItem({ index, className = '', children }) {
   - `shadow-[0_10px_40px_rgba(15,23,42,0.08)]` — Drop shadow depth (elevation).
 - **Dark mode variants:**
   - `dark:bg-[rgba(30,41,59,0.80)]` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-slate-700/50` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-none` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:509`
+#### `src/pages/About.jsx:510`
 
 ```jsx
               <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Professional Commitment</h2>
@@ -2782,7 +2814,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:510`
+#### `src/pages/About.jsx:511`
 
 ```jsx
               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
@@ -2806,7 +2838,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:514`
+#### `src/pages/About.jsx:515`
 
 ```jsx
               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
@@ -2830,7 +2862,7 @@ function MotionItem({ index, className = '', children }) {
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:521`
+#### `src/pages/About.jsx:522`
 
 ```jsx
           <MotionItem index={11} className="lg:col-span-12">
@@ -2852,7 +2884,7 @@ function MotionItem({ index, className = '', children }) {
 - **Responsive variants:**
   - `lg:col-span-12` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:523`
+#### `src/pages/About.jsx:524`
 
 ```jsx
               className={[
@@ -2877,7 +2909,7 @@ function MotionItem({ index, className = '', children }) {
   - `rounded-xl` — Corner radius.
   - `shadow-[0_10px_40px_rgba(15,23,42,0.08)]` — Drop shadow depth (elevation).
 
-#### `src/pages/About.jsx:530`
+#### `src/pages/About.jsx:531`
 
 ```jsx
               <h2 className="text-xl font-bold tracking-tight text-[#1E293B] dark:text-white">Contact & Legal Information</h2>
@@ -2907,7 +2939,7 @@ function MotionItem({ index, className = '', children }) {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/About.jsx:531`
+#### `src/pages/About.jsx:532`
 
 ```jsx
               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
@@ -2935,7 +2967,7 @@ function MotionItem({ index, className = '', children }) {
 
 > This list is generated by heuristics. It includes hard-coded UI strings and key element anchors. For absolute truth, use the source snapshot.
 
-- `src/pages/About.jsx:206` — Trust indicators
+- `src/pages/About.jsx:208` — Trust indicators
 
 ```jsx
                 <p className="text-sm font-semibold text-[#1E293B] dark:text-[#F1F5F9]">Trust indicators</p>
@@ -2943,15 +2975,15 @@ function MotionItem({ index, className = '', children }) {
               </div>
 
 ```
-- `src/pages/About.jsx:211` — Live data unavailable — showing defaults.
+- `src/pages/About.jsx:213` — Live data unavailable -- showing defaults.
 
 ```jsx
-                <p className="mt-3 text-xs text-[#64748B] dark:text-slate-300">Live data unavailable — showing defaults.</p>
+                <p className="mt-3 text-xs text-[#64748B] dark:text-slate-300">Live data unavailable -- showing defaults.</p>
               ) : null}
 
               <div className="mt-5 grid gap-3">
 ```
-- `src/pages/About.jsx:261` — Why GarTexHub Exists
+- `src/pages/About.jsx:263` — Why GarTexHub Exists
 
 ```jsx
               <h2 className="text-xl font-bold tracking-tight text-[#1E293B] dark:text-white">Why GarTexHub Exists</h2>
@@ -2959,7 +2991,7 @@ function MotionItem({ index, className = '', children }) {
                 Cross-border textile trade often depends on informal communication, scattered documents, and manual
                 verification processes. This creates inefficiencies, misunderstandings, and trust barriers.
 ```
-- `src/pages/About.jsx:284` — Mission
+- `src/pages/About.jsx:286` — Mission
 
 ```jsx
               <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Mission</h2>
@@ -2967,7 +2999,7 @@ function MotionItem({ index, className = '', children }) {
                 To simplify international garment sourcing by building a secure digital infrastructure that prioritizes
                 credibility, transparency, and efficiency.
 ```
-- `src/pages/About.jsx:303` — Vision
+- `src/pages/About.jsx:305` — Vision
 
 ```jsx
               <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Vision</h2>
@@ -2975,7 +3007,7 @@ function MotionItem({ index, className = '', children }) {
                 To become a trusted digital bridge between global buyers and garment manufacturers, reducing negotiation
                 friction and strengthening international trade relationships.
 ```
-- `src/pages/About.jsx:323` — How the Platform Works
+- `src/pages/About.jsx:325` — How the Platform Works
 
 ```jsx
               <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">How the Platform Works</h2>
@@ -2983,7 +3015,7 @@ function MotionItem({ index, className = '', children }) {
               <ul className="mt-6 space-y-4">
                 {howItWorks.map((step, idx) => (
 ```
-- `src/pages/About.jsx:360` — Verification & Trust
+- `src/pages/About.jsx:361` — Verification & Trust
 
 ```jsx
                   <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Verification & Trust</h2>
@@ -2991,15 +3023,15 @@ function MotionItem({ index, className = '', children }) {
                 <VerifiedBadge label="Verification green" />
               </div>
 ```
-- `src/pages/About.jsx:394` — Verified documents
+- `src/pages/About.jsx:395` — Verified documents
 
 ```jsx
                   <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Verified documents</h2>
                   <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
-                    Skeleton loads into audit-ready details — verified signals stay prominent.
+                    Skeleton loads into audit-ready details -- verified signals stay prominent.
                   </p>
 ```
-- `src/pages/About.jsx:433` — Updated {doc.updatedAt}
+- `src/pages/About.jsx:434` — Updated {doc.updatedAt}
 
 ```jsx
                             <p className="mt-1 text-xs text-[#64748B] dark:text-slate-300">Updated {doc.updatedAt}</p>
@@ -3007,7 +3039,7 @@ function MotionItem({ index, className = '', children }) {
                           <div className="flex items-center gap-2">
                             <StatusChip status={doc.status} />
 ```
-- `src/pages/About.jsx:459` — Digital Bridge
+- `src/pages/About.jsx:460` — Digital Bridge
 
 ```jsx
                 <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Digital Bridge</h2>
@@ -3015,7 +3047,7 @@ function MotionItem({ index, className = '', children }) {
                   Coming soon
                 </span>
 ```
-- `src/pages/About.jsx:489` — Industry Focus
+- `src/pages/About.jsx:490` — Industry Focus
 
 ```jsx
               <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Industry Focus</h2>
@@ -3023,7 +3055,7 @@ function MotionItem({ index, className = '', children }) {
                 GarTexHub is strictly dedicated to the Garments and Textile sector. By focusing on a single industry, we
                 provide smarter categorization, clearer communication, and more relevant matching between buyers and
 ```
-- `src/pages/About.jsx:509` — Professional Commitment
+- `src/pages/About.jsx:510` — Professional Commitment
 
 ```jsx
               <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Professional Commitment</h2>
@@ -3031,7 +3063,7 @@ function MotionItem({ index, className = '', children }) {
                 We do not process direct financial transactions. Our platform is designed to facilitate secure communication,
                 structured agreements, and verified business interactions.
 ```
-- `src/pages/About.jsx:530` — Contact & Legal Information
+- `src/pages/About.jsx:531` — Contact & Legal Information
 
 ```jsx
               <h2 className="text-xl font-bold tracking-tight text-[#1E293B] dark:text-white">Contact & Legal Information</h2>
@@ -3043,8 +3075,8 @@ function MotionItem({ index, className = '', children }) {
 
 | Frontend call (path:line) | Express mount | Route definition | Controller file | Handler |
 |---|---|---|---|---|
-| GET /system/about (src/pages/About.jsx:17) | /api/system -> server/routes/systemRoutes.js:73 | GET /about (server/routes/systemRoutes.js:9) | server/controllers/systemController.js | systemAbout |
-| GET /system/about (src/pages/About.jsx:111) | /api/system -> server/routes/systemRoutes.js:73 | GET /about (server/routes/systemRoutes.js:9) | server/controllers/systemController.js | systemAbout |
+| GET /system/about (src/pages/About.jsx:17) | /api/system -> server/routes/systemRoutes.js:127 | GET /about (server/routes/systemRoutes.js:9) | server/controllers/systemController.js | systemAbout |
+| GET /system/about (src/pages/About.jsx:113) | /api/system -> server/routes/systemRoutes.js:127 | GET /about (server/routes/systemRoutes.js:9) | server/controllers/systemController.js | systemAbout |
 
 ## 6) How to Edit Safely
 
@@ -3054,5 +3086,4 @@ function MotionItem({ index, className = '', children }) {
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
-{% endraw %}
 

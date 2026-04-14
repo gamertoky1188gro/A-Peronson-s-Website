@@ -1,4 +1,3 @@
-{% raw %}
 # HelpCenter - Route `/help`
 
 **Access:** Public
@@ -19,7 +18,7 @@
 
 ### 2.2 Structural section tags in JSX
 
-- `header` at `src/pages/HelpCenter.jsx:377`
+- `header` at `src/pages/HelpCenter.jsx:379`
 
 ```jsx
         <header className="text-center">
@@ -27,31 +26,31 @@
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Industrial reliability, tech-forward SaaS guidance.</p>
         </header>
 ```
-- `section` at `src/pages/HelpCenter.jsx:407`
+- `section` at `src/pages/HelpCenter.jsx:409`
 
 ```jsx
                 <section id={section.id} className="scroll-mt-6">
                   <SpotlightCard className={cardClassName()}>
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800">
+                    <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
                       <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">{section.title}</h2>
 ```
-- `section` at `src/pages/HelpCenter.jsx:567`
+- `section` at `src/pages/HelpCenter.jsx:569`
 
 ```jsx
               <section id="faq" className="scroll-mt-6">
                 <SpotlightCard className={cardClassName()}>
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800">
+                  <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
                     <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
 ```
-- `section` at `src/pages/HelpCenter.jsx:628`
+- `section` at `src/pages/HelpCenter.jsx:630`
 
 ```jsx
                 <section className="scroll-mt-6">
                   <SpotlightCard className={cardClassName({ glass: true })}>
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800">
+                    <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
                       <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
 ```
-- `section` at `src/pages/HelpCenter.jsx:720`
+- `section` at `src/pages/HelpCenter.jsx:722`
 
 ```jsx
               <section className="scroll-mt-6">
@@ -64,35 +63,50 @@
 ### 3.1 Custom CSS utilities referenced by this page (App.css / index.css)
 
 - `.nav-glass` definitions:
-  - `src/App.css:615`
+  - `src/App.css:897`
 - `.spotlight-card` definitions:
-  - `src/App.css:267`
+  - `src/App.css:550`
 - `.skeleton` definitions:
-  - `src/App.css:583`
+  - `src/App.css:865`
 - `.neo-page` definitions:
-  - `src/App.css:108`
+  - `src/App.css:115`
 - `.neo-panel` definitions:
-  - `src/App.css:116`
+  - `src/App.css:123`
 - `.cyberpunk-page` definitions:
-  - `src/App.css:109`
+  - `src/App.css:116`
 - `.cyberpunk-card` definitions:
-  - `src/App.css:110`
+  - `src/App.css:117`
 - `.assistant-orb-btn` definitions:
-  - `src/App.css:518`
+  - `src/App.css:801`
 - `.legal-weave` definitions:
-  - `src/App.css:366`
+  - `src/App.css:649`
 - `.signature-draw` definitions:
-  - `src/App.css:401`
+  - `src/App.css:684`
 - `.verified-shimmer` definitions:
-  - `src/App.css:434`
+  - `src/App.css:717`
 - `.verified-pulse` definitions:
-  - `src/App.css:293`
+  - `src/App.css:576`
 - `.conic-beam` definitions:
-  - `src/App.css:302`
+  - `src/App.css:585`
 
 ### 3.2 Every className block (with grouped explanations)
 
 #### `src/pages/HelpCenter.jsx:188`
+
+```jsx
+function MotionItem({ index, className='', children }) {
+  const reduceMotion = useReducedMotion()
+  if (reduceMotion) return <div className={className}>{children}</div>
+  return (
+```
+**Raw class strings detected (best effort):**
+
+- _(dynamic className; inspect the snippet above)_
+
+**Utility breakdown (grouped):**
+
+
+#### `src/pages/HelpCenter.jsx:190`
 
 ```jsx
   if (reduceMotion) return <div className={className}>{children}</div>
@@ -107,7 +121,7 @@
 **Utility breakdown (grouped):**
 
 
-#### `src/pages/HelpCenter.jsx:191`
+#### `src/pages/HelpCenter.jsx:193`
 
 ```jsx
       className={className}
@@ -122,7 +136,25 @@
 **Utility breakdown (grouped):**
 
 
-#### `src/pages/HelpCenter.jsx:202`
+#### `src/pages/HelpCenter.jsx:203`
+
+```jsx
+function Skeleton({ className='' }) {
+  return <div className={['skeleton', className].join(' ')} />
+}
+
+```
+**Raw class strings detected (best effort):**
+
+- `skeleton`
+- ` `
+
+**Utility breakdown (grouped):**
+
+- **Other:**
+  - `skeleton` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/HelpCenter.jsx:204`
 
 ```jsx
   return <div className={['skeleton', className].join(' ')} />
@@ -140,7 +172,7 @@ function VerifiedBadge() {
 - **Other:**
   - `skeleton` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:208`
+#### `src/pages/HelpCenter.jsx:210`
 
 ```jsx
       className={[
@@ -179,7 +211,7 @@ function VerifiedBadge() {
 - **Other:**
   - `verified-shimmer` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:214`
+#### `src/pages/HelpCenter.jsx:216`
 
 ```jsx
       <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 shadow-[0_0_14px_rgba(5,150,105,0.55)] dark:bg-emerald-400 dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]" />
@@ -205,7 +237,7 @@ function VerifiedBadge() {
   - `dark:bg-emerald-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:375`
+#### `src/pages/HelpCenter.jsx:377`
 
 ```jsx
     <div className="min-h-screen overflow-x-hidden bg-slate-50 text-slate-900 dark:bg-[#0B0F1A] dark:text-slate-100">
@@ -245,7 +277,7 @@ function VerifiedBadge() {
   - `dark:bg-[#0B0F1A]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:376`
+#### `src/pages/HelpCenter.jsx:378`
 
 ```jsx
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
@@ -284,7 +316,7 @@ function VerifiedBadge() {
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:377`
+#### `src/pages/HelpCenter.jsx:379`
 
 ```jsx
         <header className="text-center">
@@ -314,7 +346,7 @@ function VerifiedBadge() {
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:378`
+#### `src/pages/HelpCenter.jsx:380`
 
 ```jsx
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">Help Center</h1>
@@ -342,7 +374,7 @@ function VerifiedBadge() {
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:379`
+#### `src/pages/HelpCenter.jsx:381`
 
 ```jsx
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Industrial reliability, tech-forward SaaS guidance.</p>
@@ -372,7 +404,7 @@ function VerifiedBadge() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:382`
+#### `src/pages/HelpCenter.jsx:384`
 
 ```jsx
         <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-4">
@@ -402,7 +434,7 @@ function VerifiedBadge() {
   - `sm:grid-cols-2` — Variant prefix (responsive, dark, or interaction state).
   - `lg:grid-cols-6` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:383`
+#### `src/pages/HelpCenter.jsx:385`
 
 ```jsx
           <div className="lg:col-span-3 space-y-8">
@@ -428,7 +460,7 @@ function VerifiedBadge() {
   - `sm:grid-cols-2` — Variant prefix (responsive, dark, or interaction state).
   - `lg:grid-cols-6` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:384`
+#### `src/pages/HelpCenter.jsx:386`
 
 ```jsx
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
@@ -451,7 +483,7 @@ function VerifiedBadge() {
   - `sm:grid-cols-2` — Variant prefix (responsive, dark, or interaction state).
   - `lg:grid-cols-6` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:388`
+#### `src/pages/HelpCenter.jsx:390`
 
 ```jsx
                   <MotionItem key={tile.id} index={idx} className={tile.span}>
@@ -478,7 +510,7 @@ function VerifiedBadge() {
 - **Other:**
   - `group` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:389`
+#### `src/pages/HelpCenter.jsx:391`
 
 ```jsx
                     <a href={`#${tile.id}`} className={[cardClassName({ glass: true }), 'group block h-full'].join(' ')}>
@@ -513,7 +545,7 @@ function VerifiedBadge() {
 - **Other:**
   - `group` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:390`
+#### `src/pages/HelpCenter.jsx:392`
 
 ```jsx
                       <div className="flex items-start justify-between gap-3">
@@ -547,7 +579,7 @@ function VerifiedBadge() {
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:392`
+#### `src/pages/HelpCenter.jsx:394`
 
 ```jsx
                           <p className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">{tile.title}</p>
@@ -592,7 +624,7 @@ function VerifiedBadge() {
   - `dark:bg-blue-500/12` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-blue-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:393`
+#### `src/pages/HelpCenter.jsx:395`
 
 ```jsx
                           <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">{tile.desc}</p>
@@ -635,7 +667,7 @@ function VerifiedBadge() {
   - `dark:bg-blue-500/12` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-blue-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:395`
+#### `src/pages/HelpCenter.jsx:397`
 
 ```jsx
                         <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 transition group-hover:bg-blue-600/14 dark:bg-blue-500/12 dark:text-blue-400">
@@ -671,7 +703,7 @@ function VerifiedBadge() {
   - `dark:bg-blue-500/12` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-blue-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:396`
+#### `src/pages/HelpCenter.jsx:398`
 
 ```jsx
                           <Icon className="h-5 w-5" />
@@ -689,18 +721,18 @@ function VerifiedBadge() {
   - `h-5` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `w-5` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:407`
+#### `src/pages/HelpCenter.jsx:409`
 
 ```jsx
                 <section id={section.id} className="scroll-mt-6">
                   <SpotlightCard className={cardClassName()}>
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800">
+                    <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
                       <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">{section.title}</h2>
 ```
 **Raw class strings detected (best effort):**
 
 - `scroll-mt-6`
-- `flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800`
+- `flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3`
 - `text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100`
 
 **Utility breakdown (grouped):**
@@ -719,93 +751,87 @@ function VerifiedBadge() {
   - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
 - **Borders / rings / shadows:**
-  - `border-b` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-divider-b` — Border style/width/color.
 - **Dark mode variants:**
-  - `dark:border-slate-800` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
   - `scroll-mt-6` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:408`
-
-```jsx
-                  <SpotlightCard className={cardClassName()}>
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800">
-                      <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">{section.title}</h2>
-                      {section.id === 'verification' ? <VerifiedBadge /> : null}
-```
-**Raw class strings detected (best effort):**
-
-- `flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800`
-- `text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100`
-- `verification`
-
-**Utility breakdown (grouped):**
-
-- **Layout / positioning:**
-  - `flex` — Flex layout.
-  - `flex-wrap` — Flex layout.
-  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `justify-between` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Spacing:**
-  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `pb-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Typography:**
-  - `text-lg` — Text color or text sizing.
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-slate-900` — Text color or text sizing.
-- **Borders / rings / shadows:**
-  - `border-b` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
-- **Dark mode variants:**
-  - `dark:border-slate-800` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
-- **Other:**
-  - `verification` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-
-#### `src/pages/HelpCenter.jsx:409`
-
-```jsx
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800">
-                      <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">{section.title}</h2>
-                      {section.id === 'verification' ? <VerifiedBadge /> : null}
-                    </div>
-```
-**Raw class strings detected (best effort):**
-
-- `flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800`
-- `text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100`
-- `verification`
-
-**Utility breakdown (grouped):**
-
-- **Layout / positioning:**
-  - `flex` — Flex layout.
-  - `flex-wrap` — Flex layout.
-  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `justify-between` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Spacing:**
-  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `pb-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Typography:**
-  - `text-lg` — Text color or text sizing.
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-slate-900` — Text color or text sizing.
-- **Borders / rings / shadows:**
-  - `border-b` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
-- **Dark mode variants:**
-  - `dark:border-slate-800` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
-- **Other:**
-  - `verification` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-
 #### `src/pages/HelpCenter.jsx:410`
 
 ```jsx
+                  <SpotlightCard className={cardClassName()}>
+                    <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
+                      <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">{section.title}</h2>
+                      {section.id === 'verification' ? <VerifiedBadge /> : null}
+```
+**Raw class strings detected (best effort):**
+
+- `flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3`
+- `text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100`
+- `verification`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `flex-wrap` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `justify-between` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `pb-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-lg` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `borderless-divider-b` — Border style/width/color.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `verification` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/HelpCenter.jsx:411`
+
+```jsx
+                    <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
+                      <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">{section.title}</h2>
+                      {section.id === 'verification' ? <VerifiedBadge /> : null}
+                    </div>
+```
+**Raw class strings detected (best effort):**
+
+- `flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3`
+- `text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100`
+- `verification`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `flex-wrap` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `justify-between` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `pb-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-lg` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `borderless-divider-b` — Border style/width/color.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `verification` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/HelpCenter.jsx:412`
+
+```jsx
                       <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">{section.title}</h2>
                       {section.id === 'verification' ? <VerifiedBadge /> : null}
                     </div>
@@ -828,7 +854,7 @@ function VerifiedBadge() {
 - **Other:**
   - `verification` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:415`
+#### `src/pages/HelpCenter.jsx:417`
 
 ```jsx
                       <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">{section.description}</p>
@@ -850,13 +876,13 @@ function VerifiedBadge() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:419`
+#### `src/pages/HelpCenter.jsx:421`
 
 ```jsx
                       <ul className="mt-4 space-y-2 text-sm text-slate-500 dark:text-slate-400">
                         {section.content.map((item) => (
                           <li key={item} className="flex gap-2">
-                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">•</span>
+                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
 ```
 **Raw class strings detected (best effort):**
 
@@ -881,11 +907,11 @@ function VerifiedBadge() {
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-blue-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:421`
+#### `src/pages/HelpCenter.jsx:423`
 
 ```jsx
                           <li key={item} className="flex gap-2">
-                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">•</span>
+                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
                             <span>{item}</span>
                           </li>
 ```
@@ -906,10 +932,10 @@ function VerifiedBadge() {
 - **Dark mode variants:**
   - `dark:text-blue-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:422`
+#### `src/pages/HelpCenter.jsx:424`
 
 ```jsx
-                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">•</span>
+                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
                             <span>{item}</span>
                           </li>
                         ))}
@@ -927,7 +953,7 @@ function VerifiedBadge() {
 - **Dark mode variants:**
   - `dark:text-blue-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:430`
+#### `src/pages/HelpCenter.jsx:432`
 
 ```jsx
                       <div className="mt-5 grid gap-4 lg:grid-cols-3">
@@ -949,7 +975,7 @@ function VerifiedBadge() {
 - **Responsive variants:**
   - `lg:grid-cols-3` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:437`
+#### `src/pages/HelpCenter.jsx:439`
 
 ```jsx
                             className={[
@@ -983,7 +1009,7 @@ function VerifiedBadge() {
   - `dark:hover:bg-white/6` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:translate-y-0` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:444`
+#### `src/pages/HelpCenter.jsx:446`
 
 ```jsx
                             <p className="font-semibold text-slate-900 dark:text-slate-100">{sub.name}</p>
@@ -1014,13 +1040,13 @@ function VerifiedBadge() {
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:445`
+#### `src/pages/HelpCenter.jsx:447`
 
 ```jsx
                             <ul className="mt-3 space-y-2 text-sm text-slate-500 dark:text-slate-400">
                               {sub.points.map((p) => (
                                 <li key={p} className="flex gap-2">
-                                  <span className="mt-0.5 text-blue-600/90 dark:text-blue-400">•</span>
+                                  <span className="mt-0.5 text-blue-600/90 dark:text-blue-400">-</span>
 ```
 **Raw class strings detected (best effort):**
 
@@ -1045,11 +1071,11 @@ function VerifiedBadge() {
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-blue-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:447`
+#### `src/pages/HelpCenter.jsx:449`
 
 ```jsx
                                 <li key={p} className="flex gap-2">
-                                  <span className="mt-0.5 text-blue-600/90 dark:text-blue-400">•</span>
+                                  <span className="mt-0.5 text-blue-600/90 dark:text-blue-400">-</span>
                                   <span>{p}</span>
                                 </li>
 ```
@@ -1070,10 +1096,10 @@ function VerifiedBadge() {
 - **Dark mode variants:**
   - `dark:text-blue-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:448`
+#### `src/pages/HelpCenter.jsx:450`
 
 ```jsx
-                                  <span className="mt-0.5 text-blue-600/90 dark:text-blue-400">•</span>
+                                  <span className="mt-0.5 text-blue-600/90 dark:text-blue-400">-</span>
                                   <span>{p}</span>
                                 </li>
                               ))}
@@ -1091,7 +1117,7 @@ function VerifiedBadge() {
 - **Dark mode variants:**
   - `dark:text-blue-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:459`
+#### `src/pages/HelpCenter.jsx:461`
 
 ```jsx
                       <div className="mt-5 space-y-5">
@@ -1116,7 +1142,7 @@ function VerifiedBadge() {
 - **Dark mode variants:**
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:462`
+#### `src/pages/HelpCenter.jsx:464`
 
 ```jsx
                             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{roleBlock.role}</p>
@@ -1152,13 +1178,13 @@ function VerifiedBadge() {
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:463`
+#### `src/pages/HelpCenter.jsx:465`
 
 ```jsx
                             <ul className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 text-sm text-slate-500 md:grid-cols-2 dark:text-slate-400">
                               {roleBlock.docs.map((d) => (
                                 <li key={d} className="flex gap-2">
-                                  <span className="mt-0.5 text-emerald-600 dark:text-emerald-400">•</span>
+                                  <span className="mt-0.5 text-emerald-600 dark:text-emerald-400">-</span>
 ```
 **Raw class strings detected (best effort):**
 
@@ -1188,11 +1214,11 @@ function VerifiedBadge() {
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-emerald-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:465`
+#### `src/pages/HelpCenter.jsx:467`
 
 ```jsx
                                 <li key={d} className="flex gap-2">
-                                  <span className="mt-0.5 text-emerald-600 dark:text-emerald-400">•</span>
+                                  <span className="mt-0.5 text-emerald-600 dark:text-emerald-400">-</span>
                                   <span>{d}</span>
                                 </li>
 ```
@@ -1213,10 +1239,10 @@ function VerifiedBadge() {
 - **Dark mode variants:**
   - `dark:text-emerald-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:466`
+#### `src/pages/HelpCenter.jsx:468`
 
 ```jsx
-                                  <span className="mt-0.5 text-emerald-600 dark:text-emerald-400">•</span>
+                                  <span className="mt-0.5 text-emerald-600 dark:text-emerald-400">-</span>
                                   <span>{d}</span>
                                 </li>
                               ))}
@@ -1234,7 +1260,7 @@ function VerifiedBadge() {
 - **Dark mode variants:**
   - `dark:text-emerald-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:477`
+#### `src/pages/HelpCenter.jsx:479`
 
 ```jsx
                       <div className="mt-5 space-y-4">
@@ -1266,7 +1292,7 @@ function VerifiedBadge() {
 - **Dark mode variants:**
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:479`
+#### `src/pages/HelpCenter.jsx:481`
 
 ```jsx
                           <div key={s.title} className="rounded-xl bg-slate-900/2 p-5 dark:bg-white/5">
@@ -1304,7 +1330,7 @@ function VerifiedBadge() {
 - **Other:**
   - `verified` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:480`
+#### `src/pages/HelpCenter.jsx:482`
 
 ```jsx
                             <div className="flex items-center justify-between gap-3">
@@ -1335,7 +1361,7 @@ function VerifiedBadge() {
 - **Other:**
   - `verified` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:481`
+#### `src/pages/HelpCenter.jsx:483`
 
 ```jsx
                               <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{s.title}</p>
@@ -1364,7 +1390,7 @@ function VerifiedBadge() {
 - **Other:**
   - `verified` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:484`
+#### `src/pages/HelpCenter.jsx:486`
 
 ```jsx
                             {s.text ? <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{s.text}</p> : null}
@@ -1389,13 +1415,13 @@ function VerifiedBadge() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:486`
+#### `src/pages/HelpCenter.jsx:488`
 
 ```jsx
                               <ul className="mt-3 space-y-2 text-sm text-slate-500 dark:text-slate-400">
                                 {s.points.map((p) => (
                                   <li key={p} className="flex gap-2">
-                                    <span className="mt-0.5 text-blue-600 dark:text-blue-400">•</span>
+                                    <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
 ```
 **Raw class strings detected (best effort):**
 
@@ -1420,11 +1446,11 @@ function VerifiedBadge() {
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-blue-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:488`
+#### `src/pages/HelpCenter.jsx:490`
 
 ```jsx
                                   <li key={p} className="flex gap-2">
-                                    <span className="mt-0.5 text-blue-600 dark:text-blue-400">•</span>
+                                    <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
                                     <span>{p}</span>
                                   </li>
 ```
@@ -1445,10 +1471,10 @@ function VerifiedBadge() {
 - **Dark mode variants:**
   - `dark:text-blue-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:489`
+#### `src/pages/HelpCenter.jsx:491`
 
 ```jsx
-                                    <span className="mt-0.5 text-blue-600 dark:text-blue-400">•</span>
+                                    <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
                                     <span>{p}</span>
                                   </li>
                                 ))}
@@ -1466,7 +1492,7 @@ function VerifiedBadge() {
 - **Dark mode variants:**
   - `dark:text-blue-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:497`
+#### `src/pages/HelpCenter.jsx:499`
 
 ```jsx
                               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white/70 px-4 py-3 backdrop-blur-md shadow-[0_10px_24px_rgba(15,23,42,0.06)] dark:bg-white/5 dark:shadow-none">
@@ -1504,7 +1530,7 @@ function VerifiedBadge() {
 - **Other:**
   - `popLayout` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:498`
+#### `src/pages/HelpCenter.jsx:500`
 
 ```jsx
                                 <div className="flex items-center gap-3">
@@ -1527,7 +1553,7 @@ function VerifiedBadge() {
 - **Other:**
   - `popLayout` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:507`
+#### `src/pages/HelpCenter.jsx:509`
 
 ```jsx
                                         className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600/10 text-emerald-700 dark:bg-emerald-500/12 dark:text-emerald-200"
@@ -1560,7 +1586,7 @@ function VerifiedBadge() {
   - `dark:bg-emerald-500/12` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-emerald-200` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:509`
+#### `src/pages/HelpCenter.jsx:511`
 
 ```jsx
                                         <Check className="h-5 w-5" />
@@ -1578,7 +1604,7 @@ function VerifiedBadge() {
   - `h-5` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `w-5` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:518`
+#### `src/pages/HelpCenter.jsx:520`
 
 ```jsx
                                         className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900/6 text-slate-700 dark:bg-white/6 dark:text-slate-200"
@@ -1611,7 +1637,7 @@ function VerifiedBadge() {
   - `dark:bg-white/6` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:520`
+#### `src/pages/HelpCenter.jsx:522`
 
 ```jsx
                                         <Lock className="h-5 w-5" />
@@ -1629,20 +1655,20 @@ function VerifiedBadge() {
   - `h-5` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `w-5` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:525`
+#### `src/pages/HelpCenter.jsx:527`
 
 ```jsx
                                     <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Lock demo</p>
                                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                                      {lockGranted ? 'Permission granted — teammates can message.' : 'Locked — teammates need permission.'}
+                                      {lockGranted ? 'Permission granted -- teammates can message.' : 'Locked -- teammates need permission.'}
                                     </p>
 ```
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900 dark:text-slate-100`
 - `text-xs text-slate-500 dark:text-slate-400`
-- `Permission granted — teammates can message.`
-- `Locked — teammates need permission.`
+- `Permission granted -- teammates can message.`
+- `Locked -- teammates need permission.`
 
 **Utility breakdown (grouped):**
 
@@ -1658,7 +1684,7 @@ function VerifiedBadge() {
 - **Other:**
   - `Permission` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `granted` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `—` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `--` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `teammates` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `can` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `message.` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
@@ -1666,19 +1692,19 @@ function VerifiedBadge() {
   - `need` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `permission.` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:526`
+#### `src/pages/HelpCenter.jsx:528`
 
 ```jsx
                                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                                      {lockGranted ? 'Permission granted — teammates can message.' : 'Locked — teammates need permission.'}
+                                      {lockGranted ? 'Permission granted -- teammates can message.' : 'Locked -- teammates need permission.'}
                                     </p>
                                   </div>
 ```
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500 dark:text-slate-400`
-- `Permission granted — teammates can message.`
-- `Locked — teammates need permission.`
+- `Permission granted -- teammates can message.`
+- `Locked -- teammates need permission.`
 
 **Utility breakdown (grouped):**
 
@@ -1690,7 +1716,7 @@ function VerifiedBadge() {
 - **Other:**
   - `Permission` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `granted` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `—` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `--` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `teammates` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `can` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `message.` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
@@ -1698,7 +1724,7 @@ function VerifiedBadge() {
   - `need` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `permission.` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:534`
+#### `src/pages/HelpCenter.jsx:536`
 
 ```jsx
                                   className="rounded-full bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-500 dark:text-slate-900 dark:hover:bg-blue-400"
@@ -1738,13 +1764,13 @@ function VerifiedBadge() {
   - `Grant` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `permission` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:546`
+#### `src/pages/HelpCenter.jsx:548`
 
 ```jsx
                       <ul className="mt-4 space-y-2 text-sm text-slate-500 dark:text-slate-400">
                         {section.points.map((p) => (
                           <li key={p} className="flex gap-2">
-                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">•</span>
+                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
 ```
 **Raw class strings detected (best effort):**
 
@@ -1769,11 +1795,11 @@ function VerifiedBadge() {
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-blue-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:548`
+#### `src/pages/HelpCenter.jsx:550`
 
 ```jsx
                           <li key={p} className="flex gap-2">
-                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">•</span>
+                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
                             <span>{p}</span>
                           </li>
 ```
@@ -1794,10 +1820,10 @@ function VerifiedBadge() {
 - **Dark mode variants:**
   - `dark:text-blue-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:549`
+#### `src/pages/HelpCenter.jsx:551`
 
 ```jsx
-                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">•</span>
+                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
                             <span>{p}</span>
                           </li>
                         ))}
@@ -1815,17 +1841,17 @@ function VerifiedBadge() {
 - **Dark mode variants:**
   - `dark:text-blue-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:557`
+#### `src/pages/HelpCenter.jsx:559`
 
 ```jsx
-                      <p className="mt-5 border-t border-slate-200 pt-3 text-xs italic text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                      <p className="mt-5 borderless-divider-t pt-3 text-xs italic text-slate-500 dark:text-slate-400">
                         {section.footer}
                       </p>
                     ) : null}
 ```
 **Raw class strings detected (best effort):**
 
-- `mt-5 border-t border-slate-200 pt-3 text-xs italic text-slate-500 dark:border-slate-800 dark:text-slate-400`
+- `mt-5 borderless-divider-t pt-3 text-xs italic text-slate-500 dark:text-slate-400`
 
 **Utility breakdown (grouped):**
 
@@ -1837,24 +1863,22 @@ function VerifiedBadge() {
   - `italic` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-500` — Text color or text sizing.
 - **Borders / rings / shadows:**
-  - `border-t` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-divider-t` — Border style/width/color.
 - **Dark mode variants:**
-  - `dark:border-slate-800` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:567`
+#### `src/pages/HelpCenter.jsx:569`
 
 ```jsx
               <section id="faq" className="scroll-mt-6">
                 <SpotlightCard className={cardClassName()}>
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800">
+                  <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
                     <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
 ```
 **Raw class strings detected (best effort):**
 
 - `scroll-mt-6`
-- `flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800`
+- `flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3`
 - `text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100`
 
 **Utility breakdown (grouped):**
@@ -1873,25 +1897,23 @@ function VerifiedBadge() {
   - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
 - **Borders / rings / shadows:**
-  - `border-b` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-divider-b` — Border style/width/color.
 - **Dark mode variants:**
-  - `dark:border-slate-800` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
   - `scroll-mt-6` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:568`
+#### `src/pages/HelpCenter.jsx:570`
 
 ```jsx
                 <SpotlightCard className={cardClassName()}>
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800">
+                  <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
                     <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
                       10. Frequently Asked Questions (FAQ)
 ```
 **Raw class strings detected (best effort):**
 
-- `flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800`
+- `flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3`
 - `text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100`
 
 **Utility breakdown (grouped):**
@@ -1910,23 +1932,21 @@ function VerifiedBadge() {
   - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
 - **Borders / rings / shadows:**
-  - `border-b` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-divider-b` — Border style/width/color.
 - **Dark mode variants:**
-  - `dark:border-slate-800` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:569`
+#### `src/pages/HelpCenter.jsx:571`
 
 ```jsx
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800">
+                  <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
                     <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
                       10. Frequently Asked Questions (FAQ)
                     </h2>
 ```
 **Raw class strings detected (best effort):**
 
-- `flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800`
+- `flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3`
 - `text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100`
 
 **Utility breakdown (grouped):**
@@ -1945,13 +1965,11 @@ function VerifiedBadge() {
   - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
 - **Borders / rings / shadows:**
-  - `border-b` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-divider-b` — Border style/width/color.
 - **Dark mode variants:**
-  - `dark:border-slate-800` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:570`
+#### `src/pages/HelpCenter.jsx:572`
 
 ```jsx
                     <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
@@ -1988,7 +2006,7 @@ function VerifiedBadge() {
   - `dark:bg-white/6` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:573`
+#### `src/pages/HelpCenter.jsx:575`
 
 ```jsx
                     <span className="rounded-full bg-slate-900/4 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:bg-white/6 dark:text-slate-400">
@@ -2019,7 +2037,7 @@ function VerifiedBadge() {
   - `dark:bg-white/6` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:578`
+#### `src/pages/HelpCenter.jsx:580`
 
 ```jsx
                   <div className="mt-4">
@@ -2040,7 +2058,7 @@ function VerifiedBadge() {
   - `Search` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `FAQs...` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:583`
+#### `src/pages/HelpCenter.jsx:585`
 
 ```jsx
                       className="w-full rounded-full bg-slate-900/4 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
@@ -2076,7 +2094,7 @@ function VerifiedBadge() {
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:placeholder:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:587`
+#### `src/pages/HelpCenter.jsx:589`
 
 ```jsx
                   <div className="mt-5 space-y-3">
@@ -2099,7 +2117,7 @@ function VerifiedBadge() {
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
 
-#### `src/pages/HelpCenter.jsx:590`
+#### `src/pages/HelpCenter.jsx:592`
 
 ```jsx
                         <Skeleton className="h-16 rounded-xl" />
@@ -2118,7 +2136,7 @@ function VerifiedBadge() {
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
 
-#### `src/pages/HelpCenter.jsx:591`
+#### `src/pages/HelpCenter.jsx:593`
 
 ```jsx
                         <Skeleton className="h-16 rounded-xl" />
@@ -2137,7 +2155,7 @@ function VerifiedBadge() {
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
 
-#### `src/pages/HelpCenter.jsx:592`
+#### `src/pages/HelpCenter.jsx:594`
 
 ```jsx
                         <Skeleton className="h-16 rounded-xl" />
@@ -2158,7 +2176,7 @@ function VerifiedBadge() {
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
 
-#### `src/pages/HelpCenter.jsx:602`
+#### `src/pages/HelpCenter.jsx:604`
 
 ```jsx
                           className="space-y-3"
@@ -2175,7 +2193,7 @@ function VerifiedBadge() {
 - **Spacing:**
   - `space-y-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:607`
+#### `src/pages/HelpCenter.jsx:609`
 
 ```jsx
                               className="group rounded-xl bg-slate-900/2 p-4 transition-colors hover:bg-slate-900/3 dark:bg-white/5 dark:hover:bg-white/6"
@@ -2220,7 +2238,7 @@ function VerifiedBadge() {
   - `cursor-pointer` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `list-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:609`
+#### `src/pages/HelpCenter.jsx:611`
 
 ```jsx
                               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-900 dark:text-slate-100">
@@ -2262,19 +2280,19 @@ function VerifiedBadge() {
   - `shrink-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `group-open:rotate-180` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:610`
+#### `src/pages/HelpCenter.jsx:612`
 
 ```jsx
                                 <span className="min-w-0 truncate">Q: {f.q}</span>
                                 <ChevronDown className="h-4 w-4 shrink-0 text-slate-500 transition-transform group-open:rotate-180 dark:text-slate-400" />
                               </summary>
-                              <p className="mt-3 border-l-2 border-blue-600/50 pl-4 text-sm text-slate-500 dark:border-blue-400/50 dark:text-slate-400">
+                              <p className="mt-3 pl-4 text-sm text-slate-500 dark:text-slate-400 borderless-shadow">
 ```
 **Raw class strings detected (best effort):**
 
 - `min-w-0 truncate`
 - `h-4 w-4 shrink-0 text-slate-500 transition-transform group-open:rotate-180 dark:text-slate-400`
-- `mt-3 border-l-2 border-blue-600/50 pl-4 text-sm text-slate-500 dark:border-blue-400/50 dark:text-slate-400`
+- `mt-3 pl-4 text-sm text-slate-500 dark:text-slate-400 borderless-shadow`
 
 **Utility breakdown (grouped):**
 
@@ -2290,29 +2308,27 @@ function VerifiedBadge() {
   - `text-slate-500` — Text color or text sizing.
   - `text-sm` — Text color or text sizing.
 - **Borders / rings / shadows:**
-  - `border-l-2` — Border style/width/color.
-  - `border-blue-600/50` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Interaction / motion:**
   - `transition-transform` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-blue-400/50` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
   - `shrink-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `group-open:rotate-180` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:611`
+#### `src/pages/HelpCenter.jsx:613`
 
 ```jsx
                                 <ChevronDown className="h-4 w-4 shrink-0 text-slate-500 transition-transform group-open:rotate-180 dark:text-slate-400" />
                               </summary>
-                              <p className="mt-3 border-l-2 border-blue-600/50 pl-4 text-sm text-slate-500 dark:border-blue-400/50 dark:text-slate-400">
+                              <p className="mt-3 pl-4 text-sm text-slate-500 dark:text-slate-400 borderless-shadow">
                                 A: {f.a}
 ```
 **Raw class strings detected (best effort):**
 
 - `h-4 w-4 shrink-0 text-slate-500 transition-transform group-open:rotate-180 dark:text-slate-400`
-- `mt-3 border-l-2 border-blue-600/50 pl-4 text-sm text-slate-500 dark:border-blue-400/50 dark:text-slate-400`
+- `mt-3 pl-4 text-sm text-slate-500 dark:text-slate-400 borderless-shadow`
 
 **Utility breakdown (grouped):**
 
@@ -2326,28 +2342,26 @@ function VerifiedBadge() {
   - `text-slate-500` — Text color or text sizing.
   - `text-sm` — Text color or text sizing.
 - **Borders / rings / shadows:**
-  - `border-l-2` — Border style/width/color.
-  - `border-blue-600/50` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Interaction / motion:**
   - `transition-transform` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-blue-400/50` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
   - `shrink-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `group-open:rotate-180` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:613`
+#### `src/pages/HelpCenter.jsx:615`
 
 ```jsx
-                              <p className="mt-3 border-l-2 border-blue-600/50 pl-4 text-sm text-slate-500 dark:border-blue-400/50 dark:text-slate-400">
+                              <p className="mt-3 pl-4 text-sm text-slate-500 dark:text-slate-400 borderless-shadow">
                                 A: {f.a}
                               </p>
                             </details>
 ```
 **Raw class strings detected (best effort):**
 
-- `mt-3 border-l-2 border-blue-600/50 pl-4 text-sm text-slate-500 dark:border-blue-400/50 dark:text-slate-400`
+- `mt-3 pl-4 text-sm text-slate-500 dark:text-slate-400 borderless-shadow`
 
 **Utility breakdown (grouped):**
 
@@ -2358,24 +2372,22 @@ function VerifiedBadge() {
   - `text-sm` — Text color or text sizing.
   - `text-slate-500` — Text color or text sizing.
 - **Borders / rings / shadows:**
-  - `border-l-2` — Border style/width/color.
-  - `border-blue-600/50` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Dark mode variants:**
-  - `dark:border-blue-400/50` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:628`
+#### `src/pages/HelpCenter.jsx:630`
 
 ```jsx
                 <section className="scroll-mt-6">
                   <SpotlightCard className={cardClassName({ glass: true })}>
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800">
+                    <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
                       <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
 ```
 **Raw class strings detected (best effort):**
 
 - `scroll-mt-6`
-- `flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800`
+- `flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3`
 - `text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100`
 
 **Utility breakdown (grouped):**
@@ -2394,25 +2406,23 @@ function VerifiedBadge() {
   - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
 - **Borders / rings / shadows:**
-  - `border-b` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-divider-b` — Border style/width/color.
 - **Dark mode variants:**
-  - `dark:border-slate-800` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
   - `scroll-mt-6` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:629`
+#### `src/pages/HelpCenter.jsx:631`
 
 ```jsx
                   <SpotlightCard className={cardClassName({ glass: true })}>
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800">
+                    <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
                       <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
                         Admin: Manage Knowledge Base FAQ
 ```
 **Raw class strings detected (best effort):**
 
-- `flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800`
+- `flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3`
 - `text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100`
 
 **Utility breakdown (grouped):**
@@ -2431,23 +2441,21 @@ function VerifiedBadge() {
   - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
 - **Borders / rings / shadows:**
-  - `border-b` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-divider-b` — Border style/width/color.
 - **Dark mode variants:**
-  - `dark:border-slate-800` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:630`
+#### `src/pages/HelpCenter.jsx:632`
 
 ```jsx
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800">
+                    <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
                       <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
                         Admin: Manage Knowledge Base FAQ
                       </h2>
 ```
 **Raw class strings detected (best effort):**
 
-- `flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800`
+- `flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3`
 - `text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100`
 
 **Utility breakdown (grouped):**
@@ -2466,13 +2474,11 @@ function VerifiedBadge() {
   - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
 - **Borders / rings / shadows:**
-  - `border-b` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-divider-b` — Border style/width/color.
 - **Dark mode variants:**
-  - `dark:border-slate-800` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:631`
+#### `src/pages/HelpCenter.jsx:633`
 
 ```jsx
                       <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
@@ -2509,7 +2515,7 @@ function VerifiedBadge() {
   - `dark:bg-blue-500/12` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-blue-200` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:634`
+#### `src/pages/HelpCenter.jsx:636`
 
 ```jsx
                       <span className="rounded-full bg-blue-600/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-blue-700 dark:bg-blue-500/12 dark:text-blue-200">
@@ -2540,7 +2546,7 @@ function VerifiedBadge() {
   - `dark:bg-blue-500/12` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-blue-200` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:639`
+#### `src/pages/HelpCenter.jsx:641`
 
 ```jsx
                     <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -2568,7 +2574,7 @@ function VerifiedBadge() {
 - **Other:**
   - `Question` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:640`
+#### `src/pages/HelpCenter.jsx:642`
 
 ```jsx
                       <form onSubmit={saveFaq} className="space-y-3">
@@ -2588,7 +2594,7 @@ function VerifiedBadge() {
 - **Other:**
   - `Question` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:645`
+#### `src/pages/HelpCenter.jsx:647`
 
 ```jsx
                           className="w-full rounded-xl bg-slate-900/4 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
@@ -2624,7 +2630,7 @@ function VerifiedBadge() {
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:placeholder:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:652`
+#### `src/pages/HelpCenter.jsx:654`
 
 ```jsx
                           className="min-h-28 w-full rounded-xl bg-slate-900/4 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
@@ -2661,7 +2667,7 @@ function VerifiedBadge() {
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:placeholder:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:659`
+#### `src/pages/HelpCenter.jsx:661`
 
 ```jsx
                           className="w-full rounded-xl bg-slate-900/4 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
@@ -2701,7 +2707,7 @@ function VerifiedBadge() {
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:placeholder:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:661`
+#### `src/pages/HelpCenter.jsx:663`
 
 ```jsx
                         <div className="flex flex-wrap gap-2">
@@ -2743,7 +2749,7 @@ function VerifiedBadge() {
 - **Other:**
   - `submit` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:664`
+#### `src/pages/HelpCenter.jsx:666`
 
 ```jsx
                             className="rounded-full bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-500 dark:text-slate-900 dark:hover:bg-blue-400"
@@ -2782,7 +2788,7 @@ function VerifiedBadge() {
   - `Update` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Add` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:672`
+#### `src/pages/HelpCenter.jsx:674`
 
 ```jsx
                               className="rounded-full bg-slate-900/4 px-5 py-2.5 text-xs font-semibold text-slate-900 transition hover:bg-slate-900/6 active:scale-[0.98] dark:bg-white/6 dark:text-slate-100 dark:hover:bg-white/8"
@@ -2816,7 +2822,7 @@ function VerifiedBadge() {
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-white/8` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:678`
+#### `src/pages/HelpCenter.jsx:680`
 
 ```jsx
                         {feedback ? <p className="text-xs text-slate-500 dark:text-slate-400">{feedback}</p> : null}
@@ -2843,7 +2849,7 @@ function VerifiedBadge() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:681`
+#### `src/pages/HelpCenter.jsx:683`
 
 ```jsx
                       <div className="max-h-72 space-y-2 overflow-y-auto pr-2">
@@ -2868,7 +2874,7 @@ function VerifiedBadge() {
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
 
-#### `src/pages/HelpCenter.jsx:684`
+#### `src/pages/HelpCenter.jsx:686`
 
 ```jsx
                             <Skeleton className="h-12 rounded-xl" />
@@ -2887,7 +2893,7 @@ function VerifiedBadge() {
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
 
-#### `src/pages/HelpCenter.jsx:685`
+#### `src/pages/HelpCenter.jsx:687`
 
 ```jsx
                             <Skeleton className="h-12 rounded-xl" />
@@ -2906,7 +2912,7 @@ function VerifiedBadge() {
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
 
-#### `src/pages/HelpCenter.jsx:686`
+#### `src/pages/HelpCenter.jsx:688`
 
 ```jsx
                             <Skeleton className="h-12 rounded-xl" />
@@ -2925,7 +2931,7 @@ function VerifiedBadge() {
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
 
-#### `src/pages/HelpCenter.jsx:687`
+#### `src/pages/HelpCenter.jsx:689`
 
 ```jsx
                             <Skeleton className="h-12 rounded-xl" />
@@ -2944,7 +2950,7 @@ function VerifiedBadge() {
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
 
-#### `src/pages/HelpCenter.jsx:693`
+#### `src/pages/HelpCenter.jsx:695`
 
 ```jsx
                               className="rounded-xl bg-[#ffffff] p-3 text-xs shadow-[0_10px_24px_rgba(15,23,42,0.06)] dark:bg-white/5 dark:shadow-none"
@@ -2980,7 +2986,7 @@ function VerifiedBadge() {
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-none` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:695`
+#### `src/pages/HelpCenter.jsx:697`
 
 ```jsx
                               <div className="flex items-start justify-between gap-3">
@@ -3015,7 +3021,7 @@ function VerifiedBadge() {
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:696`
+#### `src/pages/HelpCenter.jsx:698`
 
 ```jsx
                                 <div className="min-w-0 flex-1">
@@ -3045,7 +3051,7 @@ function VerifiedBadge() {
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:697`
+#### `src/pages/HelpCenter.jsx:699`
 
 ```jsx
                                   <p className="truncate font-semibold text-slate-900 dark:text-slate-100">{e.question}</p>
@@ -3077,7 +3083,7 @@ function VerifiedBadge() {
 - **Other:**
   - `shrink-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:698`
+#### `src/pages/HelpCenter.jsx:700`
 
 ```jsx
                                   <p className="mt-1 truncate text-slate-500 dark:text-slate-400">{e.answer}</p>
@@ -3110,7 +3116,7 @@ function VerifiedBadge() {
 - **Other:**
   - `shrink-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:700`
+#### `src/pages/HelpCenter.jsx:702`
 
 ```jsx
                                 <div className="flex shrink-0 gap-2">
@@ -3138,7 +3144,7 @@ function VerifiedBadge() {
 - **Other:**
   - `shrink-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:701`
+#### `src/pages/HelpCenter.jsx:703`
 
 ```jsx
                                   <button onClick={() => selectForEdit(e)} className="text-blue-600 hover:underline dark:text-blue-400">
@@ -3162,7 +3168,7 @@ function VerifiedBadge() {
   - `dark:text-blue-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-rose-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:704`
+#### `src/pages/HelpCenter.jsx:706`
 
 ```jsx
                                   <button onClick={() => removeFaq(e.id)} className="text-rose-600 hover:underline dark:text-rose-300">
@@ -3183,7 +3189,7 @@ function VerifiedBadge() {
 - **Dark mode variants:**
   - `dark:text-rose-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:720`
+#### `src/pages/HelpCenter.jsx:722`
 
 ```jsx
               <section className="scroll-mt-6">
@@ -3215,7 +3221,7 @@ function VerifiedBadge() {
 - **Other:**
   - `scroll-mt-6` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:721`
+#### `src/pages/HelpCenter.jsx:723`
 
 ```jsx
                 <SpotlightCard className={cardClassName({ glass: true })}>
@@ -3258,7 +3264,7 @@ function VerifiedBadge() {
   - `dark:bg-white/6` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:722`
+#### `src/pages/HelpCenter.jsx:724`
 
 ```jsx
                   <div className="flex items-center justify-between gap-3">
@@ -3301,7 +3307,7 @@ function VerifiedBadge() {
   - `dark:bg-white/6` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:723`
+#### `src/pages/HelpCenter.jsx:725`
 
 ```jsx
                     <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Contact Support</h2>
@@ -3338,7 +3344,7 @@ function VerifiedBadge() {
   - `dark:bg-white/6` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:724`
+#### `src/pages/HelpCenter.jsx:726`
 
 ```jsx
                     <span className="rounded-full bg-slate-900/4 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:bg-white/6 dark:text-slate-400">
@@ -3369,7 +3375,7 @@ function VerifiedBadge() {
   - `dark:bg-white/6` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:728`
+#### `src/pages/HelpCenter.jsx:730`
 
 ```jsx
                   <p className="mt-3 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
@@ -3398,7 +3404,7 @@ function VerifiedBadge() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:731`
+#### `src/pages/HelpCenter.jsx:733`
 
 ```jsx
                   <div className="mt-6 flex flex-wrap gap-3">
@@ -3438,7 +3444,7 @@ function VerifiedBadge() {
   - `dark:text-slate-900` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-blue-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:732`
+#### `src/pages/HelpCenter.jsx:734`
 
 ```jsx
                     <button className="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-500 dark:text-slate-900 dark:hover:bg-blue-400">
@@ -3483,7 +3489,7 @@ function VerifiedBadge() {
   - `dark:hover:translate-y-0` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-white/8` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:735`
+#### `src/pages/HelpCenter.jsx:737`
 
 ```jsx
                     <button className="rounded-full bg-[#ffffff] px-6 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] dark:bg-white/6 dark:text-slate-100 dark:shadow-none dark:hover:translate-y-0 dark:hover:bg-white/8">
@@ -3521,7 +3527,7 @@ function VerifiedBadge() {
   - `dark:hover:translate-y-0` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-white/8` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:739`
+#### `src/pages/HelpCenter.jsx:741`
 
 ```jsx
                   <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">
@@ -3545,7 +3551,7 @@ function VerifiedBadge() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:740`
+#### `src/pages/HelpCenter.jsx:742`
 
 ```jsx
                     Tip: On <span className="font-semibold">/help</span>, the assistant uses an “Orb” style to indicate ready-to-help status.
@@ -3562,7 +3568,7 @@ function VerifiedBadge() {
 - **Typography:**
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:747`
+#### `src/pages/HelpCenter.jsx:749`
 
 ```jsx
           <div className="space-y-6">
@@ -3591,7 +3597,7 @@ function VerifiedBadge() {
 - **Dark mode variants:**
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:748`
+#### `src/pages/HelpCenter.jsx:750`
 
 ```jsx
             <div className="sticky top-8 space-y-6">
@@ -3624,7 +3630,7 @@ function VerifiedBadge() {
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:749`
+#### `src/pages/HelpCenter.jsx:751`
 
 ```jsx
               <SpotlightCard className={cardClassName({ glass: true })}>
@@ -3654,7 +3660,7 @@ function VerifiedBadge() {
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:750`
+#### `src/pages/HelpCenter.jsx:752`
 
 ```jsx
                 <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">Search</h3>
@@ -3684,7 +3690,7 @@ function VerifiedBadge() {
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:751`
+#### `src/pages/HelpCenter.jsx:753`
 
 ```jsx
                 <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Search FAQ answers instantly.</p>
@@ -3708,7 +3714,7 @@ function VerifiedBadge() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:752`
+#### `src/pages/HelpCenter.jsx:754`
 
 ```jsx
                 <div className="mt-4">
@@ -3725,7 +3731,7 @@ function VerifiedBadge() {
 - **Spacing:**
   - `mt-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:757`
+#### `src/pages/HelpCenter.jsx:759`
 
 ```jsx
                     className="w-full rounded-full bg-slate-900/4 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
@@ -3766,7 +3772,7 @@ function VerifiedBadge() {
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:placeholder:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:760`
+#### `src/pages/HelpCenter.jsx:762`
 
 ```jsx
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -3798,7 +3804,7 @@ function VerifiedBadge() {
   - `premium` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `sub-accounts` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:766`
+#### `src/pages/HelpCenter.jsx:768`
 
 ```jsx
                       className="rounded-full bg-slate-900/4 px-3 py-1 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-900/6 active:scale-[0.98] dark:bg-white/6 dark:text-slate-300 dark:hover:bg-white/8"
@@ -3832,7 +3838,7 @@ function VerifiedBadge() {
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-white/8` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:774`
+#### `src/pages/HelpCenter.jsx:776`
 
 ```jsx
               <SpotlightCard className={cardClassName({ glass: true })}>
@@ -3867,7 +3873,7 @@ function VerifiedBadge() {
   - `10.` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `FAQ` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:775`
+#### `src/pages/HelpCenter.jsx:777`
 
 ```jsx
                 <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">Quick navigation</h3>
@@ -3902,7 +3908,7 @@ function VerifiedBadge() {
   - `10.` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `FAQ` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:776`
+#### `src/pages/HelpCenter.jsx:778`
 
 ```jsx
                 <div className="mt-4 flex flex-wrap gap-2">
@@ -3929,7 +3935,7 @@ function VerifiedBadge() {
   - `10.` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `FAQ` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/HelpCenter.jsx:781`
+#### `src/pages/HelpCenter.jsx:783`
 
 ```jsx
                       className="rounded-full bg-blue-600/10 px-3 py-1 text-[11px] font-semibold text-blue-700 transition hover:bg-blue-600/14 active:scale-[0.98] dark:bg-blue-500/12 dark:text-blue-200 dark:hover:bg-blue-500/18"
@@ -3963,7 +3969,7 @@ function VerifiedBadge() {
   - `dark:text-blue-200` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-blue-500/18` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:789`
+#### `src/pages/HelpCenter.jsx:791`
 
 ```jsx
               <SpotlightCard className={cardClassName({ glass: true })}>
@@ -4006,7 +4012,7 @@ function VerifiedBadge() {
   - `dark:bg-white/6` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:790`
+#### `src/pages/HelpCenter.jsx:792`
 
 ```jsx
                 <div className="flex items-center justify-between gap-3">
@@ -4049,7 +4055,7 @@ function VerifiedBadge() {
   - `dark:bg-white/6` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:791`
+#### `src/pages/HelpCenter.jsx:793`
 
 ```jsx
                   <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">Floating Assistant</h3>
@@ -4086,7 +4092,7 @@ function VerifiedBadge() {
   - `dark:bg-white/6` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:792`
+#### `src/pages/HelpCenter.jsx:794`
 
 ```jsx
                   <span className="rounded-full bg-slate-900/4 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:bg-white/6 dark:text-slate-400">
@@ -4117,7 +4123,7 @@ function VerifiedBadge() {
   - `dark:bg-white/6` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:796`
+#### `src/pages/HelpCenter.jsx:798`
 
 ```jsx
                 <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
@@ -4148,13 +4154,13 @@ function VerifiedBadge() {
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:799`
+#### `src/pages/HelpCenter.jsx:801`
 
 ```jsx
                 <div className="mt-4 rounded-xl bg-slate-900/2 p-4 dark:bg-white/5">
                   <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">What it can do</p>
                   <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                    Setup, navigation, support articles — it does not negotiate.
+                    Setup, navigation, support articles -- it does not negotiate.
 ```
 **Raw class strings detected (best effort):**
 
@@ -4182,12 +4188,12 @@ function VerifiedBadge() {
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:800`
+#### `src/pages/HelpCenter.jsx:802`
 
 ```jsx
                   <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">What it can do</p>
                   <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                    Setup, navigation, support articles — it does not negotiate.
+                    Setup, navigation, support articles -- it does not negotiate.
                   </p>
 ```
 **Raw class strings detected (best effort):**
@@ -4208,11 +4214,11 @@ function VerifiedBadge() {
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/HelpCenter.jsx:801`
+#### `src/pages/HelpCenter.jsx:803`
 
 ```jsx
                   <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                    Setup, navigation, support articles — it does not negotiate.
+                    Setup, navigation, support articles -- it does not negotiate.
                   </p>
                 </div>
 ```
@@ -4234,7 +4240,7 @@ function VerifiedBadge() {
 
 > This list is generated by heuristics. It includes hard-coded UI strings and key element anchors. For absolute truth, use the source snapshot.
 
-- `src/pages/HelpCenter.jsx:378` — Help Center
+- `src/pages/HelpCenter.jsx:380` — Help Center
 
 ```jsx
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">Help Center</h1>
@@ -4242,7 +4248,7 @@ function VerifiedBadge() {
         </header>
 
 ```
-- `src/pages/HelpCenter.jsx:379` — Industrial reliability, tech-forward SaaS guidance.
+- `src/pages/HelpCenter.jsx:381` — Industrial reliability, tech-forward SaaS guidance.
 
 ```jsx
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Industrial reliability, tech-forward SaaS guidance.</p>
@@ -4250,63 +4256,63 @@ function VerifiedBadge() {
 
         <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-4">
 ```
-- `src/pages/HelpCenter.jsx:422` — •
+- `src/pages/HelpCenter.jsx:424` — -
 
 ```jsx
-                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">•</span>
+                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
                             <span>{item}</span>
                           </li>
                         ))}
 ```
-- `src/pages/HelpCenter.jsx:448` — •
+- `src/pages/HelpCenter.jsx:450` — -
 
 ```jsx
-                                  <span className="mt-0.5 text-blue-600/90 dark:text-blue-400">•</span>
+                                  <span className="mt-0.5 text-blue-600/90 dark:text-blue-400">-</span>
                                   <span>{p}</span>
                                 </li>
                               ))}
 ```
-- `src/pages/HelpCenter.jsx:466` — •
+- `src/pages/HelpCenter.jsx:468` — -
 
 ```jsx
-                                  <span className="mt-0.5 text-emerald-600 dark:text-emerald-400">•</span>
+                                  <span className="mt-0.5 text-emerald-600 dark:text-emerald-400">-</span>
                                   <span>{d}</span>
                                 </li>
                               ))}
 ```
-- `src/pages/HelpCenter.jsx:489` — •
+- `src/pages/HelpCenter.jsx:491` — -
 
 ```jsx
-                                    <span className="mt-0.5 text-blue-600 dark:text-blue-400">•</span>
+                                    <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
                                     <span>{p}</span>
                                   </li>
                                 ))}
 ```
-- `src/pages/HelpCenter.jsx:525` — Lock demo
+- `src/pages/HelpCenter.jsx:527` — Lock demo
 
 ```jsx
                                     <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Lock demo</p>
                                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                                      {lockGranted ? 'Permission granted — teammates can message.' : 'Locked — teammates need permission.'}
+                                      {lockGranted ? 'Permission granted -- teammates can message.' : 'Locked -- teammates need permission.'}
                                     </p>
 ```
-- `src/pages/HelpCenter.jsx:549` — •
+- `src/pages/HelpCenter.jsx:551` — -
 
 ```jsx
-                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">•</span>
+                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
                             <span>{p}</span>
                           </li>
                         ))}
 ```
-- `src/pages/HelpCenter.jsx:610` — Q: {f.q}
+- `src/pages/HelpCenter.jsx:612` — Q: {f.q}
 
 ```jsx
                                 <span className="min-w-0 truncate">Q: {f.q}</span>
                                 <ChevronDown className="h-4 w-4 shrink-0 text-slate-500 transition-transform group-open:rotate-180 dark:text-slate-400" />
                               </summary>
-                              <p className="mt-3 border-l-2 border-blue-600/50 pl-4 text-sm text-slate-500 dark:border-blue-400/50 dark:text-slate-400">
+                              <p className="mt-3 pl-4 text-sm text-slate-500 dark:text-slate-400 borderless-shadow">
 ```
-- `src/pages/HelpCenter.jsx:723` — Contact Support
+- `src/pages/HelpCenter.jsx:725` — Contact Support
 
 ```jsx
                     <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Contact Support</h2>
@@ -4314,7 +4320,7 @@ function VerifiedBadge() {
                       Response varies
                     </span>
 ```
-- `src/pages/HelpCenter.jsx:740` — /help
+- `src/pages/HelpCenter.jsx:742` — /help
 
 ```jsx
                     Tip: On <span className="font-semibold">/help</span>, the assistant uses an “Orb” style to indicate ready-to-help status.
@@ -4322,7 +4328,7 @@ function VerifiedBadge() {
                 </SpotlightCard>
               </section>
 ```
-- `src/pages/HelpCenter.jsx:750` — Search
+- `src/pages/HelpCenter.jsx:752` — Search
 
 ```jsx
                 <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">Search</h3>
@@ -4330,7 +4336,7 @@ function VerifiedBadge() {
                 <div className="mt-4">
                   <input
 ```
-- `src/pages/HelpCenter.jsx:751` — Search FAQ answers instantly.
+- `src/pages/HelpCenter.jsx:753` — Search FAQ answers instantly.
 
 ```jsx
                 <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Search FAQ answers instantly.</p>
@@ -4338,7 +4344,7 @@ function VerifiedBadge() {
                   <input
                     value={q}
 ```
-- `src/pages/HelpCenter.jsx:775` — Quick navigation
+- `src/pages/HelpCenter.jsx:777` — Quick navigation
 
 ```jsx
                 <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">Quick navigation</h3>
@@ -4346,7 +4352,7 @@ function VerifiedBadge() {
                   {[...HELP_SECTIONS.map((s) => ({ id: s.id, label: s.title })), { id: 'faq', label: '10. FAQ' }].map((s) => (
                     <a
 ```
-- `src/pages/HelpCenter.jsx:791` — Floating Assistant
+- `src/pages/HelpCenter.jsx:793` — Floating Assistant
 
 ```jsx
                   <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">Floating Assistant</h3>
@@ -4354,15 +4360,15 @@ function VerifiedBadge() {
                     Orb mode
                   </span>
 ```
-- `src/pages/HelpCenter.jsx:800` — What it can do
+- `src/pages/HelpCenter.jsx:802` — What it can do
 
 ```jsx
                   <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">What it can do</p>
                   <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                    Setup, navigation, support articles — it does not negotiate.
+                    Setup, navigation, support articles -- it does not negotiate.
                   </p>
 ```
-- `src/pages/HelpCenter.jsx:580` — Search FAQs...
+- `src/pages/HelpCenter.jsx:582` — Search FAQs...
 
 ```jsx
                       placeholder="Search FAQs..."
@@ -4370,7 +4376,7 @@ function VerifiedBadge() {
                       onChange={(e) => setQ(e.target.value)}
                       className="w-full rounded-full bg-slate-900/4 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
 ```
-- `src/pages/HelpCenter.jsx:642` — Question
+- `src/pages/HelpCenter.jsx:644` — Question
 
 ```jsx
                           placeholder="Question"
@@ -4378,7 +4384,7 @@ function VerifiedBadge() {
                           onChange={(e) => setForm({ ...form, question: e.target.value })}
                           className="w-full rounded-xl bg-slate-900/4 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
 ```
-- `src/pages/HelpCenter.jsx:649` — Answer
+- `src/pages/HelpCenter.jsx:651` — Answer
 
 ```jsx
                           placeholder="Answer"
@@ -4386,7 +4392,7 @@ function VerifiedBadge() {
                           onChange={(e) => setForm({ ...form, answer: e.target.value })}
                           className="min-h-28 w-full rounded-xl bg-slate-900/4 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
 ```
-- `src/pages/HelpCenter.jsx:656` — Keywords (comma separated)
+- `src/pages/HelpCenter.jsx:658` — Keywords (comma separated)
 
 ```jsx
                           placeholder="Keywords (comma separated)"
@@ -4394,7 +4400,7 @@ function VerifiedBadge() {
                           onChange={(e) => setForm({ ...form, keywords: e.target.value })}
                           className="w-full rounded-xl bg-slate-900/4 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
 ```
-- `src/pages/HelpCenter.jsx:756` — Search users, terms, workflows...
+- `src/pages/HelpCenter.jsx:758` — Search users, terms, workflows...
 
 ```jsx
                     placeholder="Search users, terms, workflows..."
@@ -4402,7 +4408,7 @@ function VerifiedBadge() {
                   />
                 </div>
 ```
-- `src/pages/HelpCenter.jsx:531` — (element) <button>
+- `src/pages/HelpCenter.jsx:533` — (element) <button>
 
 ```jsx
                                 <button
@@ -4410,7 +4416,7 @@ function VerifiedBadge() {
                                   onClick={() => setLockGranted((v) => !v)}
                                   className="rounded-full bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-500 dark:text-slate-900 dark:hover:bg-blue-400"
 ```
-- `src/pages/HelpCenter.jsx:662` — (element) <button>
+- `src/pages/HelpCenter.jsx:664` — (element) <button>
 
 ```jsx
                           <button
@@ -4418,7 +4424,7 @@ function VerifiedBadge() {
                             className="rounded-full bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-500 dark:text-slate-900 dark:hover:bg-blue-400"
                           >
 ```
-- `src/pages/HelpCenter.jsx:669` — (element) <button>
+- `src/pages/HelpCenter.jsx:671` — (element) <button>
 
 ```jsx
                             <button
@@ -4426,7 +4432,7 @@ function VerifiedBadge() {
                               onClick={resetForm}
                               className="rounded-full bg-slate-900/4 px-5 py-2.5 text-xs font-semibold text-slate-900 transition hover:bg-slate-900/6 active:scale-[0.98] dark:bg-white/6 dark:text-slate-100 dark:hover:bg-white/8"
 ```
-- `src/pages/HelpCenter.jsx:701` — (element) <button>
+- `src/pages/HelpCenter.jsx:703` — (element) <button>
 
 ```jsx
                                   <button onClick={() => selectForEdit(e)} className="text-blue-600 hover:underline dark:text-blue-400">
@@ -4434,7 +4440,7 @@ function VerifiedBadge() {
                                   </button>
                                   <button onClick={() => removeFaq(e.id)} className="text-rose-600 hover:underline dark:text-rose-300">
 ```
-- `src/pages/HelpCenter.jsx:704` — (element) <button>
+- `src/pages/HelpCenter.jsx:706` — (element) <button>
 
 ```jsx
                                   <button onClick={() => removeFaq(e.id)} className="text-rose-600 hover:underline dark:text-rose-300">
@@ -4442,7 +4448,7 @@ function VerifiedBadge() {
                                   </button>
                                 </div>
 ```
-- `src/pages/HelpCenter.jsx:732` — (element) <button>
+- `src/pages/HelpCenter.jsx:734` — (element) <button>
 
 ```jsx
                     <button className="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-500 dark:text-slate-900 dark:hover:bg-blue-400">
@@ -4450,7 +4456,7 @@ function VerifiedBadge() {
                     </button>
                     <button className="rounded-full bg-[#ffffff] px-6 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] dark:bg-white/6 dark:text-slate-100 dark:shadow-none dark:hover:translate-y-0 dark:hover:bg-white/8">
 ```
-- `src/pages/HelpCenter.jsx:735` — (element) <button>
+- `src/pages/HelpCenter.jsx:737` — (element) <button>
 
 ```jsx
                     <button className="rounded-full bg-[#ffffff] px-6 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] dark:bg-white/6 dark:text-slate-100 dark:shadow-none dark:hover:translate-y-0 dark:hover:bg-white/8">
@@ -4458,7 +4464,7 @@ function VerifiedBadge() {
                     </button>
                   </div>
 ```
-- `src/pages/HelpCenter.jsx:762` — (element) <button>
+- `src/pages/HelpCenter.jsx:764` — (element) <button>
 
 ```jsx
                     <button
@@ -4470,10 +4476,10 @@ function VerifiedBadge() {
 
 | Frontend call (path:line) | Express mount | Route definition | Controller file | Handler |
 |---|---|---|---|---|
-| GET /assistant/knowledge (src/pages/HelpCenter.jsx:274) | /api/assistant -> server/routes/assistantRoutes.js:69 | GET /knowledge (server/routes/assistantRoutes.js:16) | - | getAssistantKnowledge |
-| PUT /assistant/knowledge/${editingId} (src/pages/HelpCenter.jsx:319) | /api/assistant -> server/routes/assistantRoutes.js:69 | - | - | - |
-| POST /assistant/knowledge (src/pages/HelpCenter.jsx:321) | /api/assistant -> server/routes/assistantRoutes.js:69 | POST /knowledge (server/routes/assistantRoutes.js:17) | - | createAssistantKnowledge |
-| DELETE /assistant/knowledge/${entryId} (src/pages/HelpCenter.jsx:335) | /api/assistant -> server/routes/assistantRoutes.js:69 | - | - | - |
+| GET /assistant/knowledge (src/pages/HelpCenter.jsx:276) | /api/assistant -> server/routes/assistantRoutes.js:121 | GET /knowledge (server/routes/assistantRoutes.js:26) | - | getAssistantKnowledge |
+| PUT /assistant/knowledge/${editingId} (src/pages/HelpCenter.jsx:321) | /api/assistant -> server/routes/assistantRoutes.js:121 | - | - | - |
+| POST /assistant/knowledge (src/pages/HelpCenter.jsx:323) | /api/assistant -> server/routes/assistantRoutes.js:121 | POST /knowledge (server/routes/assistantRoutes.js:27) | - | createAssistantKnowledge |
+| DELETE /assistant/knowledge/${entryId} (src/pages/HelpCenter.jsx:337) | /api/assistant -> server/routes/assistantRoutes.js:121 | - | - | - |
 
 ## 6) How to Edit Safely
 
@@ -4483,5 +4489,4 @@ function VerifiedBadge() {
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
-{% endraw %}
 

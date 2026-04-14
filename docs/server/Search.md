@@ -4,7 +4,7 @@ This doc is generated from source snapshots with `path:line` references.
 
 ## Mounted prefixes
 
-- `/api/search` -> `server/routes/searchRoutes.js:76` (router var: `searchRoutes`)
+- `/api/search` -> `server/routes/searchRoutes.js:130` (router var: `searchRoutes`)
 
 ## Routes (ultra-detailed)
 

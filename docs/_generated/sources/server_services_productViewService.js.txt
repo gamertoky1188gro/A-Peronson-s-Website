@@ -1,7 +1,7 @@
     1 | import crypto from 'crypto'
     2 | import { readJson, writeJson } from '../utils/jsonStore.js'
     3 | import { sanitizeString } from '../utils/validators.js'
-    4 | import { trackEvent } from './analyticsService.js'
+    4 | import { trackEvent } from './eventTrackingService.js'
     5 | 
     6 | const FILE = 'product_views.json'
     7 | const USERS_FILE = 'users.json'
@@ -42,7 +42,7 @@
    42 |   }
    43 | }
    44 | 
-   45 | export async function recordView(userId, productId, { windowMinutes = 10 } = {}) {
+   45 | export async function recordView(userId, productId, { windowMinutes = 10, geo = null } = {}) {
    46 |   const viewerId = sanitizeString(String(userId || ''), 120)
    47 |   const pid = sanitizeString(String(productId || ''), 120)
    48 |   if (!viewerId || !pid) return 'not_found'
@@ -75,55 +75,66 @@
    75 |   }
    76 | 
    77 |   await writeJson(FILE, all)
-   78 |   await trackEvent({ type: 'product_viewed', actor_id: viewerId, entity_id: pid })
-   79 |   return { ok: true, deduped: false }
-   80 | }
-   81 | 
-   82 | export async function listMyProductViews(userId, { cursor = 0, limit = 10 } = {}) {
-   83 |   const viewerId = sanitizeString(String(userId || ''), 120)
-   84 |   const safeCursor = Math.max(0, Math.floor(Number(cursor || 0)))
-   85 |   const safeLimit = Math.min(50, Math.max(1, Math.floor(Number(limit || 10))))
-   86 | 
-   87 |   const [views, products, users] = await Promise.all([
-   88 |     readJson(FILE),
-   89 |     readJson(PRODUCTS_FILE),
-   90 |     readJson(USERS_FILE),
-   91 |   ])
-   92 | 
-   93 |   const viewsForUser = safeArray(views).filter((v) => v.user_id === viewerId).sort(sortNewest)
-   94 |   const productsById = new Map(safeArray(products).map((p) => [String(p.id), normalizeProductVideoFlags(p)]))
-   95 |   const usersById = new Map(safeArray(users).map((u) => [String(u.id), u]))
-   96 | 
-   97 |   const pageRows = viewsForUser.slice(safeCursor, safeCursor + safeLimit)
-   98 |   const items = pageRows.map((v) => {
-   99 |     const product = productsById.get(String(v.product_id)) || null
-  100 |     const author = product ? publicAuthor(usersById.get(String(product.company_id))) : null
-  101 |     return {
-  102 |       id: v.id,
-  103 |       viewed_at: v.viewed_at,
-  104 |       product: product ? {
-  105 |         id: product.id,
-  106 |         title: product.title,
-  107 |         category: product.category,
-  108 |         material: product.material,
-  109 |         moq: product.moq,
-  110 |         lead_time_days: product.lead_time_days,
-  111 |         description: product.description,
-  112 |         hasVideo: Boolean(product.hasVideo),
-  113 |         video_url: product.video_url || '',
-  114 |         video_review_status: product.video_review_status || '',
-  115 |       } : null,
-  116 |       author,
-  117 |     }
-  118 |   }).filter((row) => row.product)
-  119 | 
-  120 |   const nextCursor = safeCursor + safeLimit < viewsForUser.length ? safeCursor + safeLimit : null
-  121 |   return {
-  122 |     cursor: safeCursor,
-  123 |     next_cursor: nextCursor,
-  124 |     total: viewsForUser.length,
-  125 |     items,
-  126 |   }
-  127 | }
-  128 | 
-  129 | 
+   78 |   await trackEvent({
+   79 |     type: 'product_viewed',
+   80 |     actor_id: viewerId,
+   81 |     entity_id: pid,
+   82 |     metadata: geo && typeof geo === 'object'
+   83 |       ? {
+   84 |         country: geo.country || '',
+   85 |         city: geo.city || '',
+   86 |         lat: geo.lat ?? null,
+   87 |         lng: geo.lng ?? null,
+   88 |       }
+   89 |       : {},
+   90 |   })
+   91 |   return { ok: true, deduped: false }
+   92 | }
+   93 | 
+   94 | export async function listMyProductViews(userId, { cursor = 0, limit = 10 } = {}) {
+   95 |   const viewerId = sanitizeString(String(userId || ''), 120)
+   96 |   const safeCursor = Math.max(0, Math.floor(Number(cursor || 0)))
+   97 |   const safeLimit = Math.min(50, Math.max(1, Math.floor(Number(limit || 10))))
+   98 | 
+   99 |   const [views, products, users] = await Promise.all([
+  100 |     readJson(FILE),
+  101 |     readJson(PRODUCTS_FILE),
+  102 |     readJson(USERS_FILE),
+  103 |   ])
+  104 | 
+  105 |   const viewsForUser = safeArray(views).filter((v) => v.user_id === viewerId).sort(sortNewest)
+  106 |   const productsById = new Map(safeArray(products).map((p) => [String(p.id), normalizeProductVideoFlags(p)]))
+  107 |   const usersById = new Map(safeArray(users).map((u) => [String(u.id), u]))
+  108 | 
+  109 |   const pageRows = viewsForUser.slice(safeCursor, safeCursor + safeLimit)
+  110 |   const items = pageRows.map((v) => {
+  111 |     const product = productsById.get(String(v.product_id)) || null
+  112 |     const author = product ? publicAuthor(usersById.get(String(product.company_id))) : null
+  113 |     return {
+  114 |       id: v.id,
+  115 |       viewed_at: v.viewed_at,
+  116 |       product: product ? {
+  117 |         id: product.id,
+  118 |         title: product.title,
+  119 |         category: product.category,
+  120 |         material: product.material,
+  121 |         moq: product.moq,
+  122 |         lead_time_days: product.lead_time_days,
+  123 |         description: product.description,
+  124 |         hasVideo: Boolean(product.hasVideo),
+  125 |         video_url: product.video_url || '',
+  126 |         video_review_status: product.video_review_status || '',
+  127 |       } : null,
+  128 |       author,
+  129 |     }
+  130 |   }).filter((row) => row.product)
+  131 | 
+  132 |   const nextCursor = safeCursor + safeLimit < viewsForUser.length ? safeCursor + safeLimit : null
+  133 |   return {
+  134 |     cursor: safeCursor,
+  135 |     next_cursor: nextCursor,
+  136 |     total: viewsForUser.length,
+  137 |     items,
+  138 |   }
+  139 | }
+  140 | 

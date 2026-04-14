@@ -84,7 +84,7 @@ body,
 :root.dark .text-cyan-600,
 :root.dark .text-pink-600,
 :root.dark .text-\[\#0A66C2\] {
-  color: #67e8f9 !important;
+  color: var(--gt-blue) !important;
 }
 
 :root.dark .border,

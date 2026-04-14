@@ -1,4 +1,3 @@
-{% raw %}
 # BuyerProfile - Route `/buyer/:id`
 
 **Access:** Protected (Login required). **Roles:** buyer, buying_house, factory, owner, admin, agent
@@ -15,11 +14,15 @@
 ### 2.1 Imported child components
 
 - ../lib/auth (src/pages/BuyerProfile.jsx:30)
-- ../components/profile/VerificationPanel (src/pages/BuyerProfile.jsx:31)
+- ../lib/events (src/pages/BuyerProfile.jsx:31)
+- ../lib/leadSource (src/pages/BuyerProfile.jsx:32)
+- ../components/profile/VerificationPanel (src/pages/BuyerProfile.jsx:33)
+- ../components/profile/CrmSummaryPanel (src/pages/BuyerProfile.jsx:34)
+- ../components/JourneyTimeline (src/pages/BuyerProfile.jsx:35)
 
 ### 2.2 Structural section tags in JSX
 
-- `aside` at `src/pages/BuyerProfile.jsx:156`
+- `aside` at `src/pages/BuyerProfile.jsx:223`
 
 ```jsx
         <aside className="col-span-12 lg:col-span-4 space-y-4">
@@ -27,51 +30,51 @@
             initial={reduceMotion ? false : { opacity: 0, y: 16 }}
             animate={reduceMotion ? false : { opacity: 1, y: 0 }}
 ```
-- `main` at `src/pages/BuyerProfile.jsx:206`
+- `main` at `src/pages/BuyerProfile.jsx:326`
 
 ```jsx
         <main className="col-span-12 lg:col-span-8 space-y-4">
-          <motion.div
-            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-            animate={reduceMotion ? false : { opacity: 1, y: 0 }}
+          <CrmSummaryPanel targetId={user.id} />
+          <JourneyTimeline
+            title="Journey Timeline"
 ```
 ## 3) Styling (className blocks, utility breakdown, and custom CSS)
 
 ### 3.1 Custom CSS utilities referenced by this page (App.css / index.css)
 
 - `.nav-glass` definitions:
-  - `src/App.css:615`
+  - `src/App.css:897`
 - `.spotlight-card` definitions:
-  - `src/App.css:267`
+  - `src/App.css:550`
 - `.skeleton` definitions:
-  - `src/App.css:583`
+  - `src/App.css:865`
 - `.neo-page` definitions:
-  - `src/App.css:108`
+  - `src/App.css:115`
 - `.neo-panel` definitions:
-  - `src/App.css:116`
+  - `src/App.css:123`
 - `.cyberpunk-page` definitions:
-  - `src/App.css:109`
+  - `src/App.css:116`
 - `.cyberpunk-card` definitions:
-  - `src/App.css:110`
+  - `src/App.css:117`
 - `.assistant-orb-btn` definitions:
-  - `src/App.css:518`
+  - `src/App.css:801`
 - `.legal-weave` definitions:
-  - `src/App.css:366`
+  - `src/App.css:649`
 - `.signature-draw` definitions:
-  - `src/App.css:401`
+  - `src/App.css:684`
 - `.verified-shimmer` definitions:
-  - `src/App.css:434`
+  - `src/App.css:717`
 - `.verified-pulse` definitions:
-  - `src/App.css:293`
+  - `src/App.css:576`
 - `.conic-beam` definitions:
-  - `src/App.css:302`
+  - `src/App.css:585`
 
 ### 3.2 Every className block (with grouped explanations)
 
-#### `src/pages/BuyerProfile.jsx:144`
+#### `src/pages/BuyerProfile.jsx:211`
 
 ```jsx
-    return <div className="min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out">Loading profile…</div>
+    return <div className="min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out">Loading profile...</div>
   }
   if (error) {
     return <div className="min-h-screen bg-slate-50 p-6 text-rose-700 dark:bg-[#020617] dark:text-rose-200 transition-colors duration-500 ease-in-out">{error}</div>
@@ -101,7 +104,7 @@
   - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-rose-200` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:147`
+#### `src/pages/BuyerProfile.jsx:214`
 
 ```jsx
     return <div className="min-h-screen bg-slate-50 p-6 text-rose-700 dark:bg-[#020617] dark:text-rose-200 transition-colors duration-500 ease-in-out">{error}</div>
@@ -134,7 +137,7 @@
   - `dark:text-rose-200` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:150`
+#### `src/pages/BuyerProfile.jsx:217`
 
 ```jsx
     return <div className="min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out">Profile not found.</div>
@@ -164,7 +167,7 @@
   - `dark:bg-[#020617]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:154`
+#### `src/pages/BuyerProfile.jsx:221`
 
 ```jsx
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
@@ -206,7 +209,7 @@
   - `dark:bg-[#020617]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:155`
+#### `src/pages/BuyerProfile.jsx:222`
 
 ```jsx
       <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-12 gap-4">
@@ -235,7 +238,7 @@
 - **Responsive variants:**
   - `lg:col-span-4` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:156`
+#### `src/pages/BuyerProfile.jsx:223`
 
 ```jsx
         <aside className="col-span-12 lg:col-span-4 space-y-4">
@@ -256,35 +259,29 @@
 - **Responsive variants:**
   - `lg:col-span-4` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:161`
+#### `src/pages/BuyerProfile.jsx:228`
 
 ```jsx
             className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800"
           >
             <div className="flex items-center gap-3">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
+              {user.profile?.profile_image ? (
 ```
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800`
 - `flex items-center gap-3`
-- `h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]`
 
 **Utility breakdown (grouped):**
 
 - **Layout / positioning:**
   - `flex` — Flex layout.
   - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `h-14` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `w-14` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Spacing:**
   - `p-4` — Padding (all sides).
   - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Color / surface:**
   - `bg-[#ffffff]` — Background color/surface.
-  - `bg-gradient-to-br` — Background color/surface.
-  - `from-[#0A66C2]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `to-[#2E8BFF]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
   - `shadow-sm` — Drop shadow depth (elevation).
@@ -294,20 +291,18 @@
   - `dark:bg-slate-900/50` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-slate-800` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:163`
+#### `src/pages/BuyerProfile.jsx:230`
 
 ```jsx
             <div className="flex items-center gap-3">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
-              <div className="min-w-0">
-                <p className="text-lg font-bold text-slate-900 dark:text-slate-100 truncate">{user.name}</p>
+              {user.profile?.profile_image ? (
+                <img src={user.profile.profile_image} alt={user.name} className="h-14 w-14 rounded-2xl object-cover" />
+              ) : (
 ```
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-3`
-- `h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]`
-- `min-w-0`
-- `text-lg font-bold text-slate-900 dark:text-slate-100 truncate`
+- `h-14 w-14 rounded-2xl object-cover`
 
 **Utility breakdown (grouped):**
 
@@ -316,37 +311,53 @@
   - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `h-14` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `w-14` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `min-w-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Spacing:**
   - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Typography:**
-  - `text-lg` — Text color or text sizing.
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-slate-900` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-2xl` — Corner radius.
+- **Other:**
+  - `object-cover` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:232`
+
+```jsx
+                <img src={user.profile.profile_image} alt={user.name} className="h-14 w-14 rounded-2xl object-cover" />
+              ) : (
+                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
+              )}
+```
+**Raw class strings detected (best effort):**
+
+- `h-14 w-14 rounded-2xl object-cover`
+- `h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `h-14` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-14` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Color / surface:**
   - `bg-gradient-to-br` — Background color/surface.
   - `from-[#0A66C2]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `to-[#2E8BFF]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
-- **Dark mode variants:**
-  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `object-cover` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/BuyerProfile.jsx:164`
+#### `src/pages/BuyerProfile.jsx:234`
 
 ```jsx
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
+                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
+              )}
               <div className="min-w-0">
                 <p className="text-lg font-bold text-slate-900 dark:text-slate-100 truncate">{user.name}</p>
-                <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
 ```
 **Raw class strings detected (best effort):**
 
 - `h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]`
 - `min-w-0`
 - `text-lg font-bold text-slate-900 dark:text-slate-100 truncate`
-- `flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400`
 
 **Utility breakdown (grouped):**
 
@@ -355,28 +366,20 @@
   - `w-14` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `min-w-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `flex` — Flex layout.
-  - `flex-wrap` — Flex layout.
-  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Spacing:**
-  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
   - `text-lg` — Text color or text sizing.
   - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
-  - `text-slate-500` — Text color or text sizing.
 - **Color / surface:**
   - `bg-gradient-to-br` — Background color/surface.
   - `from-[#0A66C2]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `to-[#2E8BFF]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-[11px]` — Text color or text sizing.
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
 - **Dark mode variants:**
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:165`
+#### `src/pages/BuyerProfile.jsx:236`
 
 ```jsx
               <div className="min-w-0">
@@ -413,13 +416,13 @@
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:166`
+#### `src/pages/BuyerProfile.jsx:237`
 
 ```jsx
                 <p className="text-lg font-bold text-slate-900 dark:text-slate-100 truncate">{user.name}</p>
                 <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
                   <span className="uppercase">Buyer</span>
-                  {user.profile?.country ? <span>• {user.profile.country}</span> : null}
+                  {user.profile?.country ? <span>- {user.profile.country}</span> : null}
 ```
 **Raw class strings detected (best effort):**
 
@@ -448,12 +451,12 @@
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:167`
+#### `src/pages/BuyerProfile.jsx:238`
 
 ```jsx
                 <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
                   <span className="uppercase">Buyer</span>
-                  {user.profile?.country ? <span>• {user.profile.country}</span> : null}
+                  {user.profile?.country ? <span>- {user.profile.country}</span> : null}
                   {user.verified ? (
 ```
 **Raw class strings detected (best effort):**
@@ -477,11 +480,11 @@
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:168`
+#### `src/pages/BuyerProfile.jsx:239`
 
 ```jsx
                   <span className="uppercase">Buyer</span>
-                  {user.profile?.country ? <span>• {user.profile.country}</span> : null}
+                  {user.profile?.country ? <span>- {user.profile.country}</span> : null}
                   {user.verified ? (
                     <span className="verified-shimmer inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:from-emerald-500/12 dark:to-teal-400/10 dark:text-emerald-200 dark:ring-emerald-400/25">
 ```
@@ -519,7 +522,7 @@
 - **Other:**
   - `verified-shimmer` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/BuyerProfile.jsx:171`
+#### `src/pages/BuyerProfile.jsx:242`
 
 ```jsx
                     <span className="verified-shimmer inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:from-emerald-500/12 dark:to-teal-400/10 dark:text-emerald-200 dark:ring-emerald-400/25">
@@ -559,18 +562,116 @@
 - **Other:**
   - `verified-shimmer` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/BuyerProfile.jsx:179`
+#### `src/pages/BuyerProfile.jsx:247`
+
+```jsx
+                    <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200">
+                      Certified
+                    </span>
+                  ) : null}
+```
+**Raw class strings detected (best effort):**
+
+- `inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `inline-flex` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `px-2` — Horizontal padding (left/right).
+  - `py-0.5` — Vertical padding (top/bottom).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-emerald-700` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-emerald-50` — Background color/surface.
+  - `text-[10px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-full` — Corner radius.
+- **Dark mode variants:**
+  - `dark:bg-emerald-500/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-emerald-200` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:252`
+
+```jsx
+                    <span title="Boosted visibility enabled for Premium" className="inline-flex items-center rounded-full bg-blue-500/15 px-2 py-0.5 text-[10px] font-semibold text-blue-700 ring-1 ring-blue-500/20 dark:text-blue-200">
+                      Premium Reach
+                    </span>
+                  ) : null}
+```
+**Raw class strings detected (best effort):**
+
+- `inline-flex items-center rounded-full bg-blue-500/15 px-2 py-0.5 text-[10px] font-semibold text-blue-700 ring-1 ring-blue-500/20 dark:text-blue-200`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `inline-flex` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `px-2` — Horizontal padding (left/right).
+  - `py-0.5` — Vertical padding (top/bottom).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-blue-700` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-blue-500/15` — Background color/surface.
+  - `text-[10px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-full` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-blue-500/20` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:text-blue-200` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:257`
+
+```jsx
+                    <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:text-emerald-200">
+                      Boosted
+                    </span>
+                  ) : null}
+```
+**Raw class strings detected (best effort):**
+
+- `inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:text-emerald-200`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `inline-flex` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `px-2` — Horizontal padding (left/right).
+  - `py-0.5` — Vertical padding (top/bottom).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-emerald-700` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-emerald-500/15` — Background color/surface.
+  - `text-[10px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-full` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-emerald-500/20` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:text-emerald-200` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:265`
 
 ```jsx
             <div className="mt-4 flex gap-2">
-              <button onClick={contact} className="flex-1 rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:text-slate-950">Contact</button>
+              <button onClick={contact} className="flex-1 rounded-full bg-[var(--gt-blue)] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95">Contact</button>
               <button onClick={follow} className="flex-1 rounded-full px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">
                 {relationship.following ? 'Following' : 'Follow'}
 ```
 **Raw class strings detected (best effort):**
 
 - `mt-4 flex gap-2`
-- `flex-1 rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:text-slate-950`
+- `flex-1 rounded-full bg-[var(--gt-blue)] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95`
 - `flex-1 rounded-full px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5`
 - `Following`
 - `Follow`
@@ -591,7 +692,7 @@
   - `text-white` — Text color or text sizing.
   - `text-slate-700` — Text color or text sizing.
 - **Color / surface:**
-  - `bg-indigo-600` — Background color/surface.
+  - `bg-[var(--gt-blue)]` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
   - `shadow-sm` — Drop shadow depth (elevation).
@@ -599,13 +700,10 @@
   - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
 - **Interaction / motion:**
   - `transition` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `hover:bg-indigo-700` — Variant prefix (responsive, dark, or interaction state).
+  - `hover:bg-[var(--gt-blue-hover)]` — Variant prefix (responsive, dark, or interaction state).
   - `active:scale-95` — Variant prefix (responsive, dark, or interaction state).
   - `hover:bg-slate-50` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
-  - `dark:bg-indigo-500` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:hover:bg-indigo-400` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-slate-950` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
@@ -613,17 +711,17 @@
   - `Following` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Follow` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/BuyerProfile.jsx:180`
+#### `src/pages/BuyerProfile.jsx:266`
 
 ```jsx
-              <button onClick={contact} className="flex-1 rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:text-slate-950">Contact</button>
+              <button onClick={contact} className="flex-1 rounded-full bg-[var(--gt-blue)] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95">Contact</button>
               <button onClick={follow} className="flex-1 rounded-full px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">
                 {relationship.following ? 'Following' : 'Follow'}
               </button>
 ```
 **Raw class strings detected (best effort):**
 
-- `flex-1 rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:text-slate-950`
+- `flex-1 rounded-full bg-[var(--gt-blue)] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95`
 - `flex-1 rounded-full px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5`
 - `Following`
 - `Follow`
@@ -641,7 +739,7 @@
   - `text-white` — Text color or text sizing.
   - `text-slate-700` — Text color or text sizing.
 - **Color / surface:**
-  - `bg-indigo-600` — Background color/surface.
+  - `bg-[var(--gt-blue)]` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
   - `shadow-sm` — Drop shadow depth (elevation).
@@ -649,13 +747,10 @@
   - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
 - **Interaction / motion:**
   - `transition` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `hover:bg-indigo-700` — Variant prefix (responsive, dark, or interaction state).
+  - `hover:bg-[var(--gt-blue-hover)]` — Variant prefix (responsive, dark, or interaction state).
   - `active:scale-95` — Variant prefix (responsive, dark, or interaction state).
   - `hover:bg-slate-50` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
-  - `dark:bg-indigo-500` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:hover:bg-indigo-400` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-slate-950` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
@@ -663,7 +758,7 @@
   - `Following` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Follow` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/BuyerProfile.jsx:181`
+#### `src/pages/BuyerProfile.jsx:267`
 
 ```jsx
               <button onClick={follow} className="flex-1 rounded-full px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">
@@ -704,7 +799,7 @@
   - `Following` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Follow` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/BuyerProfile.jsx:184`
+#### `src/pages/BuyerProfile.jsx:270`
 
 ```jsx
               <button onClick={connect} className="flex-1 rounded-full px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">
@@ -751,17 +846,17 @@
   - `Requested` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Connect` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/BuyerProfile.jsx:189`
+#### `src/pages/BuyerProfile.jsx:275`
 
 ```jsx
-            <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="mt-4 grid grid-cols-1 gap-3">
               <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                <p className="text-[11px] text-slate-500">Rating</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
+                <p className="text-[11px] text-slate-500">Industry</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.industry || 'Garments & Textile'}</p>
 ```
 **Raw class strings detected (best effort):**
 
-- `mt-4 grid grid-cols-2 gap-3`
+- `mt-4 grid grid-cols-1 gap-3`
 - `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
 - `text-[11px] text-slate-500`
 - `mt-1 text-sm font-semibold text-slate-900`
@@ -770,7 +865,7 @@
 
 - **Layout / positioning:**
   - `grid` — Grid layout.
-  - `grid-cols-2` — Grid layout.
+  - `grid-cols-1` — Grid layout.
 - **Spacing:**
   - `mt-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
@@ -792,7 +887,217 @@
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:190`
+#### `src/pages/BuyerProfile.jsx:276`
+
+```jsx
+              <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                <p className="text-[11px] text-slate-500">Industry</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.industry || 'Garments & Textile'}</p>
+              </div>
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-3` — Padding (all sides).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:277`
+
+```jsx
+                <p className="text-[11px] text-slate-500">Industry</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.industry || 'Garments & Textile'}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+  - `bg-slate-50/70` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:278`
+
+```jsx
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.industry || 'Garments & Textile'}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                <p className="text-[11px] text-slate-500">Organization</p>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-1 text-sm font-semibold text-slate-900`
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] text-slate-500`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:280`
+
+```jsx
+              <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                <p className="text-[11px] text-slate-500">Organization</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.organization_name || user.profile?.organization || user.name}</p>
+              </div>
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-3` — Padding (all sides).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:281`
+
+```jsx
+                <p className="text-[11px] text-slate-500">Organization</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.organization_name || user.profile?.organization || user.name}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+  - `bg-slate-50/70` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:282`
+
+```jsx
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.organization_name || user.profile?.organization || user.name}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                <p className="text-[11px] text-slate-500">Rating</p>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-1 text-sm font-semibold text-slate-900`
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] text-slate-500`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:284`
 
 ```jsx
               <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
@@ -829,7 +1134,7 @@
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:191`
+#### `src/pages/BuyerProfile.jsx:285`
 
 ```jsx
                 <p className="text-[11px] text-slate-500">Rating</p>
@@ -856,7 +1161,7 @@
 - **Color / surface:**
   - `text-[11px]` — Text color or text sizing.
 
-#### `src/pages/BuyerProfile.jsx:192`
+#### `src/pages/BuyerProfile.jsx:286`
 
 ```jsx
                 <p className="mt-1 text-sm font-semibold text-slate-900">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
@@ -891,13 +1196,13 @@
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:193`
+#### `src/pages/BuyerProfile.jsx:287`
 
 ```jsx
                 <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
               </div>
               <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                <p className="text-[11px] text-slate-500">Requests</p>
+                <p className="text-[11px] text-slate-500">Certifications</p>
 ```
 **Raw class strings detected (best effort):**
 
@@ -923,17 +1228,244 @@
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:195`
+#### `src/pages/BuyerProfile.jsx:289`
 
 ```jsx
               <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                <p className="text-[11px] text-slate-500">Certifications</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">
+                  {(user.profile?.certifications || []).join(', ') || '--'}
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+- `, `
+- `--`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-3` — Padding (all sides).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `,` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `--` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:290`
+
+```jsx
+                <p className="text-[11px] text-slate-500">Certifications</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">
+                  {(user.profile?.certifications || []).join(', ') || '--'}
+                </p>
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+- `, `
+- `--`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+- **Other:**
+  - `,` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `--` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:291`
+
+```jsx
+                <p className="mt-1 text-sm font-semibold text-slate-900">
+                  {(user.profile?.certifications || []).join(', ') || '--'}
+                </p>
+              </div>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-1 text-sm font-semibold text-slate-900`
+- `, `
+- `--`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Other:**
+  - `,` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `--` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:295`
+
+```jsx
+              <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                <p className="text-[11px] text-slate-500">Capacity</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">
+                  {user.profile?.sourcing_capacity || user.profile?.monthly_capacity || user.profile?.annual_capacity || user.profile?.capacity || '--'}
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+- `--`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-3` — Padding (all sides).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `--` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:296`
+
+```jsx
+                <p className="text-[11px] text-slate-500">Capacity</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">
+                  {user.profile?.sourcing_capacity || user.profile?.monthly_capacity || user.profile?.annual_capacity || user.profile?.capacity || '--'}
+                </p>
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+- `--`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+- **Other:**
+  - `--` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:297`
+
+```jsx
+                <p className="mt-1 text-sm font-semibold text-slate-900">
+                  {user.profile?.sourcing_capacity || user.profile?.monthly_capacity || user.profile?.annual_capacity || user.profile?.capacity || '--'}
+                </p>
+              </div>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-1 text-sm font-semibold text-slate-900`
+- `--`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Other:**
+  - `--` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:302`
+
+```jsx
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <div className="rounded-xl bg-white/60 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                <p className="text-[11px] text-slate-500">Requests</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{profile?.counts?.requests ?? 0}</p>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-3 grid grid-cols-2 gap-3`
+- `rounded-xl bg-white/60 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `grid` — Grid layout.
+  - `grid-cols-2` — Grid layout.
+- **Spacing:**
+  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-white/60` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:303`
+
+```jsx
+              <div className="rounded-xl bg-white/60 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
                 <p className="text-[11px] text-slate-500">Requests</p>
                 <p className="mt-1 text-sm font-semibold text-slate-900">{profile?.counts?.requests ?? 0}</p>
                 <p className="text-[11px] text-slate-600">Total posted</p>
 ```
 **Raw class strings detected (best effort):**
 
-- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `rounded-xl bg-white/60 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
 - `text-[11px] text-slate-500`
 - `mt-1 text-sm font-semibold text-slate-900`
 - `text-[11px] text-slate-600`
@@ -950,7 +1482,7 @@
   - `text-slate-900` — Text color or text sizing.
   - `text-slate-600` — Text color or text sizing.
 - **Color / surface:**
-  - `bg-slate-50/70` — Background color/surface.
+  - `bg-white/60` — Background color/surface.
   - `text-[11px]` — Text color or text sizing.
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
@@ -960,7 +1492,7 @@
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:196`
+#### `src/pages/BuyerProfile.jsx:304`
 
 ```jsx
                 <p className="text-[11px] text-slate-500">Requests</p>
@@ -987,11 +1519,142 @@
 - **Color / surface:**
   - `text-[11px]` — Text color or text sizing.
 
-#### `src/pages/BuyerProfile.jsx:197`
+#### `src/pages/BuyerProfile.jsx:305`
 
 ```jsx
                 <p className="mt-1 text-sm font-semibold text-slate-900">{profile?.counts?.requests ?? 0}</p>
                 <p className="text-[11px] text-slate-600">Total posted</p>
+              </div>
+              <div className="rounded-xl bg-white/60 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+```
+**Raw class strings detected (best effort):**
+
+- `mt-1 text-sm font-semibold text-slate-900`
+- `text-[11px] text-slate-600`
+- `rounded-xl bg-white/60 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-600` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+  - `bg-white/60` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:306`
+
+```jsx
+                <p className="text-[11px] text-slate-600">Total posted</p>
+              </div>
+              <div className="rounded-xl bg-white/60 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                <p className="text-[11px] text-slate-500">Joined</p>
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] text-slate-600`
+- `rounded-xl bg-white/60 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] text-slate-500`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-3` — Padding (all sides).
+- **Typography:**
+  - `text-slate-600` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+  - `bg-white/60` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:308`
+
+```jsx
+              <div className="rounded-xl bg-white/60 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                <p className="text-[11px] text-slate-500">Joined</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.created_at ? new Date(user.created_at).getFullYear() : '--'}</p>
+                <p className="text-[11px] text-slate-600">Year</p>
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-xl bg-white/60 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+- `text-[11px] text-slate-600`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-3` — Padding (all sides).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-600` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-white/60` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:309`
+
+```jsx
+                <p className="text-[11px] text-slate-500">Joined</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.created_at ? new Date(user.created_at).getFullYear() : '--'}</p>
+                <p className="text-[11px] text-slate-600">Year</p>
+              </div>
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+- `text-[11px] text-slate-600`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-600` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+
+#### `src/pages/BuyerProfile.jsx:310`
+
+```jsx
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.created_at ? new Date(user.created_at).getFullYear() : '--'}</p>
+                <p className="text-[11px] text-slate-600">Year</p>
               </div>
             </div>
 ```
@@ -1012,10 +1675,10 @@
 - **Color / surface:**
   - `text-[11px]` — Text color or text sizing.
 
-#### `src/pages/BuyerProfile.jsx:198`
+#### `src/pages/BuyerProfile.jsx:311`
 
 ```jsx
-                <p className="text-[11px] text-slate-600">Total posted</p>
+                <p className="text-[11px] text-slate-600">Year</p>
               </div>
             </div>
           </motion.div>
@@ -1031,17 +1694,127 @@
 - **Color / surface:**
   - `text-[11px]` — Text color or text sizing.
 
-#### `src/pages/BuyerProfile.jsx:206`
+#### `src/pages/BuyerProfile.jsx:318`
+
+```jsx
+            <div className="mt-4 rounded-xl bg-white/60 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+              <p className="text-[11px] text-slate-500">Order Completion Certification</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">{certification.status || 'pending'}</p>
+              <p className="text-[11px] text-slate-600">Signed contracts: {certification.signed_contracts ?? 0}</p>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-4 rounded-xl bg-white/60 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+- `text-[11px] text-slate-600`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-4` — Padding (all sides).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-600` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-white/60` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:319`
+
+```jsx
+              <p className="text-[11px] text-slate-500">Order Completion Certification</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">{certification.status || 'pending'}</p>
+              <p className="text-[11px] text-slate-600">Signed contracts: {certification.signed_contracts ?? 0}</p>
+            </div>
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+- `text-[11px] text-slate-600`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-600` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+
+#### `src/pages/BuyerProfile.jsx:320`
+
+```jsx
+              <p className="mt-1 text-sm font-semibold text-slate-900">{certification.status || 'pending'}</p>
+              <p className="text-[11px] text-slate-600">Signed contracts: {certification.signed_contracts ?? 0}</p>
+            </div>
+          ) : null}
+```
+**Raw class strings detected (best effort):**
+
+- `mt-1 text-sm font-semibold text-slate-900`
+- `text-[11px] text-slate-600`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-600` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+
+#### `src/pages/BuyerProfile.jsx:321`
+
+```jsx
+              <p className="text-[11px] text-slate-600">Signed contracts: {certification.signed_contracts ?? 0}</p>
+            </div>
+          ) : null}
+        </aside>
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] text-slate-600`
+
+**Utility breakdown (grouped):**
+
+- **Typography:**
+  - `text-slate-600` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+
+#### `src/pages/BuyerProfile.jsx:326`
 
 ```jsx
         <main className="col-span-12 lg:col-span-8 space-y-4">
-          <motion.div
-            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-            animate={reduceMotion ? false : { opacity: 1, y: 0 }}
+          <CrmSummaryPanel targetId={user.id} />
+          <JourneyTimeline
+            title="Journey Timeline"
 ```
 **Raw class strings detected (best effort):**
 
 - `col-span-12 lg:col-span-8 space-y-4`
+- `Journey Timeline`
 
 **Utility breakdown (grouped):**
 
@@ -1051,19 +1824,22 @@
   - `space-y-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Responsive variants:**
   - `lg:col-span-8` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `Journey` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Timeline` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/BuyerProfile.jsx:211`
+#### `src/pages/BuyerProfile.jsx:338`
 
 ```jsx
             className="rounded-2xl bg-[#ffffff] shadow-sm ring-1 ring-slate-200/60 overflow-hidden dark:bg-slate-900/50 dark:ring-slate-800"
           >
-            <div className="relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 border-b border-slate-200/60 dark:border-transparent dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
+            <div className="relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 borderless-divider-b dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
               {['overview', 'requests', 'reviews'].map((tab) => (
 ```
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] shadow-sm ring-1 ring-slate-200/60 overflow-hidden dark:bg-slate-900/50 dark:ring-slate-800`
-- `relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 border-b border-slate-200/60 dark:border-transparent dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]`
+- `relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 borderless-divider-b dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]`
 - `overview`
 - `requests`
 - `reviews`
@@ -1087,30 +1863,28 @@
   - `shadow-sm` — Drop shadow depth (elevation).
   - `ring-1` — Outline ring (often used instead of borders in dark mode).
   - `ring-slate-200/60` — Outline ring (often used instead of borders in dark mode).
-  - `border-b` — Border style/width/color.
-  - `border-slate-200/60` — Border style/width/color.
+  - `borderless-divider-b` — Border style/width/color.
 - **Dark mode variants:**
   - `dark:bg-slate-900/50` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-slate-800` — Variant prefix (responsive, dark, or interaction state).
   - `dark:bg-slate-950/30` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
   - `overview` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `requests` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `reviews` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/BuyerProfile.jsx:213`
+#### `src/pages/BuyerProfile.jsx:340`
 
 ```jsx
-            <div className="relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 border-b border-slate-200/60 dark:border-transparent dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
+            <div className="relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 borderless-divider-b dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
               {['overview', 'requests', 'reviews'].map((tab) => (
                 <button
                   key={tab}
 ```
 **Raw class strings detected (best effort):**
 
-- `relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 border-b border-slate-200/60 dark:border-transparent dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]`
+- `relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 borderless-divider-b dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]`
 - `overview`
 - `requests`
 - `reviews`
@@ -1128,21 +1902,19 @@
 - **Color / surface:**
   - `bg-white/60` — Background color/surface.
 - **Borders / rings / shadows:**
-  - `border-b` — Border style/width/color.
-  - `border-slate-200/60` — Border style/width/color.
+  - `borderless-divider-b` — Border style/width/color.
 - **Dark mode variants:**
   - `dark:bg-slate-950/30` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
   - `overview` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `requests` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `reviews` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/BuyerProfile.jsx:219`
+#### `src/pages/BuyerProfile.jsx:346`
 
 ```jsx
-                  className={`relative rounded-full px-3 py-2 text-xs font-semibold transition ring-1 active:scale-95 ${
+                  className={`relative rounded-full px-3 py-2 text-xs font-semibold transition ring-1 active:scale-95${
                     activeTab === tab
                       ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
                       : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
@@ -1173,7 +1945,7 @@
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-white/8` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:228`
+#### `src/pages/BuyerProfile.jsx:355`
 
 ```jsx
                       className="absolute inset-0 rounded-full bg-indigo-500/10 dark:bg-white/10"
@@ -1200,7 +1972,7 @@
 - **Other:**
   - `spring` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/BuyerProfile.jsx:237`
+#### `src/pages/BuyerProfile.jsx:364`
 
 ```jsx
             <div className="p-4">
@@ -1222,7 +1994,7 @@
 - **Other:**
   - `overview` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/BuyerProfile.jsx:239`
+#### `src/pages/BuyerProfile.jsx:366`
 
 ```jsx
                 <div className="space-y-4">
@@ -1252,7 +2024,7 @@
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:241`
+#### `src/pages/BuyerProfile.jsx:368`
 
 ```jsx
                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100">About</p>
@@ -1280,49 +2052,423 @@
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:242`
+#### `src/pages/BuyerProfile.jsx:369`
 
 ```jsx
                     <p className="mt-2 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{user.profile?.about || 'No description added yet.'}</p>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {hasBrandKit ? (
 ```
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap`
-- `grid grid-cols-1 sm:grid-cols-2 gap-3`
 
 **Utility breakdown (grouped):**
 
 - **Layout / positioning:**
   - `whitespace-pre-wrap` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `grid` — Grid layout.
-  - `grid-cols-1` — Grid layout.
 - **Spacing:**
   - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
   - `text-sm` — Text color or text sizing.
   - `text-slate-700` — Text color or text sizing.
-- **Responsive variants:**
-  - `sm:grid-cols-2` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:245`
+#### `src/pages/BuyerProfile.jsx:373`
+
+```jsx
+                    <div className="rounded-xl bg-slate-50/70 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Brand Kit</p>
+                      <div className="mt-3 flex items-center gap-3">
+                        {brandProfile.brand_logo_url ? (
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-xl bg-slate-50/70 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `mt-3 flex items-center gap-3`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `p-4` — Padding (all sides).
+  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:374`
+
+```jsx
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Brand Kit</p>
+                      <div className="mt-3 flex items-center gap-3">
+                        {brandProfile.brand_logo_url ? (
+                          <img src={brandProfile.brand_logo_url} alt="Brand logo" className="h-12 w-12 rounded-xl object-cover" />
+```
+**Raw class strings detected (best effort):**
+
+- `text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `mt-3 flex items-center gap-3`
+- `h-12 w-12 rounded-xl object-cover`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `h-12` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-12` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `object-cover` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:375`
+
+```jsx
+                      <div className="mt-3 flex items-center gap-3">
+                        {brandProfile.brand_logo_url ? (
+                          <img src={brandProfile.brand_logo_url} alt="Brand logo" className="h-12 w-12 rounded-xl object-cover" />
+                        ) : (
+```
+**Raw class strings detected (best effort):**
+
+- `mt-3 flex items-center gap-3`
+- `h-12 w-12 rounded-xl object-cover`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `h-12` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-12` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+- **Other:**
+  - `object-cover` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:377`
+
+```jsx
+                          <img src={brandProfile.brand_logo_url} alt="Brand logo" className="h-12 w-12 rounded-xl object-cover" />
+                        ) : (
+                          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
+                        )}
+```
+**Raw class strings detected (best effort):**
+
+- `h-12 w-12 rounded-xl object-cover`
+- `h-12 w-12 rounded-xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `h-12` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-12` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `bg-gradient-to-br` — Background color/surface.
+  - `from-[#0A66C2]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `to-[#2E8BFF]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+- **Other:**
+  - `object-cover` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:379`
+
+```jsx
+                          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
+                        )}
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+```
+**Raw class strings detected (best effort):**
+
+- `h-12 w-12 rounded-xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]`
+- `min-w-0`
+- `text-sm font-semibold text-slate-900 dark:text-slate-100 truncate`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `h-12` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-12` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `min-w-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-gradient-to-br` — Background color/surface.
+  - `from-[#0A66C2]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `to-[#2E8BFF]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:381`
+
+```jsx
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+                            {brandProfile.brand_name || user.name}
+                          </div>
+```
+**Raw class strings detected (best effort):**
+
+- `min-w-0`
+- `text-sm font-semibold text-slate-900 dark:text-slate-100 truncate`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `min-w-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:382`
+
+```jsx
+                          <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+                            {brandProfile.brand_name || user.name}
+                          </div>
+                          {brandProfile.brand_tagline ? (
+```
+**Raw class strings detected (best effort):**
+
+- `text-sm font-semibold text-slate-900 dark:text-slate-100 truncate`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:386`
+
+```jsx
+                            <div className="text-xs text-slate-600 dark:text-slate-300">{brandProfile.brand_tagline}</div>
+                          ) : null}
+                          {brandProfile.brand_website ? (
+                            <div className="text-xs text-slate-500 dark:text-slate-400 truncate">{brandProfile.brand_website}</div>
+```
+**Raw class strings detected (best effort):**
+
+- `text-xs text-slate-600 dark:text-slate-300`
+- `text-xs text-slate-500 dark:text-slate-400 truncate`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-600` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:389`
+
+```jsx
+                            <div className="text-xs text-slate-500 dark:text-slate-400 truncate">{brandProfile.brand_website}</div>
+                          ) : null}
+                        </div>
+                      </div>
+```
+**Raw class strings detected (best effort):**
+
+- `text-xs text-slate-500 dark:text-slate-400 truncate`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:397`
+
+```jsx
+                    <div className="rounded-xl bg-slate-50/70 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Dedicated Account Manager</p>
+                      <div className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                        {brandProfile.account_manager_name || 'Assigned manager'}
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-xl bg-slate-50/70 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `mt-2 text-sm text-slate-700 dark:text-slate-300`
+- `Assigned manager`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-4` — Padding (all sides).
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-700` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `Assigned` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `manager` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:398`
+
+```jsx
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Dedicated Account Manager</p>
+                      <div className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                        {brandProfile.account_manager_name || 'Assigned manager'}
+                      </div>
+```
+**Raw class strings detected (best effort):**
+
+- `text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `mt-2 text-sm text-slate-700 dark:text-slate-300`
+- `Assigned manager`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-700` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `Assigned` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `manager` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:399`
+
+```jsx
+                      <div className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                        {brandProfile.account_manager_name || 'Assigned manager'}
+                      </div>
+                      <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+```
+**Raw class strings detected (best effort):**
+
+- `mt-2 text-sm text-slate-700 dark:text-slate-300`
+- `Assigned manager`
+- `mt-1 text-xs text-slate-500 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `text-slate-700` — Text color or text sizing.
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `Assigned` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `manager` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:402`
+
+```jsx
+                      <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        {brandProfile.account_manager_email || brandProfile.account_manager_phone || ''}
+                      </div>
+                    </div>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-1 text-xs text-slate-500 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:408`
 
 ```jsx
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">Country</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.country || '—'}</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Country</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.country || '--'}</p>
 ```
 **Raw class strings detected (best effort):**
 
 - `grid grid-cols-1 sm:grid-cols-2 gap-3`
 - `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
-- `text-[11px] text-slate-500 dark:text-slate-400`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
 - `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
 
 **Utility breakdown (grouped):**
@@ -1335,9 +2481,11 @@
   - `p-3` — Padding (all sides).
   - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-500` — Text color or text sizing.
   - `text-sm` — Text color or text sizing.
-  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
 - **Color / surface:**
   - `bg-slate-50/70` — Background color/surface.
@@ -1354,18 +2502,18 @@
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:246`
+#### `src/pages/BuyerProfile.jsx:409`
 
 ```jsx
                     <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">Country</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.country || '—'}</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Country</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.country || '--'}</p>
                     </div>
 ```
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
-- `text-[11px] text-slate-500 dark:text-slate-400`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
 - `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
 
 **Utility breakdown (grouped):**
@@ -1374,9 +2522,11 @@
   - `p-3` — Padding (all sides).
   - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-500` — Text color or text sizing.
   - `text-sm` — Text color or text sizing.
-  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
 - **Color / surface:**
   - `bg-slate-50/70` — Background color/surface.
@@ -1391,17 +2541,17 @@
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:247`
+#### `src/pages/BuyerProfile.jsx:410`
 
 ```jsx
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">Country</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.country || '—'}</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Country</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.country || '--'}</p>
                     </div>
                     <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
 ```
 **Raw class strings detected (best effort):**
 
-- `text-[11px] text-slate-500 dark:text-slate-400`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
 - `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
 - `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
 
@@ -1411,9 +2561,11 @@
   - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `p-3` — Padding (all sides).
 - **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-500` — Text color or text sizing.
   - `text-sm` — Text color or text sizing.
-  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
 - **Color / surface:**
   - `text-[11px]` — Text color or text sizing.
@@ -1428,19 +2580,19 @@
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:248`
+#### `src/pages/BuyerProfile.jsx:411`
 
 ```jsx
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.country || '—'}</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.country || '--'}</p>
                     </div>
                     <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">Certifications (declared)</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Certifications</p>
 ```
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
 - `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
-- `text-[11px] text-slate-500 dark:text-slate-400`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
 
 **Utility breakdown (grouped):**
 
@@ -1451,6 +2603,8 @@
   - `text-sm` — Text color or text sizing.
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-500` — Text color or text sizing.
 - **Color / surface:**
   - `bg-slate-50/70` — Background color/surface.
@@ -1465,18 +2619,18 @@
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:250`
+#### `src/pages/BuyerProfile.jsx:413`
 
 ```jsx
                     <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">Certifications (declared)</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{(user.profile?.certifications || []).join(', ') || '—'}</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Certifications</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{(user.profile?.certifications || []).join(', ') || '--'}</p>
                     </div>
 ```
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
-- `text-[11px] text-slate-500 dark:text-slate-400`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
 - `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
 
 **Utility breakdown (grouped):**
@@ -1485,9 +2639,11 @@
   - `p-3` — Padding (all sides).
   - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-500` — Text color or text sizing.
   - `text-sm` — Text color or text sizing.
-  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
 - **Color / surface:**
   - `bg-slate-50/70` — Background color/surface.
@@ -1502,17 +2658,251 @@
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:251`
+#### `src/pages/BuyerProfile.jsx:414`
 
 ```jsx
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">Certifications (declared)</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{(user.profile?.certifications || []).join(', ') || '—'}</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Certifications</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{(user.profile?.certifications || []).join(', ') || '--'}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+  - `bg-slate-50/70` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:415`
+
+```jsx
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{(user.profile?.certifications || []).join(', ') || '--'}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Active Since</p>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-500` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:417`
+
+```jsx
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Active Since</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.active_since || new Date().getFullYear()}</p>
+                    </div>
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-3` — Padding (all sides).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:418`
+
+```jsx
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Active Since</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.active_since || new Date().getFullYear()}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+  - `bg-slate-50/70` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:419`
+
+```jsx
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.active_since || new Date().getFullYear()}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Role</p>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-500` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:421`
+
+```jsx
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Role</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">Buyer</p>
+                    </div>
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-3` — Padding (all sides).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:422`
+
+```jsx
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Role</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">Buyer</p>
                     </div>
                   </div>
 ```
 **Raw class strings detected (best effort):**
 
-- `text-[11px] text-slate-500 dark:text-slate-400`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
 - `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
 
 **Utility breakdown (grouped):**
@@ -1520,9 +2910,11 @@
 - **Spacing:**
   - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-500` — Text color or text sizing.
   - `text-sm` — Text color or text sizing.
-  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
 - **Color / surface:**
   - `text-[11px]` — Text color or text sizing.
@@ -1530,13 +2922,13 @@
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:252`
+#### `src/pages/BuyerProfile.jsx:423`
 
 ```jsx
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{(user.profile?.certifications || []).join(', ') || '—'}</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">Buyer</p>
                     </div>
                   </div>
-                </div>
+
 ```
 **Raw class strings detected (best effort):**
 
@@ -1553,50 +2945,289 @@
 - **Dark mode variants:**
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:259`
+#### `src/pages/BuyerProfile.jsx:429`
+
+```jsx
+                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-3">Companies Worked With</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {(user.profile?.companies_worked_with || []).map((company, idx) => (
+                          <div key={idx} className="flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+```
+**Raw class strings detected (best effort):**
+
+- `text-sm font-bold text-slate-900 dark:text-slate-100 mb-3`
+- `grid grid-cols-1 sm:grid-cols-2 gap-3`
+- `flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `grid` — Grid layout.
+  - `grid-cols-1` — Grid layout.
+  - `flex` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mb-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Responsive variants:**
+  - `sm:grid-cols-2` — Variant prefix (responsive, dark, or interaction state).
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:430`
+
+```jsx
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {(user.profile?.companies_worked_with || []).map((company, idx) => (
+                          <div key={idx} className="flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                            {company.logo ? (
+```
+**Raw class strings detected (best effort):**
+
+- `grid grid-cols-1 sm:grid-cols-2 gap-3`
+- `flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `grid` — Grid layout.
+  - `grid-cols-1` — Grid layout.
+  - `flex` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Responsive variants:**
+  - `sm:grid-cols-2` — Variant prefix (responsive, dark, or interaction state).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:432`
+
+```jsx
+                          <div key={idx} className="flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                            {company.logo ? (
+                              <img src={company.logo} alt={company.name} className="h-10 w-10 rounded-lg object-cover" />
+                            ) : (
+```
+**Raw class strings detected (best effort):**
+
+- `flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `h-10 w-10 rounded-lg object-cover`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `h-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+  - `rounded-lg` — Corner radius.
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `object-cover` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:434`
+
+```jsx
+                              <img src={company.logo} alt={company.name} className="h-10 w-10 rounded-lg object-cover" />
+                            ) : (
+                              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500" />
+                            )}
+```
+**Raw class strings detected (best effort):**
+
+- `h-10 w-10 rounded-lg object-cover`
+- `h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `h-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `bg-gradient-to-br` — Background color/surface.
+  - `from-indigo-500` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `to-purple-500` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Borders / rings / shadows:**
+  - `rounded-lg` — Corner radius.
+- **Other:**
+  - `object-cover` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:436`
+
+```jsx
+                              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500" />
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{company.name}</p>
+```
+**Raw class strings detected (best effort):**
+
+- `h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500`
+- `min-w-0 flex-1`
+- `text-sm font-semibold text-slate-900 dark:text-slate-100 truncate`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `h-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `min-w-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `flex-1` — Flex layout.
+  - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-gradient-to-br` — Background color/surface.
+  - `from-indigo-500` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `to-purple-500` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Borders / rings / shadows:**
+  - `rounded-lg` — Corner radius.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:438`
+
+```jsx
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{company.name}</p>
+                              {company.location && <p className="text-xs text-slate-500 dark:text-slate-400">{company.location}</p>}
+                            </div>
+```
+**Raw class strings detected (best effort):**
+
+- `min-w-0 flex-1`
+- `text-sm font-semibold text-slate-900 dark:text-slate-100 truncate`
+- `text-xs text-slate-500 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `min-w-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `flex-1` — Flex layout.
+  - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:439`
+
+```jsx
+                              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{company.name}</p>
+                              {company.location && <p className="text-xs text-slate-500 dark:text-slate-400">{company.location}</p>}
+                            </div>
+                          </div>
+```
+**Raw class strings detected (best effort):**
+
+- `text-sm font-semibold text-slate-900 dark:text-slate-100 truncate`
+- `text-xs text-slate-500 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:440`
+
+```jsx
+                              {company.location && <p className="text-xs text-slate-500 dark:text-slate-400">{company.location}</p>}
+                            </div>
+                          </div>
+                        ))}
+```
+**Raw class strings detected (best effort):**
+
+- `text-xs text-slate-500 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:451`
 
 ```jsx
                 <div className="space-y-3">
-                  {requests.map((r) => (
-                    <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4">
-                      <div className="flex items-start justify-between gap-3">
+                  {viewerPerms.is_self || viewerPerms.is_admin ? (
+                    <>
+                      {requests.map((r) => (
 ```
 **Raw class strings detected (best effort):**
 
 - `space-y-3`
-- `rounded-2xl border border-slate-200 bg-white p-4`
-- `flex items-start justify-between gap-3`
 
 **Utility breakdown (grouped):**
 
-- **Layout / positioning:**
-  - `flex` — Flex layout.
-  - `items-start` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `justify-between` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Spacing:**
   - `space-y-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `p-4` — Padding (all sides).
-  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Color / surface:**
-  - `bg-white` — Background color/surface.
-- **Borders / rings / shadows:**
-  - `rounded-2xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
 
-#### `src/pages/BuyerProfile.jsx:261`
+#### `src/pages/BuyerProfile.jsx:455`
 
 ```jsx
-                    <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-bold text-slate-900">{r.category || 'Request'}</p>
+                        <div key={r.id} className="rounded-2xl borderless-shadow bg-white p-4 dark:bg-slate-900/50">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1">
+                              <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{r.category || 'Request'}</p>
 ```
 **Raw class strings detected (best effort):**
 
-- `rounded-2xl border border-slate-200 bg-white p-4`
+- `rounded-2xl borderless-shadow bg-white p-4 dark:bg-slate-900/50`
 - `flex items-start justify-between gap-3`
-- `text-sm font-bold text-slate-900`
+- `flex-1`
+- `text-sm font-bold text-slate-900 dark:text-slate-100`
 
 **Utility breakdown (grouped):**
 
@@ -1604,6 +3235,7 @@
   - `flex` — Flex layout.
   - `items-start` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `justify-between` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `flex-1` — Flex layout.
 - **Spacing:**
   - `p-4` — Padding (all sides).
   - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
@@ -1615,22 +3247,25 @@
   - `bg-white` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
+- **Dark mode variants:**
+  - `dark:bg-slate-900/50` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:262`
+#### `src/pages/BuyerProfile.jsx:456`
 
 ```jsx
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-bold text-slate-900">{r.category || 'Request'}</p>
-                          <p className="mt-1 text-sm text-slate-700 whitespace-pre-wrap">{r.custom_description || ''}</p>
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1">
+                              <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{r.category || 'Request'}</p>
+                              <p className="mt-1 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{r.custom_description || ''}</p>
 ```
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-3`
-- `text-sm font-bold text-slate-900`
-- `mt-1 text-sm text-slate-700 whitespace-pre-wrap`
+- `flex-1`
+- `text-sm font-bold text-slate-900 dark:text-slate-100`
+- `mt-1 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap`
 
 **Utility breakdown (grouped):**
 
@@ -1638,6 +3273,7 @@
   - `flex` — Flex layout.
   - `items-start` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `justify-between` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `flex-1` — Flex layout.
   - `whitespace-pre-wrap` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Spacing:**
   - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
@@ -1647,21 +3283,62 @@
   - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
   - `text-slate-700` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:264`
+#### `src/pages/BuyerProfile.jsx:457`
 
 ```jsx
-                          <p className="text-sm font-bold text-slate-900">{r.category || 'Request'}</p>
-                          <p className="mt-1 text-sm text-slate-700 whitespace-pre-wrap">{r.custom_description || ''}</p>
-                          <div className="mt-2 text-xs text-slate-600 grid grid-cols-2 gap-2">
-                            <div>Quantity: <span className="font-semibold text-slate-800">{r.quantity || '-'}</span></div>
+                            <div className="flex-1">
+                              <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{r.category || 'Request'}</p>
+                              <p className="mt-1 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{r.custom_description || ''}</p>
+                              <div className="mt-2 text-xs text-slate-600 dark:text-slate-400 grid grid-cols-2 gap-2">
 ```
 **Raw class strings detected (best effort):**
 
-- `text-sm font-bold text-slate-900`
-- `mt-1 text-sm text-slate-700 whitespace-pre-wrap`
-- `mt-2 text-xs text-slate-600 grid grid-cols-2 gap-2`
-- `font-semibold text-slate-800`
+- `flex-1`
+- `text-sm font-bold text-slate-900 dark:text-slate-100`
+- `mt-1 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap`
+- `mt-2 text-xs text-slate-600 dark:text-slate-400 grid grid-cols-2 gap-2`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex-1` — Flex layout.
+  - `whitespace-pre-wrap` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `grid` — Grid layout.
+  - `grid-cols-2` — Grid layout.
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-700` — Text color or text sizing.
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-600` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:458`
+
+```jsx
+                              <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{r.category || 'Request'}</p>
+                              <p className="mt-1 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{r.custom_description || ''}</p>
+                              <div className="mt-2 text-xs text-slate-600 dark:text-slate-400 grid grid-cols-2 gap-2">
+                                <div>Quantity: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.quantity || '-'}</span></div>
+```
+**Raw class strings detected (best effort):**
+
+- `text-sm font-bold text-slate-900 dark:text-slate-100`
+- `mt-1 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap`
+- `mt-2 text-xs text-slate-600 dark:text-slate-400 grid grid-cols-2 gap-2`
+- `font-semibold text-slate-800 dark:text-slate-200`
 
 **Utility breakdown (grouped):**
 
@@ -1682,20 +3359,25 @@
   - `text-slate-600` — Text color or text sizing.
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-800` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:265`
+#### `src/pages/BuyerProfile.jsx:459`
 
 ```jsx
-                          <p className="mt-1 text-sm text-slate-700 whitespace-pre-wrap">{r.custom_description || ''}</p>
-                          <div className="mt-2 text-xs text-slate-600 grid grid-cols-2 gap-2">
-                            <div>Quantity: <span className="font-semibold text-slate-800">{r.quantity || '-'}</span></div>
-                            <div>Timeline: <span className="font-semibold text-slate-800">{r.timeline_days || '-'}</span></div>
+                              <p className="mt-1 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{r.custom_description || ''}</p>
+                              <div className="mt-2 text-xs text-slate-600 dark:text-slate-400 grid grid-cols-2 gap-2">
+                                <div>Quantity: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.quantity || '-'}</span></div>
+                                <div>Timeline: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.timeline_days || '-'} days</span></div>
 ```
 **Raw class strings detected (best effort):**
 
-- `mt-1 text-sm text-slate-700 whitespace-pre-wrap`
-- `mt-2 text-xs text-slate-600 grid grid-cols-2 gap-2`
-- `font-semibold text-slate-800`
+- `mt-1 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap`
+- `mt-2 text-xs text-slate-600 dark:text-slate-400 grid grid-cols-2 gap-2`
+- `font-semibold text-slate-800 dark:text-slate-200`
 
 **Utility breakdown (grouped):**
 
@@ -1714,19 +3396,23 @@
   - `text-slate-600` — Text color or text sizing.
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-800` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:266`
+#### `src/pages/BuyerProfile.jsx:460`
 
 ```jsx
-                          <div className="mt-2 text-xs text-slate-600 grid grid-cols-2 gap-2">
-                            <div>Quantity: <span className="font-semibold text-slate-800">{r.quantity || '-'}</span></div>
-                            <div>Timeline: <span className="font-semibold text-slate-800">{r.timeline_days || '-'}</span></div>
-                            <div>Material: <span className="font-semibold text-slate-800">{r.material || '-'}</span></div>
+                              <div className="mt-2 text-xs text-slate-600 dark:text-slate-400 grid grid-cols-2 gap-2">
+                                <div>Quantity: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.quantity || '-'}</span></div>
+                                <div>Timeline: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.timeline_days || '-'} days</span></div>
+                                <div>Material: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.material || '-'}</span></div>
 ```
 **Raw class strings detected (best effort):**
 
-- `mt-2 text-xs text-slate-600 grid grid-cols-2 gap-2`
-- `font-semibold text-slate-800`
+- `mt-2 text-xs text-slate-600 dark:text-slate-400 grid grid-cols-2 gap-2`
+- `font-semibold text-slate-800 dark:text-slate-200`
 
 **Utility breakdown (grouped):**
 
@@ -1741,72 +3427,81 @@
   - `text-slate-600` — Text color or text sizing.
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-800` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:267`
+#### `src/pages/BuyerProfile.jsx:461`
 
 ```jsx
-                            <div>Quantity: <span className="font-semibold text-slate-800">{r.quantity || '-'}</span></div>
-                            <div>Timeline: <span className="font-semibold text-slate-800">{r.timeline_days || '-'}</span></div>
-                            <div>Material: <span className="font-semibold text-slate-800">{r.material || '-'}</span></div>
-                            <div>Status: <span className="font-semibold text-slate-800">{r.status || '-'}</span></div>
+                                <div>Quantity: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.quantity || '-'}</span></div>
+                                <div>Timeline: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.timeline_days || '-'} days</span></div>
+                                <div>Material: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.material || '-'}</span></div>
+                                <div>Status: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.status || '-'}</span></div>
 ```
 **Raw class strings detected (best effort):**
 
-- `font-semibold text-slate-800`
+- `font-semibold text-slate-800 dark:text-slate-200`
 
 **Utility breakdown (grouped):**
 
 - **Typography:**
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-800` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:268`
+#### `src/pages/BuyerProfile.jsx:462`
 
 ```jsx
-                            <div>Timeline: <span className="font-semibold text-slate-800">{r.timeline_days || '-'}</span></div>
-                            <div>Material: <span className="font-semibold text-slate-800">{r.material || '-'}</span></div>
-                            <div>Status: <span className="font-semibold text-slate-800">{r.status || '-'}</span></div>
-                          </div>
+                                <div>Timeline: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.timeline_days || '-'} days</span></div>
+                                <div>Material: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.material || '-'}</span></div>
+                                <div>Status: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.status || '-'}</span></div>
+                              </div>
 ```
 **Raw class strings detected (best effort):**
 
-- `font-semibold text-slate-800`
+- `font-semibold text-slate-800 dark:text-slate-200`
 
 **Utility breakdown (grouped):**
 
 - **Typography:**
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-800` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:269`
+#### `src/pages/BuyerProfile.jsx:463`
 
 ```jsx
-                            <div>Material: <span className="font-semibold text-slate-800">{r.material || '-'}</span></div>
-                            <div>Status: <span className="font-semibold text-slate-800">{r.status || '-'}</span></div>
-                          </div>
-                        </div>
+                                <div>Material: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.material || '-'}</span></div>
+                                <div>Status: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.status || '-'}</span></div>
+                              </div>
+                            </div>
 ```
 **Raw class strings detected (best effort):**
 
-- `font-semibold text-slate-800`
+- `font-semibold text-slate-800 dark:text-slate-200`
 
 **Utility breakdown (grouped):**
 
 - **Typography:**
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-800` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:270`
+#### `src/pages/BuyerProfile.jsx:464`
 
 ```jsx
-                            <div>Status: <span className="font-semibold text-slate-800">{r.status || '-'}</span></div>
-                          </div>
-                        </div>
-                        <div className="shrink-0">
+                                <div>Status: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.status || '-'}</span></div>
+                              </div>
+                            </div>
+                            <div className="shrink-0">
 ```
 **Raw class strings detected (best effort):**
 
-- `font-semibold text-slate-800`
+- `font-semibold text-slate-800 dark:text-slate-200`
 - `shrink-0`
 
 **Utility breakdown (grouped):**
@@ -1814,21 +3509,23 @@
 - **Typography:**
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-800` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
   - `shrink-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/BuyerProfile.jsx:273`
+#### `src/pages/BuyerProfile.jsx:467`
 
 ```jsx
-                        <div className="shrink-0">
-                          <button onClick={contact} className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182]">Contact</button>
-                        </div>
-                      </div>
+                            <div className="shrink-0">
+                              <button onClick={contact} className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] transition">Contact</button>
+                            </div>
+                          </div>
 ```
 **Raw class strings detected (best effort):**
 
 - `shrink-0`
-- `rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182]`
+- `rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] transition`
 
 **Utility breakdown (grouped):**
 
@@ -1845,20 +3542,21 @@
   - `rounded-full` — Corner radius.
 - **Interaction / motion:**
   - `hover:bg-[#004182]` — Variant prefix (responsive, dark, or interaction state).
+  - `transition` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Other:**
   - `shrink-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/BuyerProfile.jsx:274`
+#### `src/pages/BuyerProfile.jsx:468`
 
 ```jsx
-                          <button onClick={contact} className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182]">Contact</button>
+                              <button onClick={contact} className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] transition">Contact</button>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
 ```
 **Raw class strings detected (best effort):**
 
-- `rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182]`
+- `rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] transition`
 
 **Utility breakdown (grouped):**
 
@@ -1875,14 +3573,15 @@
   - `rounded-full` — Corner radius.
 - **Interaction / motion:**
   - `hover:bg-[#004182]` — Variant prefix (responsive, dark, or interaction state).
+  - `transition` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/BuyerProfile.jsx:280`
+#### `src/pages/BuyerProfile.jsx:473`
 
 ```jsx
-                  {loadingRequests ? <div className="text-sm text-slate-600 dark:text-slate-300">Loading…</div> : null}
-                  {requestsNext !== null && !loadingRequests ? (
-                    <button
-                      type="button"
+                      {loadingRequests ? <div className="text-sm text-slate-600 dark:text-slate-300">Loading...</div> : null}
+                      {requestsNext !== null && !loadingRequests ? (
+                        <button
+                          type="button"
 ```
 **Raw class strings detected (best effort):**
 
@@ -1899,13 +3598,13 @@
 - **Other:**
   - `button` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/BuyerProfile.jsx:285`
+#### `src/pages/BuyerProfile.jsx:478`
 
 ```jsx
-                      className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
-                    >
-                      Load more
-                    </button>
+                          className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
+                        >
+                          Load more
+                        </button>
 ```
 **Raw class strings detected (best effort):**
 
@@ -1936,27 +3635,148 @@
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-white/8` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:290`
+#### `src/pages/BuyerProfile.jsx:483`
 
 ```jsx
-                  {!requests.length && !loadingRequests ? <div className="text-sm text-slate-600 dark:text-slate-300">No requests found.</div> : null}
-                </div>
-              ) : null}
-
+                      {!requests.length && !loadingRequests ? <div className="text-sm text-slate-600 dark:text-slate-300">No requests found.</div> : null}
+                    </>
+                  ) : (
+                    <div className="rounded-xl bg-amber-50 p-4 text-sm text-amber-800 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
 ```
 **Raw class strings detected (best effort):**
 
 - `text-sm text-slate-600 dark:text-slate-300`
+- `rounded-xl bg-amber-50 p-4 text-sm text-amber-800 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30`
 
 **Utility breakdown (grouped):**
 
+- **Spacing:**
+  - `p-4` — Padding (all sides).
 - **Typography:**
   - `text-sm` — Text color or text sizing.
   - `text-slate-600` — Text color or text sizing.
+  - `text-amber-800` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-amber-50` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-amber-200` — Outline ring (often used instead of borders in dark mode).
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:bg-amber-500/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-amber-200` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-amber-500/30` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:295`
+#### `src/pages/BuyerProfile.jsx:486`
+
+```jsx
+                    <div className="rounded-xl bg-amber-50 p-4 text-sm text-amber-800 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
+                      <p className="font-semibold">Request details are private</p>
+                      <p className="mt-2">Only the buyer can view detailed request information to protect business privacy.</p>
+                      <p className="mt-3 text-xs">Total requests posted: <span className="font-bold">{profile?.counts?.requests || 0}</span></p>
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-xl bg-amber-50 p-4 text-sm text-amber-800 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30`
+- `font-semibold`
+- `mt-2`
+- `mt-3 text-xs`
+- `font-bold`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-4` — Padding (all sides).
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `text-amber-800` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-xs` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `bg-amber-50` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-amber-200` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-amber-500/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-amber-200` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-amber-500/30` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:487`
+
+```jsx
+                      <p className="font-semibold">Request details are private</p>
+                      <p className="mt-2">Only the buyer can view detailed request information to protect business privacy.</p>
+                      <p className="mt-3 text-xs">Total requests posted: <span className="font-bold">{profile?.counts?.requests || 0}</span></p>
+                    </div>
+```
+**Raw class strings detected (best effort):**
+
+- `font-semibold`
+- `mt-2`
+- `mt-3 text-xs`
+- `font-bold`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-xs` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:488`
+
+```jsx
+                      <p className="mt-2">Only the buyer can view detailed request information to protect business privacy.</p>
+                      <p className="mt-3 text-xs">Total requests posted: <span className="font-bold">{profile?.counts?.requests || 0}</span></p>
+                    </div>
+                  )}
+```
+**Raw class strings detected (best effort):**
+
+- `mt-2`
+- `mt-3 text-xs`
+- `font-bold`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:489`
+
+```jsx
+                      <p className="mt-3 text-xs">Total requests posted: <span className="font-bold">{profile?.counts?.requests || 0}</span></p>
+                    </div>
+                  )}
+                </div>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-3 text-xs`
+- `font-bold`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:496`
 
 ```jsx
                 <div className="space-y-3">
@@ -1994,13 +3814,13 @@
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:296`
+#### `src/pages/BuyerProfile.jsx:497`
 
 ```jsx
                   <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Rating summary</p>
                     <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
-                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 • {ratingSummary?.aggregate?.total_count ?? 0} reviews • {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
+                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 - {ratingSummary?.aggregate?.total_count ?? 0} reviews - {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
 ```
 **Raw class strings detected (best effort):**
 
@@ -2035,12 +3855,12 @@
   - `0.0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `low` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/BuyerProfile.jsx:297`
+#### `src/pages/BuyerProfile.jsx:498`
 
 ```jsx
                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Rating summary</p>
                     <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
-                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 • {ratingSummary?.aggregate?.total_count ?? 0} reviews • {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
+                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 - {ratingSummary?.aggregate?.total_count ?? 0} reviews - {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
                     </p>
 ```
 **Raw class strings detected (best effort):**
@@ -2066,11 +3886,11 @@
   - `0.0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `low` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/BuyerProfile.jsx:298`
+#### `src/pages/BuyerProfile.jsx:499`
 
 ```jsx
                     <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
-                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 • {ratingSummary?.aggregate?.total_count ?? 0} reviews • {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
+                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 - {ratingSummary?.aggregate?.total_count ?? 0} reviews - {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
                     </p>
                   </div>
 ```
@@ -2093,30 +3913,106 @@
   - `0.0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `low` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/BuyerProfile.jsx:303`
+#### `src/pages/BuyerProfile.jsx:503`
 
 ```jsx
-                    <div key={r.id} className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-950/30 dark:ring-white/10">
-                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{r.score}★</p>
-                      <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{r.comment || 'No comment provided.'}</p>
-                    </div>
+                  <div className="rounded-xl bg-indigo-50 p-3 text-xs text-indigo-800 ring-1 ring-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/30">
+                    <p className="font-semibold">Review Policy</p>
+                    <p className="mt-1">Reviews can only be edited or deleted by the person who wrote them. Profile owners cannot delete reviews to maintain transparency and trust.</p>
+                  </div>
 ```
 **Raw class strings detected (best effort):**
 
-- `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-950/30 dark:ring-white/10`
-- `text-sm font-semibold text-slate-900 dark:text-slate-100`
-- `mt-1 text-sm text-slate-700 dark:text-slate-300`
+- `rounded-xl bg-indigo-50 p-3 text-xs text-indigo-800 ring-1 ring-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/30`
+- `font-semibold`
+- `mt-1`
 
 **Utility breakdown (grouped):**
 
 - **Spacing:**
-  - `p-4` — Padding (all sides).
+  - `p-3` — Padding (all sides).
   - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `text-indigo-800` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `bg-indigo-50` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-indigo-200` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-indigo-500/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-indigo-200` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-indigo-500/30` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:504`
+
+```jsx
+                    <p className="font-semibold">Review Policy</p>
+                    <p className="mt-1">Reviews can only be edited or deleted by the person who wrote them. Profile owners cannot delete reviews to maintain transparency and trust.</p>
+                  </div>
+                  {(ratingSummary?.recent_reviews || []).map((r) => {
+```
+**Raw class strings detected (best effort):**
+
+- `font-semibold`
+- `mt-1`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:505`
+
+```jsx
+                    <p className="mt-1">Reviews can only be edited or deleted by the person who wrote them. Profile owners cannot delete reviews to maintain transparency and trust.</p>
+                  </div>
+                  {(ratingSummary?.recent_reviews || []).map((r) => {
+                    const canEdit = currentUser?.id && String(currentUser.id) === String(r.from_user_id || '')
+```
+**Raw class strings detected (best effort):**
+
+- `mt-1`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:510`
+
+```jsx
+                      <div key={r.id} className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-950/30 dark:ring-white/10">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{r.score}* -- {r.reviewer_name || 'Anonymous'}</p>
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-950/30 dark:ring-white/10`
+- `flex items-start justify-between gap-3`
+- `flex-1`
+- `text-sm font-semibold text-slate-900 dark:text-slate-100`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `items-start` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `justify-between` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `flex-1` — Flex layout.
+- **Spacing:**
+  - `p-4` — Padding (all sides).
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
   - `text-sm` — Text color or text sizing.
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
-  - `text-slate-700` — Text color or text sizing.
 - **Color / surface:**
   - `bg-[#ffffff]` — Background color/surface.
 - **Borders / rings / shadows:**
@@ -2128,24 +4024,31 @@
   - `dark:bg-slate-950/30` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:304`
+#### `src/pages/BuyerProfile.jsx:511`
 
 ```jsx
-                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{r.score}★</p>
-                      <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{r.comment || 'No comment provided.'}</p>
-                    </div>
-                  ))}
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{r.score}* -- {r.reviewer_name || 'Anonymous'}</p>
+                            <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{r.comment || 'No comment provided.'}</p>
 ```
 **Raw class strings detected (best effort):**
 
+- `flex items-start justify-between gap-3`
+- `flex-1`
 - `text-sm font-semibold text-slate-900 dark:text-slate-100`
 - `mt-1 text-sm text-slate-700 dark:text-slate-300`
 
 **Utility breakdown (grouped):**
 
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `items-start` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `justify-between` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `flex-1` — Flex layout.
 - **Spacing:**
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
   - `text-sm` — Text color or text sizing.
@@ -2156,31 +4059,230 @@
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:305`
+#### `src/pages/BuyerProfile.jsx:512`
 
 ```jsx
-                      <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{r.comment || 'No comment provided.'}</p>
-                    </div>
-                  ))}
-                  {!ratingSummary?.recent_reviews?.length ? <div className="text-sm text-slate-600 dark:text-slate-300">No reviews yet.</div> : null}
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{r.score}* -- {r.reviewer_name || 'Anonymous'}</p>
+                            <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{r.comment || 'No comment provided.'}</p>
+                            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{r.created_at ? new Date(r.created_at).toLocaleDateString() : ''}</p>
 ```
 **Raw class strings detected (best effort):**
 
+- `flex-1`
+- `text-sm font-semibold text-slate-900 dark:text-slate-100`
 - `mt-1 text-sm text-slate-700 dark:text-slate-300`
-- `text-sm text-slate-600 dark:text-slate-300`
+- `mt-2 text-xs text-slate-500 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex-1` — Flex layout.
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-700` — Text color or text sizing.
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:513`
+
+```jsx
+                            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{r.score}* -- {r.reviewer_name || 'Anonymous'}</p>
+                            <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{r.comment || 'No comment provided.'}</p>
+                            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{r.created_at ? new Date(r.created_at).toLocaleDateString() : ''}</p>
+                          </div>
+```
+**Raw class strings detected (best effort):**
+
+- `text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `mt-1 text-sm text-slate-700 dark:text-slate-300`
+- `mt-2 text-xs text-slate-500 dark:text-slate-400`
 
 **Utility breakdown (grouped):**
 
 - **Spacing:**
   - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-700` — Text color or text sizing.
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:514`
+
+```jsx
+                            <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{r.comment || 'No comment provided.'}</p>
+                            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{r.created_at ? new Date(r.created_at).toLocaleDateString() : ''}</p>
+                          </div>
+                          {canEdit ? (
+```
+**Raw class strings detected (best effort):**
+
+- `mt-1 text-sm text-slate-700 dark:text-slate-300`
+- `mt-2 text-xs text-slate-500 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
   - `text-sm` — Text color or text sizing.
   - `text-slate-700` — Text color or text sizing.
-  - `text-slate-600` — Text color or text sizing.
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/BuyerProfile.jsx:308`
+#### `src/pages/BuyerProfile.jsx:515`
+
+```jsx
+                            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{r.created_at ? new Date(r.created_at).toLocaleDateString() : ''}</p>
+                          </div>
+                          {canEdit ? (
+                            <div className="flex flex-col gap-2">
+```
+**Raw class strings detected (best effort):**
+
+- `mt-2 text-xs text-slate-500 dark:text-slate-400`
+- `flex flex-col gap-2`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `flex-col` — Flex layout.
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/BuyerProfile.jsx:518`
+
+```jsx
+                            <div className="flex flex-col gap-2">
+                              <button
+                                type="button"
+                                className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50"
+```
+**Raw class strings detected (best effort):**
+
+- `flex flex-col gap-2`
+- `button`
+- `rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `flex-col` — Flex layout.
+- **Spacing:**
+  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `px-3` — Horizontal padding (left/right).
+  - `py-1` — Vertical padding (top/bottom).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-600` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-full` — Corner radius.
+  - `borderless-shadow` — Border style/width/color.
+- **Interaction / motion:**
+  - `hover:bg-slate-50` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `button` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:521`
+
+```jsx
+                                className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50"
+                                onClick={async () => {
+                                  const score = window.prompt('Update rating (1-5)', String(r.score || '5'))
+                                  if (!score) return
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50`
+- `Update rating (1-5)`
+- `5`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `px-3` — Horizontal padding (left/right).
+  - `py-1` — Vertical padding (top/bottom).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-600` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-full` — Corner radius.
+  - `borderless-shadow` — Border style/width/color.
+- **Interaction / motion:**
+  - `hover:bg-slate-50` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `Update` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `rating` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `(1-5)` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `5` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:538`
+
+```jsx
+                                className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-50"
+                                onClick={async () => {
+                                  if (!window.confirm('Delete this review?')) return
+                                  try {
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-50`
+- `Delete this review?`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `px-3` — Horizontal padding (left/right).
+  - `py-1` — Vertical padding (top/bottom).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-rose-600` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-full` — Corner radius.
+  - `borderless-shadow` — Border style/width/color.
+- **Interaction / motion:**
+  - `hover:bg-rose-50` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `Delete` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `this` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `review?` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/BuyerProfile.jsx:557`
 
 ```jsx
                   {!ratingSummary?.recent_reviews?.length ? <div className="text-sm text-slate-600 dark:text-slate-300">No reviews yet.</div> : null}
@@ -2204,31 +4306,47 @@
 
 > This list is generated by heuristics. It includes hard-coded UI strings and key element anchors. For absolute truth, use the source snapshot.
 
-- `src/pages/BuyerProfile.jsx:168` — Buyer
+- `src/pages/BuyerProfile.jsx:239` — Buyer
 
 ```jsx
                   <span className="uppercase">Buyer</span>
-                  {user.profile?.country ? <span>• {user.profile.country}</span> : null}
+                  {user.profile?.country ? <span>- {user.profile.country}</span> : null}
                   {user.verified ? (
                     <span className="verified-shimmer inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:from-emerald-500/12 dark:to-teal-400/10 dark:text-emerald-200 dark:ring-emerald-400/25">
 ```
-- `src/pages/BuyerProfile.jsx:169` — • {user.profile.country}
+- `src/pages/BuyerProfile.jsx:240` — - {user.profile.country}
 
 ```jsx
-                  {user.profile?.country ? <span>• {user.profile.country}</span> : null}
+                  {user.profile?.country ? <span>- {user.profile.country}</span> : null}
                   {user.verified ? (
                     <span className="verified-shimmer inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:from-emerald-500/12 dark:to-teal-400/10 dark:text-emerald-200 dark:ring-emerald-400/25">
                       Verified
 ```
-- `src/pages/BuyerProfile.jsx:180` — Contact
+- `src/pages/BuyerProfile.jsx:266` — Contact
 
 ```jsx
-              <button onClick={contact} className="flex-1 rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:text-slate-950">Contact</button>
+              <button onClick={contact} className="flex-1 rounded-full bg-[var(--gt-blue)] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95">Contact</button>
               <button onClick={follow} className="flex-1 rounded-full px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">
                 {relationship.following ? 'Following' : 'Follow'}
               </button>
 ```
-- `src/pages/BuyerProfile.jsx:191` — Rating
+- `src/pages/BuyerProfile.jsx:277` — Industry
+
+```jsx
+                <p className="text-[11px] text-slate-500">Industry</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.industry || 'Garments & Textile'}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+```
+- `src/pages/BuyerProfile.jsx:281` — Organization
+
+```jsx
+                <p className="text-[11px] text-slate-500">Organization</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.organization_name || user.profile?.organization || user.name}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+```
+- `src/pages/BuyerProfile.jsx:285` — Rating
 
 ```jsx
                 <p className="text-[11px] text-slate-500">Rating</p>
@@ -2236,7 +4354,23 @@
                 <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
               </div>
 ```
-- `src/pages/BuyerProfile.jsx:196` — Requests
+- `src/pages/BuyerProfile.jsx:290` — Certifications
+
+```jsx
+                <p className="text-[11px] text-slate-500">Certifications</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">
+                  {(user.profile?.certifications || []).join(', ') || '--'}
+                </p>
+```
+- `src/pages/BuyerProfile.jsx:296` — Capacity
+
+```jsx
+                <p className="text-[11px] text-slate-500">Capacity</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">
+                  {user.profile?.sourcing_capacity || user.profile?.monthly_capacity || user.profile?.annual_capacity || user.profile?.capacity || '--'}
+                </p>
+```
+- `src/pages/BuyerProfile.jsx:304` — Requests
 
 ```jsx
                 <p className="text-[11px] text-slate-500">Requests</p>
@@ -2244,15 +4378,47 @@
                 <p className="text-[11px] text-slate-600">Total posted</p>
               </div>
 ```
-- `src/pages/BuyerProfile.jsx:198` — Total posted
+- `src/pages/BuyerProfile.jsx:306` — Total posted
 
 ```jsx
                 <p className="text-[11px] text-slate-600">Total posted</p>
               </div>
+              <div className="rounded-xl bg-white/60 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                <p className="text-[11px] text-slate-500">Joined</p>
+```
+- `src/pages/BuyerProfile.jsx:309` — Joined
+
+```jsx
+                <p className="text-[11px] text-slate-500">Joined</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.created_at ? new Date(user.created_at).getFullYear() : '--'}</p>
+                <p className="text-[11px] text-slate-600">Year</p>
+              </div>
+```
+- `src/pages/BuyerProfile.jsx:311` — Year
+
+```jsx
+                <p className="text-[11px] text-slate-600">Year</p>
+              </div>
             </div>
           </motion.div>
 ```
-- `src/pages/BuyerProfile.jsx:241` — About
+- `src/pages/BuyerProfile.jsx:319` — Order Completion Certification
+
+```jsx
+              <p className="text-[11px] text-slate-500">Order Completion Certification</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">{certification.status || 'pending'}</p>
+              <p className="text-[11px] text-slate-600">Signed contracts: {certification.signed_contracts ?? 0}</p>
+            </div>
+```
+- `src/pages/BuyerProfile.jsx:321` — Signed contracts: {certification.signed_contracts ?? 0}
+
+```jsx
+              <p className="text-[11px] text-slate-600">Signed contracts: {certification.signed_contracts ?? 0}</p>
+            </div>
+          ) : null}
+        </aside>
+```
+- `src/pages/BuyerProfile.jsx:368` — About
 
 ```jsx
                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100">About</p>
@@ -2260,47 +4426,143 @@
                   </div>
 
 ```
-- `src/pages/BuyerProfile.jsx:247` — Country
+- `src/pages/BuyerProfile.jsx:374` — Brand Kit
 
 ```jsx
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">Country</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.country || '—'}</p>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Brand Kit</p>
+                      <div className="mt-3 flex items-center gap-3">
+                        {brandProfile.brand_logo_url ? (
+                          <img src={brandProfile.brand_logo_url} alt="Brand logo" className="h-12 w-12 rounded-xl object-cover" />
+```
+- `src/pages/BuyerProfile.jsx:398` — Dedicated Account Manager
+
+```jsx
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Dedicated Account Manager</p>
+                      <div className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                        {brandProfile.account_manager_name || 'Assigned manager'}
+                      </div>
+```
+- `src/pages/BuyerProfile.jsx:410` — Country
+
+```jsx
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Country</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.country || '--'}</p>
                     </div>
                     <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
 ```
-- `src/pages/BuyerProfile.jsx:251` — Certifications (declared)
+- `src/pages/BuyerProfile.jsx:414` — Certifications
 
 ```jsx
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">Certifications (declared)</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{(user.profile?.certifications || []).join(', ') || '—'}</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Certifications</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{(user.profile?.certifications || []).join(', ') || '--'}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+```
+- `src/pages/BuyerProfile.jsx:418` — Active Since
+
+```jsx
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Active Since</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.active_since || new Date().getFullYear()}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+```
+- `src/pages/BuyerProfile.jsx:422` — Role
+
+```jsx
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Role</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">Buyer</p>
                     </div>
                   </div>
 ```
-- `src/pages/BuyerProfile.jsx:274` — Contact
+- `src/pages/BuyerProfile.jsx:423` — Buyer
 
 ```jsx
-                          <button onClick={contact} className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182]">Contact</button>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">Buyer</p>
+                    </div>
+                  </div>
+
+```
+- `src/pages/BuyerProfile.jsx:429` — Companies Worked With
+
+```jsx
+                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-3">Companies Worked With</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {(user.profile?.companies_worked_with || []).map((company, idx) => (
+                          <div key={idx} className="flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+```
+- `src/pages/BuyerProfile.jsx:468` — Contact
+
+```jsx
+                              <button onClick={contact} className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] transition">Contact</button>
+                            </div>
+                          </div>
                         </div>
-                      </div>
+```
+- `src/pages/BuyerProfile.jsx:487` — Request details are private
+
+```jsx
+                      <p className="font-semibold">Request details are private</p>
+                      <p className="mt-2">Only the buyer can view detailed request information to protect business privacy.</p>
+                      <p className="mt-3 text-xs">Total requests posted: <span className="font-bold">{profile?.counts?.requests || 0}</span></p>
                     </div>
 ```
-- `src/pages/BuyerProfile.jsx:297` — Rating summary
+- `src/pages/BuyerProfile.jsx:488` — Only the buyer can view detailed request information to protect business privacy.
+
+```jsx
+                      <p className="mt-2">Only the buyer can view detailed request information to protect business privacy.</p>
+                      <p className="mt-3 text-xs">Total requests posted: <span className="font-bold">{profile?.counts?.requests || 0}</span></p>
+                    </div>
+                  )}
+```
+- `src/pages/BuyerProfile.jsx:498` — Rating summary
 
 ```jsx
                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Rating summary</p>
                     <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
-                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 • {ratingSummary?.aggregate?.total_count ?? 0} reviews • {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
+                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 - {ratingSummary?.aggregate?.total_count ?? 0} reviews - {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
                     </p>
 ```
-- `src/pages/BuyerProfile.jsx:180` — (element) <button>
+- `src/pages/BuyerProfile.jsx:504` — Review Policy
 
 ```jsx
-              <button onClick={contact} className="flex-1 rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-95 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:text-slate-950">Contact</button>
+                    <p className="font-semibold">Review Policy</p>
+                    <p className="mt-1">Reviews can only be edited or deleted by the person who wrote them. Profile owners cannot delete reviews to maintain transparency and trust.</p>
+                  </div>
+                  {(ratingSummary?.recent_reviews || []).map((r) => {
+```
+- `src/pages/BuyerProfile.jsx:505` — Reviews can only be edited or deleted by the person who wrote them. Profile owners cannot delete reviews to maintain transparency and trust.
+
+```jsx
+                    <p className="mt-1">Reviews can only be edited or deleted by the person who wrote them. Profile owners cannot delete reviews to maintain transparency and trust.</p>
+                  </div>
+                  {(ratingSummary?.recent_reviews || []).map((r) => {
+                    const canEdit = currentUser?.id && String(currentUser.id) === String(r.from_user_id || '')
+```
+- `src/pages/BuyerProfile.jsx:252` — Boosted visibility enabled for Premium
+
+```jsx
+                    <span title="Boosted visibility enabled for Premium" className="inline-flex items-center rounded-full bg-blue-500/15 px-2 py-0.5 text-[10px] font-semibold text-blue-700 ring-1 ring-blue-500/20 dark:text-blue-200">
+                      Premium Reach
+                    </span>
+                  ) : null}
+```
+- `src/pages/BuyerProfile.jsx:329` — Journey Timeline
+
+```jsx
+            title="Journey Timeline"
+            matchId={journeyParams.get('match_id') || journeyParams.get('journey_match_id') || ''}
+            contractId={journeyParams.get('contract_id') || ''}
+            requirementId={journeyParams.get('requirement_id') || ''}
+```
+- `src/pages/BuyerProfile.jsx:266` — (element) <button>
+
+```jsx
+              <button onClick={contact} className="flex-1 rounded-full bg-[var(--gt-blue)] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95">Contact</button>
               <button onClick={follow} className="flex-1 rounded-full px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">
                 {relationship.following ? 'Following' : 'Follow'}
               </button>
 ```
-- `src/pages/BuyerProfile.jsx:181` — (element) <button>
+- `src/pages/BuyerProfile.jsx:267` — (element) <button>
 
 ```jsx
               <button onClick={follow} className="flex-1 rounded-full px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">
@@ -2308,7 +4570,7 @@
               </button>
               <button onClick={connect} className="flex-1 rounded-full px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">
 ```
-- `src/pages/BuyerProfile.jsx:184` — (element) <button>
+- `src/pages/BuyerProfile.jsx:270` — (element) <button>
 
 ```jsx
               <button onClick={connect} className="flex-1 rounded-full px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">
@@ -2316,7 +4578,7 @@
               </button>
             </div>
 ```
-- `src/pages/BuyerProfile.jsx:215` — (element) <button>
+- `src/pages/BuyerProfile.jsx:342` — (element) <button>
 
 ```jsx
                 <button
@@ -2324,31 +4586,51 @@
                   type="button"
                   onClick={() => setActiveTab(tab)}
 ```
-- `src/pages/BuyerProfile.jsx:274` — (element) <button>
+- `src/pages/BuyerProfile.jsx:468` — (element) <button>
 
 ```jsx
-                          <button onClick={contact} className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182]">Contact</button>
+                              <button onClick={contact} className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] transition">Contact</button>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
 ```
-- `src/pages/BuyerProfile.jsx:282` — (element) <button>
+- `src/pages/BuyerProfile.jsx:475` — (element) <button>
 
 ```jsx
-                    <button
-                      type="button"
-                      onClick={() => loadRequests({ reset: false })}
-                      className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
+                        <button
+                          type="button"
+                          onClick={() => loadRequests({ reset: false })}
+                          className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
+```
+- `src/pages/BuyerProfile.jsx:519` — (element) <button>
+
+```jsx
+                              <button
+                                type="button"
+                                className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50"
+                                onClick={async () => {
+```
+- `src/pages/BuyerProfile.jsx:536` — (element) <button>
+
+```jsx
+                              <button
+                                type="button"
+                                className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-50"
+                                onClick={async () => {
 ```
 ## 5) Backend Mapping (Frontend → Express → Controller → Service/DB)
 
 | Frontend call (path:line) | Express mount | Route definition | Controller file | Handler |
 |---|---|---|---|---|
-| GET /profiles/${encodeURIComponent(id)} (src/pages/BuyerProfile.jsx:67) | /api/profiles -> server/routes/profileRoutes.js:83 | - | - | - |
-| GET /ratings/profiles/user:${encodeURIComponent(id)} (src/pages/BuyerProfile.jsx:84) | /api/ratings -> server/routes/ratingsRoutes.js:81 | - | - | - |
-| GET /profiles/${encodeURIComponent(id)}/requests?cursor=${cursor}&limit=10 (src/pages/BuyerProfile.jsx:96) | /api/profiles -> server/routes/profileRoutes.js:83 | - | - | - |
-| POST /users/${encodeURIComponent(id)}/follow (src/pages/BuyerProfile.jsx:122) | /api/users -> server/routes/userRoutes.js:60 | - | - | - |
-| POST /users/${encodeURIComponent(id)}/friend-request (src/pages/BuyerProfile.jsx:132) | /api/users -> server/routes/userRoutes.js:60 | - | - | - |
+| GET /profiles/${encodeURIComponent(id)} (src/pages/BuyerProfile.jsx:95) | /api/profiles -> server/routes/profileRoutes.js:139 | - | - | - |
+| GET /ratings/profiles/user:${encodeURIComponent(id)} (src/pages/BuyerProfile.jsx:112) | /api/ratings -> server/routes/ratingsRoutes.js:137 | - | - | - |
+| GET /certifications/org/${encodeURIComponent(id)} (src/pages/BuyerProfile.jsx:122) | /api/certifications -> server/routes/certificationRoutes.js:149 | - | - | - |
+| GET /profiles/${encodeURIComponent(id)}/requests?cursor=${cursor}&limit=10 (src/pages/BuyerProfile.jsx:134) | /api/profiles -> server/routes/profileRoutes.js:139 | - | - | - |
+| GET /boosts/me (src/pages/BuyerProfile.jsx:165) | /api/boosts -> server/routes/boostRoutes.js:142 | GET /me (server/routes/boostRoutes.js:7) | server/controllers/boostController.js | getMyBoosts |
+| POST /users/${encodeURIComponent(id)}/follow (src/pages/BuyerProfile.jsx:182) | /api/users -> server/routes/userRoutes.js:112 | - | - | - |
+| POST /users/${encodeURIComponent(id)}/friend-request (src/pages/BuyerProfile.jsx:192) | /api/users -> server/routes/userRoutes.js:112 | - | - | - |
+| PATCH /ratings/${r.id} (src/pages/BuyerProfile.jsx:527) | /api/ratings -> server/routes/ratingsRoutes.js:137 | - | - | - |
+| DELETE /ratings/${r.id} (src/pages/BuyerProfile.jsx:542) | /api/ratings -> server/routes/ratingsRoutes.js:137 | - | - | - |
 
 ## 6) How to Edit Safely
 
@@ -2358,5 +4640,4 @@
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
-{% endraw %}
 

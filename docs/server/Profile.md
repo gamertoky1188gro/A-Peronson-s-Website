@@ -4,7 +4,7 @@ This doc is generated from source snapshots with `path:line` references.
 
 ## Mounted prefixes
 
-- `/api/profiles` -> `server/routes/profileRoutes.js:83` (router var: `profileRoutes`)
+- `/api/profiles` -> `server/routes/profileRoutes.js:139` (router var: `profileRoutes`)
 
 ## Routes (ultra-detailed)
 

@@ -33,781 +33,784 @@
    33 | import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
    34 | import SpotlightCard from '../components/ui/SpotlightCard'
    35 | 
-   36 | const HELP_SECTIONS = [
-   37 |   {
-   38 |     id: 'quick-start',
-   39 |     title: '1. Quick Start Guide',
-   40 |     content: [
-   41 |       'Step 1: Create an Account (Buyer, Factory, or Buying House).',
-   42 |       'Step 2: Complete your basic profile setup (Organization Name, Category, Profile Image).',
-   43 |       'Step 3: Explore the Main Feed or Search for relevant posts.',
-   44 |       'Step 4: Start conversations or post Buyer Requests / Products.',
-   45 |       'Step 5: Upgrade to Premium if advanced visibility and analytics are required.',
-   46 |     ],
-   47 |   },
-   48 |   {
-   49 |     id: 'account-types',
-   50 |     title: '2. Account Types',
-   51 |     subsections: [
-   52 |       {
-   53 |         name: 'Buyer Account',
-   54 |         points: [
-   55 |           'Post detailed Buyer Requests.',
-   56 |           'Search and filter factories.',
-   57 |           'Send direct messages.',
-   58 |           'Schedule calls.',
-   59 |         ],
-   60 |       },
-   61 |       {
-   62 |         name: 'Factory Account',
-   63 |         points: [
-   64 |           'Upload product posts and videos.',
-   65 |           'Respond to Buyer Requests.',
-   66 |           'Accept connection requests from Buying Houses.',
-   67 |           'Manage sub-accounts (Agents).',
-   68 |         ],
-   69 |       },
-   70 |       {
-   71 |         name: 'Buying House Account',
-   72 |         points: [
-   73 |           'Manage multiple agents.',
-   74 |           'Connect with multiple factories.',
-   75 |           'Assign Buyer Requests to specific agents.',
-   76 |           'Monitor deals and analytics (Premium).',
-   77 |         ],
-   78 |       },
-   79 |     ],
-   80 |   },
-   81 |   {
-   82 |     id: 'verification',
-   83 |     title: '3. Verification Process',
-   84 |     description: 'Verification is document-based and requires backend approval.',
-   85 |     roles: [
-   86 |       {
-   87 |         role: 'Factories must submit',
-   88 |         docs: [
-   89 |           'Company Registration',
-   90 |           'Trade License',
-   91 |           'TIN',
-   92 |           'Authorized Person NID',
-   93 |           'Company Bank Proof',
-   94 |           'ERC (Export Registration Certificate)',
-   95 |         ],
-   96 |       },
-   97 |       {
-   98 |         role: 'Buying Houses must submit',
-   99 |         docs: [
-  100 |           'Company Registration',
-  101 |           'Trade License',
-  102 |           'TIN',
-  103 |           'Authorized Person NID',
-  104 |           'Company Bank Proof',
-  105 |         ],
-  106 |       },
-  107 |       {
-  108 |         role: 'International Buyers (EU / USA) must submit',
-  109 |         docs: [
-  110 |           'Business Registration',
-  111 |           'VAT (EU) or EIN (USA)',
-  112 |           'EORI (EU) or IOR (USA)',
-  113 |           'Bank Proof',
-  114 |         ],
-  115 |       },
-  116 |     ],
-  117 |     footer:
-  118 |       'Verification status is subscription-based and must be renewed monthly. The more verified documentation a company provides, the stronger its credibility.',
-  119 |   },
-  120 |   {
-  121 |     id: 'messaging',
-  122 |     title: '4. Messaging & Conversation Rules',
-  123 |     sections: [
-  124 |       { title: 'Verified Users', text: 'Messages go directly to inbox.' },
-  125 |       { title: 'Unverified Users', text: 'Messages appear in \"Message Requests.\"' },
-  126 |       {
-  127 |         title: 'Buying House Conversation Lock',
-  128 |         points: [
-  129 |           'When an Agent starts a conversation, it is assigned to that Agent.',
-  130 |           'Other Agents cannot message unless permission is granted.',
-  131 |           'This prevents internal conflict.',
-  132 |         ],
-  133 |       },
-  134 |     ],
-  135 |   },
-  136 |   {
-  137 |     id: 'subscriptions',
-  138 |     title: '5. Subscription Plans',
-  139 |     description: 'Two Plans Available: Free and Premium.',
-  140 |     points: [
-  141 |       'Increased profile visibility',
-  142 |       'Advanced analytics (for eligible accounts)',
-  143 |       'Extended management capabilities',
-  144 |     ],
-  145 |     footer: 'Feature visibility varies depending on account type.',
-  146 |   },
-  147 |   {
-  148 |     id: 'calls',
-  149 |     title: '6. Video & Audio Calls',
-  150 |     points: [
-  151 |       'Calls can be initiated directly from chat.',
-  152 |       'Optional scheduling feature available.',
-  153 |       'All calls may be recorded for security and compliance.',
-  154 |       'Users are notified before recording begins.',
-  155 |     ],
-  156 |   },
-  157 |   {
-  158 |     id: 'contracts',
-  159 |     title: '7. Contracts & Legal Vault',
-  160 |     points: [
-  161 |       'Digital contracts can be signed through the platform.',
-  162 |       'PDF copies are stored securely in the Legal Vault.',
-  163 |       'Both parties can access their contract history.',
-  164 |     ],
-  165 |     footer: 'GarTexHub does not process direct financial transactions.',
-  166 |   },
-  167 |   {
-  168 |     id: 'security',
-  169 |     title: '8. Security & Data Protection',
-  170 |     points: [
-  171 |       'Uploaded documents are securely stored.',
-  172 |       'Verification requires backend approval.',
-  173 |       'Expired licenses may remove verified status.',
-  174 |       'Financial details are protected through encrypted systems.',
-  175 |     ],
-  176 |   },
-  177 |   {
-  178 |     id: 'assistant',
-  179 |     title: '9. Floating AI Assistant',
-  180 |     description: 'The Floating Assistant helps users with:',
-  181 |     points: ['Understand settings', 'Navigate dashboards', 'Access help articles', 'Connect to support'],
-  182 |     footer: 'It does not handle negotiations.',
-  183 |   },
-  184 | ]
-  185 | 
-  186 | function MotionItem({ index, className = '', children }) {
-  187 |   const reduceMotion = useReducedMotion()
-  188 |   if (reduceMotion) return <div className={className}>{children}</div>
-  189 |   return (
-  190 |     <motion.div
-  191 |       className={className}
-  192 |       initial={{ opacity: 0, y: 20 }}
-  193 |       animate={{ opacity: 1, y: 0 }}
-  194 |       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: index * 0.05 }}
-  195 |     >
-  196 |       {children}
-  197 |     </motion.div>
-  198 |   )
-  199 | }
-  200 | 
-  201 | function Skeleton({ className = '' }) {
-  202 |   return <div className={['skeleton', className].join(' ')} />
-  203 | }
-  204 | 
-  205 | function VerifiedBadge() {
-  206 |   return (
-  207 |     <span
-  208 |       className={[
-  209 |         'verified-shimmer inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold',
-  210 |         'bg-emerald-600/10 text-emerald-700 shadow-[0_0_0_1px_rgba(5,150,105,0.20),0_16px_36px_rgba(5,150,105,0.10)]',
-  211 |         'dark:bg-emerald-500/12 dark:text-emerald-200 dark:shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_0_24px_rgba(16,185,129,0.12)]',
-  212 |       ].join(' ')}
-  213 |     >
-  214 |       <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 shadow-[0_0_14px_rgba(5,150,105,0.55)] dark:bg-emerald-400 dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]" />
-  215 |       Verified
-  216 |     </span>
-  217 |   )
-  218 | }
-  219 | 
-  220 | function cardClassName({ glass = false } = {}) {
-  221 |   return [
-  222 |     'spotlight-card rounded-xl p-6',
-  223 |     glass ? 'bg-white/70 backdrop-blur-md' : 'bg-[#ffffff]',
-  224 |     'border border-slate-200 shadow-sm',
-  225 |     'transition duration-300 ease-out will-change-transform',
-  226 |     'hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98]',
-  227 |     'dark:bg-slate-900/40 dark:backdrop-blur-sm',
-  228 |     'dark:border-transparent dark:ring-1 dark:ring-slate-800/60 dark:shadow-none',
-  229 |     'dark:hover:translate-y-0 dark:hover:shadow-none dark:hover:ring-blue-500/35',
-  230 |   ].join(' ')
-  231 | }
-  232 | 
-  233 | function glowForAccount(name) {
-  234 |   if (name.toLowerCase().includes('buyer')) {
-  235 |     return 'dark:shadow-[0_0_0_1px_rgba(59,130,246,0.22),0_18px_60px_rgba(59,130,246,0.18)]'
-  236 |   }
-  237 |   if (name.toLowerCase().includes('factory')) {
-  238 |     return 'dark:shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_18px_60px_rgba(16,185,129,0.16)]'
-  239 |   }
-  240 |   return 'dark:shadow-[0_0_0_1px_rgba(99,102,241,0.22),0_18px_60px_rgba(99,102,241,0.18)]'
-  241 | }
-  242 | 
-  243 | export default function HelpCenter() {
-  244 |   const [q, setQ] = useState('')
-  245 |   const [entries, setEntries] = useState([])
-  246 |   const [feedback, setFeedback] = useState('')
-  247 |   const [form, setForm] = useState({ question: '', answer: '', keywords: '' })
-  248 |   const [editingId, setEditingId] = useState('')
-  249 |   const [faqLoading, setFaqLoading] = useState(false)
-  250 |   const [lockGranted, setLockGranted] = useState(false)
-  251 | 
-  252 |   const currentUser = useMemo(() => getCurrentUser(), [])
-  253 |   const isOwnerAdmin = currentUser?.role === 'owner' || currentUser?.role === 'admin'
-  254 |   const reduceMotion = useReducedMotion()
-  255 | 
-  256 |   const staticFaqs = [
-  257 |     {
-  258 |       q: 'Can I buy verification without documents?',
-  259 |       a: 'No. Verification requires mandatory document submission and approval.',
-  260 |     },
-  261 |     {
-  262 |       q: 'Can I create multiple sub-accounts?',
-  263 |       a: 'Yes. Buying Houses and Factories can create limited sub-accounts under Free plans.',
-  264 |     },
-  265 |     { q: 'Does GarTexHub handle payments?', a: 'No. The platform facilitates communication and contracts only.' },
-  266 |     { q: 'Can I increase my visibility?', a: 'Premium plans may provide improved reach.' },
-  267 |   ]
-  268 | 
-  269 |   const loadFaqs = useCallback(async () => {
-  270 |     try {
-  271 |       const token = getToken()
-  272 |       if (!token) return
-  273 |       setFaqLoading(true)
-  274 |       const data = await apiRequest('/assistant/knowledge', { token })
-  275 |       setEntries((data.entries || []).filter((entry) => (entry.type || 'faq') === 'faq'))
-  276 |     } catch (err) {
-  277 |       setFeedback(err.status === 403 ? 'Access denied' : err.message)
-  278 |     } finally {
-  279 |       setFaqLoading(false)
-  280 |     }
-  281 |   }, [])
-  282 | 
-  283 |   useEffect(() => {
-  284 |     if (!isOwnerAdmin) return
-  285 |     const timeoutId = setTimeout(() => {
-  286 |       loadFaqs()
-  287 |     }, 0)
-  288 |     return () => {
-  289 |       clearTimeout(timeoutId)
-  290 |     }
-  291 |   }, [isOwnerAdmin, loadFaqs])
-  292 | 
-  293 |   function selectForEdit(entry) {
-  294 |     setEditingId(entry.id)
-  295 |     setForm({
-  296 |       question: entry.question || '',
-  297 |       answer: entry.answer || '',
-  298 |       keywords: Array.isArray(entry.keywords) ? entry.keywords.join(', ') : '',
-  299 |     })
-  300 |   }
-  301 | 
-  302 |   function resetForm() {
-  303 |     setEditingId('')
-  304 |     setForm({ question: '', answer: '', keywords: '' })
-  305 |   }
-  306 | 
-  307 |   async function saveFaq(e) {
-  308 |     e.preventDefault()
-  309 |     const token = getToken()
-  310 |     if (!token) return
-  311 |     const payload = {
-  312 |       type: 'faq',
-  313 |       question: form.question,
-  314 |       answer: form.answer,
-  315 |       keywords: form.keywords.split(',').map((k) => k.trim()).filter(Boolean),
-  316 |     }
-  317 |     try {
-  318 |       if (editingId) {
-  319 |         await apiRequest(`/assistant/knowledge/${editingId}`, { method: 'PUT', token, body: payload })
-  320 |       } else {
-  321 |         await apiRequest('/assistant/knowledge', { method: 'POST', token, body: payload })
-  322 |       }
-  323 |       resetForm()
-  324 |       loadFaqs()
-  325 |       setFeedback('FAQ updated')
-  326 |     } catch (err) {
-  327 |       setFeedback(err.message)
-  328 |     }
-  329 |   }
-  330 | 
-  331 |   async function removeFaq(entryId) {
-  332 |     const token = getToken()
-  333 |     if (!token) return
-  334 |     try {
-  335 |       await apiRequest(`/assistant/knowledge/${entryId}`, { method: 'DELETE', token })
-  336 |       loadFaqs()
-  337 |     } catch (err) {
-  338 |       setFeedback(err.message)
-  339 |     }
-  340 |   }
-  341 | 
-  342 |   const allFaqs = [...entries.map((e) => ({ q: e.question, a: e.answer, id: e.id })), ...staticFaqs]
-  343 |   const filteredFaqs = allFaqs.filter(
-  344 |     (f) => f.q.toLowerCase().includes(q.toLowerCase()) || f.a.toLowerCase().includes(q.toLowerCase()),
-  345 |   )
-  346 | 
-  347 |   const hubTiles = [
-  348 |     {
-  349 |       id: 'quick-start',
-  350 |       title: 'Quick Start Guide',
-  351 |       desc: 'Fast setup for buyers, factories, and buying houses.',
-  352 |       icon: Sparkles,
-  353 |       span: 'lg:col-span-3',
-  354 |     },
-  355 |     {
-  356 |       id: 'account-types',
-  357 |       title: 'Account Types',
-  358 |       desc: 'Clear roles, clear permissions.',
-  359 |       icon: ShieldCheck,
-  360 |       span: 'lg:col-span-3',
-  361 |     },
-  362 |     { id: 'faq', title: 'FAQ', desc: 'Searchable answers, no fluff.', icon: ChevronDown, span: 'lg:col-span-2' },
-  363 |     { id: 'contracts', title: 'Legal Vault', desc: 'Contracts & audit-ready records.', icon: FileText, span: 'lg:col-span-2' },
-  364 |     {
-  365 |       id: 'verification',
-  366 |       title: 'Verification',
-  367 |       desc: 'Document-based trust indicators.',
-  368 |       icon: ShieldCheck,
-  369 |       span: 'lg:col-span-2',
-  370 |     },
-  371 |     { id: 'messaging', title: 'Messaging Lock', desc: 'Conflict-free team conversations.', icon: Lock, span: 'lg:col-span-2' },
-  372 |   ]
-  373 | 
-  374 |   return (
-  375 |     <div className="min-h-screen overflow-x-hidden bg-slate-50 text-slate-900 dark:bg-[#0B0F1A] dark:text-slate-100">
-  376 |       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-  377 |         <header className="text-center">
-  378 |           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">Help Center</h1>
-  379 |           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Industrial reliability, tech-forward SaaS guidance.</p>
-  380 |         </header>
-  381 | 
-  382 |         <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-4">
-  383 |           <div className="lg:col-span-3 space-y-8">
-  384 |             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
-  385 |               {hubTiles.map((tile, idx) => {
-  386 |                 const Icon = tile.icon
-  387 |                 return (
-  388 |                   <MotionItem key={tile.id} index={idx} className={tile.span}>
-  389 |                     <a href={`#${tile.id}`} className={[cardClassName({ glass: true }), 'group block h-full'].join(' ')}>
-  390 |                       <div className="flex items-start justify-between gap-3">
-  391 |                         <div>
-  392 |                           <p className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">{tile.title}</p>
-  393 |                           <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">{tile.desc}</p>
-  394 |                         </div>
-  395 |                         <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 transition group-hover:bg-blue-600/14 dark:bg-blue-500/12 dark:text-blue-400">
-  396 |                           <Icon className="h-5 w-5" />
-  397 |                         </span>
-  398 |                       </div>
-  399 |                     </a>
-  400 |                   </MotionItem>
-  401 |                 )
-  402 |               })}
-  403 |             </div>
-  404 | 
-  405 |             {HELP_SECTIONS.map((section, idx) => (
-  406 |               <MotionItem key={section.id} index={hubTiles.length + idx}>
-  407 |                 <section id={section.id} className="scroll-mt-6">
-  408 |                   <SpotlightCard className={cardClassName()}>
-  409 |                     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800">
-  410 |                       <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">{section.title}</h2>
-  411 |                       {section.id === 'verification' ? <VerifiedBadge /> : null}
-  412 |                     </div>
-  413 | 
-  414 |                     {section.description ? (
-  415 |                       <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">{section.description}</p>
-  416 |                     ) : null}
-  417 | 
-  418 |                     {section.content ? (
-  419 |                       <ul className="mt-4 space-y-2 text-sm text-slate-500 dark:text-slate-400">
-  420 |                         {section.content.map((item) => (
-  421 |                           <li key={item} className="flex gap-2">
-  422 |                             <span className="mt-0.5 text-blue-600 dark:text-blue-400">•</span>
-  423 |                             <span>{item}</span>
-  424 |                           </li>
-  425 |                         ))}
-  426 |                       </ul>
-  427 |                     ) : null}
-  428 | 
-  429 |                     {section.subsections ? (
-  430 |                       <div className="mt-5 grid gap-4 lg:grid-cols-3">
-  431 |                         {section.subsections.map((sub, subIndex) => (
-  432 |                           <motion.div
-  433 |                             key={sub.name}
-  434 |                             initial={reduceMotion ? false : { opacity: 0, y: 14 }}
-  435 |                             animate={{ opacity: 1, y: 0 }}
-  436 |                             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.05 + subIndex * 0.05 }}
-  437 |                             className={[
-  438 |                               'rounded-xl bg-slate-900/2 p-5 transition duration-300 ease-out',
-  439 |                               'hover:-translate-y-0.5 hover:bg-slate-900/3 active:scale-[0.98]',
-  440 |                               'dark:bg-white/5 dark:hover:bg-white/6 dark:hover:translate-y-0',
-  441 |                               glowForAccount(sub.name),
-  442 |                             ].join(' ')}
-  443 |                           >
-  444 |                             <p className="font-semibold text-slate-900 dark:text-slate-100">{sub.name}</p>
-  445 |                             <ul className="mt-3 space-y-2 text-sm text-slate-500 dark:text-slate-400">
-  446 |                               {sub.points.map((p) => (
-  447 |                                 <li key={p} className="flex gap-2">
-  448 |                                   <span className="mt-0.5 text-blue-600/90 dark:text-blue-400">•</span>
-  449 |                                   <span>{p}</span>
-  450 |                                 </li>
-  451 |                               ))}
-  452 |                             </ul>
-  453 |                           </motion.div>
-  454 |                         ))}
-  455 |                       </div>
-  456 |                     ) : null}
-  457 | 
-  458 |                     {section.roles ? (
-  459 |                       <div className="mt-5 space-y-5">
-  460 |                         {section.roles.map((roleBlock) => (
-  461 |                           <div key={roleBlock.role}>
-  462 |                             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{roleBlock.role}</p>
-  463 |                             <ul className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 text-sm text-slate-500 md:grid-cols-2 dark:text-slate-400">
-  464 |                               {roleBlock.docs.map((d) => (
-  465 |                                 <li key={d} className="flex gap-2">
-  466 |                                   <span className="mt-0.5 text-emerald-600 dark:text-emerald-400">•</span>
-  467 |                                   <span>{d}</span>
-  468 |                                 </li>
-  469 |                               ))}
-  470 |                             </ul>
-  471 |                           </div>
-  472 |                         ))}
-  473 |                       </div>
-  474 |                     ) : null}
-  475 | 
-  476 |                     {section.sections ? (
-  477 |                       <div className="mt-5 space-y-4">
-  478 |                         {section.sections.map((s) => (
-  479 |                           <div key={s.title} className="rounded-xl bg-slate-900/2 p-5 dark:bg-white/5">
-  480 |                             <div className="flex items-center justify-between gap-3">
-  481 |                               <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{s.title}</p>
-  482 |                               {s.title.toLowerCase().includes('verified') ? <VerifiedBadge /> : null}
-  483 |                             </div>
-  484 |                             {s.text ? <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{s.text}</p> : null}
-  485 |                             {s.points ? (
-  486 |                               <ul className="mt-3 space-y-2 text-sm text-slate-500 dark:text-slate-400">
-  487 |                                 {s.points.map((p) => (
-  488 |                                   <li key={p} className="flex gap-2">
-  489 |                                     <span className="mt-0.5 text-blue-600 dark:text-blue-400">•</span>
-  490 |                                     <span>{p}</span>
-  491 |                                   </li>
-  492 |                                 ))}
-  493 |                               </ul>
-  494 |                             ) : null}
-  495 | 
-  496 |                             {section.id === 'messaging' && s.title.toLowerCase().includes('lock') ? (
-  497 |                               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white/70 px-4 py-3 backdrop-blur-md shadow-[0_10px_24px_rgba(15,23,42,0.06)] dark:bg-white/5 dark:shadow-none">
-  498 |                                 <div className="flex items-center gap-3">
-  499 |                                   <AnimatePresence initial={false} mode="popLayout">
-  500 |                                     {lockGranted ? (
-  501 |                                       <motion.div
-  502 |                                         key="unlocked"
-  503 |                                         initial={reduceMotion ? false : { opacity: 0, x: 6 }}
-  504 |                                         animate={{ opacity: 1, x: 0 }}
-  505 |                                         exit={{ opacity: 0, x: -6 }}
-  506 |                                         transition={{ duration: 0.25 }}
-  507 |                                         className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600/10 text-emerald-700 dark:bg-emerald-500/12 dark:text-emerald-200"
-  508 |                                       >
-  509 |                                         <Check className="h-5 w-5" />
-  510 |                                       </motion.div>
-  511 |                                     ) : (
-  512 |                                       <motion.div
-  513 |                                         key="locked"
-  514 |                                         initial={reduceMotion ? false : { opacity: 0, x: 6 }}
-  515 |                                         animate={{ opacity: 1, x: 0 }}
-  516 |                                         exit={{ opacity: 0, x: -6 }}
-  517 |                                         transition={{ duration: 0.25 }}
-  518 |                                         className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900/6 text-slate-700 dark:bg-white/6 dark:text-slate-200"
-  519 |                                       >
-  520 |                                         <Lock className="h-5 w-5" />
-  521 |                                       </motion.div>
-  522 |                                     )}
-  523 |                                   </AnimatePresence>
-  524 |                                   <div>
-  525 |                                     <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Lock demo</p>
-  526 |                                     <p className="text-xs text-slate-500 dark:text-slate-400">
-  527 |                                       {lockGranted ? 'Permission granted — teammates can message.' : 'Locked — teammates need permission.'}
-  528 |                                     </p>
-  529 |                                   </div>
-  530 |                                 </div>
-  531 |                                 <button
-  532 |                                   type="button"
-  533 |                                   onClick={() => setLockGranted((v) => !v)}
-  534 |                                   className="rounded-full bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-500 dark:text-slate-900 dark:hover:bg-blue-400"
-  535 |                                 >
-  536 |                                   {lockGranted ? 'Reset' : 'Grant permission'}
-  537 |                                 </button>
-  538 |                               </div>
-  539 |                             ) : null}
-  540 |                           </div>
-  541 |                         ))}
-  542 |                       </div>
-  543 |                     ) : null}
-  544 | 
-  545 |                     {section.points && !section.subsections && !section.sections ? (
-  546 |                       <ul className="mt-4 space-y-2 text-sm text-slate-500 dark:text-slate-400">
-  547 |                         {section.points.map((p) => (
-  548 |                           <li key={p} className="flex gap-2">
-  549 |                             <span className="mt-0.5 text-blue-600 dark:text-blue-400">•</span>
-  550 |                             <span>{p}</span>
-  551 |                           </li>
-  552 |                         ))}
-  553 |                       </ul>
-  554 |                     ) : null}
-  555 | 
-  556 |                     {section.footer ? (
-  557 |                       <p className="mt-5 border-t border-slate-200 pt-3 text-xs italic text-slate-500 dark:border-slate-800 dark:text-slate-400">
-  558 |                         {section.footer}
-  559 |                       </p>
-  560 |                     ) : null}
-  561 |                   </SpotlightCard>
-  562 |                 </section>
-  563 |               </MotionItem>
-  564 |             ))}
-  565 | 
-  566 |             <MotionItem index={hubTiles.length + HELP_SECTIONS.length}>
-  567 |               <section id="faq" className="scroll-mt-6">
-  568 |                 <SpotlightCard className={cardClassName()}>
-  569 |                   <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800">
-  570 |                     <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
-  571 |                       10. Frequently Asked Questions (FAQ)
-  572 |                     </h2>
-  573 |                     <span className="rounded-full bg-slate-900/4 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:bg-white/6 dark:text-slate-400">
-  574 |                       Searchable
-  575 |                     </span>
-  576 |                   </div>
-  577 | 
-  578 |                   <div className="mt-4">
-  579 |                     <input
-  580 |                       placeholder="Search FAQs..."
-  581 |                       value={q}
-  582 |                       onChange={(e) => setQ(e.target.value)}
-  583 |                       className="w-full rounded-full bg-slate-900/4 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
-  584 |                     />
-  585 |                   </div>
-  586 | 
-  587 |                   <div className="mt-5 space-y-3">
-  588 |                     {faqLoading ? (
-  589 |                       <>
-  590 |                         <Skeleton className="h-16 rounded-xl" />
-  591 |                         <Skeleton className="h-16 rounded-xl" />
+   36 | const Motion = motion
+   37 | 
+   38 | const HELP_SECTIONS = [
+   39 |   {
+   40 |     id: 'quick-start',
+   41 |     title: '1. Quick Start Guide',
+   42 |     content: [
+   43 |       'Step 1: Create an Account (Buyer, Factory, or Buying House).',
+   44 |       'Step 2: Complete your basic profile setup (Organization Name, Category, Profile Image).',
+   45 |       'Step 3: Explore the Main Feed or Search for relevant posts.',
+   46 |       'Step 4: Start conversations or post Buyer Requests / Products.',
+   47 |       'Step 5: Upgrade to Premium if advanced visibility and analytics are required.',
+   48 |     ],
+   49 |   },
+   50 |   {
+   51 |     id: 'account-types',
+   52 |     title: '2. Account Types',
+   53 |     subsections: [
+   54 |       {
+   55 |         name: 'Buyer Account',
+   56 |         points: [
+   57 |           'Post detailed Buyer Requests.',
+   58 |           'Search and filter factories.',
+   59 |           'Send direct messages.',
+   60 |           'Schedule calls.',
+   61 |         ],
+   62 |       },
+   63 |       {
+   64 |         name: 'Factory Account',
+   65 |         points: [
+   66 |           'Upload product posts and videos.',
+   67 |           'Respond to Buyer Requests.',
+   68 |           'Accept connection requests from Buying Houses.',
+   69 |           'Manage sub-accounts (Agents).',
+   70 |         ],
+   71 |       },
+   72 |       {
+   73 |         name: 'Buying House Account',
+   74 |         points: [
+   75 |           'Manage multiple agents.',
+   76 |           'Connect with multiple factories.',
+   77 |           'Assign Buyer Requests to specific agents.',
+   78 |           'Monitor deals and analytics (Premium).',
+   79 |         ],
+   80 |       },
+   81 |     ],
+   82 |   },
+   83 |   {
+   84 |     id: 'verification',
+   85 |     title: '3. Verification Process',
+   86 |     description: 'Verification is document-based and requires backend approval.',
+   87 |     roles: [
+   88 |       {
+   89 |         role: 'Factories must submit',
+   90 |         docs: [
+   91 |           'Company Registration',
+   92 |           'Trade License',
+   93 |           'TIN',
+   94 |           'Authorized Person NID',
+   95 |           'Company Bank Proof',
+   96 |           'ERC (Export Registration Certificate)',
+   97 |         ],
+   98 |       },
+   99 |       {
+  100 |         role: 'Buying Houses must submit',
+  101 |         docs: [
+  102 |           'Company Registration',
+  103 |           'Trade License',
+  104 |           'TIN',
+  105 |           'Authorized Person NID',
+  106 |           'Company Bank Proof',
+  107 |         ],
+  108 |       },
+  109 |       {
+  110 |         role: 'International Buyers (EU / USA) must submit',
+  111 |         docs: [
+  112 |           'Business Registration',
+  113 |           'VAT (EU) or EIN (USA)',
+  114 |           'EORI (EU) or IOR (USA)',
+  115 |           'Bank Proof',
+  116 |         ],
+  117 |       },
+  118 |     ],
+  119 |     footer:
+  120 |       'Verification status is subscription-based and must be renewed monthly. The more verified documentation a company provides, the stronger its credibility.',
+  121 |   },
+  122 |   {
+  123 |     id: 'messaging',
+  124 |     title: '4. Messaging & Conversation Rules',
+  125 |     sections: [
+  126 |       { title: 'Verified Users', text: 'Messages go directly to inbox.' },
+  127 |       { title: 'Unverified Users', text: 'Messages appear in "Message Requests."' },
+  128 |       {
+  129 |         title: 'Buying House Conversation Lock',
+  130 |         points: [
+  131 |           'When an Agent starts a conversation, it is assigned to that Agent.',
+  132 |           'Other Agents cannot message unless permission is granted.',
+  133 |           'This prevents internal conflict.',
+  134 |         ],
+  135 |       },
+  136 |     ],
+  137 |   },
+  138 |   {
+  139 |     id: 'subscriptions',
+  140 |     title: '5. Subscription Plans',
+  141 |     description: 'Two Plans Available: Free and Premium.',
+  142 |     points: [
+  143 |       'Increased profile visibility',
+  144 |       'Advanced analytics (for eligible accounts)',
+  145 |       'Extended management capabilities',
+  146 |     ],
+  147 |     footer: 'Feature visibility varies depending on account type.',
+  148 |   },
+  149 |   {
+  150 |     id: 'calls',
+  151 |     title: '6. Video & Audio Calls',
+  152 |     points: [
+  153 |       'Calls can be initiated directly from chat.',
+  154 |       'Optional scheduling feature available.',
+  155 |       'All calls may be recorded for security and compliance.',
+  156 |       'Users are notified before recording begins.',
+  157 |     ],
+  158 |   },
+  159 |   {
+  160 |     id: 'contracts',
+  161 |     title: '7. Contracts & Legal Vault',
+  162 |     points: [
+  163 |       'Digital contracts can be signed through the platform.',
+  164 |       'PDF copies are stored securely in the Legal Vault.',
+  165 |       'Both parties can access their contract history.',
+  166 |     ],
+  167 |     footer: 'GarTexHub does not process direct financial transactions.',
+  168 |   },
+  169 |   {
+  170 |     id: 'security',
+  171 |     title: '8. Security & Data Protection',
+  172 |     points: [
+  173 |       'Uploaded documents are securely stored.',
+  174 |       'Verification requires backend approval.',
+  175 |       'Expired licenses may remove verified status.',
+  176 |       'Financial details are protected through encrypted systems.',
+  177 |     ],
+  178 |   },
+  179 |   {
+  180 |     id: 'assistant',
+  181 |     title: '9. Floating AI Assistant',
+  182 |     description: 'The Floating Assistant helps users with:',
+  183 |     points: ['Understand settings', 'Navigate dashboards', 'Access help articles', 'Connect to support'],
+  184 |     footer: 'It does not handle negotiations.',
+  185 |   },
+  186 | ]
+  187 | 
+  188 | function MotionItem({ index, className='', children }) {
+  189 |   const reduceMotion = useReducedMotion()
+  190 |   if (reduceMotion) return <div className={className}>{children}</div>
+  191 |   return (
+  192 |     <motion.div
+  193 |       className={className}
+  194 |       initial={{ opacity: 0, y: 20 }}
+  195 |       animate={{ opacity: 1, y: 0 }}
+  196 |       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: index * 0.05 }}
+  197 |     >
+  198 |       {children}
+  199 |     </motion.div>
+  200 |   )
+  201 | }
+  202 | 
+  203 | function Skeleton({ className='' }) {
+  204 |   return <div className={['skeleton', className].join(' ')} />
+  205 | }
+  206 | 
+  207 | function VerifiedBadge() {
+  208 |   return (
+  209 |     <span
+  210 |       className={[
+  211 |         'verified-shimmer inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold',
+  212 |         'bg-emerald-600/10 text-emerald-700 shadow-[0_0_0_1px_rgba(5,150,105,0.20),0_16px_36px_rgba(5,150,105,0.10)]',
+  213 |         'dark:bg-emerald-500/12 dark:text-emerald-200 dark:shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_0_24px_rgba(16,185,129,0.12)]',
+  214 |       ].join(' ')}
+  215 |     >
+  216 |       <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 shadow-[0_0_14px_rgba(5,150,105,0.55)] dark:bg-emerald-400 dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]" />
+  217 |       Verified
+  218 |     </span>
+  219 |   )
+  220 | }
+  221 | 
+  222 | function cardClassName({ glass = false } = {}) {
+  223 |   return [
+  224 |     'spotlight-card rounded-xl p-6',
+  225 |     glass ? 'bg-white/70 backdrop-blur-md' : 'bg-[#ffffff]',
+  226 |     'borderless-shadow',
+  227 |     'transition duration-300 ease-out will-change-transform',
+  228 |     'hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98]',
+  229 |     'dark:bg-slate-900/40 dark:backdrop-blur-sm',
+  230 |     'dark:ring-1 dark:ring-slate-800/60 dark:shadow-none',
+  231 |     'dark:hover:translate-y-0 dark:hover:shadow-none dark:hover:ring-blue-500/35',
+  232 |   ].join(' ')
+  233 | }
+  234 | 
+  235 | function glowForAccount(name) {
+  236 |   if (name.toLowerCase().includes('buyer')) {
+  237 |     return 'dark:shadow-[0_0_0_1px_rgba(59,130,246,0.22),0_18px_60px_rgba(59,130,246,0.18)]'
+  238 |   }
+  239 |   if (name.toLowerCase().includes('factory')) {
+  240 |     return 'dark:shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_18px_60px_rgba(16,185,129,0.16)]'
+  241 |   }
+  242 |   return 'dark:shadow-[0_0_0_1px_rgba(99,102,241,0.22),0_18px_60px_rgba(99,102,241,0.18)]'
+  243 | }
+  244 | 
+  245 | export default function HelpCenter() {
+  246 |   const [q, setQ] = useState('')
+  247 |   const [entries, setEntries] = useState([])
+  248 |   const [feedback, setFeedback] = useState('')
+  249 |   const [form, setForm] = useState({ question: '', answer: '', keywords: '' })
+  250 |   const [editingId, setEditingId] = useState('')
+  251 |   const [faqLoading, setFaqLoading] = useState(false)
+  252 |   const [lockGranted, setLockGranted] = useState(false)
+  253 | 
+  254 |   const currentUser = useMemo(() => getCurrentUser(), [])
+  255 |   const isOwnerAdmin = currentUser?.role === 'owner' || currentUser?.role === 'admin'
+  256 |   const reduceMotion = useReducedMotion()
+  257 | 
+  258 |   const staticFaqs = [
+  259 |     {
+  260 |       q: 'Can I buy verification without documents*',
+  261 |       a: 'No. Verification requires mandatory document submission and approval.',
+  262 |     },
+  263 |     {
+  264 |       q: 'Can I create multiple sub-accounts*',
+  265 |       a: 'Yes. Buying Houses and Factories can create limited sub-accounts under Free plans.',
+  266 |     },
+  267 |     { q: 'Does GarTexHub handle payments*', a: 'No. The platform facilitates communication and contracts only.' },
+  268 |     { q: 'Can I increase my visibility*', a: 'Premium plans may provide improved reach.' },
+  269 |   ]
+  270 | 
+  271 |   const loadFaqs = useCallback(async () => {
+  272 |     try {
+  273 |       const token = getToken()
+  274 |       if (!token) return
+  275 |       setFaqLoading(true)
+  276 |       const data = await apiRequest('/assistant/knowledge', { token })
+  277 |       setEntries((data.entries || []).filter((entry) => (entry.type || 'faq') === 'faq'))
+  278 |     } catch (err) {
+  279 |       setFeedback(err.status === 403 ? 'Access denied' : err.message)
+  280 |     } finally {
+  281 |       setFaqLoading(false)
+  282 |     }
+  283 |   }, [])
+  284 | 
+  285 |   useEffect(() => {
+  286 |     if (!isOwnerAdmin) return
+  287 |     const timeoutId = setTimeout(() => {
+  288 |       loadFaqs()
+  289 |     }, 0)
+  290 |     return () => {
+  291 |       clearTimeout(timeoutId)
+  292 |     }
+  293 |   }, [isOwnerAdmin, loadFaqs])
+  294 | 
+  295 |   function selectForEdit(entry) {
+  296 |     setEditingId(entry.id)
+  297 |     setForm({
+  298 |       question: entry.question || '',
+  299 |       answer: entry.answer || '',
+  300 |       keywords: Array.isArray(entry.keywords) ? entry.keywords.join(', ') : '',
+  301 |     })
+  302 |   }
+  303 | 
+  304 |   function resetForm() {
+  305 |     setEditingId('')
+  306 |     setForm({ question: '', answer: '', keywords: '' })
+  307 |   }
+  308 | 
+  309 |   async function saveFaq(e) {
+  310 |     e.preventDefault()
+  311 |     const token = getToken()
+  312 |     if (!token) return
+  313 |     const payload = {
+  314 |       type: 'faq',
+  315 |       question: form.question,
+  316 |       answer: form.answer,
+  317 |       keywords: form.keywords.split(',').map((k) => k.trim()).filter(Boolean),
+  318 |     }
+  319 |     try {
+  320 |       if (editingId) {
+  321 |         await apiRequest(`/assistant/knowledge/${editingId}`, { method: 'PUT', token, body: payload })
+  322 |       } else {
+  323 |         await apiRequest('/assistant/knowledge', { method: 'POST', token, body: payload })
+  324 |       }
+  325 |       resetForm()
+  326 |       loadFaqs()
+  327 |       setFeedback('FAQ updated')
+  328 |     } catch (err) {
+  329 |       setFeedback(err.message)
+  330 |     }
+  331 |   }
+  332 | 
+  333 |   async function removeFaq(entryId) {
+  334 |     const token = getToken()
+  335 |     if (!token) return
+  336 |     try {
+  337 |       await apiRequest(`/assistant/knowledge/${entryId}`, { method: 'DELETE', token })
+  338 |       loadFaqs()
+  339 |     } catch (err) {
+  340 |       setFeedback(err.message)
+  341 |     }
+  342 |   }
+  343 | 
+  344 |   const allFaqs = [...entries.map((e) => ({ q: e.question, a: e.answer, id: e.id })), ...staticFaqs]
+  345 |   const filteredFaqs = allFaqs.filter(
+  346 |     (f) => f.q.toLowerCase().includes(q.toLowerCase()) || f.a.toLowerCase().includes(q.toLowerCase()),
+  347 |   )
+  348 | 
+  349 |   const hubTiles = [
+  350 |     {
+  351 |       id: 'quick-start',
+  352 |       title: 'Quick Start Guide',
+  353 |       desc: 'Fast setup for buyers, factories, and buying houses.',
+  354 |       icon: Sparkles,
+  355 |       span: 'lg:col-span-3',
+  356 |     },
+  357 |     {
+  358 |       id: 'account-types',
+  359 |       title: 'Account Types',
+  360 |       desc: 'Clear roles, clear permissions.',
+  361 |       icon: ShieldCheck,
+  362 |       span: 'lg:col-span-3',
+  363 |     },
+  364 |     { id: 'faq', title: 'FAQ', desc: 'Searchable answers, no fluff.', icon: ChevronDown, span: 'lg:col-span-2' },
+  365 |     { id: 'contracts', title: 'Legal Vault', desc: 'Contracts & audit-ready records.', icon: FileText, span: 'lg:col-span-2' },
+  366 |     {
+  367 |       id: 'verification',
+  368 |       title: 'Verification',
+  369 |       desc: 'Document-based trust indicators.',
+  370 |       icon: ShieldCheck,
+  371 |       span: 'lg:col-span-2',
+  372 |     },
+  373 |     { id: 'messaging', title: 'Messaging Lock', desc: 'Conflict-free team conversations.', icon: Lock, span: 'lg:col-span-2' },
+  374 |   ]
+  375 | 
+  376 |   return (
+  377 |     <div className="min-h-screen overflow-x-hidden bg-slate-50 text-slate-900 dark:bg-[#0B0F1A] dark:text-slate-100">
+  378 |       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+  379 |         <header className="text-center">
+  380 |           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">Help Center</h1>
+  381 |           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Industrial reliability, tech-forward SaaS guidance.</p>
+  382 |         </header>
+  383 | 
+  384 |         <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-4">
+  385 |           <div className="lg:col-span-3 space-y-8">
+  386 |             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
+  387 |               {hubTiles.map((tile, idx) => {
+  388 |                 const Icon = tile.icon
+  389 |                 return (
+  390 |                   <MotionItem key={tile.id} index={idx} className={tile.span}>
+  391 |                     <a href={`#${tile.id}`} className={[cardClassName({ glass: true }), 'group block h-full'].join(' ')}>
+  392 |                       <div className="flex items-start justify-between gap-3">
+  393 |                         <div>
+  394 |                           <p className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">{tile.title}</p>
+  395 |                           <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">{tile.desc}</p>
+  396 |                         </div>
+  397 |                         <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 transition group-hover:bg-blue-600/14 dark:bg-blue-500/12 dark:text-blue-400">
+  398 |                           <Icon className="h-5 w-5" />
+  399 |                         </span>
+  400 |                       </div>
+  401 |                     </a>
+  402 |                   </MotionItem>
+  403 |                 )
+  404 |               })}
+  405 |             </div>
+  406 | 
+  407 |             {HELP_SECTIONS.map((section, idx) => (
+  408 |               <MotionItem key={section.id} index={hubTiles.length + idx}>
+  409 |                 <section id={section.id} className="scroll-mt-6">
+  410 |                   <SpotlightCard className={cardClassName()}>
+  411 |                     <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
+  412 |                       <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">{section.title}</h2>
+  413 |                       {section.id === 'verification' ? <VerifiedBadge /> : null}
+  414 |                     </div>
+  415 | 
+  416 |                     {section.description ? (
+  417 |                       <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">{section.description}</p>
+  418 |                     ) : null}
+  419 | 
+  420 |                     {section.content ? (
+  421 |                       <ul className="mt-4 space-y-2 text-sm text-slate-500 dark:text-slate-400">
+  422 |                         {section.content.map((item) => (
+  423 |                           <li key={item} className="flex gap-2">
+  424 |                             <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
+  425 |                             <span>{item}</span>
+  426 |                           </li>
+  427 |                         ))}
+  428 |                       </ul>
+  429 |                     ) : null}
+  430 | 
+  431 |                     {section.subsections ? (
+  432 |                       <div className="mt-5 grid gap-4 lg:grid-cols-3">
+  433 |                         {section.subsections.map((sub, subIndex) => (
+  434 |                           <motion.div
+  435 |                             key={sub.name}
+  436 |                             initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+  437 |                             animate={{ opacity: 1, y: 0 }}
+  438 |                             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.05 + subIndex * 0.05 }}
+  439 |                             className={[
+  440 |                               'rounded-xl bg-slate-900/2 p-5 transition duration-300 ease-out',
+  441 |                               'hover:-translate-y-0.5 hover:bg-slate-900/3 active:scale-[0.98]',
+  442 |                               'dark:bg-white/5 dark:hover:bg-white/6 dark:hover:translate-y-0',
+  443 |                               glowForAccount(sub.name),
+  444 |                             ].join(' ')}
+  445 |                           >
+  446 |                             <p className="font-semibold text-slate-900 dark:text-slate-100">{sub.name}</p>
+  447 |                             <ul className="mt-3 space-y-2 text-sm text-slate-500 dark:text-slate-400">
+  448 |                               {sub.points.map((p) => (
+  449 |                                 <li key={p} className="flex gap-2">
+  450 |                                   <span className="mt-0.5 text-blue-600/90 dark:text-blue-400">-</span>
+  451 |                                   <span>{p}</span>
+  452 |                                 </li>
+  453 |                               ))}
+  454 |                             </ul>
+  455 |                           </motion.div>
+  456 |                         ))}
+  457 |                       </div>
+  458 |                     ) : null}
+  459 | 
+  460 |                     {section.roles ? (
+  461 |                       <div className="mt-5 space-y-5">
+  462 |                         {section.roles.map((roleBlock) => (
+  463 |                           <div key={roleBlock.role}>
+  464 |                             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{roleBlock.role}</p>
+  465 |                             <ul className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 text-sm text-slate-500 md:grid-cols-2 dark:text-slate-400">
+  466 |                               {roleBlock.docs.map((d) => (
+  467 |                                 <li key={d} className="flex gap-2">
+  468 |                                   <span className="mt-0.5 text-emerald-600 dark:text-emerald-400">-</span>
+  469 |                                   <span>{d}</span>
+  470 |                                 </li>
+  471 |                               ))}
+  472 |                             </ul>
+  473 |                           </div>
+  474 |                         ))}
+  475 |                       </div>
+  476 |                     ) : null}
+  477 | 
+  478 |                     {section.sections ? (
+  479 |                       <div className="mt-5 space-y-4">
+  480 |                         {section.sections.map((s) => (
+  481 |                           <div key={s.title} className="rounded-xl bg-slate-900/2 p-5 dark:bg-white/5">
+  482 |                             <div className="flex items-center justify-between gap-3">
+  483 |                               <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{s.title}</p>
+  484 |                               {s.title.toLowerCase().includes('verified') ? <VerifiedBadge /> : null}
+  485 |                             </div>
+  486 |                             {s.text ? <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{s.text}</p> : null}
+  487 |                             {s.points ? (
+  488 |                               <ul className="mt-3 space-y-2 text-sm text-slate-500 dark:text-slate-400">
+  489 |                                 {s.points.map((p) => (
+  490 |                                   <li key={p} className="flex gap-2">
+  491 |                                     <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
+  492 |                                     <span>{p}</span>
+  493 |                                   </li>
+  494 |                                 ))}
+  495 |                               </ul>
+  496 |                             ) : null}
+  497 | 
+  498 |                             {section.id === 'messaging' && s.title.toLowerCase().includes('lock') ? (
+  499 |                               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white/70 px-4 py-3 backdrop-blur-md shadow-[0_10px_24px_rgba(15,23,42,0.06)] dark:bg-white/5 dark:shadow-none">
+  500 |                                 <div className="flex items-center gap-3">
+  501 |                                   <AnimatePresence initial={false} mode="popLayout">
+  502 |                                     {lockGranted ? (
+  503 |                                       <motion.div
+  504 |                                         key="unlocked"
+  505 |                                         initial={reduceMotion ? false : { opacity: 0, x: 6 }}
+  506 |                                         animate={{ opacity: 1, x: 0 }}
+  507 |                                         exit={{ opacity: 0, x: -6 }}
+  508 |                                         transition={{ duration: 0.25 }}
+  509 |                                         className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600/10 text-emerald-700 dark:bg-emerald-500/12 dark:text-emerald-200"
+  510 |                                       >
+  511 |                                         <Check className="h-5 w-5" />
+  512 |                                       </motion.div>
+  513 |                                     ) : (
+  514 |                                       <motion.div
+  515 |                                         key="locked"
+  516 |                                         initial={reduceMotion ? false : { opacity: 0, x: 6 }}
+  517 |                                         animate={{ opacity: 1, x: 0 }}
+  518 |                                         exit={{ opacity: 0, x: -6 }}
+  519 |                                         transition={{ duration: 0.25 }}
+  520 |                                         className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900/6 text-slate-700 dark:bg-white/6 dark:text-slate-200"
+  521 |                                       >
+  522 |                                         <Lock className="h-5 w-5" />
+  523 |                                       </motion.div>
+  524 |                                     )}
+  525 |                                   </AnimatePresence>
+  526 |                                   <div>
+  527 |                                     <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Lock demo</p>
+  528 |                                     <p className="text-xs text-slate-500 dark:text-slate-400">
+  529 |                                       {lockGranted ? 'Permission granted -- teammates can message.' : 'Locked -- teammates need permission.'}
+  530 |                                     </p>
+  531 |                                   </div>
+  532 |                                 </div>
+  533 |                                 <button
+  534 |                                   type="button"
+  535 |                                   onClick={() => setLockGranted((v) => !v)}
+  536 |                                   className="rounded-full bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-500 dark:text-slate-900 dark:hover:bg-blue-400"
+  537 |                                 >
+  538 |                                   {lockGranted ? 'Reset' : 'Grant permission'}
+  539 |                                 </button>
+  540 |                               </div>
+  541 |                             ) : null}
+  542 |                           </div>
+  543 |                         ))}
+  544 |                       </div>
+  545 |                     ) : null}
+  546 | 
+  547 |                     {section.points && !section.subsections && !section.sections ? (
+  548 |                       <ul className="mt-4 space-y-2 text-sm text-slate-500 dark:text-slate-400">
+  549 |                         {section.points.map((p) => (
+  550 |                           <li key={p} className="flex gap-2">
+  551 |                             <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
+  552 |                             <span>{p}</span>
+  553 |                           </li>
+  554 |                         ))}
+  555 |                       </ul>
+  556 |                     ) : null}
+  557 | 
+  558 |                     {section.footer ? (
+  559 |                       <p className="mt-5 borderless-divider-t pt-3 text-xs italic text-slate-500 dark:text-slate-400">
+  560 |                         {section.footer}
+  561 |                       </p>
+  562 |                     ) : null}
+  563 |                   </SpotlightCard>
+  564 |                 </section>
+  565 |               </MotionItem>
+  566 |             ))}
+  567 | 
+  568 |             <MotionItem index={hubTiles.length + HELP_SECTIONS.length}>
+  569 |               <section id="faq" className="scroll-mt-6">
+  570 |                 <SpotlightCard className={cardClassName()}>
+  571 |                   <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
+  572 |                     <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
+  573 |                       10. Frequently Asked Questions (FAQ)
+  574 |                     </h2>
+  575 |                     <span className="rounded-full bg-slate-900/4 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:bg-white/6 dark:text-slate-400">
+  576 |                       Searchable
+  577 |                     </span>
+  578 |                   </div>
+  579 | 
+  580 |                   <div className="mt-4">
+  581 |                     <input
+  582 |                       placeholder="Search FAQs..."
+  583 |                       value={q}
+  584 |                       onChange={(e) => setQ(e.target.value)}
+  585 |                       className="w-full rounded-full bg-slate-900/4 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
+  586 |                     />
+  587 |                   </div>
+  588 | 
+  589 |                   <div className="mt-5 space-y-3">
+  590 |                     {faqLoading ? (
+  591 |                       <>
   592 |                         <Skeleton className="h-16 rounded-xl" />
-  593 |                       </>
-  594 |                     ) : (
-  595 |                       <AnimatePresence mode="wait" initial={false}>
-  596 |                         <motion.div
-  597 |                           key="faq"
-  598 |                           initial={reduceMotion ? false : { opacity: 0 }}
-  599 |                           animate={{ opacity: 1 }}
-  600 |                           exit={{ opacity: 0 }}
-  601 |                           transition={{ duration: 0.3 }}
-  602 |                           className="space-y-3"
-  603 |                         >
-  604 |                           {filteredFaqs.map((f) => (
-  605 |                             <details
-  606 |                               key={f.id || f.q}
-  607 |                               className="group rounded-xl bg-slate-900/2 p-4 transition-colors hover:bg-slate-900/3 dark:bg-white/5 dark:hover:bg-white/6"
-  608 |                             >
-  609 |                               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-900 dark:text-slate-100">
-  610 |                                 <span className="min-w-0 truncate">Q: {f.q}</span>
-  611 |                                 <ChevronDown className="h-4 w-4 shrink-0 text-slate-500 transition-transform group-open:rotate-180 dark:text-slate-400" />
-  612 |                               </summary>
-  613 |                               <p className="mt-3 border-l-2 border-blue-600/50 pl-4 text-sm text-slate-500 dark:border-blue-400/50 dark:text-slate-400">
-  614 |                                 A: {f.a}
-  615 |                               </p>
-  616 |                             </details>
-  617 |                           ))}
-  618 |                         </motion.div>
-  619 |                       </AnimatePresence>
-  620 |                     )}
-  621 |                   </div>
-  622 |                 </SpotlightCard>
-  623 |               </section>
-  624 |             </MotionItem>
-  625 | 
-  626 |             {isOwnerAdmin ? (
-  627 |               <MotionItem index={hubTiles.length + HELP_SECTIONS.length + 1}>
-  628 |                 <section className="scroll-mt-6">
-  629 |                   <SpotlightCard className={cardClassName({ glass: true })}>
-  630 |                     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 dark:border-slate-800">
-  631 |                       <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
-  632 |                         Admin: Manage Knowledge Base FAQ
-  633 |                       </h2>
-  634 |                       <span className="rounded-full bg-blue-600/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-blue-700 dark:bg-blue-500/12 dark:text-blue-200">
-  635 |                         Owner/Admin
-  636 |                       </span>
-  637 |                     </div>
-  638 | 
-  639 |                     <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-  640 |                       <form onSubmit={saveFaq} className="space-y-3">
-  641 |                         <input
-  642 |                           placeholder="Question"
-  643 |                           value={form.question}
-  644 |                           onChange={(e) => setForm({ ...form, question: e.target.value })}
-  645 |                           className="w-full rounded-xl bg-slate-900/4 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
-  646 |                           required
-  647 |                         />
-  648 |                         <textarea
-  649 |                           placeholder="Answer"
-  650 |                           value={form.answer}
-  651 |                           onChange={(e) => setForm({ ...form, answer: e.target.value })}
-  652 |                           className="min-h-28 w-full rounded-xl bg-slate-900/4 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
-  653 |                           required
-  654 |                         />
-  655 |                         <input
-  656 |                           placeholder="Keywords (comma separated)"
-  657 |                           value={form.keywords}
-  658 |                           onChange={(e) => setForm({ ...form, keywords: e.target.value })}
-  659 |                           className="w-full rounded-xl bg-slate-900/4 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
-  660 |                         />
-  661 |                         <div className="flex flex-wrap gap-2">
-  662 |                           <button
-  663 |                             type="submit"
-  664 |                             className="rounded-full bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-500 dark:text-slate-900 dark:hover:bg-blue-400"
-  665 |                           >
-  666 |                             {editingId ? 'Update' : 'Add'} FAQ
-  667 |                           </button>
-  668 |                           {editingId ? (
-  669 |                             <button
-  670 |                               type="button"
-  671 |                               onClick={resetForm}
-  672 |                               className="rounded-full bg-slate-900/4 px-5 py-2.5 text-xs font-semibold text-slate-900 transition hover:bg-slate-900/6 active:scale-[0.98] dark:bg-white/6 dark:text-slate-100 dark:hover:bg-white/8"
-  673 |                             >
-  674 |                               Cancel
-  675 |                             </button>
-  676 |                           ) : null}
-  677 |                         </div>
-  678 |                         {feedback ? <p className="text-xs text-slate-500 dark:text-slate-400">{feedback}</p> : null}
-  679 |                       </form>
-  680 | 
-  681 |                       <div className="max-h-72 space-y-2 overflow-y-auto pr-2">
-  682 |                         {faqLoading ? (
-  683 |                           <>
-  684 |                             <Skeleton className="h-12 rounded-xl" />
-  685 |                             <Skeleton className="h-12 rounded-xl" />
+  593 |                         <Skeleton className="h-16 rounded-xl" />
+  594 |                         <Skeleton className="h-16 rounded-xl" />
+  595 |                       </>
+  596 |                     ) : (
+  597 |                       <AnimatePresence mode="wait" initial={false}>
+  598 |                         <motion.div
+  599 |                           key="faq"
+  600 |                           initial={reduceMotion ? false : { opacity: 0 }}
+  601 |                           animate={{ opacity: 1 }}
+  602 |                           exit={{ opacity: 0 }}
+  603 |                           transition={{ duration: 0.3 }}
+  604 |                           className="space-y-3"
+  605 |                         >
+  606 |                           {filteredFaqs.map((f) => (
+  607 |                             <details
+  608 |                               key={f.id || f.q}
+  609 |                               className="group rounded-xl bg-slate-900/2 p-4 transition-colors hover:bg-slate-900/3 dark:bg-white/5 dark:hover:bg-white/6"
+  610 |                             >
+  611 |                               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-900 dark:text-slate-100">
+  612 |                                 <span className="min-w-0 truncate">Q: {f.q}</span>
+  613 |                                 <ChevronDown className="h-4 w-4 shrink-0 text-slate-500 transition-transform group-open:rotate-180 dark:text-slate-400" />
+  614 |                               </summary>
+  615 |                               <p className="mt-3 pl-4 text-sm text-slate-500 dark:text-slate-400 borderless-shadow">
+  616 |                                 A: {f.a}
+  617 |                               </p>
+  618 |                             </details>
+  619 |                           ))}
+  620 |                         </motion.div>
+  621 |                       </AnimatePresence>
+  622 |                     )}
+  623 |                   </div>
+  624 |                 </SpotlightCard>
+  625 |               </section>
+  626 |             </MotionItem>
+  627 | 
+  628 |             {isOwnerAdmin ? (
+  629 |               <MotionItem index={hubTiles.length + HELP_SECTIONS.length + 1}>
+  630 |                 <section className="scroll-mt-6">
+  631 |                   <SpotlightCard className={cardClassName({ glass: true })}>
+  632 |                     <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
+  633 |                       <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
+  634 |                         Admin: Manage Knowledge Base FAQ
+  635 |                       </h2>
+  636 |                       <span className="rounded-full bg-blue-600/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-blue-700 dark:bg-blue-500/12 dark:text-blue-200">
+  637 |                         Owner/Admin
+  638 |                       </span>
+  639 |                     </div>
+  640 | 
+  641 |                     <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+  642 |                       <form onSubmit={saveFaq} className="space-y-3">
+  643 |                         <input
+  644 |                           placeholder="Question"
+  645 |                           value={form.question}
+  646 |                           onChange={(e) => setForm({ ...form, question: e.target.value })}
+  647 |                           className="w-full rounded-xl bg-slate-900/4 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
+  648 |                           required
+  649 |                         />
+  650 |                         <textarea
+  651 |                           placeholder="Answer"
+  652 |                           value={form.answer}
+  653 |                           onChange={(e) => setForm({ ...form, answer: e.target.value })}
+  654 |                           className="min-h-28 w-full rounded-xl bg-slate-900/4 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
+  655 |                           required
+  656 |                         />
+  657 |                         <input
+  658 |                           placeholder="Keywords (comma separated)"
+  659 |                           value={form.keywords}
+  660 |                           onChange={(e) => setForm({ ...form, keywords: e.target.value })}
+  661 |                           className="w-full rounded-xl bg-slate-900/4 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
+  662 |                         />
+  663 |                         <div className="flex flex-wrap gap-2">
+  664 |                           <button
+  665 |                             type="submit"
+  666 |                             className="rounded-full bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-500 dark:text-slate-900 dark:hover:bg-blue-400"
+  667 |                           >
+  668 |                             {editingId ? 'Update' : 'Add'} FAQ
+  669 |                           </button>
+  670 |                           {editingId ? (
+  671 |                             <button
+  672 |                               type="button"
+  673 |                               onClick={resetForm}
+  674 |                               className="rounded-full bg-slate-900/4 px-5 py-2.5 text-xs font-semibold text-slate-900 transition hover:bg-slate-900/6 active:scale-[0.98] dark:bg-white/6 dark:text-slate-100 dark:hover:bg-white/8"
+  675 |                             >
+  676 |                               Cancel
+  677 |                             </button>
+  678 |                           ) : null}
+  679 |                         </div>
+  680 |                         {feedback ? <p className="text-xs text-slate-500 dark:text-slate-400">{feedback}</p> : null}
+  681 |                       </form>
+  682 | 
+  683 |                       <div className="max-h-72 space-y-2 overflow-y-auto pr-2">
+  684 |                         {faqLoading ? (
+  685 |                           <>
   686 |                             <Skeleton className="h-12 rounded-xl" />
   687 |                             <Skeleton className="h-12 rounded-xl" />
-  688 |                           </>
-  689 |                         ) : (
-  690 |                           entries.map((e) => (
-  691 |                             <div
-  692 |                               key={e.id}
-  693 |                               className="rounded-xl bg-[#ffffff] p-3 text-xs shadow-[0_10px_24px_rgba(15,23,42,0.06)] dark:bg-white/5 dark:shadow-none"
-  694 |                             >
-  695 |                               <div className="flex items-start justify-between gap-3">
-  696 |                                 <div className="min-w-0 flex-1">
-  697 |                                   <p className="truncate font-semibold text-slate-900 dark:text-slate-100">{e.question}</p>
-  698 |                                   <p className="mt-1 truncate text-slate-500 dark:text-slate-400">{e.answer}</p>
-  699 |                                 </div>
-  700 |                                 <div className="flex shrink-0 gap-2">
-  701 |                                   <button onClick={() => selectForEdit(e)} className="text-blue-600 hover:underline dark:text-blue-400">
-  702 |                                     Edit
-  703 |                                   </button>
-  704 |                                   <button onClick={() => removeFaq(e.id)} className="text-rose-600 hover:underline dark:text-rose-300">
-  705 |                                     Del
-  706 |                                   </button>
-  707 |                                 </div>
-  708 |                               </div>
-  709 |                             </div>
-  710 |                           ))
-  711 |                         )}
-  712 |                       </div>
-  713 |                     </div>
-  714 |                   </SpotlightCard>
-  715 |                 </section>
-  716 |               </MotionItem>
-  717 |             ) : null}
-  718 | 
-  719 |             <MotionItem index={hubTiles.length + HELP_SECTIONS.length + 2}>
-  720 |               <section className="scroll-mt-6">
-  721 |                 <SpotlightCard className={cardClassName({ glass: true })}>
-  722 |                   <div className="flex items-center justify-between gap-3">
-  723 |                     <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Contact Support</h2>
-  724 |                     <span className="rounded-full bg-slate-900/4 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:bg-white/6 dark:text-slate-400">
-  725 |                       Response varies
-  726 |                     </span>
-  727 |                   </div>
-  728 |                   <p className="mt-3 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-  729 |                     If your issue is not resolved, use the Floating Assistant, submit a support ticket, or contact the GarTexHub Support Team.
-  730 |                   </p>
-  731 |                   <div className="mt-6 flex flex-wrap gap-3">
-  732 |                     <button className="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-500 dark:text-slate-900 dark:hover:bg-blue-400">
-  733 |                       Open support ticket
-  734 |                     </button>
-  735 |                     <button className="rounded-full bg-[#ffffff] px-6 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] dark:bg-white/6 dark:text-slate-100 dark:shadow-none dark:hover:translate-y-0 dark:hover:bg-white/8">
-  736 |                       Live chat
-  737 |                     </button>
-  738 |                   </div>
-  739 |                   <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">
-  740 |                     Tip: On <span className="font-semibold">/help</span>, the assistant uses an “Orb” style to indicate ready-to-help status.
-  741 |                   </p>
-  742 |                 </SpotlightCard>
-  743 |               </section>
-  744 |             </MotionItem>
-  745 |           </div>
-  746 | 
-  747 |           <div className="space-y-6">
-  748 |             <div className="sticky top-8 space-y-6">
-  749 |               <SpotlightCard className={cardClassName({ glass: true })}>
-  750 |                 <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">Search</h3>
-  751 |                 <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Search FAQ answers instantly.</p>
-  752 |                 <div className="mt-4">
-  753 |                   <input
-  754 |                     value={q}
-  755 |                     onChange={(e) => setQ(e.target.value)}
-  756 |                     placeholder="Search users, terms, workflows..."
-  757 |                     className="w-full rounded-full bg-slate-900/4 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
-  758 |                   />
-  759 |                 </div>
-  760 |                 <div className="mt-3 flex flex-wrap gap-2">
-  761 |                   {['verification', 'contracts', 'messages', 'premium', 'sub-accounts'].map((chip) => (
-  762 |                     <button
-  763 |                       key={chip}
-  764 |                       type="button"
-  765 |                       onClick={() => setQ(chip)}
-  766 |                       className="rounded-full bg-slate-900/4 px-3 py-1 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-900/6 active:scale-[0.98] dark:bg-white/6 dark:text-slate-300 dark:hover:bg-white/8"
-  767 |                     >
-  768 |                       {chip}
-  769 |                     </button>
-  770 |                   ))}
-  771 |                 </div>
-  772 |               </SpotlightCard>
-  773 | 
-  774 |               <SpotlightCard className={cardClassName({ glass: true })}>
-  775 |                 <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">Quick navigation</h3>
-  776 |                 <div className="mt-4 flex flex-wrap gap-2">
-  777 |                   {[...HELP_SECTIONS.map((s) => ({ id: s.id, label: s.title })), { id: 'faq', label: '10. FAQ' }].map((s) => (
-  778 |                     <a
-  779 |                       key={s.id}
-  780 |                       href={`#${s.id}`}
-  781 |                       className="rounded-full bg-blue-600/10 px-3 py-1 text-[11px] font-semibold text-blue-700 transition hover:bg-blue-600/14 active:scale-[0.98] dark:bg-blue-500/12 dark:text-blue-200 dark:hover:bg-blue-500/18"
-  782 |                     >
-  783 |                       {s.label}
-  784 |                     </a>
-  785 |                   ))}
-  786 |                 </div>
-  787 |               </SpotlightCard>
-  788 | 
-  789 |               <SpotlightCard className={cardClassName({ glass: true })}>
-  790 |                 <div className="flex items-center justify-between gap-3">
-  791 |                   <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">Floating Assistant</h3>
-  792 |                   <span className="rounded-full bg-slate-900/4 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:bg-white/6 dark:text-slate-400">
-  793 |                     Orb mode
-  794 |                   </span>
-  795 |                 </div>
-  796 |                 <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-  797 |                   On this page, the assistant uses a glass “Orb” with a rotating ring in dark mode to signal it’s ready to help.
-  798 |                 </p>
-  799 |                 <div className="mt-4 rounded-xl bg-slate-900/2 p-4 dark:bg-white/5">
-  800 |                   <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">What it can do</p>
-  801 |                   <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-  802 |                     Setup, navigation, support articles — it does not negotiate.
-  803 |                   </p>
-  804 |                 </div>
-  805 |               </SpotlightCard>
-  806 |             </div>
-  807 |           </div>
-  808 |         </div>
-  809 |       </div>
-  810 |     </div>
-  811 |   )
-  812 | }
-  813 | 
+  688 |                             <Skeleton className="h-12 rounded-xl" />
+  689 |                             <Skeleton className="h-12 rounded-xl" />
+  690 |                           </>
+  691 |                         ) : (
+  692 |                           entries.map((e) => (
+  693 |                             <div
+  694 |                               key={e.id}
+  695 |                               className="rounded-xl bg-[#ffffff] p-3 text-xs shadow-[0_10px_24px_rgba(15,23,42,0.06)] dark:bg-white/5 dark:shadow-none"
+  696 |                             >
+  697 |                               <div className="flex items-start justify-between gap-3">
+  698 |                                 <div className="min-w-0 flex-1">
+  699 |                                   <p className="truncate font-semibold text-slate-900 dark:text-slate-100">{e.question}</p>
+  700 |                                   <p className="mt-1 truncate text-slate-500 dark:text-slate-400">{e.answer}</p>
+  701 |                                 </div>
+  702 |                                 <div className="flex shrink-0 gap-2">
+  703 |                                   <button onClick={() => selectForEdit(e)} className="text-blue-600 hover:underline dark:text-blue-400">
+  704 |                                     Edit
+  705 |                                   </button>
+  706 |                                   <button onClick={() => removeFaq(e.id)} className="text-rose-600 hover:underline dark:text-rose-300">
+  707 |                                     Del
+  708 |                                   </button>
+  709 |                                 </div>
+  710 |                               </div>
+  711 |                             </div>
+  712 |                           ))
+  713 |                         )}
+  714 |                       </div>
+  715 |                     </div>
+  716 |                   </SpotlightCard>
+  717 |                 </section>
+  718 |               </MotionItem>
+  719 |             ) : null}
+  720 | 
+  721 |             <MotionItem index={hubTiles.length + HELP_SECTIONS.length + 2}>
+  722 |               <section className="scroll-mt-6">
+  723 |                 <SpotlightCard className={cardClassName({ glass: true })}>
+  724 |                   <div className="flex items-center justify-between gap-3">
+  725 |                     <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Contact Support</h2>
+  726 |                     <span className="rounded-full bg-slate-900/4 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:bg-white/6 dark:text-slate-400">
+  727 |                       Response varies
+  728 |                     </span>
+  729 |                   </div>
+  730 |                   <p className="mt-3 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+  731 |                     If your issue is not resolved, use the Floating Assistant, submit a support ticket, or contact the GarTexHub Support Team.
+  732 |                   </p>
+  733 |                   <div className="mt-6 flex flex-wrap gap-3">
+  734 |                     <button className="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-500 dark:text-slate-900 dark:hover:bg-blue-400">
+  735 |                       Open support ticket
+  736 |                     </button>
+  737 |                     <button className="rounded-full bg-[#ffffff] px-6 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] dark:bg-white/6 dark:text-slate-100 dark:shadow-none dark:hover:translate-y-0 dark:hover:bg-white/8">
+  738 |                       Live chat
+  739 |                     </button>
+  740 |                   </div>
+  741 |                   <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">
+  742 |                     Tip: On <span className="font-semibold">/help</span>, the assistant uses an “Orb” style to indicate ready-to-help status.
+  743 |                   </p>
+  744 |                 </SpotlightCard>
+  745 |               </section>
+  746 |             </MotionItem>
+  747 |           </div>
+  748 | 
+  749 |           <div className="space-y-6">
+  750 |             <div className="sticky top-8 space-y-6">
+  751 |               <SpotlightCard className={cardClassName({ glass: true })}>
+  752 |                 <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">Search</h3>
+  753 |                 <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Search FAQ answers instantly.</p>
+  754 |                 <div className="mt-4">
+  755 |                   <input
+  756 |                     value={q}
+  757 |                     onChange={(e) => setQ(e.target.value)}
+  758 |                     placeholder="Search users, terms, workflows..."
+  759 |                     className="w-full rounded-full bg-slate-900/4 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
+  760 |                   />
+  761 |                 </div>
+  762 |                 <div className="mt-3 flex flex-wrap gap-2">
+  763 |                   {['verification', 'contracts', 'messages', 'premium', 'sub-accounts'].map((chip) => (
+  764 |                     <button
+  765 |                       key={chip}
+  766 |                       type="button"
+  767 |                       onClick={() => setQ(chip)}
+  768 |                       className="rounded-full bg-slate-900/4 px-3 py-1 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-900/6 active:scale-[0.98] dark:bg-white/6 dark:text-slate-300 dark:hover:bg-white/8"
+  769 |                     >
+  770 |                       {chip}
+  771 |                     </button>
+  772 |                   ))}
+  773 |                 </div>
+  774 |               </SpotlightCard>
+  775 | 
+  776 |               <SpotlightCard className={cardClassName({ glass: true })}>
+  777 |                 <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">Quick navigation</h3>
+  778 |                 <div className="mt-4 flex flex-wrap gap-2">
+  779 |                   {[...HELP_SECTIONS.map((s) => ({ id: s.id, label: s.title })), { id: 'faq', label: '10. FAQ' }].map((s) => (
+  780 |                     <a
+  781 |                       key={s.id}
+  782 |                       href={`#${s.id}`}
+  783 |                       className="rounded-full bg-blue-600/10 px-3 py-1 text-[11px] font-semibold text-blue-700 transition hover:bg-blue-600/14 active:scale-[0.98] dark:bg-blue-500/12 dark:text-blue-200 dark:hover:bg-blue-500/18"
+  784 |                     >
+  785 |                       {s.label}
+  786 |                     </a>
+  787 |                   ))}
+  788 |                 </div>
+  789 |               </SpotlightCard>
+  790 | 
+  791 |               <SpotlightCard className={cardClassName({ glass: true })}>
+  792 |                 <div className="flex items-center justify-between gap-3">
+  793 |                   <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">Floating Assistant</h3>
+  794 |                   <span className="rounded-full bg-slate-900/4 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:bg-white/6 dark:text-slate-400">
+  795 |                     Orb mode
+  796 |                   </span>
+  797 |                 </div>
+  798 |                 <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+  799 |                   On this page, the assistant uses a glass “Orb” with a rotating ring in dark mode to signal it’s ready to help.
+  800 |                 </p>
+  801 |                 <div className="mt-4 rounded-xl bg-slate-900/2 p-4 dark:bg-white/5">
+  802 |                   <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">What it can do</p>
+  803 |                   <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+  804 |                     Setup, navigation, support articles -- it does not negotiate.
+  805 |                   </p>
+  806 |                 </div>
+  807 |               </SpotlightCard>
+  808 |             </div>
+  809 |           </div>
+  810 |         </div>
+  811 |       </div>
+  812 |     </div>
+  813 |   )
+  814 | }
+  815 | 
+  816 | 

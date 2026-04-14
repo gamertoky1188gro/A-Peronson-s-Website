@@ -135,7 +135,6 @@ export const BUYER_COUNTRY_OPTIONS = [
   'Iraq',
   'Ireland',
   'Isle of Man',
-  'Israel',
   'Italy',
   'Jamaica',
   'Japan',

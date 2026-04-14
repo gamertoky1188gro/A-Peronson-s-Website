@@ -1,4 +1,3 @@
-{% raw %}
 # FactoryProfile - Route `/factory/:id`
 
 **Access:** Protected (Login required). **Roles:** buyer, buying_house, factory, owner, admin, agent
@@ -15,11 +14,14 @@
 ### 2.1 Imported child components
 
 - ../lib/auth (src/pages/FactoryProfile.jsx:25)
-- ../components/profile/VerificationPanel (src/pages/FactoryProfile.jsx:26)
+- ../lib/events (src/pages/FactoryProfile.jsx:26)
+- ../lib/leadSource (src/pages/FactoryProfile.jsx:27)
+- ../components/profile/VerificationPanel (src/pages/FactoryProfile.jsx:28)
+- ../components/profile/CrmSummaryPanel (src/pages/FactoryProfile.jsx:29)
 
 ### 2.2 Structural section tags in JSX
 
-- `aside` at `src/pages/FactoryProfile.jsx:155`
+- `aside` at `src/pages/FactoryProfile.jsx:218`
 
 ```jsx
         <aside className="col-span-12 lg:col-span-4 space-y-4">
@@ -27,51 +29,51 @@
             initial={reduceMotion ? false : { opacity: 0, y: 16 }}
             animate={reduceMotion ? false : { opacity: 1, y: 0 }}
 ```
-- `main` at `src/pages/FactoryProfile.jsx:201`
+- `main` at `src/pages/FactoryProfile.jsx:293`
 
 ```jsx
         <main className="col-span-12 lg:col-span-8 space-y-4">
+          <CrmSummaryPanel targetId={user.id} />
           <motion.div
             initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-            animate={reduceMotion ? false : { opacity: 1, y: 0 }}
 ```
 ## 3) Styling (className blocks, utility breakdown, and custom CSS)
 
 ### 3.1 Custom CSS utilities referenced by this page (App.css / index.css)
 
 - `.nav-glass` definitions:
-  - `src/App.css:615`
+  - `src/App.css:897`
 - `.spotlight-card` definitions:
-  - `src/App.css:267`
+  - `src/App.css:550`
 - `.skeleton` definitions:
-  - `src/App.css:583`
+  - `src/App.css:865`
 - `.neo-page` definitions:
-  - `src/App.css:108`
+  - `src/App.css:115`
 - `.neo-panel` definitions:
-  - `src/App.css:116`
+  - `src/App.css:123`
 - `.cyberpunk-page` definitions:
-  - `src/App.css:109`
+  - `src/App.css:116`
 - `.cyberpunk-card` definitions:
-  - `src/App.css:110`
+  - `src/App.css:117`
 - `.assistant-orb-btn` definitions:
-  - `src/App.css:518`
+  - `src/App.css:801`
 - `.legal-weave` definitions:
-  - `src/App.css:366`
+  - `src/App.css:649`
 - `.signature-draw` definitions:
-  - `src/App.css:401`
+  - `src/App.css:684`
 - `.verified-shimmer` definitions:
-  - `src/App.css:434`
+  - `src/App.css:717`
 - `.verified-pulse` definitions:
-  - `src/App.css:293`
+  - `src/App.css:576`
 - `.conic-beam` definitions:
-  - `src/App.css:302`
+  - `src/App.css:585`
 
 ### 3.2 Every className block (with grouped explanations)
 
-#### `src/pages/FactoryProfile.jsx:148`
+#### `src/pages/FactoryProfile.jsx:211`
 
 ```jsx
-  if (loading) return <div className="min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out">Loading profile…</div>
+  if (loading) return <div className="min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out">Loading profile...</div>
   if (error) return <div className="min-h-screen bg-slate-50 p-6 text-rose-700 dark:bg-[#020617] dark:text-rose-200 transition-colors duration-500 ease-in-out">{error}</div>
   if (!user) return <div className="min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out">Profile not found.</div>
 
@@ -101,7 +103,7 @@
   - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-rose-200` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:149`
+#### `src/pages/FactoryProfile.jsx:212`
 
 ```jsx
   if (error) return <div className="min-h-screen bg-slate-50 p-6 text-rose-700 dark:bg-[#020617] dark:text-rose-200 transition-colors duration-500 ease-in-out">{error}</div>
@@ -134,7 +136,7 @@
   - `dark:text-rose-200` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:150`
+#### `src/pages/FactoryProfile.jsx:213`
 
 ```jsx
   if (!user) return <div className="min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out">Profile not found.</div>
@@ -167,7 +169,7 @@
   - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:153`
+#### `src/pages/FactoryProfile.jsx:216`
 
 ```jsx
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
@@ -209,7 +211,7 @@
   - `dark:bg-[#020617]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:154`
+#### `src/pages/FactoryProfile.jsx:217`
 
 ```jsx
       <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-12 gap-4">
@@ -238,7 +240,7 @@
 - **Responsive variants:**
   - `lg:col-span-4` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:155`
+#### `src/pages/FactoryProfile.jsx:218`
 
 ```jsx
         <aside className="col-span-12 lg:col-span-4 space-y-4">
@@ -259,35 +261,29 @@
 - **Responsive variants:**
   - `lg:col-span-4` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:160`
+#### `src/pages/FactoryProfile.jsx:223`
 
 ```jsx
             className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800"
           >
             <div className="flex items-center gap-3">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
+              {user.profile?.profile_image ? (
 ```
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800`
 - `flex items-center gap-3`
-- `h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]`
 
 **Utility breakdown (grouped):**
 
 - **Layout / positioning:**
   - `flex` — Flex layout.
   - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `h-14` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `w-14` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Spacing:**
   - `p-4` — Padding (all sides).
   - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Color / surface:**
   - `bg-[#ffffff]` — Background color/surface.
-  - `bg-gradient-to-br` — Background color/surface.
-  - `from-[#0A66C2]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `to-[#2E8BFF]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
   - `shadow-sm` — Drop shadow depth (elevation).
@@ -297,20 +293,18 @@
   - `dark:bg-slate-900/50` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-slate-800` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:162`
+#### `src/pages/FactoryProfile.jsx:225`
 
 ```jsx
             <div className="flex items-center gap-3">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
-              <div className="min-w-0">
-                <p className="text-lg font-bold text-slate-900 truncate">{user.name}</p>
+              {user.profile?.profile_image ? (
+                <img src={user.profile.profile_image} alt={user.name} className="h-14 w-14 rounded-2xl object-cover" />
+              ) : (
 ```
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-3`
-- `h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]`
-- `min-w-0`
-- `text-lg font-bold text-slate-900 truncate`
+- `h-14 w-14 rounded-2xl object-cover`
 
 **Utility breakdown (grouped):**
 
@@ -319,35 +313,53 @@
   - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `h-14` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `w-14` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `min-w-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Spacing:**
   - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Typography:**
-  - `text-lg` — Text color or text sizing.
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-slate-900` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-2xl` — Corner radius.
+- **Other:**
+  - `object-cover` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/FactoryProfile.jsx:227`
+
+```jsx
+                <img src={user.profile.profile_image} alt={user.name} className="h-14 w-14 rounded-2xl object-cover" />
+              ) : (
+                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
+              )}
+```
+**Raw class strings detected (best effort):**
+
+- `h-14 w-14 rounded-2xl object-cover`
+- `h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `h-14` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-14` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Color / surface:**
   - `bg-gradient-to-br` — Background color/surface.
   - `from-[#0A66C2]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `to-[#2E8BFF]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
+- **Other:**
+  - `object-cover` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/FactoryProfile.jsx:163`
+#### `src/pages/FactoryProfile.jsx:229`
 
 ```jsx
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
+                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
+              )}
               <div className="min-w-0">
                 <p className="text-lg font-bold text-slate-900 truncate">{user.name}</p>
-                <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
 ```
 **Raw class strings detected (best effort):**
 
 - `h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]`
 - `min-w-0`
 - `text-lg font-bold text-slate-900 truncate`
-- `flex flex-wrap items-center gap-2 text-[11px] text-slate-500`
 
 **Utility breakdown (grouped):**
 
@@ -356,25 +368,18 @@
   - `w-14` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `min-w-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `flex` — Flex layout.
-  - `flex-wrap` — Flex layout.
-  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Spacing:**
-  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
   - `text-lg` — Text color or text sizing.
   - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
-  - `text-slate-500` — Text color or text sizing.
 - **Color / surface:**
   - `bg-gradient-to-br` — Background color/surface.
   - `from-[#0A66C2]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `to-[#2E8BFF]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-[11px]` — Text color or text sizing.
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
 
-#### `src/pages/FactoryProfile.jsx:164`
+#### `src/pages/FactoryProfile.jsx:231`
 
 ```jsx
               <div className="min-w-0">
@@ -408,13 +413,13 @@
 - **Color / surface:**
   - `text-[11px]` — Text color or text sizing.
 
-#### `src/pages/FactoryProfile.jsx:165`
+#### `src/pages/FactoryProfile.jsx:232`
 
 ```jsx
                 <p className="text-lg font-bold text-slate-900 truncate">{user.name}</p>
                 <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
                   <span className="uppercase">Factory</span>
-                  {user.profile?.country ? <span>• {user.profile.country}</span> : null}
+                  {user.profile?.country ? <span>- {user.profile.country}</span> : null}
 ```
 **Raw class strings detected (best effort):**
 
@@ -440,12 +445,12 @@
 - **Color / surface:**
   - `text-[11px]` — Text color or text sizing.
 
-#### `src/pages/FactoryProfile.jsx:166`
+#### `src/pages/FactoryProfile.jsx:233`
 
 ```jsx
                 <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
                   <span className="uppercase">Factory</span>
-                  {user.profile?.country ? <span>• {user.profile.country}</span> : null}
+                  {user.profile?.country ? <span>- {user.profile.country}</span> : null}
                   {user.verified ? <span className="font-bold text-[#0A66C2]">Verified</span> : null}
 ```
 **Raw class strings detected (best effort):**
@@ -470,59 +475,123 @@
   - `text-[11px]` — Text color or text sizing.
   - `text-[#0A66C2]` — Text color or text sizing.
 
-#### `src/pages/FactoryProfile.jsx:167`
+#### `src/pages/FactoryProfile.jsx:234`
 
 ```jsx
                   <span className="uppercase">Factory</span>
-                  {user.profile?.country ? <span>• {user.profile.country}</span> : null}
+                  {user.profile?.country ? <span>- {user.profile.country}</span> : null}
                   {user.verified ? <span className="font-bold text-[#0A66C2]">Verified</span> : null}
+                  {isCertified ? <span className="font-bold text-emerald-600">Certified</span> : null}
+```
+**Raw class strings detected (best effort):**
+
+- `uppercase`
+- `font-bold text-[#0A66C2]`
+- `font-bold text-emerald-600`
+
+**Utility breakdown (grouped):**
+
+- **Typography:**
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-emerald-600` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[#0A66C2]` — Text color or text sizing.
+
+#### `src/pages/FactoryProfile.jsx:236`
+
+```jsx
+                  {user.verified ? <span className="font-bold text-[#0A66C2]">Verified</span> : null}
+                  {isCertified ? <span className="font-bold text-emerald-600">Certified</span> : null}
+                  {isPremium ? <span title="Boosted visibility enabled for Premium" className="font-bold text-blue-600">Premium Reach</span> : null}
+                  {isBoosted ? <span className="font-bold text-emerald-600">Boosted</span> : null}
+```
+**Raw class strings detected (best effort):**
+
+- `font-bold text-[#0A66C2]`
+- `font-bold text-emerald-600`
+- `font-bold text-blue-600`
+
+**Utility breakdown (grouped):**
+
+- **Typography:**
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-emerald-600` — Text color or text sizing.
+  - `text-blue-600` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[#0A66C2]` — Text color or text sizing.
+
+#### `src/pages/FactoryProfile.jsx:237`
+
+```jsx
+                  {isCertified ? <span className="font-bold text-emerald-600">Certified</span> : null}
+                  {isPremium ? <span title="Boosted visibility enabled for Premium" className="font-bold text-blue-600">Premium Reach</span> : null}
+                  {isBoosted ? <span className="font-bold text-emerald-600">Boosted</span> : null}
                 </div>
 ```
 **Raw class strings detected (best effort):**
 
-- `uppercase`
-- `font-bold text-[#0A66C2]`
+- `font-bold text-emerald-600`
+- `font-bold text-blue-600`
 
 **Utility breakdown (grouped):**
 
 - **Typography:**
-  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Color / surface:**
-  - `text-[#0A66C2]` — Text color or text sizing.
+  - `text-emerald-600` — Text color or text sizing.
+  - `text-blue-600` — Text color or text sizing.
 
-#### `src/pages/FactoryProfile.jsx:169`
+#### `src/pages/FactoryProfile.jsx:238`
 
 ```jsx
-                  {user.verified ? <span className="font-bold text-[#0A66C2]">Verified</span> : null}
+                  {isPremium ? <span title="Boosted visibility enabled for Premium" className="font-bold text-blue-600">Premium Reach</span> : null}
+                  {isBoosted ? <span className="font-bold text-emerald-600">Boosted</span> : null}
+                </div>
+              </div>
+```
+**Raw class strings detected (best effort):**
+
+- `font-bold text-blue-600`
+- `font-bold text-emerald-600`
+
+**Utility breakdown (grouped):**
+
+- **Typography:**
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-blue-600` — Text color or text sizing.
+  - `text-emerald-600` — Text color or text sizing.
+
+#### `src/pages/FactoryProfile.jsx:239`
+
+```jsx
+                  {isBoosted ? <span className="font-bold text-emerald-600">Boosted</span> : null}
                 </div>
               </div>
             </div>
 ```
 **Raw class strings detected (best effort):**
 
-- `font-bold text-[#0A66C2]`
+- `font-bold text-emerald-600`
 
 **Utility breakdown (grouped):**
 
 - **Typography:**
   - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Color / surface:**
-  - `text-[#0A66C2]` — Text color or text sizing.
+  - `text-emerald-600` — Text color or text sizing.
 
-#### `src/pages/FactoryProfile.jsx:174`
+#### `src/pages/FactoryProfile.jsx:244`
 
 ```jsx
             <div className="mt-4 flex gap-2">
               <button onClick={contact} className="flex-1 rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182]">Contact</button>
-              <button onClick={follow} className="flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+              <button onClick={follow} className="flex-1 rounded-full borderless-shadow px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
                 {relationship.following ? 'Following' : 'Follow'}
 ```
 **Raw class strings detected (best effort):**
 
 - `mt-4 flex gap-2`
 - `flex-1 rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182]`
-- `flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50`
+- `flex-1 rounded-full borderless-shadow px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50`
 - `Following`
 - `Follow`
 
@@ -545,8 +614,7 @@
   - `bg-[#0A66C2]` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Interaction / motion:**
   - `hover:bg-[#004182]` — Variant prefix (responsive, dark, or interaction state).
   - `hover:bg-slate-50` — Variant prefix (responsive, dark, or interaction state).
@@ -554,18 +622,18 @@
   - `Following` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Follow` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/FactoryProfile.jsx:175`
+#### `src/pages/FactoryProfile.jsx:245`
 
 ```jsx
               <button onClick={contact} className="flex-1 rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182]">Contact</button>
-              <button onClick={follow} className="flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+              <button onClick={follow} className="flex-1 rounded-full borderless-shadow px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
                 {relationship.following ? 'Following' : 'Follow'}
               </button>
 ```
 **Raw class strings detected (best effort):**
 
 - `flex-1 rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182]`
-- `flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50`
+- `flex-1 rounded-full borderless-shadow px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50`
 - `Following`
 - `Follow`
 
@@ -585,8 +653,7 @@
   - `bg-[#0A66C2]` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Interaction / motion:**
   - `hover:bg-[#004182]` — Variant prefix (responsive, dark, or interaction state).
   - `hover:bg-slate-50` — Variant prefix (responsive, dark, or interaction state).
@@ -594,17 +661,17 @@
   - `Following` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Follow` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/FactoryProfile.jsx:176`
+#### `src/pages/FactoryProfile.jsx:246`
 
 ```jsx
-              <button onClick={follow} className="flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+              <button onClick={follow} className="flex-1 rounded-full borderless-shadow px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
                 {relationship.following ? 'Following' : 'Follow'}
               </button>
-              <button onClick={connect} className="flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+              <button onClick={connect} className="flex-1 rounded-full borderless-shadow px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
 ```
 **Raw class strings detected (best effort):**
 
-- `flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50`
+- `flex-1 rounded-full borderless-shadow px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50`
 - `Following`
 - `Follow`
 
@@ -621,25 +688,24 @@
   - `text-slate-700` — Text color or text sizing.
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Interaction / motion:**
   - `hover:bg-slate-50` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
   - `Following` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Follow` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/FactoryProfile.jsx:179`
+#### `src/pages/FactoryProfile.jsx:249`
 
 ```jsx
-              <button onClick={connect} className="flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+              <button onClick={connect} className="flex-1 rounded-full borderless-shadow px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
                 {relationship.friend_status === 'friends' ? 'Connected' : (relationship.friend_status === 'requested' ? 'Requested' : 'Connect')}
               </button>
             </div>
 ```
 **Raw class strings detected (best effort):**
 
-- `flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50`
+- `flex-1 rounded-full borderless-shadow px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50`
 - `friends`
 - `Connected`
 - `requested`
@@ -659,8 +725,7 @@
   - `text-slate-700` — Text color or text sizing.
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Interaction / motion:**
   - `hover:bg-slate-50` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
@@ -670,18 +735,18 @@
   - `Requested` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Connect` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/FactoryProfile.jsx:184`
+#### `src/pages/FactoryProfile.jsx:254`
 
 ```jsx
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                <p className="text-[11px] text-slate-500">Capacity</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.monthly_capacity || '—'}</p>
+            <div className="mt-4 grid grid-cols-1 gap-3">
+              <div className="rounded-xl borderless-shadow bg-slate-50 p-3">
+                <p className="text-[11px] text-slate-500">Industry</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.industry || 'Garments & Textile'}</p>
 ```
 **Raw class strings detected (best effort):**
 
-- `mt-4 grid grid-cols-2 gap-3`
-- `rounded-xl border border-slate-200 bg-slate-50 p-3`
+- `mt-4 grid grid-cols-1 gap-3`
+- `rounded-xl borderless-shadow bg-slate-50 p-3`
 - `text-[11px] text-slate-500`
 - `mt-1 text-sm font-semibold text-slate-900`
 
@@ -689,7 +754,7 @@
 
 - **Layout / positioning:**
   - `grid` — Grid layout.
-  - `grid-cols-2` — Grid layout.
+  - `grid-cols-1` — Grid layout.
 - **Spacing:**
   - `mt-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
@@ -705,20 +770,205 @@
   - `text-[11px]` — Text color or text sizing.
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 
-#### `src/pages/FactoryProfile.jsx:185`
+#### `src/pages/FactoryProfile.jsx:255`
 
 ```jsx
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                <p className="text-[11px] text-slate-500">Capacity</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.monthly_capacity || '—'}</p>
-                <p className="text-[11px] text-slate-600">Monthly</p>
+              <div className="rounded-xl borderless-shadow bg-slate-50 p-3">
+                <p className="text-[11px] text-slate-500">Industry</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.industry || 'Garments & Textile'}</p>
+              </div>
 ```
 **Raw class strings detected (best effort):**
 
-- `rounded-xl border border-slate-200 bg-slate-50 p-3`
+- `rounded-xl borderless-shadow bg-slate-50 p-3`
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-3` — Padding (all sides).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `borderless-shadow` — Border style/width/color.
+
+#### `src/pages/FactoryProfile.jsx:256`
+
+```jsx
+                <p className="text-[11px] text-slate-500">Industry</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.industry || 'Garments & Textile'}</p>
+              </div>
+              <div className="rounded-xl borderless-shadow bg-slate-50 p-3">
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+- `rounded-xl borderless-shadow bg-slate-50 p-3`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+  - `bg-slate-50` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `borderless-shadow` — Border style/width/color.
+
+#### `src/pages/FactoryProfile.jsx:257`
+
+```jsx
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.industry || 'Garments & Textile'}</p>
+              </div>
+              <div className="rounded-xl borderless-shadow bg-slate-50 p-3">
+                <p className="text-[11px] text-slate-500">Organization</p>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-1 text-sm font-semibold text-slate-900`
+- `rounded-xl borderless-shadow bg-slate-50 p-3`
+- `text-[11px] text-slate-500`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `borderless-shadow` — Border style/width/color.
+
+#### `src/pages/FactoryProfile.jsx:259`
+
+```jsx
+              <div className="rounded-xl borderless-shadow bg-slate-50 p-3">
+                <p className="text-[11px] text-slate-500">Organization</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.organization_name || user.profile?.organization || user.name}</p>
+              </div>
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-xl borderless-shadow bg-slate-50 p-3`
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-3` — Padding (all sides).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `borderless-shadow` — Border style/width/color.
+
+#### `src/pages/FactoryProfile.jsx:260`
+
+```jsx
+                <p className="text-[11px] text-slate-500">Organization</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.organization_name || user.profile?.organization || user.name}</p>
+              </div>
+              <div className="rounded-xl borderless-shadow bg-slate-50 p-3">
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+- `rounded-xl borderless-shadow bg-slate-50 p-3`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+  - `bg-slate-50` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `borderless-shadow` — Border style/width/color.
+
+#### `src/pages/FactoryProfile.jsx:261`
+
+```jsx
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.organization_name || user.profile?.organization || user.name}</p>
+              </div>
+              <div className="rounded-xl borderless-shadow bg-slate-50 p-3">
+                <p className="text-[11px] text-slate-500">Rating</p>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-1 text-sm font-semibold text-slate-900`
+- `rounded-xl borderless-shadow bg-slate-50 p-3`
+- `text-[11px] text-slate-500`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `borderless-shadow` — Border style/width/color.
+
+#### `src/pages/FactoryProfile.jsx:263`
+
+```jsx
+              <div className="rounded-xl borderless-shadow bg-slate-50 p-3">
+                <p className="text-[11px] text-slate-500">Rating</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
+                <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-xl borderless-shadow bg-slate-50 p-3`
 - `text-[11px] text-slate-500`
 - `mt-1 text-sm font-semibold text-slate-900`
 - `text-[11px] text-slate-600`
@@ -739,14 +989,161 @@
   - `text-[11px]` — Text color or text sizing.
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 
-#### `src/pages/FactoryProfile.jsx:186`
+#### `src/pages/FactoryProfile.jsx:264`
+
+```jsx
+                <p className="text-[11px] text-slate-500">Rating</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
+                <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
+              </div>
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+- `text-[11px] text-slate-600`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-600` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+
+#### `src/pages/FactoryProfile.jsx:265`
+
+```jsx
+                <p className="mt-1 text-sm font-semibold text-slate-900">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
+                <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
+              </div>
+            </div>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-1 text-sm font-semibold text-slate-900`
+- `text-[11px] text-slate-600`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-600` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+
+#### `src/pages/FactoryProfile.jsx:266`
+
+```jsx
+                <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
+              </div>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] text-slate-600`
+- `mt-3 grid grid-cols-2 gap-3`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `grid` — Grid layout.
+  - `grid-cols-2` — Grid layout.
+- **Spacing:**
+  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-slate-600` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+
+#### `src/pages/FactoryProfile.jsx:269`
+
+```jsx
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <div className="rounded-xl borderless-shadow bg-white p-3">
+                <p className="text-[11px] text-slate-500">Capacity</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.monthly_capacity || '--'}</p>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-3 grid grid-cols-2 gap-3`
+- `rounded-xl borderless-shadow bg-white p-3`
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `grid` — Grid layout.
+  - `grid-cols-2` — Grid layout.
+- **Spacing:**
+  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-white` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `borderless-shadow` — Border style/width/color.
+
+#### `src/pages/FactoryProfile.jsx:270`
+
+```jsx
+              <div className="rounded-xl borderless-shadow bg-white p-3">
+                <p className="text-[11px] text-slate-500">Capacity</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.monthly_capacity || '--'}</p>
+                <p className="text-[11px] text-slate-600">Monthly</p>
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-xl borderless-shadow bg-white p-3`
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+- `text-[11px] text-slate-600`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-3` — Padding (all sides).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-600` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-white` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `borderless-shadow` — Border style/width/color.
+
+#### `src/pages/FactoryProfile.jsx:271`
 
 ```jsx
                 <p className="text-[11px] text-slate-500">Capacity</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.monthly_capacity || '—'}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.monthly_capacity || '--'}</p>
                 <p className="text-[11px] text-slate-600">Monthly</p>
               </div>
 ```
@@ -769,19 +1166,19 @@
 - **Color / surface:**
   - `text-[11px]` — Text color or text sizing.
 
-#### `src/pages/FactoryProfile.jsx:187`
+#### `src/pages/FactoryProfile.jsx:272`
 
 ```jsx
-                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.monthly_capacity || '—'}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.monthly_capacity || '--'}</p>
                 <p className="text-[11px] text-slate-600">Monthly</p>
               </div>
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <div className="rounded-xl borderless-shadow bg-white p-3">
 ```
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm font-semibold text-slate-900`
 - `text-[11px] text-slate-600`
-- `rounded-xl border border-slate-200 bg-slate-50 p-3`
+- `rounded-xl borderless-shadow bg-white p-3`
 
 **Utility breakdown (grouped):**
 
@@ -795,24 +1192,23 @@
   - `text-slate-600` — Text color or text sizing.
 - **Color / surface:**
   - `text-[11px]` — Text color or text sizing.
-  - `bg-slate-50` — Background color/surface.
+  - `bg-white` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 
-#### `src/pages/FactoryProfile.jsx:188`
+#### `src/pages/FactoryProfile.jsx:273`
 
 ```jsx
                 <p className="text-[11px] text-slate-600">Monthly</p>
               </div>
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <div className="rounded-xl borderless-shadow bg-white p-3">
                 <p className="text-[11px] text-slate-500">MOQ</p>
 ```
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-600`
-- `rounded-xl border border-slate-200 bg-slate-50 p-3`
+- `rounded-xl borderless-shadow bg-white p-3`
 - `text-[11px] text-slate-500`
 
 **Utility breakdown (grouped):**
@@ -824,23 +1220,22 @@
   - `text-slate-500` — Text color or text sizing.
 - **Color / surface:**
   - `text-[11px]` — Text color or text sizing.
-  - `bg-slate-50` — Background color/surface.
+  - `bg-white` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 
-#### `src/pages/FactoryProfile.jsx:190`
+#### `src/pages/FactoryProfile.jsx:275`
 
 ```jsx
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <div className="rounded-xl borderless-shadow bg-white p-3">
                 <p className="text-[11px] text-slate-500">MOQ</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.moq || '—'}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.moq || '--'}</p>
                 <p className="text-[11px] text-slate-600">Declared</p>
 ```
 **Raw class strings detected (best effort):**
 
-- `rounded-xl border border-slate-200 bg-slate-50 p-3`
+- `rounded-xl borderless-shadow bg-white p-3`
 - `text-[11px] text-slate-500`
 - `mt-1 text-sm font-semibold text-slate-900`
 - `text-[11px] text-slate-600`
@@ -857,18 +1252,17 @@
   - `text-slate-900` — Text color or text sizing.
   - `text-slate-600` — Text color or text sizing.
 - **Color / surface:**
-  - `bg-slate-50` — Background color/surface.
+  - `bg-white` — Background color/surface.
   - `text-[11px]` — Text color or text sizing.
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 
-#### `src/pages/FactoryProfile.jsx:191`
+#### `src/pages/FactoryProfile.jsx:276`
 
 ```jsx
                 <p className="text-[11px] text-slate-500">MOQ</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.moq || '—'}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.moq || '--'}</p>
                 <p className="text-[11px] text-slate-600">Declared</p>
               </div>
 ```
@@ -891,10 +1285,10 @@
 - **Color / surface:**
   - `text-[11px]` — Text color or text sizing.
 
-#### `src/pages/FactoryProfile.jsx:192`
+#### `src/pages/FactoryProfile.jsx:277`
 
 ```jsx
-                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.moq || '—'}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.moq || '--'}</p>
                 <p className="text-[11px] text-slate-600">Declared</p>
               </div>
             </div>
@@ -916,7 +1310,7 @@
 - **Color / surface:**
   - `text-[11px]` — Text color or text sizing.
 
-#### `src/pages/FactoryProfile.jsx:193`
+#### `src/pages/FactoryProfile.jsx:278`
 
 ```jsx
                 <p className="text-[11px] text-slate-600">Declared</p>
@@ -935,13 +1329,122 @@
 - **Color / surface:**
   - `text-[11px]` — Text color or text sizing.
 
-#### `src/pages/FactoryProfile.jsx:201`
+#### `src/pages/FactoryProfile.jsx:285`
+
+```jsx
+            <div className="mt-4 rounded-xl bg-white/60 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+              <p className="text-[11px] text-slate-500">Order Completion Certification</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">{certification.status || 'pending'}</p>
+              <p className="text-[11px] text-slate-600">Signed contracts: {certification.signed_contracts ?? 0}</p>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-4 rounded-xl bg-white/60 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+- `text-[11px] text-slate-600`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-4` — Padding (all sides).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-600` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-white/60` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:286`
+
+```jsx
+              <p className="text-[11px] text-slate-500">Order Completion Certification</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">{certification.status || 'pending'}</p>
+              <p className="text-[11px] text-slate-600">Signed contracts: {certification.signed_contracts ?? 0}</p>
+            </div>
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900`
+- `text-[11px] text-slate-600`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-600` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+
+#### `src/pages/FactoryProfile.jsx:287`
+
+```jsx
+              <p className="mt-1 text-sm font-semibold text-slate-900">{certification.status || 'pending'}</p>
+              <p className="text-[11px] text-slate-600">Signed contracts: {certification.signed_contracts ?? 0}</p>
+            </div>
+          ) : null}
+```
+**Raw class strings detected (best effort):**
+
+- `mt-1 text-sm font-semibold text-slate-900`
+- `text-[11px] text-slate-600`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-600` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+
+#### `src/pages/FactoryProfile.jsx:288`
+
+```jsx
+              <p className="text-[11px] text-slate-600">Signed contracts: {certification.signed_contracts ?? 0}</p>
+            </div>
+          ) : null}
+        </aside>
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] text-slate-600`
+
+**Utility breakdown (grouped):**
+
+- **Typography:**
+  - `text-slate-600` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+
+#### `src/pages/FactoryProfile.jsx:293`
 
 ```jsx
         <main className="col-span-12 lg:col-span-8 space-y-4">
+          <CrmSummaryPanel targetId={user.id} />
           <motion.div
             initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-            animate={reduceMotion ? false : { opacity: 1, y: 0 }}
 ```
 **Raw class strings detected (best effort):**
 
@@ -956,18 +1459,18 @@
 - **Responsive variants:**
   - `lg:col-span-8` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:206`
+#### `src/pages/FactoryProfile.jsx:299`
 
 ```jsx
             className="rounded-2xl bg-[#ffffff] shadow-sm ring-1 ring-slate-200/60 overflow-hidden dark:bg-slate-900/50 dark:ring-slate-800"
           >
-            <div className="relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 border-b border-slate-200/60 dark:border-transparent dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
+            <div className="relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 borderless-divider-b dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
               {['overview', 'products', 'videos', 'reviews'].map((tab) => (
 ```
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] shadow-sm ring-1 ring-slate-200/60 overflow-hidden dark:bg-slate-900/50 dark:ring-slate-800`
-- `relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 border-b border-slate-200/60 dark:border-transparent dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]`
+- `relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 borderless-divider-b dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]`
 - `overview`
 - `products`
 - `videos`
@@ -992,13 +1495,11 @@
   - `shadow-sm` — Drop shadow depth (elevation).
   - `ring-1` — Outline ring (often used instead of borders in dark mode).
   - `ring-slate-200/60` — Outline ring (often used instead of borders in dark mode).
-  - `border-b` — Border style/width/color.
-  - `border-slate-200/60` — Border style/width/color.
+  - `borderless-divider-b` — Border style/width/color.
 - **Dark mode variants:**
   - `dark:bg-slate-900/50` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-slate-800` — Variant prefix (responsive, dark, or interaction state).
   - `dark:bg-slate-950/30` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
   - `overview` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
@@ -1006,17 +1507,17 @@
   - `videos` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `reviews` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/FactoryProfile.jsx:208`
+#### `src/pages/FactoryProfile.jsx:301`
 
 ```jsx
-            <div className="relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 border-b border-slate-200/60 dark:border-transparent dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
+            <div className="relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 borderless-divider-b dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
               {['overview', 'products', 'videos', 'reviews'].map((tab) => (
                 <button
                   key={tab}
 ```
 **Raw class strings detected (best effort):**
 
-- `relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 border-b border-slate-200/60 dark:border-transparent dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]`
+- `relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 borderless-divider-b dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]`
 - `overview`
 - `products`
 - `videos`
@@ -1035,11 +1536,9 @@
 - **Color / surface:**
   - `bg-white/60` — Background color/surface.
 - **Borders / rings / shadows:**
-  - `border-b` — Border style/width/color.
-  - `border-slate-200/60` — Border style/width/color.
+  - `borderless-divider-b` — Border style/width/color.
 - **Dark mode variants:**
   - `dark:bg-slate-950/30` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
   - `overview` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
@@ -1047,10 +1546,10 @@
   - `videos` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `reviews` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/FactoryProfile.jsx:214`
+#### `src/pages/FactoryProfile.jsx:307`
 
 ```jsx
-                  className={`relative rounded-full px-3 py-2 text-xs font-semibold transition ring-1 active:scale-95 ${
+                  className={`relative rounded-full px-3 py-2 text-xs font-semibold transition ring-1 active:scale-95${
                     activeTab === tab
                       ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
                       : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
@@ -1081,7 +1580,7 @@
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-white/8` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:223`
+#### `src/pages/FactoryProfile.jsx:316`
 
 ```jsx
                       className="absolute inset-0 rounded-full bg-indigo-500/10 dark:bg-white/10"
@@ -1108,7 +1607,7 @@
 - **Other:**
   - `spring` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/FactoryProfile.jsx:232`
+#### `src/pages/FactoryProfile.jsx:325`
 
 ```jsx
             <div className="p-4">
@@ -1130,19 +1629,19 @@
 - **Other:**
   - `overview` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/FactoryProfile.jsx:234`
+#### `src/pages/FactoryProfile.jsx:327`
 
 ```jsx
                 <div className="space-y-4">
                   <div>
-                    <p className="text-sm font-bold text-slate-900">About</p>
-                    <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">{user.profile?.about || 'No description added yet.'}</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">About</p>
+                    <p className="mt-2 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{user.profile?.about || 'No description added yet.'}</p>
 ```
 **Raw class strings detected (best effort):**
 
 - `space-y-4`
-- `text-sm font-bold text-slate-900`
-- `mt-2 text-sm text-slate-700 whitespace-pre-wrap`
+- `text-sm font-bold text-slate-900 dark:text-slate-100`
+- `mt-2 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap`
 
 **Utility breakdown (grouped):**
 
@@ -1156,19 +1655,22 @@
   - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
   - `text-slate-700` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:236`
+#### `src/pages/FactoryProfile.jsx:329`
 
 ```jsx
-                    <p className="text-sm font-bold text-slate-900">About</p>
-                    <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">{user.profile?.about || 'No description added yet.'}</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">About</p>
+                    <p className="mt-2 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{user.profile?.about || 'No description added yet.'}</p>
                   </div>
 
 ```
 **Raw class strings detected (best effort):**
 
-- `text-sm font-bold text-slate-900`
-- `mt-2 text-sm text-slate-700 whitespace-pre-wrap`
+- `text-sm font-bold text-slate-900 dark:text-slate-100`
+- `mt-2 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap`
 
 **Utility breakdown (grouped):**
 
@@ -1181,49 +1683,428 @@
   - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
   - `text-slate-700` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:237`
+#### `src/pages/FactoryProfile.jsx:330`
 
 ```jsx
-                    <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">{user.profile?.about || 'No description added yet.'}</p>
+                    <p className="mt-2 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{user.profile?.about || 'No description added yet.'}</p>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {hasBrandKit ? (
 ```
 **Raw class strings detected (best effort):**
 
-- `mt-2 text-sm text-slate-700 whitespace-pre-wrap`
-- `grid grid-cols-1 sm:grid-cols-3 gap-3`
+- `mt-2 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap`
 
 **Utility breakdown (grouped):**
 
 - **Layout / positioning:**
   - `whitespace-pre-wrap` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `grid` — Grid layout.
-  - `grid-cols-1` — Grid layout.
 - **Spacing:**
   - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
   - `text-sm` — Text color or text sizing.
   - `text-slate-700` — Text color or text sizing.
-- **Responsive variants:**
-  - `sm:grid-cols-3` — Variant prefix (responsive, dark, or interaction state).
+- **Dark mode variants:**
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:240`
+#### `src/pages/FactoryProfile.jsx:334`
+
+```jsx
+                    <div className="rounded-xl bg-slate-50/70 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Brand Kit</p>
+                      <div className="mt-3 flex items-center gap-3">
+                        {brandProfile.brand_logo_url ? (
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-xl bg-slate-50/70 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `mt-3 flex items-center gap-3`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `p-4` — Padding (all sides).
+  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:335`
+
+```jsx
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Brand Kit</p>
+                      <div className="mt-3 flex items-center gap-3">
+                        {brandProfile.brand_logo_url ? (
+                          <img src={brandProfile.brand_logo_url} alt="Brand logo" className="h-12 w-12 rounded-xl object-cover" />
+```
+**Raw class strings detected (best effort):**
+
+- `text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `mt-3 flex items-center gap-3`
+- `h-12 w-12 rounded-xl object-cover`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `h-12` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-12` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `object-cover` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/FactoryProfile.jsx:336`
+
+```jsx
+                      <div className="mt-3 flex items-center gap-3">
+                        {brandProfile.brand_logo_url ? (
+                          <img src={brandProfile.brand_logo_url} alt="Brand logo" className="h-12 w-12 rounded-xl object-cover" />
+                        ) : (
+```
+**Raw class strings detected (best effort):**
+
+- `mt-3 flex items-center gap-3`
+- `h-12 w-12 rounded-xl object-cover`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `h-12` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-12` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+- **Other:**
+  - `object-cover` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/FactoryProfile.jsx:338`
+
+```jsx
+                          <img src={brandProfile.brand_logo_url} alt="Brand logo" className="h-12 w-12 rounded-xl object-cover" />
+                        ) : (
+                          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
+                        )}
+```
+**Raw class strings detected (best effort):**
+
+- `h-12 w-12 rounded-xl object-cover`
+- `h-12 w-12 rounded-xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `h-12` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-12` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `bg-gradient-to-br` — Background color/surface.
+  - `from-[#0A66C2]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `to-[#2E8BFF]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+- **Other:**
+  - `object-cover` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/FactoryProfile.jsx:340`
+
+```jsx
+                          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
+                        )}
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+```
+**Raw class strings detected (best effort):**
+
+- `h-12 w-12 rounded-xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]`
+- `min-w-0`
+- `text-sm font-semibold text-slate-900 dark:text-slate-100 truncate`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `h-12` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-12` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `min-w-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-gradient-to-br` — Background color/surface.
+  - `from-[#0A66C2]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `to-[#2E8BFF]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:342`
+
+```jsx
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+                            {brandProfile.brand_name || user.name}
+                          </div>
+```
+**Raw class strings detected (best effort):**
+
+- `min-w-0`
+- `text-sm font-semibold text-slate-900 dark:text-slate-100 truncate`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `min-w-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:343`
+
+```jsx
+                          <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+                            {brandProfile.brand_name || user.name}
+                          </div>
+                          {brandProfile.brand_tagline ? (
+```
+**Raw class strings detected (best effort):**
+
+- `text-sm font-semibold text-slate-900 dark:text-slate-100 truncate`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:347`
+
+```jsx
+                            <div className="text-xs text-slate-600 dark:text-slate-300">{brandProfile.brand_tagline}</div>
+                          ) : null}
+                          {brandProfile.brand_website ? (
+                            <div className="text-xs text-slate-500 dark:text-slate-400 truncate">{brandProfile.brand_website}</div>
+```
+**Raw class strings detected (best effort):**
+
+- `text-xs text-slate-600 dark:text-slate-300`
+- `text-xs text-slate-500 dark:text-slate-400 truncate`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-600` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:350`
+
+```jsx
+                            <div className="text-xs text-slate-500 dark:text-slate-400 truncate">{brandProfile.brand_website}</div>
+                          ) : null}
+                        </div>
+                      </div>
+```
+**Raw class strings detected (best effort):**
+
+- `text-xs text-slate-500 dark:text-slate-400 truncate`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:358`
+
+```jsx
+                    <div className="rounded-xl bg-slate-50/70 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Dedicated Account Manager</p>
+                      <div className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                        {brandProfile.account_manager_name || 'Assigned manager'}
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-xl bg-slate-50/70 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `mt-2 text-sm text-slate-700 dark:text-slate-300`
+- `Assigned manager`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-4` — Padding (all sides).
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-700` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `Assigned` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `manager` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/FactoryProfile.jsx:359`
+
+```jsx
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Dedicated Account Manager</p>
+                      <div className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                        {brandProfile.account_manager_name || 'Assigned manager'}
+                      </div>
+```
+**Raw class strings detected (best effort):**
+
+- `text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `mt-2 text-sm text-slate-700 dark:text-slate-300`
+- `Assigned manager`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-700` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `Assigned` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `manager` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/FactoryProfile.jsx:360`
+
+```jsx
+                      <div className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                        {brandProfile.account_manager_name || 'Assigned manager'}
+                      </div>
+                      <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+```
+**Raw class strings detected (best effort):**
+
+- `mt-2 text-sm text-slate-700 dark:text-slate-300`
+- `Assigned manager`
+- `mt-1 text-xs text-slate-500 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `text-slate-700` — Text color or text sizing.
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `Assigned` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `manager` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/FactoryProfile.jsx:363`
+
+```jsx
+                      <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        {brandProfile.account_manager_email || brandProfile.account_manager_phone || ''}
+                      </div>
+                    </div>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-1 text-xs text-slate-500 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:369`
 
 ```jsx
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                      <p className="text-[11px] text-slate-500">Lead time</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.lead_time_days || '—'}</p>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Industry</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.industry || 'Garments & Textile'}</p>
 ```
 **Raw class strings detected (best effort):**
 
 - `grid grid-cols-1 sm:grid-cols-3 gap-3`
-- `rounded-xl border border-slate-200 bg-slate-50 p-3`
-- `text-[11px] text-slate-500`
-- `mt-1 text-sm font-semibold text-slate-900`
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
 
 **Utility breakdown (grouped):**
 
@@ -1235,33 +2116,40 @@
   - `p-3` — Padding (all sides).
   - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-500` — Text color or text sizing.
   - `text-sm` — Text color or text sizing.
-  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
 - **Color / surface:**
-  - `bg-slate-50` — Background color/surface.
+  - `bg-slate-50/70` — Background color/surface.
   - `text-[11px]` — Text color or text sizing.
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
 - **Responsive variants:**
   - `sm:grid-cols-3` — Variant prefix (responsive, dark, or interaction state).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:241`
+#### `src/pages/FactoryProfile.jsx:370`
 
 ```jsx
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                      <p className="text-[11px] text-slate-500">Lead time</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.lead_time_days || '—'}</p>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Industry</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.industry || 'Garments & Textile'}</p>
                     </div>
 ```
 **Raw class strings detected (best effort):**
 
-- `rounded-xl border border-slate-200 bg-slate-50 p-3`
-- `text-[11px] text-slate-500`
-- `mt-1 text-sm font-semibold text-slate-900`
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
 
 **Utility breakdown (grouped):**
 
@@ -1269,31 +2157,38 @@
   - `p-3` — Padding (all sides).
   - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-500` — Text color or text sizing.
   - `text-sm` — Text color or text sizing.
-  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
 - **Color / surface:**
-  - `bg-slate-50` — Background color/surface.
+  - `bg-slate-50/70` — Background color/surface.
   - `text-[11px]` — Text color or text sizing.
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:242`
+#### `src/pages/FactoryProfile.jsx:371`
 
 ```jsx
-                      <p className="text-[11px] text-slate-500">Lead time</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.lead_time_days || '—'}</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Industry</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.industry || 'Garments & Textile'}</p>
                     </div>
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
 ```
 **Raw class strings detected (best effort):**
 
-- `text-[11px] text-slate-500`
-- `mt-1 text-sm font-semibold text-slate-900`
-- `rounded-xl border border-slate-200 bg-slate-50 p-3`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
 
 **Utility breakdown (grouped):**
 
@@ -1301,127 +2196,38 @@
   - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `p-3` — Padding (all sides).
 - **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-500` — Text color or text sizing.
   - `text-sm` — Text color or text sizing.
-  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
 - **Color / surface:**
   - `text-[11px]` — Text color or text sizing.
-  - `bg-slate-50` — Background color/surface.
+  - `bg-slate-50/70` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:243`
+#### `src/pages/FactoryProfile.jsx:372`
 
 ```jsx
-                      <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.lead_time_days || '—'}</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.industry || 'Garments & Textile'}</p>
                     </div>
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                      <p className="text-[11px] text-slate-500">Certifications</p>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Organization</p>
 ```
 **Raw class strings detected (best effort):**
 
-- `mt-1 text-sm font-semibold text-slate-900`
-- `rounded-xl border border-slate-200 bg-slate-50 p-3`
-- `text-[11px] text-slate-500`
-
-**Utility breakdown (grouped):**
-
-- **Spacing:**
-  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `p-3` — Padding (all sides).
-- **Typography:**
-  - `text-sm` — Text color or text sizing.
-  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-slate-900` — Text color or text sizing.
-  - `text-slate-500` — Text color or text sizing.
-- **Color / surface:**
-  - `bg-slate-50` — Background color/surface.
-  - `text-[11px]` — Text color or text sizing.
-- **Borders / rings / shadows:**
-  - `rounded-xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
-
-#### `src/pages/FactoryProfile.jsx:245`
-
-```jsx
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                      <p className="text-[11px] text-slate-500">Certifications</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900">{(user.profile?.certifications || []).join(', ') || '—'}</p>
-                    </div>
-```
-**Raw class strings detected (best effort):**
-
-- `rounded-xl border border-slate-200 bg-slate-50 p-3`
-- `text-[11px] text-slate-500`
-- `mt-1 text-sm font-semibold text-slate-900`
-
-**Utility breakdown (grouped):**
-
-- **Spacing:**
-  - `p-3` — Padding (all sides).
-  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Typography:**
-  - `text-slate-500` — Text color or text sizing.
-  - `text-sm` — Text color or text sizing.
-  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-slate-900` — Text color or text sizing.
-- **Color / surface:**
-  - `bg-slate-50` — Background color/surface.
-  - `text-[11px]` — Text color or text sizing.
-- **Borders / rings / shadows:**
-  - `rounded-xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
-
-#### `src/pages/FactoryProfile.jsx:246`
-
-```jsx
-                      <p className="text-[11px] text-slate-500">Certifications</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900">{(user.profile?.certifications || []).join(', ') || '—'}</p>
-                    </div>
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-```
-**Raw class strings detected (best effort):**
-
-- `text-[11px] text-slate-500`
-- `mt-1 text-sm font-semibold text-slate-900`
-- `rounded-xl border border-slate-200 bg-slate-50 p-3`
-
-**Utility breakdown (grouped):**
-
-- **Spacing:**
-  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `p-3` — Padding (all sides).
-- **Typography:**
-  - `text-slate-500` — Text color or text sizing.
-  - `text-sm` — Text color or text sizing.
-  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-slate-900` — Text color or text sizing.
-- **Color / surface:**
-  - `text-[11px]` — Text color or text sizing.
-  - `bg-slate-50` — Background color/surface.
-- **Borders / rings / shadows:**
-  - `rounded-xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
-
-#### `src/pages/FactoryProfile.jsx:247`
-
-```jsx
-                      <p className="mt-1 text-sm font-semibold text-slate-900">{(user.profile?.certifications || []).join(', ') || '—'}</p>
-                    </div>
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                      <p className="text-[11px] text-slate-500">Rating</p>
-```
-**Raw class strings detected (best effort):**
-
-- `mt-1 text-sm font-semibold text-slate-900`
-- `rounded-xl border border-slate-200 bg-slate-50 p-3`
-- `text-[11px] text-slate-500`
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
 
 **Utility breakdown (grouped):**
 
@@ -1432,29 +2238,35 @@
   - `text-sm` — Text color or text sizing.
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-500` — Text color or text sizing.
 - **Color / surface:**
-  - `bg-slate-50` — Background color/surface.
+  - `bg-slate-50/70` — Background color/surface.
   - `text-[11px]` — Text color or text sizing.
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:249`
+#### `src/pages/FactoryProfile.jsx:374`
 
 ```jsx
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                      <p className="text-[11px] text-slate-500">Rating</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
-                      <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Organization</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.organization_name || user.profile?.organization || user.name}</p>
+                    </div>
 ```
 **Raw class strings detected (best effort):**
 
-- `rounded-xl border border-slate-200 bg-slate-50 p-3`
-- `text-[11px] text-slate-500`
-- `mt-1 text-sm font-semibold text-slate-900`
-- `text-[11px] text-slate-600`
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
 
 **Utility breakdown (grouped):**
 
@@ -1462,58 +2274,188 @@
   - `p-3` — Padding (all sides).
   - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-500` — Text color or text sizing.
   - `text-sm` — Text color or text sizing.
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:375`
+
+```jsx
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Organization</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.organization_name || user.profile?.organization || user.name}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Typography:**
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+  - `bg-slate-50/70` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:376`
+
+```jsx
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.organization_name || user.profile?.organization || user.name}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Rating</p>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-500` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:378`
+
+```jsx
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Rating</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-400">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `text-[11px] text-slate-600 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-3` — Padding (all sides).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
   - `text-slate-900` — Text color or text sizing.
   - `text-slate-600` — Text color or text sizing.
 - **Color / surface:**
-  - `bg-slate-50` — Background color/surface.
+  - `bg-slate-50/70` — Background color/surface.
   - `text-[11px]` — Text color or text sizing.
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:250`
+#### `src/pages/FactoryProfile.jsx:379`
 
 ```jsx
-                      <p className="text-[11px] text-slate-500">Rating</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
-                      <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Rating</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-400">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
                     </div>
 ```
 **Raw class strings detected (best effort):**
 
-- `text-[11px] text-slate-500`
-- `mt-1 text-sm font-semibold text-slate-900`
-- `text-[11px] text-slate-600`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `text-[11px] text-slate-600 dark:text-slate-400`
 
 **Utility breakdown (grouped):**
 
 - **Spacing:**
   - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-500` — Text color or text sizing.
   - `text-sm` — Text color or text sizing.
-  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
   - `text-slate-600` — Text color or text sizing.
 - **Color / surface:**
   - `text-[11px]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:251`
+#### `src/pages/FactoryProfile.jsx:380`
 
 ```jsx
-                      <p className="mt-1 text-sm font-semibold text-slate-900">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
-                      <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-400">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
                     </div>
                   </div>
 ```
 **Raw class strings detected (best effort):**
 
-- `mt-1 text-sm font-semibold text-slate-900`
-- `text-[11px] text-slate-600`
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `text-[11px] text-slate-600 dark:text-slate-400`
 
 **Utility breakdown (grouped):**
 
@@ -1526,39 +2468,676 @@
   - `text-slate-600` — Text color or text sizing.
 - **Color / surface:**
   - `text-[11px]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:252`
+#### `src/pages/FactoryProfile.jsx:381`
 
 ```jsx
-                      <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-400">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
                     </div>
                   </div>
-                </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
 ```
 **Raw class strings detected (best effort):**
 
-- `text-[11px] text-slate-600`
+- `text-[11px] text-slate-600 dark:text-slate-400`
+- `grid grid-cols-1 sm:grid-cols-3 gap-3`
 
 **Utility breakdown (grouped):**
 
+- **Layout / positioning:**
+  - `grid` — Grid layout.
+  - `grid-cols-1` — Grid layout.
+- **Spacing:**
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
   - `text-slate-600` — Text color or text sizing.
 - **Color / surface:**
   - `text-[11px]` — Text color or text sizing.
+- **Responsive variants:**
+  - `sm:grid-cols-3` — Variant prefix (responsive, dark, or interaction state).
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:259`
+#### `src/pages/FactoryProfile.jsx:384`
+
+```jsx
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Lead time</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.lead_time_days || '--'} days</p>
+```
+**Raw class strings detected (best effort):**
+
+- `grid grid-cols-1 sm:grid-cols-3 gap-3`
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `grid` — Grid layout.
+  - `grid-cols-1` — Grid layout.
+- **Spacing:**
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Responsive variants:**
+  - `sm:grid-cols-3` — Variant prefix (responsive, dark, or interaction state).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:385`
+
+```jsx
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Lead time</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.lead_time_days || '--'} days</p>
+                    </div>
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-3` — Padding (all sides).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:386`
+
+```jsx
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Lead time</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.lead_time_days || '--'} days</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+  - `bg-slate-50/70` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:387`
+
+```jsx
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.lead_time_days || '--'} days</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Certifications</p>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-500` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:389`
+
+```jsx
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Certifications</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{(user.profile?.certifications || []).join(', ') || '--'}</p>
+                    </div>
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-3` — Padding (all sides).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:390`
+
+```jsx
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Certifications</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{(user.profile?.certifications || []).join(', ') || '--'}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+  - `bg-slate-50/70` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:391`
+
+```jsx
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{(user.profile?.certifications || []).join(', ') || '--'}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Employees</p>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-500` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:393`
+
+```jsx
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Employees</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.employee_count || '--'}</p>
+                    </div>
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-3` — Padding (all sides).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:394`
+
+```jsx
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Employees</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.employee_count || '--'}</p>
+                    </div>
+                  </div>
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uppercase` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-wider` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:395`
+
+```jsx
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.employee_count || '--'}</p>
+                    </div>
+                  </div>
+
+```
+**Raw class strings detected (best effort):**
+
+- `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:401`
+
+```jsx
+                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-3">Companies Worked With</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {(user.profile?.companies_worked_with || []).map((company, idx) => (
+                          <div key={idx} className="flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+```
+**Raw class strings detected (best effort):**
+
+- `text-sm font-bold text-slate-900 dark:text-slate-100 mb-3`
+- `grid grid-cols-1 sm:grid-cols-2 gap-3`
+- `flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `grid` — Grid layout.
+  - `grid-cols-1` — Grid layout.
+  - `flex` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mb-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Responsive variants:**
+  - `sm:grid-cols-2` — Variant prefix (responsive, dark, or interaction state).
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:402`
+
+```jsx
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {(user.profile?.companies_worked_with || []).map((company, idx) => (
+                          <div key={idx} className="flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                            {company.logo ? (
+```
+**Raw class strings detected (best effort):**
+
+- `grid grid-cols-1 sm:grid-cols-2 gap-3`
+- `flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `grid` — Grid layout.
+  - `grid-cols-1` — Grid layout.
+  - `flex` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Responsive variants:**
+  - `sm:grid-cols-2` — Variant prefix (responsive, dark, or interaction state).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:404`
+
+```jsx
+                          <div key={idx} className="flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                            {company.logo ? (
+                              <img src={company.logo} alt={company.name} className="h-10 w-10 rounded-lg object-cover" />
+                            ) : (
+```
+**Raw class strings detected (best effort):**
+
+- `flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
+- `h-10 w-10 rounded-lg object-cover`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `h-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+- **Color / surface:**
+  - `bg-slate-50/70` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+  - `rounded-lg` — Corner radius.
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `object-cover` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/FactoryProfile.jsx:406`
+
+```jsx
+                              <img src={company.logo} alt={company.name} className="h-10 w-10 rounded-lg object-cover" />
+                            ) : (
+                              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500" />
+                            )}
+```
+**Raw class strings detected (best effort):**
+
+- `h-10 w-10 rounded-lg object-cover`
+- `h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `h-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `bg-gradient-to-br` — Background color/surface.
+  - `from-indigo-500` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `to-purple-500` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Borders / rings / shadows:**
+  - `rounded-lg` — Corner radius.
+- **Other:**
+  - `object-cover` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/FactoryProfile.jsx:408`
+
+```jsx
+                              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500" />
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{company.name}</p>
+```
+**Raw class strings detected (best effort):**
+
+- `h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500`
+- `min-w-0 flex-1`
+- `text-sm font-semibold text-slate-900 dark:text-slate-100 truncate`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `h-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `min-w-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `flex-1` — Flex layout.
+  - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-gradient-to-br` — Background color/surface.
+  - `from-indigo-500` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `to-purple-500` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Borders / rings / shadows:**
+  - `rounded-lg` — Corner radius.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:410`
+
+```jsx
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{company.name}</p>
+                              {company.location && <p className="text-xs text-slate-500 dark:text-slate-400">{company.location}</p>}
+                            </div>
+```
+**Raw class strings detected (best effort):**
+
+- `min-w-0 flex-1`
+- `text-sm font-semibold text-slate-900 dark:text-slate-100 truncate`
+- `text-xs text-slate-500 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `min-w-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `flex-1` — Flex layout.
+  - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:411`
+
+```jsx
+                              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{company.name}</p>
+                              {company.location && <p className="text-xs text-slate-500 dark:text-slate-400">{company.location}</p>}
+                            </div>
+                          </div>
+```
+**Raw class strings detected (best effort):**
+
+- `text-sm font-semibold text-slate-900 dark:text-slate-100 truncate`
+- `text-xs text-slate-500 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:412`
+
+```jsx
+                              {company.location && <p className="text-xs text-slate-500 dark:text-slate-400">{company.location}</p>}
+                            </div>
+                          </div>
+                        ))}
+```
+**Raw class strings detected (best effort):**
+
+- `text-xs text-slate-500 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/FactoryProfile.jsx:423`
 
 ```jsx
                 <div className="space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {products.map((p) => (
-                      <div key={p.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                      <div key={p.id} className="rounded-2xl borderless-shadow bg-white p-4">
 ```
 **Raw class strings detected (best effort):**
 
 - `space-y-3`
 - `grid grid-cols-1 sm:grid-cols-2 gap-3`
-- `rounded-2xl border border-slate-200 bg-white p-4`
+- `rounded-2xl borderless-shadow bg-white p-4`
 
 **Utility breakdown (grouped):**
 
@@ -1573,24 +3152,22 @@
   - `bg-white` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Responsive variants:**
   - `sm:grid-cols-2` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:260`
+#### `src/pages/FactoryProfile.jsx:424`
 
 ```jsx
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {products.map((p) => (
-                      <div key={p.id} className="rounded-2xl border border-slate-200 bg-white p-4">
-                        <p className="text-sm font-bold text-slate-900">{p.title || 'Product'}</p>
+                      <div key={p.id} className="rounded-2xl borderless-shadow bg-white p-4">
+                        {p.cover_image_public_url ? (
 ```
 **Raw class strings detected (best effort):**
 
 - `grid grid-cols-1 sm:grid-cols-2 gap-3`
-- `rounded-2xl border border-slate-200 bg-white p-4`
-- `text-sm font-bold text-slate-900`
+- `rounded-2xl borderless-shadow bg-white p-4`
 
 **Utility breakdown (grouped):**
 
@@ -1600,40 +3177,97 @@
 - **Spacing:**
   - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `p-4` — Padding (all sides).
-- **Typography:**
-  - `text-sm` — Text color or text sizing.
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-slate-900` — Text color or text sizing.
 - **Color / surface:**
   - `bg-white` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Responsive variants:**
   - `sm:grid-cols-2` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:262`
+#### `src/pages/FactoryProfile.jsx:426`
 
 ```jsx
-                      <div key={p.id} className="rounded-2xl border border-slate-200 bg-white p-4">
-                        <p className="text-sm font-bold text-slate-900">{p.title || 'Product'}</p>
-                        <p className="mt-1 text-xs text-slate-600">{p.category || '—'} • MOQ {p.moq || '—'} • Lead time {p.lead_time_days || '—'}</p>
-                        <p className="mt-2 text-sm text-slate-700 line-clamp-3">{p.description || ''}</p>
+                      <div key={p.id} className="rounded-2xl borderless-shadow bg-white p-4">
+                        {p.cover_image_public_url ? (
+                          <img src={p.cover_image_public_url} alt={p.title || 'Product'} className="h-32 w-full rounded-xl object-cover mb-3" />
+                        ) : null}
 ```
 **Raw class strings detected (best effort):**
 
-- `rounded-2xl border border-slate-200 bg-white p-4`
+- `rounded-2xl borderless-shadow bg-white p-4`
+- `h-32 w-full rounded-xl object-cover mb-3`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `h-32` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-full` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `p-4` — Padding (all sides).
+  - `mb-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `bg-white` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-2xl` — Corner radius.
+  - `borderless-shadow` — Border style/width/color.
+  - `rounded-xl` — Corner radius.
+- **Other:**
+  - `object-cover` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/FactoryProfile.jsx:428`
+
+```jsx
+                          <img src={p.cover_image_public_url} alt={p.title || 'Product'} className="h-32 w-full rounded-xl object-cover mb-3" />
+                        ) : null}
+                        <p className="text-sm font-bold text-slate-900">{p.title || 'Product'}</p>
+                        <p className="mt-1 text-xs text-slate-600">{p.category || '--'} - MOQ {p.moq || '--'} - Lead time {p.lead_time_days || '--'}</p>
+```
+**Raw class strings detected (best effort):**
+
+- `h-32 w-full rounded-xl object-cover mb-3`
+- `text-sm font-bold text-slate-900`
+- `mt-1 text-xs text-slate-600`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `h-32` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-full` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mb-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-600` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+- **Other:**
+  - `object-cover` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/FactoryProfile.jsx:430`
+
+```jsx
+                        <p className="text-sm font-bold text-slate-900">{p.title || 'Product'}</p>
+                        <p className="mt-1 text-xs text-slate-600">{p.category || '--'} - MOQ {p.moq || '--'} - Lead time {p.lead_time_days || '--'}</p>
+                        <p className="mt-2 text-sm text-slate-700 line-clamp-3">{p.description || ''}</p>
+                        <p className="mt-2 text-[11px] text-slate-500">Status: {String(p.status || 'published')}</p>
+```
+**Raw class strings detected (best effort):**
+
 - `text-sm font-bold text-slate-900`
 - `mt-1 text-xs text-slate-600`
 - `mt-2 text-sm text-slate-700 line-clamp-3`
+- `mt-2 text-[11px] text-slate-500`
 
 **Utility breakdown (grouped):**
 
 - **Layout / positioning:**
   - `line-clamp-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Spacing:**
-  - `p-4` — Padding (all sides).
   - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
@@ -1643,26 +3277,23 @@
   - `text-xs` — Text color or text sizing.
   - `text-slate-600` — Text color or text sizing.
   - `text-slate-700` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
 - **Color / surface:**
-  - `bg-white` — Background color/surface.
-- **Borders / rings / shadows:**
-  - `rounded-2xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `text-[11px]` — Text color or text sizing.
 
-#### `src/pages/FactoryProfile.jsx:263`
+#### `src/pages/FactoryProfile.jsx:431`
 
 ```jsx
-                        <p className="text-sm font-bold text-slate-900">{p.title || 'Product'}</p>
-                        <p className="mt-1 text-xs text-slate-600">{p.category || '—'} • MOQ {p.moq || '—'} • Lead time {p.lead_time_days || '—'}</p>
+                        <p className="mt-1 text-xs text-slate-600">{p.category || '--'} - MOQ {p.moq || '--'} - Lead time {p.lead_time_days || '--'}</p>
                         <p className="mt-2 text-sm text-slate-700 line-clamp-3">{p.description || ''}</p>
+                        <p className="mt-2 text-[11px] text-slate-500">Status: {String(p.status || 'published')}</p>
                         {p.hasVideo ? <p className="mt-2 text-xs font-semibold text-indigo-700">Video available</p> : null}
 ```
 **Raw class strings detected (best effort):**
 
-- `text-sm font-bold text-slate-900`
 - `mt-1 text-xs text-slate-600`
 - `mt-2 text-sm text-slate-700 line-clamp-3`
+- `mt-2 text-[11px] text-slate-500`
 - `mt-2 text-xs font-semibold text-indigo-700`
 
 **Utility breakdown (grouped):**
@@ -1673,27 +3304,28 @@
   - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
-  - `text-sm` — Text color or text sizing.
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-slate-900` — Text color or text sizing.
   - `text-xs` — Text color or text sizing.
   - `text-slate-600` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
   - `text-slate-700` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-indigo-700` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
 
-#### `src/pages/FactoryProfile.jsx:264`
+#### `src/pages/FactoryProfile.jsx:432`
 
 ```jsx
-                        <p className="mt-1 text-xs text-slate-600">{p.category || '—'} • MOQ {p.moq || '—'} • Lead time {p.lead_time_days || '—'}</p>
                         <p className="mt-2 text-sm text-slate-700 line-clamp-3">{p.description || ''}</p>
+                        <p className="mt-2 text-[11px] text-slate-500">Status: {String(p.status || 'published')}</p>
                         {p.hasVideo ? <p className="mt-2 text-xs font-semibold text-indigo-700">Video available</p> : null}
                       </div>
 ```
 **Raw class strings detected (best effort):**
 
-- `mt-1 text-xs text-slate-600`
 - `mt-2 text-sm text-slate-700 line-clamp-3`
+- `mt-2 text-[11px] text-slate-500`
 - `mt-2 text-xs font-semibold text-indigo-700`
 
 **Utility breakdown (grouped):**
@@ -1701,43 +3333,43 @@
 - **Layout / positioning:**
   - `line-clamp-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Spacing:**
-  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
-  - `text-xs` — Text color or text sizing.
-  - `text-slate-600` — Text color or text sizing.
   - `text-sm` — Text color or text sizing.
   - `text-slate-700` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+  - `text-xs` — Text color or text sizing.
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-indigo-700` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
 
-#### `src/pages/FactoryProfile.jsx:265`
+#### `src/pages/FactoryProfile.jsx:433`
 
 ```jsx
-                        <p className="mt-2 text-sm text-slate-700 line-clamp-3">{p.description || ''}</p>
+                        <p className="mt-2 text-[11px] text-slate-500">Status: {String(p.status || 'published')}</p>
                         {p.hasVideo ? <p className="mt-2 text-xs font-semibold text-indigo-700">Video available</p> : null}
                       </div>
                     ))}
 ```
 **Raw class strings detected (best effort):**
 
-- `mt-2 text-sm text-slate-700 line-clamp-3`
+- `mt-2 text-[11px] text-slate-500`
 - `mt-2 text-xs font-semibold text-indigo-700`
 
 **Utility breakdown (grouped):**
 
-- **Layout / positioning:**
-  - `line-clamp-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Spacing:**
   - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
-  - `text-sm` — Text color or text sizing.
-  - `text-slate-700` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
   - `text-xs` — Text color or text sizing.
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-indigo-700` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
 
-#### `src/pages/FactoryProfile.jsx:266`
+#### `src/pages/FactoryProfile.jsx:434`
 
 ```jsx
                         {p.hasVideo ? <p className="mt-2 text-xs font-semibold text-indigo-700">Video available</p> : null}
@@ -1758,10 +3390,10 @@
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-indigo-700` — Text color or text sizing.
 
-#### `src/pages/FactoryProfile.jsx:270`
+#### `src/pages/FactoryProfile.jsx:438`
 
 ```jsx
-                  {loadingProducts ? <div className="text-sm text-slate-600">Loading…</div> : null}
+                  {loadingProducts ? <div className="text-sm text-slate-600">Loading...</div> : null}
                   {productsNext !== null && !loadingProducts ? (
                     <button
                       type="button"
@@ -1779,17 +3411,17 @@
 - **Other:**
   - `button` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/FactoryProfile.jsx:275`
+#### `src/pages/FactoryProfile.jsx:443`
 
 ```jsx
-                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                      className="rounded-full borderless-shadow bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                     >
                       Load more
                     </button>
 ```
 **Raw class strings detected (best effort):**
 
-- `rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50`
+- `rounded-full borderless-shadow bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50`
 
 **Utility breakdown (grouped):**
 
@@ -1804,12 +3436,11 @@
   - `bg-white` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Interaction / motion:**
   - `hover:bg-slate-50` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:280`
+#### `src/pages/FactoryProfile.jsx:448`
 
 ```jsx
                   {!products.length && !loadingProducts ? <div className="text-sm text-slate-600">No products found.</div> : null}
@@ -1827,7 +3458,7 @@
   - `text-sm` — Text color or text sizing.
   - `text-slate-600` — Text color or text sizing.
 
-#### `src/pages/FactoryProfile.jsx:285`
+#### `src/pages/FactoryProfile.jsx:453`
 
 ```jsx
                 <div className="space-y-3">
@@ -1848,7 +3479,7 @@
   - `text-sm` — Text color or text sizing.
   - `text-slate-700` — Text color or text sizing.
 
-#### `src/pages/FactoryProfile.jsx:286`
+#### `src/pages/FactoryProfile.jsx:454`
 
 ```jsx
                   <p className="text-sm text-slate-700">
@@ -1874,18 +3505,18 @@
 - **Responsive variants:**
   - `sm:grid-cols-2` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:289`
+#### `src/pages/FactoryProfile.jsx:457`
 
 ```jsx
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {visibleVideos.map((p) => (
-                      <div key={p.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                      <div key={p.id} className="rounded-2xl borderless-shadow bg-white p-4">
                         <p className="text-sm font-bold text-slate-900">{p.title || 'Video'}</p>
 ```
 **Raw class strings detected (best effort):**
 
 - `grid grid-cols-1 sm:grid-cols-2 gap-3`
-- `rounded-2xl border border-slate-200 bg-white p-4`
+- `rounded-2xl borderless-shadow bg-white p-4`
 - `text-sm font-bold text-slate-900`
 
 **Utility breakdown (grouped):**
@@ -1904,22 +3535,21 @@
   - `bg-white` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Responsive variants:**
   - `sm:grid-cols-2` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:291`
+#### `src/pages/FactoryProfile.jsx:459`
 
 ```jsx
-                      <div key={p.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                      <div key={p.id} className="rounded-2xl borderless-shadow bg-white p-4">
                         <p className="text-sm font-bold text-slate-900">{p.title || 'Video'}</p>
-                        <p className="mt-1 text-xs text-slate-600">Status: {String(p.video_review_status || '—').replaceAll('_', ' ')}</p>
+                        <p className="mt-1 text-xs text-slate-600">Status: {String(p.video_review_status || '--').replaceAll('_', ' ')}</p>
                         <p className="mt-2 text-sm text-slate-700 line-clamp-3">{p.description || ''}</p>
 ```
 **Raw class strings detected (best effort):**
 
-- `rounded-2xl border border-slate-200 bg-white p-4`
+- `rounded-2xl borderless-shadow bg-white p-4`
 - `text-sm font-bold text-slate-900`
 - `mt-1 text-xs text-slate-600`
 - `mt-2 text-sm text-slate-700 line-clamp-3`
@@ -1943,14 +3573,13 @@
   - `bg-white` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 
-#### `src/pages/FactoryProfile.jsx:292`
+#### `src/pages/FactoryProfile.jsx:460`
 
 ```jsx
                         <p className="text-sm font-bold text-slate-900">{p.title || 'Video'}</p>
-                        <p className="mt-1 text-xs text-slate-600">Status: {String(p.video_review_status || '—').replaceAll('_', ' ')}</p>
+                        <p className="mt-1 text-xs text-slate-600">Status: {String(p.video_review_status || '--').replaceAll('_', ' ')}</p>
                         <p className="mt-2 text-sm text-slate-700 line-clamp-3">{p.description || ''}</p>
                         {p.video_url ? (
 ```
@@ -1975,10 +3604,10 @@
   - `text-slate-600` — Text color or text sizing.
   - `text-slate-700` — Text color or text sizing.
 
-#### `src/pages/FactoryProfile.jsx:293`
+#### `src/pages/FactoryProfile.jsx:461`
 
 ```jsx
-                        <p className="mt-1 text-xs text-slate-600">Status: {String(p.video_review_status || '—').replaceAll('_', ' ')}</p>
+                        <p className="mt-1 text-xs text-slate-600">Status: {String(p.video_review_status || '--').replaceAll('_', ' ')}</p>
                         <p className="mt-2 text-sm text-slate-700 line-clamp-3">{p.description || ''}</p>
                         {p.video_url ? (
                           <a href={p.video_url} target="_blank" rel="noreferrer" className="mt-3 inline-block text-xs font-semibold text-[#0A66C2] hover:underline">
@@ -2009,7 +3638,7 @@
 - **Interaction / motion:**
   - `hover:underline` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:294`
+#### `src/pages/FactoryProfile.jsx:462`
 
 ```jsx
                         <p className="mt-2 text-sm text-slate-700 line-clamp-3">{p.description || ''}</p>
@@ -2040,7 +3669,7 @@
 - **Interaction / motion:**
   - `hover:underline` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:296`
+#### `src/pages/FactoryProfile.jsx:464`
 
 ```jsx
                           <a href={p.video_url} target="_blank" rel="noreferrer" className="mt-3 inline-block text-xs font-semibold text-[#0A66C2] hover:underline">
@@ -2066,7 +3695,7 @@
 - **Interaction / motion:**
   - `hover:underline` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/FactoryProfile.jsx:303`
+#### `src/pages/FactoryProfile.jsx:471`
 
 ```jsx
                   {!visibleVideos.length && !loadingProducts ? <div className="text-sm text-slate-600">No public videos available.</div> : null}
@@ -2084,18 +3713,18 @@
   - `text-sm` — Text color or text sizing.
   - `text-slate-600` — Text color or text sizing.
 
-#### `src/pages/FactoryProfile.jsx:308`
+#### `src/pages/FactoryProfile.jsx:476`
 
 ```jsx
                 <div className="space-y-3">
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  <div className="rounded-xl borderless-shadow bg-slate-50 p-3">
                     <p className="text-sm font-bold text-slate-900">Rating summary</p>
                     <p className="mt-1 text-sm text-slate-700">
 ```
 **Raw class strings detected (best effort):**
 
 - `space-y-3`
-- `rounded-xl border border-slate-200 bg-slate-50 p-3`
+- `rounded-xl borderless-shadow bg-slate-50 p-3`
 - `text-sm font-bold text-slate-900`
 - `mt-1 text-sm text-slate-700`
 
@@ -2114,20 +3743,19 @@
   - `bg-slate-50` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 
-#### `src/pages/FactoryProfile.jsx:309`
+#### `src/pages/FactoryProfile.jsx:477`
 
 ```jsx
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  <div className="rounded-xl borderless-shadow bg-slate-50 p-3">
                     <p className="text-sm font-bold text-slate-900">Rating summary</p>
                     <p className="mt-1 text-sm text-slate-700">
-                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 • {ratingSummary?.aggregate?.total_count ?? 0} reviews • {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
+                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 - {ratingSummary?.aggregate?.total_count ?? 0} reviews - {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
 ```
 **Raw class strings detected (best effort):**
 
-- `rounded-xl border border-slate-200 bg-slate-50 p-3`
+- `rounded-xl borderless-shadow bg-slate-50 p-3`
 - `text-sm font-bold text-slate-900`
 - `mt-1 text-sm text-slate-700`
 - `0.0`
@@ -2147,18 +3775,17 @@
   - `bg-slate-50` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Other:**
   - `0.0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `low` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/FactoryProfile.jsx:310`
+#### `src/pages/FactoryProfile.jsx:478`
 
 ```jsx
                     <p className="text-sm font-bold text-slate-900">Rating summary</p>
                     <p className="mt-1 text-sm text-slate-700">
-                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 • {ratingSummary?.aggregate?.total_count ?? 0} reviews • {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
+                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 - {ratingSummary?.aggregate?.total_count ?? 0} reviews - {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
                     </p>
 ```
 **Raw class strings detected (best effort):**
@@ -2181,11 +3808,11 @@
   - `0.0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `low` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/FactoryProfile.jsx:311`
+#### `src/pages/FactoryProfile.jsx:479`
 
 ```jsx
                     <p className="mt-1 text-sm text-slate-700">
-                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 • {ratingSummary?.aggregate?.total_count ?? 0} reviews • {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
+                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 - {ratingSummary?.aggregate?.total_count ?? 0} reviews - {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
                     </p>
                   </div>
 ```
@@ -2206,53 +3833,65 @@
   - `0.0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `low` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/FactoryProfile.jsx:316`
+#### `src/pages/FactoryProfile.jsx:486`
 
 ```jsx
-                    <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4">
-                      <p className="text-sm font-semibold text-slate-900">{r.score}★</p>
-                      <p className="mt-1 text-sm text-slate-700">{r.comment || 'No comment provided.'}</p>
-                    </div>
+                      <div key={r.id} className="rounded-2xl borderless-shadow bg-white p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-slate-900">{r.score}* -- {r.reviewer_name || 'Anonymous'}</p>
 ```
 **Raw class strings detected (best effort):**
 
-- `rounded-2xl border border-slate-200 bg-white p-4`
+- `rounded-2xl borderless-shadow bg-white p-4`
+- `flex items-start justify-between gap-3`
+- `flex-1`
 - `text-sm font-semibold text-slate-900`
-- `mt-1 text-sm text-slate-700`
 
 **Utility breakdown (grouped):**
 
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `items-start` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `justify-between` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `flex-1` — Flex layout.
 - **Spacing:**
   - `p-4` — Padding (all sides).
-  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
   - `text-sm` — Text color or text sizing.
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-900` — Text color or text sizing.
-  - `text-slate-700` — Text color or text sizing.
 - **Color / surface:**
   - `bg-white` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 
-#### `src/pages/FactoryProfile.jsx:317`
+#### `src/pages/FactoryProfile.jsx:487`
 
 ```jsx
-                      <p className="text-sm font-semibold text-slate-900">{r.score}★</p>
-                      <p className="mt-1 text-sm text-slate-700">{r.comment || 'No comment provided.'}</p>
-                    </div>
-                  ))}
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-slate-900">{r.score}* -- {r.reviewer_name || 'Anonymous'}</p>
+                            <p className="mt-1 text-sm text-slate-700">{r.comment || 'No comment provided.'}</p>
 ```
 **Raw class strings detected (best effort):**
 
+- `flex items-start justify-between gap-3`
+- `flex-1`
 - `text-sm font-semibold text-slate-900`
 - `mt-1 text-sm text-slate-700`
 
 **Utility breakdown (grouped):**
 
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `items-start` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `justify-between` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `flex-1` — Flex layout.
 - **Spacing:**
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
   - `text-sm` — Text color or text sizing.
@@ -2260,29 +3899,217 @@
   - `text-slate-900` — Text color or text sizing.
   - `text-slate-700` — Text color or text sizing.
 
-#### `src/pages/FactoryProfile.jsx:318`
+#### `src/pages/FactoryProfile.jsx:488`
 
 ```jsx
-                      <p className="mt-1 text-sm text-slate-700">{r.comment || 'No comment provided.'}</p>
-                    </div>
-                  ))}
-                  {!ratingSummary?.recent_reviews?.length ? <div className="text-sm text-slate-600">No reviews yet.</div> : null}
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-slate-900">{r.score}* -- {r.reviewer_name || 'Anonymous'}</p>
+                            <p className="mt-1 text-sm text-slate-700">{r.comment || 'No comment provided.'}</p>
+                            <p className="mt-2 text-xs text-slate-500">{r.created_at ? new Date(r.created_at).toLocaleDateString() : ''}</p>
 ```
 **Raw class strings detected (best effort):**
 
+- `flex-1`
+- `text-sm font-semibold text-slate-900`
 - `mt-1 text-sm text-slate-700`
-- `text-sm text-slate-600`
+- `mt-2 text-xs text-slate-500`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex-1` — Flex layout.
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-700` — Text color or text sizing.
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+
+#### `src/pages/FactoryProfile.jsx:489`
+
+```jsx
+                            <p className="text-sm font-semibold text-slate-900">{r.score}* -- {r.reviewer_name || 'Anonymous'}</p>
+                            <p className="mt-1 text-sm text-slate-700">{r.comment || 'No comment provided.'}</p>
+                            <p className="mt-2 text-xs text-slate-500">{r.created_at ? new Date(r.created_at).toLocaleDateString() : ''}</p>
+                          </div>
+```
+**Raw class strings detected (best effort):**
+
+- `text-sm font-semibold text-slate-900`
+- `mt-1 text-sm text-slate-700`
+- `mt-2 text-xs text-slate-500`
 
 **Utility breakdown (grouped):**
 
 - **Spacing:**
   - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-700` — Text color or text sizing.
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+
+#### `src/pages/FactoryProfile.jsx:490`
+
+```jsx
+                            <p className="mt-1 text-sm text-slate-700">{r.comment || 'No comment provided.'}</p>
+                            <p className="mt-2 text-xs text-slate-500">{r.created_at ? new Date(r.created_at).toLocaleDateString() : ''}</p>
+                          </div>
+                          {canEdit ? (
+```
+**Raw class strings detected (best effort):**
+
+- `mt-1 text-sm text-slate-700`
+- `mt-2 text-xs text-slate-500`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
   - `text-sm` — Text color or text sizing.
   - `text-slate-700` — Text color or text sizing.
-  - `text-slate-600` — Text color or text sizing.
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
 
-#### `src/pages/FactoryProfile.jsx:321`
+#### `src/pages/FactoryProfile.jsx:491`
+
+```jsx
+                            <p className="mt-2 text-xs text-slate-500">{r.created_at ? new Date(r.created_at).toLocaleDateString() : ''}</p>
+                          </div>
+                          {canEdit ? (
+                            <div className="flex flex-col gap-2">
+```
+**Raw class strings detected (best effort):**
+
+- `mt-2 text-xs text-slate-500`
+- `flex flex-col gap-2`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `flex-col` — Flex layout.
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+
+#### `src/pages/FactoryProfile.jsx:494`
+
+```jsx
+                            <div className="flex flex-col gap-2">
+                              <button
+                                type="button"
+                                className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50"
+```
+**Raw class strings detected (best effort):**
+
+- `flex flex-col gap-2`
+- `button`
+- `rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `flex-col` — Flex layout.
+- **Spacing:**
+  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `px-3` — Horizontal padding (left/right).
+  - `py-1` — Vertical padding (top/bottom).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-600` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-full` — Corner radius.
+  - `borderless-shadow` — Border style/width/color.
+- **Interaction / motion:**
+  - `hover:bg-slate-50` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `button` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/FactoryProfile.jsx:497`
+
+```jsx
+                                className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50"
+                                onClick={async () => {
+                                  const score = window.prompt('Update rating (1-5)', String(r.score || '5'))
+                                  if (!score) return
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50`
+- `Update rating (1-5)`
+- `5`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `px-3` — Horizontal padding (left/right).
+  - `py-1` — Vertical padding (top/bottom).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-600` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-full` — Corner radius.
+  - `borderless-shadow` — Border style/width/color.
+- **Interaction / motion:**
+  - `hover:bg-slate-50` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `Update` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `rating` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `(1-5)` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `5` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/FactoryProfile.jsx:514`
+
+```jsx
+                                className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-50"
+                                onClick={async () => {
+                                  if (!window.confirm('Delete this review?')) return
+                                  try {
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-50`
+- `Delete this review?`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `px-3` — Horizontal padding (left/right).
+  - `py-1` — Vertical padding (top/bottom).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-rose-600` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-full` — Corner radius.
+  - `borderless-shadow` — Border style/width/color.
+- **Interaction / motion:**
+  - `hover:bg-rose-50` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `Delete` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `this` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `review?` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/FactoryProfile.jsx:533`
 
 ```jsx
                   {!ratingSummary?.recent_reviews?.length ? <div className="text-sm text-slate-600">No reviews yet.</div> : null}
@@ -2304,63 +4131,111 @@
 
 > This list is generated by heuristics. It includes hard-coded UI strings and key element anchors. For absolute truth, use the source snapshot.
 
-- `src/pages/FactoryProfile.jsx:167` — Factory
+- `src/pages/FactoryProfile.jsx:234` — Factory
 
 ```jsx
                   <span className="uppercase">Factory</span>
-                  {user.profile?.country ? <span>• {user.profile.country}</span> : null}
+                  {user.profile?.country ? <span>- {user.profile.country}</span> : null}
                   {user.verified ? <span className="font-bold text-[#0A66C2]">Verified</span> : null}
-                </div>
+                  {isCertified ? <span className="font-bold text-emerald-600">Certified</span> : null}
 ```
-- `src/pages/FactoryProfile.jsx:168` — • {user.profile.country}
+- `src/pages/FactoryProfile.jsx:235` — - {user.profile.country}
 
 ```jsx
-                  {user.profile?.country ? <span>• {user.profile.country}</span> : null}
+                  {user.profile?.country ? <span>- {user.profile.country}</span> : null}
                   {user.verified ? <span className="font-bold text-[#0A66C2]">Verified</span> : null}
+                  {isCertified ? <span className="font-bold text-emerald-600">Certified</span> : null}
+                  {isPremium ? <span title="Boosted visibility enabled for Premium" className="font-bold text-blue-600">Premium Reach</span> : null}
+```
+- `src/pages/FactoryProfile.jsx:236` — Verified
+
+```jsx
+                  {user.verified ? <span className="font-bold text-[#0A66C2]">Verified</span> : null}
+                  {isCertified ? <span className="font-bold text-emerald-600">Certified</span> : null}
+                  {isPremium ? <span title="Boosted visibility enabled for Premium" className="font-bold text-blue-600">Premium Reach</span> : null}
+                  {isBoosted ? <span className="font-bold text-emerald-600">Boosted</span> : null}
+```
+- `src/pages/FactoryProfile.jsx:237` — Certified
+
+```jsx
+                  {isCertified ? <span className="font-bold text-emerald-600">Certified</span> : null}
+                  {isPremium ? <span title="Boosted visibility enabled for Premium" className="font-bold text-blue-600">Premium Reach</span> : null}
+                  {isBoosted ? <span className="font-bold text-emerald-600">Boosted</span> : null}
+                </div>
+```
+- `src/pages/FactoryProfile.jsx:238` — Premium Reach
+
+```jsx
+                  {isPremium ? <span title="Boosted visibility enabled for Premium" className="font-bold text-blue-600">Premium Reach</span> : null}
+                  {isBoosted ? <span className="font-bold text-emerald-600">Boosted</span> : null}
                 </div>
               </div>
 ```
-- `src/pages/FactoryProfile.jsx:169` — Verified
+- `src/pages/FactoryProfile.jsx:239` — Boosted
 
 ```jsx
-                  {user.verified ? <span className="font-bold text-[#0A66C2]">Verified</span> : null}
+                  {isBoosted ? <span className="font-bold text-emerald-600">Boosted</span> : null}
                 </div>
               </div>
             </div>
 ```
-- `src/pages/FactoryProfile.jsx:175` — Contact
+- `src/pages/FactoryProfile.jsx:245` — Contact
 
 ```jsx
               <button onClick={contact} className="flex-1 rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182]">Contact</button>
-              <button onClick={follow} className="flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+              <button onClick={follow} className="flex-1 rounded-full borderless-shadow px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
                 {relationship.following ? 'Following' : 'Follow'}
               </button>
 ```
-- `src/pages/FactoryProfile.jsx:186` — Capacity
+- `src/pages/FactoryProfile.jsx:256` — Industry
+
+```jsx
+                <p className="text-[11px] text-slate-500">Industry</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.industry || 'Garments & Textile'}</p>
+              </div>
+              <div className="rounded-xl borderless-shadow bg-slate-50 p-3">
+```
+- `src/pages/FactoryProfile.jsx:260` — Organization
+
+```jsx
+                <p className="text-[11px] text-slate-500">Organization</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.organization_name || user.profile?.organization || user.name}</p>
+              </div>
+              <div className="rounded-xl borderless-shadow bg-slate-50 p-3">
+```
+- `src/pages/FactoryProfile.jsx:264` — Rating
+
+```jsx
+                <p className="text-[11px] text-slate-500">Rating</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
+                <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
+              </div>
+```
+- `src/pages/FactoryProfile.jsx:271` — Capacity
 
 ```jsx
                 <p className="text-[11px] text-slate-500">Capacity</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.monthly_capacity || '—'}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.monthly_capacity || '--'}</p>
                 <p className="text-[11px] text-slate-600">Monthly</p>
               </div>
 ```
-- `src/pages/FactoryProfile.jsx:188` — Monthly
+- `src/pages/FactoryProfile.jsx:273` — Monthly
 
 ```jsx
                 <p className="text-[11px] text-slate-600">Monthly</p>
               </div>
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <div className="rounded-xl borderless-shadow bg-white p-3">
                 <p className="text-[11px] text-slate-500">MOQ</p>
 ```
-- `src/pages/FactoryProfile.jsx:191` — MOQ
+- `src/pages/FactoryProfile.jsx:276` — MOQ
 
 ```jsx
                 <p className="text-[11px] text-slate-500">MOQ</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.moq || '—'}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.moq || '--'}</p>
                 <p className="text-[11px] text-slate-600">Declared</p>
               </div>
 ```
-- `src/pages/FactoryProfile.jsx:193` — Declared
+- `src/pages/FactoryProfile.jsx:278` — Declared
 
 ```jsx
                 <p className="text-[11px] text-slate-600">Declared</p>
@@ -2368,39 +4243,111 @@
             </div>
           </motion.div>
 ```
-- `src/pages/FactoryProfile.jsx:236` — About
+- `src/pages/FactoryProfile.jsx:286` — Order Completion Certification
 
 ```jsx
-                    <p className="text-sm font-bold text-slate-900">About</p>
-                    <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">{user.profile?.about || 'No description added yet.'}</p>
+              <p className="text-[11px] text-slate-500">Order Completion Certification</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">{certification.status || 'pending'}</p>
+              <p className="text-[11px] text-slate-600">Signed contracts: {certification.signed_contracts ?? 0}</p>
+            </div>
+```
+- `src/pages/FactoryProfile.jsx:288` — Signed contracts: {certification.signed_contracts ?? 0}
+
+```jsx
+              <p className="text-[11px] text-slate-600">Signed contracts: {certification.signed_contracts ?? 0}</p>
+            </div>
+          ) : null}
+        </aside>
+```
+- `src/pages/FactoryProfile.jsx:329` — About
+
+```jsx
+                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">About</p>
+                    <p className="mt-2 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{user.profile?.about || 'No description added yet.'}</p>
                   </div>
 
 ```
-- `src/pages/FactoryProfile.jsx:242` — Lead time
+- `src/pages/FactoryProfile.jsx:335` — Brand Kit
 
 ```jsx
-                      <p className="text-[11px] text-slate-500">Lead time</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.lead_time_days || '—'}</p>
-                    </div>
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Brand Kit</p>
+                      <div className="mt-3 flex items-center gap-3">
+                        {brandProfile.brand_logo_url ? (
+                          <img src={brandProfile.brand_logo_url} alt="Brand logo" className="h-12 w-12 rounded-xl object-cover" />
 ```
-- `src/pages/FactoryProfile.jsx:246` — Certifications
+- `src/pages/FactoryProfile.jsx:359` — Dedicated Account Manager
 
 ```jsx
-                      <p className="text-[11px] text-slate-500">Certifications</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900">{(user.profile?.certifications || []).join(', ') || '—'}</p>
-                    </div>
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Dedicated Account Manager</p>
+                      <div className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                        {brandProfile.account_manager_name || 'Assigned manager'}
+                      </div>
 ```
-- `src/pages/FactoryProfile.jsx:250` — Rating
+- `src/pages/FactoryProfile.jsx:371` — Industry
 
 ```jsx
-                      <p className="text-[11px] text-slate-500">Rating</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
-                      <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Industry</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.industry || 'Garments & Textile'}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+```
+- `src/pages/FactoryProfile.jsx:375` — Organization
+
+```jsx
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Organization</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.organization_name || user.profile?.organization || user.name}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+```
+- `src/pages/FactoryProfile.jsx:379` — Rating
+
+```jsx
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Rating</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-400">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
                     </div>
 ```
-- `src/pages/FactoryProfile.jsx:266` — Video available
+- `src/pages/FactoryProfile.jsx:386` — Lead time
+
+```jsx
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Lead time</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.lead_time_days || '--'} days</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+```
+- `src/pages/FactoryProfile.jsx:390` — Certifications
+
+```jsx
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Certifications</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{(user.profile?.certifications || []).join(', ') || '--'}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+```
+- `src/pages/FactoryProfile.jsx:394` — Employees
+
+```jsx
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Employees</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.employee_count || '--'}</p>
+                    </div>
+                  </div>
+```
+- `src/pages/FactoryProfile.jsx:401` — Companies Worked With
+
+```jsx
+                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-3">Companies Worked With</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {(user.profile?.companies_worked_with || []).map((company, idx) => (
+                          <div key={idx} className="flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+```
+- `src/pages/FactoryProfile.jsx:433` — Status: {String(p.status \|\| 'published')}
+
+```jsx
+                        <p className="mt-2 text-[11px] text-slate-500">Status: {String(p.status || 'published')}</p>
+                        {p.hasVideo ? <p className="mt-2 text-xs font-semibold text-indigo-700">Video available</p> : null}
+                      </div>
+                    ))}
+```
+- `src/pages/FactoryProfile.jsx:434` — Video available
 
 ```jsx
                         {p.hasVideo ? <p className="mt-2 text-xs font-semibold text-indigo-700">Video available</p> : null}
@@ -2408,47 +4355,55 @@
                     ))}
                   </div>
 ```
-- `src/pages/FactoryProfile.jsx:293` — Status: {String(p.video_review_status \|\| '—').replaceAll('_', ' ')}
+- `src/pages/FactoryProfile.jsx:461` — Status: {String(p.video_review_status \|\| '--').replaceAll('_', ' ')}
 
 ```jsx
-                        <p className="mt-1 text-xs text-slate-600">Status: {String(p.video_review_status || '—').replaceAll('_', ' ')}</p>
+                        <p className="mt-1 text-xs text-slate-600">Status: {String(p.video_review_status || '--').replaceAll('_', ' ')}</p>
                         <p className="mt-2 text-sm text-slate-700 line-clamp-3">{p.description || ''}</p>
                         {p.video_url ? (
                           <a href={p.video_url} target="_blank" rel="noreferrer" className="mt-3 inline-block text-xs font-semibold text-[#0A66C2] hover:underline">
 ```
-- `src/pages/FactoryProfile.jsx:310` — Rating summary
+- `src/pages/FactoryProfile.jsx:478` — Rating summary
 
 ```jsx
                     <p className="text-sm font-bold text-slate-900">Rating summary</p>
                     <p className="mt-1 text-sm text-slate-700">
-                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 • {ratingSummary?.aggregate?.total_count ?? 0} reviews • {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
+                      {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 - {ratingSummary?.aggregate?.total_count ?? 0} reviews - {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
                     </p>
 ```
-- `src/pages/FactoryProfile.jsx:175` — (element) <button>
+- `src/pages/FactoryProfile.jsx:238` — Boosted visibility enabled for Premium
+
+```jsx
+                  {isPremium ? <span title="Boosted visibility enabled for Premium" className="font-bold text-blue-600">Premium Reach</span> : null}
+                  {isBoosted ? <span className="font-bold text-emerald-600">Boosted</span> : null}
+                </div>
+              </div>
+```
+- `src/pages/FactoryProfile.jsx:245` — (element) <button>
 
 ```jsx
               <button onClick={contact} className="flex-1 rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182]">Contact</button>
-              <button onClick={follow} className="flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+              <button onClick={follow} className="flex-1 rounded-full borderless-shadow px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
                 {relationship.following ? 'Following' : 'Follow'}
               </button>
 ```
-- `src/pages/FactoryProfile.jsx:176` — (element) <button>
+- `src/pages/FactoryProfile.jsx:246` — (element) <button>
 
 ```jsx
-              <button onClick={follow} className="flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+              <button onClick={follow} className="flex-1 rounded-full borderless-shadow px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
                 {relationship.following ? 'Following' : 'Follow'}
               </button>
-              <button onClick={connect} className="flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+              <button onClick={connect} className="flex-1 rounded-full borderless-shadow px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
 ```
-- `src/pages/FactoryProfile.jsx:179` — (element) <button>
+- `src/pages/FactoryProfile.jsx:249` — (element) <button>
 
 ```jsx
-              <button onClick={connect} className="flex-1 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+              <button onClick={connect} className="flex-1 rounded-full borderless-shadow px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
                 {relationship.friend_status === 'friends' ? 'Connected' : (relationship.friend_status === 'requested' ? 'Requested' : 'Connect')}
               </button>
             </div>
 ```
-- `src/pages/FactoryProfile.jsx:210` — (element) <button>
+- `src/pages/FactoryProfile.jsx:303` — (element) <button>
 
 ```jsx
                 <button
@@ -2456,23 +4411,43 @@
                   type="button"
                   onClick={() => setActiveTab(tab)}
 ```
-- `src/pages/FactoryProfile.jsx:272` — (element) <button>
+- `src/pages/FactoryProfile.jsx:440` — (element) <button>
 
 ```jsx
                     <button
                       type="button"
                       onClick={() => loadProducts({ reset: false })}
-                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                      className="rounded-full borderless-shadow bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+```
+- `src/pages/FactoryProfile.jsx:495` — (element) <button>
+
+```jsx
+                              <button
+                                type="button"
+                                className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50"
+                                onClick={async () => {
+```
+- `src/pages/FactoryProfile.jsx:512` — (element) <button>
+
+```jsx
+                              <button
+                                type="button"
+                                className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-50"
+                                onClick={async () => {
 ```
 ## 5) Backend Mapping (Frontend → Express → Controller → Service/DB)
 
 | Frontend call (path:line) | Express mount | Route definition | Controller file | Handler |
 |---|---|---|---|---|
-| GET /profiles/${encodeURIComponent(id)} (src/pages/FactoryProfile.jsx:67) | /api/profiles -> server/routes/profileRoutes.js:83 | - | - | - |
-| GET /ratings/profiles/user:${encodeURIComponent(id)} (src/pages/FactoryProfile.jsx:84) | /api/ratings -> server/routes/ratingsRoutes.js:81 | - | - | - |
-| GET /profiles/${encodeURIComponent(id)}/products?cursor=${cursor}&limit=10 (src/pages/FactoryProfile.jsx:96) | /api/profiles -> server/routes/profileRoutes.js:83 | - | - | - |
-| POST /users/${encodeURIComponent(id)}/follow (src/pages/FactoryProfile.jsx:122) | /api/users -> server/routes/userRoutes.js:60 | - | - | - |
-| POST /users/${encodeURIComponent(id)}/friend-request (src/pages/FactoryProfile.jsx:132) | /api/users -> server/routes/userRoutes.js:60 | - | - | - |
+| GET /profiles/${encodeURIComponent(id)} (src/pages/FactoryProfile.jsx:90) | /api/profiles -> server/routes/profileRoutes.js:139 | - | - | - |
+| GET /ratings/profiles/user:${encodeURIComponent(id)} (src/pages/FactoryProfile.jsx:107) | /api/ratings -> server/routes/ratingsRoutes.js:137 | - | - | - |
+| GET /certifications/org/${encodeURIComponent(id)} (src/pages/FactoryProfile.jsx:117) | /api/certifications -> server/routes/certificationRoutes.js:149 | - | - | - |
+| GET /profiles/${encodeURIComponent(id)}/products?cursor=${cursor}&limit=10 (src/pages/FactoryProfile.jsx:129) | /api/profiles -> server/routes/profileRoutes.js:139 | - | - | - |
+| GET /boosts/me (src/pages/FactoryProfile.jsx:160) | /api/boosts -> server/routes/boostRoutes.js:142 | GET /me (server/routes/boostRoutes.js:7) | server/controllers/boostController.js | getMyBoosts |
+| POST /users/${encodeURIComponent(id)}/follow (src/pages/FactoryProfile.jsx:177) | /api/users -> server/routes/userRoutes.js:112 | - | - | - |
+| POST /users/${encodeURIComponent(id)}/friend-request (src/pages/FactoryProfile.jsx:187) | /api/users -> server/routes/userRoutes.js:112 | - | - | - |
+| PATCH /ratings/${r.id} (src/pages/FactoryProfile.jsx:503) | /api/ratings -> server/routes/ratingsRoutes.js:137 | - | - | - |
+| DELETE /ratings/${r.id} (src/pages/FactoryProfile.jsx:518) | /api/ratings -> server/routes/ratingsRoutes.js:137 | - | - | - |
 
 ## 6) How to Edit Safely
 
@@ -2482,5 +4457,4 @@
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
-{% endraw %}
 

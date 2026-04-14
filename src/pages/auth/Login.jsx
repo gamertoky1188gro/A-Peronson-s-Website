@@ -24,6 +24,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { apiRequest, getCurrentUser, getRoleHome, saveSession } from '../../lib/auth'
 import { startAuthentication, startRegistration } from '@simplewebauthn/browser'
+import BackButton from '../../components/ui/BackButton'
 
 export default function Login() {
   // `navigate` is used after a successful login (or when routing needs to change).
@@ -55,6 +56,7 @@ export default function Login() {
     }
   })
   const [error, setError] = useState('')
+  const [passwordVisible, setPasswordVisible] = useState(false)
 
   // If ProtectedRoute sent us here, it passes the blocked path in state so we can return after login.
   const redirectTo = location.state?.from || null
@@ -191,43 +193,58 @@ export default function Login() {
 
   return (
     // Page wrapper: centers the login panel and applies the current "neo/cyberpunk" base style utilities.
-    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card flex items-center justify-center p-4">
+    <div className="min-h-screen neo-page cyberpunk-page bg-slate-50 dark:bg-[#020617] flex items-center justify-center p-4">
       {/* Login card container (max width keeps form readable). */}
-      <div className="w-full max-w-md bg-white neo-panel cyberpunk-card rounded-xl p-8">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Login</h1>
-          <button type="button" onClick={handleBack} className="text-sm text-slate-600 hover:text-slate-900">
-            Back
-          </button>
+      <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-[0_18px_60px_rgba(15,23,42,0.08)] ring-1 ring-slate-200/60 dark:bg-slate-900/70 dark:shadow-none dark:ring-white/10">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Login</h1>
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Access pages based on your role (Buyer, Factory, Buying House, Admin).</p>
+          </div>
+          <BackButton onClick={handleBack} className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white bg-transparent px-2 py-1 rounded-none" />
         </div>
-        <p className="mt-2 text-sm text-gray-600">Access pages based on your role (Buyer, Factory, Buying House, Admin).</p>
 
         {/* Controlled form: React state is the single source of truth for inputs. */}
         <form onSubmit={handleLogin} className="mt-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Email or Agent ID</label>
+            <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">Email or Agent ID</label>
             <input
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               type="text"
               required
               placeholder="Enter your email or Agent ID"
-              className="w-full px-4 py-3 borderless-shadow rounded-lg"
+              className="w-full rounded-lg borderless-shadow px-4 py-3 bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100"
             />
-            <p className="mt-1 text-xs text-slate-500">Agents: Use your assigned Agent ID to login</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Agents: Use your assigned Agent ID to login</p>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Password</label>
+            <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">Password</label>
             {/* Password is required; actual auth validation happens server-side. */}
-            <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required className="w-full px-4 py-3 borderless-shadow rounded-lg" />
+            <div className="flex items-center gap-2 rounded-lg borderless-shadow px-3 py-2 bg-white dark:bg-[#0b1224] focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
+              <input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                type={passwordVisible ? 'text' : 'password'}
+                required
+                className="w-full bg-transparent outline-none text-slate-900 dark:text-slate-100"
+              />
+              <button
+                type="button"
+                onClick={() => setPasswordVisible((prev) => !prev)}
+                className="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+              >
+                {passwordVisible ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </div>
 
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm">
+            <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
               <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
               Remember me
             </label>
-            <label className="flex items-center gap-2 text-sm">
+            <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
               <input
                 type="checkbox"
                 checked={rememberPasskeyUser}
@@ -236,7 +253,7 @@ export default function Login() {
               Remember passkey user
             </label>
             {passkeyHint ? (
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Passkey: <span className="font-semibold">{passkeyHint.passkey_name || 'Passkey'}</span>
                 {passkeyHint.user_name ? ` · ${passkeyHint.user_name}` : ''}
                 {passkeyHint.user_email ? ` (${passkeyHint.user_email})` : ''}
@@ -245,17 +262,17 @@ export default function Login() {
           </div>
 
           {/* Inline error (only renders when there is an error string). */}
-          {error ? <p className="text-sm text-red-500">{error}</p> : null}
+          {error ? <p className="text-sm text-red-500 dark:text-rose-300">{error}</p> : null}
 
           {/* Primary CTA: uses brand blue color */}
-          <button disabled={loading} className="w-full px-4 py-3 rounded-lg bg-[var(--gt-blue)] hover:bg-[var(--gt-blue-hover)] text-white disabled:opacity-70 transition">
+          <button disabled={loading} className="w-full px-4 py-3 rounded-lg bg-(--gt-blue) hover:bg-(--gt-blue-hover) text-white disabled:opacity-70 transition">
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
           <button
             type="button"
             onClick={handlePasskeyLogin}
             disabled={passkeyLoading}
-            className="w-full px-4 py-3 rounded-lg borderless-shadow text-slate-700 disabled:opacity-70"
+            className="w-full px-4 py-3 rounded-lg borderless-shadow text-slate-700 dark:text-slate-100 disabled:opacity-70"
           >
             {passkeyLoading ? 'Opening passkey...' : 'Sign in with passkey'}
           </button>
@@ -263,16 +280,14 @@ export default function Login() {
             type="button"
             onClick={handlePasskeyEnroll}
             disabled={enrollLoading}
-            className="w-full px-4 py-3 rounded-lg borderless-shadow text-slate-700 disabled:opacity-70"
+            className="w-full px-4 py-3 rounded-lg borderless-shadow text-slate-700 dark:text-slate-100 disabled:opacity-70"
           >
             {enrollLoading ? 'Setting up passkey...' : 'Set up passkey (first time)'}
           </button>
+          <p className="mt-6 text-sm text-gray-600 dark:text-slate-300">
+            New here* <Link className="text-(--gt-blue) hover:underline" to="/signup">Create account</Link>
+          </p>
         </form>
-
-        {/* Secondary nav: send user to signup if they do not have an account yet. */}
-        <p className="mt-6 text-sm text-gray-600">
-          New here* <Link className="text-[var(--gt-blue)] hover:underline" to="/signup">Create account</Link>
-        </p>
       </div>
     </div>
   )

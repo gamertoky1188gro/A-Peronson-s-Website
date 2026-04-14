@@ -8,6 +8,7 @@ import { moderateTextOrRedact } from './policyService.js'
 import { getPlanForUser } from './entitlementService.js'
 import { indexRequirement, deleteRequirementIndex } from './openSearchService.js'
 import { extractOriginalPrice, getBaseCurrency, normalizePriceRange } from './currencyService.js'
+import { getBuyerRequestSubmissionErrors } from '../../shared/requirementValidation.js'
 
 const FILE = 'requirements.json'
 
@@ -58,6 +59,15 @@ function normalizeCustomFields(raw = []) {
       value: sanitizeString(row?.value || '', 240),
     }))
     .filter((row) => row.label || row.value)
+}
+
+function buildValidationError(errors = {}) {
+  const message = Object.values(errors).filter(Boolean).join(' ')
+  if (!message) return null
+  const error = new Error(message)
+  error.status = 400
+  error.details = errors
+  return error
 }
 
 function normalizeDate(value) {
@@ -133,40 +143,13 @@ function normalizeSpecs(payload = {}, requestType) {
 
 function assertRequiredFields(payload = {}, requestType, status = 'open') {
   if (String(status || '').toLowerCase() === 'draft') return
-  const missing = []
-  const type = String(requestType || '').toLowerCase()
-  const get = (value) => sanitizeString(value || '', 160)
-
-  if (type === 'textile') {
-    if (!get(payload.title)) missing.push('title')
-    if (!get(payload.material_type)) missing.push('material_type')
-    if (!get(payload.sub_category)) missing.push('sub_category')
-    if (!get(payload.quantity)) missing.push('quantity')
-    if (!get(payload.unit)) missing.push('unit')
-    if (!get(payload.fiber_composition)) missing.push('fiber_composition')
-    if (!get(payload.fabric_weight_gsm || payload.fabric_weight)) missing.push('fabric_weight_gsm')
-    if (!get(payload.price_range || payload.target_price)) missing.push('target_price')
-    if (!get(payload.price_unit)) missing.push('price_unit')
-    if (!get(payload.incoterms)) missing.push('incoterm')
-    if (!get(payload.delivery_port)) missing.push('delivery_port')
-    if (!get(payload.lead_time_required)) missing.push('lead_time_required')
-  } else {
-    if (!get(payload.title)) missing.push('title')
-    if (!get(payload.category)) missing.push('category')
-    if (!get(payload.gender_target)) missing.push('gender_target')
-    if (!get(payload.season)) missing.push('season')
-    if (!get(payload.quantity)) missing.push('total_quantity')
-    if (!get(payload.price_range || payload.target_fob_price)) missing.push('target_fob_price')
-    if (!get(payload.incoterms)) missing.push('incoterm')
-    if (!get(payload.ex_factory_date)) missing.push('ex_factory_date')
-    if (!get(payload.payment_terms)) missing.push('payment_terms')
+  const validationPayload = {
+    ...(payload || {}),
+    request_type: requestType || payload.request_type || payload.requestType || '',
   }
-
-  if (missing.length) {
-    const error = new Error(`Missing required fields: ${missing.join(', ')}`)
-    error.status = 400
-    throw error
-  }
+  const errors = getBuyerRequestSubmissionErrors(validationPayload)
+  const error = buildValidationError(errors)
+  if (error) throw error
 }
 
 function normalizeRequirement(buyerId, payload) {
@@ -175,7 +158,7 @@ function normalizeRequirement(buyerId, payload) {
     : 'garments'
   const status = sanitizeString(payload.status || 'open', 20).toLowerCase()
   assertRequiredFields(payload, requestType, status)
-  const title = sanitizeString(payload.title || payload.request_title || payload.category, 160)
+  const title = sanitizeString(payload.title || payload.request_title || '', 160)
   const specs = normalizeSpecs(payload, requestType)
   const customFields = normalizeCustomFields(payload.custom_fields || payload.customFields || [])
   const normalized = {
@@ -441,7 +424,7 @@ export async function updateRequirement(requirementId, patch, actor) {
     ...next,
     ...next.specs,
     request_type: next.request_type,
-  }, next.request_type)
+  }, next.request_type, next.status)
 
   next.ai_summary = buildRequirementSummary(next)
 

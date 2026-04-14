@@ -24,6 +24,7 @@
     - Magnetic CTAs via `MagneticButton`.
 */
 import React, { useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Check, Minus } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
@@ -80,10 +81,11 @@ function MotionItem({ index, className='', children }) {
 function accentClasses(accent) {
   if (accent === 'teal') return 'text-[#2dd4bf]'
   if (accent === 'gold') return 'text-[#f59e0b]'
-  return 'text-[var(--gt-blue)]'
+  return 'text-(--gt-blue)'
 }
 
 export default function Pricing() {
+  const location = useLocation()
   const [pricing, setPricing] = useState(defaultPricing)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
@@ -94,6 +96,18 @@ export default function Pricing() {
   const activePlanKey = isLoggedIn ? planKeyForUserRole(sessionUser?.role) : 'neutral'
 
   useEffect(() => {
+    // If route contains a hash (e.g. /pricing#plans), scroll to that section after render.
+    if (typeof window !== 'undefined' && location?.hash) {
+      const id = String(location.hash || '').replace(/^#/, '')
+      if (id) {
+        // Allow parent layout scroll-to-top to settle first.
+        setTimeout(() => {
+          const el = document.getElementById(id)
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }, 80)
+      }
+    }
+
     let alive = true
     const controller = new AbortController()
 
@@ -378,13 +392,13 @@ const premiumFeatures = [
             <div className="mt-8 flex flex-wrap gap-3">
               <MagneticButton
                 to="/signup"
-                className="shimmer-btn inline-flex items-center justify-center rounded-md bg-[var(--gt-blue)] px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(10,102,194,0.25)] transition hover:brightness-105 dark:shadow-none"
+                className="shimmer-btn inline-flex items-center justify-center rounded-md bg-(--gt-blue) px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(10,102,194,0.25)] transition hover:brightness-105 dark:shadow-none"
               >
                 Create your organization
               </MagneticButton>
               <MagneticButton
                 to="#plans"
-                className="inline-flex items-center justify-center rounded-md bg-[rgba(9,9,11,0.06)] px-5 py-3 text-sm font-semibold text-[#09090b] transition hover:bg-[rgba(9,9,11,0.08)] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#fafafa] dark:hover:bg-[rgba(250,250,250,0.08)]"
+                className="inline-flex items-center justify-center rounded-md border border-[#d4d4d8] bg-white px-5 py-3 text-sm font-semibold text-[#09090b] shadow-none transition hover:bg-[#fafafa] dark:border-white/10 dark:bg-[#18181b] dark:text-[#fafafa]"
               >
                 View plans
               </MagneticButton>
@@ -513,7 +527,7 @@ const premiumFeatures = [
               <SpotlightCard
                 className={[
                   'conic-beam rounded-xl p-7',
-                  'bg-[rgba(255,255,255,0.70)] backdrop-blur-[12px]',
+                  'bg-[rgba(255,255,255,0.70)] backdrop-blur-md',
                   'borderless-shadow shadow-[0_10px_38px_-18px_rgba(0,0,0,0.22)]',
                   'transition duration-300 ease-out',
                   'hover:-translate-y-0.5 hover:shadow-[0_16px_54px_-22px_rgba(0,0,0,0.26)]',
@@ -586,7 +600,7 @@ const premiumFeatures = [
                 <ul className="mt-5 space-y-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">
                   {['Team scale without limits', 'Decision-ready visibility', 'Secure contract trail', 'Verified trust signals'].map((item) => (
                     <li key={item} className="flex items-start gap-2">
-                      <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[rgba(10,102,194,0.14)] text-[var(--gt-blue)]">
+                      <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[rgba(10,102,194,0.14)] text-(--gt-blue)">
                         <Check className="h-3 w-3" />
                       </span>
                       <span>{item}</span>
@@ -661,7 +675,7 @@ const premiumFeatures = [
                 <ul className="mt-4 space-y-2 text-sm text-[#09090b] dark:text-[#fafafa]">
                   {bundle.items.map((item) => (
                     <li key={item} className="flex items-start gap-2">
-                      <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-[#4B9DFB]" />
+                      <span className="mt-0.75 h-1.5 w-1.5 rounded-full bg-[#4B9DFB]" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -688,7 +702,7 @@ const premiumFeatures = [
               </thead>
               <tbody className="divide-y divide-[#e4e4e7] dark:divide-[#27272a]">
                 {tableRows.map((row) => (
-                  <tr key={row.label} className="transition-colors hover:bg-black/[0.02] dark:hover:bg-white/[0.02]">
+                  <tr key={row.label} className="transition-colors hover:bg-black/2 dark:hover:bg-white/2">
                     <td className="px-6 py-4 font-medium text-[#09090b] dark:text-[#fafafa]">{row.label}</td>
                     <td className="px-6 py-4 text-[#52525b] dark:text-[#a1a1aa]">
                       {typeof row.free === 'boolean' ? (
@@ -760,7 +774,7 @@ const premiumFeatures = [
             <div className="mt-7 flex flex-wrap justify-center gap-3">
               <MagneticButton
                 to="/signup"
-                className="shimmer-btn inline-flex items-center justify-center rounded-md bg-[var(--gt-blue)] px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(10,102,194,0.25)] transition hover:brightness-105 dark:shadow-none"
+                className="shimmer-btn inline-flex items-center justify-center rounded-md bg-(--gt-blue) px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(10,102,194,0.25)] transition hover:brightness-105 dark:shadow-none"
               >
                 Create your organization
               </MagneticButton>

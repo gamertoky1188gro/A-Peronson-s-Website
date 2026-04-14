@@ -49,8 +49,8 @@
    49 | :root.dark .bg-cyan-600,
    50 | :root.dark .bg-pink-600,
    51 | :root.dark .bg-\[\#0A66C2\] {
-   52 |   background-image: linear-gradient(120deg, #0ea5e9 0%, #8b5cf6 44%, #ec4899 100%) !important;
-   53 |   background-color: #8b5cf6 !important;
+   52 |   background-image: linear-gradient(120deg, #0A66C2 0%, #2E8BFF 100%) !important;
+   53 |   background-color: #0A66C2 !important;
    54 | }
    55 | 
    56 | :root.dark .enterprise-gradient,
@@ -84,7 +84,7 @@
    84 | :root.dark .text-cyan-600,
    85 | :root.dark .text-pink-600,
    86 | :root.dark .text-\[\#0A66C2\] {
-   87 |   color: #67e8f9 !important;
+   87 |   color: var(--gt-blue) !important;
    88 | }
    89 | 
    90 | :root.dark .border,
@@ -149,3 +149,126 @@
   149 |   background-color: rgba(7, 14, 31, 0.85) !important;
   150 | }
   151 | 
+  152 | /* Borderless UI: replace borders with shadows */
+  153 | :root {
+  154 |   --borderless-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 12px 28px rgba(15, 23, 42, 0.10);
+  155 |   --borderless-divider: inset 0 -1px 0 rgba(15, 23, 42, 0.12);
+  156 |   --borderless-divider-top: inset 0 1px 0 rgba(15, 23, 42, 0.12);
+  157 |   --borderless-divider-left: inset 1px 0 0 rgba(15, 23, 42, 0.12);
+  158 |   --borderless-divider-right: inset -1px 0 0 rgba(15, 23, 42, 0.12);
+  159 |   --borderless-divider-x: inset 1px 0 0 rgba(15, 23, 42, 0.12), inset -1px 0 0 rgba(15, 23, 42, 0.12);
+  160 |   --borderless-divider-y: inset 0 1px 0 rgba(15, 23, 42, 0.12), inset 0 -1px 0 rgba(15, 23, 42, 0.12);
+  161 | }
+  162 | 
+  163 | :root.dark {
+  164 |   --borderless-shadow: 0 10px 26px rgba(0, 0, 0, 0.45), 0 22px 50px rgba(0, 0, 0, 0.55);
+  165 |   --borderless-divider: inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+  166 |   --borderless-divider-top: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  167 |   --borderless-divider-left: inset 1px 0 0 rgba(255, 255, 255, 0.08);
+  168 |   --borderless-divider-right: inset -1px 0 0 rgba(255, 255, 255, 0.08);
+  169 |   --borderless-divider-x: inset 1px 0 0 rgba(255, 255, 255, 0.08), inset -1px 0 0 rgba(255, 255, 255, 0.08);
+  170 |   --borderless-divider-y: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+  171 | }
+  172 | 
+  173 | .borderless-shadow {
+  174 |   box-shadow: var(--borderless-shadow);
+  175 | }
+  176 | 
+  177 | .borderless-divider-b {
+  178 |   box-shadow: var(--borderless-divider);
+  179 | }
+  180 | 
+  181 | .borderless-divider-t {
+  182 |   box-shadow: var(--borderless-divider-top);
+  183 | }
+  184 | 
+  185 | .borderless-divider-l {
+  186 |   box-shadow: var(--borderless-divider-left);
+  187 | }
+  188 | 
+  189 | .borderless-divider-r {
+  190 |   box-shadow: var(--borderless-divider-right);
+  191 | }
+  192 | 
+  193 | .borderless-divider-x {
+  194 |   box-shadow: var(--borderless-divider-x);
+  195 | }
+  196 | 
+  197 | .borderless-divider-y {
+  198 |   box-shadow: var(--borderless-divider-y);
+  199 | }
+  200 | 
+  201 | :where(
+  202 |   .border,
+  203 |   .border-0,
+  204 |   .border-2,
+  205 |   .border-4,
+  206 |   .border-8,
+  207 |   .border-x,
+  208 |   .border-y,
+  209 |   .border-t,
+  210 |   .border-b,
+  211 |   .border-l,
+  212 |   .border-r,
+  213 |   [class*='border-'],
+  214 |   [class~='border']
+  215 | ) {
+  216 |   border: none !important;
+  217 | }
+  218 | 
+  219 | :where([class~='border'], [class*='border-']):not([class~='shadow']):not([class^='shadow-']):not([class*=' shadow-']):not([class*='border-none']):not([class*='border-0']) {
+  220 |   --tw-shadow: var(--borderless-shadow);
+  221 |   box-shadow:
+  222 |     var(--tw-ring-offset-shadow, 0 0 #0000),
+  223 |     var(--tw-ring-shadow, 0 0 #0000),
+  224 |     var(--tw-shadow);
+  225 | }
+  226 | 
+  227 | :where([class*='border-b']):not([class~='shadow']):not([class^='shadow-']):not([class*=' shadow-']):not([class*='border-none']):not([class*='border-0']) {
+  228 |   --tw-shadow: var(--borderless-divider);
+  229 |   box-shadow:
+  230 |     var(--tw-ring-offset-shadow, 0 0 #0000),
+  231 |     var(--tw-ring-shadow, 0 0 #0000),
+  232 |     var(--tw-shadow);
+  233 | }
+  234 | 
+  235 | :where([class*='border-t']):not([class~='shadow']):not([class^='shadow-']):not([class*=' shadow-']):not([class*='border-none']):not([class*='border-0']) {
+  236 |   --tw-shadow: var(--borderless-divider-top);
+  237 |   box-shadow:
+  238 |     var(--tw-ring-offset-shadow, 0 0 #0000),
+  239 |     var(--tw-ring-shadow, 0 0 #0000),
+  240 |     var(--tw-shadow);
+  241 | }
+  242 | 
+  243 | :where([class*='border-l']):not([class~='shadow']):not([class^='shadow-']):not([class*=' shadow-']):not([class*='border-none']):not([class*='border-0']) {
+  244 |   --tw-shadow: var(--borderless-divider-left);
+  245 |   box-shadow:
+  246 |     var(--tw-ring-offset-shadow, 0 0 #0000),
+  247 |     var(--tw-ring-shadow, 0 0 #0000),
+  248 |     var(--tw-shadow);
+  249 | }
+  250 | 
+  251 | :where([class*='border-r']):not([class~='shadow']):not([class^='shadow-']):not([class*=' shadow-']):not([class*='border-none']):not([class*='border-0']) {
+  252 |   --tw-shadow: var(--borderless-divider-right);
+  253 |   box-shadow:
+  254 |     var(--tw-ring-offset-shadow, 0 0 #0000),
+  255 |     var(--tw-ring-shadow, 0 0 #0000),
+  256 |     var(--tw-shadow);
+  257 | }
+  258 | 
+  259 | :where([class*='border-x']):not([class~='shadow']):not([class^='shadow-']):not([class*=' shadow-']):not([class*='border-none']):not([class*='border-0']) {
+  260 |   --tw-shadow: var(--borderless-divider-x);
+  261 |   box-shadow:
+  262 |     var(--tw-ring-offset-shadow, 0 0 #0000),
+  263 |     var(--tw-ring-shadow, 0 0 #0000),
+  264 |     var(--tw-shadow);
+  265 | }
+  266 | 
+  267 | :where([class*='border-y']):not([class~='shadow']):not([class^='shadow-']):not([class*=' shadow-']):not([class*='border-none']):not([class*='border-0']) {
+  268 |   --tw-shadow: var(--borderless-divider-y);
+  269 |   box-shadow:
+  270 |     var(--tw-ring-offset-shadow, 0 0 #0000),
+  271 |     var(--tw-ring-shadow, 0 0 #0000),
+  272 |     var(--tw-shadow);
+  273 | }
+  274 | 

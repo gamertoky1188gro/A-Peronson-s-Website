@@ -29,123 +29,123 @@
    29 | import { apiRequest } from '../lib/auth'
    30 | import { AnimatePresence, motion, useMotionValue, useReducedMotion, useSpring } from 'framer-motion'
    31 | 
-   32 | function VerifiedBadge({ label = 'Verified' }) {
-   33 |   return (
-   34 |     // "Trust anchor" badge:
-   35 |     // - Light mode: subtle emerald tint + soft glow
-   36 |     // - Dark mode: slightly brighter mint glow (still subdued)
-   37 |     <span
-   38 |       className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_10px_24px_rgba(16,185,129,0.12)] dark:bg-emerald-400/8 dark:text-emerald-200 dark:shadow-[0_0_0_1px_rgba(16,185,129,0.14),0_0_32px_rgba(16,185,129,0.16)]"
-   39 |       title="Verified"
-   40 |     >
-   41 |       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_16px_rgba(16,185,129,0.65)] dark:bg-emerald-300 dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]" />
-   42 |       {label}
-   43 |     </span>
-   44 |   )
-   45 | }
-   46 | 
-   47 | function Surface({ className = '', children }) {
-   48 |   function handleSpotlightMove(event) {
-   49 |     // Mouse-follow spotlight:
-   50 |     // - store cursor position inside the card as CSS variables
-   51 |     // - `spotlight-card::before` reads these variables to draw a radial gradient highlight
-   52 |     const rect = event.currentTarget.getBoundingClientRect()
-   53 |     event.currentTarget.style.setProperty('--spotlight-x', `${event.clientX - rect.left}px`)
-   54 |     event.currentTarget.style.setProperty('--spotlight-y', `${event.clientY - rect.top}px`)
-   55 |   }
-   56 | 
-   57 |   return (
-   58 |     <div
-   59 |       className={[
-   60 |         // Visual: borderless card with depth via shadows (light) + lifted slate surface (dark).
-   61 |         'spotlight-card rounded-3xl bg-white/75 backdrop-blur-sm',
-   62 |         'shadow-[0_18px_46px_rgba(15,23,42,0.08)]',
-   63 |         'dark:bg-[#0D0D14] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]',
-   64 |         'transition duration-300 ease-out will-change-transform',
-   65 |         'hover:-translate-y-0.5 hover:shadow-[0_26px_70px_rgba(15,23,42,0.12)]',
-   66 |         'dark:hover:-translate-y-1',
-   67 |         className,
-   68 |       ].join(' ')}
-   69 |       onMouseMove={handleSpotlightMove}
-   70 |     >
-   71 |       {children}
-   72 |     </div>
-   73 |   )
-   74 | }
-   75 | 
-   76 | function GlassSurface({ className = '', children }) {
-   77 |   function handleSpotlightMove(event) {
-   78 |     // Same spotlight behavior as `Surface`, but on a darker "secure room" glass surface.
-   79 |     const rect = event.currentTarget.getBoundingClientRect()
-   80 |     event.currentTarget.style.setProperty('--spotlight-x', `${event.clientX - rect.left}px`)
-   81 |     event.currentTarget.style.setProperty('--spotlight-y', `${event.clientY - rect.top}px`)
-   82 |   }
-   83 | 
-   84 |   return (
-   85 |     <div
-   86 |       className={[
-   87 |         // Intentionally dark glass in *both* light + dark mode (Contract Vault = "secure room" vibe).
-   88 |         // Avoid multiple `bg-*` utilities here (Tailwind utility ordering can make overrides unreliable).
-   89 |         // `ring-1 ring-white/12` gives the "glass edge" without using borders (which are globally overridden in dark mode).
-   90 |         'spotlight-card rounded-3xl bg-white/10 backdrop-blur-md text-[#1E293B] dark:text-white',
-   91 |         'shadow-[0_22px_60px_rgba(2,6,23,0.55)]',
-   92 |         'ring-1 ring-white/12',
-   93 |         'transition duration-300 ease-out will-change-transform',
-   94 |         'hover:-translate-y-0.5 hover:shadow-[0_30px_80px_rgba(2,6,23,0.65)]',
-   95 |         className,
-   96 |       ].join(' ')}
-   97 |       onMouseMove={handleSpotlightMove}
-   98 |     >
-   99 |       {children}
-  100 |     </div>
-  101 |   )
-  102 | }
-  103 | 
-  104 | function BentoMotion({ index, className = '', children }) {
-  105 |   const reduceMotion = useReducedMotion()
-  106 |   // Accessibility: if user prefers reduced motion, render without animation.
-  107 |   if (reduceMotion) return <div className={className}>{children}</div>
-  108 | 
-  109 |   return (
-  110 |     <motion.div
-  111 |       className={className}
-  112 |       // Entrance: fade + slide up (and a tiny scale) to mimic modern "bento" reveal.
-  113 |       initial={{ opacity: 0, y: 20, scale: 0.985 }}
-  114 |       animate={{ opacity: 1, y: 0, scale: 1 }}
-  115 |       transition={{
-  116 |         duration: 0.5,
-  117 |         ease: [0.16, 1, 0.3, 1],
-  118 |         // Stagger timing: each card waits `index * 100ms`.
-  119 |         delay: index * 0.1,
-  120 |       }}
-  121 |     >
-  122 |       {children}
-  123 |     </motion.div>
-  124 |   )
-  125 | }
-  126 | 
-  127 | function AnimatedHeroHeading({ text, className = '' }) {
-  128 |   const reduceMotion = useReducedMotion()
-  129 |   // Reduced-motion users get static text (no per-character animation).
-  130 |   if (reduceMotion) return <span className={className}>{text}</span>
-  131 | 
-  132 |   // Split into words, then characters, so we can stagger a micro animation per character.
-  133 |   const words = String(text).split(' ')
-  134 |   let globalIndex = 0
-  135 |   return (
-  136 |     <span className={className}>
-  137 |       <span className="sr-only">{text}</span>
-  138 |       <span aria-hidden="true">
-  139 |         {words.map((word, wordIndex) => {
-  140 |           const chars = Array.from(word)
-  141 |           return (
-  142 |             // eslint-disable-next-line react/no-array-index-key
-  143 |             <React.Fragment key={`${word}-${wordIndex}`}>
-  144 |               <span className="inline-block whitespace-nowrap">
-  145 |                 {chars.map((ch, idx) => {
-  146 |                   const charIndex = globalIndex++
-  147 |                   return (
-  148 |                     // eslint-disable-next-line react/no-array-index-key
+   32 | const Motion = motion
+   33 | 
+   34 | function VerifiedBadge({ label = 'Verified' }) {
+   35 |   return (
+   36 |     // "Trust anchor" badge:
+   37 |     // - Light mode: subtle emerald tint + soft glow
+   38 |     // - Dark mode: slightly brighter mint glow (still subdued)
+   39 |     <span
+   40 |       className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_10px_24px_rgba(16,185,129,0.12)] dark:bg-emerald-400/8 dark:text-emerald-200 dark:shadow-[0_0_0_1px_rgba(16,185,129,0.14),0_0_32px_rgba(16,185,129,0.16)]"
+   41 |       title="Verified"
+   42 |     >
+   43 |       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_16px_rgba(16,185,129,0.65)] dark:bg-emerald-300 dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]" />
+   44 |       {label}
+   45 |     </span>
+   46 |   )
+   47 | }
+   48 | 
+   49 | function Surface({ className='', children }) {
+   50 |   function handleSpotlightMove(event) {
+   51 |     // Mouse-follow spotlight:
+   52 |     // - store cursor position inside the card as CSS variables
+   53 |     // - `spotlight-card::before` reads these variables to draw a radial gradient highlight
+   54 |     const rect = event.currentTarget.getBoundingClientRect()
+   55 |     event.currentTarget.style.setProperty('--spotlight-x', `${event.clientX - rect.left}px`)
+   56 |     event.currentTarget.style.setProperty('--spotlight-y', `${event.clientY - rect.top}px`)
+   57 |   }
+   58 | 
+   59 |   return (
+   60 |     <div
+   61 |       className={[
+   62 |         // Visual: borderless card with depth via shadows (light) + lifted slate surface (dark).
+   63 |         'spotlight-card rounded-3xl bg-white/75 backdrop-blur-sm',
+   64 |         'shadow-[0_18px_46px_rgba(15,23,42,0.08)]',
+   65 |         'dark:bg-[#0D0D14] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]',
+   66 |         'transition duration-300 ease-out will-change-transform',
+   67 |         'hover:-translate-y-0.5 hover:shadow-[0_26px_70px_rgba(15,23,42,0.12)]',
+   68 |         'dark:hover:-translate-y-1',
+   69 |         className,
+   70 |       ].join(' ')}
+   71 |       onMouseMove={handleSpotlightMove}
+   72 |     >
+   73 |       {children}
+   74 |     </div>
+   75 |   )
+   76 | }
+   77 | 
+   78 | function GlassSurface({ className='', children }) {
+   79 |   function handleSpotlightMove(event) {
+   80 |     // Same spotlight behavior as `Surface`, but on a darker "secure room" glass surface.
+   81 |     const rect = event.currentTarget.getBoundingClientRect()
+   82 |     event.currentTarget.style.setProperty('--spotlight-x', `${event.clientX - rect.left}px`)
+   83 |     event.currentTarget.style.setProperty('--spotlight-y', `${event.clientY - rect.top}px`)
+   84 |   }
+   85 | 
+   86 |   return (
+   87 |     <div
+   88 |       className={[
+   89 |         // Intentionally dark glass in *both* light + dark mode (Contract Vault = "secure room" vibe).
+   90 |         // Avoid multiple `bg-*` utilities here (Tailwind utility ordering can make overrides unreliable).
+   91 |         // `ring-1 ring-white/12` gives the "glass edge" without using borders (which are globally overridden in dark mode).
+   92 |         'spotlight-card rounded-3xl bg-white/10 backdrop-blur-md text-[#1E293B] dark:text-white',
+   93 |         'shadow-[0_22px_60px_rgba(2,6,23,0.55)]',
+   94 |         'ring-1 ring-white/12',
+   95 |         'transition duration-300 ease-out will-change-transform',
+   96 |         'hover:-translate-y-0.5 hover:shadow-[0_30px_80px_rgba(2,6,23,0.65)]',
+   97 |         className,
+   98 |       ].join(' ')}
+   99 |       onMouseMove={handleSpotlightMove}
+  100 |     >
+  101 |       {children}
+  102 |     </div>
+  103 |   )
+  104 | }
+  105 | 
+  106 | function BentoMotion({ index, className='', children }) {
+  107 |   const reduceMotion = useReducedMotion()
+  108 |   // Accessibility: if user prefers reduced motion, render without animation.
+  109 |   if (reduceMotion) return <div className={className}>{children}</div>
+  110 | 
+  111 |   return (
+  112 |     <motion.div
+  113 |       className={className}
+  114 |       // Entrance: fade + slide up (and a tiny scale) to mimic modern "bento" reveal.
+  115 |       initial={{ opacity: 0, y: 20, scale: 0.985 }}
+  116 |       animate={{ opacity: 1, y: 0, scale: 1 }}
+  117 |       transition={{
+  118 |         duration: 0.5,
+  119 |         ease: [0.16, 1, 0.3, 1],
+  120 |         // Stagger timing: each card waits `index * 100ms`.
+  121 |         delay: index * 0.1,
+  122 |       }}
+  123 |     >
+  124 |       {children}
+  125 |     </motion.div>
+  126 |   )
+  127 | }
+  128 | 
+  129 | function AnimatedHeroHeading({ text, className='' }) {
+  130 |   const reduceMotion = useReducedMotion()
+  131 |   // Reduced-motion users get static text (no per-character animation).
+  132 |   if (reduceMotion) return <span className={className}>{text}</span>
+  133 | 
+  134 |   // Split into words, then characters, so we can stagger a micro animation per character.
+  135 |   const words = String(text).split(' ')
+  136 |   let globalIndex = 0
+  137 |   return (
+  138 |     <span className={className}>
+  139 |       <span className="sr-only">{text}</span>
+  140 |       <span aria-hidden="true">
+  141 |         {words.map((word, wordIndex) => {
+  142 |           const chars = Array.from(word)
+  143 |           return (
+  144 |             <React.Fragment key={`${word}-${wordIndex}`}>
+  145 |               <span className="inline-block whitespace-nowrap">
+  146 |                 {chars.map((ch, idx) => {
+  147 |                   const charIndex = globalIndex++
+  148 |                   return (
   149 |                     <motion.span
   150 |                       key={`${ch}-${idx}`}
   151 |                       className="inline-block"
@@ -167,7 +167,7 @@
   167 |   )
   168 | }
   169 | 
-  170 | function MagneticLinkButton({ to, className = '', children }) {
+  170 | function MagneticLinkButton({ to, className='', children }) {
   171 |   const reduceMotion = useReducedMotion()
   172 |   // Motion values track the current offset; springs return to center smoothly.
   173 |   const x = useMotionValue(0)
@@ -211,477 +211,477 @@
   211 |   )
   212 | }
   213 | 
-  214 | function SkeletonLine({ className = '' }) {
+  214 | function SkeletonLine({ className='' }) {
   215 |   // Skeleton shimmer utility (App.css): used during loading to avoid layout shifts.
   216 |   return <div className={['skeleton rounded-xl', className].join(' ')} />
   217 | }
   218 | 
   219 | export default function TexHub() {
   220 |   const initialHome = useMemo(
-  221 |     () => ({
-  222 |       hero: {
-  223 |         buyerRequest: {
-  224 |           label: 'Buyer Request',
-  225 |           title: 'Denim jacket — 10k pcs, wash + trims',
-  226 |           badge: 'Priority',
-  227 |           fields: [
-  228 |             { label: 'Target', value: 'EU' },
-  229 |             { label: 'Delivery', value: 'May' },
-  230 |           ],
-  231 |         },
-  232 |         verifiedFactories: {
-  233 |           title: 'Verified factories',
-  234 |           subtitle: 'Matched by compliance',
-  235 |           factories: [
-  236 |             { id: null, name: 'GarmentWorks Ltd', verified: true },
-  237 |             { id: null, name: 'TexPro Manufacturing', verified: true },
-  238 |             { id: null, name: 'Stitch & Seal Co', verified: true },
-  239 |           ],
-  240 |         },
-  241 |       },
-  242 |       bento: {
-  243 |         professionalFeed: {
-  244 |           title: 'Professional feed',
-  245 |           description: 'A calm, LinkedIn-style surface where posts stay readable without heavy frames.',
-  246 |           lanes: [
-  247 |             { label: 'Buyer Requests', meta: 'Auto-sorted' },
-  248 |             { label: 'Factory Updates', meta: 'Auto-sorted' },
-  249 |             { label: 'Buying House Notes', meta: 'Auto-sorted' },
-  250 |           ],
-  251 |         },
-  252 |         structuredBuyerRequests: {
-  253 |           title: 'Structured buyer requests',
-  254 |           description: 'Perfectly aligned fields so teams compare requirements instantly.',
-  255 |           badge: 'Aligned',
-  256 |           fields: [
-  257 |             { label: 'Product', value: 'Polo shirt' },
-  258 |             { label: 'Qty', value: '30,000' },
-  259 |             { label: 'Fabric', value: 'Cotton 200gsm' },
-  260 |             { label: 'Target', value: 'USA' },
-  261 |           ],
-  262 |         },
-  263 |         contractVault: {
-  264 |           title: 'Contract Vault',
-  265 |           description: 'A secure room vibe for agreements, compliance docs, and audit-ready records.',
-  266 |           items: ['Draft → Signed', 'Version history', 'Team access control'],
-  267 |           badge: 'Encrypted storage',
-  268 |         },
-  269 |         enterpriseAnalytics: {
-  270 |           title: 'Enterprise analytics',
-  271 |           description: 'Decision-ready reporting for buying houses — without turning the UI into a spreadsheet.',
-  272 |           stats: [
-  273 |             { label: 'Active leads', value: '128' },
-  274 |             { label: 'Verified matches', value: '64' },
-  275 |             { label: 'Avg. response', value: '2h 14m' },
-  276 |           ],
+  221 |       () => ({
+  222 |         hero: {
+  223 |           headline: 'Where global buyers, factories, and buying houses connect with clarity',
+  224 |           subheadline: 'A focused B2B sourcing workflow platform for garments and textiles. Post requests, showcase products, connect quickly, and move from first contact to contract in one place.',
+  225 |           short_description: 'A focused B2B platform for Bangladesh-centric but global-facing garments and textile sourcing.',
+  226 |           presentation_rule: 'Strategic presentation rule: GartexHub must be presented in a way that makes business workflow stronger, more transparent, more efficient, and more trusted. It cannot be marketed with a destructive message against any group.',
+  227 |           value_props: [
+  228 |             'Structured buyer request system',
+  229 |             'Factory product visibility engine',
+  230 |             'Buying house team-based workflow',
+  231 |             'AI-assisted communication + verification',
+  232 |           ],
+  233 |           trust_points: [
+  234 |             'Organization-based verification',
+  235 |             'Digital signature + PDF contract record',
+  236 |             'Audit-ready activity history',
+  237 |             'Controlled communication flow',
+  238 |           ],
+  239 |           buyerRequest: {
+  240 |             label: 'Buyer Request',
+  241 |             title: 'No live buyer requests yet',
+  242 |             badge: 'Live',
+  243 |             fields: [],
+  244 |         },
+  245 |         verifiedFactories: {
+  246 |           title: 'Verified factories',
+  247 |           subtitle: 'Matched by compliance',
+  248 |           factories: [],
+  249 |         },
+  250 |       },
+  251 |       bento: {
+  252 |         professionalFeed: {
+  253 |           title: 'Professional feed',
+  254 |           description: 'A calm, LinkedIn-style surface where posts stay readable without heavy frames.',
+  255 |           lanes: [
+  256 |             { label: 'Buyer Requests', meta: 'Auto-sorted' },
+  257 |             { label: 'Factory Updates', meta: 'Auto-sorted' },
+  258 |             { label: 'Buying House Notes', meta: 'Auto-sorted' },
+  259 |           ],
+  260 |         },
+  261 |         structuredBuyerRequests: {
+  262 |           title: 'Structured buyer requests',
+  263 |           description: 'Perfectly aligned fields so teams compare requirements instantly.',
+  264 |           badge: 'Aligned',
+  265 |           fields: [],
+  266 |         },
+  267 |         contractVault: {
+  268 |           title: 'Contract Vault',
+  269 |           description: 'A secure room vibe for agreements, compliance docs, and audit-ready records.',
+  270 |           items: ['Draft → Signed', 'Version history', 'Team access control'],
+  271 |           badge: 'Encrypted storage',
+  272 |         },
+  273 |         enterpriseAnalytics: {
+  274 |           title: 'Enterprise analytics',
+  275 |           description: 'Decision-ready reporting for buying houses -- without turning the UI into a spreadsheet.',
+  276 |           stats: [],
   277 |         },
   278 |         agentLock: {
   279 |           title: 'Internal Agent Lock System',
   280 |           description: 'Subtle, conflict-free lead ownership across multi-agent buying house teams.',
-  281 |           requestLabel: 'Request #BR-1842',
-  282 |           status: 'Locked',
-  283 |           note: 'Claimed by Agent A — teammates can collaborate without overwriting.',
+  281 |           requestLabel: 'No active request yet',
+  282 |           status: 'Idle',
+  283 |           note: 'Live request locks will appear here once teams start claiming leads.',
   284 |         },
   285 |       },
-  286 |     }),
-  287 |     [],
-  288 |   )
-  289 | 
-  290 |   // `home` holds dynamic landing content fetched from the server (fallback to `initialHome`).
-  291 |   const [home, setHome] = useState(initialHome)
-  292 |   // Non-blocking error message for the public preview fetch.
-  293 |   const [loadError, setLoadError] = useState('')
-  294 |   // Loading flag for skeleton shimmer placeholders (prevents layout jump).
-  295 |   const [loading, setLoading] = useState(true)
-  296 |   // "Unique toggle" mode: switches between a strict professional view and a broader discovery view.
-  297 |   const [mode, setMode] = useState('professional')
-  298 | 
-  299 |   useEffect(() => {
-  300 |     // Fetch dynamic landing page content from `/system/home`.
-  301 |     // We guard with `alive` + AbortController to avoid setState after unmount.
-  302 |     let alive = true
-  303 |     const controller = new AbortController()
-  304 | 
-  305 |     apiRequest('/system/home', { signal: controller.signal })
-  306 |       .then((data) => {
-  307 |         if (!alive) return
-  308 |         if (data?.ok && data?.hero && data?.bento) {
-  309 |           // Merge server data over local defaults (keeps layout stable if server omits a field).
-  310 |           setHome((prev) => ({ ...prev, ...data }))
-  311 |         }
-  312 |       })
-  313 |       .catch((err) => {
-  314 |         if (!alive) return
-  315 |         if (err?.name === 'AbortError') return
-  316 |         // Keep rendering fallback content; only show a small inline error in the UI.
-  317 |         setLoadError(String(err?.message || 'Failed to load'))
-  318 |       })
-  319 |       .finally(() => {
-  320 |         if (!alive) return
-  321 |         setLoading(false)
-  322 |       })
-  323 | 
-  324 |     return () => {
-  325 |       alive = false
-  326 |       controller.abort()
-  327 |     }
-  328 |   }, [initialHome])
-  329 | 
-  330 |   const heroBuyerRequest = home?.hero?.buyerRequest || initialHome.hero.buyerRequest
-  331 |   const heroFactories = home?.hero?.verifiedFactories || initialHome.hero.verifiedFactories
-  332 |   const bento = home?.bento || initialHome.bento
-  333 | 
-  334 |   const bentoView = useMemo(() => {
-  335 |     // Derived bento data based on the current `mode` toggle.
-  336 |     // This is where we can swap copy, lanes, and badge semantics while keeping structure aligned.
-  337 |     if (mode === 'professional') return bento
-  338 |     return {
-  339 |       ...bento,
-  340 |       professionalFeed: {
-  341 |         ...bento.professionalFeed,
-  342 |         title: 'Diverse feed',
-  343 |         description: 'A broader surface for discovery — still structured and readable.',
-  344 |         lanes: [
-  345 |           { label: 'Market Updates', meta: 'Auto-sorted' },
-  346 |           { label: 'New Suppliers', meta: 'Auto-sorted' },
-  347 |           { label: 'Opportunities', meta: 'Auto-sorted' },
-  348 |         ],
-  349 |       },
-  350 |       structuredBuyerRequests: {
-  351 |         ...bento.structuredBuyerRequests,
-  352 |         badge: 'Verified',
-  353 |         fields: [
-  354 |           { label: 'Product', value: 'Hoodie' },
-  355 |           { label: 'Qty', value: '12,500' },
-  356 |           { label: 'Fabric', value: 'Fleece 320gsm' },
-  357 |           { label: 'Target', value: 'EU' },
-  358 |         ],
-  359 |       },
-  360 |     }
-  361 |   }, [bento, mode])
-  362 | 
-  363 |   return (
-  364 |     <div className="neo-page relative min-h-screen overflow-x-hidden bg-[#F8FAFC] dark:bg-[#05050A]">
-  365 |       <div className="pointer-events-none absolute inset-0 -z-10 hidden dark:block">
-  366 |         <div
-  367 |           className={[
-  368 |             'absolute -top-40 left-1/2 h-[520px] w-[720px] -translate-x-1/2 rounded-full blur-3xl',
-  369 |             mode === 'professional' ? 'bg-emerald-500/10' : 'bg-fuchsia-500/10',
-  370 |           ].join(' ')}
-  371 |         />
-  372 |         <div
-  373 |           className={[
-  374 |             'absolute top-24 right-[-140px] h-[520px] w-[520px] rounded-full blur-3xl',
-  375 |             mode === 'professional' ? 'bg-sky-500/10' : 'bg-violet-500/10',
-  376 |           ].join(' ')}
-  377 |         />
-  378 |         <div
-  379 |           className={[
-  380 |             'absolute bottom-[-220px] left-[-160px] h-[600px] w-[600px] rounded-full blur-3xl',
-  381 |             mode === 'professional' ? 'bg-indigo-500/10' : 'bg-emerald-500/10',
-  382 |           ].join(' ')}
-  383 |         />
-  384 |       </div>
-  385 |       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-  386 |         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center">
-  387 |           <div className="lg:col-span-6">
-  388 |             <div className="inline-flex items-center gap-2 rounded-full bg-[#1E293B]/5 px-3 py-1 text-xs font-semibold text-[#1E293B]/80 shadow-[0_12px_30px_rgba(15,23,42,0.07)] dark:bg-white/[0.03] dark:text-slate-300 dark:shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
-  389 |               <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_18px_rgba(16,185,129,0.6)]" />
-  390 |               Clean Tech sourcing for garments & textiles
-  391 |             </div>
-  392 |             <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-[#1E293B] sm:text-5xl dark:text-white">
-  393 |               <AnimatedHeroHeading text="Where global buyers meet verified garment & textile suppliers" />
-  394 |             </h1>
-  395 |             <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#475569] dark:text-slate-400">
-  396 |               A structured, low-noise B2B platform for buyer requests, verified factories, partner networks, and secure
-  397 |               contracts — built for real teams.
-  398 |             </p>
-  399 | 
-  400 |             <div className="mt-8 flex flex-wrap items-center gap-3">
-  401 |               <MagneticLinkButton
-  402 |                 to="/signup"
-  403 |                 className="shimmer-btn border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[#162132] hover:shadow-[0_22px_50px_rgba(15,23,42,0.25)] dark:bg-gradient-to-r dark:from-emerald-500/85 dark:via-sky-500/70 dark:to-indigo-500/70 dark:hover:from-emerald-500/92 dark:hover:via-sky-500/80 dark:hover:to-indigo-500/80 dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
-  404 |               >
-  405 |                 Create Buyer Account
-  406 |               </MagneticLinkButton>
-  407 |               <MagneticLinkButton
-  408 |                 to="/signup"
-  409 |                 className="border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-white/70 text-[#1E293B] font-semibold tracking-tight backdrop-blur-sm transition duration-300 ease-out hover:bg-white hover:shadow-[0_22px_50px_rgba(15,23,42,0.10)] dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06] dark:hover:shadow-[0_26px_70px_rgba(0,0,0,0.55)]"
-  410 |               >
-  411 |                 Register Factory
-  412 |               </MagneticLinkButton>
-  413 |               <MagneticLinkButton
-  414 |                 to="/feed"
-  415 |                 className="border-0 px-4 py-2 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B]/5 text-[#1E293B]/80 font-semibold transition duration-300 ease-out hover:bg-[#1E293B]/8 dark:bg-white/[0.03] dark:text-slate-200 dark:hover:bg-white/[0.06]"
-  416 |               >
-  417 |                 Explore Platform
-  418 |               </MagneticLinkButton>
-  419 |             </div>
-  420 | 
-  421 |             <div className="mt-8 grid grid-cols-2 gap-3 text-sm text-[#475569] sm:grid-cols-4 dark:text-slate-400">
-  422 |               <div className="flex items-center gap-2">
-  423 |                 <span className="h-2 w-2 rounded-full bg-emerald-500/90" />
-  424 |                 Structured Buyer Requests
-  425 |               </div>
-  426 |               <div className="flex items-center gap-2">
-  427 |                 <span className="h-2 w-2 rounded-full bg-emerald-500/90" />
-  428 |                 Verified Factories
-  429 |               </div>
-  430 |               <div className="flex items-center gap-2">
-  431 |                 <span className="h-2 w-2 rounded-full bg-emerald-500/90" />
-  432 |                 Digital Contract Vault
-  433 |               </div>
-  434 |               <div className="flex items-center gap-2">
-  435 |                 <span className="h-2 w-2 rounded-full bg-emerald-500/90" />
-  436 |                 AI Guided Workflow
-  437 |               </div>
-  438 |             </div>
-  439 |           </div>
-  440 | 
-  441 |           <div className="lg:col-span-6">
-  442 |             <Surface className="p-6">
-  443 |               <div className="flex items-center justify-between">
-  444 |                 {loading ? (
-  445 |                   <>
-  446 |                     <SkeletonLine className="h-7 w-40 rounded-full" />
-  447 |                     <SkeletonLine className="h-7 w-24 rounded-full" />
-  448 |                   </>
-  449 |                 ) : (
-  450 |                   <>
-  451 |                     <div className="h-7 w-40 rounded-full bg-[#1E293B]/5 dark:bg-white/[0.06]" />
-  452 |                     <div className="h-7 w-24 rounded-full bg-[#1E293B]/5 dark:bg-white/[0.06]" />
-  453 |                   </>
-  454 |                 )}
-  455 |               </div>
-  456 |               <div className="mt-5 grid gap-3">
-  457 |                 {loading ? (
-  458 |                   <>
-  459 |                     <div className="rounded-2xl bg-white/80 p-4 shadow-[0_14px_35px_rgba(15,23,42,0.06)] dark:bg-white/[0.03] dark:shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
-  460 |                       <SkeletonLine className="h-3 w-24" />
-  461 |                       <SkeletonLine className="mt-3 h-4 w-64" />
-  462 |                       <div className="mt-4 grid grid-cols-2 gap-2">
-  463 |                         <SkeletonLine className="h-8" />
-  464 |                         <SkeletonLine className="h-8" />
-  465 |                       </div>
-  466 |                     </div>
-  467 |                     <div className="rounded-2xl bg-[#1E293B]/4 p-4 dark:bg-white/[0.03]">
-  468 |                       <div className="flex items-center justify-between gap-3">
-  469 |                         <SkeletonLine className="h-4 w-36" />
-  470 |                         <SkeletonLine className="h-3 w-28" />
-  471 |                       </div>
-  472 |                       <div className="mt-3 grid gap-2">
-  473 |                         <SkeletonLine className="h-10" />
-  474 |                         <SkeletonLine className="h-10" />
-  475 |                         <SkeletonLine className="h-10" />
-  476 |                       </div>
-  477 |                     </div>
-  478 |                   </>
-  479 |                 ) : (
-  480 |                   <>
-  481 |                     <div className="rounded-2xl bg-white/80 p-4 shadow-[0_14px_35px_rgba(15,23,42,0.06)] dark:bg-white/[0.03] dark:shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
-  482 |                       <div className="flex items-center justify-between gap-4">
-  483 |                         <div className="min-w-0">
-  484 |                           <p className="text-xs font-semibold text-emerald-700">{heroBuyerRequest.label}</p>
-  485 |                           <p className="mt-1 truncate text-sm font-semibold text-[#1E293B] dark:text-white">{heroBuyerRequest.title}</p>
-  486 |                         </div>
-  487 |                         <VerifiedBadge label={heroBuyerRequest.badge} />
-  488 |                       </div>
-  489 |                       <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-[#475569] dark:text-slate-400">
-  490 |                         {(heroBuyerRequest.fields || []).slice(0, 2).map((field) => (
-  491 |                           <div
-  492 |                             key={field.label}
-  493 |                             className="flex items-center justify-between rounded-xl bg-[#1E293B]/4 px-3 py-2 dark:bg-white/[0.03]"
-  494 |                           >
-  495 |                             <span>{field.label}</span>
-  496 |                             <span className="font-semibold text-[#1E293B] dark:text-white">{field.value}</span>
-  497 |                           </div>
-  498 |                         ))}
-  499 |                       </div>
-  500 |                     </div>
-  501 |                     <div className="rounded-2xl bg-[#1E293B]/4 p-4 dark:bg-white/[0.03]">
-  502 |                       <div className="flex items-center justify-between gap-3">
-  503 |                         <p className="text-sm font-semibold text-[#1E293B] dark:text-white">{heroFactories.title}</p>
-  504 |                         <p className="text-xs text-[#475569] dark:text-slate-400">{heroFactories.subtitle}</p>
-  505 |                       </div>
-  506 |                       <div className="mt-3 grid gap-2">
-  507 |                         {(heroFactories.factories || []).slice(0, 3).map((factory) => (
-  508 |                           <div
-  509 |                             key={factory.id || factory.name}
-  510 |                             className="flex items-center justify-between rounded-2xl bg-white/80 px-4 py-3 dark:bg-[#05050A]"
-  511 |                           >
-  512 |                             <p className="text-sm font-semibold text-[#1E293B] dark:text-white">{factory.name}</p>
-  513 |                             {factory.verified ? <VerifiedBadge /> : <VerifiedBadge label="Review" />}
-  514 |                           </div>
-  515 |                         ))}
-  516 |                       </div>
-  517 |                     </div>
-  518 |                   </>
-  519 |                 )}
-  520 |                 {loadError ? <p className="text-xs text-amber-700 dark:text-amber-300">{loadError}</p> : null}
-  521 |               </div>
-  522 |             </Surface>
-  523 |           </div>
-  524 |         </div>
-  525 | 
-  526 |         <div id="about" className="mt-16">
-  527 |           <div className="grid gap-6 lg:grid-cols-2">
-  528 |             <Surface className="relative p-8">
-  529 |               <div className="pointer-events-none absolute -inset-28 hidden dark:block bg-[radial-gradient(closest-side,rgba(59,130,246,0.10),transparent_70%)]" />
-  530 |               <div className="relative z-10">
-  531 |               <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Problem</h3>
-  532 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-  533 |                 Typical marketplaces are loud and unstructured — teams lose time, trust, and context.
-  534 |               </p>
-  535 |               <ul className="mt-5 space-y-2 text-sm text-[#334155] dark:text-slate-300">
-  536 |                 <li>Noise from random listings</li>
-  537 |                 <li>Unstructured buyer requirements</li>
-  538 |                 <li>Weak verification signals</li>
-  539 |                 <li>Internal lead conflicts in buying houses</li>
-  540 |               </ul>
-  541 |               </div>
-  542 |             </Surface>
-  543 |             <Surface className="relative p-8">
-  544 |               <div className="pointer-events-none absolute -inset-28 hidden dark:block bg-[radial-gradient(closest-side,rgba(16,185,129,0.10),transparent_70%)]" />
-  545 |               <div className="relative z-10">
-  546 |               <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Solution</h3>
-  547 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-  548 |                 Clear surfaces, verified signals, and structured workflows — designed to stay calm at scale.
-  549 |               </p>
-  550 |               <ul className="mt-5 space-y-2 text-sm text-[#334155] dark:text-slate-300">
-  551 |                 <li>Structured Buyer Requests</li>
-  552 |                 <li>Verified supplier priority</li>
-  553 |                 <li>Internal Agent Lock System</li>
-  554 |                 <li>Organized partner network</li>
-  555 |               </ul>
-  556 |               </div>
-  557 |             </Surface>
-  558 |           </div>
-  559 |         </div>
-  560 | 
-  561 |         <div id="how-it-works" className="mt-16">
-  562 |           <div>
-  563 |             <h2 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">How GarTexHub works</h2>
-  564 |             <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">A simple flow that stays structured end-to-end.</p>
-  565 |           </div>
-  566 | 
-  567 |           <div className="mt-6 grid gap-6 md:grid-cols-3">
-  568 |             <Surface className="p-6">
-  569 |               <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Step 1</p>
-  570 |               <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Post or search</h4>
-  571 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-  572 |                 Buyers post structured requirements. Factories publish products and capacity.
-  573 |               </p>
-  574 |             </Surface>
-  575 |             <Surface className="p-6">
-  576 |               <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Step 2</p>
-  577 |               <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Smart matching + claim lead</h4>
-  578 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-  579 |                 Agents claim requests. AI summarizes context so the team moves fast without noise.
-  580 |               </p>
-  581 |             </Surface>
-  582 |             <Surface className="p-6">
-  583 |               <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Step 3</p>
-  584 |               <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Chat, call, contract</h4>
-  585 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-  586 |                 Communicate, schedule meetings, and store agreements inside the Contract Vault.
-  587 |               </p>
-  588 |             </Surface>
-  589 |           </div>
-  590 |         </div>
-  591 | 
-  592 |         <div className="mt-16">
-  593 |           <div className="flex flex-col items-center text-center">
-  594 |             <h3 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Platform features</h3>
-  595 |             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-  596 |               Borderless surfaces, clean hierarchy, and strong trust indicators.
-  597 |             </p>
+  286 |       marketing: {
+  287 |         sections: [],
+  288 |       },
+  289 |     }),
+  290 |     [],
+  291 |   )
+  292 | 
+  293 |   // `home` holds dynamic landing content fetched from the server (fallback to `initialHome`).
+  294 |   const [home, setHome] = useState(initialHome)
+  295 |   // Non-blocking error message for the public preview fetch.
+  296 |   const [loadError, setLoadError] = useState('')
+  297 |   // Loading flag for skeleton shimmer placeholders (prevents layout jump).
+  298 |   const [loading, setLoading] = useState(true)
+  299 |   // "Unique toggle" mode: switches between a strict professional view and a broader discovery view.
+  300 |   const [mode, setMode] = useState('professional')
+  301 | 
+  302 |   useEffect(() => {
+  303 |     // Fetch dynamic landing page content from `/system/home`.
+  304 |     // We guard with `alive` + AbortController to avoid setState after unmount.
+  305 |     let alive = true
+  306 |     const controller = new AbortController()
+  307 | 
+  308 |     apiRequest('/system/home', { signal: controller.signal })
+  309 |       .then((data) => {
+  310 |         if (!alive) return
+  311 |         if (data?.ok && data?.hero && data?.bento) {
+  312 |           // Merge server data over local defaults (keeps layout stable if server omits a field).
+  313 |           setHome((prev) => ({ ...prev, ...data }))
+  314 |         }
+  315 |       })
+  316 |       .catch((err) => {
+  317 |         if (!alive) return
+  318 |         if (err?.name === 'AbortError') return
+  319 |         // Keep rendering fallback content; only show a small inline error in the UI.
+  320 |         setLoadError(String(err?.message || 'Failed to load'))
+  321 |       })
+  322 |       .finally(() => {
+  323 |         if (!alive) return
+  324 |         setLoading(false)
+  325 |       })
+  326 | 
+  327 |     return () => {
+  328 |       alive = false
+  329 |       controller.abort()
+  330 |     }
+  331 |   }, [initialHome])
+  332 | 
+  333 |   const heroBuyerRequest = home?.hero?.buyerRequest || initialHome.hero.buyerRequest
+  334 |   const heroFactories = home?.hero?.verifiedFactories || initialHome.hero.verifiedFactories
+  335 |   const heroHeadline = home?.hero?.headline || initialHome.hero.headline
+  336 |   const heroSubheadline = home?.hero?.subheadline || initialHome.hero.subheadline
+  337 |   const heroShortDescription = home?.hero?.short_description || initialHome.hero.short_description
+  338 |   const heroPresentation = home?.hero?.presentation_rule || initialHome.hero.presentation_rule
+  339 |   const heroValueProps = Array.isArray(home?.hero?.value_props) ? home.hero.value_props : initialHome.hero.value_props
+  340 |   const bento = home?.bento || initialHome.bento
+  341 |   const marketingSections = Array.isArray(home?.marketing?.sections) ? home.marketing.sections : (initialHome?.marketing?.sections || [])
+  342 | 
+  343 |   const bentoView = useMemo(() => {
+  344 |     // Derived bento data based on the current `mode` toggle.
+  345 |     // This is where we can swap copy, lanes, and badge semantics while keeping structure aligned.
+  346 |     if (mode === 'professional') return bento
+  347 |     return {
+  348 |       ...bento,
+  349 |       professionalFeed: {
+  350 |         ...bento.professionalFeed,
+  351 |         title: 'Diverse feed',
+  352 |         description: 'A broader surface for discovery -- still structured and readable.',
+  353 |         lanes: [
+  354 |           { label: 'Market Updates', meta: 'Auto-sorted' },
+  355 |           { label: 'New Suppliers', meta: 'Auto-sorted' },
+  356 |           { label: 'Opportunities', meta: 'Auto-sorted' },
+  357 |         ],
+  358 |       },
+  359 |       structuredBuyerRequests: {
+  360 |         ...bento.structuredBuyerRequests,
+  361 |         badge: 'Verified',
+  362 |       },
+  363 |     }
+  364 |   }, [bento, mode])
+  365 | 
+  366 |   return (
+  367 |     <div className="neo-page relative min-h-screen overflow-x-hidden bg-[#F8FAFC] dark:bg-[#05050A]">
+  368 |       <div className="pointer-events-none absolute inset-0 -z-10 hidden dark:block">
+  369 |         <div
+  370 |           className={[
+  371 |             'absolute -top-40 left-1/2 h-[520px] w-[720px] -translate-x-1/2 rounded-full blur-3xl',
+  372 |             mode === 'professional' ? 'bg-emerald-500/10' : 'bg-fuchsia-500/10',
+  373 |           ].join(' ')}
+  374 |         />
+  375 |         <div
+  376 |           className={[
+  377 |             'absolute top-24 right-[-140px] h-[520px] w-[520px] rounded-full blur-3xl',
+  378 |             mode === 'professional' ? 'bg-sky-500/10' : 'bg-violet-500/10',
+  379 |           ].join(' ')}
+  380 |         />
+  381 |         <div
+  382 |           className={[
+  383 |             'absolute bottom-[-220px] left-[-160px] h-[600px] w-[600px] rounded-full blur-3xl',
+  384 |             mode === 'professional' ? 'bg-indigo-500/10' : 'bg-emerald-500/10',
+  385 |           ].join(' ')}
+  386 |         />
+  387 |       </div>
+  388 |       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
+  389 |         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center">
+  390 |           <div className="lg:col-span-6">
+  391 |             <div className="inline-flex items-center gap-2 rounded-full bg-[#1E293B]/5 px-3 py-1 text-xs font-semibold text-[#1E293B]/80 shadow-[0_12px_30px_rgba(15,23,42,0.07)] dark:bg-white/[0.03] dark:text-slate-300 dark:shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
+  392 |               <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_18px_rgba(16,185,129,0.6)]" />
+  393 |               Clean Tech sourcing for garments & textiles
+  394 |             </div>
+  395 |               <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-[#1E293B] sm:text-5xl dark:text-white">
+  396 |                 <AnimatedHeroHeading text={heroHeadline} />
+  397 |               </h1>
+  398 |               <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#475569] dark:text-slate-400">
+  399 |                 {heroSubheadline}
+  400 |               </p>
+  401 |               <p className="mt-3 max-w-xl text-sm font-medium text-[#334155] dark:text-slate-300">
+  402 |                 {heroShortDescription}
+  403 |               </p>
+  404 |               {heroPresentation ? (
+  405 |                 <p className="mt-2 max-w-xl text-xs italic text-[#64748B] dark:text-slate-400">
+  406 |                   {heroPresentation}
+  407 |                 </p>
+  408 |               ) : null}
+  409 | 
+  410 |             <div className="mt-8 flex flex-wrap items-center gap-3">
+  411 |               <MagneticLinkButton
+  412 |                 to="/signup"
+  413 |                 className="shimmer-btn px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
+  414 |               >
+  415 |                 Create Buyer Account
+  416 |               </MagneticLinkButton>
+  417 |               <MagneticLinkButton
+  418 |                 to="/signup"
+  419 |                 className="px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-white/70 text-[#1E293B] font-semibold tracking-tight backdrop-blur-sm transition duration-300 ease-out hover:bg-white hover:shadow-[0_22px_50px_rgba(15,23,42,0.10)] dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06] dark:hover:shadow-[0_26px_70px_rgba(0,0,0,0.55)]"
+  420 |               >
+  421 |                 Register Factory
+  422 |               </MagneticLinkButton>
+  423 |               <MagneticLinkButton
+  424 |                 to="/login"
+  425 |                 className="px-4 py-2 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B]/5 text-[#1E293B]/80 font-semibold transition duration-300 ease-out hover:bg-[#1E293B]/8 dark:bg-white/[0.03] dark:text-slate-200 dark:hover:bg-white/[0.06]"
+  426 |               >
+  427 |                 
+  428 |               </MagneticLinkButton>
+  429 |             </div>
+  430 | 
+  431 |             <div className="mt-8 grid grid-cols-2 gap-3 text-sm text-[#475569] sm:grid-cols-4 dark:text-slate-400">
+  432 |               <div className="flex items-center gap-2">
+  433 |                 <span className="h-2 w-2 rounded-full bg-emerald-500/90" />
+  434 |                 Structured Buyer Requests
+  435 |               </div>
+  436 |               <div className="flex items-center gap-2">
+  437 |                 <span className="h-2 w-2 rounded-full bg-emerald-500/90" />
+  438 |                 Verified Factories
+  439 |               </div>
+  440 |               <div className="flex items-center gap-2">
+  441 |                 <span className="h-2 w-2 rounded-full bg-emerald-500/90" />
+  442 |                 Digital Contract Vault
+  443 |               </div>
+  444 |               <div className="flex items-center gap-2">
+  445 |                 <span className="h-2 w-2 rounded-full bg-emerald-500/90" />
+  446 |                 AI Guided Workflow
+  447 |               </div>
+  448 |             </div>
+  449 |           </div>
+  450 | 
+  451 |           <div className="lg:col-span-6">
+  452 |             <Surface className="p-6">
+  453 |               <div className="flex items-center justify-between">
+  454 |                 {loading ? (
+  455 |                   <>
+  456 |                     <SkeletonLine className="h-7 w-40 rounded-full" />
+  457 |                     <SkeletonLine className="h-7 w-24 rounded-full" />
+  458 |                   </>
+  459 |                 ) : (
+  460 |                   <>
+  461 |                     <div className="h-7 w-40 rounded-full bg-[#1E293B]/5 dark:bg-white/[0.06]" />
+  462 |                     <div className="h-7 w-24 rounded-full bg-[#1E293B]/5 dark:bg-white/[0.06]" />
+  463 |                   </>
+  464 |                 )}
+  465 |               </div>
+  466 |               <div className="mt-5 grid gap-3">
+  467 |                 {loading ? (
+  468 |                   <>
+  469 |                     <div className="rounded-2xl bg-white/80 p-4 shadow-[0_14px_35px_rgba(15,23,42,0.06)] dark:bg-white/[0.03] dark:shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
+  470 |                       <SkeletonLine className="h-3 w-24" />
+  471 |                       <SkeletonLine className="mt-3 h-4 w-64" />
+  472 |                       <div className="mt-4 grid grid-cols-2 gap-2">
+  473 |                         <SkeletonLine className="h-8" />
+  474 |                         <SkeletonLine className="h-8" />
+  475 |                       </div>
+  476 |                     </div>
+  477 |                     <div className="rounded-2xl bg-[#1E293B]/4 p-4 dark:bg-white/[0.03]">
+  478 |                       <div className="flex items-center justify-between gap-3">
+  479 |                         <SkeletonLine className="h-4 w-36" />
+  480 |                         <SkeletonLine className="h-3 w-28" />
+  481 |                       </div>
+  482 |                       <div className="mt-3 grid gap-2">
+  483 |                         <SkeletonLine className="h-10" />
+  484 |                         <SkeletonLine className="h-10" />
+  485 |                         <SkeletonLine className="h-10" />
+  486 |                       </div>
+  487 |                     </div>
+  488 |                   </>
+  489 |                 ) : (
+  490 |                   <>
+  491 |                     <div className="rounded-2xl bg-white/80 p-4 shadow-[0_14px_35px_rgba(15,23,42,0.06)] dark:bg-white/[0.03] dark:shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
+  492 |                       <div className="flex items-center justify-between gap-4">
+  493 |                         <div className="min-w-0">
+  494 |                           <p className="text-xs font-semibold text-emerald-700">{heroBuyerRequest.label}</p>
+  495 |                           <p className="mt-1 truncate text-sm font-semibold text-[#1E293B] dark:text-white">{heroBuyerRequest.title}</p>
+  496 |                         </div>
+  497 |                         <VerifiedBadge label={heroBuyerRequest.badge} />
+  498 |                       </div>
+  499 |                       <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-[#475569] dark:text-slate-400">
+  500 |                         {(heroBuyerRequest.fields || []).slice(0, 2).map((field) => (
+  501 |                           <div
+  502 |                             key={field.label}
+  503 |                             className="flex items-center justify-between rounded-xl bg-[#1E293B]/4 px-3 py-2 dark:bg-white/[0.03]"
+  504 |                           >
+  505 |                             <span>{field.label}</span>
+  506 |                             <span className="font-semibold text-[#1E293B] dark:text-white">{field.value}</span>
+  507 |                           </div>
+  508 |                         ))}
+  509 |                       </div>
+  510 |                     </div>
+  511 |                     <div className="rounded-2xl bg-[#1E293B]/4 p-4 dark:bg-white/[0.03]">
+  512 |                       <div className="flex items-center justify-between gap-3">
+  513 |                         <p className="text-sm font-semibold text-[#1E293B] dark:text-white">{heroFactories.title}</p>
+  514 |                         <p className="text-xs text-[#475569] dark:text-slate-400">{heroFactories.subtitle}</p>
+  515 |                       </div>
+  516 |                       <div className="mt-3 grid gap-2">
+  517 |                         {(heroFactories.factories || []).slice(0, 3).map((factory) => (
+  518 |                           <div
+  519 |                             key={factory.id || factory.name}
+  520 |                             className="flex items-center justify-between rounded-2xl bg-white/80 px-4 py-3 dark:bg-[#05050A]"
+  521 |                           >
+  522 |                             <p className="text-sm font-semibold text-[#1E293B] dark:text-white">{factory.name}</p>
+  523 |                             {factory.verified ? <VerifiedBadge /> : <VerifiedBadge label="Review" />}
+  524 |                           </div>
+  525 |                         ))}
+  526 |                       </div>
+  527 |                     </div>
+  528 |                   </>
+  529 |                 )}
+  530 |                 {loadError ? <p className="text-xs text-amber-700 dark:text-amber-300">{loadError}</p> : null}
+  531 |               </div>
+  532 |             </Surface>
+  533 |           </div>
+  534 |         </div>
+  535 | 
+  536 |         <div id="about" className="mt-16">
+  537 |           <div className="grid gap-6 lg:grid-cols-2">
+  538 |             <Surface className="relative p-8">
+  539 |               <div className="pointer-events-none absolute -inset-28 hidden dark:block bg-[radial-gradient(closest-side,rgba(59,130,246,0.10),transparent_70%)]" />
+  540 |               <div className="relative z-10">
+  541 |                 <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Why GarTexHub</h3>
+  542 |                 <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+  543 |                   A sourcing workflow network built only for garments and textiles: low noise, structured requests, and trust by design.
+  544 |                 </p>
+  545 |                 <ul className="mt-5 space-y-2 text-sm text-[#334155] dark:text-slate-300">
+  546 |                   {(heroValueProps || []).slice(0, 4).map((item) => (
+  547 |                     <li key={item}>{item}</li>
+  548 |                   ))}
+  549 |                 </ul>
+  550 |               </div>
+  551 |             </Surface>
+  552 |             <Surface className="relative p-8">
+  553 |               <div className="pointer-events-none absolute -inset-28 hidden dark:block bg-[radial-gradient(closest-side,rgba(16,185,129,0.10),transparent_70%)]" />
+  554 |               <div className="relative z-10">
+  555 |               <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Solution</h3>
+  556 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+  557 |                 Clear surfaces, verified signals, and structured workflows -- designed to stay calm at scale.
+  558 |               </p>
+  559 |               <ul className="mt-5 space-y-2 text-sm text-[#334155] dark:text-slate-300">
+  560 |                 <li>Structured Buyer Requests</li>
+  561 |                 <li>Verified supplier priority</li>
+  562 |                 <li>Internal Agent Lock System</li>
+  563 |                 <li>Organized partner network</li>
+  564 |               </ul>
+  565 |               </div>
+  566 |             </Surface>
+  567 |           </div>
+  568 |         </div>
+  569 | 
+  570 |         <div id="how-it-works" className="mt-16">
+  571 |           <div>
+  572 |             <h2 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">How GarTexHub works</h2>
+  573 |             <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">A simple flow that stays structured end-to-end.</p>
+  574 |           </div>
+  575 | 
+  576 |           <div className="mt-6 grid gap-6 md:grid-cols-3">
+  577 |             <Surface className="p-6">
+  578 |               <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Step 1</p>
+  579 |               <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Post or search</h4>
+  580 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+  581 |                 Buyers post structured requirements. Factories publish products and capacity.
+  582 |               </p>
+  583 |             </Surface>
+  584 |             <Surface className="p-6">
+  585 |               <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Step 2</p>
+  586 |               <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Smart matching + claim lead</h4>
+  587 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+  588 |                 Agents claim requests. AI summarizes context so the team moves fast without noise.
+  589 |               </p>
+  590 |             </Surface>
+  591 |             <Surface className="p-6">
+  592 |               <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Step 3</p>
+  593 |               <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Chat, call, contract</h4>
+  594 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+  595 |                 Communicate, schedule meetings, and store agreements inside the Contract Vault.
+  596 |               </p>
+  597 |             </Surface>
   598 |           </div>
-  599 | 
-  600 |           <div
-  601 |             className={[
-  602 |               'mt-8 rounded-3xl bg-transparent p-0 dark:p-[2px] transition-colors duration-[400ms]',
-  603 |               mode === 'professional' ? 'dark:bg-[#05050A]' : 'dark:bg-[#0B0A18]',
-  604 |             ].join(' ')}
-  605 |           >
-  606 |           <div className="grid grid-cols-1 gap-6 md:grid-cols-6 dark:gap-px">
-  607 |             <BentoMotion index={0} className="md:col-span-3">
-  608 |             <Surface className="p-7">
-  609 |               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.professionalFeed.title}</h4>
-  610 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-  611 |                 {bentoView.professionalFeed.description}
-  612 |               </p>
-  613 |               <div className="mt-5 grid gap-2">
-  614 |                 {loading ? (
-  615 |                   <>
-  616 |                     <SkeletonLine className="h-10" />
-  617 |                     <SkeletonLine className="h-10" />
-  618 |                     <SkeletonLine className="h-10" />
-  619 |                   </>
-  620 |                 ) : (
-  621 |                   <AnimatePresence mode="popLayout" initial={false}>
-  622 |                     <motion.div
-  623 |                       key={mode}
-  624 |                       initial={{ opacity: 0, y: 6 }}
-  625 |                       animate={{ opacity: 1, y: 0 }}
-  626 |                       exit={{ opacity: 0, y: -6 }}
-  627 |                       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-  628 |                       className="grid gap-2"
-  629 |                     >
-  630 |                       {(bentoView.professionalFeed.lanes || []).map((lane) => (
-  631 |                         <div
-  632 |                           key={lane.label}
-  633 |                           className="flex items-center justify-between rounded-2xl bg-slate-900/4 px-4 py-3 dark:bg-white/[0.03]"
-  634 |                         >
-  635 |                           <p className="text-sm font-semibold text-[#1E293B] dark:text-white">{lane.label}</p>
-  636 |                           <span className="rounded-full bg-[#1E293B]/5 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#64748B] dark:bg-white/[0.06] dark:text-slate-400">
-  637 |                             {lane.meta}
-  638 |                           </span>
-  639 |                         </div>
-  640 |                       ))}
-  641 |                     </motion.div>
-  642 |                   </AnimatePresence>
-  643 |                 )}
-  644 |               </div>
-  645 |             </Surface>
-  646 |             </BentoMotion>
-  647 | 
-  648 |             <BentoMotion index={1} className="md:col-span-3">
-  649 |             <Surface className="p-7">
-  650 |               <div className="flex items-center justify-between gap-4">
-  651 |                 <div>
-  652 |                   <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.structuredBuyerRequests.title}</h4>
-  653 |                   <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-  654 |                     {bentoView.structuredBuyerRequests.description}
-  655 |                   </p>
-  656 |                 </div>
-  657 |                 <VerifiedBadge label={bentoView.structuredBuyerRequests.badge} />
-  658 |               </div>
-  659 | 
-  660 |               <div className="mt-5 grid gap-3 sm:grid-cols-2">
-  661 |                 {loading ? (
-  662 |                   <>
+  599 |         </div>
+  600 | 
+  601 |         {marketingSections.length ? (
+  602 |           <div className="mt-16">
+  603 |             <div className="flex flex-col items-center text-center">
+  604 |               <h3 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Why GarTexHub</h3>
+  605 |               <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+  606 |                 Clear positioning and a structured sourcing workflow -- built only for garments & textile.
+  607 |               </p>
+  608 |             </div>
+  609 | 
+  610 |             <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 dark:gap-px">
+  611 |               {marketingSections.map((section, idx) => (
+  612 |                 <BentoMotion key={section.id || section.title || String(idx)} index={idx} className="md:col-span-1">
+  613 |                   <Surface className="p-7">
+  614 |                     {section.eyebrow ? (
+  615 |                       <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">{section.eyebrow}</p>
+  616 |                     ) : null}
+  617 |                     <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{section.title}</h4>
+  618 |                     {section.description ? (
+  619 |                       <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">{section.description}</p>
+  620 |                     ) : null}
+  621 |                     {Array.isArray(section.bullets) && section.bullets.length ? (
+  622 |                       <ul className="mt-4 space-y-2 text-sm text-[#334155] dark:text-slate-300">
+  623 |                         {section.bullets.map((bullet) => (
+  624 |                           <li key={bullet} className="flex items-start gap-2">
+  625 |                             <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500/90" />
+  626 |                             <span className="leading-relaxed">{bullet}</span>
+  627 |                           </li>
+  628 |                         ))}
+  629 |                       </ul>
+  630 |                     ) : null}
+  631 |                   </Surface>
+  632 |                 </BentoMotion>
+  633 |               ))}
+  634 |             </div>
+  635 |           </div>
+  636 |         ) : null}
+  637 | 
+  638 |         <div className="mt-16">
+  639 |           <div className="flex flex-col items-center text-center">
+  640 |             <h3 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Platform features</h3>
+  641 |             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+  642 |               Borderless surfaces, clean hierarchy, and strong trust indicators.
+  643 |             </p>
+  644 |           </div>
+  645 | 
+  646 |           <div
+  647 |             className={[
+  648 |               'mt-8 rounded-3xl bg-transparent p-0 dark:p-[2px] transition-colors duration-[400ms]',
+  649 |               mode === 'professional' ? 'dark:bg-[#05050A]' : 'dark:bg-[#0B0A18]',
+  650 |             ].join(' ')}
+  651 |           >
+  652 |           <div className="grid grid-cols-1 gap-6 md:grid-cols-6 dark:gap-px">
+  653 |             <BentoMotion index={0} className="md:col-span-3">
+  654 |             <Surface className="p-7">
+  655 |               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.professionalFeed.title}</h4>
+  656 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+  657 |                 {bentoView.professionalFeed.description}
+  658 |               </p>
+  659 |               <div className="mt-5 grid gap-2">
+  660 |                 {loading ? (
+  661 |                   <>
+  662 |                     <SkeletonLine className="h-10" />
   663 |                     <SkeletonLine className="h-10" />
   664 |                     <SkeletonLine className="h-10" />
-  665 |                     <SkeletonLine className="h-10" />
-  666 |                     <SkeletonLine className="h-10" />
-  667 |                   </>
-  668 |                 ) : (
-  669 |                   <AnimatePresence mode="popLayout" initial={false}>
-  670 |                     <motion.div
-  671 |                       key={mode}
-  672 |                       initial={{ opacity: 0, y: 6 }}
-  673 |                       animate={{ opacity: 1, y: 0 }}
-  674 |                       exit={{ opacity: 0, y: -6 }}
-  675 |                       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-  676 |                       className="grid gap-3 sm:grid-cols-2"
-  677 |                     >
-  678 |                       {(bentoView.structuredBuyerRequests.fields || []).map((field) => (
-  679 |                         <div
-  680 |                           key={field.label}
-  681 |                           className="flex items-center justify-between rounded-2xl bg-slate-900/4 px-4 py-3 text-sm dark:bg-white/[0.03]"
-  682 |                         >
-  683 |                           <span className="text-[#64748B] dark:text-slate-400">{field.label}</span>
-  684 |                           <span className="font-semibold text-[#1E293B] dark:text-white">{field.value}</span>
+  665 |                   </>
+  666 |                 ) : (
+  667 |                   <AnimatePresence mode="popLayout" initial={false}>
+  668 |                     <motion.div
+  669 |                       key={mode}
+  670 |                       initial={{ opacity: 0, y: 6 }}
+  671 |                       animate={{ opacity: 1, y: 0 }}
+  672 |                       exit={{ opacity: 0, y: -6 }}
+  673 |                       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+  674 |                       className="grid gap-2"
+  675 |                     >
+  676 |                       {(bentoView.professionalFeed.lanes || []).map((lane) => (
+  677 |                         <div
+  678 |                           key={lane.label}
+  679 |                           className="flex items-center justify-between rounded-2xl bg-slate-900/4 px-4 py-3 dark:bg-white/[0.03]"
+  680 |                         >
+  681 |                           <p className="text-sm font-semibold text-[#1E293B] dark:text-white">{lane.label}</p>
+  682 |                           <span className="rounded-full bg-[#1E293B]/5 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#64748B] dark:bg-white/[0.06] dark:text-slate-400">
+  683 |                             {lane.meta}
+  684 |                           </span>
   685 |                         </div>
   686 |                       ))}
   687 |                     </motion.div>
@@ -691,205 +691,250 @@
   691 |             </Surface>
   692 |             </BentoMotion>
   693 | 
-  694 |             <BentoMotion index={2} className="md:col-span-2">
-  695 |             <GlassSurface className="p-7">
-  696 |               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.contractVault.title}</h4>
-  697 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-white/80">{bentoView.contractVault.description}</p>
-  698 |               <div className="mt-5 space-y-2">
-  699 |                 {(bentoView.contractVault.items || []).map((item) => (
-  700 |                   <div key={item} className="rounded-2xl bg-[#1E293B]/5 px-4 py-3 text-sm text-[#1E293B] dark:bg-white/12 dark:text-white">
-  701 |                     {item}
-  702 |                   </div>
-  703 |                 ))}
+  694 |             <BentoMotion index={1} className="md:col-span-3">
+  695 |             <Surface className="p-7">
+  696 |               <div className="flex items-center justify-between gap-4">
+  697 |                 <div>
+  698 |                   <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.structuredBuyerRequests.title}</h4>
+  699 |                   <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+  700 |                     {bentoView.structuredBuyerRequests.description}
+  701 |                   </p>
+  702 |                 </div>
+  703 |                 <VerifiedBadge label={bentoView.structuredBuyerRequests.badge} />
   704 |               </div>
-  705 |               <div className="mt-5 inline-flex">
-  706 |                 <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_16px_40px_rgba(16,185,129,0.12)] dark:bg-emerald-400/18 dark:text-emerald-200 dark:shadow-[0_0_26px_rgba(16,185,129,0.24)]">
-  707 |                   {bentoView.contractVault.badge}
-  708 |                 </span>
-  709 |               </div>
-  710 |             </GlassSurface>
-  711 |             </BentoMotion>
-  712 | 
-  713 |             <BentoMotion index={3} className="md:col-span-4">
-  714 |             <Surface className="p-7">
-  715 |               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.enterpriseAnalytics.title}</h4>
-  716 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-  717 |                 {bentoView.enterpriseAnalytics.description}
-  718 |               </p>
-  719 |               <div className="mt-5 grid gap-3 sm:grid-cols-3">
-  720 |                 {(bentoView.enterpriseAnalytics.stats || []).map((stat) => (
-  721 |                   <div key={stat.label} className="rounded-2xl bg-slate-900/4 p-4 dark:bg-white/[0.03]">
-  722 |                     <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">{stat.label}</p>
-  723 |                     <p className="mt-2 text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">{stat.value}</p>
-  724 |                   </div>
-  725 |                 ))}
-  726 |               </div>
-  727 |             </Surface>
-  728 |             </BentoMotion>
-  729 | 
-  730 |             <BentoMotion index={4} className="md:col-span-4">
-  731 |             <Surface className="p-7 bg-slate-900/3">
-  732 |               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.agentLock.title}</h4>
-  733 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-  734 |                 {bentoView.agentLock.description}
-  735 |               </p>
-  736 |               <div className="mt-5 rounded-2xl bg-white/70 p-4 dark:bg-white/[0.03]">
-  737 |                 <div className="flex items-center justify-between gap-3">
-  738 |                   <p className="text-sm font-semibold text-[#1E293B] dark:text-white">{bentoView.agentLock.requestLabel}</p>
-  739 |                   <span className="rounded-full bg-slate-900/6 px-3 py-1 text-xs font-semibold text-[#334155] dark:bg-white/[0.06] dark:text-slate-300">
-  740 |                     {bentoView.agentLock.status}
-  741 |                   </span>
-  742 |                 </div>
-  743 |                 <p className="mt-2 text-xs leading-relaxed text-[#475569] dark:text-slate-400">
-  744 |                   {bentoView.agentLock.note}
-  745 |                 </p>
-  746 |               </div>
-  747 |             </Surface>
-  748 |             </BentoMotion>
-  749 | 
-  750 |             <BentoMotion index={5} className="md:col-span-2">
-  751 |             <Surface
-  752 |               className={[
-  753 |                 'p-7 transition-colors duration-[400ms]',
-  754 |                 mode === 'professional' ? '' : 'dark:bg-[#0E0D1A]',
-  755 |               ].join(' ')}
-  756 |             >
-  757 |               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Unique toggle</h4>
-  758 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-  759 |                 A tactile switch for diverse content modes — recessed track, raised handle.
-  760 |               </p>
-  761 |               <div className="mt-5 inline-flex items-center gap-3">
-  762 |                 <button
-  763 |                   type="button"
-  764 |                   onClick={() => setMode((current) => (current === 'professional' ? 'diverse' : 'professional'))}
-  765 |                   className={[
-  766 |                     'relative h-10 w-20 rounded-full p-1 flex items-center transition-colors duration-[400ms]',
-  767 |                     mode === 'professional' ? 'justify-start bg-[#1E293B]/10' : 'justify-end bg-[#312E81]/12',
-  768 |                     'shadow-[inset_0_2px_6px_rgba(15,23,42,0.18)]',
-  769 |                     'dark:bg-white/[0.06] dark:shadow-[inset_0_2px_10px_rgba(0,0,0,0.7)]',
-  770 |                   ].join(' ')}
-  771 |                   aria-label="Toggle content mode"
-  772 |                 >
-  773 |                   <motion.div
-  774 |                     layout
-  775 |                     layoutId="home-mode-handle"
-  776 |                     transition={{ type: 'spring', stiffness: 520, damping: 34 }}
-  777 |                     className="h-8 w-8 rounded-full bg-white shadow-[0_10px_22px_rgba(15,23,42,0.20)] dark:bg-white/90 dark:shadow-[0_14px_40px_rgba(0,0,0,0.65)]"
-  778 |                   />
-  779 |                 </button>
-  780 |                 <span className="text-sm font-semibold text-[#334155] dark:text-slate-300">
-  781 |                   {mode === 'professional' ? 'Professional' : 'Diverse'}
-  782 |                 </span>
-  783 |               </div>
-  784 |             </Surface>
-  785 |             </BentoMotion>
-  786 | 
-  787 |             <BentoMotion index={6} className="md:col-span-2">
-  788 |             <Surface className="p-7">
-  789 |               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Factory video gallery</h4>
-  790 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-  791 |                 Edge-to-edge thumbnails for an immersive profile experience.
-  792 |               </p>
-  793 |               <div className="mt-5 overflow-hidden rounded-2xl">
-  794 |                 <div className="grid grid-cols-3">
-  795 |                   {Array.from({ length: 6 }).map((_, i) => (
-  796 |                     <div
-  797 |                       // eslint-disable-next-line react/no-array-index-key
-  798 |                       key={i}
-  799 |                       className={[
-  800 |                         'aspect-video',
-  801 |                         loading ? 'skeleton' : 'bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-900 dark:to-slate-800',
-  802 |                         !loading && i % 3 === 1 ? 'from-slate-100 to-slate-300 dark:from-slate-950 dark:to-slate-800' : '',
-  803 |                       ].join(' ')}
-  804 |                     />
-  805 |                   ))}
-  806 |                 </div>
-  807 |               </div>
-  808 |             </Surface>
-  809 |             </BentoMotion>
-  810 | 
-  811 |             <BentoMotion index={7} className="md:col-span-4">
-  812 |             <Surface className="p-7">
-  813 |               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">AI assistant</h4>
-  814 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-  815 |                 A floating assistant that feels premium — glassy, calm, and helpful.
-  816 |               </p>
-  817 |               <div className="mt-5 rounded-2xl bg-white/55 backdrop-blur-md p-4 shadow-[0_18px_50px_rgba(15,23,42,0.10)] ring-1 ring-white/50 dark:bg-white/[0.03] dark:ring-white/10">
-  818 |                 <p className="text-sm font-semibold text-[#1E293B] dark:text-white">“Need help posting a request?”</p>
-  819 |                 <p className="mt-1 text-xs leading-relaxed text-[#475569] dark:text-slate-400">I can generate a structured template in seconds.</p>
-  820 |               </div>
-  821 |             </Surface>
-  822 |             </BentoMotion>
-  823 |           </div>
-  824 |           </div>
-  825 |         </div>
-  826 | 
-  827 |         <div className="mt-16">
-  828 |           <Surface className="p-10">
-  829 |             <div className="grid gap-10 lg:grid-cols-12 lg:items-center">
-  830 |               <div className="lg:col-span-7">
-  831 |                 <h3 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Built for growing buying houses</h3>
-  832 |                 <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-  833 |                   Unlimited sub-accounts · dedicated analytics · organization control · contract management
-  834 |                 </p>
-  835 |               </div>
-  836 |               <div className="lg:col-span-5 lg:flex lg:justify-end">
-  837 |                 <MagneticLinkButton
-  838 |                   to="/pricing"
-  839 |                   className="border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-emerald-600 text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-emerald-500 hover:shadow-[0_22px_50px_rgba(16,185,129,0.28)] dark:bg-emerald-500/80 dark:hover:bg-emerald-500/90 dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
-  840 |                 >
-  841 |                   View enterprise plans
-  842 |                 </MagneticLinkButton>
-  843 |               </div>
-  844 |             </div>
-  845 |           </Surface>
-  846 |         </div>
-  847 | 
-  848 |         <div className="mt-16">
-  849 |           <div className="flex flex-col items-center text-center">
-  850 |             <h3 className="text-xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Focused only on garments & textile</h3>
-  851 |             <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">Industry categories:</p>
-  852 |           </div>
-  853 |           <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm text-[#334155] dark:text-slate-300">
-  854 |             {['Shirts', 'Pants', 'Knitwear', 'Woven', 'Denim', 'Custom production'].map((tag) => (
-  855 |               <span
-  856 |                 key={tag}
-  857 |                 className="rounded-full bg-white/70 px-4 py-2 shadow-[0_14px_38px_rgba(15,23,42,0.07)] dark:bg-white/[0.03] dark:shadow-[0_20px_50px_rgba(0,0,0,0.45)]"
-  858 |               >
-  859 |                 {tag}
-  860 |               </span>
-  861 |             ))}
-  862 |           </div>
-  863 |         </div>
-  864 | 
-  865 |         <div className="mt-16 pb-6">
-  866 |           <Surface className="p-10">
-  867 |             <div className="grid gap-8 lg:grid-cols-12 lg:items-center">
-  868 |               <div className="lg:col-span-7">
-  869 |                 <h2 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Start connecting with the right partners</h2>
-  870 |                 <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-  871 |                   Clear CTAs and clean surfaces — your first step into a structured marketplace.
-  872 |                 </p>
-  873 |               </div>
-  874 |               <div className="flex flex-wrap gap-3 lg:col-span-5 lg:justify-end">
-  875 |                 <MagneticLinkButton
-  876 |                   to="/signup"
-  877 |                   className="shimmer-btn border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[#162132] hover:shadow-[0_22px_50px_rgba(15,23,42,0.25)] dark:bg-gradient-to-r dark:from-emerald-500/85 dark:via-sky-500/70 dark:to-indigo-500/70 dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
-  878 |                 >
-  879 |                   Create account
-  880 |                 </MagneticLinkButton>
-  881 |                 <MagneticLinkButton
-  882 |                   to="/login"
-  883 |                   className="border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-white/70 text-[#1E293B] font-semibold tracking-tight backdrop-blur-sm transition duration-300 ease-out hover:bg-white hover:shadow-[0_22px_50px_rgba(15,23,42,0.10)] dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06] dark:hover:shadow-[0_26px_70px_rgba(0,0,0,0.55)]"
-  884 |                 >
-  885 |                   Login
-  886 |                 </MagneticLinkButton>
-  887 |               </div>
-  888 |             </div>
-  889 |           </Surface>
-  890 |         </div>
-  891 |       </div>
-  892 |     </div>
-  893 |   )
-  894 | }
-  895 | 
+  705 | 
+  706 |               <div className="mt-5 grid gap-3 sm:grid-cols-2">
+  707 |                 {loading ? (
+  708 |                   <>
+  709 |                     <SkeletonLine className="h-10" />
+  710 |                     <SkeletonLine className="h-10" />
+  711 |                     <SkeletonLine className="h-10" />
+  712 |                     <SkeletonLine className="h-10" />
+  713 |                   </>
+  714 |                 ) : (
+  715 |                   <AnimatePresence mode="popLayout" initial={false}>
+  716 |                     <motion.div
+  717 |                       key={mode}
+  718 |                       initial={{ opacity: 0, y: 6 }}
+  719 |                       animate={{ opacity: 1, y: 0 }}
+  720 |                       exit={{ opacity: 0, y: -6 }}
+  721 |                       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+  722 |                       className="grid gap-3 sm:grid-cols-2"
+  723 |                     >
+  724 |                       {(bentoView.structuredBuyerRequests.fields || []).map((field) => (
+  725 |                         <div
+  726 |                           key={field.label}
+  727 |                           className="flex items-center justify-between rounded-2xl bg-slate-900/4 px-4 py-3 text-sm dark:bg-white/[0.03]"
+  728 |                         >
+  729 |                           <span className="text-[#64748B] dark:text-slate-400">{field.label}</span>
+  730 |                           <span className="font-semibold text-[#1E293B] dark:text-white">{field.value}</span>
+  731 |                         </div>
+  732 |                       ))}
+  733 |                     </motion.div>
+  734 |                   </AnimatePresence>
+  735 |                 )}
+  736 |               </div>
+  737 |             </Surface>
+  738 |             </BentoMotion>
+  739 | 
+  740 |             <BentoMotion index={2} className="md:col-span-2">
+  741 |             <GlassSurface className="p-7">
+  742 |               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.contractVault.title}</h4>
+  743 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-white/80">{bentoView.contractVault.description}</p>
+  744 |               <div className="mt-5 space-y-2">
+  745 |                 {(bentoView.contractVault.items || []).map((item) => (
+  746 |                   <div key={item} className="rounded-2xl bg-[#1E293B]/5 px-4 py-3 text-sm text-[#1E293B] dark:bg-white/12 dark:text-white">
+  747 |                     {item}
+  748 |                   </div>
+  749 |                 ))}
+  750 |               </div>
+  751 |               <div className="mt-5 inline-flex">
+  752 |                 <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_16px_40px_rgba(16,185,129,0.12)] dark:bg-emerald-400/18 dark:text-emerald-200 dark:shadow-[0_0_26px_rgba(16,185,129,0.24)]">
+  753 |                   {bentoView.contractVault.badge}
+  754 |                 </span>
+  755 |               </div>
+  756 |             </GlassSurface>
+  757 |             </BentoMotion>
+  758 | 
+  759 |             <BentoMotion index={3} className="md:col-span-4">
+  760 |             <Surface className="p-7">
+  761 |               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.enterpriseAnalytics.title}</h4>
+  762 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+  763 |                 {bentoView.enterpriseAnalytics.description}
+  764 |               </p>
+  765 |               <div className="mt-5 grid gap-3 sm:grid-cols-3">
+  766 |                 {(bentoView.enterpriseAnalytics.stats || []).map((stat) => (
+  767 |                   <div key={stat.label} className="rounded-2xl bg-slate-900/4 p-4 dark:bg-white/[0.03]">
+  768 |                     <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">{stat.label}</p>
+  769 |                     <p className="mt-2 text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">{stat.value}</p>
+  770 |                   </div>
+  771 |                 ))}
+  772 |               </div>
+  773 |             </Surface>
+  774 |             </BentoMotion>
+  775 | 
+  776 |             <BentoMotion index={4} className="md:col-span-4">
+  777 |             <Surface className="p-7 bg-slate-900/3">
+  778 |               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.agentLock.title}</h4>
+  779 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+  780 |                 {bentoView.agentLock.description}
+  781 |               </p>
+  782 |               <div className="mt-5 rounded-2xl bg-white/70 p-4 dark:bg-white/[0.03]">
+  783 |                 <div className="flex items-center justify-between gap-3">
+  784 |                   <p className="text-sm font-semibold text-[#1E293B] dark:text-white">{bentoView.agentLock.requestLabel}</p>
+  785 |                   <span className="rounded-full bg-slate-900/6 px-3 py-1 text-xs font-semibold text-[#334155] dark:bg-white/[0.06] dark:text-slate-300">
+  786 |                     {bentoView.agentLock.status}
+  787 |                   </span>
+  788 |                 </div>
+  789 |                 <p className="mt-2 text-xs leading-relaxed text-[#475569] dark:text-slate-400">
+  790 |                   {bentoView.agentLock.note}
+  791 |                 </p>
+  792 |               </div>
+  793 |             </Surface>
+  794 |             </BentoMotion>
+  795 | 
+  796 |             <BentoMotion index={5} className="md:col-span-2">
+  797 |             <Surface
+  798 |               className={[
+  799 |                 'p-7 transition-colors duration-[400ms]',
+  800 |                 mode === 'professional' ? '' : 'dark:bg-[#0E0D1A]',
+  801 |               ].join(' ')}
+  802 |             >
+  803 |               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Unique toggle</h4>
+  804 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+  805 |                 A tactile switch for diverse content modes -- recessed track, raised handle.
+  806 |               </p>
+  807 |               <div className="mt-5 inline-flex items-center gap-3">
+  808 |                 <button
+  809 |                   type="button"
+  810 |                   onClick={() => setMode((current) => (current === 'professional' ? 'diverse' : 'professional'))}
+  811 |                   className={[
+  812 |                     'relative h-10 w-20 rounded-full p-1 flex items-center transition-colors duration-[400ms]',
+  813 |                     mode === 'professional' ? 'justify-start bg-[#1E293B]/10' : 'justify-end bg-[#312E81]/12',
+  814 |                     'shadow-[inset_0_2px_6px_rgba(15,23,42,0.18)]',
+  815 |                     'dark:bg-white/[0.06] dark:shadow-[inset_0_2px_10px_rgba(0,0,0,0.7)]',
+  816 |                   ].join(' ')}
+  817 |                   aria-label="Toggle content mode"
+  818 |                 >
+  819 |                   <motion.div
+  820 |                     layout
+  821 |                     layoutId="home-mode-handle"
+  822 |                     transition={{ type: 'spring', stiffness: 520, damping: 34 }}
+  823 |                     className="h-8 w-8 rounded-full bg-white shadow-[0_10px_22px_rgba(15,23,42,0.20)] dark:bg-white/90 dark:shadow-[0_14px_40px_rgba(0,0,0,0.65)]"
+  824 |                   />
+  825 |                 </button>
+  826 |                 <span className="text-sm font-semibold text-[#334155] dark:text-slate-300">
+  827 |                   {mode === 'professional' ? 'Professional' : 'Diverse'}
+  828 |                 </span>
+  829 |               </div>
+  830 |             </Surface>
+  831 |             </BentoMotion>
+  832 | 
+  833 |             <BentoMotion index={6} className="md:col-span-2">
+  834 |             <Surface className="p-7">
+  835 |               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Factory video gallery</h4>
+  836 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+  837 |                 Edge-to-edge thumbnails for an immersive profile experience.
+  838 |               </p>
+  839 |               <div className="mt-5 overflow-hidden rounded-2xl">
+  840 |                 <div className="grid grid-cols-3">
+  841 |                   {Array.from({ length: 6 }).map((_, i) => (
+  842 |                     <div
+  843 |                       key={i}
+  844 |                       className={[
+  845 |                         'aspect-video',
+  846 |                         loading ? 'skeleton' : 'bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-900 dark:to-slate-800',
+  847 |                         !loading && i % 3 === 1 ? 'from-slate-100 to-slate-300 dark:from-slate-950 dark:to-slate-800' : '',
+  848 |                       ].join(' ')}
+  849 |                     />
+  850 |                   ))}
+  851 |                 </div>
+  852 |               </div>
+  853 |             </Surface>
+  854 |             </BentoMotion>
+  855 | 
+  856 |             <BentoMotion index={7} className="md:col-span-4">
+  857 |             <Surface className="p-7">
+  858 |               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">AI assistant</h4>
+  859 |               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+  860 |                 A floating assistant that feels premium -- glassy, calm, and helpful.
+  861 |               </p>
+  862 |               <div className="mt-5 rounded-2xl bg-white/55 backdrop-blur-md p-4 shadow-[0_18px_50px_rgba(15,23,42,0.10)] ring-1 ring-white/50 dark:bg-white/[0.03] dark:ring-white/10">
+  863 |                 <p className="text-sm font-semibold text-[#1E293B] dark:text-white">“Need help posting a request*”</p>
+  864 |                 <p className="mt-1 text-xs leading-relaxed text-[#475569] dark:text-slate-400">I can generate a structured template in seconds.</p>
+  865 |               </div>
+  866 |             </Surface>
+  867 |             </BentoMotion>
+  868 |           </div>
+  869 |           </div>
+  870 |         </div>
+  871 | 
+  872 |         <div className="mt-16">
+  873 |           <Surface className="p-10">
+  874 |             <div className="grid gap-10 lg:grid-cols-12 lg:items-center">
+  875 |               <div className="lg:col-span-7">
+  876 |                 <h3 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Built for growing buying houses</h3>
+  877 |                 <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+  878 |                   Unlimited sub-accounts · dedicated analytics · organization control · contract management
+  879 |                 </p>
+  880 |               </div>
+  881 |               <div className="lg:col-span-5 lg:flex lg:justify-end">
+  882 |                 <MagneticLinkButton
+  883 |                   to="/pricing"
+  884 |                   className="px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-emerald-600 text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-emerald-500 hover:shadow-[0_22px_50px_rgba(16,185,129,0.28)] dark:bg-emerald-500/80 dark:hover:bg-emerald-500/90 dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
+  885 |                 >
+  886 |                   View enterprise plans
+  887 |                 </MagneticLinkButton>
+  888 |               </div>
+  889 |             </div>
+  890 |           </Surface>
+  891 |         </div>
+  892 | 
+  893 |         <div className="mt-16">
+  894 |           <div className="flex flex-col items-center text-center">
+  895 |             <h3 className="text-xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Focused only on garments & textile</h3>
+  896 |             <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">Industry categories:</p>
+  897 |           </div>
+  898 |           <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm text-[#334155] dark:text-slate-300">
+  899 |             {['Shirts', 'Pants', 'Knitwear', 'Woven', 'Denim', 'Custom production'].map((tag) => (
+  900 |               <span
+  901 |                 key={tag}
+  902 |                 className="rounded-full bg-white/70 px-4 py-2 shadow-[0_14px_38px_rgba(15,23,42,0.07)] dark:bg-white/[0.03] dark:shadow-[0_20px_50px_rgba(0,0,0,0.45)]"
+  903 |               >
+  904 |                 {tag}
+  905 |               </span>
+  906 |             ))}
+  907 |           </div>
+  908 |         </div>
+  909 | 
+  910 |         <div className="mt-16 pb-6">
+  911 |           <Surface className="p-10">
+  912 |             <div className="grid gap-8 lg:grid-cols-12 lg:items-center">
+  913 |               <div className="lg:col-span-7">
+  914 |                 <h2 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Start connecting with the right partners</h2>
+  915 |                 <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+  916 |                   Clear CTAs and clean surfaces -- your first step into a structured marketplace.
+  917 |                 </p>
+  918 |               </div>
+  919 |               <div className="flex flex-wrap gap-3 lg:col-span-5 lg:justify-end">
+  920 |                 <MagneticLinkButton
+  921 |                   to="/signup"
+  922 |                   className="shimmer-btn px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
+  923 |                 >
+  924 |                   Create account
+  925 |                 </MagneticLinkButton>
+  926 |                 <MagneticLinkButton
+  927 |                   to="/login"
+  928 |                   className="px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-white/70 text-[#1E293B] font-semibold tracking-tight backdrop-blur-sm transition duration-300 ease-out hover:bg-white hover:shadow-[0_22px_50px_rgba(15,23,42,0.10)] dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06] dark:hover:shadow-[0_26px_70px_rgba(0,0,0,0.55)]"
+  929 |                 >
+  930 |                   Login
+  931 |                 </MagneticLinkButton>
+  932 |               </div>
+  933 |             </div>
+  934 |           </Surface>
+  935 |         </div>
+  936 |       </div>
+  937 |     </div>
+  938 |   )
+  939 | }
+  940 | 

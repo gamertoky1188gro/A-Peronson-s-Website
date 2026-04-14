@@ -1,6 +1,6 @@
 import {
   orchestrateRequirementExtraction,
-  orchestrateReplyDraft,
+  generateDraftResponse,
   approveReply,
   sendReply,
 } from '../services/aiOrchestrationService.js'
@@ -19,8 +19,10 @@ export async function extractRequirements(req, res) {
 export async function draftReply(req, res) {
   try {
     const text = String(req.body?.text || '')
-    const result = await orchestrateReplyDraft({ text })
-    return res.json(result)
+    // Build a lightweight draft by first extracting requirements and then generating a draft response.
+    const extraction = await orchestrateRequirementExtraction({ text })
+    const draft = generateDraftResponse(extraction.extracted || {}, extraction.missing_fields || [])
+    return res.json({ draft, extraction })
   } catch (error) {
     return handleControllerError(res, error)
   }

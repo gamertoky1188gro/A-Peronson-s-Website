@@ -36,10 +36,13 @@ export default function SignupUltra() {
     name: '',
     email: '',
     password: '',
+    confirmPassword: '',
     role: 'admin',
     country: '',
     organization: '',
   })
+  const [passwordVisible, setPasswordVisible] = useState(false)
+  const [confirmVisible, setConfirmVisible] = useState(false)
 
   if (!isAuthorized) {
     return <Navigate to="/" replace />
@@ -51,6 +54,11 @@ export default function SignupUltra() {
     e.preventDefault()
     setLoading(true)
     setError('')
+    if (form.password !== form.confirmPassword) {
+      setLoading(false)
+      setError('Passwords do not match.')
+      return
+    }
     try {
       const payload = {
         name: form.name,
@@ -72,30 +80,58 @@ export default function SignupUltra() {
   }
 
   return (
-    <div className="min-h-screen neo-page cyberpunk-page bg-slate-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl bg-white neo-panel cyberpunk-card rounded-xl p-8 shadow-[0_0_20px_rgba(99,102,241,0.5)]">
+    <div className="min-h-screen neo-page cyberpunk-page bg-slate-50 dark:bg-[#020617] flex items-center justify-center p-4">
+      <div className="w-full max-w-2xl bg-white rounded-xl p-8 shadow-[0_0_20px_rgba(10,102,194,0.35)] ring-1 ring-slate-200/60 dark:bg-slate-900/70 dark:shadow-none dark:ring-white/10">
         <div className="flex items-center gap-2 mb-2">
-          <span className="bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-tighter">Ultra Access</span>
-          <h1 className="text-3xl font-bold text-slate-900">Elevated Registration</h1>
+          <span className="bg-[var(--gt-blue)] text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-tighter">Ultra Access</span>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Elevated Registration</h1>
         </div>
-        <p className="text-sm text-slate-500">Authorized personnel only. Create Admin, Agent, or Owner accounts directly.</p>
+        <p className="text-sm text-slate-500 dark:text-slate-300">Authorized personnel only. Create Admin, Agent, or Owner accounts directly.</p>
 
         <form className="mt-6 grid md:grid-cols-2 gap-4" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Full Name</label>
-            <input className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors borderless-shadow" value={form.name} onChange={(e) => onChange('name', e.target.value)} required />
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">Full Name</label>
+            <input className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors borderless-shadow bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100" value={form.name} onChange={(e) => onChange('name', e.target.value)} required />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Secret Email</label>
-            <input type="email" className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors borderless-shadow" value={form.email} onChange={(e) => onChange('email', e.target.value)} required />
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">Secret Email</label>
+            <input type="email" className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors borderless-shadow bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100" value={form.email} onChange={(e) => onChange('email', e.target.value)} required />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Master Password</label>
-            <input type="password" placeholder="--------" className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors borderless-shadow" value={form.password} onChange={(e) => onChange('password', e.target.value)} required />
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">Master Password</label>
+            <div className="flex items-center gap-2 rounded-lg borderless-shadow px-3 py-2 bg-white dark:bg-[#0b1224] focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
+              <input
+                type={passwordVisible ? 'text' : 'password'}
+                placeholder="--------"
+                className="w-full bg-transparent outline-none text-slate-900 dark:text-slate-100"
+                value={form.password}
+                onChange={(e) => onChange('password', e.target.value)}
+                required
+              />
+              <button type="button" onClick={() => setPasswordVisible((prev) => !prev)} className="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
+                {passwordVisible ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Elevated Role</label>
-            <select className="w-full px-4 py-2.5 rounded-lg outline-none bg-white transition-colors borderless-shadow" value={form.role} onChange={(e) => onChange('role', e.target.value)}>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">Confirm Password</label>
+            <div className="flex items-center gap-2 rounded-lg borderless-shadow px-3 py-2 bg-white dark:bg-[#0b1224] focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
+              <input
+                type={confirmVisible ? 'text' : 'password'}
+                placeholder="--------"
+                className="w-full bg-transparent outline-none text-slate-900 dark:text-slate-100"
+                value={form.confirmPassword}
+                onChange={(e) => onChange('confirmPassword', e.target.value)}
+                required
+              />
+              <button type="button" onClick={() => setConfirmVisible((prev) => !prev)} className="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
+                {confirmVisible ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">Elevated Role</label>
+            <select className="w-full px-4 py-2.5 rounded-lg outline-none bg-white dark:bg-[#0b1224] text-slate-900 dark:text-slate-100 transition-colors borderless-shadow" value={form.role} onChange={(e) => onChange('role', e.target.value)}>
               <option value="admin">Administrator</option>
               <option value="owner">System Owner</option>
               <option value="agent">Operational Agent</option>
@@ -105,25 +141,25 @@ export default function SignupUltra() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">HQ Country</label>
-            <input className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors borderless-shadow" value={form.country} onChange={(e) => onChange('country', e.target.value)} required />
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">HQ Country</label>
+            <input className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors borderless-shadow bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100" value={form.country} onChange={(e) => onChange('country', e.target.value)} required />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Organization / Entity</label>
-            <input className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors borderless-shadow" value={form.organization} onChange={(e) => onChange('organization', e.target.value)} />
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">Organization / Entity</label>
+            <input className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors borderless-shadow bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100" value={form.organization} onChange={(e) => onChange('organization', e.target.value)} />
           </div>
 
-          <div className="md:col-span-2 bg-indigo-50 rounded-xl p-4 text-xs text-indigo-900 leading-relaxed borderless-shadow">
+          <div className="md:col-span-2 bg-blue-50 rounded-xl p-4 text-xs text-[#0a3d78] leading-relaxed borderless-shadow dark:bg-[#0a1a33] dark:text-slate-200 dark:ring-1 dark:ring-[#0A66C2]/30">
             <p className="font-bold mb-1 underline">⚠️ Security Notice:</p>
             <p>Admin and Owner accounts are automatically granted full system verification and override capabilities. All actions performed through this terminal are logged for security auditing. High-level accounts must maintain 2FA after initial login.</p>
           </div>
 
-          {error ? <p className="md:col-span-2 text-sm font-bold text-rose-600 bg-rose-50 p-2 rounded borderless-shadow">Auth Error: {error}</p> : null}
+          {error ? <p className="md:col-span-2 text-sm font-bold text-rose-600 bg-rose-50 p-2 rounded borderless-shadow dark:bg-rose-500/10 dark:text-rose-200">Auth Error: {error}</p> : null}
 
           <div className="md:col-span-2 pt-2">
             <button 
               disabled={loading} 
-              className="w-full py-3.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] disabled:opacity-50"
+              className="w-full py-3.5 rounded-lg bg-[var(--gt-blue)] hover:bg-[var(--gt-blue-hover)] text-white font-bold shadow-lg shadow-blue-200 transition-all active:scale-[0.98] disabled:opacity-50"
             >
               {loading ? 'INITIALIZING ACCOUNT...' : 'PROVISION ACCOUNT'}
             </button>

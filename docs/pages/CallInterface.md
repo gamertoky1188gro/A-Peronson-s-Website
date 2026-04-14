@@ -1,4 +1,3 @@
-{% raw %}
 # CallInterface - Route `/call`
 
 **Access:** Protected (Login required). **Roles:** buyer, buying_house, factory, owner, admin, agent
@@ -15,23 +14,25 @@
 ### 2.1 Imported child components
 
 - ../lib/auth (src/pages/CallInterface.jsx:43)
-- ../components/chat/MarkdownMessage (src/pages/CallInterface.jsx:44)
+- ../lib/events (src/pages/CallInterface.jsx:44)
+- ../components/chat/MarkdownMessage (src/pages/CallInterface.jsx:45)
+- ../components/JourneyTimeline (src/pages/CallInterface.jsx:46)
 
 ### 2.2 Structural section tags in JSX
 
-- `header` at `src/pages/CallInterface.jsx:1283`
+- `header` at `src/pages/CallInterface.jsx:1532`
 
 ```jsx
-      <header className="flex h-16 items-center justify-between gap-4 border-b border-slate-200/60 bg-white/70 px-4 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/40 sm:px-6">
+      <header className="flex h-16 items-center justify-between gap-4 borderless-divider-b bg-white/70 px-4 shadow-sm backdrop-blur-xl dark:bg-slate-950/40 sm:px-6">
         <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <button
             type="button"
 ```
-- `aside` at `src/pages/CallInterface.jsx:1474`
+- `aside` at `src/pages/CallInterface.jsx:1735`
 
 ```jsx
           <aside className="flex w-full flex-col overflow-hidden rounded-[28px] bg-white/70 shadow-xl shadow-slate-900/5 ring-1 ring-slate-200/60 backdrop-blur-xl dark:bg-white/5 dark:ring-white/10 lg:w-[380px]">
-            <div className="flex h-14 items-center justify-between gap-3 border-b border-slate-200/60 bg-white/40 px-5 backdrop-blur-xl dark:border-white/10 dark:bg-white/5">
+            <div className="flex h-14 items-center justify-between gap-3 borderless-divider-b bg-white/40 px-5 backdrop-blur-xl dark:bg-white/5">
               <div className="min-w-0">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300/80">Chat</h2>
 ```
@@ -40,35 +41,35 @@
 ### 3.1 Custom CSS utilities referenced by this page (App.css / index.css)
 
 - `.nav-glass` definitions:
-  - `src/App.css:615`
+  - `src/App.css:897`
 - `.spotlight-card` definitions:
-  - `src/App.css:267`
+  - `src/App.css:550`
 - `.skeleton` definitions:
-  - `src/App.css:583`
+  - `src/App.css:865`
 - `.neo-page` definitions:
-  - `src/App.css:108`
+  - `src/App.css:115`
 - `.neo-panel` definitions:
-  - `src/App.css:116`
+  - `src/App.css:123`
 - `.cyberpunk-page` definitions:
-  - `src/App.css:109`
+  - `src/App.css:116`
 - `.cyberpunk-card` definitions:
-  - `src/App.css:110`
+  - `src/App.css:117`
 - `.assistant-orb-btn` definitions:
-  - `src/App.css:518`
+  - `src/App.css:801`
 - `.legal-weave` definitions:
-  - `src/App.css:366`
+  - `src/App.css:649`
 - `.signature-draw` definitions:
-  - `src/App.css:401`
+  - `src/App.css:684`
 - `.verified-shimmer` definitions:
-  - `src/App.css:434`
+  - `src/App.css:717`
 - `.verified-pulse` definitions:
-  - `src/App.css:293`
+  - `src/App.css:576`
 - `.conic-beam` definitions:
-  - `src/App.css:302`
+  - `src/App.css:585`
 
 ### 3.2 Every className block (with grouped explanations)
 
-#### `src/pages/CallInterface.jsx:1269`
+#### `src/pages/CallInterface.jsx:1518`
 
 ```jsx
     <div className="relative isolate flex h-screen w-screen flex-col overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 font-sans text-slate-900 dark:from-[#050816] dark:via-slate-950/10 dark:to-[#120726] dark:text-slate-100">
@@ -130,7 +131,7 @@
   - `-bottom-32` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `-right-32` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1270`
+#### `src/pages/CallInterface.jsx:1519`
 
 ```jsx
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
@@ -182,7 +183,7 @@
   - `-bottom-32` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `-right-32` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1271`
+#### `src/pages/CallInterface.jsx:1520`
 
 ```jsx
         <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-cyan-400/20 blur-3xl motion-safe:animate-[callFloat_14s_ease-in-out_infinite] dark:bg-cyan-400/10" />
@@ -229,7 +230,7 @@
   - `-bottom-32` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `-right-32` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1272`
+#### `src/pages/CallInterface.jsx:1521`
 
 ```jsx
         <div className="absolute -bottom-32 -right-32 h-[28rem] w-[28rem] rounded-full bg-fuchsia-400/20 blur-3xl motion-safe:animate-[callFloat_18s_ease-in-out_infinite] dark:bg-fuchsia-400/10" style={{ animationDelay: '-6s' }} />
@@ -268,7 +269,7 @@
   - `-right-32` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `blur-3xl` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1273`
+#### `src/pages/CallInterface.jsx:1522`
 
 ```jsx
         <div className="absolute right-[-6rem] top-[35%] h-80 w-80 rounded-full bg-indigo-400/15 blur-3xl motion-safe:animate-[callFloat_16s_ease-in-out_infinite] dark:bg-indigo-400/10" style={{ animationDelay: '-12s' }} />
@@ -310,11 +311,11 @@
   - `pointer-events-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `-translate-x-1/2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1276`
+#### `src/pages/CallInterface.jsx:1525`
 
 ```jsx
         <div className="pointer-events-none fixed left-1/2 top-[76px] z-[70] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 px-2">
-          <div className={`rounded-2xl px-4 py-2 text-center text-sm font-semibold shadow-lg ring-1 backdrop-blur-xl ${toast.tone === 'error' ? 'bg-rose-500/15 text-rose-100 ring-rose-500/25' : toast.tone === 'success' ? 'bg-emerald-500/15 text-emerald-50 ring-emerald-500/25' : 'bg-slate-950/75 text-white ring-white/10'}`}>
+          <div className={`rounded-2xl px-4 py-2 text-center text-sm font-semibold shadow-lg ring-1 backdrop-blur-xl${toast.tone === 'error' ? 'bg-rose-500/15 text-rose-100 ring-rose-500/25' : toast.tone === 'success' ? 'bg-emerald-500/15 text-emerald-50 ring-emerald-500/25' : 'bg-slate-950/75 text-white ring-white/10'}`}>
             {toast.message}
           </div>
 ```
@@ -356,10 +357,10 @@
   - `error` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `success` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1277`
+#### `src/pages/CallInterface.jsx:1526`
 
 ```jsx
-          <div className={`rounded-2xl px-4 py-2 text-center text-sm font-semibold shadow-lg ring-1 backdrop-blur-xl ${toast.tone === 'error' ? 'bg-rose-500/15 text-rose-100 ring-rose-500/25' : toast.tone === 'success' ? 'bg-emerald-500/15 text-emerald-50 ring-emerald-500/25' : 'bg-slate-950/75 text-white ring-white/10'}`}>
+          <div className={`rounded-2xl px-4 py-2 text-center text-sm font-semibold shadow-lg ring-1 backdrop-blur-xl${toast.tone === 'error' ? 'bg-rose-500/15 text-rose-100 ring-rose-500/25' : toast.tone === 'success' ? 'bg-emerald-500/15 text-emerald-50 ring-emerald-500/25' : 'bg-slate-950/75 text-white ring-white/10'}`}>
             {toast.message}
           </div>
         </div>
@@ -390,17 +391,17 @@
   - `error` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `success` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1283`
+#### `src/pages/CallInterface.jsx:1532`
 
 ```jsx
-      <header className="flex h-16 items-center justify-between gap-4 border-b border-slate-200/60 bg-white/70 px-4 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/40 sm:px-6">
+      <header className="flex h-16 items-center justify-between gap-4 borderless-divider-b bg-white/70 px-4 shadow-sm backdrop-blur-xl dark:bg-slate-950/40 sm:px-6">
         <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <button
             type="button"
 ```
 **Raw class strings detected (best effort):**
 
-- `flex h-16 items-center justify-between gap-4 border-b border-slate-200/60 bg-white/70 px-4 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/40 sm:px-6`
+- `flex h-16 items-center justify-between gap-4 borderless-divider-b bg-white/70 px-4 shadow-sm backdrop-blur-xl dark:bg-slate-950/40 sm:px-6`
 - `flex min-w-0 items-center gap-3 sm:gap-4`
 - `button`
 
@@ -420,19 +421,17 @@
   - `bg-white/70` — Background color/surface.
   - `backdrop-blur-xl` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Borders / rings / shadows:**
-  - `border-b` — Border style/width/color.
-  - `border-slate-200/60` — Border style/width/color.
+  - `borderless-divider-b` — Border style/width/color.
   - `shadow-sm` — Drop shadow depth (elevation).
 - **Responsive variants:**
   - `sm:px-6` — Variant prefix (responsive, dark, or interaction state).
   - `sm:gap-4` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
-  - `dark:border-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:bg-slate-950/40` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
   - `button` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1284`
+#### `src/pages/CallInterface.jsx:1533`
 
 ```jsx
         <div className="flex min-w-0 items-center gap-3 sm:gap-4">
@@ -458,7 +457,7 @@
 - **Other:**
   - `button` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1288`
+#### `src/pages/CallInterface.jsx:1537`
 
 ```jsx
             className="group flex h-9 w-9 items-center justify-center rounded-xl bg-white/80 text-slate-600 shadow-sm ring-1 ring-slate-200/60 transition hover:bg-white hover:text-slate-900 active:scale-95 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10"
@@ -504,7 +503,7 @@
   - `group` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Back` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1291`
+#### `src/pages/CallInterface.jsx:1540`
 
 ```jsx
             <ChevronLeft size={18} className="transition-transform group-hover:-translate-x-0.5" />
@@ -536,7 +535,7 @@
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1293`
+#### `src/pages/CallInterface.jsx:1542`
 
 ```jsx
           <div className="min-w-0">
@@ -567,7 +566,7 @@
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1294`
+#### `src/pages/CallInterface.jsx:1543`
 
 ```jsx
             <div className="truncate text-sm font-semibold tracking-tight text-slate-900 dark:text-white sm:text-base">
@@ -602,19 +601,19 @@
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300/80` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1295`
+#### `src/pages/CallInterface.jsx:1544`
 
 ```jsx
               Call with <span className="text-slate-600 dark:text-slate-300">“{remoteName}”</span>
             </div>
             <div className="hidden truncate text-xs text-slate-500 dark:text-slate-300/80 sm:block">
-              {statusMessage || 'Preparing call…'}
+              {statusMessage || 'Preparing call...'}
 ```
 **Raw class strings detected (best effort):**
 
 - `text-slate-600 dark:text-slate-300`
 - `hidden truncate text-xs text-slate-500 dark:text-slate-300/80 sm:block`
-- `Preparing call…`
+- `Preparing call...`
 
 **Utility breakdown (grouped):**
 
@@ -632,20 +631,20 @@
   - `dark:text-slate-300/80` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
   - `Preparing` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `call…` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `call...` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1297`
+#### `src/pages/CallInterface.jsx:1546`
 
 ```jsx
             <div className="hidden truncate text-xs text-slate-500 dark:text-slate-300/80 sm:block">
-              {statusMessage || 'Preparing call…'}
+              {statusMessage || 'Preparing call...'}
             </div>
           </div>
 ```
 **Raw class strings detected (best effort):**
 
 - `hidden truncate text-xs text-slate-500 dark:text-slate-300/80 sm:block`
-- `Preparing call…`
+- `Preparing call...`
 
 **Utility breakdown (grouped):**
 
@@ -661,14 +660,14 @@
   - `dark:text-slate-300/80` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
   - `Preparing` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `call…` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `call...` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1303`
+#### `src/pages/CallInterface.jsx:1552`
 
 ```jsx
         <div className="flex flex-none items-center gap-2">
-          <span className={`hidden items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ring-1 sm:inline-flex ${connectionBadge.pillClass}`}>
-            <span className={`h-2 w-2 rounded-full ${connectionBadge.dotClass}`} />
+          <span className={`hidden items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ring-1 sm:inline-flex${connectionBadge.pillClass}`}>
+            <span className={`h-2 w-2 rounded-full${connectionBadge.dotClass}`} />
             {connectionBadge.label}
 ```
 **Raw class strings detected (best effort):**
@@ -684,11 +683,11 @@
 - **Spacing:**
   - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1304`
+#### `src/pages/CallInterface.jsx:1553`
 
 ```jsx
-          <span className={`hidden items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ring-1 sm:inline-flex ${connectionBadge.pillClass}`}>
-            <span className={`h-2 w-2 rounded-full ${connectionBadge.dotClass}`} />
+          <span className={`hidden items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ring-1 sm:inline-flex${connectionBadge.pillClass}`}>
+            <span className={`h-2 w-2 rounded-full${connectionBadge.dotClass}`} />
             {connectionBadge.label}
           </span>
 ```
@@ -699,41 +698,113 @@
 **Utility breakdown (grouped):**
 
 
-#### `src/pages/CallInterface.jsx:1305`
+#### `src/pages/CallInterface.jsx:1554`
 
 ```jsx
-            <span className={`h-2 w-2 rounded-full ${connectionBadge.dotClass}`} />
+            <span className={`h-2 w-2 rounded-full${connectionBadge.dotClass}`} />
             {connectionBadge.label}
           </span>
-          <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-bold tabular-nums text-slate-700 ring-1 ring-slate-200/60 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
+          {recordingState !== 'idle' ? (
 ```
 **Raw class strings detected (best effort):**
 
-- `rounded-full bg-white/70 px-3 py-1 text-xs font-bold tabular-nums text-slate-700 ring-1 ring-slate-200/60 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
+- `idle`
 
 **Utility breakdown (grouped):**
 
+- **Other:**
+  - `idle` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/CallInterface.jsx:1558`
+
+```jsx
+            <span className="hidden items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/60 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 sm:inline-flex">
+              <span className={`h-2 w-2 rounded-full${recordingState === 'recording' ? 'bg-rose-500 animate-pulse' : recordingState === 'available' ? 'bg-emerald-500' : recordingState === 'uploading' ? 'bg-amber-500 animate-pulse' : 'bg-rose-500'}`} />
+              {recordingState === 'recording'
+                ? 'REC'
+```
+**Raw class strings detected (best effort):**
+
+- `hidden items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/60 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 sm:inline-flex`
+- `recording`
+- `bg-rose-500 animate-pulse`
+- `available`
+- `bg-emerald-500`
+- `uploading`
+- `bg-amber-500 animate-pulse`
+- `bg-rose-500`
+- `REC`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `hidden` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Spacing:**
+  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `px-3` — Horizontal padding (left/right).
   - `py-1` — Vertical padding (top/bottom).
 - **Typography:**
   - `text-xs` — Text color or text sizing.
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-700` — Text color or text sizing.
 - **Color / surface:**
   - `bg-white/70` — Background color/surface.
+  - `bg-rose-500` — Background color/surface.
+  - `bg-emerald-500` — Background color/surface.
+  - `bg-amber-500` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
   - `ring-1` — Outline ring (often used instead of borders in dark mode).
   - `ring-slate-200/60` — Outline ring (often used instead of borders in dark mode).
+- **Interaction / motion:**
+  - `animate-pulse` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Responsive variants:**
+  - `sm:inline-flex` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
-  - `tabular-nums` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `recording` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `available` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uploading` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `REC` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1308`
+#### `src/pages/CallInterface.jsx:1559`
+
+```jsx
+              <span className={`h-2 w-2 rounded-full${recordingState === 'recording' ? 'bg-rose-500 animate-pulse' : recordingState === 'available' ? 'bg-emerald-500' : recordingState === 'uploading' ? 'bg-amber-500 animate-pulse' : 'bg-rose-500'}`} />
+              {recordingState === 'recording'
+                ? 'REC'
+                : recordingState === 'uploading'
+```
+**Raw class strings detected (best effort):**
+
+- `recording`
+- `bg-rose-500 animate-pulse`
+- `available`
+- `bg-emerald-500`
+- `uploading`
+- `bg-amber-500 animate-pulse`
+- `bg-rose-500`
+- `REC`
+
+**Utility breakdown (grouped):**
+
+- **Color / surface:**
+  - `bg-rose-500` — Background color/surface.
+  - `bg-emerald-500` — Background color/surface.
+  - `bg-amber-500` — Background color/surface.
+- **Interaction / motion:**
+  - `animate-pulse` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Other:**
+  - `recording` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `available` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `uploading` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `REC` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/CallInterface.jsx:1569`
 
 ```jsx
           <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-bold tabular-nums text-slate-700 ring-1 ring-slate-200/60 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
@@ -767,7 +838,7 @@
 - **Other:**
   - `tabular-nums` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1315`
+#### `src/pages/CallInterface.jsx:1576`
 
 ```jsx
       <div className="flex flex-1 flex-col gap-4 overflow-hidden p-4 sm:p-6 lg:flex-row">
@@ -808,7 +879,7 @@
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1318`
+#### `src/pages/CallInterface.jsx:1579`
 
 ```jsx
         <div className="relative flex min-h-[520px] flex-1 flex-col overflow-hidden rounded-[28px] bg-white/70 shadow-xl shadow-slate-900/5 ring-1 ring-slate-200/60 backdrop-blur-xl dark:bg-white/5 dark:ring-white/10">
@@ -845,7 +916,7 @@
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1320`
+#### `src/pages/CallInterface.jsx:1581`
 
 ```jsx
           <div ref={stageRef} className="relative flex-1 overflow-hidden rounded-[24px] bg-slate-950">
@@ -895,7 +966,7 @@
   - `ring-1` — Outline ring (often used instead of borders in dark mode).
   - `ring-white/10` — Outline ring (often used instead of borders in dark mode).
 
-#### `src/pages/CallInterface.jsx:1322`
+#### `src/pages/CallInterface.jsx:1583`
 
 ```jsx
             <div className="absolute left-5 top-5 z-20 flex items-center gap-2 rounded-full bg-black/35 px-3 py-2 text-xs font-semibold text-white backdrop-blur-md ring-1 ring-white/10">
@@ -942,7 +1013,7 @@
 - **Other:**
   - `U` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1323`
+#### `src/pages/CallInterface.jsx:1584`
 
 ```jsx
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-[11px] font-bold">
@@ -976,7 +1047,7 @@
 - **Other:**
   - `U` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1326`
+#### `src/pages/CallInterface.jsx:1587`
 
 ```jsx
               <div className="max-w-[220px] truncate">{remoteName}</div>
@@ -994,7 +1065,7 @@
   - `max-w-[220px]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1335`
+#### `src/pages/CallInterface.jsx:1596`
 
 ```jsx
               className="absolute inset-0 h-full w-full object-cover"
@@ -1023,7 +1094,7 @@
   - `object-cover` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `pointer-events-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1337`
+#### `src/pages/CallInterface.jsx:1598`
 
 ```jsx
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/50" />
@@ -1068,7 +1139,7 @@
 - **Other:**
   - `pointer-events-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1339`
+#### `src/pages/CallInterface.jsx:1600`
 
 ```jsx
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-white/80">
@@ -1109,7 +1180,7 @@
 - **Other:**
   - `U` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1340`
+#### `src/pages/CallInterface.jsx:1601`
 
 ```jsx
                 <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/10 text-3xl font-bold ring-1 ring-white/10">
@@ -1145,19 +1216,19 @@
 - **Other:**
   - `U` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1343`
+#### `src/pages/CallInterface.jsx:1604`
 
 ```jsx
                 <div className="text-base font-semibold">{remoteName}</div>
                 <div className="max-w-xs text-center text-xs text-white/60">
-                  {statusMessage || 'Waiting to connect…'}
+                  {statusMessage || 'Waiting to connect...'}
                 </div>
 ```
 **Raw class strings detected (best effort):**
 
 - `text-base font-semibold`
 - `max-w-xs text-center text-xs text-white/60`
-- `Waiting to connect…`
+- `Waiting to connect...`
 
 **Utility breakdown (grouped):**
 
@@ -1172,20 +1243,20 @@
 - **Other:**
   - `Waiting` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `to` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `connect…` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `connect...` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1344`
+#### `src/pages/CallInterface.jsx:1605`
 
 ```jsx
                 <div className="max-w-xs text-center text-xs text-white/60">
-                  {statusMessage || 'Waiting to connect…'}
+                  {statusMessage || 'Waiting to connect...'}
                 </div>
               </div>
 ```
 **Raw class strings detected (best effort):**
 
 - `max-w-xs text-center text-xs text-white/60`
-- `Waiting to connect…`
+- `Waiting to connect...`
 
 **Utility breakdown (grouped):**
 
@@ -1198,20 +1269,20 @@
 - **Other:**
   - `Waiting` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `to` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `connect…` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `connect...` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1351`
+#### `src/pages/CallInterface.jsx:1612`
 
 ```jsx
               <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 p-6">
-                <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/10 p-6 text-center text-white backdrop-blur-md">
+                <div className="w-full max-w-md rounded-2xl borderless-shadow bg-white/10 p-6 text-center text-white backdrop-blur-md">
                   <div className="text-lg font-semibold">{mediaGate.title}</div>
                   <div className="mt-2 text-sm text-white/80">{mediaGate.message}</div>
 ```
 **Raw class strings detected (best effort):**
 
 - `absolute inset-0 z-50 flex items-center justify-center bg-black/60 p-6`
-- `w-full max-w-md rounded-2xl border border-white/10 bg-white/10 p-6 text-center text-white backdrop-blur-md`
+- `w-full max-w-md rounded-2xl borderless-shadow bg-white/10 p-6 text-center text-white backdrop-blur-md`
 - `text-lg font-semibold`
 - `mt-2 text-sm text-white/80`
 
@@ -1242,20 +1313,19 @@
   - `backdrop-blur-md` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-white/10` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 
-#### `src/pages/CallInterface.jsx:1352`
+#### `src/pages/CallInterface.jsx:1613`
 
 ```jsx
-                <div className="w-full max-w-md rounded-2xl border border-white/10 bg-white/10 p-6 text-center text-white backdrop-blur-md">
+                <div className="w-full max-w-md rounded-2xl borderless-shadow bg-white/10 p-6 text-center text-white backdrop-blur-md">
                   <div className="text-lg font-semibold">{mediaGate.title}</div>
                   <div className="mt-2 text-sm text-white/80">{mediaGate.message}</div>
                   <div className="mt-5 flex items-center justify-center gap-3">
 ```
 **Raw class strings detected (best effort):**
 
-- `w-full max-w-md rounded-2xl border border-white/10 bg-white/10 p-6 text-center text-white backdrop-blur-md`
+- `w-full max-w-md rounded-2xl borderless-shadow bg-white/10 p-6 text-center text-white backdrop-blur-md`
 - `text-lg font-semibold`
 - `mt-2 text-sm text-white/80`
 - `mt-5 flex items-center justify-center gap-3`
@@ -1285,10 +1355,9 @@
   - `backdrop-blur-md` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-white/10` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 
-#### `src/pages/CallInterface.jsx:1353`
+#### `src/pages/CallInterface.jsx:1614`
 
 ```jsx
                   <div className="text-lg font-semibold">{mediaGate.title}</div>
@@ -1318,7 +1387,7 @@
   - `text-sm` — Text color or text sizing.
   - `text-white/80` — Text color or text sizing.
 
-#### `src/pages/CallInterface.jsx:1354`
+#### `src/pages/CallInterface.jsx:1615`
 
 ```jsx
                   <div className="mt-2 text-sm text-white/80">{mediaGate.message}</div>
@@ -1345,7 +1414,7 @@
   - `text-sm` — Text color or text sizing.
   - `text-white/80` — Text color or text sizing.
 
-#### `src/pages/CallInterface.jsx:1355`
+#### `src/pages/CallInterface.jsx:1616`
 
 ```jsx
                   <div className="mt-5 flex items-center justify-center gap-3">
@@ -1370,18 +1439,18 @@
 - **Other:**
   - `button` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1361`
+#### `src/pages/CallInterface.jsx:1622`
 
 ```jsx
                         className="rounded-xl bg-blue-500 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600 disabled:opacity-60"
                       >
-                        {isRequestingMedia ? 'Requesting…' : mediaGate.actionLabel}
+                        {isRequestingMedia ? 'Requesting...' : mediaGate.actionLabel}
                       </button>
 ```
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-blue-500 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600 disabled:opacity-60`
-- `Requesting…`
+- `Requesting...`
 
 **Utility breakdown (grouped):**
 
@@ -1400,9 +1469,9 @@
   - `hover:bg-blue-600` — Variant prefix (responsive, dark, or interaction state).
   - `disabled:opacity-60` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
-  - `Requesting…` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Requesting...` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1369`
+#### `src/pages/CallInterface.jsx:1630`
 
 ```jsx
                       className="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20"
@@ -1430,10 +1499,10 @@
 - **Interaction / motion:**
   - `hover:bg-white/20` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1380`
+#### `src/pages/CallInterface.jsx:1641`
 
 ```jsx
-              className={`absolute right-5 top-5 z-30 aspect-video w-40 overflow-hidden rounded-2xl bg-black/80 ring-1 ${isSpeaking ? 'ring-cyan-300/70' : 'ring-white/20'} shadow-2xl shadow-black/40 sm:w-56`}
+              className={`absolute right-5 top-5 z-30 aspect-video w-40 overflow-hidden rounded-2xl bg-black/80 ring-1${isSpeaking ? 'ring-cyan-300/70' : 'ring-white/20'}shadow-2xl shadow-black/40 sm:w-56`}
               style={isSpeaking ? { boxShadow: '0 22px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(34,211,238,0.35), 0 0 34px rgba(34,211,238,0.25)' } : undefined}
             >
               <video 
@@ -1459,7 +1528,7 @@
   - `34px` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `rgba(34,211,238,0.25)` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1388`
+#### `src/pages/CallInterface.jsx:1649`
 
 ```jsx
                 className="h-full w-full object-cover"
@@ -1495,7 +1564,7 @@
 - **Other:**
   - `object-cover` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1390`
+#### `src/pages/CallInterface.jsx:1651`
 
 ```jsx
               <div className="absolute bottom-2 left-2 rounded-full bg-black/50 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur">
@@ -1526,7 +1595,7 @@
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
 
-#### `src/pages/CallInterface.jsx:1396`
+#### `src/pages/CallInterface.jsx:1657`
 
 ```jsx
             <div className="absolute bottom-5 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2 rounded-2xl bg-black/35 p-2 backdrop-blur-xl ring-1 ring-white/10 shadow-lg">
@@ -1563,10 +1632,10 @@
   - `-translate-x-1/2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `button` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1400`
+#### `src/pages/CallInterface.jsx:1661`
 
 ```jsx
-                className={`relative flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95 ${isChatOpen ? 'bg-sky-500/90 hover:bg-sky-500' : 'bg-white/10 hover:bg-white/15'}`}
+                className={`relative flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95${isChatOpen ? 'bg-sky-500/90 hover:bg-sky-500' : 'bg-white/10 hover:bg-white/15'}`}
                 title={isChatOpen ? 'Hide chat' : 'Show chat'}
               >
                 <MessageSquare size={20} />
@@ -1591,7 +1660,7 @@
   - `chat` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Show` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1405`
+#### `src/pages/CallInterface.jsx:1666`
 
 ```jsx
                   <span className="absolute -right-1 -top-1 inline-flex min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white ring-2 ring-black/40">
@@ -1631,10 +1700,10 @@
   - `-top-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `99+` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1413`
+#### `src/pages/CallInterface.jsx:1674`
 
 ```jsx
-                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95 ${isSpeakerMuted ? 'bg-amber-500/90 hover:bg-amber-500' : 'bg-white/10 hover:bg-white/15'}`}
+                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95${isSpeakerMuted ? 'bg-amber-500/90 hover:bg-amber-500' : 'bg-white/10 hover:bg-white/15'}`}
                 title={isSpeakerMuted ? 'Unmute speaker' : 'Mute speaker'}
               >
                 {isSpeakerMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
@@ -1659,10 +1728,10 @@
   - `speaker` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Mute` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1421`
+#### `src/pages/CallInterface.jsx:1682`
 
 ```jsx
-                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95 ${isMuted ? 'bg-rose-500 hover:bg-rose-600' : 'bg-white/10 hover:bg-white/15'}`}
+                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95${isMuted ? 'bg-rose-500 hover:bg-rose-600' : 'bg-white/10 hover:bg-white/15'}`}
                 title={isMuted ? 'Unmute mic' : 'Mute mic'}
                 aria-pressed={!isMuted}
                 style={!isMuted && micLevel > 0.02 ? { boxShadow: `0 0 ${10 + micLevel * 26}px rgba(34,211,238,${0.18 + micLevel * 0.35})` } : undefined}
@@ -1687,7 +1756,7 @@
   - `mic` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Mute` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1431`
+#### `src/pages/CallInterface.jsx:1692`
 
 ```jsx
                 className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-500 text-white transition-all hover:bg-rose-600 active:scale-95"
@@ -1722,10 +1791,10 @@
   - `End` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `call` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1439`
+#### `src/pages/CallInterface.jsx:1700`
 
 ```jsx
-                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95 ${!isCameraOn ? 'bg-rose-500 hover:bg-rose-600' : 'bg-white/10 hover:bg-white/15'}`}
+                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95${!isCameraOn ? 'bg-rose-500 hover:bg-rose-600' : 'bg-white/10 hover:bg-white/15'}`}
                 title={!isCameraOn ? 'Turn camera on' : 'Turn camera off'}
               >
                 {!isCameraOn ? <VideoOff size={20} /> : <Video size={20} />}
@@ -1751,10 +1820,10 @@
   - `on` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `off` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1447`
+#### `src/pages/CallInterface.jsx:1708`
 
 ```jsx
-                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95 ${isFullscreen ? 'bg-white/20' : 'bg-white/10 hover:bg-white/15'}`}
+                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95${isFullscreen ? 'bg-white/20' : 'bg-white/10 hover:bg-white/15'}`}
                 title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
               >
                 <Maximize size={20} />
@@ -1778,17 +1847,17 @@
   - `fullscreen` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Fullscreen` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1456`
+#### `src/pages/CallInterface.jsx:1717`
 
 ```jsx
-          <div className="flex items-center gap-3 border-t border-slate-200/60 bg-white/70 px-4 py-3 backdrop-blur-xl dark:border-white/10 dark:bg-white/5 sm:px-6">
+          <div className="flex items-center gap-3 borderless-divider-t bg-white/70 px-4 py-3 backdrop-blur-xl dark:bg-white/5 sm:px-6">
             <div className="flex items-end gap-1.5 text-sky-600 dark:text-cyan-300" aria-hidden="true">
               {[0.28, 0.44, 0.72, 0.44, 0.28].map((base, index) => (
                 <span
 ```
 **Raw class strings detected (best effort):**
 
-- `flex items-center gap-3 border-t border-slate-200/60 bg-white/70 px-4 py-3 backdrop-blur-xl dark:border-white/10 dark:bg-white/5 sm:px-6`
+- `flex items-center gap-3 borderless-divider-t bg-white/70 px-4 py-3 backdrop-blur-xl dark:bg-white/5 sm:px-6`
 - `flex items-end gap-1.5 text-sky-600 dark:text-cyan-300`
 
 **Utility breakdown (grouped):**
@@ -1808,16 +1877,14 @@
   - `bg-white/70` — Background color/surface.
   - `backdrop-blur-xl` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Borders / rings / shadows:**
-  - `border-t` — Border style/width/color.
-  - `border-slate-200/60` — Border style/width/color.
+  - `borderless-divider-t` — Border style/width/color.
 - **Responsive variants:**
   - `sm:px-6` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
-  - `dark:border-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-cyan-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1457`
+#### `src/pages/CallInterface.jsx:1718`
 
 ```jsx
             <div className="flex items-end gap-1.5 text-sky-600 dark:text-cyan-300" aria-hidden="true">
@@ -1841,7 +1908,7 @@
 - **Dark mode variants:**
   - `dark:text-cyan-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1461`
+#### `src/pages/CallInterface.jsx:1722`
 
 ```jsx
                   className="h-5 w-1.5 rounded-full bg-current transition-transform duration-150 will-change-transform"
@@ -1869,7 +1936,7 @@
   - `duration-150` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `will-change-transform` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1466`
+#### `src/pages/CallInterface.jsx:1727`
 
 ```jsx
             <p className="min-w-0 flex-1 truncate text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -1900,18 +1967,18 @@
   - `in` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `progress.` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1474`
+#### `src/pages/CallInterface.jsx:1735`
 
 ```jsx
           <aside className="flex w-full flex-col overflow-hidden rounded-[28px] bg-white/70 shadow-xl shadow-slate-900/5 ring-1 ring-slate-200/60 backdrop-blur-xl dark:bg-white/5 dark:ring-white/10 lg:w-[380px]">
-            <div className="flex h-14 items-center justify-between gap-3 border-b border-slate-200/60 bg-white/40 px-5 backdrop-blur-xl dark:border-white/10 dark:bg-white/5">
+            <div className="flex h-14 items-center justify-between gap-3 borderless-divider-b bg-white/40 px-5 backdrop-blur-xl dark:bg-white/5">
               <div className="min-w-0">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300/80">Chat</h2>
 ```
 **Raw class strings detected (best effort):**
 
 - `flex w-full flex-col overflow-hidden rounded-[28px] bg-white/70 shadow-xl shadow-slate-900/5 ring-1 ring-slate-200/60 backdrop-blur-xl dark:bg-white/5 dark:ring-white/10 lg:w-[380px]`
-- `flex h-14 items-center justify-between gap-3 border-b border-slate-200/60 bg-white/40 px-5 backdrop-blur-xl dark:border-white/10 dark:bg-white/5`
+- `flex h-14 items-center justify-between gap-3 borderless-divider-b bg-white/40 px-5 backdrop-blur-xl dark:bg-white/5`
 - `min-w-0`
 - `text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300/80`
 
@@ -1945,27 +2012,25 @@
   - `shadow-slate-900/5` — Drop shadow depth (elevation).
   - `ring-1` — Outline ring (often used instead of borders in dark mode).
   - `ring-slate-200/60` — Outline ring (often used instead of borders in dark mode).
-  - `border-b` — Border style/width/color.
-  - `border-slate-200/60` — Border style/width/color.
+  - `borderless-divider-b` — Border style/width/color.
 - **Responsive variants:**
   - `lg:w-[380px]` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300/80` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1475`
+#### `src/pages/CallInterface.jsx:1736`
 
 ```jsx
-            <div className="flex h-14 items-center justify-between gap-3 border-b border-slate-200/60 bg-white/40 px-5 backdrop-blur-xl dark:border-white/10 dark:bg-white/5">
+            <div className="flex h-14 items-center justify-between gap-3 borderless-divider-b bg-white/40 px-5 backdrop-blur-xl dark:bg-white/5">
               <div className="min-w-0">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300/80">Chat</h2>
                 <p className="truncate text-[11px] text-slate-500 dark:text-slate-300/70">{remoteName}</p>
 ```
 **Raw class strings detected (best effort):**
 
-- `flex h-14 items-center justify-between gap-3 border-b border-slate-200/60 bg-white/40 px-5 backdrop-blur-xl dark:border-white/10 dark:bg-white/5`
+- `flex h-14 items-center justify-between gap-3 borderless-divider-b bg-white/40 px-5 backdrop-blur-xl dark:bg-white/5`
 - `min-w-0`
 - `text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300/80`
 - `truncate text-[11px] text-slate-500 dark:text-slate-300/70`
@@ -1993,15 +2058,13 @@
   - `backdrop-blur-xl` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-[11px]` — Text color or text sizing.
 - **Borders / rings / shadows:**
-  - `border-b` — Border style/width/color.
-  - `border-slate-200/60` — Border style/width/color.
+  - `borderless-divider-b` — Border style/width/color.
 - **Dark mode variants:**
-  - `dark:border-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300/80` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300/70` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1476`
+#### `src/pages/CallInterface.jsx:1737`
 
 ```jsx
               <div className="min-w-0">
@@ -2032,7 +2095,7 @@
   - `dark:text-slate-300/80` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300/70` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1477`
+#### `src/pages/CallInterface.jsx:1738`
 
 ```jsx
                 <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300/80">Chat</h2>
@@ -2067,13 +2130,13 @@
   - `dark:text-slate-300/80` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300/70` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1478`
+#### `src/pages/CallInterface.jsx:1739`
 
 ```jsx
                 <p className="truncate text-[11px] text-slate-500 dark:text-slate-300/70">{remoteName}</p>
               </div>
               <div ref={morePopoverRef} className="relative flex items-center gap-2">
-                <span className={`hidden items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold ring-1 sm:inline-flex ${isChatLive ? 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-200' : 'bg-slate-500/10 text-slate-600 ring-slate-400/20 dark:text-slate-300'}`}>
+                <span className={`hidden items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold ring-1 sm:inline-flex${isChatLive ? 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-200' : 'bg-slate-500/10 text-slate-600 ring-slate-400/20 dark:text-slate-300'}`}>
 ```
 **Raw class strings detected (best effort):**
 
@@ -2107,12 +2170,12 @@
   - `dark:text-emerald-200` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1480`
+#### `src/pages/CallInterface.jsx:1741`
 
 ```jsx
               <div ref={morePopoverRef} className="relative flex items-center gap-2">
-                <span className={`hidden items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold ring-1 sm:inline-flex ${isChatLive ? 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-200' : 'bg-slate-500/10 text-slate-600 ring-slate-400/20 dark:text-slate-300'}`}>
-                  <span className={`h-2 w-2 rounded-full ${isChatLive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                <span className={`hidden items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold ring-1 sm:inline-flex${isChatLive ? 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-200' : 'bg-slate-500/10 text-slate-600 ring-slate-400/20 dark:text-slate-300'}`}>
+                  <span className={`h-2 w-2 rounded-full${isChatLive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
                   {isChatLive ? 'Live' : 'Syncing'}
 ```
 **Raw class strings detected (best effort):**
@@ -2153,11 +2216,11 @@
   - `Live` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Syncing` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1481`
+#### `src/pages/CallInterface.jsx:1742`
 
 ```jsx
-                <span className={`hidden items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold ring-1 sm:inline-flex ${isChatLive ? 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-200' : 'bg-slate-500/10 text-slate-600 ring-slate-400/20 dark:text-slate-300'}`}>
-                  <span className={`h-2 w-2 rounded-full ${isChatLive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                <span className={`hidden items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold ring-1 sm:inline-flex${isChatLive ? 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-200' : 'bg-slate-500/10 text-slate-600 ring-slate-400/20 dark:text-slate-300'}`}>
+                  <span className={`h-2 w-2 rounded-full${isChatLive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
                   {isChatLive ? 'Live' : 'Syncing'}
                 </span>
 ```
@@ -2192,10 +2255,10 @@
   - `Live` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Syncing` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1482`
+#### `src/pages/CallInterface.jsx:1743`
 
 ```jsx
-                  <span className={`h-2 w-2 rounded-full ${isChatLive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                  <span className={`h-2 w-2 rounded-full${isChatLive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
                   {isChatLive ? 'Live' : 'Syncing'}
                 </span>
                 <button
@@ -2218,7 +2281,7 @@
   - `Live` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Syncing` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1491`
+#### `src/pages/CallInterface.jsx:1752`
 
 ```jsx
                   className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-slate-200"
@@ -2253,7 +2316,7 @@
 - **Other:**
   - `More` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1498`
+#### `src/pages/CallInterface.jsx:1759`
 
 ```jsx
                   <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-2xl bg-white/90 p-2 shadow-xl ring-1 ring-slate-200/60 backdrop-blur-xl dark:bg-slate-950/60 dark:ring-white/10">
@@ -2291,7 +2354,7 @@
 - **Other:**
   - `button` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1505`
+#### `src/pages/CallInterface.jsx:1766`
 
 ```jsx
                       className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-white/10"
@@ -2329,7 +2392,7 @@
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1507`
+#### `src/pages/CallInterface.jsx:1768`
 
 ```jsx
                       <Copy size={16} className="opacity-80" />
@@ -2346,7 +2409,7 @@
 - **Color / surface:**
   - `opacity-80` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1516`
+#### `src/pages/CallInterface.jsx:1777`
 
 ```jsx
                       className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-white/10"
@@ -2384,7 +2447,7 @@
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1518`
+#### `src/pages/CallInterface.jsx:1779`
 
 ```jsx
                       <ShieldAlert size={16} className="opacity-80" />
@@ -2401,7 +2464,7 @@
 - **Color / surface:**
   - `opacity-80` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1528`
+#### `src/pages/CallInterface.jsx:1789`
 
 ```jsx
                       className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-white/10"
@@ -2439,7 +2502,7 @@
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1530`
+#### `src/pages/CallInterface.jsx:1791`
 
 ```jsx
                       <RefreshCw size={16} className="opacity-80" />
@@ -2456,7 +2519,7 @@
 - **Color / surface:**
   - `opacity-80` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1539`
+#### `src/pages/CallInterface.jsx:1800`
 
 ```jsx
                       className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-white/10"
@@ -2494,7 +2557,7 @@
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1541`
+#### `src/pages/CallInterface.jsx:1802`
 
 ```jsx
                       <MessageSquare size={16} className="opacity-80" />
@@ -2511,7 +2574,34 @@
 - **Color / surface:**
   - `opacity-80` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1549`
+#### `src/pages/CallInterface.jsx:1809`
+
+```jsx
+            <div className="borderless-divider-b bg-white/30 p-3 dark:bg-white/5">
+              <JourneyTimeline title="Journey Timeline" matchId={effectiveMatchId || ''} />
+            </div>
+
+```
+**Raw class strings detected (best effort):**
+
+- `borderless-divider-b bg-white/30 p-3 dark:bg-white/5`
+- `Journey Timeline`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-3` — Padding (all sides).
+- **Color / surface:**
+  - `bg-white/30` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `borderless-divider-b` — Border style/width/color.
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `Journey` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Timeline` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/CallInterface.jsx:1813`
 
 ```jsx
           <div ref={chatScrollRef} className="flex-1 overflow-y-auto bg-slate-50/60 p-5 space-y-6 dark:bg-black/20 scrollbar-hide">
@@ -2538,10 +2628,10 @@
 - **Other:**
   - `scrollbar-hide` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1555`
+#### `src/pages/CallInterface.jsx:1819`
 
 ```jsx
-                <div key={msg.id} className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
+                <div key={msg.id} className={`flex flex-col${isOwn ? 'items-end' : 'items-start'}`}>
                   <div className="flex items-center gap-2 mb-1">
                     {!isOwn && (
                       <div className="h-6 w-6 rounded-full bg-green-500 flex items-center justify-center text-[10px] text-white font-bold">
@@ -2575,7 +2665,7 @@
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
 
-#### `src/pages/CallInterface.jsx:1556`
+#### `src/pages/CallInterface.jsx:1820`
 
 ```jsx
                   <div className="flex items-center gap-2 mb-1">
@@ -2611,7 +2701,7 @@
 - **Other:**
   - `U` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1558`
+#### `src/pages/CallInterface.jsx:1822`
 
 ```jsx
                       <div className="h-6 w-6 rounded-full bg-green-500 flex items-center justify-center text-[10px] text-white font-bold">
@@ -2643,13 +2733,13 @@
 - **Other:**
   - `U` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1562`
+#### `src/pages/CallInterface.jsx:1826`
 
 ```jsx
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{senderName}</span>
                     <span className="text-[10px] text-slate-400 dark:text-slate-400/80">{formatMessageTime(msg.timestamp)}</span>
                   </div>
-                  <div className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm leading-relaxed shadow-sm ${
+                  <div className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm leading-relaxed shadow-sm${
 ```
 **Raw class strings detected (best effort):**
 
@@ -2669,12 +2759,12 @@
   - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400/80` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1563`
+#### `src/pages/CallInterface.jsx:1827`
 
 ```jsx
                     <span className="text-[10px] text-slate-400 dark:text-slate-400/80">{formatMessageTime(msg.timestamp)}</span>
                   </div>
-                  <div className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm leading-relaxed shadow-sm ${
+                  <div className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm leading-relaxed shadow-sm${
                     isOwn
 ```
 **Raw class strings detected (best effort):**
@@ -2690,10 +2780,10 @@
 - **Dark mode variants:**
   - `dark:text-slate-400/80` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1565`
+#### `src/pages/CallInterface.jsx:1829`
 
 ```jsx
-                  <div className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm leading-relaxed shadow-sm ${
+                  <div className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm leading-relaxed shadow-sm${
                     isOwn
                       ? 'bg-blue-600 text-white rounded-tr-none'
                       : 'bg-white/80 text-slate-800 ring-1 ring-slate-200/60 rounded-tl-none dark:bg-white/5 dark:text-slate-100 dark:ring-white/10'
@@ -2721,7 +2811,7 @@
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1575`
+#### `src/pages/CallInterface.jsx:1839`
 
 ```jsx
               <div className="text-sm text-slate-400">No messages yet.</div>
@@ -2739,17 +2829,17 @@
   - `text-sm` — Text color or text sizing.
   - `text-slate-400` — Text color or text sizing.
 
-#### `src/pages/CallInterface.jsx:1580`
+#### `src/pages/CallInterface.jsx:1844`
 
 ```jsx
-            <div className="border-t border-slate-200/60 p-4 dark:border-white/10">
+            <div className="borderless-divider-t p-4">
               <div className="relative flex items-center gap-2 rounded-2xl bg-white/70 p-2 shadow-sm ring-1 ring-slate-200/60 focus-within:ring-sky-500/30 dark:bg-white/5 dark:ring-white/10">
                 <div ref={emojiPopoverRef} className="relative ml-1">
                   <button
 ```
 **Raw class strings detected (best effort):**
 
-- `border-t border-slate-200/60 p-4 dark:border-white/10`
+- `borderless-divider-t p-4`
 - `relative flex items-center gap-2 rounded-2xl bg-white/70 p-2 shadow-sm ring-1 ring-slate-200/60 focus-within:ring-sky-500/30 dark:bg-white/5 dark:ring-white/10`
 - `relative ml-1`
 
@@ -2767,8 +2857,7 @@
 - **Color / surface:**
   - `bg-white/70` — Background color/surface.
 - **Borders / rings / shadows:**
-  - `border-t` — Border style/width/color.
-  - `border-slate-200/60` — Border style/width/color.
+  - `borderless-divider-t` — Border style/width/color.
   - `rounded-2xl` — Corner radius.
   - `shadow-sm` — Drop shadow depth (elevation).
   - `ring-1` — Outline ring (often used instead of borders in dark mode).
@@ -2776,11 +2865,10 @@
 - **Interaction / motion:**
   - `focus-within:ring-sky-500/30` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
-  - `dark:border-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1581`
+#### `src/pages/CallInterface.jsx:1845`
 
 ```jsx
               <div className="relative flex items-center gap-2 rounded-2xl bg-white/70 p-2 shadow-sm ring-1 ring-slate-200/60 focus-within:ring-sky-500/30 dark:bg-white/5 dark:ring-white/10">
@@ -2819,7 +2907,7 @@
 - **Other:**
   - `button` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1582`
+#### `src/pages/CallInterface.jsx:1846`
 
 ```jsx
                 <div ref={emojiPopoverRef} className="relative ml-1">
@@ -2841,10 +2929,10 @@
 - **Other:**
   - `button` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1589`
+#### `src/pages/CallInterface.jsx:1853`
 
 ```jsx
-                    className={`flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-slate-200 ${isEmojiOpen ? 'bg-slate-100 dark:bg-white/10' : ''}`}
+                    className={`flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-slate-200${isEmojiOpen ? 'bg-slate-100 dark:bg-white/10' : ''}`}
                     title="Emoji"
                   >
                     <Smile size={20} />
@@ -2863,7 +2951,7 @@
 - **Other:**
   - `Emoji` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1596`
+#### `src/pages/CallInterface.jsx:1860`
 
 ```jsx
                     <div className="absolute bottom-full left-0 z-50 mb-2 w-72 rounded-2xl bg-white/90 p-3 shadow-xl ring-1 ring-slate-200/60 backdrop-blur-xl dark:bg-slate-950/60 dark:ring-white/10">
@@ -2902,7 +2990,7 @@
   - `dark:bg-slate-950/60` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1597`
+#### `src/pages/CallInterface.jsx:1861`
 
 ```jsx
                       <div className="grid grid-cols-8 gap-1">
@@ -2922,7 +3010,7 @@
 - **Spacing:**
   - `gap-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1607`
+#### `src/pages/CallInterface.jsx:1871`
 
 ```jsx
                             className="flex h-8 w-8 items-center justify-center rounded-xl text-lg transition hover:bg-slate-100 dark:hover:bg-white/10"
@@ -2952,7 +3040,7 @@
 - **Dark mode variants:**
   - `dark:hover:bg-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1614`
+#### `src/pages/CallInterface.jsx:1878`
 
 ```jsx
                       <div className="mt-2 text-[11px] font-medium text-slate-500 dark:text-slate-300/70">Press Esc to close.</div>
@@ -2976,7 +3064,7 @@
 - **Dark mode variants:**
   - `dark:text-slate-300/70` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/CallInterface.jsx:1622`
+#### `src/pages/CallInterface.jsx:1886`
 
 ```jsx
                   className="flex-1 bg-transparent px-1 text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400/70"
@@ -3009,7 +3097,7 @@
 - **Other:**
   - `Enter` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/CallInterface.jsx:1631`
+#### `src/pages/CallInterface.jsx:1895`
 
 ```jsx
                   className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-white shadow-md transition hover:bg-blue-700 active:scale-95"
@@ -3048,15 +3136,15 @@
 
 > This list is generated by heuristics. It includes hard-coded UI strings and key element anchors. For absolute truth, use the source snapshot.
 
-- `src/pages/CallInterface.jsx:1295` — “{remoteName}”
+- `src/pages/CallInterface.jsx:1544` — “{remoteName}”
 
 ```jsx
               Call with <span className="text-slate-600 dark:text-slate-300">“{remoteName}”</span>
             </div>
             <div className="hidden truncate text-xs text-slate-500 dark:text-slate-300/80 sm:block">
-              {statusMessage || 'Preparing call…'}
+              {statusMessage || 'Preparing call...'}
 ```
-- `src/pages/CallInterface.jsx:1477` — Chat
+- `src/pages/CallInterface.jsx:1738` — Chat
 
 ```jsx
                 <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300/80">Chat</h2>
@@ -3064,7 +3152,7 @@
               </div>
               <div ref={morePopoverRef} className="relative flex items-center gap-2">
 ```
-- `src/pages/CallInterface.jsx:1289` — Back
+- `src/pages/CallInterface.jsx:1538` — Back
 
 ```jsx
             title="Back"
@@ -3072,7 +3160,7 @@
             <ChevronLeft size={18} className="transition-transform group-hover:-translate-x-0.5" />
           </button>
 ```
-- `src/pages/CallInterface.jsx:1432` — End call
+- `src/pages/CallInterface.jsx:1693` — End call
 
 ```jsx
                 title="End call"
@@ -3080,7 +3168,7 @@
                 <PhoneOff size={20} />
               </button>
 ```
-- `src/pages/CallInterface.jsx:1492` — More
+- `src/pages/CallInterface.jsx:1753` — More
 
 ```jsx
                   title="More"
@@ -3088,7 +3176,15 @@
                   <MoreHorizontal size={20} />
                 </button>
 ```
-- `src/pages/CallInterface.jsx:1590` — Emoji
+- `src/pages/CallInterface.jsx:1810` — Journey Timeline
+
+```jsx
+              <JourneyTimeline title="Journey Timeline" matchId={effectiveMatchId || ''} />
+            </div>
+
+          <div ref={chatScrollRef} className="flex-1 overflow-y-auto bg-slate-50/60 p-5 space-y-6 dark:bg-black/20 scrollbar-hide">
+```
+- `src/pages/CallInterface.jsx:1854` — Emoji
 
 ```jsx
                     title="Emoji"
@@ -3096,7 +3192,7 @@
                     <Smile size={20} />
                   </button>
 ```
-- `src/pages/CallInterface.jsx:1621` — Type here...
+- `src/pages/CallInterface.jsx:1885` — Type here...
 
 ```jsx
                   placeholder="Type here..."
@@ -3104,7 +3200,7 @@
                   value={chatDraft}
                   onChange={(e) => setChatDraft(e.target.value)}
 ```
-- `src/pages/CallInterface.jsx:1632` — Send
+- `src/pages/CallInterface.jsx:1896` — Send
 
 ```jsx
                   title="Send"
@@ -3112,7 +3208,7 @@
                   <Send size={16} />
                 </button>
 ```
-- `src/pages/CallInterface.jsx:1285` — (element) <button>
+- `src/pages/CallInterface.jsx:1534` — (element) <button>
 
 ```jsx
           <button
@@ -3120,7 +3216,7 @@
             onClick={() => navigate(-1)}
             className="group flex h-9 w-9 items-center justify-center rounded-xl bg-white/80 text-slate-600 shadow-sm ring-1 ring-slate-200/60 transition hover:bg-white hover:text-slate-900 active:scale-95 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10"
 ```
-- `src/pages/CallInterface.jsx:1357` — (element) <button>
+- `src/pages/CallInterface.jsx:1618` — (element) <button>
 
 ```jsx
                       <button
@@ -3128,7 +3224,7 @@
                         onClick={() => ensureLocalStream().catch(() => {})}
                         disabled={isRequestingMedia}
 ```
-- `src/pages/CallInterface.jsx:1366` — (element) <button>
+- `src/pages/CallInterface.jsx:1627` — (element) <button>
 
 ```jsx
                     <button
@@ -3136,31 +3232,31 @@
                       onClick={() => setMediaGate(null)}
                       className="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20"
 ```
-- `src/pages/CallInterface.jsx:1397` — (element) <button>
+- `src/pages/CallInterface.jsx:1658` — (element) <button>
 
 ```jsx
               <button
                 type="button"
                 onClick={() => setIsChatOpen((prev) => !prev)}
-                className={`relative flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95 ${isChatOpen ? 'bg-sky-500/90 hover:bg-sky-500' : 'bg-white/10 hover:bg-white/15'}`}
+                className={`relative flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95${isChatOpen ? 'bg-sky-500/90 hover:bg-sky-500' : 'bg-white/10 hover:bg-white/15'}`}
 ```
-- `src/pages/CallInterface.jsx:1410` — (element) <button>
+- `src/pages/CallInterface.jsx:1671` — (element) <button>
 
 ```jsx
               <button
                 type="button"
                 onClick={toggleSpeaker}
-                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95 ${isSpeakerMuted ? 'bg-amber-500/90 hover:bg-amber-500' : 'bg-white/10 hover:bg-white/15'}`}
+                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95${isSpeakerMuted ? 'bg-amber-500/90 hover:bg-amber-500' : 'bg-white/10 hover:bg-white/15'}`}
 ```
-- `src/pages/CallInterface.jsx:1418` — (element) <button>
+- `src/pages/CallInterface.jsx:1679` — (element) <button>
 
 ```jsx
               <button 
                 type="button"
                 onClick={toggleMute}
-                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95 ${isMuted ? 'bg-rose-500 hover:bg-rose-600' : 'bg-white/10 hover:bg-white/15'}`}
+                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95${isMuted ? 'bg-rose-500 hover:bg-rose-600' : 'bg-white/10 hover:bg-white/15'}`}
 ```
-- `src/pages/CallInterface.jsx:1428` — (element) <button>
+- `src/pages/CallInterface.jsx:1689` — (element) <button>
 
 ```jsx
               <button 
@@ -3168,23 +3264,23 @@
                 onClick={endCall}
                 className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-500 text-white transition-all hover:bg-rose-600 active:scale-95"
 ```
-- `src/pages/CallInterface.jsx:1436` — (element) <button>
+- `src/pages/CallInterface.jsx:1697` — (element) <button>
 
 ```jsx
               <button 
                 type="button"
                 onClick={toggleCamera}
-                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95 ${!isCameraOn ? 'bg-rose-500 hover:bg-rose-600' : 'bg-white/10 hover:bg-white/15'}`}
+                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95${!isCameraOn ? 'bg-rose-500 hover:bg-rose-600' : 'bg-white/10 hover:bg-white/15'}`}
 ```
-- `src/pages/CallInterface.jsx:1444` — (element) <button>
+- `src/pages/CallInterface.jsx:1705` — (element) <button>
 
 ```jsx
               <button
                 type="button"
                 onClick={toggleFullscreen}
-                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95 ${isFullscreen ? 'bg-white/20' : 'bg-white/10 hover:bg-white/15'}`}
+                className={`flex h-11 w-11 items-center justify-center rounded-xl text-white transition-all active:scale-95${isFullscreen ? 'bg-white/20' : 'bg-white/10 hover:bg-white/15'}`}
 ```
-- `src/pages/CallInterface.jsx:1485` — (element) <button>
+- `src/pages/CallInterface.jsx:1746` — (element) <button>
 
 ```jsx
                 <button
@@ -3192,7 +3288,7 @@
                   onClick={() => {
                     setIsMoreOpen((prev) => !prev)
 ```
-- `src/pages/CallInterface.jsx:1499` — (element) <button>
+- `src/pages/CallInterface.jsx:1760` — (element) <button>
 
 ```jsx
                     <button
@@ -3200,7 +3296,7 @@
                       onClick={() => {
                         copyCallLink()
 ```
-- `src/pages/CallInterface.jsx:1510` — (element) <button>
+- `src/pages/CallInterface.jsx:1771` — (element) <button>
 
 ```jsx
                     <button
@@ -3208,7 +3304,7 @@
                       onClick={() => {
                         requestMediaPermissions()
 ```
-- `src/pages/CallInterface.jsx:1521` — (element) <button>
+- `src/pages/CallInterface.jsx:1782` — (element) <button>
 
 ```jsx
                     <button
@@ -3216,7 +3312,7 @@
                       onClick={() => {
                         reconnectCall()
 ```
-- `src/pages/CallInterface.jsx:1533` — (element) <button>
+- `src/pages/CallInterface.jsx:1794` — (element) <button>
 
 ```jsx
                     <button
@@ -3224,7 +3320,7 @@
                       onClick={() => {
                         setIsChatOpen(false)
 ```
-- `src/pages/CallInterface.jsx:1583` — (element) <button>
+- `src/pages/CallInterface.jsx:1847` — (element) <button>
 
 ```jsx
                   <button
@@ -3232,7 +3328,7 @@
                     onClick={() => {
                       setIsEmojiOpen((prev) => !prev)
 ```
-- `src/pages/CallInterface.jsx:1599` — (element) <button>
+- `src/pages/CallInterface.jsx:1863` — (element) <button>
 
 ```jsx
                           <button
@@ -3240,7 +3336,7 @@
                             type="button"
                             onClick={() => {
 ```
-- `src/pages/CallInterface.jsx:1628` — (element) <button>
+- `src/pages/CallInterface.jsx:1892` — (element) <button>
 
 ```jsx
                 <button
@@ -3252,13 +3348,17 @@
 
 | Frontend call (path:line) | Express mount | Route definition | Controller file | Handler |
 |---|---|---|---|---|
-| GET /calls/${callId} (src/pages/CallInterface.jsx:508) | /api/calls -> server/routes/callSessionRoutes.js:78 | - | - | - |
-| POST /calls/${callId}/start (src/pages/CallInterface.jsx:530) | /api/calls -> server/routes/callSessionRoutes.js:78 | - | - | - |
-| POST /users/lookup (src/pages/CallInterface.jsx:539) | /api/users -> server/routes/userRoutes.js:60 | POST /lookup (server/routes/userRoutes.js:20) | - | lookupUsers |
-| GET /messages/${effectiveMatchId} (src/pages/CallInterface.jsx:550) | /api/messages -> server/routes/messageRoutes.js:71 | - | - | - |
-| GET /calls/${callId}/ice (src/pages/CallInterface.jsx:557) | /api/calls -> server/routes/callSessionRoutes.js:78 | - | - | - |
-| POST /calls/${callId}/end (src/pages/CallInterface.jsx:1231) | /api/calls -> server/routes/callSessionRoutes.js:78 | - | - | - |
-| POST /messages/${threadId} (src/pages/CallInterface.jsx:1255) | /api/messages -> server/routes/messageRoutes.js:71 | - | - | - |
+| GET /calls/${callId} (src/pages/CallInterface.jsx:517) | /api/calls -> server/routes/callSessionRoutes.js:134 | - | - | - |
+| POST /calls/${callId}/start (src/pages/CallInterface.jsx:539) | /api/calls -> server/routes/callSessionRoutes.js:134 | - | - | - |
+| POST /workflow/journeys (src/pages/CallInterface.jsx:541) | /api/workflow -> server/routes/workflowLifecycleRoutes.js:153 | POST /journeys (server/routes/workflowLifecycleRoutes.js:12) | - | createJourney |
+| GET /workflow/journeys/${encodeURIComponent(journey.id)}/transition (src/pages/CallInterface.jsx:547) | /api/workflow -> server/routes/workflowLifecycleRoutes.js:153 | - | - | - |
+| POST /users/lookup (src/pages/CallInterface.jsx:562) | /api/users -> server/routes/userRoutes.js:112 | POST /lookup (server/routes/userRoutes.js:29) | - | lookupUsers |
+| GET /messages/${effectiveMatchId} (src/pages/CallInterface.jsx:573) | /api/messages -> server/routes/messageRoutes.js:123 | - | - | - |
+| GET /calls/${callId}/ice (src/pages/CallInterface.jsx:580) | /api/calls -> server/routes/callSessionRoutes.js:134 | - | - | - |
+| POST /calls/${callId}/end (src/pages/CallInterface.jsx:1455) | /api/calls -> server/routes/callSessionRoutes.js:134 | - | - | - |
+| GET /workflow/journeys/by-match/${encodeURIComponent(effectiveMatchId)} (src/pages/CallInterface.jsx:1457) | /api/workflow -> server/routes/workflowLifecycleRoutes.js:153 | - | - | - |
+| GET /workflow/journeys/${encodeURIComponent(journey.id)}/transition (src/pages/CallInterface.jsx:1459) | /api/workflow -> server/routes/workflowLifecycleRoutes.js:153 | - | - | - |
+| POST /messages/${threadId} (src/pages/CallInterface.jsx:1504) | /api/messages -> server/routes/messageRoutes.js:123 | - | - | - |
 
 ## 6) How to Edit Safely
 
@@ -3268,5 +3368,4 @@
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
-{% endraw %}
 

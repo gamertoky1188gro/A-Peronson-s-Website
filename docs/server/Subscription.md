@@ -4,13 +4,13 @@ This doc is generated from source snapshots with `path:line` references.
 
 ## Mounted prefixes
 
-- `/api/subscriptions` -> `server/routes/subscriptionRoutes.js:64` (router var: `subscriptionRoutes`)
+- `/api/subscriptions` -> `server/routes/subscriptionRoutes.js:116` (router var: `subscriptionRoutes`)
 
 ## Routes (ultra-detailed)
 
 ### GET `/api/subscriptions/me`
 
-- **Route definition:** `server/routes/subscriptionRoutes.js:7`
+- **Route definition:** `server/routes/subscriptionRoutes.js:8`
 
 ```js
 router.get('/me', requireAuth, getMySubscription)
@@ -20,7 +20,7 @@ router.get('/me', requireAuth, getMySubscription)
 - **Handler:** `getMySubscription`
 - **Controller file:** `server/controllers/subscriptionController.js`
 
-#### Controller implementation: `server/controllers/subscriptionController.js:5`
+#### Controller implementation: `server/controllers/subscriptionController.js:6`
 
 ```js
 export async function getMySubscription(req, res) {
@@ -31,7 +31,7 @@ export async function getMySubscription(req, res) {
 ```
 ### POST `/api/subscriptions/me`
 
-- **Route definition:** `server/routes/subscriptionRoutes.js:8`
+- **Route definition:** `server/routes/subscriptionRoutes.js:9`
 
 ```js
 router.post('/me', requireAuth, updateMySubscription)
@@ -41,19 +41,23 @@ router.post('/me', requireAuth, updateMySubscription)
 - **Handler:** `updateMySubscription`
 - **Controller file:** `server/controllers/subscriptionController.js`
 
-#### Controller implementation: `server/controllers/subscriptionController.js:10`
+#### Controller implementation: `server/controllers/subscriptionController.js:11`
 
 ```js
 export async function updateMySubscription(req, res) {
   const plan = req.body?.plan === 'premium' ? 'premium' : 'free'
-  const sub = await upsertSubscription(req.user.id, plan, req.body?.auto_renew)
+  const sub = await upsertSubscription(req.user.id, plan, req.body?.auto_renew, {
+    actor_id: req.user.id,
+    source: 'user_request',
+    note: 'self_service',
+  })
   return res.json(sub)
 }
 
 ```
 ### POST `/api/subscriptions/me/renew-monthly`
 
-- **Route definition:** `server/routes/subscriptionRoutes.js:9`
+- **Route definition:** `server/routes/subscriptionRoutes.js:10`
 
 ```js
 router.post('/me/renew-monthly', requireAuth, renewMyPremiumMonthly)
@@ -63,18 +67,36 @@ router.post('/me/renew-monthly', requireAuth, renewMyPremiumMonthly)
 - **Handler:** `renewMyPremiumMonthly`
 - **Controller file:** `server/controllers/subscriptionController.js`
 
-#### Controller implementation: `server/controllers/subscriptionController.js:25`
+#### Controller implementation: `server/controllers/subscriptionController.js:34`
 
 ```js
 export async function renewMyPremiumMonthly(req, res) {
-  const sub = await renewPremiumMonthly(req.user.id, req.body?.auto_renew)
-  return res.json(sub)
+  const FIRST_MONTH_PRICE_USD = 1.99
+  const RENEWAL_PRICE_USD = 6.99
+
+  const existing = await getSubscription(req.user.id)
+  const isFirstTime = !existing || String(existing.plan || '').toLowerCase() !== 'premium'
+  const priceUsd = isFirstTime ? FIRST_MONTH_PRICE_USD : RENEWAL_PRICE_USD
+
+  try {
+    const charge = await debitWallet({
+      userId: req.user.id,
+      amountUsd: priceUsd,
+      reason: 'subscription_renewal',
+      ref: `subscription:${req.user.id}`,
+      allowRestricted: true,
+    })
+    const sub = await renewPremiumMonthly(req.user.id, req.body?.auto_renew)
+    return res.json({ ...sub, price_usd: priceUsd, wallet: charge.wallet, wallet_entry: charge.entry })
+  } catch (error) {
+    return res.status(error.status || 400).json({ error: error.message || 'Unable to renew subscription' })
+  }
 }
 
 ```
 ### GET `/api/subscriptions/me/remaining-days`
 
-- **Route definition:** `server/routes/subscriptionRoutes.js:10`
+- **Route definition:** `server/routes/subscriptionRoutes.js:11`
 
 ```js
 router.get('/me/remaining-days', requireAuth, getMyRemainingDays)
@@ -84,7 +106,7 @@ router.get('/me/remaining-days', requireAuth, getMyRemainingDays)
 - **Handler:** `getMyRemainingDays`
 - **Controller file:** `server/controllers/subscriptionController.js`
 
-#### Controller implementation: `server/controllers/subscriptionController.js:30`
+#### Controller implementation: `server/controllers/subscriptionController.js:57`
 
 ```js
 export async function getMyRemainingDays(req, res) {
@@ -95,7 +117,7 @@ export async function getMyRemainingDays(req, res) {
 ```
 ### POST `/api/subscriptions/me/verification/mark-expiring-soon`
 
-- **Route definition:** `server/routes/subscriptionRoutes.js:11`
+- **Route definition:** `server/routes/subscriptionRoutes.js:12`
 
 ```js
 router.post('/me/verification/mark-expiring-soon', requireAuth, markMyVerificationExpiringSoon)
@@ -105,7 +127,7 @@ router.post('/me/verification/mark-expiring-soon', requireAuth, markMyVerificati
 - **Handler:** `markMyVerificationExpiringSoon`
 - **Controller file:** `server/controllers/subscriptionController.js`
 
-#### Controller implementation: `server/controllers/subscriptionController.js:35`
+#### Controller implementation: `server/controllers/subscriptionController.js:62`
 
 ```js
 export async function markMyVerificationExpiringSoon(req, res) {
@@ -118,25 +140,29 @@ export async function markMyVerificationExpiringSoon(req, res) {
 ```
 ### POST `/api/subscriptions/admin/:userId`
 
-- **Route definition:** `server/routes/subscriptionRoutes.js:12`
+- **Route definition:** `server/routes/subscriptionRoutes.js:13`
 
 ```js
-router.post('/admin/:userId', requireAuth, allowRoles('admin'), adminSetUserSubscription)
+router.post('/admin/:userId', requireAuth, requireAdminSecurity, adminSetUserSubscription)
 ```
 - **Middleware stack (in order):**
   - `requireAuth`
-  - `allowRoles('admin')`
+  - `requireAdminSecurity`
 - **Handler:** `adminSetUserSubscription`
 - **Controller file:** `server/controllers/subscriptionController.js`
 
-#### Controller implementation: `server/controllers/subscriptionController.js:16`
+#### Controller implementation: `server/controllers/subscriptionController.js:21`
 
 ```js
 export async function adminSetUserSubscription(req, res) {
   const user = await findUserById(req.params.userId)
   if (!user) return res.status(404).json({ error: 'User not found' })
   const plan = req.body?.plan === 'premium' ? 'premium' : 'free'
-  const sub = await upsertSubscription(user.id, plan, req.body?.auto_renew)
+  const sub = await upsertSubscription(user.id, plan, req.body?.auto_renew, {
+    actor_id: req.user.id,
+    source: 'admin_request',
+    note: 'subscription_override',
+  })
   return res.json(sub)
 }
 

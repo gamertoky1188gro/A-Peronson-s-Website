@@ -15,6 +15,7 @@
       re-prompt until onboarding_completed is true.
 */
 import React, { useMemo, useState } from 'react'
+import BackButton from '../../components/ui/BackButton'
 import { useNavigate } from 'react-router-dom'
 import { apiRequest, getCurrentUser, getRoleHome, getToken, saveSession } from '../../lib/auth'
 
@@ -71,6 +72,21 @@ export default function OnboardingWizard() {
     setSaving(true)
     setError('')
     try {
+      // Basic validation before submitting (unless skipping)
+      if (!skipped) {
+        const name = String(organizationName || '').trim()
+        if (!name || name.length < 3) {
+          setError('Organization name must be at least 3 characters.')
+          setSaving(false)
+          return
+        }
+        // Require at least one category to be selected (unless user explicitly skips)
+        if (!Array.isArray(categories) || categories.length === 0) {
+          setError('Please select at least one category or click "Skip for now".')
+          setSaving(false)
+          return
+        }
+      }
       const payload = {
         profile_image: skipped ? (profileImage || '') : (profileImage || ''),
         organization_name: skipped ? (organizationName || '') : (organizationName || ''),
@@ -89,6 +105,32 @@ export default function OnboardingWizard() {
   }
 
   function next() {
+    setError('')
+    // Validate current step before advancing
+    const validate = (s) => {
+      if (s === 1) {
+        if (profileImage) {
+          try {
+            // simple URL validation
+            // eslint-disable-next-line no-new
+            new URL(profileImage)
+          } catch (e) {
+            setError('Please enter a valid image URL or leave it blank.')
+            return false
+          }
+        }
+      }
+      if (s === 2) {
+        const name = String(organizationName || '').trim()
+        if (!name || name.length < 3) {
+          setError('Organization name must be at least 3 characters.')
+          return false
+        }
+      }
+      return true
+    }
+
+    if (!validate(step)) return
     setStep((s) => Math.min(3, s + 1))
   }
 
@@ -178,14 +220,13 @@ export default function OnboardingWizard() {
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
-              <button
-                type="button"
+              <BackButton
                 onClick={back}
                 disabled={step === 1 || saving}
                 className="rounded-xl borderless-shadow bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60 dark:bg-[#0b1224] dark:text-slate-200"
               >
                 Back
-              </button>
+              </BackButton>
               {step < 3 ? (
                 <button
                   type="button"

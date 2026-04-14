@@ -19,10 +19,12 @@
 - ../components/feed/ReportModal (src/pages/MainFeed.jsx:33)
 - ../hooks/useLocalStorageState (src/pages/MainFeed.jsx:34)
 - ../lib/auth (src/pages/MainFeed.jsx:35)
+- ../lib/events (src/pages/MainFeed.jsx:36)
+- ../lib/leadSource (src/pages/MainFeed.jsx:37)
 
 ### 2.2 Structural section tags in JSX
 
-- `aside` at `src/pages/MainFeed.jsx:372`
+- `aside` at `src/pages/MainFeed.jsx:471`
 
 ```jsx
         <aside className="col-span-12 lg:col-span-3 space-y-4">
@@ -30,7 +32,7 @@
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
 ```
-- `main` at `src/pages/MainFeed.jsx:407`
+- `main` at `src/pages/MainFeed.jsx:506`
 
 ```jsx
         <main className="col-span-12 lg:col-span-6 space-y-4">
@@ -38,7 +40,7 @@
             <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
               <p className="text-xs font-semibold text-slate-500">Feed</p>
 ```
-- `aside` at `src/pages/MainFeed.jsx:513`
+- `aside` at `src/pages/MainFeed.jsx:657`
 
 ```jsx
         <aside className="col-span-3 hidden xl:block space-y-4">
@@ -51,35 +53,35 @@
 ### 3.1 Custom CSS utilities referenced by this page (App.css / index.css)
 
 - `.nav-glass` definitions:
-  - `src/App.css:615`
+  - `src/App.css:897`
 - `.spotlight-card` definitions:
-  - `src/App.css:267`
+  - `src/App.css:550`
 - `.skeleton` definitions:
-  - `src/App.css:583`
+  - `src/App.css:865`
 - `.neo-page` definitions:
-  - `src/App.css:108`
+  - `src/App.css:115`
 - `.neo-panel` definitions:
-  - `src/App.css:116`
+  - `src/App.css:123`
 - `.cyberpunk-page` definitions:
-  - `src/App.css:109`
+  - `src/App.css:116`
 - `.cyberpunk-card` definitions:
-  - `src/App.css:110`
+  - `src/App.css:117`
 - `.assistant-orb-btn` definitions:
-  - `src/App.css:518`
+  - `src/App.css:801`
 - `.legal-weave` definitions:
-  - `src/App.css:366`
+  - `src/App.css:649`
 - `.signature-draw` definitions:
-  - `src/App.css:401`
+  - `src/App.css:684`
 - `.verified-shimmer` definitions:
-  - `src/App.css:434`
+  - `src/App.css:717`
 - `.verified-pulse` definitions:
-  - `src/App.css:293`
+  - `src/App.css:576`
 - `.conic-beam` definitions:
-  - `src/App.css:302`
+  - `src/App.css:585`
 
 ### 3.2 Every className block (with grouped explanations)
 
-#### `src/pages/MainFeed.jsx:111`
+#### `src/pages/MainFeed.jsx:134`
 
 ```jsx
       className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800"
@@ -114,7 +116,7 @@
 - **Other:**
   - `true` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:114`
+#### `src/pages/MainFeed.jsx:137`
 
 ```jsx
       <div className="flex items-center gap-3">
@@ -147,7 +149,7 @@
 - **Other:**
   - `skeleton` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:115`
+#### `src/pages/MainFeed.jsx:138`
 
 ```jsx
         <div className="h-10 w-10 rounded-full skeleton" />
@@ -179,7 +181,7 @@
 - **Other:**
   - `skeleton` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:116`
+#### `src/pages/MainFeed.jsx:139`
 
 ```jsx
         <div className="flex-1 space-y-2">
@@ -208,7 +210,7 @@
 - **Other:**
   - `skeleton` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:117`
+#### `src/pages/MainFeed.jsx:140`
 
 ```jsx
           <div className="h-3 w-1/3 rounded-full skeleton" />
@@ -236,7 +238,7 @@
 - **Other:**
   - `skeleton` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:118`
+#### `src/pages/MainFeed.jsx:141`
 
 ```jsx
           <div className="h-2 w-1/4 rounded-full skeleton" />
@@ -261,7 +263,7 @@
 - **Other:**
   - `skeleton` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:120`
+#### `src/pages/MainFeed.jsx:143`
 
 ```jsx
         <div className="h-6 w-16 rounded-full skeleton" />
@@ -290,7 +292,7 @@
 - **Other:**
   - `skeleton` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:122`
+#### `src/pages/MainFeed.jsx:145`
 
 ```jsx
       <div className="mt-4 space-y-2">
@@ -322,7 +324,7 @@
 - **Other:**
   - `skeleton` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:123`
+#### `src/pages/MainFeed.jsx:146`
 
 ```jsx
         <div className="h-3 w-2/3 rounded-full skeleton" />
@@ -350,7 +352,7 @@
 - **Other:**
   - `skeleton` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:124`
+#### `src/pages/MainFeed.jsx:147`
 
 ```jsx
         <div className="h-3 w-1/2 rounded-full skeleton" />
@@ -382,7 +384,7 @@
 - **Other:**
   - `skeleton` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:125`
+#### `src/pages/MainFeed.jsx:148`
 
 ```jsx
         <div className="h-24 w-full rounded-xl skeleton" />
@@ -414,7 +416,7 @@
 - **Other:**
   - `skeleton` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:127`
+#### `src/pages/MainFeed.jsx:150`
 
 ```jsx
       <div className="mt-4 flex items-center justify-between">
@@ -444,7 +446,7 @@
 - **Other:**
   - `skeleton` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:128`
+#### `src/pages/MainFeed.jsx:151`
 
 ```jsx
         <div className="h-3 w-32 rounded-full skeleton" />
@@ -470,7 +472,7 @@
   - `skeleton` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `sr-only` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:129`
+#### `src/pages/MainFeed.jsx:152`
 
 ```jsx
         <div className="h-9 w-32 rounded-full skeleton" />
@@ -494,7 +496,7 @@
   - `skeleton` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `sr-only` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:131`
+#### `src/pages/MainFeed.jsx:154`
 
 ```jsx
       <span className="sr-only">Loading feed item {index + 1}</span>
@@ -511,7 +513,7 @@
 - **Other:**
   - `sr-only` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:348`
+#### `src/pages/MainFeed.jsx:447`
 
 ```jsx
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
@@ -539,7 +541,7 @@
   - `dark:bg-[#020617]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:371`
+#### `src/pages/MainFeed.jsx:470`
 
 ```jsx
       <div className="max-w-7xl mx-auto grid grid-cols-12 gap-4 px-4 py-4">
@@ -584,7 +586,7 @@
   - `dark:bg-slate-900/50` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-slate-800` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:372`
+#### `src/pages/MainFeed.jsx:471`
 
 ```jsx
         <aside className="col-span-12 lg:col-span-3 space-y-4">
@@ -628,7 +630,7 @@
   - `dark:bg-slate-900/50` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-slate-800` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:373`
+#### `src/pages/MainFeed.jsx:472`
 
 ```jsx
           <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
@@ -669,7 +671,7 @@
   - `dark:bg-slate-900/50` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-slate-800` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:374`
+#### `src/pages/MainFeed.jsx:473`
 
 ```jsx
             <div className="flex items-center gap-3">
@@ -707,7 +709,7 @@
 - **Dark mode variants:**
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:375`
+#### `src/pages/MainFeed.jsx:474`
 
 ```jsx
               <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
@@ -743,7 +745,7 @@
 - **Dark mode variants:**
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:376`
+#### `src/pages/MainFeed.jsx:475`
 
 ```jsx
               <div className="min-w-0">
@@ -770,7 +772,7 @@
 - **Dark mode variants:**
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:377`
+#### `src/pages/MainFeed.jsx:476`
 
 ```jsx
                 <p className="font-semibold text-slate-900 dark:text-slate-100 truncate">{user?.name || 'Member'}</p>
@@ -795,7 +797,7 @@
 - **Dark mode variants:**
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:378`
+#### `src/pages/MainFeed.jsx:477`
 
 ```jsx
                 <p className="text-xs text-slate-500">{user?.role ? user.role.replaceAll('_', ' ') : 'Account'}</p>
@@ -813,17 +815,17 @@
   - `text-xs` — Text color or text sizing.
   - `text-slate-500` — Text color or text sizing.
 
-#### `src/pages/MainFeed.jsx:382`
+#### `src/pages/MainFeed.jsx:481`
 
 ```jsx
-            <div className="mt-4 border-t border-slate-100 pt-4">
+            <div className="mt-4 borderless-divider-t pt-4">
               <p className="text-xs font-semibold text-slate-700 mb-2">Quick actions</p>
               <div className="flex flex-wrap gap-2">
                 {quickActions.map((a) => (
 ```
 **Raw class strings detected (best effort):**
 
-- `mt-4 border-t border-slate-100 pt-4`
+- `mt-4 borderless-divider-t pt-4`
 - `text-xs font-semibold text-slate-700 mb-2`
 - `flex flex-wrap gap-2`
 
@@ -842,10 +844,9 @@
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-700` — Text color or text sizing.
 - **Borders / rings / shadows:**
-  - `border-t` — Border style/width/color.
-  - `border-slate-100` — Border style/width/color.
+  - `borderless-divider-t` — Border style/width/color.
 
-#### `src/pages/MainFeed.jsx:383`
+#### `src/pages/MainFeed.jsx:482`
 
 ```jsx
               <p className="text-xs font-semibold text-slate-700 mb-2">Quick actions</p>
@@ -871,7 +872,7 @@
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-700` — Text color or text sizing.
 
-#### `src/pages/MainFeed.jsx:384`
+#### `src/pages/MainFeed.jsx:483`
 
 ```jsx
               <div className="flex flex-wrap gap-2">
@@ -891,17 +892,17 @@
 - **Spacing:**
   - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:389`
+#### `src/pages/MainFeed.jsx:488`
 
 ```jsx
-                    className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                    className="rounded-full borderless-shadow bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                   >
                     {a.label}
                   </Link>
 ```
 **Raw class strings detected (best effort):**
 
-- `rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50`
+- `rounded-full borderless-shadow bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50`
 
 **Utility breakdown (grouped):**
 
@@ -916,12 +917,11 @@
   - `bg-white` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Interaction / motion:**
   - `hover:bg-slate-50` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:399`
+#### `src/pages/MainFeed.jsx:498`
 
 ```jsx
             <div className="hidden lg:block rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
@@ -964,7 +964,7 @@
   - `dark:ring-slate-800` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:400`
+#### `src/pages/MainFeed.jsx:499`
 
 ```jsx
               <p className="text-xs font-semibold text-slate-500">Viewing</p>
@@ -992,7 +992,7 @@
 - **Dark mode variants:**
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:401`
+#### `src/pages/MainFeed.jsx:500`
 
 ```jsx
               <p className="mt-1 text-lg font-bold text-slate-900 dark:text-slate-100">{headerLabel}</p>
@@ -1018,7 +1018,7 @@
 - **Dark mode variants:**
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:402`
+#### `src/pages/MainFeed.jsx:501`
 
 ```jsx
               {activeCategory ? <p className="mt-1 text-xs text-slate-500">Category: {activeCategory}</p> : null}
@@ -1038,7 +1038,7 @@
   - `text-xs` — Text color or text sizing.
   - `text-slate-500` — Text color or text sizing.
 
-#### `src/pages/MainFeed.jsx:407`
+#### `src/pages/MainFeed.jsx:506`
 
 ```jsx
         <main className="col-span-12 lg:col-span-6 space-y-4">
@@ -1076,7 +1076,7 @@
   - `dark:bg-slate-900/50` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-slate-800` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:409`
+#### `src/pages/MainFeed.jsx:508`
 
 ```jsx
             <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
@@ -1115,7 +1115,7 @@
   - `dark:ring-slate-800` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:410`
+#### `src/pages/MainFeed.jsx:509`
 
 ```jsx
               <p className="text-xs font-semibold text-slate-500">Feed</p>
@@ -1143,7 +1143,7 @@
 - **Dark mode variants:**
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:411`
+#### `src/pages/MainFeed.jsx:510`
 
 ```jsx
               <p className="mt-1 text-xl font-bold text-slate-900 dark:text-slate-100">{headerLabel}</p>
@@ -1169,7 +1169,7 @@
 - **Dark mode variants:**
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:412`
+#### `src/pages/MainFeed.jsx:511`
 
 ```jsx
               {activeCategory ? <p className="mt-1 text-xs text-slate-500">Category: {activeCategory}</p> : null}
@@ -1189,10 +1189,10 @@
   - `text-xs` — Text color or text sizing.
   - `text-slate-500` — Text color or text sizing.
 
-#### `src/pages/MainFeed.jsx:417`
+#### `src/pages/MainFeed.jsx:516`
 
 ```jsx
-            <div className={`rounded-2xl p-4 text-sm ring-1 ${
+            <div className={`rounded-2xl p-4 text-sm ring-1${
               notice.type === 'error'
                 ? 'bg-rose-50 text-rose-800 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30'
                 : notice.type === 'success'
@@ -1219,7 +1219,7 @@
   - `error` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `success` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:424`
+#### `src/pages/MainFeed.jsx:523`
 
 ```jsx
               <div className="flex items-center justify-between gap-3">
@@ -1243,7 +1243,7 @@
 - **Typography:**
   - `font-medium` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:425`
+#### `src/pages/MainFeed.jsx:524`
 
 ```jsx
                 <p className="font-medium">{notice.message}</p>
@@ -1263,7 +1263,7 @@
 - **Other:**
   - `button` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:430`
+#### `src/pages/MainFeed.jsx:529`
 
 ```jsx
                     className="rounded-full bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
@@ -1299,7 +1299,452 @@
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-white/8` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:440`
+#### `src/pages/MainFeed.jsx:539`
+
+```jsx
+            <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Early access: new verified factories</p>
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800`
+- `flex items-center justify-between`
+- `text-sm font-semibold text-slate-900 dark:text-slate-100`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `justify-between` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `p-4` — Padding (all sides).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-[#ffffff]` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-2xl` — Corner radius.
+  - `shadow-sm` — Drop shadow depth (elevation).
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/60` — Outline ring (often used instead of borders in dark mode).
+- **Dark mode variants:**
+  - `dark:bg-slate-900/50` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-slate-800` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/MainFeed.jsx:540`
+
+```jsx
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Early access: new verified factories</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Verified in the last 30 days</p>
+```
+**Raw class strings detected (best effort):**
+
+- `flex items-center justify-between`
+- `text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `text-[11px] text-slate-500 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `justify-between` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/MainFeed.jsx:542`
+
+```jsx
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Early access: new verified factories</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Verified in the last 30 days</p>
+                </div>
+                {!canEarlyAccess ? (
+```
+**Raw class strings detected (best effort):**
+
+- `text-sm font-semibold text-slate-900 dark:text-slate-100`
+- `text-[11px] text-slate-500 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/MainFeed.jsx:543`
+
+```jsx
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Verified in the last 30 days</p>
+                </div>
+                {!canEarlyAccess ? (
+                  <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-200">
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] text-slate-500 dark:text-slate-400`
+- `rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-200`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `px-2` — Horizontal padding (left/right).
+  - `py-1` — Vertical padding (top/bottom).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-amber-700` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+  - `bg-amber-50` — Background color/surface.
+  - `text-[10px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-full` — Corner radius.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:bg-amber-500/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-amber-200` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/MainFeed.jsx:546`
+
+```jsx
+                  <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-200">
+                    Premium
+                  </span>
+                ) : null}
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-200`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `px-2` — Horizontal padding (left/right).
+  - `py-1` — Vertical padding (top/bottom).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-amber-700` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-amber-50` — Background color/surface.
+  - `text-[10px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-full` — Corner radius.
+- **Dark mode variants:**
+  - `dark:bg-amber-500/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-amber-200` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/MainFeed.jsx:552`
+
+```jsx
+                <div className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
+                  Unlock early access to newly verified factories with a Premium plan.
+                  <div className="mt-2">
+                    <Link to="/pricing" className="text-[11px] font-semibold text-[var(--gt-blue)] hover:underline">View Premium options</Link>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30`
+- `mt-2`
+- `text-[11px] font-semibold text-[var(--gt-blue)] hover:underline`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-3` — Padding (all sides).
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `text-amber-800` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `bg-amber-50` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+  - `text-[var(--gt-blue)]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-amber-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Interaction / motion:**
+  - `hover:underline` — Variant prefix (responsive, dark, or interaction state).
+- **Dark mode variants:**
+  - `dark:bg-amber-500/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-amber-200` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-amber-500/30` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/MainFeed.jsx:554`
+
+```jsx
+                  <div className="mt-2">
+                    <Link to="/pricing" className="text-[11px] font-semibold text-[var(--gt-blue)] hover:underline">View Premium options</Link>
+                  </div>
+                </div>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-2`
+- `text-[11px] font-semibold text-[var(--gt-blue)] hover:underline`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+  - `text-[var(--gt-blue)]` — Text color or text sizing.
+- **Interaction / motion:**
+  - `hover:underline` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/MainFeed.jsx:555`
+
+```jsx
+                    <Link to="/pricing" className="text-[11px] font-semibold text-[var(--gt-blue)] hover:underline">View Premium options</Link>
+                  </div>
+                </div>
+              ) : (
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] font-semibold text-[var(--gt-blue)] hover:underline`
+
+**Utility breakdown (grouped):**
+
+- **Typography:**
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+  - `text-[var(--gt-blue)]` — Text color or text sizing.
+- **Interaction / motion:**
+  - `hover:underline` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/MainFeed.jsx:559`
+
+```jsx
+                <div className="mt-3">
+                  {earlyVerifiedLoading ? <div className="text-xs text-slate-500">Loading early access list...</div> : null}
+                  {earlyVerifiedError ? <div className="text-xs text-rose-600">{earlyVerifiedError}</div> : null}
+                  {!earlyVerifiedLoading && !earlyVerifiedError ? (
+```
+**Raw class strings detected (best effort):**
+
+- `mt-3`
+- `text-xs text-slate-500`
+- `text-xs text-rose-600`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+  - `text-rose-600` — Text color or text sizing.
+
+#### `src/pages/MainFeed.jsx:560`
+
+```jsx
+                  {earlyVerifiedLoading ? <div className="text-xs text-slate-500">Loading early access list...</div> : null}
+                  {earlyVerifiedError ? <div className="text-xs text-rose-600">{earlyVerifiedError}</div> : null}
+                  {!earlyVerifiedLoading && !earlyVerifiedError ? (
+                    <div className="space-y-2">
+```
+**Raw class strings detected (best effort):**
+
+- `text-xs text-slate-500`
+- `text-xs text-rose-600`
+- `space-y-2`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `space-y-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+  - `text-rose-600` — Text color or text sizing.
+
+#### `src/pages/MainFeed.jsx:561`
+
+```jsx
+                  {earlyVerifiedError ? <div className="text-xs text-rose-600">{earlyVerifiedError}</div> : null}
+                  {!earlyVerifiedLoading && !earlyVerifiedError ? (
+                    <div className="space-y-2">
+                      {earlyVerifiedFactories.length ? earlyVerifiedFactories.slice(0, 6).map((factory) => (
+```
+**Raw class strings detected (best effort):**
+
+- `text-xs text-rose-600`
+- `space-y-2`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `space-y-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `text-rose-600` — Text color or text sizing.
+
+#### `src/pages/MainFeed.jsx:563`
+
+```jsx
+                    <div className="space-y-2">
+                      {earlyVerifiedFactories.length ? earlyVerifiedFactories.slice(0, 6).map((factory) => (
+                        <Link
+                          key={factory.id}
+```
+**Raw class strings detected (best effort):**
+
+- `space-y-2`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `space-y-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/MainFeed.jsx:568`
+
+```jsx
+                          className="block rounded-xl bg-white px-3 py-2 text-left ring-1 ring-slate-200/70 transition hover:bg-slate-50 dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/8"
+                        >
+                          <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{factory.name || 'Factory'}</p>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{factory.country || '-'} · verified</p>
+```
+**Raw class strings detected (best effort):**
+
+- `block rounded-xl bg-white px-3 py-2 text-left ring-1 ring-slate-200/70 transition hover:bg-slate-50 dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/8`
+- `text-xs font-semibold text-slate-900 dark:text-slate-100 truncate`
+- `text-[11px] text-slate-500 dark:text-slate-400 truncate`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `block` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `px-3` — Horizontal padding (left/right).
+  - `py-2` — Vertical padding (top/bottom).
+- **Typography:**
+  - `text-left` — Text color or text sizing.
+  - `text-xs` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Color / surface:**
+  - `bg-white` — Background color/surface.
+  - `text-[11px]` — Text color or text sizing.
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+  - `ring-1` — Outline ring (often used instead of borders in dark mode).
+  - `ring-slate-200/70` — Outline ring (often used instead of borders in dark mode).
+- **Interaction / motion:**
+  - `transition` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `hover:bg-slate-50` — Variant prefix (responsive, dark, or interaction state).
+- **Dark mode variants:**
+  - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:hover:bg-white/8` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/MainFeed.jsx:570`
+
+```jsx
+                          <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{factory.name || 'Factory'}</p>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{factory.country || '-'} · verified</p>
+                        </Link>
+                      )) : (
+```
+**Raw class strings detected (best effort):**
+
+- `text-xs font-semibold text-slate-900 dark:text-slate-100 truncate`
+- `text-[11px] text-slate-500 dark:text-slate-400 truncate`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-900` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/MainFeed.jsx:571`
+
+```jsx
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{factory.country || '-'} · verified</p>
+                        </Link>
+                      )) : (
+                        <div className="text-xs text-slate-500 dark:text-slate-400">No new verified factories yet.</div>
+```
+**Raw class strings detected (best effort):**
+
+- `text-[11px] text-slate-500 dark:text-slate-400 truncate`
+- `text-xs text-slate-500 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `truncate` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-xs` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[11px]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/MainFeed.jsx:574`
+
+```jsx
+                        <div className="text-xs text-slate-500 dark:text-slate-400">No new verified factories yet.</div>
+                      )}
+                    </div>
+                  ) : null}
+```
+**Raw class strings detected (best effort):**
+
+- `text-xs text-slate-500 dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `text-slate-500` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/MainFeed.jsx:584`
 
 ```jsx
             <div className="space-y-4">
@@ -1316,7 +1761,7 @@
 - **Spacing:**
   - `space-y-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:448`
+#### `src/pages/MainFeed.jsx:592`
 
 ```jsx
             <div className="rounded-2xl bg-rose-50 p-6 text-sm text-rose-800 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30">
@@ -1348,7 +1793,7 @@
   - `dark:text-rose-200` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-rose-500/30` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:450`
+#### `src/pages/MainFeed.jsx:594`
 
 ```jsx
               <div className="mt-3">
@@ -1368,7 +1813,7 @@
 - **Other:**
   - `button` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:454`
+#### `src/pages/MainFeed.jsx:598`
 
 ```jsx
                   className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
@@ -1404,7 +1849,7 @@
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-white/8` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:463`
+#### `src/pages/MainFeed.jsx:607`
 
 ```jsx
             <div className="rounded-2xl bg-[#ffffff] p-6 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:text-slate-300 dark:ring-slate-800">
@@ -1435,7 +1880,7 @@
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-slate-800` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:500`
+#### `src/pages/MainFeed.jsx:644`
 
 ```jsx
           <div ref={sentinelRef} className="h-10" />
@@ -1465,7 +1910,7 @@
   - `dark:bg-slate-900/50` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-slate-800` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:503`
+#### `src/pages/MainFeed.jsx:647`
 
 ```jsx
             <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
@@ -1500,7 +1945,7 @@
 - **Other:**
   - `skeleton` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:504`
+#### `src/pages/MainFeed.jsx:648`
 
 ```jsx
               <div className="h-3 w-40 rounded-full skeleton mx-auto" />
@@ -1524,7 +1969,7 @@
 - **Other:**
   - `skeleton` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/MainFeed.jsx:509`
+#### `src/pages/MainFeed.jsx:653`
 
 ```jsx
             <div className="text-center text-xs text-slate-400 dark:text-slate-500 py-3">You’re all caught up.</div>
@@ -1547,7 +1992,7 @@
 - **Dark mode variants:**
   - `dark:text-slate-500` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:513`
+#### `src/pages/MainFeed.jsx:657`
 
 ```jsx
         <aside className="col-span-3 hidden xl:block space-y-4">
@@ -1593,7 +2038,7 @@
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:514`
+#### `src/pages/MainFeed.jsx:658`
 
 ```jsx
           <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
@@ -1633,7 +2078,7 @@
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:515`
+#### `src/pages/MainFeed.jsx:659`
 
 ```jsx
             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Tips</p>
@@ -1662,7 +2107,7 @@
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:516`
+#### `src/pages/MainFeed.jsx:660`
 
 ```jsx
             <p className="mt-2 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
@@ -1692,7 +2137,7 @@
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:517`
+#### `src/pages/MainFeed.jsx:661`
 
 ```jsx
               Turn on <span className="font-semibold">Unique</span> to avoid seeing only one product type all day. Use the category chips for fast filtering.
@@ -1731,7 +2176,7 @@
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:519`
+#### `src/pages/MainFeed.jsx:663`
 
 ```jsx
             <div className="mt-3 flex gap-2">
@@ -1769,7 +2214,7 @@
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:520`
+#### `src/pages/MainFeed.jsx:664`
 
 ```jsx
               <Link to="/search" className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">Search</Link>
@@ -1802,7 +2247,7 @@
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/MainFeed.jsx:521`
+#### `src/pages/MainFeed.jsx:665`
 
 ```jsx
               <Link to="/notifications" className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">Alerts</Link>
@@ -1839,7 +2284,7 @@
 
 > This list is generated by heuristics. It includes hard-coded UI strings and key element anchors. For absolute truth, use the source snapshot.
 
-- `src/pages/MainFeed.jsx:131` — Loading feed item {index + 1}
+- `src/pages/MainFeed.jsx:154` — Loading feed item {index + 1}
 
 ```jsx
       <span className="sr-only">Loading feed item {index + 1}</span>
@@ -1847,7 +2292,7 @@
   )
 }
 ```
-- `src/pages/MainFeed.jsx:383` — Quick actions
+- `src/pages/MainFeed.jsx:482` — Quick actions
 
 ```jsx
               <p className="text-xs font-semibold text-slate-700 mb-2">Quick actions</p>
@@ -1855,7 +2300,7 @@
                 {quickActions.map((a) => (
                   <Link
 ```
-- `src/pages/MainFeed.jsx:400` — Viewing
+- `src/pages/MainFeed.jsx:499` — Viewing
 
 ```jsx
               <p className="text-xs font-semibold text-slate-500">Viewing</p>
@@ -1863,7 +2308,7 @@
               {activeCategory ? <p className="mt-1 text-xs text-slate-500">Category: {activeCategory}</p> : null}
             </div>
 ```
-- `src/pages/MainFeed.jsx:402` — Category: {activeCategory}
+- `src/pages/MainFeed.jsx:501` — Category: {activeCategory}
 
 ```jsx
               {activeCategory ? <p className="mt-1 text-xs text-slate-500">Category: {activeCategory}</p> : null}
@@ -1871,7 +2316,7 @@
           ) : null}
         </aside>
 ```
-- `src/pages/MainFeed.jsx:410` — Feed
+- `src/pages/MainFeed.jsx:509` — Feed
 
 ```jsx
               <p className="text-xs font-semibold text-slate-500">Feed</p>
@@ -1879,7 +2324,7 @@
               {activeCategory ? <p className="mt-1 text-xs text-slate-500">Category: {activeCategory}</p> : null}
             </div>
 ```
-- `src/pages/MainFeed.jsx:412` — Category: {activeCategory}
+- `src/pages/MainFeed.jsx:511` — Category: {activeCategory}
 
 ```jsx
               {activeCategory ? <p className="mt-1 text-xs text-slate-500">Category: {activeCategory}</p> : null}
@@ -1887,7 +2332,31 @@
           ) : null}
 
 ```
-- `src/pages/MainFeed.jsx:515` — Tips
+- `src/pages/MainFeed.jsx:542` — Early access: new verified factories
+
+```jsx
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Early access: new verified factories</p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Verified in the last 30 days</p>
+                </div>
+                {!canEarlyAccess ? (
+```
+- `src/pages/MainFeed.jsx:543` — Verified in the last 30 days
+
+```jsx
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Verified in the last 30 days</p>
+                </div>
+                {!canEarlyAccess ? (
+                  <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-200">
+```
+- `src/pages/MainFeed.jsx:555` — View Premium options
+
+```jsx
+                    <Link to="/pricing" className="text-[11px] font-semibold text-[var(--gt-blue)] hover:underline">View Premium options</Link>
+                  </div>
+                </div>
+              ) : (
+```
+- `src/pages/MainFeed.jsx:659` — Tips
 
 ```jsx
             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Tips</p>
@@ -1895,7 +2364,7 @@
               Turn on <span className="font-semibold">Unique</span> to avoid seeing only one product type all day. Use the category chips for fast filtering.
             </p>
 ```
-- `src/pages/MainFeed.jsx:517` — Unique
+- `src/pages/MainFeed.jsx:661` — Unique
 
 ```jsx
               Turn on <span className="font-semibold">Unique</span> to avoid seeing only one product type all day. Use the category chips for fast filtering.
@@ -1903,7 +2372,7 @@
             <div className="mt-3 flex gap-2">
               <Link to="/search" className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">Search</Link>
 ```
-- `src/pages/MainFeed.jsx:520` — Search
+- `src/pages/MainFeed.jsx:664` — Search
 
 ```jsx
               <Link to="/search" className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">Search</Link>
@@ -1911,7 +2380,7 @@
             </div>
           </div>
 ```
-- `src/pages/MainFeed.jsx:521` — Alerts
+- `src/pages/MainFeed.jsx:665` — Alerts
 
 ```jsx
               <Link to="/notifications" className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">Alerts</Link>
@@ -1919,15 +2388,15 @@
           </div>
         </aside>
 ```
-- `src/pages/MainFeed.jsx:386` — (element) <Link>
+- `src/pages/MainFeed.jsx:485` — (element) <Link>
 
 ```jsx
                   <Link
                     key={a.to}
                     to={a.to}
-                    className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                    className="rounded-full borderless-shadow bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
 ```
-- `src/pages/MainFeed.jsx:427` — (element) <button>
+- `src/pages/MainFeed.jsx:526` — (element) <button>
 
 ```jsx
                   <button
@@ -1935,7 +2404,23 @@
                     onClick={() => navigate('/chat', { state: { notice: `Buyer request ${claimedRequestId} claimed. Open inbox to continue.` } })}
                     className="rounded-full bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
 ```
-- `src/pages/MainFeed.jsx:451` — (element) <button>
+- `src/pages/MainFeed.jsx:555` — (element) <Link>
+
+```jsx
+                    <Link to="/pricing" className="text-[11px] font-semibold text-[var(--gt-blue)] hover:underline">View Premium options</Link>
+                  </div>
+                </div>
+              ) : (
+```
+- `src/pages/MainFeed.jsx:565` — (element) <Link>
+
+```jsx
+                        <Link
+                          key={factory.id}
+                          to={`/factory/${encodeURIComponent(factory.id)}`}
+                          className="block rounded-xl bg-white px-3 py-2 text-left ring-1 ring-slate-200/70 transition hover:bg-slate-50 dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/8"
+```
+- `src/pages/MainFeed.jsx:595` — (element) <button>
 
 ```jsx
                 <button
@@ -1943,7 +2428,7 @@
                   onClick={() => loadFeedPage({ reset: true })}
                   className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
 ```
-- `src/pages/MainFeed.jsx:520` — (element) <Link>
+- `src/pages/MainFeed.jsx:664` — (element) <Link>
 
 ```jsx
               <Link to="/search" className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">Search</Link>
@@ -1951,7 +2436,7 @@
             </div>
           </div>
 ```
-- `src/pages/MainFeed.jsx:521` — (element) <Link>
+- `src/pages/MainFeed.jsx:665` — (element) <Link>
 
 ```jsx
               <Link to="/notifications" className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">Alerts</Link>
@@ -1963,9 +2448,11 @@
 
 | Frontend call (path:line) | Express mount | Route definition | Controller file | Handler |
 |---|---|---|---|---|
-| POST /social/${encodeURIComponent(item.entityType)}/${encodeURIComponent(item.id)}/share (src/pages/MainFeed.jsx:270) | /api/social -> server/routes/socialRoutes.js:75 | - | - | - |
-| GET /social/${encodeURIComponent(reportItem.entityType)}/${encodeURIComponent(reportItem.id)}/report (src/pages/MainFeed.jsx:294) | /api/social -> server/routes/socialRoutes.js:75 | - | - | - |
-| POST /conversations/${encodeURIComponent(item.id)}/claim (src/pages/MainFeed.jsx:315) | /api/conversations -> server/routes/conversationRoutes.js:70 | - | - | - |
+| GET /feed?${query} (src/pages/MainFeed.jsx:264) | - | - | - | - |
+| GET /users/verified/early (src/pages/MainFeed.jsx:305) | /api/users -> server/routes/userRoutes.js:112 | GET /verified/early (server/routes/userRoutes.js:28) | - | listEarlyVerifiedFactoriesController |
+| POST /social/${encodeURIComponent(item.entityType)}/${encodeURIComponent(item.id)}/share (src/pages/MainFeed.jsx:357) | /api/social -> server/routes/socialRoutes.js:129 | - | - | - |
+| POST /reports/content (src/pages/MainFeed.jsx:393) | /api/reports -> server/routes/reportRoutes.js:148 | POST /content (server/routes/reportRoutes.js:13) | - | createContentReportController |
+| POST /conversations/${encodeURIComponent(item.id)}/claim (src/pages/MainFeed.jsx:414) | /api/conversations -> server/routes/conversationRoutes.js:122 | - | - | - |
 
 ## 6) How to Edit Safely
 

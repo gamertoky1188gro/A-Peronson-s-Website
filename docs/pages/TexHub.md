@@ -1,4 +1,3 @@
-{% raw %}
 # TexHub - Route `/`
 
 **Access:** Public
@@ -25,35 +24,35 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 ### 3.1 Custom CSS utilities referenced by this page (App.css / index.css)
 
 - `.nav-glass` definitions:
-  - `src/App.css:615`
+  - `src/App.css:897`
 - `.spotlight-card` definitions:
-  - `src/App.css:267`
+  - `src/App.css:550`
 - `.skeleton` definitions:
-  - `src/App.css:583`
+  - `src/App.css:865`
 - `.neo-page` definitions:
-  - `src/App.css:108`
+  - `src/App.css:115`
 - `.neo-panel` definitions:
-  - `src/App.css:116`
+  - `src/App.css:123`
 - `.cyberpunk-page` definitions:
-  - `src/App.css:109`
+  - `src/App.css:116`
 - `.cyberpunk-card` definitions:
-  - `src/App.css:110`
+  - `src/App.css:117`
 - `.assistant-orb-btn` definitions:
-  - `src/App.css:518`
+  - `src/App.css:801`
 - `.legal-weave` definitions:
-  - `src/App.css:366`
+  - `src/App.css:649`
 - `.signature-draw` definitions:
-  - `src/App.css:401`
+  - `src/App.css:684`
 - `.verified-shimmer` definitions:
-  - `src/App.css:434`
+  - `src/App.css:717`
 - `.verified-pulse` definitions:
-  - `src/App.css:293`
+  - `src/App.css:576`
 - `.conic-beam` definitions:
-  - `src/App.css:302`
+  - `src/App.css:585`
 
 ### 3.2 Every className block (with grouped explanations)
 
-#### `src/pages/TexHub.jsx:38`
+#### `src/pages/TexHub.jsx:40`
 
 ```jsx
       className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_10px_24px_rgba(16,185,129,0.12)] dark:bg-emerald-400/8 dark:text-emerald-200 dark:shadow-[0_0_0_1px_rgba(16,185,129,0.14),0_0_32px_rgba(16,185,129,0.16)]"
@@ -98,7 +97,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 - **Other:**
   - `Verified` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:41`
+#### `src/pages/TexHub.jsx:43`
 
 ```jsx
       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_16px_rgba(16,185,129,0.65)] dark:bg-emerald-300 dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]" />
@@ -124,7 +123,22 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `dark:bg-emerald-300` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:59`
+#### `src/pages/TexHub.jsx:49`
+
+```jsx
+function Surface({ className='', children }) {
+  function handleSpotlightMove(event) {
+    // Mouse-follow spotlight:
+    // - store cursor position inside the card as CSS variables
+```
+**Raw class strings detected (best effort):**
+
+- _(dynamic className; inspect the snippet above)_
+
+**Utility breakdown (grouped):**
+
+
+#### `src/pages/TexHub.jsx:61`
 
 ```jsx
       className={[
@@ -148,7 +162,25 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 - **Other:**
   - `spotlight-card` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:86`
+#### `src/pages/TexHub.jsx:78`
+
+```jsx
+function GlassSurface({ className='', children }) {
+  function handleSpotlightMove(event) {
+    // Same spotlight behavior as `Surface`, but on a darker "secure room" glass surface.
+    const rect = event.currentTarget.getBoundingClientRect()
+```
+**Raw class strings detected (best effort):**
+
+- `secure room`
+
+**Utility breakdown (grouped):**
+
+- **Other:**
+  - `secure` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `room` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/TexHub.jsx:88`
 
 ```jsx
       className={[
@@ -169,7 +201,22 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `glass` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `edge` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:107`
+#### `src/pages/TexHub.jsx:106`
+
+```jsx
+function BentoMotion({ index, className='', children }) {
+  const reduceMotion = useReducedMotion()
+  // Accessibility: if user prefers reduced motion, render without animation.
+  if (reduceMotion) return <div className={className}>{children}</div>
+```
+**Raw class strings detected (best effort):**
+
+- _(dynamic className; inspect the snippet above)_
+
+**Utility breakdown (grouped):**
+
+
+#### `src/pages/TexHub.jsx:109`
 
 ```jsx
   if (reduceMotion) return <div className={className}>{children}</div>
@@ -184,7 +231,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 **Utility breakdown (grouped):**
 
 
-#### `src/pages/TexHub.jsx:111`
+#### `src/pages/TexHub.jsx:113`
 
 ```jsx
       className={className}
@@ -201,7 +248,22 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 - **Other:**
   - `bento` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:130`
+#### `src/pages/TexHub.jsx:129`
+
+```jsx
+function AnimatedHeroHeading({ text, className='' }) {
+  const reduceMotion = useReducedMotion()
+  // Reduced-motion users get static text (no per-character animation).
+  if (reduceMotion) return <span className={className}>{text}</span>
+```
+**Raw class strings detected (best effort):**
+
+- _(dynamic className; inspect the snippet above)_
+
+**Utility breakdown (grouped):**
+
+
+#### `src/pages/TexHub.jsx:132`
 
 ```jsx
   if (reduceMotion) return <span className={className}>{text}</span>
@@ -216,7 +278,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 **Utility breakdown (grouped):**
 
 
-#### `src/pages/TexHub.jsx:136`
+#### `src/pages/TexHub.jsx:138`
 
 ```jsx
     <span className={className}>
@@ -235,7 +297,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `sr-only` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `true` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:137`
+#### `src/pages/TexHub.jsx:139`
 
 ```jsx
       <span className="sr-only">{text}</span>
@@ -254,7 +316,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `sr-only` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `true` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:144`
+#### `src/pages/TexHub.jsx:145`
 
 ```jsx
               <span className="inline-block whitespace-nowrap">
@@ -292,6 +354,21 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 - **Other:**
   - `easeOut` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
+#### `src/pages/TexHub.jsx:170`
+
+```jsx
+function MagneticLinkButton({ to, className='', children }) {
+  const reduceMotion = useReducedMotion()
+  // Motion values track the current offset; springs return to center smoothly.
+  const x = useMotionValue(0)
+```
+**Raw class strings detected (best effort):**
+
+- _(dynamic className; inspect the snippet above)_
+
+**Utility breakdown (grouped):**
+
+
 #### `src/pages/TexHub.jsx:199`
 
 ```jsx
@@ -324,6 +401,26 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 **Utility breakdown (grouped):**
 
 
+#### `src/pages/TexHub.jsx:214`
+
+```jsx
+function SkeletonLine({ className='' }) {
+  // Skeleton shimmer utility (App.css): used during loading to avoid layout shifts.
+  return <div className={['skeleton rounded-xl', className].join(' ')} />
+}
+```
+**Raw class strings detected (best effort):**
+
+- `skeleton rounded-xl`
+- ` `
+
+**Utility breakdown (grouped):**
+
+- **Borders / rings / shadows:**
+  - `rounded-xl` — Corner radius.
+- **Other:**
+  - `skeleton` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
 #### `src/pages/TexHub.jsx:216`
 
 ```jsx
@@ -344,7 +441,7 @@ export default function TexHub() {
 - **Other:**
   - `skeleton` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:364`
+#### `src/pages/TexHub.jsx:367`
 
 ```jsx
     <div className="neo-page relative min-h-screen overflow-x-hidden bg-[#F8FAFC] dark:bg-[#05050A]">
@@ -376,7 +473,7 @@ export default function TexHub() {
   - `pointer-events-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `-z-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:365`
+#### `src/pages/TexHub.jsx:368`
 
 ```jsx
       <div className="pointer-events-none absolute inset-0 -z-10 hidden dark:block">
@@ -409,7 +506,7 @@ export default function TexHub() {
   - `-translate-x-1/2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `blur-3xl` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:367`
+#### `src/pages/TexHub.jsx:370`
 
 ```jsx
           className={[
@@ -443,7 +540,7 @@ export default function TexHub() {
   - `blur-3xl` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `professional` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:373`
+#### `src/pages/TexHub.jsx:376`
 
 ```jsx
           className={[
@@ -476,7 +573,7 @@ export default function TexHub() {
   - `blur-3xl` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `professional` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:379`
+#### `src/pages/TexHub.jsx:382`
 
 ```jsx
           className={[
@@ -509,7 +606,7 @@ export default function TexHub() {
   - `blur-3xl` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `professional` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:385`
+#### `src/pages/TexHub.jsx:388`
 
 ```jsx
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
@@ -560,7 +657,7 @@ export default function TexHub() {
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-[0_24px_70px_rgba(0,0,0,0.55)]` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:386`
+#### `src/pages/TexHub.jsx:389`
 
 ```jsx
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center">
@@ -609,7 +706,7 @@ export default function TexHub() {
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-[0_24px_70px_rgba(0,0,0,0.55)]` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:387`
+#### `src/pages/TexHub.jsx:390`
 
 ```jsx
           <div className="lg:col-span-6">
@@ -652,7 +749,7 @@ export default function TexHub() {
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-[0_24px_70px_rgba(0,0,0,0.55)]` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:388`
+#### `src/pages/TexHub.jsx:391`
 
 ```jsx
             <div className="inline-flex items-center gap-2 rounded-full bg-[#1E293B]/5 px-3 py-1 text-xs font-semibold text-[#1E293B]/80 shadow-[0_12px_30px_rgba(15,23,42,0.07)] dark:bg-white/[0.03] dark:text-slate-300 dark:shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
@@ -692,13 +789,13 @@ export default function TexHub() {
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-[0_24px_70px_rgba(0,0,0,0.55)]` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:389`
+#### `src/pages/TexHub.jsx:392`
 
 ```jsx
               <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_18px_rgba(16,185,129,0.6)]" />
               Clean Tech sourcing for garments & textiles
             </div>
-            <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-[#1E293B] sm:text-5xl dark:text-white">
+              <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-[#1E293B] sm:text-5xl dark:text-white">
 ```
 **Raw class strings detected (best effort):**
 
@@ -727,18 +824,17 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:392`
+#### `src/pages/TexHub.jsx:395`
 
 ```jsx
-            <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-[#1E293B] sm:text-5xl dark:text-white">
-              <AnimatedHeroHeading text="Where global buyers meet verified garment & textile suppliers" />
-            </h1>
-            <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#475569] dark:text-slate-400">
+              <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-[#1E293B] sm:text-5xl dark:text-white">
+                <AnimatedHeroHeading text={heroHeadline} />
+              </h1>
+              <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#475569] dark:text-slate-400">
 ```
 **Raw class strings detected (best effort):**
 
 - `mt-5 text-4xl font-extrabold tracking-tight text-[#1E293B] sm:text-5xl dark:text-white`
-- `Where global buyers meet verified garment & textile suppliers`
 - `mt-5 max-w-xl text-[15px] leading-relaxed text-[#475569] dark:text-slate-400`
 
 **Utility breakdown (grouped):**
@@ -761,28 +857,19 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
-- **Other:**
-  - `Where` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `global` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `buyers` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `meet` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `verified` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `garment` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `&` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `textile` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `suppliers` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:395`
+#### `src/pages/TexHub.jsx:398`
 
 ```jsx
-            <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#475569] dark:text-slate-400">
-              A structured, low-noise B2B platform for buyer requests, verified factories, partner networks, and secure
-              contracts — built for real teams.
-            </p>
+              <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#475569] dark:text-slate-400">
+                {heroSubheadline}
+              </p>
+              <p className="mt-3 max-w-xl text-sm font-medium text-[#334155] dark:text-slate-300">
 ```
 **Raw class strings detected (best effort):**
 
 - `mt-5 max-w-xl text-[15px] leading-relaxed text-[#475569] dark:text-slate-400`
+- `mt-3 max-w-xl text-sm font-medium text-[#334155] dark:text-slate-300`
 
 **Utility breakdown (grouped):**
 
@@ -790,27 +877,84 @@ export default function TexHub() {
   - `max-w-xl` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Spacing:**
   - `mt-5` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
   - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-sm` — Text color or text sizing.
+  - `font-medium` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Color / surface:**
   - `text-[15px]` — Text color or text sizing.
   - `text-[#475569]` — Text color or text sizing.
+  - `text-[#334155]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/TexHub.jsx:401`
+
+```jsx
+              <p className="mt-3 max-w-xl text-sm font-medium text-[#334155] dark:text-slate-300">
+                {heroShortDescription}
+              </p>
+              {heroPresentation ? (
+```
+**Raw class strings detected (best effort):**
+
+- `mt-3 max-w-xl text-sm font-medium text-[#334155] dark:text-slate-300`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `max-w-xl` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `font-medium` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `text-[#334155]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/TexHub.jsx:405`
+
+```jsx
+                <p className="mt-2 max-w-xl text-xs italic text-[#64748B] dark:text-slate-400">
+                  {heroPresentation}
+                </p>
+              ) : null}
+```
+**Raw class strings detected (best effort):**
+
+- `mt-2 max-w-xl text-xs italic text-[#64748B] dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `max-w-xl` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `italic` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `text-[#64748B]` — Text color or text sizing.
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:400`
+#### `src/pages/TexHub.jsx:410`
 
 ```jsx
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <MagneticLinkButton
                 to="/signup"
-                className="shimmer-btn border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[#162132] hover:shadow-[0_22px_50px_rgba(15,23,42,0.25)] dark:bg-gradient-to-r dark:from-emerald-500/85 dark:via-sky-500/70 dark:to-indigo-500/70 dark:hover:from-emerald-500/92 dark:hover:via-sky-500/80 dark:hover:to-indigo-500/80 dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
+                className="shimmer-btn px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
 ```
 **Raw class strings detected (best effort):**
 
 - `mt-8 flex flex-wrap items-center gap-3`
 - `/signup`
-- `shimmer-btn border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[#162132] hover:shadow-[0_22px_50px_rgba(15,23,42,0.25)] dark:bg-gradient-to-r dark:from-emerald-500/85 dark:via-sky-500/70 dark:to-indigo-500/70 dark:hover:from-emerald-500/92 dark:hover:via-sky-500/80 dark:hover:to-indigo-500/80 dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]`
+- `shimmer-btn px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]`
 
 **Utility breakdown (grouped):**
 
@@ -830,42 +974,34 @@ export default function TexHub() {
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Color / surface:**
-  - `bg-[#1E293B]` — Background color/surface.
+  - `bg-[var(--gt-blue)]` — Background color/surface.
 - **Borders / rings / shadows:**
-  - `border-0` — Border style/width/color.
   - `shadow-none` — Drop shadow depth (elevation).
   - `rounded-2xl` — Corner radius.
 - **Interaction / motion:**
   - `transition` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `duration-300` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `ease-out` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `hover:bg-[#162132]` — Variant prefix (responsive, dark, or interaction state).
-  - `hover:shadow-[0_22px_50px_rgba(15,23,42,0.25)]` — Variant prefix (responsive, dark, or interaction state).
+  - `hover:bg-[var(--gt-blue-hover)]` — Variant prefix (responsive, dark, or interaction state).
+  - `hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)]` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
-  - `dark:bg-gradient-to-r` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:from-emerald-500/85` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:via-sky-500/70` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:to-indigo-500/70` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:hover:from-emerald-500/92` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:hover:via-sky-500/80` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:hover:to-indigo-500/80` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
   - `/signup` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `shimmer-btn` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:403`
+#### `src/pages/TexHub.jsx:413`
 
 ```jsx
-                className="shimmer-btn border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[#162132] hover:shadow-[0_22px_50px_rgba(15,23,42,0.25)] dark:bg-gradient-to-r dark:from-emerald-500/85 dark:via-sky-500/70 dark:to-indigo-500/70 dark:hover:from-emerald-500/92 dark:hover:via-sky-500/80 dark:hover:to-indigo-500/80 dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
+                className="shimmer-btn px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
               >
                 Create Buyer Account
               </MagneticLinkButton>
 ```
 **Raw class strings detected (best effort):**
 
-- `shimmer-btn border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[#162132] hover:shadow-[0_22px_50px_rgba(15,23,42,0.25)] dark:bg-gradient-to-r dark:from-emerald-500/85 dark:via-sky-500/70 dark:to-indigo-500/70 dark:hover:from-emerald-500/92 dark:hover:via-sky-500/80 dark:hover:to-indigo-500/80 dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]`
+- `shimmer-btn px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]`
 
 **Utility breakdown (grouped):**
 
@@ -881,41 +1017,33 @@ export default function TexHub() {
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Color / surface:**
-  - `bg-[#1E293B]` — Background color/surface.
+  - `bg-[var(--gt-blue)]` — Background color/surface.
 - **Borders / rings / shadows:**
-  - `border-0` — Border style/width/color.
   - `shadow-none` — Drop shadow depth (elevation).
   - `rounded-2xl` — Corner radius.
 - **Interaction / motion:**
   - `transition` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `duration-300` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `ease-out` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `hover:bg-[#162132]` — Variant prefix (responsive, dark, or interaction state).
-  - `hover:shadow-[0_22px_50px_rgba(15,23,42,0.25)]` — Variant prefix (responsive, dark, or interaction state).
+  - `hover:bg-[var(--gt-blue-hover)]` — Variant prefix (responsive, dark, or interaction state).
+  - `hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)]` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
-  - `dark:bg-gradient-to-r` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:from-emerald-500/85` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:via-sky-500/70` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:to-indigo-500/70` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:hover:from-emerald-500/92` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:hover:via-sky-500/80` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:hover:to-indigo-500/80` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
   - `shimmer-btn` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:409`
+#### `src/pages/TexHub.jsx:419`
 
 ```jsx
-                className="border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-white/70 text-[#1E293B] font-semibold tracking-tight backdrop-blur-sm transition duration-300 ease-out hover:bg-white hover:shadow-[0_22px_50px_rgba(15,23,42,0.10)] dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06] dark:hover:shadow-[0_26px_70px_rgba(0,0,0,0.55)]"
+                className="px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-white/70 text-[#1E293B] font-semibold tracking-tight backdrop-blur-sm transition duration-300 ease-out hover:bg-white hover:shadow-[0_22px_50px_rgba(15,23,42,0.10)] dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06] dark:hover:shadow-[0_26px_70px_rgba(0,0,0,0.55)]"
               >
                 Register Factory
               </MagneticLinkButton>
 ```
 **Raw class strings detected (best effort):**
 
-- `border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-white/70 text-[#1E293B] font-semibold tracking-tight backdrop-blur-sm transition duration-300 ease-out hover:bg-white hover:shadow-[0_22px_50px_rgba(15,23,42,0.10)] dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06] dark:hover:shadow-[0_26px_70px_rgba(0,0,0,0.55)]`
+- `px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-white/70 text-[#1E293B] font-semibold tracking-tight backdrop-blur-sm transition duration-300 ease-out hover:bg-white hover:shadow-[0_22px_50px_rgba(15,23,42,0.10)] dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06] dark:hover:shadow-[0_26px_70px_rgba(0,0,0,0.55)]`
 
 **Utility breakdown (grouped):**
 
@@ -934,7 +1062,6 @@ export default function TexHub() {
   - `text-[#1E293B]` — Text color or text sizing.
   - `backdrop-blur-sm` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Borders / rings / shadows:**
-  - `border-0` — Border style/width/color.
   - `shadow-none` — Drop shadow depth (elevation).
   - `rounded-2xl` — Corner radius.
 - **Interaction / motion:**
@@ -949,17 +1076,17 @@ export default function TexHub() {
   - `dark:hover:bg-white/[0.06]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:shadow-[0_26px_70px_rgba(0,0,0,0.55)]` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:415`
+#### `src/pages/TexHub.jsx:425`
 
 ```jsx
-                className="border-0 px-4 py-2 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B]/5 text-[#1E293B]/80 font-semibold transition duration-300 ease-out hover:bg-[#1E293B]/8 dark:bg-white/[0.03] dark:text-slate-200 dark:hover:bg-white/[0.06]"
+                className="px-4 py-2 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B]/5 text-[#1E293B]/80 font-semibold transition duration-300 ease-out hover:bg-[#1E293B]/8 dark:bg-white/[0.03] dark:text-slate-200 dark:hover:bg-white/[0.06]"
               >
-                Explore Platform
+                
               </MagneticLinkButton>
 ```
 **Raw class strings detected (best effort):**
 
-- `border-0 px-4 py-2 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B]/5 text-[#1E293B]/80 font-semibold transition duration-300 ease-out hover:bg-[#1E293B]/8 dark:bg-white/[0.03] dark:text-slate-200 dark:hover:bg-white/[0.06]`
+- `px-4 py-2 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B]/5 text-[#1E293B]/80 font-semibold transition duration-300 ease-out hover:bg-[#1E293B]/8 dark:bg-white/[0.03] dark:text-slate-200 dark:hover:bg-white/[0.06]`
 
 **Utility breakdown (grouped):**
 
@@ -976,7 +1103,6 @@ export default function TexHub() {
   - `bg-[#1E293B]/5` — Background color/surface.
   - `text-[#1E293B]/80` — Text color or text sizing.
 - **Borders / rings / shadows:**
-  - `border-0` — Border style/width/color.
   - `shadow-none` — Drop shadow depth (elevation).
   - `rounded-2xl` — Corner radius.
 - **Interaction / motion:**
@@ -989,7 +1115,7 @@ export default function TexHub() {
   - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-white/[0.06]` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:421`
+#### `src/pages/TexHub.jsx:431`
 
 ```jsx
             <div className="mt-8 grid grid-cols-2 gap-3 text-sm text-[#475569] sm:grid-cols-4 dark:text-slate-400">
@@ -1028,7 +1154,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:422`
+#### `src/pages/TexHub.jsx:432`
 
 ```jsx
               <div className="flex items-center gap-2">
@@ -1055,7 +1181,7 @@ export default function TexHub() {
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
 
-#### `src/pages/TexHub.jsx:423`
+#### `src/pages/TexHub.jsx:433`
 
 ```jsx
                 <span className="h-2 w-2 rounded-full bg-emerald-500/90" />
@@ -1082,7 +1208,7 @@ export default function TexHub() {
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
 
-#### `src/pages/TexHub.jsx:426`
+#### `src/pages/TexHub.jsx:436`
 
 ```jsx
               <div className="flex items-center gap-2">
@@ -1109,7 +1235,7 @@ export default function TexHub() {
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
 
-#### `src/pages/TexHub.jsx:427`
+#### `src/pages/TexHub.jsx:437`
 
 ```jsx
                 <span className="h-2 w-2 rounded-full bg-emerald-500/90" />
@@ -1136,7 +1262,7 @@ export default function TexHub() {
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
 
-#### `src/pages/TexHub.jsx:430`
+#### `src/pages/TexHub.jsx:440`
 
 ```jsx
               <div className="flex items-center gap-2">
@@ -1163,7 +1289,7 @@ export default function TexHub() {
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
 
-#### `src/pages/TexHub.jsx:431`
+#### `src/pages/TexHub.jsx:441`
 
 ```jsx
                 <span className="h-2 w-2 rounded-full bg-emerald-500/90" />
@@ -1190,7 +1316,7 @@ export default function TexHub() {
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
 
-#### `src/pages/TexHub.jsx:434`
+#### `src/pages/TexHub.jsx:444`
 
 ```jsx
               <div className="flex items-center gap-2">
@@ -1217,7 +1343,7 @@ export default function TexHub() {
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
 
-#### `src/pages/TexHub.jsx:435`
+#### `src/pages/TexHub.jsx:445`
 
 ```jsx
                 <span className="h-2 w-2 rounded-full bg-emerald-500/90" />
@@ -1239,7 +1365,7 @@ export default function TexHub() {
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
 
-#### `src/pages/TexHub.jsx:441`
+#### `src/pages/TexHub.jsx:451`
 
 ```jsx
           <div className="lg:col-span-6">
@@ -1264,7 +1390,7 @@ export default function TexHub() {
 - **Responsive variants:**
   - `lg:col-span-6` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:442`
+#### `src/pages/TexHub.jsx:452`
 
 ```jsx
             <Surface className="p-6">
@@ -1286,7 +1412,7 @@ export default function TexHub() {
 - **Spacing:**
   - `p-6` — Padding (all sides).
 
-#### `src/pages/TexHub.jsx:443`
+#### `src/pages/TexHub.jsx:453`
 
 ```jsx
               <div className="flex items-center justify-between">
@@ -1310,7 +1436,7 @@ export default function TexHub() {
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
 
-#### `src/pages/TexHub.jsx:446`
+#### `src/pages/TexHub.jsx:456`
 
 ```jsx
                     <SkeletonLine className="h-7 w-40 rounded-full" />
@@ -1332,7 +1458,7 @@ export default function TexHub() {
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
 
-#### `src/pages/TexHub.jsx:447`
+#### `src/pages/TexHub.jsx:457`
 
 ```jsx
                     <SkeletonLine className="h-7 w-24 rounded-full" />
@@ -1352,7 +1478,7 @@ export default function TexHub() {
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
 
-#### `src/pages/TexHub.jsx:451`
+#### `src/pages/TexHub.jsx:461`
 
 ```jsx
                     <div className="h-7 w-40 rounded-full bg-[#1E293B]/5 dark:bg-white/[0.06]" />
@@ -1378,7 +1504,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:bg-white/[0.06]` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:452`
+#### `src/pages/TexHub.jsx:462`
 
 ```jsx
                     <div className="h-7 w-24 rounded-full bg-[#1E293B]/5 dark:bg-white/[0.06]" />
@@ -1402,7 +1528,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:bg-white/[0.06]` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:456`
+#### `src/pages/TexHub.jsx:466`
 
 ```jsx
               <div className="mt-5 grid gap-3">
@@ -1432,7 +1558,7 @@ export default function TexHub() {
   - `dark:bg-white/[0.03]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-[0_20px_50px_rgba(0,0,0,0.45)]` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:459`
+#### `src/pages/TexHub.jsx:469`
 
 ```jsx
                     <div className="rounded-2xl bg-white/80 p-4 shadow-[0_14px_35px_rgba(15,23,42,0.06)] dark:bg-white/[0.03] dark:shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
@@ -1470,7 +1596,7 @@ export default function TexHub() {
   - `dark:bg-white/[0.03]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-[0_20px_50px_rgba(0,0,0,0.45)]` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:460`
+#### `src/pages/TexHub.jsx:470`
 
 ```jsx
                       <SkeletonLine className="h-3 w-24" />
@@ -1500,7 +1626,7 @@ export default function TexHub() {
   - `mt-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:461`
+#### `src/pages/TexHub.jsx:471`
 
 ```jsx
                       <SkeletonLine className="mt-3 h-4 w-64" />
@@ -1527,7 +1653,7 @@ export default function TexHub() {
   - `mt-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:462`
+#### `src/pages/TexHub.jsx:472`
 
 ```jsx
                       <div className="mt-4 grid grid-cols-2 gap-2">
@@ -1550,204 +1676,204 @@ export default function TexHub() {
   - `mt-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:463`
-
-```jsx
-                        <SkeletonLine className="h-8" />
-                        <SkeletonLine className="h-8" />
-                      </div>
-                    </div>
-```
-**Raw class strings detected (best effort):**
-
-- `h-8`
-
-**Utility breakdown (grouped):**
-
-- **Layout / positioning:**
-  - `h-8` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-
-#### `src/pages/TexHub.jsx:464`
-
-```jsx
-                        <SkeletonLine className="h-8" />
-                      </div>
-                    </div>
-                    <div className="rounded-2xl bg-[#1E293B]/4 p-4 dark:bg-white/[0.03]">
-```
-**Raw class strings detected (best effort):**
-
-- `h-8`
-- `rounded-2xl bg-[#1E293B]/4 p-4 dark:bg-white/[0.03]`
-
-**Utility breakdown (grouped):**
-
-- **Layout / positioning:**
-  - `h-8` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Spacing:**
-  - `p-4` — Padding (all sides).
-- **Color / surface:**
-  - `bg-[#1E293B]/4` — Background color/surface.
-- **Borders / rings / shadows:**
-  - `rounded-2xl` — Corner radius.
-- **Dark mode variants:**
-  - `dark:bg-white/[0.03]` — Variant prefix (responsive, dark, or interaction state).
-
-#### `src/pages/TexHub.jsx:467`
-
-```jsx
-                    <div className="rounded-2xl bg-[#1E293B]/4 p-4 dark:bg-white/[0.03]">
-                      <div className="flex items-center justify-between gap-3">
-                        <SkeletonLine className="h-4 w-36" />
-                        <SkeletonLine className="h-3 w-28" />
-```
-**Raw class strings detected (best effort):**
-
-- `rounded-2xl bg-[#1E293B]/4 p-4 dark:bg-white/[0.03]`
-- `flex items-center justify-between gap-3`
-- `h-4 w-36`
-- `h-3 w-28`
-
-**Utility breakdown (grouped):**
-
-- **Layout / positioning:**
-  - `flex` — Flex layout.
-  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `justify-between` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `h-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `w-36` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `h-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `w-28` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Spacing:**
-  - `p-4` — Padding (all sides).
-  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Color / surface:**
-  - `bg-[#1E293B]/4` — Background color/surface.
-- **Borders / rings / shadows:**
-  - `rounded-2xl` — Corner radius.
-- **Dark mode variants:**
-  - `dark:bg-white/[0.03]` — Variant prefix (responsive, dark, or interaction state).
-
-#### `src/pages/TexHub.jsx:468`
-
-```jsx
-                      <div className="flex items-center justify-between gap-3">
-                        <SkeletonLine className="h-4 w-36" />
-                        <SkeletonLine className="h-3 w-28" />
-                      </div>
-```
-**Raw class strings detected (best effort):**
-
-- `flex items-center justify-between gap-3`
-- `h-4 w-36`
-- `h-3 w-28`
-
-**Utility breakdown (grouped):**
-
-- **Layout / positioning:**
-  - `flex` — Flex layout.
-  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `justify-between` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `h-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `w-36` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `h-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `w-28` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Spacing:**
-  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-
-#### `src/pages/TexHub.jsx:469`
-
-```jsx
-                        <SkeletonLine className="h-4 w-36" />
-                        <SkeletonLine className="h-3 w-28" />
-                      </div>
-                      <div className="mt-3 grid gap-2">
-```
-**Raw class strings detected (best effort):**
-
-- `h-4 w-36`
-- `h-3 w-28`
-- `mt-3 grid gap-2`
-
-**Utility breakdown (grouped):**
-
-- **Layout / positioning:**
-  - `h-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `w-36` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `h-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `w-28` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `grid` — Grid layout.
-- **Spacing:**
-  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-
-#### `src/pages/TexHub.jsx:470`
-
-```jsx
-                        <SkeletonLine className="h-3 w-28" />
-                      </div>
-                      <div className="mt-3 grid gap-2">
-                        <SkeletonLine className="h-10" />
-```
-**Raw class strings detected (best effort):**
-
-- `h-3 w-28`
-- `mt-3 grid gap-2`
-- `h-10`
-
-**Utility breakdown (grouped):**
-
-- **Layout / positioning:**
-  - `h-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `w-28` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `grid` — Grid layout.
-  - `h-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Spacing:**
-  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-
-#### `src/pages/TexHub.jsx:472`
-
-```jsx
-                      <div className="mt-3 grid gap-2">
-                        <SkeletonLine className="h-10" />
-                        <SkeletonLine className="h-10" />
-                        <SkeletonLine className="h-10" />
-```
-**Raw class strings detected (best effort):**
-
-- `mt-3 grid gap-2`
-- `h-10`
-
-**Utility breakdown (grouped):**
-
-- **Layout / positioning:**
-  - `grid` — Grid layout.
-  - `h-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Spacing:**
-  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-
 #### `src/pages/TexHub.jsx:473`
 
 ```jsx
-                        <SkeletonLine className="h-10" />
-                        <SkeletonLine className="h-10" />
-                        <SkeletonLine className="h-10" />
+                        <SkeletonLine className="h-8" />
+                        <SkeletonLine className="h-8" />
                       </div>
+                    </div>
 ```
 **Raw class strings detected (best effort):**
 
-- `h-10`
+- `h-8`
 
 **Utility breakdown (grouped):**
 
 - **Layout / positioning:**
-  - `h-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `h-8` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
 #### `src/pages/TexHub.jsx:474`
 
 ```jsx
+                        <SkeletonLine className="h-8" />
+                      </div>
+                    </div>
+                    <div className="rounded-2xl bg-[#1E293B]/4 p-4 dark:bg-white/[0.03]">
+```
+**Raw class strings detected (best effort):**
+
+- `h-8`
+- `rounded-2xl bg-[#1E293B]/4 p-4 dark:bg-white/[0.03]`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `h-8` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `p-4` — Padding (all sides).
+- **Color / surface:**
+  - `bg-[#1E293B]/4` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-2xl` — Corner radius.
+- **Dark mode variants:**
+  - `dark:bg-white/[0.03]` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/TexHub.jsx:477`
+
+```jsx
+                    <div className="rounded-2xl bg-[#1E293B]/4 p-4 dark:bg-white/[0.03]">
+                      <div className="flex items-center justify-between gap-3">
+                        <SkeletonLine className="h-4 w-36" />
+                        <SkeletonLine className="h-3 w-28" />
+```
+**Raw class strings detected (best effort):**
+
+- `rounded-2xl bg-[#1E293B]/4 p-4 dark:bg-white/[0.03]`
+- `flex items-center justify-between gap-3`
+- `h-4 w-36`
+- `h-3 w-28`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `justify-between` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `h-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-36` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `h-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-28` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `p-4` — Padding (all sides).
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `bg-[#1E293B]/4` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-2xl` — Corner radius.
+- **Dark mode variants:**
+  - `dark:bg-white/[0.03]` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/TexHub.jsx:478`
+
+```jsx
+                      <div className="flex items-center justify-between gap-3">
+                        <SkeletonLine className="h-4 w-36" />
+                        <SkeletonLine className="h-3 w-28" />
+                      </div>
+```
+**Raw class strings detected (best effort):**
+
+- `flex items-center justify-between gap-3`
+- `h-4 w-36`
+- `h-3 w-28`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `justify-between` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `h-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-36` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `h-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-28` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `gap-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/TexHub.jsx:479`
+
+```jsx
+                        <SkeletonLine className="h-4 w-36" />
+                        <SkeletonLine className="h-3 w-28" />
+                      </div>
+                      <div className="mt-3 grid gap-2">
+```
+**Raw class strings detected (best effort):**
+
+- `h-4 w-36`
+- `h-3 w-28`
+- `mt-3 grid gap-2`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `h-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-36` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `h-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-28` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `grid` — Grid layout.
+- **Spacing:**
+  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/TexHub.jsx:480`
+
+```jsx
+                        <SkeletonLine className="h-3 w-28" />
+                      </div>
+                      <div className="mt-3 grid gap-2">
+                        <SkeletonLine className="h-10" />
+```
+**Raw class strings detected (best effort):**
+
+- `h-3 w-28`
+- `mt-3 grid gap-2`
+- `h-10`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `h-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-28` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `grid` — Grid layout.
+  - `h-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/TexHub.jsx:482`
+
+```jsx
+                      <div className="mt-3 grid gap-2">
+                        <SkeletonLine className="h-10" />
+                        <SkeletonLine className="h-10" />
+                        <SkeletonLine className="h-10" />
+```
+**Raw class strings detected (best effort):**
+
+- `mt-3 grid gap-2`
+- `h-10`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `grid` — Grid layout.
+  - `h-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/TexHub.jsx:483`
+
+```jsx
+                        <SkeletonLine className="h-10" />
+                        <SkeletonLine className="h-10" />
+                        <SkeletonLine className="h-10" />
+                      </div>
+```
+**Raw class strings detected (best effort):**
+
+- `h-10`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `h-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/TexHub.jsx:484`
+
+```jsx
                         <SkeletonLine className="h-10" />
                         <SkeletonLine className="h-10" />
                       </div>
@@ -1762,7 +1888,7 @@ export default function TexHub() {
 - **Layout / positioning:**
   - `h-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:475`
+#### `src/pages/TexHub.jsx:485`
 
 ```jsx
                         <SkeletonLine className="h-10" />
@@ -1779,7 +1905,7 @@ export default function TexHub() {
 - **Layout / positioning:**
   - `h-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:481`
+#### `src/pages/TexHub.jsx:491`
 
 ```jsx
                     <div className="rounded-2xl bg-white/80 p-4 shadow-[0_14px_35px_rgba(15,23,42,0.06)] dark:bg-white/[0.03] dark:shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
@@ -1817,7 +1943,7 @@ export default function TexHub() {
   - `dark:bg-white/[0.03]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-[0_20px_50px_rgba(0,0,0,0.45)]` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:482`
+#### `src/pages/TexHub.jsx:492`
 
 ```jsx
                       <div className="flex items-center justify-between gap-4">
@@ -1853,7 +1979,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:483`
+#### `src/pages/TexHub.jsx:493`
 
 ```jsx
                         <div className="min-w-0">
@@ -1884,7 +2010,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:484`
+#### `src/pages/TexHub.jsx:494`
 
 ```jsx
                           <p className="text-xs font-semibold text-emerald-700">{heroBuyerRequest.label}</p>
@@ -1913,7 +2039,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:485`
+#### `src/pages/TexHub.jsx:495`
 
 ```jsx
                           <p className="mt-1 truncate text-sm font-semibold text-[#1E293B] dark:text-white">{heroBuyerRequest.title}</p>
@@ -1939,7 +2065,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:489`
+#### `src/pages/TexHub.jsx:499`
 
 ```jsx
                       <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-[#475569] dark:text-slate-400">
@@ -1965,7 +2091,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:493`
+#### `src/pages/TexHub.jsx:503`
 
 ```jsx
                             className="flex items-center justify-between rounded-xl bg-[#1E293B]/4 px-3 py-2 dark:bg-white/[0.03]"
@@ -1998,7 +2124,7 @@ export default function TexHub() {
   - `dark:bg-white/[0.03]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:496`
+#### `src/pages/TexHub.jsx:506`
 
 ```jsx
                             <span className="font-semibold text-[#1E293B] dark:text-white">{field.value}</span>
@@ -2019,7 +2145,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:501`
+#### `src/pages/TexHub.jsx:511`
 
 ```jsx
                     <div className="rounded-2xl bg-[#1E293B]/4 p-4 dark:bg-white/[0.03]">
@@ -2058,7 +2184,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:502`
+#### `src/pages/TexHub.jsx:512`
 
 ```jsx
                       <div className="flex items-center justify-between gap-3">
@@ -2091,7 +2217,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:503`
+#### `src/pages/TexHub.jsx:513`
 
 ```jsx
                         <p className="text-sm font-semibold text-[#1E293B] dark:text-white">{heroFactories.title}</p>
@@ -2123,7 +2249,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:504`
+#### `src/pages/TexHub.jsx:514`
 
 ```jsx
                         <p className="text-xs text-[#475569] dark:text-slate-400">{heroFactories.subtitle}</p>
@@ -2150,7 +2276,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:506`
+#### `src/pages/TexHub.jsx:516`
 
 ```jsx
                       <div className="mt-3 grid gap-2">
@@ -2170,7 +2296,7 @@ export default function TexHub() {
   - `mt-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:510`
+#### `src/pages/TexHub.jsx:520`
 
 ```jsx
                             className="flex items-center justify-between rounded-2xl bg-white/80 px-4 py-3 dark:bg-[#05050A]"
@@ -2207,7 +2333,7 @@ export default function TexHub() {
 - **Other:**
   - `Review` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:512`
+#### `src/pages/TexHub.jsx:522`
 
 ```jsx
                             <p className="text-sm font-semibold text-[#1E293B] dark:text-white">{factory.name}</p>
@@ -2232,7 +2358,7 @@ export default function TexHub() {
 - **Other:**
   - `Review` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:520`
+#### `src/pages/TexHub.jsx:530`
 
 ```jsx
                 {loadError ? <p className="text-xs text-amber-700 dark:text-amber-300">{loadError}</p> : null}
@@ -2252,7 +2378,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-amber-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:526`
+#### `src/pages/TexHub.jsx:536`
 
 ```jsx
         <div id="about" className="mt-16">
@@ -2288,7 +2414,7 @@ export default function TexHub() {
   - `pointer-events-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `-inset-28` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:527`
+#### `src/pages/TexHub.jsx:537`
 
 ```jsx
           <div className="grid gap-6 lg:grid-cols-2">
@@ -2324,13 +2450,13 @@ export default function TexHub() {
   - `pointer-events-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `-inset-28` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:528`
+#### `src/pages/TexHub.jsx:538`
 
 ```jsx
             <Surface className="relative p-8">
               <div className="pointer-events-none absolute -inset-28 hidden dark:block bg-[radial-gradient(closest-side,rgba(59,130,246,0.10),transparent_70%)]" />
               <div className="relative z-10">
-              <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Problem</h3>
+                <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Why GarTexHub</h3>
 ```
 **Raw class strings detected (best effort):**
 
@@ -2362,13 +2488,13 @@ export default function TexHub() {
   - `pointer-events-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `-inset-28` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:529`
+#### `src/pages/TexHub.jsx:539`
 
 ```jsx
               <div className="pointer-events-none absolute -inset-28 hidden dark:block bg-[radial-gradient(closest-side,rgba(59,130,246,0.10),transparent_70%)]" />
               <div className="relative z-10">
-              <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Problem</h3>
-              <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+                <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Why GarTexHub</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
 ```
 **Raw class strings detected (best effort):**
 
@@ -2404,13 +2530,13 @@ export default function TexHub() {
   - `pointer-events-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `-inset-28` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:530`
+#### `src/pages/TexHub.jsx:540`
 
 ```jsx
               <div className="relative z-10">
-              <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Problem</h3>
-              <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                Typical marketplaces are loud and unstructured — teams lose time, trust, and context.
+                <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Why GarTexHub</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+                  A sourcing workflow network built only for garments and textiles: low noise, structured requests, and trust by design.
 ```
 **Raw class strings detected (best effort):**
 
@@ -2438,13 +2564,13 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:531`
+#### `src/pages/TexHub.jsx:541`
 
 ```jsx
-              <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Problem</h3>
-              <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                Typical marketplaces are loud and unstructured — teams lose time, trust, and context.
-              </p>
+                <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Why GarTexHub</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+                  A sourcing workflow network built only for garments and textiles: low noise, structured requests, and trust by design.
+                </p>
 ```
 **Raw class strings detected (best effort):**
 
@@ -2468,13 +2594,13 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:532`
+#### `src/pages/TexHub.jsx:542`
 
 ```jsx
-              <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                Typical marketplaces are loud and unstructured — teams lose time, trust, and context.
-              </p>
-              <ul className="mt-5 space-y-2 text-sm text-[#334155] dark:text-slate-300">
+                <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+                  A sourcing workflow network built only for garments and textiles: low noise, structured requests, and trust by design.
+                </p>
+                <ul className="mt-5 space-y-2 text-sm text-[#334155] dark:text-slate-300">
 ```
 **Raw class strings detected (best effort):**
 
@@ -2496,118 +2622,118 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
-
-#### `src/pages/TexHub.jsx:535`
-
-```jsx
-              <ul className="mt-5 space-y-2 text-sm text-[#334155] dark:text-slate-300">
-                <li>Noise from random listings</li>
-                <li>Unstructured buyer requirements</li>
-                <li>Weak verification signals</li>
-```
-**Raw class strings detected (best effort):**
-
-- `mt-5 space-y-2 text-sm text-[#334155] dark:text-slate-300`
-
-**Utility breakdown (grouped):**
-
-- **Spacing:**
-  - `mt-5` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `space-y-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Typography:**
-  - `text-sm` — Text color or text sizing.
-- **Color / surface:**
-  - `text-[#334155]` — Text color or text sizing.
-- **Dark mode variants:**
-  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
-
-#### `src/pages/TexHub.jsx:543`
-
-```jsx
-            <Surface className="relative p-8">
-              <div className="pointer-events-none absolute -inset-28 hidden dark:block bg-[radial-gradient(closest-side,rgba(16,185,129,0.10),transparent_70%)]" />
-              <div className="relative z-10">
-              <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Solution</h3>
-```
-**Raw class strings detected (best effort):**
-
-- `relative p-8`
-- `pointer-events-none absolute -inset-28 hidden dark:block bg-[radial-gradient(closest-side,rgba(16,185,129,0.10),transparent_70%)]`
-- `relative z-10`
-- `text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white`
-
-**Utility breakdown (grouped):**
-
-- **Layout / positioning:**
-  - `relative` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `absolute` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `hidden` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `z-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Spacing:**
-  - `p-8` — Padding (all sides).
-- **Typography:**
-  - `text-lg` — Text color or text sizing.
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `tracking-[-0.02em]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Color / surface:**
-  - `bg-[radial-gradient(closest-side,rgba(16,185,129,0.10),transparent_70%)]` — Background color/surface.
-  - `text-[#1E293B]` — Text color or text sizing.
-- **Dark mode variants:**
-  - `dark:block` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
-- **Other:**
-  - `pointer-events-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `-inset-28` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-
-#### `src/pages/TexHub.jsx:544`
-
-```jsx
-              <div className="pointer-events-none absolute -inset-28 hidden dark:block bg-[radial-gradient(closest-side,rgba(16,185,129,0.10),transparent_70%)]" />
-              <div className="relative z-10">
-              <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Solution</h3>
-              <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-```
-**Raw class strings detected (best effort):**
-
-- `pointer-events-none absolute -inset-28 hidden dark:block bg-[radial-gradient(closest-side,rgba(16,185,129,0.10),transparent_70%)]`
-- `relative z-10`
-- `text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white`
-- `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
-
-**Utility breakdown (grouped):**
-
-- **Layout / positioning:**
-  - `absolute` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `hidden` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `relative` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `z-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Spacing:**
-  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Typography:**
-  - `text-lg` — Text color or text sizing.
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `tracking-[-0.02em]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-sm` — Text color or text sizing.
-  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Color / surface:**
-  - `bg-[radial-gradient(closest-side,rgba(16,185,129,0.10),transparent_70%)]` — Background color/surface.
-  - `text-[#1E293B]` — Text color or text sizing.
-  - `text-[#475569]` — Text color or text sizing.
-- **Dark mode variants:**
-  - `dark:block` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
-- **Other:**
-  - `pointer-events-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `-inset-28` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
 #### `src/pages/TexHub.jsx:545`
 
 ```jsx
+                <ul className="mt-5 space-y-2 text-sm text-[#334155] dark:text-slate-300">
+                  {(heroValueProps || []).slice(0, 4).map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+```
+**Raw class strings detected (best effort):**
+
+- `mt-5 space-y-2 text-sm text-[#334155] dark:text-slate-300`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-5` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `space-y-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[#334155]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/TexHub.jsx:552`
+
+```jsx
+            <Surface className="relative p-8">
+              <div className="pointer-events-none absolute -inset-28 hidden dark:block bg-[radial-gradient(closest-side,rgba(16,185,129,0.10),transparent_70%)]" />
+              <div className="relative z-10">
+              <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Solution</h3>
+```
+**Raw class strings detected (best effort):**
+
+- `relative p-8`
+- `pointer-events-none absolute -inset-28 hidden dark:block bg-[radial-gradient(closest-side,rgba(16,185,129,0.10),transparent_70%)]`
+- `relative z-10`
+- `text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `relative` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `absolute` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `hidden` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `z-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `p-8` — Padding (all sides).
+- **Typography:**
+  - `text-lg` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-[-0.02em]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `bg-[radial-gradient(closest-side,rgba(16,185,129,0.10),transparent_70%)]` — Background color/surface.
+  - `text-[#1E293B]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:block` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `pointer-events-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `-inset-28` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/TexHub.jsx:553`
+
+```jsx
+              <div className="pointer-events-none absolute -inset-28 hidden dark:block bg-[radial-gradient(closest-side,rgba(16,185,129,0.10),transparent_70%)]" />
               <div className="relative z-10">
               <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Solution</h3>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                Clear surfaces, verified signals, and structured workflows — designed to stay calm at scale.
+```
+**Raw class strings detected (best effort):**
+
+- `pointer-events-none absolute -inset-28 hidden dark:block bg-[radial-gradient(closest-side,rgba(16,185,129,0.10),transparent_70%)]`
+- `relative z-10`
+- `text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white`
+- `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `absolute` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `hidden` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `relative` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `z-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-lg` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-[-0.02em]` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-sm` — Text color or text sizing.
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `bg-[radial-gradient(closest-side,rgba(16,185,129,0.10),transparent_70%)]` — Background color/surface.
+  - `text-[#1E293B]` — Text color or text sizing.
+  - `text-[#475569]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:block` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `pointer-events-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `-inset-28` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/TexHub.jsx:554`
+
+```jsx
+              <div className="relative z-10">
+              <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Solution</h3>
+              <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+                Clear surfaces, verified signals, and structured workflows -- designed to stay calm at scale.
 ```
 **Raw class strings detected (best effort):**
 
@@ -2635,12 +2761,12 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:546`
+#### `src/pages/TexHub.jsx:555`
 
 ```jsx
               <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Solution</h3>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                Clear surfaces, verified signals, and structured workflows — designed to stay calm at scale.
+                Clear surfaces, verified signals, and structured workflows -- designed to stay calm at scale.
               </p>
 ```
 **Raw class strings detected (best effort):**
@@ -2665,11 +2791,11 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:547`
+#### `src/pages/TexHub.jsx:556`
 
 ```jsx
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                Clear surfaces, verified signals, and structured workflows — designed to stay calm at scale.
+                Clear surfaces, verified signals, and structured workflows -- designed to stay calm at scale.
               </p>
               <ul className="mt-5 space-y-2 text-sm text-[#334155] dark:text-slate-300">
 ```
@@ -2694,7 +2820,7 @@ export default function TexHub() {
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:550`
+#### `src/pages/TexHub.jsx:559`
 
 ```jsx
               <ul className="mt-5 space-y-2 text-sm text-[#334155] dark:text-slate-300">
@@ -2718,7 +2844,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:561`
+#### `src/pages/TexHub.jsx:570`
 
 ```jsx
         <div id="how-it-works" className="mt-16">
@@ -2750,7 +2876,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:563`
+#### `src/pages/TexHub.jsx:572`
 
 ```jsx
             <h2 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">How GarTexHub works</h2>
@@ -2780,7 +2906,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:564`
+#### `src/pages/TexHub.jsx:573`
 
 ```jsx
             <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">A simple flow that stays structured end-to-end.</p>
@@ -2811,7 +2937,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:567`
+#### `src/pages/TexHub.jsx:576`
 
 ```jsx
           <div className="mt-6 grid gap-6 md:grid-cols-3">
@@ -2850,233 +2976,233 @@ export default function TexHub() {
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:568`
-
-```jsx
-            <Surface className="p-6">
-              <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Step 1</p>
-              <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Post or search</h4>
-              <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-```
-**Raw class strings detected (best effort):**
-
-- `p-6`
-- `text-xs font-semibold text-[#64748B] dark:text-slate-400`
-- `mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
-- `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
-
-**Utility breakdown (grouped):**
-
-- **Spacing:**
-  - `p-6` — Padding (all sides).
-  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Typography:**
-  - `text-xs` — Text color or text sizing.
-  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-base` — Text color or text sizing.
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-sm` — Text color or text sizing.
-  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Color / surface:**
-  - `text-[#64748B]` — Text color or text sizing.
-  - `text-[#1E293B]` — Text color or text sizing.
-  - `text-[#475569]` — Text color or text sizing.
-- **Dark mode variants:**
-  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
-
-#### `src/pages/TexHub.jsx:569`
-
-```jsx
-              <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Step 1</p>
-              <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Post or search</h4>
-              <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                Buyers post structured requirements. Factories publish products and capacity.
-```
-**Raw class strings detected (best effort):**
-
-- `text-xs font-semibold text-[#64748B] dark:text-slate-400`
-- `mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
-- `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
-
-**Utility breakdown (grouped):**
-
-- **Spacing:**
-  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Typography:**
-  - `text-xs` — Text color or text sizing.
-  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-base` — Text color or text sizing.
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-sm` — Text color or text sizing.
-  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Color / surface:**
-  - `text-[#64748B]` — Text color or text sizing.
-  - `text-[#1E293B]` — Text color or text sizing.
-  - `text-[#475569]` — Text color or text sizing.
-- **Dark mode variants:**
-  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
-
-#### `src/pages/TexHub.jsx:570`
-
-```jsx
-              <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Post or search</h4>
-              <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                Buyers post structured requirements. Factories publish products and capacity.
-              </p>
-```
-**Raw class strings detected (best effort):**
-
-- `mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
-- `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
-
-**Utility breakdown (grouped):**
-
-- **Spacing:**
-  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Typography:**
-  - `text-base` — Text color or text sizing.
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-sm` — Text color or text sizing.
-  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Color / surface:**
-  - `text-[#1E293B]` — Text color or text sizing.
-  - `text-[#475569]` — Text color or text sizing.
-- **Dark mode variants:**
-  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
-
-#### `src/pages/TexHub.jsx:571`
-
-```jsx
-              <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                Buyers post structured requirements. Factories publish products and capacity.
-              </p>
-            </Surface>
-```
-**Raw class strings detected (best effort):**
-
-- `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
-
-**Utility breakdown (grouped):**
-
-- **Spacing:**
-  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Typography:**
-  - `text-sm` — Text color or text sizing.
-  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Color / surface:**
-  - `text-[#475569]` — Text color or text sizing.
-- **Dark mode variants:**
-  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
-
-#### `src/pages/TexHub.jsx:575`
-
-```jsx
-            <Surface className="p-6">
-              <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Step 2</p>
-              <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Smart matching + claim lead</h4>
-              <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-```
-**Raw class strings detected (best effort):**
-
-- `p-6`
-- `text-xs font-semibold text-[#64748B] dark:text-slate-400`
-- `mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
-- `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
-
-**Utility breakdown (grouped):**
-
-- **Spacing:**
-  - `p-6` — Padding (all sides).
-  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Typography:**
-  - `text-xs` — Text color or text sizing.
-  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-base` — Text color or text sizing.
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-sm` — Text color or text sizing.
-  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Color / surface:**
-  - `text-[#64748B]` — Text color or text sizing.
-  - `text-[#1E293B]` — Text color or text sizing.
-  - `text-[#475569]` — Text color or text sizing.
-- **Dark mode variants:**
-  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
-
-#### `src/pages/TexHub.jsx:576`
-
-```jsx
-              <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Step 2</p>
-              <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Smart matching + claim lead</h4>
-              <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                Agents claim requests. AI summarizes context so the team moves fast without noise.
-```
-**Raw class strings detected (best effort):**
-
-- `text-xs font-semibold text-[#64748B] dark:text-slate-400`
-- `mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
-- `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
-
-**Utility breakdown (grouped):**
-
-- **Spacing:**
-  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Typography:**
-  - `text-xs` — Text color or text sizing.
-  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-base` — Text color or text sizing.
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-sm` — Text color or text sizing.
-  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Color / surface:**
-  - `text-[#64748B]` — Text color or text sizing.
-  - `text-[#1E293B]` — Text color or text sizing.
-  - `text-[#475569]` — Text color or text sizing.
-- **Dark mode variants:**
-  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
-
 #### `src/pages/TexHub.jsx:577`
 
 ```jsx
-              <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Smart matching + claim lead</h4>
+            <Surface className="p-6">
+              <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Step 1</p>
+              <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Post or search</h4>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                Agents claim requests. AI summarizes context so the team moves fast without noise.
-              </p>
 ```
 **Raw class strings detected (best effort):**
 
+- `p-6`
+- `text-xs font-semibold text-[#64748B] dark:text-slate-400`
 - `mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
 - `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
 
 **Utility breakdown (grouped):**
 
 - **Spacing:**
+  - `p-6` — Padding (all sides).
   - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-base` — Text color or text sizing.
   - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-sm` — Text color or text sizing.
   - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Color / surface:**
+  - `text-[#64748B]` — Text color or text sizing.
   - `text-[#1E293B]` — Text color or text sizing.
   - `text-[#475569]` — Text color or text sizing.
 - **Dark mode variants:**
-  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
 #### `src/pages/TexHub.jsx:578`
 
 ```jsx
+              <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Step 1</p>
+              <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Post or search</h4>
+              <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+                Buyers post structured requirements. Factories publish products and capacity.
+```
+**Raw class strings detected (best effort):**
+
+- `text-xs font-semibold text-[#64748B] dark:text-slate-400`
+- `mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
+- `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-base` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-sm` — Text color or text sizing.
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `text-[#64748B]` — Text color or text sizing.
+  - `text-[#1E293B]` — Text color or text sizing.
+  - `text-[#475569]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/TexHub.jsx:579`
+
+```jsx
+              <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Post or search</h4>
+              <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+                Buyers post structured requirements. Factories publish products and capacity.
+              </p>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
+- `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-base` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-sm` — Text color or text sizing.
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `text-[#1E293B]` — Text color or text sizing.
+  - `text-[#475569]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/TexHub.jsx:580`
+
+```jsx
+              <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+                Buyers post structured requirements. Factories publish products and capacity.
+              </p>
+            </Surface>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `text-[#475569]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/TexHub.jsx:584`
+
+```jsx
+            <Surface className="p-6">
+              <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Step 2</p>
+              <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Smart matching + claim lead</h4>
+              <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+```
+**Raw class strings detected (best effort):**
+
+- `p-6`
+- `text-xs font-semibold text-[#64748B] dark:text-slate-400`
+- `mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
+- `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-6` — Padding (all sides).
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-base` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-sm` — Text color or text sizing.
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `text-[#64748B]` — Text color or text sizing.
+  - `text-[#1E293B]` — Text color or text sizing.
+  - `text-[#475569]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/TexHub.jsx:585`
+
+```jsx
+              <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Step 2</p>
+              <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Smart matching + claim lead</h4>
+              <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+                Agents claim requests. AI summarizes context so the team moves fast without noise.
+```
+**Raw class strings detected (best effort):**
+
+- `text-xs font-semibold text-[#64748B] dark:text-slate-400`
+- `mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
+- `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-base` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-sm` — Text color or text sizing.
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `text-[#64748B]` — Text color or text sizing.
+  - `text-[#1E293B]` — Text color or text sizing.
+  - `text-[#475569]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/TexHub.jsx:586`
+
+```jsx
+              <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Smart matching + claim lead</h4>
+              <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+                Agents claim requests. AI summarizes context so the team moves fast without noise.
+              </p>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
+- `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-base` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-sm` — Text color or text sizing.
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `text-[#1E293B]` — Text color or text sizing.
+  - `text-[#475569]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/TexHub.jsx:587`
+
+```jsx
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
                 Agents claim requests. AI summarizes context so the team moves fast without noise.
               </p>
@@ -3098,7 +3224,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:582`
+#### `src/pages/TexHub.jsx:591`
 
 ```jsx
             <Surface className="p-6">
@@ -3134,7 +3260,7 @@ export default function TexHub() {
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:583`
+#### `src/pages/TexHub.jsx:592`
 
 ```jsx
               <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Step 3</p>
@@ -3168,7 +3294,7 @@ export default function TexHub() {
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:584`
+#### `src/pages/TexHub.jsx:593`
 
 ```jsx
               <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Chat, call, contract</h4>
@@ -3198,7 +3324,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:585`
+#### `src/pages/TexHub.jsx:594`
 
 ```jsx
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
@@ -3222,7 +3348,429 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:592`
+#### `src/pages/TexHub.jsx:602`
+
+```jsx
+          <div className="mt-16">
+            <div className="flex flex-col items-center text-center">
+              <h3 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Why GarTexHub</h3>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+```
+**Raw class strings detected (best effort):**
+
+- `mt-16`
+- `flex flex-col items-center text-center`
+- `text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white`
+- `mt-2 max-w-2xl text-sm leading-relaxed text-[#475569] dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `flex-col` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `max-w-2xl` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mt-16` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-center` — Text color or text sizing.
+  - `text-2xl` — Text color or text sizing.
+  - `font-extrabold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-sm` — Text color or text sizing.
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `text-[#1E293B]` — Text color or text sizing.
+  - `text-[#475569]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/TexHub.jsx:603`
+
+```jsx
+            <div className="flex flex-col items-center text-center">
+              <h3 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Why GarTexHub</h3>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+                Clear positioning and a structured sourcing workflow -- built only for garments & textile.
+```
+**Raw class strings detected (best effort):**
+
+- `flex flex-col items-center text-center`
+- `text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white`
+- `mt-2 max-w-2xl text-sm leading-relaxed text-[#475569] dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `flex-col` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `max-w-2xl` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-center` — Text color or text sizing.
+  - `text-2xl` — Text color or text sizing.
+  - `font-extrabold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-sm` — Text color or text sizing.
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `text-[#1E293B]` — Text color or text sizing.
+  - `text-[#475569]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/TexHub.jsx:604`
+
+```jsx
+              <h3 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Why GarTexHub</h3>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+                Clear positioning and a structured sourcing workflow -- built only for garments & textile.
+              </p>
+```
+**Raw class strings detected (best effort):**
+
+- `text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white`
+- `mt-2 max-w-2xl text-sm leading-relaxed text-[#475569] dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `max-w-2xl` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-2xl` — Text color or text sizing.
+  - `font-extrabold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-sm` — Text color or text sizing.
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `text-[#1E293B]` — Text color or text sizing.
+  - `text-[#475569]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/TexHub.jsx:605`
+
+```jsx
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+                Clear positioning and a structured sourcing workflow -- built only for garments & textile.
+              </p>
+            </div>
+```
+**Raw class strings detected (best effort):**
+
+- `mt-2 max-w-2xl text-sm leading-relaxed text-[#475569] dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `max-w-2xl` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `text-[#475569]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/TexHub.jsx:610`
+
+```jsx
+            <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 dark:gap-px">
+              {marketingSections.map((section, idx) => (
+                <BentoMotion key={section.id || section.title || String(idx)} index={idx} className="md:col-span-1">
+                  <Surface className="p-7">
+```
+**Raw class strings detected (best effort):**
+
+- `mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 dark:gap-px`
+- `md:col-span-1`
+- `p-7`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `grid` — Grid layout.
+  - `grid-cols-1` — Grid layout.
+- **Spacing:**
+  - `mt-8` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `gap-6` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-7` — Padding (all sides).
+- **Responsive variants:**
+  - `md:grid-cols-2` — Variant prefix (responsive, dark, or interaction state).
+  - `md:col-span-1` — Variant prefix (responsive, dark, or interaction state).
+- **Dark mode variants:**
+  - `dark:gap-px` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/TexHub.jsx:612`
+
+```jsx
+                <BentoMotion key={section.id || section.title || String(idx)} index={idx} className="md:col-span-1">
+                  <Surface className="p-7">
+                    {section.eyebrow ? (
+                      <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">{section.eyebrow}</p>
+```
+**Raw class strings detected (best effort):**
+
+- `md:col-span-1`
+- `p-7`
+- `text-xs font-semibold text-[#64748B] dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-7` — Padding (all sides).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `text-[#64748B]` — Text color or text sizing.
+- **Responsive variants:**
+  - `md:col-span-1` — Variant prefix (responsive, dark, or interaction state).
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/TexHub.jsx:613`
+
+```jsx
+                  <Surface className="p-7">
+                    {section.eyebrow ? (
+                      <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">{section.eyebrow}</p>
+                    ) : null}
+```
+**Raw class strings detected (best effort):**
+
+- `p-7`
+- `text-xs font-semibold text-[#64748B] dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `p-7` — Padding (all sides).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `text-[#64748B]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/TexHub.jsx:615`
+
+```jsx
+                      <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">{section.eyebrow}</p>
+                    ) : null}
+                    <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{section.title}</h4>
+                    {section.description ? (
+```
+**Raw class strings detected (best effort):**
+
+- `text-xs font-semibold text-[#64748B] dark:text-slate-400`
+- `mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xs` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-base` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `text-[#64748B]` — Text color or text sizing.
+  - `text-[#1E293B]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/TexHub.jsx:617`
+
+```jsx
+                    <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{section.title}</h4>
+                    {section.description ? (
+                      <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">{section.description}</p>
+                    ) : null}
+```
+**Raw class strings detected (best effort):**
+
+- `mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
+- `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-base` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-sm` — Text color or text sizing.
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `text-[#1E293B]` — Text color or text sizing.
+  - `text-[#475569]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/TexHub.jsx:619`
+
+```jsx
+                      <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">{section.description}</p>
+                    ) : null}
+                    {Array.isArray(section.bullets) && section.bullets.length ? (
+                      <ul className="mt-4 space-y-2 text-sm text-[#334155] dark:text-slate-300">
+```
+**Raw class strings detected (best effort):**
+
+- `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
+- `mt-4 space-y-2 text-sm text-[#334155] dark:text-slate-300`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `mt-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `space-y-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `text-[#475569]` — Text color or text sizing.
+  - `text-[#334155]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/TexHub.jsx:622`
+
+```jsx
+                      <ul className="mt-4 space-y-2 text-sm text-[#334155] dark:text-slate-300">
+                        {section.bullets.map((bullet) => (
+                          <li key={bullet} className="flex items-start gap-2">
+                            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500/90" />
+```
+**Raw class strings detected (best effort):**
+
+- `mt-4 space-y-2 text-sm text-[#334155] dark:text-slate-300`
+- `flex items-start gap-2`
+- `mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500/90`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `items-start` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `h-1.5` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-1.5` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mt-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `space-y-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-sm` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[#334155]` — Text color or text sizing.
+  - `bg-emerald-500/90` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-full` — Corner radius.
+- **Dark mode variants:**
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `shrink-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/TexHub.jsx:624`
+
+```jsx
+                          <li key={bullet} className="flex items-start gap-2">
+                            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500/90" />
+                            <span className="leading-relaxed">{bullet}</span>
+                          </li>
+```
+**Raw class strings detected (best effort):**
+
+- `flex items-start gap-2`
+- `mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500/90`
+- `leading-relaxed`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `items-start` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `h-1.5` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-1.5` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `bg-emerald-500/90` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-full` — Corner radius.
+- **Other:**
+  - `shrink-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/TexHub.jsx:625`
+
+```jsx
+                            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500/90" />
+                            <span className="leading-relaxed">{bullet}</span>
+                          </li>
+                        ))}
+```
+**Raw class strings detected (best effort):**
+
+- `mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500/90`
+- `leading-relaxed`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `h-1.5` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `w-1.5` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mt-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `bg-emerald-500/90` — Background color/surface.
+- **Borders / rings / shadows:**
+  - `rounded-full` — Corner radius.
+- **Other:**
+  - `shrink-0` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/TexHub.jsx:626`
+
+```jsx
+                            <span className="leading-relaxed">{bullet}</span>
+                          </li>
+                        ))}
+                      </ul>
+```
+**Raw class strings detected (best effort):**
+
+- `leading-relaxed`
+
+**Utility breakdown (grouped):**
+
+- **Typography:**
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/TexHub.jsx:638`
 
 ```jsx
         <div className="mt-16">
@@ -3261,7 +3809,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:593`
+#### `src/pages/TexHub.jsx:639`
 
 ```jsx
           <div className="flex flex-col items-center text-center">
@@ -3298,7 +3846,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:594`
+#### `src/pages/TexHub.jsx:640`
 
 ```jsx
             <h3 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Platform features</h3>
@@ -3330,7 +3878,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:595`
+#### `src/pages/TexHub.jsx:641`
 
 ```jsx
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#475569] dark:text-slate-400">
@@ -3356,7 +3904,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:601`
+#### `src/pages/TexHub.jsx:647`
 
 ```jsx
             className={[
@@ -3391,7 +3939,7 @@ export default function TexHub() {
 - **Other:**
   - `professional` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:606`
+#### `src/pages/TexHub.jsx:652`
 
 ```jsx
           <div className="grid grid-cols-1 gap-6 md:grid-cols-6 dark:gap-px">
@@ -3427,7 +3975,7 @@ export default function TexHub() {
   - `dark:gap-px` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:607`
+#### `src/pages/TexHub.jsx:653`
 
 ```jsx
             <BentoMotion index={0} className="md:col-span-3">
@@ -3462,7 +4010,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:608`
+#### `src/pages/TexHub.jsx:654`
 
 ```jsx
             <Surface className="p-7">
@@ -3494,7 +4042,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:609`
+#### `src/pages/TexHub.jsx:655`
 
 ```jsx
               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.professionalFeed.title}</h4>
@@ -3524,7 +4072,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:610`
+#### `src/pages/TexHub.jsx:656`
 
 ```jsx
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
@@ -3553,7 +4101,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:613`
+#### `src/pages/TexHub.jsx:659`
 
 ```jsx
               <div className="mt-5 grid gap-2">
@@ -3575,7 +4123,7 @@ export default function TexHub() {
   - `mt-5` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:616`
+#### `src/pages/TexHub.jsx:662`
 
 ```jsx
                     <SkeletonLine className="h-10" />
@@ -3592,7 +4140,7 @@ export default function TexHub() {
 - **Layout / positioning:**
   - `h-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:617`
+#### `src/pages/TexHub.jsx:663`
 
 ```jsx
                     <SkeletonLine className="h-10" />
@@ -3609,7 +4157,7 @@ export default function TexHub() {
 - **Layout / positioning:**
   - `h-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:618`
+#### `src/pages/TexHub.jsx:664`
 
 ```jsx
                     <SkeletonLine className="h-10" />
@@ -3629,7 +4177,7 @@ export default function TexHub() {
 - **Other:**
   - `popLayout` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:628`
+#### `src/pages/TexHub.jsx:674`
 
 ```jsx
                       className="grid gap-2"
@@ -3648,7 +4196,7 @@ export default function TexHub() {
 - **Spacing:**
   - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:633`
+#### `src/pages/TexHub.jsx:679`
 
 ```jsx
                           className="flex items-center justify-between rounded-2xl bg-slate-900/4 px-4 py-3 dark:bg-white/[0.03]"
@@ -3693,7 +4241,7 @@ export default function TexHub() {
   - `dark:bg-white/[0.06]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:635`
+#### `src/pages/TexHub.jsx:681`
 
 ```jsx
                           <p className="text-sm font-semibold text-[#1E293B] dark:text-white">{lane.label}</p>
@@ -3728,7 +4276,7 @@ export default function TexHub() {
   - `dark:bg-white/[0.06]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:636`
+#### `src/pages/TexHub.jsx:682`
 
 ```jsx
                           <span className="rounded-full bg-[#1E293B]/5 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#64748B] dark:bg-white/[0.06] dark:text-slate-400">
@@ -3759,7 +4307,7 @@ export default function TexHub() {
   - `dark:bg-white/[0.06]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:648`
+#### `src/pages/TexHub.jsx:694`
 
 ```jsx
             <BentoMotion index={1} className="md:col-span-3">
@@ -3785,7 +4333,7 @@ export default function TexHub() {
 - **Responsive variants:**
   - `md:col-span-3` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:649`
+#### `src/pages/TexHub.jsx:695`
 
 ```jsx
             <Surface className="p-7">
@@ -3817,7 +4365,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:650`
+#### `src/pages/TexHub.jsx:696`
 
 ```jsx
               <div className="flex items-center justify-between gap-4">
@@ -3853,7 +4401,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:652`
+#### `src/pages/TexHub.jsx:698`
 
 ```jsx
                   <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.structuredBuyerRequests.title}</h4>
@@ -3883,7 +4431,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:653`
+#### `src/pages/TexHub.jsx:699`
 
 ```jsx
                   <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
@@ -3907,7 +4455,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:660`
+#### `src/pages/TexHub.jsx:706`
 
 ```jsx
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -3931,7 +4479,7 @@ export default function TexHub() {
 - **Responsive variants:**
   - `sm:grid-cols-2` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:663`
+#### `src/pages/TexHub.jsx:709`
 
 ```jsx
                     <SkeletonLine className="h-10" />
@@ -3948,7 +4496,7 @@ export default function TexHub() {
 - **Layout / positioning:**
   - `h-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:664`
+#### `src/pages/TexHub.jsx:710`
 
 ```jsx
                     <SkeletonLine className="h-10" />
@@ -3965,7 +4513,7 @@ export default function TexHub() {
 - **Layout / positioning:**
   - `h-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:665`
+#### `src/pages/TexHub.jsx:711`
 
 ```jsx
                     <SkeletonLine className="h-10" />
@@ -3982,7 +4530,7 @@ export default function TexHub() {
 - **Layout / positioning:**
   - `h-10` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:666`
+#### `src/pages/TexHub.jsx:712`
 
 ```jsx
                     <SkeletonLine className="h-10" />
@@ -4002,7 +4550,7 @@ export default function TexHub() {
 - **Other:**
   - `popLayout` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:676`
+#### `src/pages/TexHub.jsx:722`
 
 ```jsx
                       className="grid gap-3 sm:grid-cols-2"
@@ -4023,7 +4571,7 @@ export default function TexHub() {
 - **Responsive variants:**
   - `sm:grid-cols-2` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:681`
+#### `src/pages/TexHub.jsx:727`
 
 ```jsx
                           className="flex items-center justify-between rounded-2xl bg-slate-900/4 px-4 py-3 text-sm dark:bg-white/[0.03]"
@@ -4060,7 +4608,7 @@ export default function TexHub() {
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:683`
+#### `src/pages/TexHub.jsx:729`
 
 ```jsx
                           <span className="text-[#64748B] dark:text-slate-400">{field.label}</span>
@@ -4084,7 +4632,7 @@ export default function TexHub() {
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:684`
+#### `src/pages/TexHub.jsx:730`
 
 ```jsx
                           <span className="font-semibold text-[#1E293B] dark:text-white">{field.value}</span>
@@ -4105,7 +4653,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:694`
+#### `src/pages/TexHub.jsx:740`
 
 ```jsx
             <BentoMotion index={2} className="md:col-span-2">
@@ -4140,7 +4688,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white/80` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:695`
+#### `src/pages/TexHub.jsx:741`
 
 ```jsx
             <GlassSurface className="p-7">
@@ -4175,7 +4723,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white/80` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:696`
+#### `src/pages/TexHub.jsx:742`
 
 ```jsx
               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.contractVault.title}</h4>
@@ -4208,7 +4756,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white/80` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:697`
+#### `src/pages/TexHub.jsx:743`
 
 ```jsx
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-white/80">{bentoView.contractVault.description}</p>
@@ -4244,7 +4792,7 @@ export default function TexHub() {
   - `dark:bg-white/12` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:698`
+#### `src/pages/TexHub.jsx:744`
 
 ```jsx
               <div className="mt-5 space-y-2">
@@ -4275,7 +4823,7 @@ export default function TexHub() {
   - `dark:bg-white/12` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:700`
+#### `src/pages/TexHub.jsx:746`
 
 ```jsx
                   <div key={item} className="rounded-2xl bg-[#1E293B]/5 px-4 py-3 text-sm text-[#1E293B] dark:bg-white/12 dark:text-white">
@@ -4303,7 +4851,7 @@ export default function TexHub() {
   - `dark:bg-white/12` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:705`
+#### `src/pages/TexHub.jsx:751`
 
 ```jsx
               <div className="mt-5 inline-flex">
@@ -4338,7 +4886,7 @@ export default function TexHub() {
   - `dark:text-emerald-200` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-[0_0_26px_rgba(16,185,129,0.24)]` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:706`
+#### `src/pages/TexHub.jsx:752`
 
 ```jsx
                 <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_16px_40px_rgba(16,185,129,0.12)] dark:bg-emerald-400/18 dark:text-emerald-200 dark:shadow-[0_0_26px_rgba(16,185,129,0.24)]">
@@ -4369,7 +4917,7 @@ export default function TexHub() {
   - `dark:text-emerald-200` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-[0_0_26px_rgba(16,185,129,0.24)]` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:713`
+#### `src/pages/TexHub.jsx:759`
 
 ```jsx
             <BentoMotion index={3} className="md:col-span-4">
@@ -4404,7 +4952,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:714`
+#### `src/pages/TexHub.jsx:760`
 
 ```jsx
             <Surface className="p-7">
@@ -4436,7 +4984,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:715`
+#### `src/pages/TexHub.jsx:761`
 
 ```jsx
               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.enterpriseAnalytics.title}</h4>
@@ -4466,7 +5014,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:716`
+#### `src/pages/TexHub.jsx:762`
 
 ```jsx
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
@@ -4497,7 +5045,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:719`
+#### `src/pages/TexHub.jsx:765`
 
 ```jsx
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -4533,7 +5081,7 @@ export default function TexHub() {
   - `dark:bg-white/[0.03]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:721`
+#### `src/pages/TexHub.jsx:767`
 
 ```jsx
                   <div key={stat.label} className="rounded-2xl bg-slate-900/4 p-4 dark:bg-white/[0.03]">
@@ -4569,7 +5117,7 @@ export default function TexHub() {
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:722`
+#### `src/pages/TexHub.jsx:768`
 
 ```jsx
                     <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">{stat.label}</p>
@@ -4599,7 +5147,7 @@ export default function TexHub() {
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:723`
+#### `src/pages/TexHub.jsx:769`
 
 ```jsx
                     <p className="mt-2 text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">{stat.value}</p>
@@ -4624,7 +5172,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:730`
+#### `src/pages/TexHub.jsx:776`
 
 ```jsx
             <BentoMotion index={4} className="md:col-span-4">
@@ -4660,7 +5208,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:731`
+#### `src/pages/TexHub.jsx:777`
 
 ```jsx
             <Surface className="p-7 bg-slate-900/3">
@@ -4693,7 +5241,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:732`
+#### `src/pages/TexHub.jsx:778`
 
 ```jsx
               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.agentLock.title}</h4>
@@ -4723,7 +5271,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:733`
+#### `src/pages/TexHub.jsx:779`
 
 ```jsx
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
@@ -4754,7 +5302,7 @@ export default function TexHub() {
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:bg-white/[0.03]` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:736`
+#### `src/pages/TexHub.jsx:782`
 
 ```jsx
               <div className="mt-5 rounded-2xl bg-white/70 p-4 dark:bg-white/[0.03]">
@@ -4799,7 +5347,7 @@ export default function TexHub() {
   - `dark:bg-white/[0.06]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:737`
+#### `src/pages/TexHub.jsx:783`
 
 ```jsx
                 <div className="flex items-center justify-between gap-3">
@@ -4838,7 +5386,7 @@ export default function TexHub() {
   - `dark:bg-white/[0.06]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:738`
+#### `src/pages/TexHub.jsx:784`
 
 ```jsx
                   <p className="text-sm font-semibold text-[#1E293B] dark:text-white">{bentoView.agentLock.requestLabel}</p>
@@ -4871,7 +5419,7 @@ export default function TexHub() {
   - `dark:bg-white/[0.06]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:739`
+#### `src/pages/TexHub.jsx:785`
 
 ```jsx
                   <span className="rounded-full bg-slate-900/6 px-3 py-1 text-xs font-semibold text-[#334155] dark:bg-white/[0.06] dark:text-slate-300">
@@ -4900,7 +5448,7 @@ export default function TexHub() {
   - `dark:bg-white/[0.06]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:743`
+#### `src/pages/TexHub.jsx:789`
 
 ```jsx
                 <p className="mt-2 text-xs leading-relaxed text-[#475569] dark:text-slate-400">
@@ -4924,7 +5472,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:750`
+#### `src/pages/TexHub.jsx:796`
 
 ```jsx
             <BentoMotion index={5} className="md:col-span-2">
@@ -4947,7 +5495,7 @@ export default function TexHub() {
 - **Responsive variants:**
   - `md:col-span-2` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:752`
+#### `src/pages/TexHub.jsx:798`
 
 ```jsx
               className={[
@@ -4973,12 +5521,12 @@ export default function TexHub() {
   - `professional` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `:` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:757`
+#### `src/pages/TexHub.jsx:803`
 
 ```jsx
               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Unique toggle</h4>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                A tactile switch for diverse content modes — recessed track, raised handle.
+                A tactile switch for diverse content modes -- recessed track, raised handle.
               </p>
 ```
 **Raw class strings detected (best effort):**
@@ -5003,11 +5551,11 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:758`
+#### `src/pages/TexHub.jsx:804`
 
 ```jsx
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                A tactile switch for diverse content modes — recessed track, raised handle.
+                A tactile switch for diverse content modes -- recessed track, raised handle.
               </p>
               <div className="mt-5 inline-flex items-center gap-3">
 ```
@@ -5033,7 +5581,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:761`
+#### `src/pages/TexHub.jsx:807`
 
 ```jsx
               <div className="mt-5 inline-flex items-center gap-3">
@@ -5061,7 +5609,7 @@ export default function TexHub() {
   - `professional` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `diverse` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:765`
+#### `src/pages/TexHub.jsx:811`
 
 ```jsx
                   className={[
@@ -5101,7 +5649,7 @@ export default function TexHub() {
 - **Other:**
   - `professional` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:777`
+#### `src/pages/TexHub.jsx:823`
 
 ```jsx
                     className="h-8 w-8 rounded-full bg-white shadow-[0_10px_22px_rgba(15,23,42,0.20)] dark:bg-white/90 dark:shadow-[0_14px_40px_rgba(0,0,0,0.65)]"
@@ -5133,7 +5681,7 @@ export default function TexHub() {
   - `dark:shadow-[0_14px_40px_rgba(0,0,0,0.65)]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:780`
+#### `src/pages/TexHub.jsx:826`
 
 ```jsx
                 <span className="text-sm font-semibold text-[#334155] dark:text-slate-300">
@@ -5162,7 +5710,7 @@ export default function TexHub() {
   - `Professional` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Diverse` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:787`
+#### `src/pages/TexHub.jsx:833`
 
 ```jsx
             <BentoMotion index={6} className="md:col-span-2">
@@ -5197,7 +5745,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:788`
+#### `src/pages/TexHub.jsx:834`
 
 ```jsx
             <Surface className="p-7">
@@ -5229,7 +5777,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:789`
+#### `src/pages/TexHub.jsx:835`
 
 ```jsx
               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Factory video gallery</h4>
@@ -5259,7 +5807,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:790`
+#### `src/pages/TexHub.jsx:836`
 
 ```jsx
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
@@ -5289,7 +5837,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:793`
+#### `src/pages/TexHub.jsx:839`
 
 ```jsx
               <div className="mt-5 overflow-hidden rounded-2xl">
@@ -5313,13 +5861,13 @@ export default function TexHub() {
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
 
-#### `src/pages/TexHub.jsx:794`
+#### `src/pages/TexHub.jsx:840`
 
 ```jsx
                 <div className="grid grid-cols-3">
                   {Array.from({ length: 6 }).map((_, i) => (
                     <div
-                      // eslint-disable-next-line react/no-array-index-key
+                      key={i}
 ```
 **Raw class strings detected (best effort):**
 
@@ -5331,7 +5879,7 @@ export default function TexHub() {
   - `grid` — Grid layout.
   - `grid-cols-3` — Grid layout.
 
-#### `src/pages/TexHub.jsx:799`
+#### `src/pages/TexHub.jsx:844`
 
 ```jsx
                       className={[
@@ -5362,7 +5910,7 @@ export default function TexHub() {
 - **Other:**
   - `skeleton` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:811`
+#### `src/pages/TexHub.jsx:856`
 
 ```jsx
             <BentoMotion index={7} className="md:col-span-4">
@@ -5397,13 +5945,13 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:812`
+#### `src/pages/TexHub.jsx:857`
 
 ```jsx
             <Surface className="p-7">
               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">AI assistant</h4>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                A floating assistant that feels premium — glassy, calm, and helpful.
+                A floating assistant that feels premium -- glassy, calm, and helpful.
 ```
 **Raw class strings detected (best effort):**
 
@@ -5429,12 +5977,12 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:813`
+#### `src/pages/TexHub.jsx:858`
 
 ```jsx
               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">AI assistant</h4>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                A floating assistant that feels premium — glassy, calm, and helpful.
+                A floating assistant that feels premium -- glassy, calm, and helpful.
               </p>
 ```
 **Raw class strings detected (best effort):**
@@ -5459,11 +6007,11 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:814`
+#### `src/pages/TexHub.jsx:859`
 
 ```jsx
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                A floating assistant that feels premium — glassy, calm, and helpful.
+                A floating assistant that feels premium -- glassy, calm, and helpful.
               </p>
               <div className="mt-5 rounded-2xl bg-white/55 backdrop-blur-md p-4 shadow-[0_18px_50px_rgba(15,23,42,0.10)] ring-1 ring-white/50 dark:bg-white/[0.03] dark:ring-white/10">
 ```
@@ -5495,11 +6043,11 @@ export default function TexHub() {
   - `dark:bg-white/[0.03]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:817`
+#### `src/pages/TexHub.jsx:862`
 
 ```jsx
               <div className="mt-5 rounded-2xl bg-white/55 backdrop-blur-md p-4 shadow-[0_18px_50px_rgba(15,23,42,0.10)] ring-1 ring-white/50 dark:bg-white/[0.03] dark:ring-white/10">
-                <p className="text-sm font-semibold text-[#1E293B] dark:text-white">“Need help posting a request?”</p>
+                <p className="text-sm font-semibold text-[#1E293B] dark:text-white">“Need help posting a request*”</p>
                 <p className="mt-1 text-xs leading-relaxed text-[#475569] dark:text-slate-400">I can generate a structured template in seconds.</p>
               </div>
 ```
@@ -5536,10 +6084,10 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:818`
+#### `src/pages/TexHub.jsx:863`
 
 ```jsx
-                <p className="text-sm font-semibold text-[#1E293B] dark:text-white">“Need help posting a request?”</p>
+                <p className="text-sm font-semibold text-[#1E293B] dark:text-white">“Need help posting a request*”</p>
                 <p className="mt-1 text-xs leading-relaxed text-[#475569] dark:text-slate-400">I can generate a structured template in seconds.</p>
               </div>
             </Surface>
@@ -5565,7 +6113,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:819`
+#### `src/pages/TexHub.jsx:864`
 
 ```jsx
                 <p className="mt-1 text-xs leading-relaxed text-[#475569] dark:text-slate-400">I can generate a structured template in seconds.</p>
@@ -5589,7 +6137,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:827`
+#### `src/pages/TexHub.jsx:872`
 
 ```jsx
         <div className="mt-16">
@@ -5617,7 +6165,7 @@ export default function TexHub() {
   - `lg:items-center` — Variant prefix (responsive, dark, or interaction state).
   - `lg:col-span-7` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:828`
+#### `src/pages/TexHub.jsx:873`
 
 ```jsx
           <Surface className="p-10">
@@ -5652,7 +6200,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:829`
+#### `src/pages/TexHub.jsx:874`
 
 ```jsx
             <div className="grid gap-10 lg:grid-cols-12 lg:items-center">
@@ -5691,7 +6239,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:830`
+#### `src/pages/TexHub.jsx:875`
 
 ```jsx
               <div className="lg:col-span-7">
@@ -5724,7 +6272,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:831`
+#### `src/pages/TexHub.jsx:876`
 
 ```jsx
                 <h3 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Built for growing buying houses</h3>
@@ -5754,7 +6302,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:832`
+#### `src/pages/TexHub.jsx:877`
 
 ```jsx
                 <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
@@ -5778,19 +6326,19 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:836`
+#### `src/pages/TexHub.jsx:881`
 
 ```jsx
               <div className="lg:col-span-5 lg:flex lg:justify-end">
                 <MagneticLinkButton
                   to="/pricing"
-                  className="border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-emerald-600 text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-emerald-500 hover:shadow-[0_22px_50px_rgba(16,185,129,0.28)] dark:bg-emerald-500/80 dark:hover:bg-emerald-500/90 dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
+                  className="px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-emerald-600 text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-emerald-500 hover:shadow-[0_22px_50px_rgba(16,185,129,0.28)] dark:bg-emerald-500/80 dark:hover:bg-emerald-500/90 dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
 ```
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-5 lg:flex lg:justify-end`
 - `/pricing`
-- `border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-emerald-600 text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-emerald-500 hover:shadow-[0_22px_50px_rgba(16,185,129,0.28)] dark:bg-emerald-500/80 dark:hover:bg-emerald-500/90 dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]`
+- `px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-emerald-600 text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-emerald-500 hover:shadow-[0_22px_50px_rgba(16,185,129,0.28)] dark:bg-emerald-500/80 dark:hover:bg-emerald-500/90 dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]`
 
 **Utility breakdown (grouped):**
 
@@ -5808,7 +6356,6 @@ export default function TexHub() {
 - **Color / surface:**
   - `bg-emerald-600` — Background color/surface.
 - **Borders / rings / shadows:**
-  - `border-0` — Border style/width/color.
   - `shadow-none` — Drop shadow depth (elevation).
   - `rounded-2xl` — Corner radius.
 - **Interaction / motion:**
@@ -5828,17 +6375,17 @@ export default function TexHub() {
 - **Other:**
   - `/pricing` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:839`
+#### `src/pages/TexHub.jsx:884`
 
 ```jsx
-                  className="border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-emerald-600 text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-emerald-500 hover:shadow-[0_22px_50px_rgba(16,185,129,0.28)] dark:bg-emerald-500/80 dark:hover:bg-emerald-500/90 dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
+                  className="px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-emerald-600 text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-emerald-500 hover:shadow-[0_22px_50px_rgba(16,185,129,0.28)] dark:bg-emerald-500/80 dark:hover:bg-emerald-500/90 dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
                 >
                   View enterprise plans
                 </MagneticLinkButton>
 ```
 **Raw class strings detected (best effort):**
 
-- `border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-emerald-600 text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-emerald-500 hover:shadow-[0_22px_50px_rgba(16,185,129,0.28)] dark:bg-emerald-500/80 dark:hover:bg-emerald-500/90 dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]`
+- `px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-emerald-600 text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-emerald-500 hover:shadow-[0_22px_50px_rgba(16,185,129,0.28)] dark:bg-emerald-500/80 dark:hover:bg-emerald-500/90 dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]`
 
 **Utility breakdown (grouped):**
 
@@ -5856,7 +6403,6 @@ export default function TexHub() {
 - **Color / surface:**
   - `bg-emerald-600` — Background color/surface.
 - **Borders / rings / shadows:**
-  - `border-0` — Border style/width/color.
   - `shadow-none` — Drop shadow depth (elevation).
   - `rounded-2xl` — Corner radius.
 - **Interaction / motion:**
@@ -5870,7 +6416,7 @@ export default function TexHub() {
   - `dark:hover:bg-emerald-500/90` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:848`
+#### `src/pages/TexHub.jsx:893`
 
 ```jsx
         <div className="mt-16">
@@ -5908,7 +6454,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:849`
+#### `src/pages/TexHub.jsx:894`
 
 ```jsx
           <div className="flex flex-col items-center text-center">
@@ -5944,7 +6490,7 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:850`
+#### `src/pages/TexHub.jsx:895`
 
 ```jsx
             <h3 className="text-xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Focused only on garments & textile</h3>
@@ -5983,7 +6529,7 @@ export default function TexHub() {
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:851`
+#### `src/pages/TexHub.jsx:896`
 
 ```jsx
             <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">Industry categories:</p>
@@ -6030,7 +6576,7 @@ export default function TexHub() {
   - `Custom` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `production` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:853`
+#### `src/pages/TexHub.jsx:898`
 
 ```jsx
           <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm text-[#334155] dark:text-slate-300">
@@ -6072,7 +6618,7 @@ export default function TexHub() {
   - `Custom` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `production` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:857`
+#### `src/pages/TexHub.jsx:902`
 
 ```jsx
                 className="rounded-full bg-white/70 px-4 py-2 shadow-[0_14px_38px_rgba(15,23,42,0.07)] dark:bg-white/[0.03] dark:shadow-[0_20px_50px_rgba(0,0,0,0.45)]"
@@ -6098,7 +6644,7 @@ export default function TexHub() {
   - `dark:bg-white/[0.03]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-[0_20px_50px_rgba(0,0,0,0.45)]` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:865`
+#### `src/pages/TexHub.jsx:910`
 
 ```jsx
         <div className="mt-16 pb-6">
@@ -6127,7 +6673,7 @@ export default function TexHub() {
   - `lg:items-center` — Variant prefix (responsive, dark, or interaction state).
   - `lg:col-span-7` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:866`
+#### `src/pages/TexHub.jsx:911`
 
 ```jsx
           <Surface className="p-10">
@@ -6162,7 +6708,7 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:867`
+#### `src/pages/TexHub.jsx:912`
 
 ```jsx
             <div className="grid gap-8 lg:grid-cols-12 lg:items-center">
@@ -6201,13 +6747,13 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:868`
+#### `src/pages/TexHub.jsx:913`
 
 ```jsx
               <div className="lg:col-span-7">
                 <h2 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Start connecting with the right partners</h2>
                 <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                  Clear CTAs and clean surfaces — your first step into a structured marketplace.
+                  Clear CTAs and clean surfaces -- your first step into a structured marketplace.
 ```
 **Raw class strings detected (best effort):**
 
@@ -6234,12 +6780,12 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:869`
+#### `src/pages/TexHub.jsx:914`
 
 ```jsx
                 <h2 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Start connecting with the right partners</h2>
                 <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                  Clear CTAs and clean surfaces — your first step into a structured marketplace.
+                  Clear CTAs and clean surfaces -- your first step into a structured marketplace.
                 </p>
 ```
 **Raw class strings detected (best effort):**
@@ -6264,11 +6810,11 @@ export default function TexHub() {
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:870`
+#### `src/pages/TexHub.jsx:915`
 
 ```jsx
                 <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                  Clear CTAs and clean surfaces — your first step into a structured marketplace.
+                  Clear CTAs and clean surfaces -- your first step into a structured marketplace.
                 </p>
               </div>
 ```
@@ -6288,19 +6834,19 @@ export default function TexHub() {
 - **Dark mode variants:**
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/TexHub.jsx:874`
+#### `src/pages/TexHub.jsx:919`
 
 ```jsx
               <div className="flex flex-wrap gap-3 lg:col-span-5 lg:justify-end">
                 <MagneticLinkButton
                   to="/signup"
-                  className="shimmer-btn border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[#162132] hover:shadow-[0_22px_50px_rgba(15,23,42,0.25)] dark:bg-gradient-to-r dark:from-emerald-500/85 dark:via-sky-500/70 dark:to-indigo-500/70 dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
+                  className="shimmer-btn px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
 ```
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap gap-3 lg:col-span-5 lg:justify-end`
 - `/signup`
-- `shimmer-btn border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[#162132] hover:shadow-[0_22px_50px_rgba(15,23,42,0.25)] dark:bg-gradient-to-r dark:from-emerald-500/85 dark:via-sky-500/70 dark:to-indigo-500/70 dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]`
+- `shimmer-btn px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]`
 
 **Utility breakdown (grouped):**
 
@@ -6319,41 +6865,37 @@ export default function TexHub() {
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Color / surface:**
-  - `bg-[#1E293B]` — Background color/surface.
+  - `bg-[var(--gt-blue)]` — Background color/surface.
 - **Borders / rings / shadows:**
-  - `border-0` — Border style/width/color.
   - `shadow-none` — Drop shadow depth (elevation).
   - `rounded-2xl` — Corner radius.
 - **Interaction / motion:**
   - `transition` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `duration-300` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `ease-out` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `hover:bg-[#162132]` — Variant prefix (responsive, dark, or interaction state).
-  - `hover:shadow-[0_22px_50px_rgba(15,23,42,0.25)]` — Variant prefix (responsive, dark, or interaction state).
+  - `hover:bg-[var(--gt-blue-hover)]` — Variant prefix (responsive, dark, or interaction state).
+  - `hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)]` — Variant prefix (responsive, dark, or interaction state).
 - **Responsive variants:**
   - `lg:col-span-5` — Variant prefix (responsive, dark, or interaction state).
   - `lg:justify-end` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
-  - `dark:bg-gradient-to-r` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:from-emerald-500/85` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:via-sky-500/70` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:to-indigo-500/70` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
   - `/signup` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `shimmer-btn` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:877`
+#### `src/pages/TexHub.jsx:922`
 
 ```jsx
-                  className="shimmer-btn border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[#162132] hover:shadow-[0_22px_50px_rgba(15,23,42,0.25)] dark:bg-gradient-to-r dark:from-emerald-500/85 dark:via-sky-500/70 dark:to-indigo-500/70 dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
+                  className="shimmer-btn px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
                 >
                   Create account
                 </MagneticLinkButton>
 ```
 **Raw class strings detected (best effort):**
 
-- `shimmer-btn border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[#162132] hover:shadow-[0_22px_50px_rgba(15,23,42,0.25)] dark:bg-gradient-to-r dark:from-emerald-500/85 dark:via-sky-500/70 dark:to-indigo-500/70 dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]`
+- `shimmer-btn px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]`
 
 **Utility breakdown (grouped):**
 
@@ -6369,37 +6911,33 @@ export default function TexHub() {
   - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Color / surface:**
-  - `bg-[#1E293B]` — Background color/surface.
+  - `bg-[var(--gt-blue)]` — Background color/surface.
 - **Borders / rings / shadows:**
-  - `border-0` — Border style/width/color.
   - `shadow-none` — Drop shadow depth (elevation).
   - `rounded-2xl` — Corner radius.
 - **Interaction / motion:**
   - `transition` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `duration-300` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `ease-out` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `hover:bg-[#162132]` — Variant prefix (responsive, dark, or interaction state).
-  - `hover:shadow-[0_22px_50px_rgba(15,23,42,0.25)]` — Variant prefix (responsive, dark, or interaction state).
+  - `hover:bg-[var(--gt-blue-hover)]` — Variant prefix (responsive, dark, or interaction state).
+  - `hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)]` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
-  - `dark:bg-gradient-to-r` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:from-emerald-500/85` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:via-sky-500/70` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:to-indigo-500/70` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
   - `shimmer-btn` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/TexHub.jsx:883`
+#### `src/pages/TexHub.jsx:928`
 
 ```jsx
-                  className="border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-white/70 text-[#1E293B] font-semibold tracking-tight backdrop-blur-sm transition duration-300 ease-out hover:bg-white hover:shadow-[0_22px_50px_rgba(15,23,42,0.10)] dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06] dark:hover:shadow-[0_26px_70px_rgba(0,0,0,0.55)]"
+                  className="px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-white/70 text-[#1E293B] font-semibold tracking-tight backdrop-blur-sm transition duration-300 ease-out hover:bg-white hover:shadow-[0_22px_50px_rgba(15,23,42,0.10)] dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06] dark:hover:shadow-[0_26px_70px_rgba(0,0,0,0.55)]"
                 >
                   Login
                 </MagneticLinkButton>
 ```
 **Raw class strings detected (best effort):**
 
-- `border-0 px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-white/70 text-[#1E293B] font-semibold tracking-tight backdrop-blur-sm transition duration-300 ease-out hover:bg-white hover:shadow-[0_22px_50px_rgba(15,23,42,0.10)] dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06] dark:hover:shadow-[0_26px_70px_rgba(0,0,0,0.55)]`
+- `px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-white/70 text-[#1E293B] font-semibold tracking-tight backdrop-blur-sm transition duration-300 ease-out hover:bg-white hover:shadow-[0_22px_50px_rgba(15,23,42,0.10)] dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06] dark:hover:shadow-[0_26px_70px_rgba(0,0,0,0.55)]`
 
 **Utility breakdown (grouped):**
 
@@ -6418,7 +6956,6 @@ export default function TexHub() {
   - `text-[#1E293B]` — Text color or text sizing.
   - `backdrop-blur-sm` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Borders / rings / shadows:**
-  - `border-0` — Border style/width/color.
   - `shadow-none` — Drop shadow depth (elevation).
   - `rounded-2xl` — Corner radius.
 - **Interaction / motion:**
@@ -6437,55 +6974,23 @@ export default function TexHub() {
 
 > This list is generated by heuristics. It includes hard-coded UI strings and key element anchors. For absolute truth, use the source snapshot.
 
-- `src/pages/TexHub.jsx:531` — Problem
+- `src/pages/TexHub.jsx:541` — Why GarTexHub
 
 ```jsx
-              <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Problem</h3>
-              <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                Typical marketplaces are loud and unstructured — teams lose time, trust, and context.
-              </p>
+                <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Why GarTexHub</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+                  A sourcing workflow network built only for garments and textiles: low noise, structured requests, and trust by design.
+                </p>
 ```
-- `src/pages/TexHub.jsx:536` — Noise from random listings
-
-```jsx
-                <li>Noise from random listings</li>
-                <li>Unstructured buyer requirements</li>
-                <li>Weak verification signals</li>
-                <li>Internal lead conflicts in buying houses</li>
-```
-- `src/pages/TexHub.jsx:537` — Unstructured buyer requirements
-
-```jsx
-                <li>Unstructured buyer requirements</li>
-                <li>Weak verification signals</li>
-                <li>Internal lead conflicts in buying houses</li>
-              </ul>
-```
-- `src/pages/TexHub.jsx:538` — Weak verification signals
-
-```jsx
-                <li>Weak verification signals</li>
-                <li>Internal lead conflicts in buying houses</li>
-              </ul>
-              </div>
-```
-- `src/pages/TexHub.jsx:539` — Internal lead conflicts in buying houses
-
-```jsx
-                <li>Internal lead conflicts in buying houses</li>
-              </ul>
-              </div>
-            </Surface>
-```
-- `src/pages/TexHub.jsx:546` — Solution
+- `src/pages/TexHub.jsx:555` — Solution
 
 ```jsx
               <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Solution</h3>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                Clear surfaces, verified signals, and structured workflows — designed to stay calm at scale.
+                Clear surfaces, verified signals, and structured workflows -- designed to stay calm at scale.
               </p>
 ```
-- `src/pages/TexHub.jsx:551` — Structured Buyer Requests
+- `src/pages/TexHub.jsx:560` — Structured Buyer Requests
 
 ```jsx
                 <li>Structured Buyer Requests</li>
@@ -6493,7 +6998,7 @@ export default function TexHub() {
                 <li>Internal Agent Lock System</li>
                 <li>Organized partner network</li>
 ```
-- `src/pages/TexHub.jsx:552` — Verified supplier priority
+- `src/pages/TexHub.jsx:561` — Verified supplier priority
 
 ```jsx
                 <li>Verified supplier priority</li>
@@ -6501,7 +7006,7 @@ export default function TexHub() {
                 <li>Organized partner network</li>
               </ul>
 ```
-- `src/pages/TexHub.jsx:553` — Internal Agent Lock System
+- `src/pages/TexHub.jsx:562` — Internal Agent Lock System
 
 ```jsx
                 <li>Internal Agent Lock System</li>
@@ -6509,7 +7014,7 @@ export default function TexHub() {
               </ul>
               </div>
 ```
-- `src/pages/TexHub.jsx:554` — Organized partner network
+- `src/pages/TexHub.jsx:563` — Organized partner network
 
 ```jsx
                 <li>Organized partner network</li>
@@ -6517,7 +7022,7 @@ export default function TexHub() {
               </div>
             </Surface>
 ```
-- `src/pages/TexHub.jsx:563` — How GarTexHub works
+- `src/pages/TexHub.jsx:572` — How GarTexHub works
 
 ```jsx
             <h2 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">How GarTexHub works</h2>
@@ -6525,7 +7030,7 @@ export default function TexHub() {
           </div>
 
 ```
-- `src/pages/TexHub.jsx:564` — A simple flow that stays structured end-to-end.
+- `src/pages/TexHub.jsx:573` — A simple flow that stays structured end-to-end.
 
 ```jsx
             <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">A simple flow that stays structured end-to-end.</p>
@@ -6533,7 +7038,7 @@ export default function TexHub() {
 
           <div className="mt-6 grid gap-6 md:grid-cols-3">
 ```
-- `src/pages/TexHub.jsx:569` — Step 1
+- `src/pages/TexHub.jsx:578` — Step 1
 
 ```jsx
               <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Step 1</p>
@@ -6541,7 +7046,7 @@ export default function TexHub() {
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
                 Buyers post structured requirements. Factories publish products and capacity.
 ```
-- `src/pages/TexHub.jsx:570` — Post or search
+- `src/pages/TexHub.jsx:579` — Post or search
 
 ```jsx
               <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Post or search</h4>
@@ -6549,7 +7054,7 @@ export default function TexHub() {
                 Buyers post structured requirements. Factories publish products and capacity.
               </p>
 ```
-- `src/pages/TexHub.jsx:576` — Step 2
+- `src/pages/TexHub.jsx:585` — Step 2
 
 ```jsx
               <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Step 2</p>
@@ -6557,7 +7062,7 @@ export default function TexHub() {
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
                 Agents claim requests. AI summarizes context so the team moves fast without noise.
 ```
-- `src/pages/TexHub.jsx:577` — Smart matching + claim lead
+- `src/pages/TexHub.jsx:586` — Smart matching + claim lead
 
 ```jsx
               <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Smart matching + claim lead</h4>
@@ -6565,7 +7070,7 @@ export default function TexHub() {
                 Agents claim requests. AI summarizes context so the team moves fast without noise.
               </p>
 ```
-- `src/pages/TexHub.jsx:583` — Step 3
+- `src/pages/TexHub.jsx:592` — Step 3
 
 ```jsx
               <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Step 3</p>
@@ -6573,7 +7078,7 @@ export default function TexHub() {
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
                 Communicate, schedule meetings, and store agreements inside the Contract Vault.
 ```
-- `src/pages/TexHub.jsx:584` — Chat, call, contract
+- `src/pages/TexHub.jsx:593` — Chat, call, contract
 
 ```jsx
               <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Chat, call, contract</h4>
@@ -6581,7 +7086,15 @@ export default function TexHub() {
                 Communicate, schedule meetings, and store agreements inside the Contract Vault.
               </p>
 ```
-- `src/pages/TexHub.jsx:594` — Platform features
+- `src/pages/TexHub.jsx:604` — Why GarTexHub
+
+```jsx
+              <h3 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Why GarTexHub</h3>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+                Clear positioning and a structured sourcing workflow -- built only for garments & textile.
+              </p>
+```
+- `src/pages/TexHub.jsx:640` — Platform features
 
 ```jsx
             <h3 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Platform features</h3>
@@ -6589,15 +7102,15 @@ export default function TexHub() {
               Borderless surfaces, clean hierarchy, and strong trust indicators.
             </p>
 ```
-- `src/pages/TexHub.jsx:757` — Unique toggle
+- `src/pages/TexHub.jsx:803` — Unique toggle
 
 ```jsx
               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Unique toggle</h4>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                A tactile switch for diverse content modes — recessed track, raised handle.
+                A tactile switch for diverse content modes -- recessed track, raised handle.
               </p>
 ```
-- `src/pages/TexHub.jsx:789` — Factory video gallery
+- `src/pages/TexHub.jsx:835` — Factory video gallery
 
 ```jsx
               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Factory video gallery</h4>
@@ -6605,23 +7118,23 @@ export default function TexHub() {
                 Edge-to-edge thumbnails for an immersive profile experience.
               </p>
 ```
-- `src/pages/TexHub.jsx:813` — AI assistant
+- `src/pages/TexHub.jsx:858` — AI assistant
 
 ```jsx
               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">AI assistant</h4>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                A floating assistant that feels premium — glassy, calm, and helpful.
+                A floating assistant that feels premium -- glassy, calm, and helpful.
               </p>
 ```
-- `src/pages/TexHub.jsx:818` — “Need help posting a request?”
+- `src/pages/TexHub.jsx:863` — “Need help posting a request*”
 
 ```jsx
-                <p className="text-sm font-semibold text-[#1E293B] dark:text-white">“Need help posting a request?”</p>
+                <p className="text-sm font-semibold text-[#1E293B] dark:text-white">“Need help posting a request*”</p>
                 <p className="mt-1 text-xs leading-relaxed text-[#475569] dark:text-slate-400">I can generate a structured template in seconds.</p>
               </div>
             </Surface>
 ```
-- `src/pages/TexHub.jsx:819` — I can generate a structured template in seconds.
+- `src/pages/TexHub.jsx:864` — I can generate a structured template in seconds.
 
 ```jsx
                 <p className="mt-1 text-xs leading-relaxed text-[#475569] dark:text-slate-400">I can generate a structured template in seconds.</p>
@@ -6629,7 +7142,7 @@ export default function TexHub() {
             </Surface>
             </BentoMotion>
 ```
-- `src/pages/TexHub.jsx:831` — Built for growing buying houses
+- `src/pages/TexHub.jsx:876` — Built for growing buying houses
 
 ```jsx
                 <h3 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Built for growing buying houses</h3>
@@ -6637,7 +7150,7 @@ export default function TexHub() {
                   Unlimited sub-accounts · dedicated analytics · organization control · contract management
                 </p>
 ```
-- `src/pages/TexHub.jsx:850` — Focused only on garments & textile
+- `src/pages/TexHub.jsx:895` — Focused only on garments & textile
 
 ```jsx
             <h3 className="text-xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Focused only on garments & textile</h3>
@@ -6645,7 +7158,7 @@ export default function TexHub() {
           </div>
           <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm text-[#334155] dark:text-slate-300">
 ```
-- `src/pages/TexHub.jsx:851` — Industry categories:
+- `src/pages/TexHub.jsx:896` — Industry categories:
 
 ```jsx
             <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">Industry categories:</p>
@@ -6653,15 +7166,15 @@ export default function TexHub() {
           <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm text-[#334155] dark:text-slate-300">
             {['Shirts', 'Pants', 'Knitwear', 'Woven', 'Denim', 'Custom production'].map((tag) => (
 ```
-- `src/pages/TexHub.jsx:869` — Start connecting with the right partners
+- `src/pages/TexHub.jsx:914` — Start connecting with the right partners
 
 ```jsx
                 <h2 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Start connecting with the right partners</h2>
                 <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
-                  Clear CTAs and clean surfaces — your first step into a structured marketplace.
+                  Clear CTAs and clean surfaces -- your first step into a structured marketplace.
                 </p>
 ```
-- `src/pages/TexHub.jsx:39` — Verified
+- `src/pages/TexHub.jsx:41` — Verified
 
 ```jsx
       title="Verified"
@@ -6669,7 +7182,7 @@ export default function TexHub() {
       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_16px_rgba(16,185,129,0.65)] dark:bg-emerald-300 dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]" />
       {label}
 ```
-- `src/pages/TexHub.jsx:771` — Toggle content mode
+- `src/pages/TexHub.jsx:817` — Toggle content mode
 
 ```jsx
                   aria-label="Toggle content mode"
@@ -6685,7 +7198,7 @@ export default function TexHub() {
         className={className}
         style={{ x: springX, y: springY }}
 ```
-- `src/pages/TexHub.jsx:762` — (element) <button>
+- `src/pages/TexHub.jsx:808` — (element) <button>
 
 ```jsx
                 <button
@@ -6697,8 +7210,8 @@ export default function TexHub() {
 
 | Frontend call (path:line) | Express mount | Route definition | Controller file | Handler |
 |---|---|---|---|---|
-| GET /system/home (src/pages/TexHub.jsx:18) | /api/system -> server/routes/systemRoutes.js:73 | GET /home (server/routes/systemRoutes.js:7) | server/controllers/systemController.js | systemHome |
-| GET /system/home (src/pages/TexHub.jsx:305) | /api/system -> server/routes/systemRoutes.js:73 | GET /home (server/routes/systemRoutes.js:7) | server/controllers/systemController.js | systemHome |
+| GET /system/home (src/pages/TexHub.jsx:18) | /api/system -> server/routes/systemRoutes.js:127 | GET /home (server/routes/systemRoutes.js:7) | server/controllers/systemController.js | systemHome |
+| GET /system/home (src/pages/TexHub.jsx:308) | /api/system -> server/routes/systemRoutes.js:127 | GET /home (server/routes/systemRoutes.js:7) | server/controllers/systemController.js | systemHome |
 
 ## 6) How to Edit Safely
 
@@ -6708,5 +7221,4 @@ export default function TexHub() {
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
-{% endraw %}
 

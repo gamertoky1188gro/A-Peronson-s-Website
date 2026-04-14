@@ -4,13 +4,13 @@ This doc is generated from source snapshots with `path:line` references.
 
 ## Mounted prefixes
 
-- `/api/verification` -> `server/routes/verificationRoutes.js:63` (router var: `verificationRoutes`)
+- `/api/verification` -> `server/routes/verificationRoutes.js:115` (router var: `verificationRoutes`)
 
 ## Routes (ultra-detailed)
 
 ### GET `/api/verification/me`
 
-- **Route definition:** `server/routes/verificationRoutes.js:7`
+- **Route definition:** `server/routes/verificationRoutes.js:16`
 
 ```js
 router.get('/me', requireAuth, getMyVerification)
@@ -18,20 +18,11 @@ router.get('/me', requireAuth, getMyVerification)
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `getMyVerification`
-- **Controller file:** `server/controllers/verificationController.js`
+- **Controller file:** `—`
 
-#### Controller implementation: `server/controllers/verificationController.js:4`
-
-```js
-export async function getMyVerification(req, res) {
-  const rec = await getVerification(req.user.id)
-  return res.json(rec || { user_id: req.user.id, verified: false, missing_required: [] })
-}
-
-```
 ### POST `/api/verification/me`
 
-- **Route definition:** `server/routes/verificationRoutes.js:8`
+- **Route definition:** `server/routes/verificationRoutes.js:17`
 
 ```js
 router.post('/me', requireAuth, allowRoles('buyer', 'factory', 'buying_house'), submitMyVerification)
@@ -40,71 +31,73 @@ router.post('/me', requireAuth, allowRoles('buyer', 'factory', 'buying_house'), 
   - `requireAuth`
   - `allowRoles('buyer', 'factory', 'buying_house')`
 - **Handler:** `submitMyVerification`
-- **Controller file:** `server/controllers/verificationController.js`
+- **Controller file:** `—`
 
-#### Controller implementation: `server/controllers/verificationController.js:9`
+### POST `/api/verification/renew`
+
+- **Route definition:** `server/routes/verificationRoutes.js:18`
 
 ```js
-export async function submitMyVerification(req, res) {
-  const user = await findUserById(req.user.id)
-  if (!user) return res.status(404).json({ error: 'User not found' })
-
-  try {
-    const rec = await upsertVerification(user, req.body?.documents || {})
-    return res.json(rec)
-  } catch (error) {
-    const status = Number(error?.statusCode) || 400
-    return res.status(status).json({ error: error?.message || 'Verification data is invalid' })
-  }
-}
-
+router.post('/renew', requireAuth, allowRoles('buyer', 'factory', 'buying_house'), renewMyVerification)
 ```
+- **Middleware stack (in order):**
+  - `requireAuth`
+  - `allowRoles('buyer', 'factory', 'buying_house')`
+- **Handler:** `renewMyVerification`
+- **Controller file:** `—`
+
+### GET `/api/verification/admin/queue`
+
+- **Route definition:** `server/routes/verificationRoutes.js:19`
+
+```js
+router.get('/admin/queue', requireAuth, requireAdminSecurity, adminQueue)
+```
+- **Middleware stack (in order):**
+  - `requireAuth`
+  - `requireAdminSecurity`
+- **Handler:** `adminQueue`
+- **Controller file:** `—`
+
 ### POST `/api/verification/admin/:userId/approve`
 
-- **Route definition:** `server/routes/verificationRoutes.js:9`
+- **Route definition:** `server/routes/verificationRoutes.js:20`
 
 ```js
-router.post('/admin/:userId/approve', requireAuth, allowRoles('admin'), adminApprove)
+router.post('/admin/:userId/approve', requireAuth, requireAdminSecurity, adminApprove)
 ```
 - **Middleware stack (in order):**
   - `requireAuth`
-  - `allowRoles('admin')`
+  - `requireAdminSecurity`
 - **Handler:** `adminApprove`
-- **Controller file:** `server/controllers/verificationController.js`
+- **Controller file:** `—`
 
-#### Controller implementation: `server/controllers/verificationController.js:22`
+### POST `/api/verification/admin/:userId/reject`
+
+- **Route definition:** `server/routes/verificationRoutes.js:21`
 
 ```js
-export async function adminApprove(req, res) {
-  const rec = await adminApproveVerification(req.params.userId)
-  if (!rec) return res.status(404).json({ error: 'Verification record not found' })
-  await setUserVerification(req.params.userId, rec.verified)
-  return res.json(rec)
-}
-
+router.post('/admin/:userId/reject', requireAuth, requireAdminSecurity, adminReject)
 ```
+- **Middleware stack (in order):**
+  - `requireAuth`
+  - `requireAdminSecurity`
+- **Handler:** `adminReject`
+- **Controller file:** `—`
+
 ### POST `/api/verification/admin/revoke-expired`
 
-- **Route definition:** `server/routes/verificationRoutes.js:10`
+- **Route definition:** `server/routes/verificationRoutes.js:22`
 
 ```js
-router.post('/admin/revoke-expired', requireAuth, allowRoles('admin'), adminRevokeExpired)
+router.post('/admin/revoke-expired', requireAuth, requireAdminSecurity, adminRevokeExpired)
 ```
 - **Middleware stack (in order):**
   - `requireAuth`
-  - `allowRoles('admin')`
+  - `requireAdminSecurity`
 - **Handler:** `adminRevokeExpired`
-- **Controller file:** `server/controllers/verificationController.js`
+- **Controller file:** `—`
 
-#### Controller implementation: `server/controllers/verificationController.js:29`
-
-```js
-export async function adminRevokeExpired(req, res) {
-  const updated = await revokeExpiredVerifications()
-  return res.json({ ok: true, total: updated.length })
-}
-
-```
 ## Persistence model (JSON-backed "DB")
 
 - JSON helpers: `server/utils/jsonStore.js` (readJson/writeJson/updateJson).

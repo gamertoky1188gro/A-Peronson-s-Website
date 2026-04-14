@@ -20,8 +20,8 @@
 */
 import React, { useState, useRef, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { API_BASE } from '../lib/auth'
-import { Bot } from 'lucide-react'
+import { API_BASE, getToken } from '../lib/auth'
+import BotLogo from './ui/BotLogo'
 
 /**
  * Helper component to simulate typing effect
@@ -88,7 +88,17 @@ export default function FloatingAssistant() {
     const socket = new WebSocket(wsUrl)
 
     // Basic lifecycle logging (useful during dev).
-    socket.onopen = () => console.log('Assistant WS Connected')
+    socket.onopen = () => {
+      console.log('Assistant WS Connected')
+      try {
+        const token = typeof getToken === 'function' ? getToken() : null
+        if (token) {
+          socket.send(JSON.stringify({ type: 'identify', token }))
+        }
+      } catch (err) {
+        console.warn('Assistant identify failed', err)
+      }
+    }
     socket.onmessage = (event) => {
       // Server sends JSON messages. We expect { type: 'reply' | 'error', ... }.
       const data = JSON.parse(event.data)
@@ -96,7 +106,8 @@ export default function FloatingAssistant() {
         const botMsg = { 
           role: 'assistant', 
           text: data.answer || 'I am sorry, I could not find an answer to that.',
-          isNew: true 
+          isNew: true,
+          request_id: data.request_id || null,
         }
         // Append assistant message to transcript and stop loading indicator.
         setMessages(prev => [...prev, botMsg])
@@ -106,7 +117,7 @@ export default function FloatingAssistant() {
         setMessages(prev => [...prev, { 
           role: 'assistant', 
           text: 'Error: ' + (data.message || 'Something went wrong'),
-          isNew: true 
+          isNew: true,
         }])
         setLoading(false)
       }
@@ -139,14 +150,15 @@ export default function FloatingAssistant() {
     if (!text.trim() || loading) return
 
     // Add the user's message to transcript immediately for snappy UX.
-    const userMsg = { role: 'user', text, isNew: false }
+    const requestId = `req_${Date.now()}_${Math.random().toString(36).slice(2,9)}`
+    const userMsg = { role: 'user', text, request_id: requestId, isNew: false }
     setMessages(prev => [...prev, userMsg])
     setInput('')
     setLoading(true)
 
     // Send the question over WS if connected; otherwise show a recoverable error message.
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify({ type: 'ask', question: text }))
+      socketRef.current.send(JSON.stringify({ type: 'ask', question: text, request_id: requestId }))
     } else {
       setMessages(prev => [...prev, { 
         role: 'assistant', 
@@ -175,16 +187,24 @@ export default function FloatingAssistant() {
       {/* Floating launcher button (bottom-right). */}
       <div className="fixed right-6 bottom-6 z-50">
         <button
+          type="button"
           onClick={() => setOpen(!open)}
           className={[
-            'w-14 h-14 rounded-full flex items-center justify-center text-white text-2xl transition-transform active:scale-95',
+            'w-14 h-14 rounded-full flex items-center justify-center text-white transition-transform active:scale-95',
             orbMode
               ? 'assistant-orb-btn hover:scale-110'
               : 'bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] shadow-xl hover:scale-110 ring-2 ring-white/20',
           ].join(' ')}
-          aria-label="Toggle assistant"
+          aria-label={open ? 'Close assistant' : 'Open assistant'}
+          title={open ? 'Close assistant' : 'Open assistant'}
         >
-          {open ? 'X' : <Bot size={22} />}
+          {!open ? (
+            <BotLogo width={22} height={22} />
+          ) : (
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-white">
+              <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M6 6 L18 18 M6 18 L18 6" />
+            </svg>
+          )}
         </button>
       </div>
 
@@ -197,7 +217,9 @@ export default function FloatingAssistant() {
         {/* Drawer header: title + live status (thinking/live) + close button. */}
         <div className="p-4 bg-[#0A66C2] text-white flex items-center justify-between shadow-md">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold backdrop-blur-sm">AI</div>
+            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold backdrop-blur-sm">
+              <BotLogo width={24} height={24} variant="glyph" className="text-white" />
+            </div>
             <div>
               <p className="font-bold tracking-tight">GarTex Assistant</p>
               <div className="flex items-center gap-1.5">
@@ -208,8 +230,10 @@ export default function FloatingAssistant() {
               </div>
             </div>
           </div>
-          <button onClick={() => setOpen(false)} className="hover:bg-white/10 p-1 rounded-full transition-colors w-8 h-8 flex items-center justify-center">
-            X
+          <button onClick={() => setOpen(false)} aria-label="Close assistant" title="Close assistant" type="button" className="hover:bg-white/10 p-1 rounded-full transition-colors w-8 h-8 flex items-center justify-center">
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-white">
+              <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M6 6 L18 18 M6 18 L18 6" />
+            </svg>
           </button>
         </div>
 

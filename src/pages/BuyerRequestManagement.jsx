@@ -2,6 +2,7 @@
 import { Link } from 'react-router-dom'
 import { apiRequest, getCurrentUser, getToken, API_BASE, hasEntitlement } from '../lib/auth'
 import { mapExtractedToForm } from '../lib/aiPrefill'
+import { getBuyerRequestErrorStep, getBuyerRequestStepErrors, getBuyerRequestSubmissionErrors } from '../../shared/requirementValidation.js'
 
 // Roles allowed by router:
 // - buyer: create requests + see own requests + browse redacted summaries
@@ -219,12 +220,13 @@ function toPublicFileUrl(filePath = '') {
   return normalized.startsWith('/') ? normalized : `/${normalized}`
 }
 
-function Field({ label, children, hint }) {
+function Field({ label, children, hint, error }) {
   return (
     <div className="space-y-1">
       <label className="block text-sm font-medium">{label}</label>
       {children}
       {hint ? <p className="text-xs text-slate-500">{hint}</p> : null}
+      {error ? <p className="text-xs font-semibold text-rose-600">{error}</p> : null}
     </div>
   )
 }
@@ -240,6 +242,7 @@ export default function BuyerRequestManagement() {
   const [form, setForm] = useState(EMPTY_FORM)
   const [step, setStep] = useState(0)
   const [pendingAttachments, setPendingAttachments] = useState([])
+  const [fieldErrors, setFieldErrors] = useState({})
 
   const [requests, setRequests] = useState([])
   const [browse, setBrowse] = useState([])
@@ -274,11 +277,36 @@ export default function BuyerRequestManagement() {
   ), [isTextile])
   const isFirstStep = step === 0
   const isLastStep = step === steps.length - 1
-  const canAdvance = step === 0 ? Boolean(form.requestType) : true
 
   useEffect(() => {
     if (step > steps.length - 1) setStep(steps.length - 1)
   }, [step, steps.length])
+
+  function clearValidationState() {
+    setFieldErrors({})
+    setError('')
+  }
+
+  function validateCurrentStep(targetStep = step) {
+    const nextErrors = getBuyerRequestStepErrors(form, targetStep)
+    setFieldErrors(nextErrors)
+    if (Object.keys(nextErrors).length) {
+      setError('Please fix the highlighted fields before continuing.')
+      return false
+    }
+    return true
+  }
+
+  function handleNext() {
+    if (!validateCurrentStep(step)) return
+    clearValidationState()
+    setStep((prev) => Math.min(steps.length - 1, prev + 1))
+  }
+
+  function handleBack() {
+    clearValidationState()
+    setStep((prev) => Math.max(0, prev - 1))
+  }
 
   function updateCustomField(index, key, value) {
     setForm((prev) => {
@@ -406,6 +434,15 @@ export default function BuyerRequestManagement() {
     setError('')
     setSuccess('')
     try {
+      if (statusOverride !== 'draft') {
+        const validationErrors = getBuyerRequestSubmissionErrors(form)
+        if (Object.keys(validationErrors).length) {
+          setFieldErrors(validationErrors)
+          setError('Please fix the highlighted fields before posting.')
+          setStep(getBuyerRequestErrorStep(validationErrors))
+          return
+        }
+      }
       const created = await apiRequest('/requirements', { method: 'POST', token, body: { ...formToPayload(form), status: statusOverride } })
       if (created?.id && pendingAttachments.length) {
         for (const attachment of pendingAttachments) {
@@ -416,6 +453,7 @@ export default function BuyerRequestManagement() {
       setSuccess(statusOverride === 'draft' ? 'Draft saved.' : 'Buyer request posted.')
       setForm(EMPTY_FORM)
       setPendingAttachments([])
+      setFieldErrors({})
       setStep(0)
       await loadRequests()
       await loadBrowse()
@@ -515,6 +553,11 @@ export default function BuyerRequestManagement() {
     setError('')
     setSuccess('')
     try {
+      const validationErrors = getBuyerRequestSubmissionErrors(editForm)
+      if (Object.keys(validationErrors).length) {
+        setError('Please fix the highlighted fields before saving.')
+        return
+      }
       await apiRequest(`/requirements/${encodeURIComponent(editingId)}`, { method: 'PATCH', token, body: formToPayload(editForm) })
       setSuccess('Request updated.')
       setEditingId('')
@@ -673,7 +716,7 @@ export default function BuyerRequestManagement() {
               </div>
               <button
                 type="button"
-                className="text-xs font-semibold text-[var(--gt-blue)]"
+                className="text-xs font-semibold text-(--gt-blue)"
                 onClick={() => setMoreFieldsOpen((v) => !v)}
               >
                 {moreFieldsOpen ? 'Hide more fields' : 'More fields'}
@@ -690,7 +733,7 @@ export default function BuyerRequestManagement() {
                 <div
                   key={`${label}-${idx}`}
                   className={`rounded-full px-3 py-1 font-semibold${
-                    idx === step ? 'bg-[var(--gt-blue)] text-white' : idx < step ? 'bg-emerald-50 text-emerald-700' : 'bg-white text-slate-500 ring-1 ring-slate-200'
+                    idx === step ? 'bg-(--gt-blue) text-white' : idx < step ? 'bg-emerald-50 text-emerald-700' : 'bg-white text-slate-500 ring-1 ring-slate-200'
                   }`}
                 >
                   {label}
@@ -705,7 +748,7 @@ export default function BuyerRequestManagement() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <button
                     type="button"
-                    className={`rounded-2xl borderless-shadow px-4 py-4 text-left transition${form.requestType === 'garments' ? ' ring-2 ring-[var(--gt-blue)]/30' : ''}`}
+                    className={`rounded-2xl borderless-shadow px-4 py-4 text-left transition${form.requestType === 'garments' ? ' ring-2 ring-(--gt-blue)/30' : ''}${fieldErrors.requestType ? ' ring-2 ring-rose-400' : ''}`}
                     onClick={() => setForm({ ...form, requestType: 'garments' })}
                   >
                     <p className="text-sm font-semibold">Garments Buyer</p>
@@ -713,7 +756,7 @@ export default function BuyerRequestManagement() {
                   </button>
                   <button
                     type="button"
-                    className={`rounded-2xl borderless-shadow px-4 py-4 text-left transition${form.requestType === 'textile' ? ' ring-2 ring-[var(--gt-blue)]/30' : ''}`}
+                    className={`rounded-2xl borderless-shadow px-4 py-4 text-left transition${form.requestType === 'textile' ? ' ring-2 ring-(--gt-blue)/30' : ''}${fieldErrors.requestType ? ' ring-2 ring-rose-400' : ''}`}
                     onClick={() => setForm({ ...form, requestType: 'textile' })}
                   >
                     <p className="text-sm font-semibold">Textile Buyer</p>
@@ -726,36 +769,36 @@ export default function BuyerRequestManagement() {
             {step === 1 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2 text-sm font-semibold text-slate-900">Basic info</div>
-                <Field label="Request title" hint="Example: Denim Jacket � 10k pcs">
+                <Field label="Request title" hint="Example: Denim Jacket - 10k pcs" error={fieldErrors.title || fieldErrors.request_title}>
                   <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
                 </Field>
                 {isTextile ? (
                   <>
-                    <Field label="Material type">
+                    <Field label="Material type" error={fieldErrors.materialType || fieldErrors.material_type}>
                       <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.materialType} onChange={(e) => setForm({ ...form, materialType: e.target.value })} />
                     </Field>
-                    <Field label="Sub-category">
+                    <Field label="Sub-category" error={fieldErrors.subCategory || fieldErrors.sub_category}>
                       <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.subCategory} onChange={(e) => setForm({ ...form, subCategory: e.target.value })} />
                     </Field>
-                    <Field label="Quantity">
+                    <Field label="Quantity" error={fieldErrors.quantity || fieldErrors.totalQuantity || fieldErrors.total_quantity}>
                       <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} />
                     </Field>
-                    <Field label="Unit">
+                    <Field label="Unit" error={fieldErrors.unit}>
                       <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
                     </Field>
                   </>
                 ) : (
                   <>
-                    <Field label="Product category">
+                    <Field label="Product category" error={fieldErrors.category}>
                       <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
                     </Field>
-                    <Field label="Gender target">
+                    <Field label="Gender target" error={fieldErrors.genderTarget || fieldErrors.gender_target}>
                       <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.genderTarget} onChange={(e) => setForm({ ...form, genderTarget: e.target.value })} />
                     </Field>
-                    <Field label="Season">
+                    <Field label="Season" error={fieldErrors.season}>
                       <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.season} onChange={(e) => setForm({ ...form, season: e.target.value })} />
                     </Field>
-                    <Field label="Total quantity (pcs)">
+                    <Field label="Total quantity (pcs)" error={fieldErrors.totalQuantity || fieldErrors.quantity || fieldErrors.total_quantity}>
                       <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.totalQuantity} onChange={(e) => setForm({ ...form, totalQuantity: e.target.value })} />
                     </Field>
                   </>
@@ -782,10 +825,10 @@ export default function BuyerRequestManagement() {
                 <div className="md:col-span-2 text-sm font-semibold text-slate-900">Product specifications</div>
                 {isTextile ? (
                   <>
-                    <Field label="Fiber composition">
+                    <Field label="Fiber composition" error={fieldErrors.fiberComposition || fieldErrors.fiber_composition}>
                       <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.fiberComposition} onChange={(e) => setForm({ ...form, fiberComposition: e.target.value })} />
                     </Field>
-                    <Field label="Fabric weight (GSM)">
+                    <Field label="Fabric weight (GSM)" error={fieldErrors.fabricWeightGsm || fieldErrors.fabric_weight_gsm || fieldErrors.fabric_weight}>
                       <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.fabricWeightGsm} onChange={(e) => setForm({ ...form, fabricWeightGsm: e.target.value })} />
                     </Field>
                     <Field label="Fabric width">
@@ -852,7 +895,7 @@ export default function BuyerRequestManagement() {
                       )}
                     </div>
                     <div className="mt-2 flex items-center gap-2">
-                      <label className="text-[11px] font-semibold text-[var(--gt-blue)] cursor-pointer">
+                      <label className="text-[11px] font-semibold text-(--gt-blue) cursor-pointer">
                         Add file
                         <input
                           type="file"
@@ -878,19 +921,19 @@ export default function BuyerRequestManagement() {
                 <div className="md:col-span-2 text-sm font-semibold text-slate-900">Commercial terms</div>
                 {isTextile ? (
                   <>
-                    <Field label="Target price">
+                    <Field label="Target price" error={fieldErrors.targetPrice || fieldErrors.price_range || fieldErrors.target_price}>
                       <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.targetPrice} onChange={(e) => setForm({ ...form, targetPrice: e.target.value })} />
                     </Field>
-                    <Field label="Price unit">
+                    <Field label="Price unit" error={fieldErrors.priceUnit || fieldErrors.price_unit}>
                       <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.priceUnit} onChange={(e) => setForm({ ...form, priceUnit: e.target.value })} />
                     </Field>
-                    <Field label="Incoterm">
+                    <Field label="Incoterm" error={fieldErrors.incoterms || fieldErrors.incoterm}>
                       <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.incoterms} onChange={(e) => setForm({ ...form, incoterms: e.target.value })} />
                     </Field>
-                    <Field label="Delivery port">
+                    <Field label="Delivery port" error={fieldErrors.deliveryPort || fieldErrors.delivery_port}>
                       <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.deliveryPort} onChange={(e) => setForm({ ...form, deliveryPort: e.target.value })} />
                     </Field>
-                    <Field label="Lead time required">
+                    <Field label="Lead time required" error={fieldErrors.leadTimeRequired || fieldErrors.lead_time_required}>
                       <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.leadTimeRequired} onChange={(e) => setForm({ ...form, leadTimeRequired: e.target.value })} />
                     </Field>
                     <Field label="Lab test required">
@@ -902,16 +945,16 @@ export default function BuyerRequestManagement() {
                   </>
                 ) : (
                   <>
-                    <Field label="Target FOB price">
+                    <Field label="Target FOB price" error={fieldErrors.targetFobPrice || fieldErrors.price_range || fieldErrors.target_fob_price}>
                       <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.targetFobPrice} onChange={(e) => setForm({ ...form, targetFobPrice: e.target.value })} />
                     </Field>
-                    <Field label="Incoterm">
+                    <Field label="Incoterm" error={fieldErrors.incoterms || fieldErrors.incoterm}>
                       <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.incoterms} onChange={(e) => setForm({ ...form, incoterms: e.target.value })} />
                     </Field>
                     <Field label="Destination port">
                       <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.destinationPort} onChange={(e) => setForm({ ...form, destinationPort: e.target.value })} />
                     </Field>
-                    <Field label="Ex-factory date">
+                    <Field label="Ex-factory date" error={fieldErrors.exFactoryDate || fieldErrors.ex_factory_date}>
                       <input type="date" className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.exFactoryDate} onChange={(e) => setForm({ ...form, exFactoryDate: e.target.value })} />
                     </Field>
                     <Field label="Sample required">
@@ -920,7 +963,7 @@ export default function BuyerRequestManagement() {
                     <Field label="Sample type">
                       <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.sampleType} onChange={(e) => setForm({ ...form, sampleType: e.target.value })} />
                     </Field>
-                    <Field label="Payment terms">
+                    <Field label="Payment terms" error={fieldErrors.paymentTerms || fieldErrors.payment_terms}>
                       <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={form.paymentTerms} onChange={(e) => setForm({ ...form, paymentTerms: e.target.value })} />
                     </Field>
                   </>
@@ -1012,12 +1055,12 @@ export default function BuyerRequestManagement() {
                       </div>
                     </Field>
                     <Field label="Compliance notes">
-                      <textarea className="w-full min-h-[100px] rounded-lg borderless-shadow px-3 py-2" value={form.complianceNotes} onChange={(e) => setForm({ ...form, complianceNotes: e.target.value })} />
+                      <textarea className="w-full min-h-25 rounded-lg borderless-shadow px-3 py-2" value={form.complianceNotes} onChange={(e) => setForm({ ...form, complianceNotes: e.target.value })} />
                     </Field>
                   </>
                 ) : (
                   <Field label="Lab/Certification notes">
-                    <textarea className="w-full min-h-[100px] rounded-lg borderless-shadow px-3 py-2" value={form.labCertNotes} onChange={(e) => setForm({ ...form, labCertNotes: e.target.value })} />
+                    <textarea className="w-full min-h-25 rounded-lg borderless-shadow px-3 py-2" value={form.labCertNotes} onChange={(e) => setForm({ ...form, labCertNotes: e.target.value })} />
                   </Field>
                 )}
 
@@ -1076,7 +1119,7 @@ export default function BuyerRequestManagement() {
                             onChange={(e) => updateCustomField(index, 'label', e.target.value)}
                           />
                           <input
-                            className="flex-[2] rounded-lg borderless-shadow px-3 py-2 text-sm"
+                            className="flex-2 rounded-lg borderless-shadow px-3 py-2 text-sm"
                             placeholder="Value"
                             value={row.value}
                             onChange={(e) => updateCustomField(index, 'value', e.target.value)}
@@ -1087,14 +1130,14 @@ export default function BuyerRequestManagement() {
                         </div>
                       ))}
                     </div>
-                    <button type="button" className="mt-2 text-[11px] font-semibold text-[var(--gt-blue)]" onClick={addCustomField}>
+                    <button type="button" className="mt-2 text-[11px] font-semibold text-(--gt-blue)" onClick={addCustomField}>
                       Add custom field
                     </button>
                   </div>
                 ) : null}
 
                 <Field label="Custom description" hint="Use this for extra notes, design details, or negotiation context.">
-                  <textarea className="w-full min-h-[140px] rounded-lg borderless-shadow px-3 py-2" value={form.customDescription} onChange={(e) => setForm({ ...form, customDescription: e.target.value })} />
+                  <textarea className="w-full min-h-35 rounded-lg borderless-shadow px-3 py-2" value={form.customDescription} onChange={(e) => setForm({ ...form, customDescription: e.target.value })} />
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     <button
                       type="button"
@@ -1137,7 +1180,7 @@ export default function BuyerRequestManagement() {
               <button
                 type="button"
                 disabled={isFirstStep}
-                onClick={() => setStep((prev) => Math.max(0, prev - 1))}
+                onClick={handleBack}
                 className="rounded-lg borderless-shadow px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
               >
                 Back
@@ -1156,16 +1199,16 @@ export default function BuyerRequestManagement() {
                     type="button"
                     disabled={saving}
                     onClick={createRequest}
-                    className="rounded-lg bg-[var(--gt-blue)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--gt-blue-hover)] disabled:opacity-70"
+                    className="rounded-lg bg-(--gt-blue) px-4 py-2 text-sm font-semibold text-white hover:bg-(--gt-blue-hover) disabled:opacity-70"
                   >
                     {saving ? 'Posting...' : 'Post Request'}
                   </button>
                 ) : (
                   <button
                     type="button"
-                    disabled={!canAdvance}
-                    onClick={() => setStep((prev) => Math.min(steps.length - 1, prev + 1))}
-                    className="rounded-lg bg-[var(--gt-blue)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--gt-blue-hover)] disabled:opacity-50"
+                    disabled={saving}
+                    onClick={handleNext}
+                    className="rounded-lg bg-(--gt-blue) px-4 py-2 text-sm font-semibold text-white hover:bg-(--gt-blue-hover) disabled:opacity-50"
                   >
                     Next
                   </button>
@@ -1273,7 +1316,7 @@ export default function BuyerRequestManagement() {
                         <input className="w-full rounded-lg borderless-shadow px-3 py-2" value={editForm.quantity} onChange={(e) => setEditForm({ ...editForm, quantity: e.target.value })} />
                       </Field>
                       <Field label="Custom description">
-                        <textarea className="w-full min-h-[120px] rounded-lg borderless-shadow px-3 py-2" value={editForm.customDescription} onChange={(e) => setEditForm({ ...editForm, customDescription: e.target.value })} />
+                        <textarea className="w-full min-h-30 rounded-lg borderless-shadow px-3 py-2" value={editForm.customDescription} onChange={(e) => setEditForm({ ...editForm, customDescription: e.target.value })} />
                       </Field>
                         <Field
                           label="Messaging access"
@@ -1301,7 +1344,7 @@ export default function BuyerRequestManagement() {
                           </div>
                         </Field>
                       <div className="flex gap-2">
-                        <button type="button" disabled={saving} className="rounded-lg bg-[var(--gt-blue)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--gt-blue-hover)] disabled:opacity-70" onClick={saveEdit}>
+                        <button type="button" disabled={saving} className="rounded-lg bg-(--gt-blue) px-4 py-2 text-sm font-semibold text-white hover:bg-(--gt-blue-hover) disabled:opacity-70" onClick={saveEdit}>
                           Save
                         </button>
                         <button type="button" className="rounded-lg borderless-shadow px-4 py-2 text-sm font-semibold" onClick={() => setEditingId('')}>
@@ -1335,7 +1378,7 @@ export default function BuyerRequestManagement() {
                         >
                           {smartMatchLoading === r.id ? 'Matching...' : 'Smart match'}
                         </button>
-                        <button type="button" className="rounded-full bg-[var(--gt-blue)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--gt-blue-hover)]" onClick={() => startEditing(r)}>
+                        <button type="button" className="rounded-full bg-(--gt-blue) px-3 py-2 text-xs font-semibold text-white hover:bg-(--gt-blue-hover)" onClick={() => startEditing(r)}>
                           Edit
                         </button>
                         <button type="button" className="rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50" onClick={() => deleteRequest(r.id)}>
@@ -1348,7 +1391,7 @@ export default function BuyerRequestManagement() {
                       <div className="rounded-xl bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-200/70">
                         Smart supplier matching is a Premium feature.
                         <div className="mt-2">
-                          <Link to="/pricing" className="text-[11px] font-semibold text-[var(--gt-blue)] hover:underline">Upgrade to unlock</Link>
+                          <Link to="/pricing" className="text-[11px] font-semibold text-(--gt-blue) hover:underline">Upgrade to unlock</Link>
                         </div>
                       </div>
                     ) : null}
@@ -1379,7 +1422,7 @@ export default function BuyerRequestManagement() {
                         <p className="text-xs font-semibold text-slate-700">Attachments</p>
                         <button
                           type="button"
-                          className="text-[11px] font-semibold text-[var(--gt-blue)]"
+                          className="text-[11px] font-semibold text-(--gt-blue)"
                           onClick={() => loadAttachments(r.id)}
                         >
                           Refresh
@@ -1421,7 +1464,7 @@ export default function BuyerRequestManagement() {
                           <option value="compliance">Compliance</option>
                           <option value="other">Other</option>
                         </select>
-                        <label className="text-xs font-semibold text-[var(--gt-blue)] cursor-pointer">
+                        <label className="text-xs font-semibold text-(--gt-blue) cursor-pointer">
                           {uploadingAttachmentId === r.id ? 'Uploading...' : 'Upload file'}
                           <input
                             type="file"

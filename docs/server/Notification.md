@@ -4,7 +4,7 @@ This doc is generated from source snapshots with `path:line` references.
 
 ## Mounted prefixes
 
-- `/api/notifications` -> `server/routes/notificationRoutes.js:74` (router var: `notificationRoutes`)
+- `/api/notifications` -> `server/routes/notificationRoutes.js:128` (router var: `notificationRoutes`)
 
 ## Routes (ultra-detailed)
 

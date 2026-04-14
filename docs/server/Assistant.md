@@ -4,13 +4,13 @@ This doc is generated from source snapshots with `path:line` references.
 
 ## Mounted prefixes
 
-- `/api/assistant` -> `server/routes/assistantRoutes.js:69` (router var: `assistantRoutes`)
+- `/api/assistant` -> `server/routes/assistantRoutes.js:121` (router var: `assistantRoutes`)
 
 ## Routes (ultra-detailed)
 
 ### POST `/api/assistant/ask`
 
-- **Route definition:** `server/routes/assistantRoutes.js:14`
+- **Route definition:** `server/routes/assistantRoutes.js:19`
 
 ```js
 router.post('/ask', requireAuth, askAssistant)
@@ -22,7 +22,7 @@ router.post('/ask', requireAuth, askAssistant)
 
 ### POST `/api/assistant/ask-public`
 
-- **Route definition:** `server/routes/assistantRoutes.js:15`
+- **Route definition:** `server/routes/assistantRoutes.js:20`
 
 ```js
 router.post('/ask-public', askAssistantPublic)
@@ -32,9 +32,69 @@ router.post('/ask-public', askAssistantPublic)
 - **Handler:** `askAssistantPublic`
 - **Controller file:** `—`
 
+### POST `/api/assistant/extract-requirement`
+
+- **Route definition:** `server/routes/assistantRoutes.js:21`
+
+```js
+router.post('/extract-requirement', requireAuth, postExtractRequirement)
+```
+- **Middleware stack (in order):**
+  - `requireAuth`
+- **Handler:** `postExtractRequirement`
+- **Controller file:** `—`
+
+### POST `/api/assistant/generate-first-response`
+
+- **Route definition:** `server/routes/assistantRoutes.js:22`
+
+```js
+router.post('/generate-first-response', requireAuth, postGenerateFirstResponse)
+```
+- **Middleware stack (in order):**
+  - `requireAuth`
+- **Handler:** `postGenerateFirstResponse`
+- **Controller file:** `—`
+
+### POST `/api/assistant/validate-response`
+
+- **Route definition:** `server/routes/assistantRoutes.js:23`
+
+```js
+router.post('/validate-response', requireAuth, postValidateResponse)
+```
+- **Middleware stack (in order):**
+  - `requireAuth`
+- **Handler:** `postValidateResponse`
+- **Controller file:** `—`
+
+### POST `/api/assistant/conversation-summary`
+
+- **Route definition:** `server/routes/assistantRoutes.js:24`
+
+```js
+router.post('/conversation-summary', requireAuth, getConversationSummary)
+```
+- **Middleware stack (in order):**
+  - `requireAuth`
+- **Handler:** `getConversationSummary`
+- **Controller file:** `—`
+
+### POST `/api/assistant/negotiation`
+
+- **Route definition:** `server/routes/assistantRoutes.js:25`
+
+```js
+router.post('/negotiation', requireAuth, getNegotiationHelper)
+```
+- **Middleware stack (in order):**
+  - `requireAuth`
+- **Handler:** `getNegotiationHelper`
+- **Controller file:** `—`
+
 ### GET `/api/assistant/knowledge`
 
-- **Route definition:** `server/routes/assistantRoutes.js:16`
+- **Route definition:** `server/routes/assistantRoutes.js:26`
 
 ```js
 router.get('/knowledge', requireAuth, getAssistantKnowledge)
@@ -46,7 +106,7 @@ router.get('/knowledge', requireAuth, getAssistantKnowledge)
 
 ### POST `/api/assistant/knowledge`
 
-- **Route definition:** `server/routes/assistantRoutes.js:17`
+- **Route definition:** `server/routes/assistantRoutes.js:27`
 
 ```js
 router.post('/knowledge', requireAuth, allowRoles('owner', 'admin'), createAssistantKnowledge)
@@ -59,7 +119,7 @@ router.post('/knowledge', requireAuth, allowRoles('owner', 'admin'), createAssis
 
 ### DELETE `/api/assistant/knowledge/:entryId`
 
-- **Route definition:** `server/routes/assistantRoutes.js:19`
+- **Route definition:** `server/routes/assistantRoutes.js:29`
 
 ```js
 router.delete('/knowledge/:entryId', requireAuth, allowRoles('owner', 'admin'), removeAssistantKnowledge)

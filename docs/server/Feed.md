@@ -4,7 +4,7 @@ This doc is generated from source snapshots with `path:line` references.
 
 ## Mounted prefixes
 
-- `/api/feed` -> `server/routes/feedRoutes.js:66` (router var: `feedRoutes`)
+- `/api/feed` -> `server/routes/feedRoutes.js:118` (router var: `feedRoutes`)
 
 ## Routes (ultra-detailed)
 
@@ -30,7 +30,7 @@ export async function combinedFeed(req, res) {
   const cursor = Number.isFinite(Number(req.query.cursor)) ? Math.max(0, Math.floor(Number(req.query.cursor))) : 0
   const limitRaw = Number.isFinite(Number(req.query.limit)) ? Math.floor(Number(req.query.limit)) : 12
   const limit = Math.min(50, Math.max(1, limitRaw))
-  const data = await getCombinedFeed({ unique, type, category, cursor, limit })
+  const data = await getCombinedFeed({ unique, type, category, cursor, limit, viewer: req.user })
   return res.json(data)
 }
 

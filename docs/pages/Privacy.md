@@ -24,47 +24,62 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 ### 3.1 Custom CSS utilities referenced by this page (App.css / index.css)
 
 - `.nav-glass` definitions:
-  - `src/App.css:615`
+  - `src/App.css:897`
 - `.spotlight-card` definitions:
-  - `src/App.css:267`
+  - `src/App.css:550`
 - `.skeleton` definitions:
-  - `src/App.css:583`
+  - `src/App.css:865`
 - `.neo-page` definitions:
-  - `src/App.css:108`
+  - `src/App.css:115`
 - `.neo-panel` definitions:
-  - `src/App.css:116`
+  - `src/App.css:123`
 - `.cyberpunk-page` definitions:
-  - `src/App.css:109`
+  - `src/App.css:116`
 - `.cyberpunk-card` definitions:
-  - `src/App.css:110`
+  - `src/App.css:117`
 - `.assistant-orb-btn` definitions:
-  - `src/App.css:518`
+  - `src/App.css:801`
 - `.legal-weave` definitions:
-  - `src/App.css:366`
+  - `src/App.css:649`
 - `.signature-draw` definitions:
-  - `src/App.css:401`
+  - `src/App.css:684`
 - `.verified-shimmer` definitions:
-  - `src/App.css:434`
+  - `src/App.css:717`
 - `.verified-pulse` definitions:
-  - `src/App.css:293`
+  - `src/App.css:576`
 - `.conic-beam` definitions:
-  - `src/App.css:302`
+  - `src/App.css:585`
 
 ### 3.2 Every className block (with grouped explanations)
 
-#### `src/pages/Privacy.jsx:38`
+#### `src/pages/Privacy.jsx:26`
+
+```jsx
+function LegalCard({ children, className='', index = 0, id }) {
+  const reduceMotion = useReducedMotion()
+
+  return (
+```
+**Raw class strings detected (best effort):**
+
+- _(dynamic className; inspect the snippet above)_
+
+**Utility breakdown (grouped):**
+
+
+#### `src/pages/Privacy.jsx:39`
 
 ```jsx
       className={[
         'rounded-2xl p-6 lg:p-8 transition-colors duration-500 ease-in-out',
-        'bg-[#ffffff] border border-slate-200 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
-        'dark:bg-[#0f172a] dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/5',
+        'bg-[#ffffff] borderless-shadow shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
+        'dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5',
 ```
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl p-6 lg:p-8 transition-colors duration-500 ease-in-out`
-- `bg-[#ffffff] border border-slate-200 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]`
-- `dark:bg-[#0f172a] dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/5`
+- `bg-[#ffffff] borderless-shadow shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]`
+- `dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5`
 
 **Utility breakdown (grouped):**
 
@@ -74,8 +89,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `bg-[#ffffff]` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
   - `shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]` — Drop shadow depth (elevation).
 - **Interaction / motion:**
   - `transition-colors` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
@@ -85,12 +99,11 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `lg:p-8` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
   - `dark:bg-[#0f172a]` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-none` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/5` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:54`
+#### `src/pages/Privacy.jsx:55`
 
 ```jsx
       className="rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide text-slate-700 hover:text-indigo-700 bg-black/[0.03] hover:bg-black/[0.05] dark:text-slate-200 dark:hover:text-white dark:bg-white/5 dark:hover:bg-white/10 transition"
@@ -126,7 +139,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:hover:bg-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:66`
+#### `src/pages/Privacy.jsx:67`
 
 ```jsx
     <div className="min-h-screen legal-weave bg-[#f8fafc] text-[#0f172a] dark:bg-[#020617] dark:text-[#f8fafc] transition-colors duration-500 ease-in-out px-4 py-8 lg:px-12 lg:py-12">
@@ -164,7 +177,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 - **Other:**
   - `legal-weave` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/Privacy.jsx:67`
+#### `src/pages/Privacy.jsx:68`
 
 ```jsx
       <div className="mx-auto max-w-6xl">
@@ -183,18 +196,18 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 - **Spacing:**
   - `mx-auto` — Horizontal margin (left/right).
 
-#### `src/pages/Privacy.jsx:72`
+#### `src/pages/Privacy.jsx:73`
 
 ```jsx
           className="mb-5"
         >
-          <div className="rounded-3xl bg-[#ffffff]/80 backdrop-blur-md border border-slate-200 shadow-[0_10px_40px_rgba(2,6,23,0.06)] p-6 lg:p-8 dark:bg-[#0f172a]/70 dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out">
+          <div className="rounded-3xl bg-[#ffffff]/80 backdrop-blur-md borderless-shadow shadow-[0_10px_40px_rgba(2,6,23,0.06)] p-6 lg:p-8 dark:bg-[#0f172a]/70 dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out">
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
 ```
 **Raw class strings detected (best effort):**
 
 - `mb-5`
-- `rounded-3xl bg-[#ffffff]/80 backdrop-blur-md border border-slate-200 shadow-[0_10px_40px_rgba(2,6,23,0.06)] p-6 lg:p-8 dark:bg-[#0f172a]/70 dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out`
+- `rounded-3xl bg-[#ffffff]/80 backdrop-blur-md borderless-shadow shadow-[0_10px_40px_rgba(2,6,23,0.06)] p-6 lg:p-8 dark:bg-[#0f172a]/70 dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out`
 - `flex flex-col gap-4 md:flex-row md:items-end md:justify-between`
 
 **Utility breakdown (grouped):**
@@ -211,8 +224,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `backdrop-blur-md` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Borders / rings / shadows:**
   - `rounded-3xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
   - `shadow-[0_10px_40px_rgba(2,6,23,0.06)]` — Drop shadow depth (elevation).
 - **Interaction / motion:**
   - `transition-colors` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
@@ -225,24 +237,23 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `md:justify-between` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
   - `dark:bg-[#0f172a]/70` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-none` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:74`
+#### `src/pages/Privacy.jsx:75`
 
 ```jsx
-          <div className="rounded-3xl bg-[#ffffff]/80 backdrop-blur-md border border-slate-200 shadow-[0_10px_40px_rgba(2,6,23,0.06)] p-6 lg:p-8 dark:bg-[#0f172a]/70 dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out">
+          <div className="rounded-3xl bg-[#ffffff]/80 backdrop-blur-md borderless-shadow shadow-[0_10px_40px_rgba(2,6,23,0.06)] p-6 lg:p-8 dark:bg-[#0f172a]/70 dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out">
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase bg-sky-50 text-sky-700 border border-sky-100 dark:bg-white/5 dark:text-sky-200 dark:border-transparent dark:ring-1 dark:ring-white/10">
+                <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase bg-sky-50 text-sky-700 borderless-shadow dark:bg-white/5 dark:text-sky-200 dark:ring-1 dark:ring-white/10">
 ```
 **Raw class strings detected (best effort):**
 
-- `rounded-3xl bg-[#ffffff]/80 backdrop-blur-md border border-slate-200 shadow-[0_10px_40px_rgba(2,6,23,0.06)] p-6 lg:p-8 dark:bg-[#0f172a]/70 dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out`
+- `rounded-3xl bg-[#ffffff]/80 backdrop-blur-md borderless-shadow shadow-[0_10px_40px_rgba(2,6,23,0.06)] p-6 lg:p-8 dark:bg-[#0f172a]/70 dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out`
 - `flex flex-col gap-4 md:flex-row md:items-end md:justify-between`
-- `inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase bg-sky-50 text-sky-700 border border-sky-100 dark:bg-white/5 dark:text-sky-200 dark:border-transparent dark:ring-1 dark:ring-white/10`
+- `inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase bg-sky-50 text-sky-700 borderless-shadow dark:bg-white/5 dark:text-sky-200 dark:ring-1 dark:ring-white/10`
 
 **Utility breakdown (grouped):**
 
@@ -269,11 +280,9 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `bg-sky-50` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-3xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
   - `shadow-[0_10px_40px_rgba(2,6,23,0.06)]` — Drop shadow depth (elevation).
   - `rounded-full` — Corner radius.
-  - `border-sky-100` — Border style/width/color.
 - **Interaction / motion:**
   - `transition-colors` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `duration-500` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
@@ -285,25 +294,24 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `md:justify-between` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
   - `dark:bg-[#0f172a]/70` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-none` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-sky-200` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:75`
+#### `src/pages/Privacy.jsx:76`
 
 ```jsx
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase bg-sky-50 text-sky-700 border border-sky-100 dark:bg-white/5 dark:text-sky-200 dark:border-transparent dark:ring-1 dark:ring-white/10">
+                <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase bg-sky-50 text-sky-700 borderless-shadow dark:bg-white/5 dark:text-sky-200 dark:ring-1 dark:ring-white/10">
                   Legal Documentation
 ```
 **Raw class strings detected (best effort):**
 
 - `flex flex-col gap-4 md:flex-row md:items-end md:justify-between`
-- `inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase bg-sky-50 text-sky-700 border border-sky-100 dark:bg-white/5 dark:text-sky-200 dark:border-transparent dark:ring-1 dark:ring-white/10`
+- `inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase bg-sky-50 text-sky-700 borderless-shadow dark:bg-white/5 dark:text-sky-200 dark:ring-1 dark:ring-white/10`
 
 **Utility breakdown (grouped):**
 
@@ -327,8 +335,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `bg-sky-50` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-sky-100` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Responsive variants:**
   - `md:flex-row` — Variant prefix (responsive, dark, or interaction state).
   - `md:items-end` — Variant prefix (responsive, dark, or interaction state).
@@ -336,21 +343,20 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 - **Dark mode variants:**
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-sky-200` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:77`
+#### `src/pages/Privacy.jsx:78`
 
 ```jsx
-                <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase bg-sky-50 text-sky-700 border border-sky-100 dark:bg-white/5 dark:text-sky-200 dark:border-transparent dark:ring-1 dark:ring-white/10">
+                <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase bg-sky-50 text-sky-700 borderless-shadow dark:bg-white/5 dark:text-sky-200 dark:ring-1 dark:ring-white/10">
                   Legal Documentation
                 </div>
                 <h1 className="mt-4 text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#0f172a] dark:text-white">
 ```
 **Raw class strings detected (best effort):**
 
-- `inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase bg-sky-50 text-sky-700 border border-sky-100 dark:bg-white/5 dark:text-sky-200 dark:border-transparent dark:ring-1 dark:ring-white/10`
+- `inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase bg-sky-50 text-sky-700 borderless-shadow dark:bg-white/5 dark:text-sky-200 dark:ring-1 dark:ring-white/10`
 - `mt-4 text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#0f172a] dark:text-white`
 
 **Utility breakdown (grouped):**
@@ -377,20 +383,18 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `text-[#0f172a]` — Text color or text sizing.
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-sky-100` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Responsive variants:**
   - `md:text-4xl` — Variant prefix (responsive, dark, or interaction state).
   - `lg:text-5xl` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-sky-200` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:80`
+#### `src/pages/Privacy.jsx:81`
 
 ```jsx
                 <h1 className="mt-4 text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#0f172a] dark:text-white">
@@ -424,7 +428,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:83`
+#### `src/pages/Privacy.jsx:84`
 
 ```jsx
                 <p className="mt-2 text-sm font-medium text-slate-600 dark:text-slate-300">
@@ -452,7 +456,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:85`
+#### `src/pages/Privacy.jsx:86`
 
 ```jsx
                   <span className="text-[#0f172a] dark:text-slate-100">{lastUpdated}</span>
@@ -481,17 +485,19 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `dark:text-slate-100` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:88`
+#### `src/pages/Privacy.jsx:89`
 
 ```jsx
               <div className="max-w-xl text-sm md:text-base leading-relaxed text-slate-600 dark:text-slate-300">
-                This Privacy Policy explains how our B2B Garments and Textile Marketplace platform collects, uses, protects, and manages your information. Our platform connects international Buyers, Factories, and Buying Houses in a secure and professional environment. By creating an account or using our services, you agree to the practices described in this policy.
+                This Privacy Policy explains how our B2B Garments and Textile Marketplace platform <span className="font-bold text-indigo-700 dark:text-indigo-300">collects, uses, protects, and manages your information</span>. Our platform connects international Buyers, Factories, and Buying Houses in a secure and professional environment. <span className="font-semibold text-rose-700 dark:text-rose-300">By creating an account or using our services, you agree to the practices described in this policy.</span>
               </div>
             </div>
 ```
 **Raw class strings detected (best effort):**
 
 - `max-w-xl text-sm md:text-base leading-relaxed text-slate-600 dark:text-slate-300`
+- `font-bold text-indigo-700 dark:text-indigo-300`
+- `font-semibold text-rose-700 dark:text-rose-300`
 
 **Utility breakdown (grouped):**
 
@@ -501,23 +507,53 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `text-sm` — Text color or text sizing.
   - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-600` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-indigo-700` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-rose-700` — Text color or text sizing.
 - **Responsive variants:**
   - `md:text-base` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-indigo-300` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-rose-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:95`
+#### `src/pages/Privacy.jsx:90`
+
+```jsx
+                This Privacy Policy explains how our B2B Garments and Textile Marketplace platform <span className="font-bold text-indigo-700 dark:text-indigo-300">collects, uses, protects, and manages your information</span>. Our platform connects international Buyers, Factories, and Buying Houses in a secure and professional environment. <span className="font-semibold text-rose-700 dark:text-rose-300">By creating an account or using our services, you agree to the practices described in this policy.</span>
+              </div>
+            </div>
+          </div>
+```
+**Raw class strings detected (best effort):**
+
+- `font-bold text-indigo-700 dark:text-indigo-300`
+- `font-semibold text-rose-700 dark:text-rose-300`
+
+**Utility breakdown (grouped):**
+
+- **Typography:**
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-indigo-700` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-rose-700` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-indigo-300` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-rose-300` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/Privacy.jsx:96`
 
 ```jsx
         <div className="sticky top-[72px] z-40 mb-6">
-          <div className="rounded-2xl border border-slate-200 bg-[#ffffff]/70 backdrop-blur-md shadow-[0_10px_34px_rgba(2,6,23,0.05)] px-4 py-3 dark:bg-[#020617]/60 dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out">
+          <div className="rounded-2xl borderless-shadow bg-[#ffffff]/70 backdrop-blur-md shadow-[0_10px_34px_rgba(2,6,23,0.05)] px-4 py-3 dark:bg-[#020617]/60 dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out">
             <div className="flex flex-wrap items-center gap-2">
               <TocLink href="#collect" label="1. Collect" />
 ```
 **Raw class strings detected (best effort):**
 
 - `sticky top-[72px] z-40 mb-6`
-- `rounded-2xl border border-slate-200 bg-[#ffffff]/70 backdrop-blur-md shadow-[0_10px_34px_rgba(2,6,23,0.05)] px-4 py-3 dark:bg-[#020617]/60 dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out`
+- `rounded-2xl borderless-shadow bg-[#ffffff]/70 backdrop-blur-md shadow-[0_10px_34px_rgba(2,6,23,0.05)] px-4 py-3 dark:bg-[#020617]/60 dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out`
 - `flex flex-wrap items-center gap-2`
 - `#collect`
 - `1. Collect`
@@ -541,8 +577,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `backdrop-blur-md` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
   - `shadow-[0_10px_34px_rgba(2,6,23,0.05)]` — Drop shadow depth (elevation).
 - **Interaction / motion:**
   - `transition-colors` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
@@ -550,7 +585,6 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `ease-in-out` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Dark mode variants:**
   - `dark:bg-[#020617]/60` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-none` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
@@ -559,17 +593,17 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `1.` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Collect` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/Privacy.jsx:96`
+#### `src/pages/Privacy.jsx:97`
 
 ```jsx
-          <div className="rounded-2xl border border-slate-200 bg-[#ffffff]/70 backdrop-blur-md shadow-[0_10px_34px_rgba(2,6,23,0.05)] px-4 py-3 dark:bg-[#020617]/60 dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out">
+          <div className="rounded-2xl borderless-shadow bg-[#ffffff]/70 backdrop-blur-md shadow-[0_10px_34px_rgba(2,6,23,0.05)] px-4 py-3 dark:bg-[#020617]/60 dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out">
             <div className="flex flex-wrap items-center gap-2">
               <TocLink href="#collect" label="1. Collect" />
               <TocLink href="#use" label="2. Use" />
 ```
 **Raw class strings detected (best effort):**
 
-- `rounded-2xl border border-slate-200 bg-[#ffffff]/70 backdrop-blur-md shadow-[0_10px_34px_rgba(2,6,23,0.05)] px-4 py-3 dark:bg-[#020617]/60 dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out`
+- `rounded-2xl borderless-shadow bg-[#ffffff]/70 backdrop-blur-md shadow-[0_10px_34px_rgba(2,6,23,0.05)] px-4 py-3 dark:bg-[#020617]/60 dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out`
 - `flex flex-wrap items-center gap-2`
 - `#collect`
 - `1. Collect`
@@ -591,8 +625,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `backdrop-blur-md` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
   - `shadow-[0_10px_34px_rgba(2,6,23,0.05)]` — Drop shadow depth (elevation).
 - **Interaction / motion:**
   - `transition-colors` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
@@ -600,7 +633,6 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `ease-in-out` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Dark mode variants:**
   - `dark:bg-[#020617]/60` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-none` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
@@ -612,7 +644,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `2.` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Use` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/Privacy.jsx:97`
+#### `src/pages/Privacy.jsx:98`
 
 ```jsx
             <div className="flex flex-wrap items-center gap-2">
@@ -649,20 +681,20 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `3.` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Fraud` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/Privacy.jsx:111`
+#### `src/pages/Privacy.jsx:112`
 
 ```jsx
         <div className="grid grid-cols-12 gap-6">
           <LegalCard index={0} className="col-span-12" id="collect">
             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 dark:bg-white/5 dark:text-slate-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm">
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
 ```
 **Raw class strings detected (best effort):**
 
 - `grid grid-cols-12 gap-6`
 - `col-span-12`
 - `text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3`
-- `flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 dark:bg-white/5 dark:text-slate-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm`
+- `flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm`
 
 **Utility breakdown (grouped):**
 
@@ -690,31 +722,29 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `bg-slate-50` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-lg` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Responsive variants:**
   - `md:text-2xl` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:112`
+#### `src/pages/Privacy.jsx:113`
 
 ```jsx
           <LegalCard index={0} className="col-span-12" id="collect">
             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 dark:bg-white/5 dark:text-slate-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm">
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
                 1
 ```
 **Raw class strings detected (best effort):**
 
 - `col-span-12`
 - `text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3`
-- `flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 dark:bg-white/5 dark:text-slate-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm`
+- `flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm`
 
 **Utility breakdown (grouped):**
 
@@ -739,30 +769,28 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `bg-slate-50` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-lg` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Responsive variants:**
   - `md:text-2xl` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:113`
+#### `src/pages/Privacy.jsx:114`
 
 ```jsx
             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 dark:bg-white/5 dark:text-slate-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm">
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
                 1
               </span>
 ```
 **Raw class strings detected (best effort):**
 
 - `text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3`
-- `flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 dark:bg-white/5 dark:text-slate-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm`
+- `flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm`
 
 **Utility breakdown (grouped):**
 
@@ -786,29 +814,27 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `bg-slate-50` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-lg` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Responsive variants:**
   - `md:text-2xl` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:114`
+#### `src/pages/Privacy.jsx:115`
 
 ```jsx
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 dark:bg-white/5 dark:text-slate-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm">
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
                 1
               </span>
               Information We Collect
 ```
 **Raw class strings detected (best effort):**
 
-- `flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 dark:bg-white/5 dark:text-slate-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm`
+- `flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm`
 
 **Utility breakdown (grouped):**
 
@@ -825,27 +851,25 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `bg-slate-50` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-lg` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Dark mode variants:**
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:120`
+#### `src/pages/Privacy.jsx:121`
 
 ```jsx
             <div className="grid grid-cols-12 gap-4">
-              <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] border border-slate-200 dark:bg-white/5 dark:border-transparent dark:ring-1 dark:ring-white/10">
+              <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10">
                 <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Account Data</h3>
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
 ```
 **Raw class strings detected (best effort):**
 
 - `grid grid-cols-12 gap-4`
-- `col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] border border-slate-200 dark:bg-white/5 dark:border-transparent dark:ring-1 dark:ring-white/10`
+- `col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10`
 - `font-bold text-[#0f172a] dark:text-white mb-3`
 - `space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300`
 
@@ -872,14 +896,12 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `text-[#0f172a]` — Text color or text sizing.
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Responsive variants:**
   - `md:col-span-6` — Variant prefix (responsive, dark, or interaction state).
   - `md:text-base` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
@@ -887,17 +909,17 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 - **Other:**
   - `list-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/Privacy.jsx:121`
+#### `src/pages/Privacy.jsx:122`
 
 ```jsx
-              <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] border border-slate-200 dark:bg-white/5 dark:border-transparent dark:ring-1 dark:ring-white/10">
+              <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10">
                 <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Account Data</h3>
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
                   {['Full Name', 'Organization Name', 'Email Address', 'Phone Number', 'Country', 'Verification Docs', 'Account Type'].map((item) => (
 ```
 **Raw class strings detected (best effort):**
 
-- `col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] border border-slate-200 dark:bg-white/5 dark:border-transparent dark:ring-1 dark:ring-white/10`
+- `col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10`
 - `font-bold text-[#0f172a] dark:text-white mb-3`
 - `space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300`
 - `Full Name`
@@ -928,75 +950,14 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `text-[#0f172a]` — Text color or text sizing.
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Responsive variants:**
   - `md:col-span-6` — Variant prefix (responsive, dark, or interaction state).
   - `md:text-base` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
-- **Other:**
-  - `list-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Full` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Name` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Organization` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Email` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Address` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Phone` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Number` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Country` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Verification` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Docs` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Account` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Type` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-
-#### `src/pages/Privacy.jsx:122`
-
-```jsx
-                <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Account Data</h3>
-                <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
-                  {['Full Name', 'Organization Name', 'Email Address', 'Phone Number', 'Country', 'Verification Docs', 'Account Type'].map((item) => (
-                    <li key={item} className="flex items-center gap-2">
-```
-**Raw class strings detected (best effort):**
-
-- `font-bold text-[#0f172a] dark:text-white mb-3`
-- `space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300`
-- `Full Name`
-- `Organization Name`
-- `Email Address`
-- `Phone Number`
-- `Country`
-- `Verification Docs`
-- `Account Type`
-- `flex items-center gap-2`
-
-**Utility breakdown (grouped):**
-
-- **Layout / positioning:**
-  - `flex` — Flex layout.
-  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Spacing:**
-  - `mb-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `space-y-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `p-0` — Padding (all sides).
-  - `m-0` — Margin (all sides).
-  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Typography:**
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-sm` — Text color or text sizing.
-  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-slate-700` — Text color or text sizing.
-- **Color / surface:**
-  - `text-[#0f172a]` — Text color or text sizing.
-- **Responsive variants:**
-  - `md:text-base` — Variant prefix (responsive, dark, or interaction state).
-- **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
@@ -1017,6 +978,65 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/Privacy.jsx:123`
 
 ```jsx
+                <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Account Data</h3>
+                <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
+                  {['Full Name', 'Organization Name', 'Email Address', 'Phone Number', 'Country', 'Verification Docs', 'Account Type'].map((item) => (
+                    <li key={item} className="flex items-center gap-2">
+```
+**Raw class strings detected (best effort):**
+
+- `font-bold text-[#0f172a] dark:text-white mb-3`
+- `space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300`
+- `Full Name`
+- `Organization Name`
+- `Email Address`
+- `Phone Number`
+- `Country`
+- `Verification Docs`
+- `Account Type`
+- `flex items-center gap-2`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mb-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `space-y-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-0` — Padding (all sides).
+  - `m-0` — Margin (all sides).
+  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-sm` — Text color or text sizing.
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-700` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[#0f172a]` — Text color or text sizing.
+- **Responsive variants:**
+  - `md:text-base` — Variant prefix (responsive, dark, or interaction state).
+- **Dark mode variants:**
+  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `list-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Full` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Name` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Organization` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Email` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Address` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Phone` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Number` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Country` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Verification` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Docs` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Account` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Type` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/Privacy.jsx:124`
+
+```jsx
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
                   {['Full Name', 'Organization Name', 'Email Address', 'Phone Number', 'Country', 'Verification Docs', 'Account Type'].map((item) => (
                     <li key={item} className="flex items-center gap-2">
@@ -1074,7 +1094,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `Account` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Type` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/Privacy.jsx:125`
+#### `src/pages/Privacy.jsx:126`
 
 ```jsx
                     <li key={item} className="flex items-center gap-2">
@@ -1101,7 +1121,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
 
-#### `src/pages/Privacy.jsx:126`
+#### `src/pages/Privacy.jsx:127`
 
 ```jsx
                       <span className="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
@@ -1123,17 +1143,17 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
 
-#### `src/pages/Privacy.jsx:133`
+#### `src/pages/Privacy.jsx:134`
 
 ```jsx
-              <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] border border-slate-200 dark:bg-white/5 dark:border-transparent dark:ring-1 dark:ring-white/10">
+              <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10">
                 <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Business Data</h3>
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
                   {['Product Specifications', 'Design Requirements', 'Order Documents', 'Digital Signature Records'].map((item) => (
 ```
 **Raw class strings detected (best effort):**
 
-- `col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] border border-slate-200 dark:bg-white/5 dark:border-transparent dark:ring-1 dark:ring-white/10`
+- `col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10`
 - `font-bold text-[#0f172a] dark:text-white mb-3`
 - `space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300`
 - `Product Specifications`
@@ -1161,69 +1181,14 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `text-[#0f172a]` — Text color or text sizing.
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Responsive variants:**
   - `md:col-span-6` — Variant prefix (responsive, dark, or interaction state).
   - `md:text-base` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
-- **Other:**
-  - `list-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Product` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Specifications` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Design` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Requirements` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Order` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Documents` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Digital` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Signature` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Records` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-
-#### `src/pages/Privacy.jsx:134`
-
-```jsx
-                <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Business Data</h3>
-                <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
-                  {['Product Specifications', 'Design Requirements', 'Order Documents', 'Digital Signature Records'].map((item) => (
-                    <li key={item} className="flex items-center gap-2">
-```
-**Raw class strings detected (best effort):**
-
-- `font-bold text-[#0f172a] dark:text-white mb-3`
-- `space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300`
-- `Product Specifications`
-- `Design Requirements`
-- `Order Documents`
-- `Digital Signature Records`
-- `flex items-center gap-2`
-
-**Utility breakdown (grouped):**
-
-- **Layout / positioning:**
-  - `flex` — Flex layout.
-  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Spacing:**
-  - `mb-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `space-y-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `p-0` — Padding (all sides).
-  - `m-0` — Margin (all sides).
-  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Typography:**
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-sm` — Text color or text sizing.
-  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-slate-700` — Text color or text sizing.
-- **Color / surface:**
-  - `text-[#0f172a]` — Text color or text sizing.
-- **Responsive variants:**
-  - `md:text-base` — Variant prefix (responsive, dark, or interaction state).
-- **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
@@ -1241,6 +1206,59 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/Privacy.jsx:135`
 
 ```jsx
+                <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Business Data</h3>
+                <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
+                  {['Product Specifications', 'Design Requirements', 'Order Documents', 'Digital Signature Records'].map((item) => (
+                    <li key={item} className="flex items-center gap-2">
+```
+**Raw class strings detected (best effort):**
+
+- `font-bold text-[#0f172a] dark:text-white mb-3`
+- `space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300`
+- `Product Specifications`
+- `Design Requirements`
+- `Order Documents`
+- `Digital Signature Records`
+- `flex items-center gap-2`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mb-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `space-y-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-0` — Padding (all sides).
+  - `m-0` — Margin (all sides).
+  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-sm` — Text color or text sizing.
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-700` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[#0f172a]` — Text color or text sizing.
+- **Responsive variants:**
+  - `md:text-base` — Variant prefix (responsive, dark, or interaction state).
+- **Dark mode variants:**
+  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `list-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Product` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Specifications` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Design` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Requirements` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Order` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Documents` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Digital` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Signature` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Records` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/Privacy.jsx:136`
+
+```jsx
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
                   {['Product Specifications', 'Design Requirements', 'Order Documents', 'Digital Signature Records'].map((item) => (
                     <li key={item} className="flex items-center gap-2">
@@ -1292,7 +1310,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `Signature` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Records` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/Privacy.jsx:137`
+#### `src/pages/Privacy.jsx:138`
 
 ```jsx
                     <li key={item} className="flex items-center gap-2">
@@ -1319,7 +1337,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
 
-#### `src/pages/Privacy.jsx:138`
+#### `src/pages/Privacy.jsx:139`
 
 ```jsx
                       <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
@@ -1341,17 +1359,17 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
 
-#### `src/pages/Privacy.jsx:145`
+#### `src/pages/Privacy.jsx:146`
 
 ```jsx
-              <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] border border-slate-200 dark:bg-white/5 dark:border-transparent dark:ring-1 dark:ring-white/10">
+              <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10">
                 <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Communications</h3>
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
                   {['Chat messages', 'Video/Audio logs', 'Call recordings'].map((item) => (
 ```
 **Raw class strings detected (best effort):**
 
-- `col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] border border-slate-200 dark:bg-white/5 dark:border-transparent dark:ring-1 dark:ring-white/10`
+- `col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10`
 - `font-bold text-[#0f172a] dark:text-white mb-3`
 - `space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300`
 - `Chat messages`
@@ -1378,65 +1396,14 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `text-[#0f172a]` — Text color or text sizing.
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Responsive variants:**
   - `md:col-span-6` — Variant prefix (responsive, dark, or interaction state).
   - `md:text-base` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
-- **Other:**
-  - `list-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Chat` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `messages` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Video/Audio` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `logs` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Call` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `recordings` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-
-#### `src/pages/Privacy.jsx:146`
-
-```jsx
-                <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Communications</h3>
-                <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
-                  {['Chat messages', 'Video/Audio logs', 'Call recordings'].map((item) => (
-                    <li key={item} className="flex items-center gap-2">
-```
-**Raw class strings detected (best effort):**
-
-- `font-bold text-[#0f172a] dark:text-white mb-3`
-- `space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300`
-- `Chat messages`
-- `Video/Audio logs`
-- `Call recordings`
-- `flex items-center gap-2`
-
-**Utility breakdown (grouped):**
-
-- **Layout / positioning:**
-  - `flex` — Flex layout.
-  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Spacing:**
-  - `mb-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `space-y-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `p-0` — Padding (all sides).
-  - `m-0` — Margin (all sides).
-  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Typography:**
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-sm` — Text color or text sizing.
-  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-slate-700` — Text color or text sizing.
-- **Color / surface:**
-  - `text-[#0f172a]` — Text color or text sizing.
-- **Responsive variants:**
-  - `md:text-base` — Variant prefix (responsive, dark, or interaction state).
-- **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
@@ -1451,6 +1418,55 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/Privacy.jsx:147`
 
 ```jsx
+                <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Communications</h3>
+                <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
+                  {['Chat messages', 'Video/Audio logs', 'Call recordings'].map((item) => (
+                    <li key={item} className="flex items-center gap-2">
+```
+**Raw class strings detected (best effort):**
+
+- `font-bold text-[#0f172a] dark:text-white mb-3`
+- `space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300`
+- `Chat messages`
+- `Video/Audio logs`
+- `Call recordings`
+- `flex items-center gap-2`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `flex` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mb-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `space-y-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-0` — Padding (all sides).
+  - `m-0` — Margin (all sides).
+  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-sm` — Text color or text sizing.
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-700` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[#0f172a]` — Text color or text sizing.
+- **Responsive variants:**
+  - `md:text-base` — Variant prefix (responsive, dark, or interaction state).
+- **Dark mode variants:**
+  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `list-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Chat` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `messages` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Video/Audio` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `logs` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Call` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `recordings` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/Privacy.jsx:148`
+
+```jsx
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
                   {['Chat messages', 'Video/Audio logs', 'Call recordings'].map((item) => (
                     <li key={item} className="flex items-center gap-2">
@@ -1498,7 +1514,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `Call` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `recordings` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/Privacy.jsx:149`
+#### `src/pages/Privacy.jsx:150`
 
 ```jsx
                     <li key={item} className="flex items-center gap-2">
@@ -1525,7 +1541,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
 
-#### `src/pages/Privacy.jsx:150`
+#### `src/pages/Privacy.jsx:151`
 
 ```jsx
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
@@ -1547,17 +1563,17 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
 
-#### `src/pages/Privacy.jsx:157`
+#### `src/pages/Privacy.jsx:158`
 
 ```jsx
-              <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] border border-slate-200 dark:bg-white/5 dark:border-transparent dark:ring-1 dark:ring-white/10">
+              <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10">
                 <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Technical Information</h3>
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
                   {['IP address', 'Device/Browser type', 'Usage activity', 'Search history'].map((item) => (
 ```
 **Raw class strings detected (best effort):**
 
-- `col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] border border-slate-200 dark:bg-white/5 dark:border-transparent dark:ring-1 dark:ring-white/10`
+- `col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10`
 - `font-bold text-[#0f172a] dark:text-white mb-3`
 - `space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300`
 - `IP address`
@@ -1586,68 +1602,14 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `text-[#0f172a]` — Text color or text sizing.
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Responsive variants:**
   - `md:col-span-6` — Variant prefix (responsive, dark, or interaction state).
   - `md:text-base` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
-- **Other:**
-  - `list-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `IP` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `address` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Device/Browser` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `type` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Usage` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `activity` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Search` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-
-#### `src/pages/Privacy.jsx:158`
-
-```jsx
-                <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Technical Information</h3>
-                <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
-                  {['IP address', 'Device/Browser type', 'Usage activity', 'Search history'].map((item) => (
-                    <li key={item} className="flex items-center gap-2">
-```
-**Raw class strings detected (best effort):**
-
-- `font-bold text-[#0f172a] dark:text-white mb-3`
-- `space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300`
-- `IP address`
-- `Device/Browser type`
-- `Usage activity`
-- `Search history`
-- `flex items-center gap-2`
-
-**Utility breakdown (grouped):**
-
-- **Layout / positioning:**
-  - `history` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `flex` — Flex layout.
-  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Spacing:**
-  - `mb-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `space-y-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `p-0` — Padding (all sides).
-  - `m-0` — Margin (all sides).
-  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Typography:**
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-sm` — Text color or text sizing.
-  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-slate-700` — Text color or text sizing.
-- **Color / surface:**
-  - `text-[#0f172a]` — Text color or text sizing.
-- **Responsive variants:**
-  - `md:text-base` — Variant prefix (responsive, dark, or interaction state).
-- **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
@@ -1663,6 +1625,58 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/Privacy.jsx:159`
 
 ```jsx
+                <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Technical Information</h3>
+                <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
+                  {['IP address', 'Device/Browser type', 'Usage activity', 'Search history'].map((item) => (
+                    <li key={item} className="flex items-center gap-2">
+```
+**Raw class strings detected (best effort):**
+
+- `font-bold text-[#0f172a] dark:text-white mb-3`
+- `space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300`
+- `IP address`
+- `Device/Browser type`
+- `Usage activity`
+- `Search history`
+- `flex items-center gap-2`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `history` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `flex` — Flex layout.
+  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Spacing:**
+  - `mb-3` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `space-y-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-0` — Padding (all sides).
+  - `m-0` — Margin (all sides).
+  - `gap-2` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-sm` — Text color or text sizing.
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-700` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[#0f172a]` — Text color or text sizing.
+- **Responsive variants:**
+  - `md:text-base` — Variant prefix (responsive, dark, or interaction state).
+- **Dark mode variants:**
+  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `list-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `IP` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `address` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Device/Browser` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `type` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Usage` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `activity` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `Search` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/Privacy.jsx:160`
+
+```jsx
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
                   {['IP address', 'Device/Browser type', 'Usage activity', 'Search history'].map((item) => (
                     <li key={item} className="flex items-center gap-2">
@@ -1713,7 +1727,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `activity` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Search` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/Privacy.jsx:161`
+#### `src/pages/Privacy.jsx:162`
 
 ```jsx
                     <li key={item} className="flex items-center gap-2">
@@ -1740,7 +1754,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
 
-#### `src/pages/Privacy.jsx:162`
+#### `src/pages/Privacy.jsx:163`
 
 ```jsx
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
@@ -1762,19 +1776,19 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 - **Borders / rings / shadows:**
   - `rounded-full` — Corner radius.
 
-#### `src/pages/Privacy.jsx:171`
+#### `src/pages/Privacy.jsx:172`
 
 ```jsx
           <LegalCard index={1} className="col-span-12" id="use">
             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 dark:bg-white/5 dark:text-slate-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm">
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
                 2
 ```
 **Raw class strings detected (best effort):**
 
 - `col-span-12`
 - `text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3`
-- `flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 dark:bg-white/5 dark:text-slate-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm`
+- `flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm`
 
 **Utility breakdown (grouped):**
 
@@ -1799,30 +1813,28 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `bg-slate-50` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-lg` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Responsive variants:**
   - `md:text-2xl` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:172`
+#### `src/pages/Privacy.jsx:173`
 
 ```jsx
             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 dark:bg-white/5 dark:text-slate-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm">
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
                 2
               </span>
 ```
 **Raw class strings detected (best effort):**
 
 - `text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3`
-- `flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 dark:bg-white/5 dark:text-slate-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm`
+- `flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm`
 
 **Utility breakdown (grouped):**
 
@@ -1846,29 +1858,27 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `bg-slate-50` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-lg` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Responsive variants:**
   - `md:text-2xl` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:173`
+#### `src/pages/Privacy.jsx:174`
 
 ```jsx
-              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 dark:bg-white/5 dark:text-slate-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm">
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
                 2
               </span>
               How We Use Your Information
 ```
 **Raw class strings detected (best effort):**
 
-- `flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 dark:bg-white/5 dark:text-slate-200 dark:border-transparent dark:ring-1 dark:ring-white/10 text-sm`
+- `flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm`
 
 **Utility breakdown (grouped):**
 
@@ -1885,26 +1895,24 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `bg-slate-50` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-lg` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Dark mode variants:**
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-200` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:179`
+#### `src/pages/Privacy.jsx:180`
 
 ```jsx
-            <div className="rounded-2xl p-5 bg-black/[0.02] border border-slate-200 dark:bg-white/5 dark:border-transparent dark:ring-1 dark:ring-white/10">
+            <div className="rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10">
               <ul className="grid md:grid-cols-2 gap-4 list-none p-0 m-0">
                 {[
                   'Account Management',
 ```
 **Raw class strings detected (best effort):**
 
-- `rounded-2xl p-5 bg-black/[0.02] border border-slate-200 dark:bg-white/5 dark:border-transparent dark:ring-1 dark:ring-white/10`
+- `rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10`
 - `grid md:grid-cols-2 gap-4 list-none p-0 m-0`
 - `Account Management`
 
@@ -1921,13 +1929,11 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `bg-black/[0.02]` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
 - **Responsive variants:**
   - `md:grid-cols-2` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
   - `dark:bg-white/5` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/10` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
@@ -1935,7 +1941,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `Account` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Management` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/Privacy.jsx:180`
+#### `src/pages/Privacy.jsx:181`
 
 ```jsx
               <ul className="grid md:grid-cols-2 gap-4 list-none p-0 m-0">
@@ -1966,7 +1972,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `Order` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `Matching` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/Privacy.jsx:190`
+#### `src/pages/Privacy.jsx:191`
 
 ```jsx
                   <li key={item} className="flex items-center gap-3 text-sm md:text-base font-medium rounded-xl px-3 py-2">
@@ -1999,7 +2005,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 - **Dark mode variants:**
   - `dark:text-sky-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:191`
+#### `src/pages/Privacy.jsx:192`
 
 ```jsx
                     <span className="text-sky-600 dark:text-sky-300">✓</span>
@@ -2018,7 +2024,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 - **Dark mode variants:**
   - `dark:text-sky-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:201`
+#### `src/pages/Privacy.jsx:202`
 
 ```jsx
             className="col-span-12 dark:bg-[#0b1220] dark:text-white dark:ring-1 dark:ring-white/10"
@@ -2054,19 +2060,60 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 - **Other:**
   - `fraud` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/Privacy.jsx:204`
+#### `src/pages/Privacy.jsx:205`
 
 ```jsx
             <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-4 text-[#0f172a] dark:text-white">3. Fraud Prevention Measures</h2>
-            <ul className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-white/85 text-sm md:text-base leading-relaxed list-none p-0 m-0">
-              {[
-                'Identity verification process',
+            <p className="text-sm md:text-base leading-relaxed text-slate-700 dark:text-white/85 mb-4">
+              <span className="font-bold text-rose-700 dark:text-rose-300">We take fraud prevention seriously.</span> <span className="text-indigo-700 dark:text-indigo-300 font-semibold">All calls are recorded</span> and <span className="text-indigo-700 dark:text-indigo-300 font-semibold">contracts are digitally signed</span> for your security.
+            </p>
 ```
 **Raw class strings detected (best effort):**
 
 - `text-xl md:text-2xl font-bold tracking-tight mb-4 text-[#0f172a] dark:text-white`
+- `text-sm md:text-base leading-relaxed text-slate-700 dark:text-white/85 mb-4`
+- `font-bold text-rose-700 dark:text-rose-300`
+- `text-indigo-700 dark:text-indigo-300 font-semibold`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `mb-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-xl` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-sm` — Text color or text sizing.
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-700` — Text color or text sizing.
+  - `text-rose-700` — Text color or text sizing.
+  - `text-indigo-700` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Color / surface:**
+  - `text-[#0f172a]` — Text color or text sizing.
+- **Responsive variants:**
+  - `md:text-2xl` — Variant prefix (responsive, dark, or interaction state).
+  - `md:text-base` — Variant prefix (responsive, dark, or interaction state).
+- **Dark mode variants:**
+  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-white/85` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-rose-300` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-indigo-300` — Variant prefix (responsive, dark, or interaction state).
+
+#### `src/pages/Privacy.jsx:206`
+
+```jsx
+            <p className="text-sm md:text-base leading-relaxed text-slate-700 dark:text-white/85 mb-4">
+              <span className="font-bold text-rose-700 dark:text-rose-300">We take fraud prevention seriously.</span> <span className="text-indigo-700 dark:text-indigo-300 font-semibold">All calls are recorded</span> and <span className="text-indigo-700 dark:text-indigo-300 font-semibold">contracts are digitally signed</span> for your security.
+            </p>
+            <ul className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-white/85 text-sm md:text-base leading-relaxed list-none p-0 m-0">
+```
+**Raw class strings detected (best effort):**
+
+- `text-sm md:text-base leading-relaxed text-slate-700 dark:text-white/85 mb-4`
+- `font-bold text-rose-700 dark:text-rose-300`
+- `text-indigo-700 dark:text-indigo-300 font-semibold`
 - `grid md:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-white/85 text-sm md:text-base leading-relaxed list-none p-0 m-0`
-- `Identity verification process`
 
 **Utility breakdown (grouped):**
 
@@ -2079,28 +2126,65 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `p-0` — Padding (all sides).
   - `m-0` — Margin (all sides).
 - **Typography:**
-  - `text-xl` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-700` — Text color or text sizing.
   - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `tracking-tight` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-rose-700` — Text color or text sizing.
+  - `text-indigo-700` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Responsive variants:**
+  - `md:text-base` — Variant prefix (responsive, dark, or interaction state).
+  - `md:grid-cols-2` — Variant prefix (responsive, dark, or interaction state).
+- **Dark mode variants:**
+  - `dark:text-white/85` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-rose-300` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-indigo-300` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `list-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/Privacy.jsx:207`
+
+```jsx
+              <span className="font-bold text-rose-700 dark:text-rose-300">We take fraud prevention seriously.</span> <span className="text-indigo-700 dark:text-indigo-300 font-semibold">All calls are recorded</span> and <span className="text-indigo-700 dark:text-indigo-300 font-semibold">contracts are digitally signed</span> for your security.
+            </p>
+            <ul className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-white/85 text-sm md:text-base leading-relaxed list-none p-0 m-0">
+              {[
+```
+**Raw class strings detected (best effort):**
+
+- `font-bold text-rose-700 dark:text-rose-300`
+- `text-indigo-700 dark:text-indigo-300 font-semibold`
+- `grid md:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-white/85 text-sm md:text-base leading-relaxed list-none p-0 m-0`
+
+**Utility breakdown (grouped):**
+
+- **Layout / positioning:**
+  - `grid` — Grid layout.
+- **Spacing:**
+  - `gap-x-8` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `gap-y-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `p-0` — Padding (all sides).
+  - `m-0` — Margin (all sides).
+- **Typography:**
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-rose-700` — Text color or text sizing.
+  - `text-indigo-700` — Text color or text sizing.
+  - `font-semibold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `text-slate-700` — Text color or text sizing.
   - `text-sm` — Text color or text sizing.
   - `leading-relaxed` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Color / surface:**
-  - `text-[#0f172a]` — Text color or text sizing.
 - **Responsive variants:**
-  - `md:text-2xl` — Variant prefix (responsive, dark, or interaction state).
   - `md:grid-cols-2` — Variant prefix (responsive, dark, or interaction state).
   - `md:text-base` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
-  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-rose-300` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-indigo-300` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white/85` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
   - `list-none` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `Identity` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `verification` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `process` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/Privacy.jsx:205`
+#### `src/pages/Privacy.jsx:209`
 
 ```jsx
             <ul className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-white/85 text-sm md:text-base leading-relaxed list-none p-0 m-0">
@@ -2141,7 +2225,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `digital` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `contracts` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/Privacy.jsx:215`
+#### `src/pages/Privacy.jsx:219`
 
 ```jsx
                 <li key={item} className="flex items-start gap-3">
@@ -2186,7 +2270,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `4L19` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `7` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/Privacy.jsx:216`
+#### `src/pages/Privacy.jsx:220`
 
 ```jsx
                   <span className="mt-1 bg-black/5 dark:bg-white/10 p-1 rounded-full">
@@ -2227,7 +2311,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `4L19` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `7` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/Privacy.jsx:217`
+#### `src/pages/Privacy.jsx:221`
 
 ```jsx
                     <svg className="w-3 h-3 text-indigo-700 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2259,7 +2343,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `4L19` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `7` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/Privacy.jsx:259`
+#### `src/pages/Privacy.jsx:263`
 
 ```jsx
             <LegalCard key={item.id} index={3 + idx} id={item.anchor} className="col-span-12 md:col-span-6">
@@ -2290,7 +2374,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 - **Dark mode variants:**
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:260`
+#### `src/pages/Privacy.jsx:264`
 
 ```jsx
               <h2 className="text-lg md:text-xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-3">
@@ -2323,7 +2407,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:263`
+#### `src/pages/Privacy.jsx:267`
 
 ```jsx
               <p className="text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">{item.text}</p>
@@ -2346,195 +2430,99 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 - **Dark mode variants:**
   - `dark:text-slate-300` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:267`
+#### `src/pages/Privacy.jsx:271`
 
 ```jsx
           <LegalCard index={8} className="col-span-12 dark:bg-[#0b1220] dark:text-white" id="contact">
             <h2 className="text-xl font-bold mb-4 text-[#0f172a] dark:text-white">13. Contact Information</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-1">
+            <div className="space-y-1">
+              <p className="text-slate-500 dark:text-white/60 text-sm">Direct Support</p>
 ```
 **Raw class strings detected (best effort):**
 
 - `col-span-12 dark:bg-[#0b1220] dark:text-white`
 - `text-xl font-bold mb-4 text-[#0f172a] dark:text-white`
-- `grid md:grid-cols-2 gap-6`
 - `space-y-1`
+- `text-slate-500 dark:text-white/60 text-sm`
 
 **Utility breakdown (grouped):**
 
 - **Layout / positioning:**
   - `col-span-12` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `grid` — Grid layout.
 - **Spacing:**
   - `mb-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `gap-6` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `space-y-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
   - `text-xl` — Text color or text sizing.
   - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
 - **Color / surface:**
   - `text-[#0f172a]` — Text color or text sizing.
-- **Responsive variants:**
-  - `md:grid-cols-2` — Variant prefix (responsive, dark, or interaction state).
 - **Dark mode variants:**
   - `dark:bg-[#0b1220]` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
-
-#### `src/pages/Privacy.jsx:268`
-
-```jsx
-            <h2 className="text-xl font-bold mb-4 text-[#0f172a] dark:text-white">13. Contact Information</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-1">
-                <p className="text-slate-500 dark:text-white/60 text-sm">Direct Support</p>
-```
-**Raw class strings detected (best effort):**
-
-- `text-xl font-bold mb-4 text-[#0f172a] dark:text-white`
-- `grid md:grid-cols-2 gap-6`
-- `space-y-1`
-- `text-slate-500 dark:text-white/60 text-sm`
-
-**Utility breakdown (grouped):**
-
-- **Layout / positioning:**
-  - `grid` — Grid layout.
-- **Spacing:**
-  - `mb-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `gap-6` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `space-y-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Typography:**
-  - `text-xl` — Text color or text sizing.
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `text-slate-500` — Text color or text sizing.
-  - `text-sm` — Text color or text sizing.
-- **Color / surface:**
-  - `text-[#0f172a]` — Text color or text sizing.
-- **Responsive variants:**
-  - `md:grid-cols-2` — Variant prefix (responsive, dark, or interaction state).
-- **Dark mode variants:**
-  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-white/60` — Variant prefix (responsive, dark, or interaction state).
-
-#### `src/pages/Privacy.jsx:269`
-
-```jsx
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-1">
-                <p className="text-slate-500 dark:text-white/60 text-sm">Direct Support</p>
-                <p className="font-bold underline decoration-sky-500 underline-offset-4">support@gartexhub.com</p>
-```
-**Raw class strings detected (best effort):**
-
-- `grid md:grid-cols-2 gap-6`
-- `space-y-1`
-- `text-slate-500 dark:text-white/60 text-sm`
-- `font-bold underline decoration-sky-500 underline-offset-4`
-
-**Utility breakdown (grouped):**
-
-- **Layout / positioning:**
-  - `grid` — Grid layout.
-- **Spacing:**
-  - `gap-6` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `space-y-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Typography:**
-  - `text-slate-500` — Text color or text sizing.
-  - `text-sm` — Text color or text sizing.
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Responsive variants:**
-  - `md:grid-cols-2` — Variant prefix (responsive, dark, or interaction state).
-- **Dark mode variants:**
-  - `dark:text-white/60` — Variant prefix (responsive, dark, or interaction state).
-- **Other:**
-  - `underline` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `decoration-sky-500` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `underline-offset-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-
-#### `src/pages/Privacy.jsx:270`
-
-```jsx
-              <div className="space-y-1">
-                <p className="text-slate-500 dark:text-white/60 text-sm">Direct Support</p>
-                <p className="font-bold underline decoration-sky-500 underline-offset-4">support@gartexhub.com</p>
-              </div>
-```
-**Raw class strings detected (best effort):**
-
-- `space-y-1`
-- `text-slate-500 dark:text-white/60 text-sm`
-- `font-bold underline decoration-sky-500 underline-offset-4`
-
-**Utility breakdown (grouped):**
-
-- **Spacing:**
-  - `space-y-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Typography:**
-  - `text-slate-500` — Text color or text sizing.
-  - `text-sm` — Text color or text sizing.
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Dark mode variants:**
-  - `dark:text-white/60` — Variant prefix (responsive, dark, or interaction state).
-- **Other:**
-  - `underline` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `decoration-sky-500` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `underline-offset-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-
-#### `src/pages/Privacy.jsx:271`
-
-```jsx
-                <p className="text-slate-500 dark:text-white/60 text-sm">Direct Support</p>
-                <p className="font-bold underline decoration-sky-500 underline-offset-4">support@gartexhub.com</p>
-              </div>
-              <div className="flex gap-4 items-center">
-```
-**Raw class strings detected (best effort):**
-
-- `text-slate-500 dark:text-white/60 text-sm`
-- `font-bold underline decoration-sky-500 underline-offset-4`
-- `flex gap-4 items-center`
-
-**Utility breakdown (grouped):**
-
-- **Layout / positioning:**
-  - `flex` — Flex layout.
-  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Spacing:**
-  - `gap-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Typography:**
-  - `text-slate-500` — Text color or text sizing.
-  - `text-sm` — Text color or text sizing.
-  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Dark mode variants:**
-  - `dark:text-white/60` — Variant prefix (responsive, dark, or interaction state).
-- **Other:**
-  - `underline` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `decoration-sky-500` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `underline-offset-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
 #### `src/pages/Privacy.jsx:272`
 
 ```jsx
-                <p className="font-bold underline decoration-sky-500 underline-offset-4">support@gartexhub.com</p>
-              </div>
-              <div className="flex gap-4 items-center">
-                <a
+            <h2 className="text-xl font-bold mb-4 text-[#0f172a] dark:text-white">13. Contact Information</h2>
+            <div className="space-y-1">
+              <p className="text-slate-500 dark:text-white/60 text-sm">Direct Support</p>
+              <p className="font-bold underline decoration-sky-500 underline-offset-4">gartexhub@gmail.com</p>
 ```
 **Raw class strings detected (best effort):**
 
+- `text-xl font-bold mb-4 text-[#0f172a] dark:text-white`
+- `space-y-1`
+- `text-slate-500 dark:text-white/60 text-sm`
 - `font-bold underline decoration-sky-500 underline-offset-4`
-- `flex gap-4 items-center`
 
 **Utility breakdown (grouped):**
 
-- **Layout / positioning:**
-  - `flex` — Flex layout.
-  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Spacing:**
-  - `gap-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `mb-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `space-y-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Typography:**
+  - `text-xl` — Text color or text sizing.
   - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+- **Color / surface:**
+  - `text-[#0f172a]` — Text color or text sizing.
+- **Dark mode variants:**
+  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-white/60` — Variant prefix (responsive, dark, or interaction state).
+- **Other:**
+  - `underline` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `decoration-sky-500` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `underline-offset-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+
+#### `src/pages/Privacy.jsx:273`
+
+```jsx
+            <div className="space-y-1">
+              <p className="text-slate-500 dark:text-white/60 text-sm">Direct Support</p>
+              <p className="font-bold underline decoration-sky-500 underline-offset-4">gartexhub@gmail.com</p>
+            </div>
+```
+**Raw class strings detected (best effort):**
+
+- `space-y-1`
+- `text-slate-500 dark:text-white/60 text-sm`
+- `font-bold underline decoration-sky-500 underline-offset-4`
+
+**Utility breakdown (grouped):**
+
+- **Spacing:**
+  - `space-y-1` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Typography:**
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Dark mode variants:**
+  - `dark:text-white/60` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
   - `underline` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
   - `decoration-sky-500` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
@@ -2543,113 +2531,62 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/Privacy.jsx:274`
 
 ```jsx
-              <div className="flex gap-4 items-center">
-                <a
-                  href="#"
-                  className="p-2 rounded-lg bg-black/5 hover:bg-black/10 text-slate-800 dark:bg-white/10 dark:hover:bg-white/20 dark:text-white transition-colors"
+              <p className="text-slate-500 dark:text-white/60 text-sm">Direct Support</p>
+              <p className="font-bold underline decoration-sky-500 underline-offset-4">gartexhub@gmail.com</p>
+            </div>
+          </LegalCard>
 ```
 **Raw class strings detected (best effort):**
 
-- `flex gap-4 items-center`
-- `#`
-- `p-2 rounded-lg bg-black/5 hover:bg-black/10 text-slate-800 dark:bg-white/10 dark:hover:bg-white/20 dark:text-white transition-colors`
+- `text-slate-500 dark:text-white/60 text-sm`
+- `font-bold underline decoration-sky-500 underline-offset-4`
 
 **Utility breakdown (grouped):**
 
-- **Layout / positioning:**
-  - `flex` — Flex layout.
-  - `items-center` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Spacing:**
-  - `gap-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-  - `p-2` — Padding (all sides).
 - **Typography:**
-  - `text-slate-800` — Text color or text sizing.
-- **Color / surface:**
-  - `bg-black/5` — Background color/surface.
-- **Borders / rings / shadows:**
-  - `rounded-lg` — Corner radius.
-- **Interaction / motion:**
-  - `hover:bg-black/10` — Variant prefix (responsive, dark, or interaction state).
-  - `transition-colors` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `text-slate-500` — Text color or text sizing.
+  - `text-sm` — Text color or text sizing.
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Dark mode variants:**
-  - `dark:bg-white/10` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:hover:bg-white/20` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
+  - `dark:text-white/60` — Variant prefix (responsive, dark, or interaction state).
 - **Other:**
-  - `#` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `underline` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `decoration-sky-500` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `underline-offset-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
-#### `src/pages/Privacy.jsx:277`
+#### `src/pages/Privacy.jsx:275`
 
 ```jsx
-                  className="p-2 rounded-lg bg-black/5 hover:bg-black/10 text-slate-800 dark:bg-white/10 dark:hover:bg-white/20 dark:text-white transition-colors"
-                >
-                  LinkedIn
-                </a>
+              <p className="font-bold underline decoration-sky-500 underline-offset-4">gartexhub@gmail.com</p>
+            </div>
+          </LegalCard>
+
 ```
 **Raw class strings detected (best effort):**
 
-- `p-2 rounded-lg bg-black/5 hover:bg-black/10 text-slate-800 dark:bg-white/10 dark:hover:bg-white/20 dark:text-white transition-colors`
+- `font-bold underline decoration-sky-500 underline-offset-4`
 
 **Utility breakdown (grouped):**
 
-- **Spacing:**
-  - `p-2` — Padding (all sides).
 - **Typography:**
-  - `text-slate-800` — Text color or text sizing.
-- **Color / surface:**
-  - `bg-black/5` — Background color/surface.
-- **Borders / rings / shadows:**
-  - `rounded-lg` — Corner radius.
-- **Interaction / motion:**
-  - `hover:bg-black/10` — Variant prefix (responsive, dark, or interaction state).
-  - `transition-colors` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Dark mode variants:**
-  - `dark:bg-white/10` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:hover:bg-white/20` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
+  - `font-bold` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+- **Other:**
+  - `underline` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `decoration-sky-500` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
+  - `underline-offset-4` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 
 #### `src/pages/Privacy.jsx:283`
 
 ```jsx
-                  className="p-2 rounded-lg bg-black/5 hover:bg-black/10 text-slate-800 dark:bg-white/10 dark:hover:bg-white/20 dark:text-white transition-colors"
-                >
-                  Facebook
-                </a>
-```
-**Raw class strings detected (best effort):**
-
-- `p-2 rounded-lg bg-black/5 hover:bg-black/10 text-slate-800 dark:bg-white/10 dark:hover:bg-white/20 dark:text-white transition-colors`
-
-**Utility breakdown (grouped):**
-
-- **Spacing:**
-  - `p-2` — Padding (all sides).
-- **Typography:**
-  - `text-slate-800` — Text color or text sizing.
-- **Color / surface:**
-  - `bg-black/5` — Background color/surface.
-- **Borders / rings / shadows:**
-  - `rounded-lg` — Corner radius.
-- **Interaction / motion:**
-  - `hover:bg-black/10` — Variant prefix (responsive, dark, or interaction state).
-  - `transition-colors` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
-- **Dark mode variants:**
-  - `dark:bg-white/10` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:hover:bg-white/20` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:text-white` — Variant prefix (responsive, dark, or interaction state).
-
-#### `src/pages/Privacy.jsx:295`
-
-```jsx
             className="col-span-12 text-center"
           >
-            <div className="rounded-2xl p-6 bg-[#ffffff] border border-slate-200 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#0f172a] dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/5 transition-colors duration-500 ease-in-out">
+            <div className="rounded-2xl p-6 bg-[#ffffff] borderless-shadow shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5 transition-colors duration-500 ease-in-out">
               <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest">
 ```
 **Raw class strings detected (best effort):**
 
 - `col-span-12 text-center`
-- `rounded-2xl p-6 bg-[#ffffff] border border-slate-200 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#0f172a] dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/5 transition-colors duration-500 ease-in-out`
+- `rounded-2xl p-6 bg-[#ffffff] borderless-shadow shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5 transition-colors duration-500 ease-in-out`
 - `text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest`
 
 **Utility breakdown (grouped):**
@@ -2669,8 +2606,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `bg-[#ffffff]` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
   - `shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]` — Drop shadow depth (elevation).
 - **Interaction / motion:**
   - `transition-colors` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
@@ -2678,23 +2614,22 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `ease-in-out` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Dark mode variants:**
   - `dark:bg-[#0f172a]` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-none` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:297`
+#### `src/pages/Privacy.jsx:285`
 
 ```jsx
-            <div className="rounded-2xl p-6 bg-[#ffffff] border border-slate-200 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#0f172a] dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/5 transition-colors duration-500 ease-in-out">
+            <div className="rounded-2xl p-6 bg-[#ffffff] borderless-shadow shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5 transition-colors duration-500 ease-in-out">
               <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                 © 2026 GARTEXHUB PROFESSIONAL NETWORK. ALL RIGHTS RESERVE
               </p>
 ```
 **Raw class strings detected (best effort):**
 
-- `rounded-2xl p-6 bg-[#ffffff] border border-slate-200 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#0f172a] dark:border-transparent dark:shadow-none dark:ring-1 dark:ring-white/5 transition-colors duration-500 ease-in-out`
+- `rounded-2xl p-6 bg-[#ffffff] borderless-shadow shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5 transition-colors duration-500 ease-in-out`
 - `text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest`
 
 **Utility breakdown (grouped):**
@@ -2711,8 +2646,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `bg-[#ffffff]` — Background color/surface.
 - **Borders / rings / shadows:**
   - `rounded-2xl` — Corner radius.
-  - `border` — Border style/width/color.
-  - `border-slate-200` — Border style/width/color.
+  - `borderless-shadow` — Border style/width/color.
   - `shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]` — Drop shadow depth (elevation).
 - **Interaction / motion:**
   - `transition-colors` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
@@ -2720,13 +2654,12 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `ease-in-out` — Utility class (see Tailwind docs or local CSS utilities for custom classes).
 - **Dark mode variants:**
   - `dark:bg-[#0f172a]` — Variant prefix (responsive, dark, or interaction state).
-  - `dark:border-transparent` — Variant prefix (responsive, dark, or interaction state).
   - `dark:shadow-none` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-1` — Variant prefix (responsive, dark, or interaction state).
   - `dark:ring-white/5` — Variant prefix (responsive, dark, or interaction state).
   - `dark:text-slate-400` — Variant prefix (responsive, dark, or interaction state).
 
-#### `src/pages/Privacy.jsx:298`
+#### `src/pages/Privacy.jsx:286`
 
 ```jsx
               <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest">
@@ -2753,7 +2686,15 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 
 > This list is generated by heuristics. It includes hard-coded UI strings and key element anchors. For absolute truth, use the source snapshot.
 
-- `src/pages/Privacy.jsx:122` — Account Data
+- `src/pages/Privacy.jsx:90` — collects, uses, protects, and manages your information
+
+```jsx
+                This Privacy Policy explains how our B2B Garments and Textile Marketplace platform <span className="font-bold text-indigo-700 dark:text-indigo-300">collects, uses, protects, and manages your information</span>. Our platform connects international Buyers, Factories, and Buying Houses in a secure and professional environment. <span className="font-semibold text-rose-700 dark:text-rose-300">By creating an account or using our services, you agree to the practices described in this policy.</span>
+              </div>
+            </div>
+          </div>
+```
+- `src/pages/Privacy.jsx:123` — Account Data
 
 ```jsx
                 <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Account Data</h3>
@@ -2761,7 +2702,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   {['Full Name', 'Organization Name', 'Email Address', 'Phone Number', 'Country', 'Verification Docs', 'Account Type'].map((item) => (
                     <li key={item} className="flex items-center gap-2">
 ```
-- `src/pages/Privacy.jsx:134` — Business Data
+- `src/pages/Privacy.jsx:135` — Business Data
 
 ```jsx
                 <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Business Data</h3>
@@ -2769,7 +2710,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   {['Product Specifications', 'Design Requirements', 'Order Documents', 'Digital Signature Records'].map((item) => (
                     <li key={item} className="flex items-center gap-2">
 ```
-- `src/pages/Privacy.jsx:146` — Communications
+- `src/pages/Privacy.jsx:147` — Communications
 
 ```jsx
                 <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Communications</h3>
@@ -2777,7 +2718,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   {['Chat messages', 'Video/Audio logs', 'Call recordings'].map((item) => (
                     <li key={item} className="flex items-center gap-2">
 ```
-- `src/pages/Privacy.jsx:158` — Technical Information
+- `src/pages/Privacy.jsx:159` — Technical Information
 
 ```jsx
                 <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Technical Information</h3>
@@ -2785,7 +2726,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   {['IP address', 'Device/Browser type', 'Usage activity', 'Search history'].map((item) => (
                     <li key={item} className="flex items-center gap-2">
 ```
-- `src/pages/Privacy.jsx:191` — ✓
+- `src/pages/Privacy.jsx:192` — ✓
 
 ```jsx
                     <span className="text-sky-600 dark:text-sky-300">✓</span>
@@ -2793,37 +2734,45 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   </li>
                 ))}
 ```
-- `src/pages/Privacy.jsx:204` — 3. Fraud Prevention Measures
+- `src/pages/Privacy.jsx:205` — 3. Fraud Prevention Measures
 
 ```jsx
             <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-4 text-[#0f172a] dark:text-white">3. Fraud Prevention Measures</h2>
+            <p className="text-sm md:text-base leading-relaxed text-slate-700 dark:text-white/85 mb-4">
+              <span className="font-bold text-rose-700 dark:text-rose-300">We take fraud prevention seriously.</span> <span className="text-indigo-700 dark:text-indigo-300 font-semibold">All calls are recorded</span> and <span className="text-indigo-700 dark:text-indigo-300 font-semibold">contracts are digitally signed</span> for your security.
+            </p>
+```
+- `src/pages/Privacy.jsx:207` — We take fraud prevention seriously.
+
+```jsx
+              <span className="font-bold text-rose-700 dark:text-rose-300">We take fraud prevention seriously.</span> <span className="text-indigo-700 dark:text-indigo-300 font-semibold">All calls are recorded</span> and <span className="text-indigo-700 dark:text-indigo-300 font-semibold">contracts are digitally signed</span> for your security.
+            </p>
             <ul className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-white/85 text-sm md:text-base leading-relaxed list-none p-0 m-0">
               {[
-                'Identity verification process',
 ```
-- `src/pages/Privacy.jsx:268` — 13. Contact Information
+- `src/pages/Privacy.jsx:272` — 13. Contact Information
 
 ```jsx
             <h2 className="text-xl font-bold mb-4 text-[#0f172a] dark:text-white">13. Contact Information</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-1">
-                <p className="text-slate-500 dark:text-white/60 text-sm">Direct Support</p>
+            <div className="space-y-1">
+              <p className="text-slate-500 dark:text-white/60 text-sm">Direct Support</p>
+              <p className="font-bold underline decoration-sky-500 underline-offset-4">gartexhub@gmail.com</p>
 ```
-- `src/pages/Privacy.jsx:271` — Direct Support
+- `src/pages/Privacy.jsx:274` — Direct Support
 
 ```jsx
-                <p className="text-slate-500 dark:text-white/60 text-sm">Direct Support</p>
-                <p className="font-bold underline decoration-sky-500 underline-offset-4">support@gartexhub.com</p>
-              </div>
-              <div className="flex gap-4 items-center">
+              <p className="text-slate-500 dark:text-white/60 text-sm">Direct Support</p>
+              <p className="font-bold underline decoration-sky-500 underline-offset-4">gartexhub@gmail.com</p>
+            </div>
+          </LegalCard>
 ```
-- `src/pages/Privacy.jsx:272` — support@gartexhub.com
+- `src/pages/Privacy.jsx:275` — gartexhub@gmail.com
 
 ```jsx
-                <p className="font-bold underline decoration-sky-500 underline-offset-4">support@gartexhub.com</p>
-              </div>
-              <div className="flex gap-4 items-center">
-                <a
+              <p className="font-bold underline decoration-sky-500 underline-offset-4">gartexhub@gmail.com</p>
+            </div>
+          </LegalCard>
+
 ```
 ## 5) Backend Mapping (Frontend → Express → Controller → Service/DB)
 
