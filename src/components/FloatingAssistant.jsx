@@ -211,7 +211,7 @@ export default function FloatingAssistant() {
 
       {/* Slide-in drawer panel (off-canvas). */}
       <div
-        className={`fixed top-0 right-0 h-full w-full md:w-[400px] bg-white shadow-2xl z-50 transform transition-transform duration-300 flex flex-col borderless-divider-l${
+        className={`fixed top-0 right-0 h-full w-full md:w-[400px] bg-white shadow-2xl z-50 transform transition-transform duration-300 flex flex-col borderless-divider-l ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
