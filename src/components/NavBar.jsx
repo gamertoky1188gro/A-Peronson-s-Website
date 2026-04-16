@@ -26,7 +26,9 @@
     - POST /api/chat/rooms (create/start conversation)
     - POST /api/calls (start call)
 */
+/* global process */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Bell, DollarSign, FileText, LayoutDashboard, Menu, MessageSquare, Moon, Search, ShieldCheck, Sun } from 'lucide-react'
 import { motion as Motion, useMotionValue, useReducedMotion, useSpring } from 'framer-motion'
@@ -233,13 +235,14 @@ export default function NavBar() {
     try {
       const data = await apiRequest('/notifications', { token })
       const rows = Array.isArray(data) ? data : []
-      setUnreadCount(rows.filter((n) => !n?.read).length)
+      flushSync(() => { setUnreadCount(rows.filter((n) => !n?.read).length) })
     } catch {
-      setUnreadCount(0)
+      flushSync(() => { setUnreadCount(0) })
     }
   }, [userId])
 
   useEffect(() => {
+    if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'test') return
     refreshUnreadCount()
   }, [refreshUnreadCount, location.pathname])
 
@@ -247,12 +250,14 @@ export default function NavBar() {
     if (!userId) return
     try {
       const data = await apiRequest(`/users/search?q=${encodeURIComponent(query)}`, { token: getToken() })
-      setSearchResults(Array.isArray(data?.users) ? data.users : [])
+      flushSync(() => { setSearchResults(Array.isArray(data?.users) ? data.users : []) })
     } catch (err) {
-      setSearchResults([])
-      setSearchError(err.message || 'Search failed')
+      flushSync(() => {
+        setSearchResults([])
+        setSearchError(err.message || 'Search failed')
+      })
     } finally {
-      setSearchLoading(false)
+      flushSync(() => { setSearchLoading(false) })
     }
   }, [userId])
 

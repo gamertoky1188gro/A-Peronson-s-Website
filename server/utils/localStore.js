@@ -1,5 +1,11 @@
 import prisma from './prisma.js'
 
+const _mem = new Map()
+
+function isTestEnv() {
+  return process.env.NODE_ENV === 'test'
+}
+
 function toSerializable(value) {
   if (value instanceof Date) return value.toISOString()
   if (Array.isArray(value)) return value.map(toSerializable)
@@ -22,12 +28,19 @@ async function ensureStateRow(key, fallback) {
 }
 
 export async function readLocalJson(fileName, fallback = []) {
+  if (isTestEnv()) {
+    return _mem.has(fileName) ? _mem.get(fileName) : fallback
+  }
   const key = String(fileName)
   const row = await ensureStateRow(key, fallback)
   return row?.data ?? fallback
 }
 
 export async function writeLocalJson(fileName, data) {
+  if (isTestEnv()) {
+    _mem.set(fileName, data)
+    return data
+  }
   const key = String(fileName)
   const payload = toSerializable(data)
   await prisma.appState.upsert({
@@ -39,6 +52,12 @@ export async function writeLocalJson(fileName, data) {
 }
 
 export async function updateLocalJson(fileName, updater, fallback = []) {
+  if (isTestEnv()) {
+    const current = _mem.has(fileName) ? _mem.get(fileName) : fallback
+    const next = await updater(current)
+    _mem.set(fileName, next)
+    return next
+  }
   const current = await readLocalJson(fileName, fallback)
   const next = await updater(current)
   await writeLocalJson(fileName, next)

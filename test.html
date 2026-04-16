@@ -1,0 +1,236 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title></title>
+<style type="text/css">
+.ansi2html-content { display: inline; white-space: pre-wrap; word-wrap: break-word; }
+.body_foreground { color: #AAAAAA; }
+.body_background { background-color: #000000; }
+.inv_foreground { color: #000000; }
+.inv_background { background-color: #AAAAAA; }
+</style>
+</head>
+<body class="body_foreground body_background" style="font-size: normal;" >
+<pre class="ansi2html-content">
+
+&gt; meow@0.0.0 test
+&gt; node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand
+
+(node:14568) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS tests/unit/frontendSearchResults.rtl.test.js
+PASS tests/unit/subscriptionEntitlementBoundary.test.js
+PASS tests/unit/authRoutesController.test.js
+PASS tests/unit/frontendAnalyticsHook.rtl.test.js
+PASS tests/unit/searchValidationMalformed.test.js
+PASS tests/unit/orgThresholds.test.js
+PASS tests/unit/frontendNavBar.rtl.test.js
+PASS tests/unit/messageModerationIsolation.test.js
+PASS tests/integration/contractAudit.test.js
+PASS tests/unit/middlewareAuthz.test.js
+PASS tests/unit/eSignProviderDropbox.test.js
+PASS tests/unit/frontendChatInterface.rtl.test.js
+PASS tests/integration/ai-prefill-e2e.test.js
+  ΓùÅ Console
+
+    console.log
+      [INFO] 2026-04-16T14:34:49.096Z Buyer request created {
+        requirement_id: '70c46f6d-a69c-4bd6-b192-59b5b7577fcc',
+        buyer_id: 'buyer-e2e',
+        status: 'draft',
+        at: '2026-04-16T14:34:49.093Z'
+      }
+
+      at log (server/utils/logger.js:4:13)
+
+PASS tests/integration/contractSigning.test.js
+PASS tests/unit/dbConnectionLifecycle.test.js
+  ΓùÅ Console
+
+    console.log
+      [db] Using DATABASE_URL: postgresql://user:***@localhost:5432/meow
+
+      at log (server/utils/db.js:23:13)
+
+    console.log
+      [db] Using DATABASE_URL: postgresql://user:***@localhost:5432/meow
+
+      at log (server/utils/db.js:23:13)
+
+PASS tests/unit/requirementModerationValidation.test.js
+  ΓùÅ Console
+
+    console.log
+      [INFO] 2026-04-16T14:34:51.045Z Buyer request created {
+        requirement_id: 'b6a9aaa5-f840-453b-8555-6f0c8272d166',
+        buyer_id: 'buyer-1776350091037',
+        status: 'open',
+        at: '2026-04-16T14:34:51.039Z'
+      }
+
+      at log (server/utils/logger.js:4:13)
+
+    console.log
+      [INFO] 2026-04-16T14:34:51.050Z Buyer request created {
+        requirement_id: 'fb88a998-abaa-4d62-a15c-abed0bccf5c2',
+        buyer_id: 'buyer-assign-1776350091049',
+        status: 'open',
+        at: '2026-04-16T14:34:51.050Z'
+      }
+
+      at log (server/utils/logger.js:4:13)
+
+PASS tests/unit/messagePolicyIntegrity.test.js
+PASS tests/unit/leadReminderConsistency.test.js
+PASS tests/unit/verificationTransitions.test.js
+  ΓùÅ Console
+
+    console.log
+      [INFO] 2026-04-16T14:34:52.504Z Verification documents updated {
+        user_id: 'verify-1776350092503',
+        buyer_region: '',
+        missing_required: 5,
+        credibility_score: 14
+      }
+
+      at log (server/utils/logger.js:4:13)
+
+    console.log
+      [INFO] 2026-04-16T14:34:52.514Z Verification documents updated {
+        user_id: 'verify-approve-1776350092513',
+        buyer_region: '',
+        missing_required: 0,
+        credibility_score: 85
+      }
+
+      at log (server/utils/logger.js:4:13)
+
+    console.log
+      [INFO] 2026-04-16T14:34:52.514Z Verification approved { user_id: 'verify-approve-1776350092513' }
+
+      at log (server/utils/logger.js:4:13)
+
+    console.log
+      [INFO] 2026-04-16T14:34:52.515Z Verification rejected {
+        user_id: 'verify-approve-1776350092513',
+        reason: 'document_mismatch'
+      }
+
+      at log (server/utils/logger.js:4:13)
+
+PASS tests/unit/frontendLocalStorageHook.rtl.test.js
+PASS tests/unit/frontendAppProtectedRoutes.rtl.test.js
+PASS tests/unit/frontendAccessDenied.rtl.test.js
+PASS tests/unit/agentSubIds.test.js
+PASS tests/unit/requirementMatchId.test.js
+  ΓùÅ Console
+
+    console.log
+      [INFO] 2026-04-16T14:34:55.589Z Buyer request created {
+        requirement_id: 'ec431be1-ddcf-432f-b3cd-68b81f317b07',
+        buyer_id: 'buyer1',
+        status: 'draft',
+        at: '2026-04-16T14:34:55.586Z'
+      }
+
+      at log (server/utils/logger.js:4:13)
+
+PASS tests/unit/walletRefundIdempotency.test.js
+PASS tests/unit/analyticsGovernance.suppression.test.js
+PASS tests/integration/eSignFullFlow.test.js
+  ΓùÅ Console
+
+    console.log
+      [INFO] 2026-04-16T14:34:57.178Z esign_webhook_received {
+        contractId: '536c0e0b-8802-4723-8d03-31c3e90ee171',
+        hasSignature: false,
+        hasSecret: false
+      }
+
+      at log (server/utils/logger.js:4:13)
+
+    console.log
+      [INFO] 2026-04-16T14:34:57.186Z esign_webhook_processed {
+        contractId: '536c0e0b-8802-4723-8d03-31c3e90ee171',
+        buyer_signature_state: 'signed',
+        factory_signature_state: 'pending',
+        artifact_status: 'draft'
+      }
+
+      at log (server/utils/logger.js:4:13)
+
+    console.log
+      [INFO] 2026-04-16T14:34:57.187Z esign_webhook_received {
+        contractId: '536c0e0b-8802-4723-8d03-31c3e90ee171',
+        hasSignature: false,
+        hasSecret: false
+      }
+
+      at log (server/utils/logger.js:4:13)
+
+    console.log
+      [INFO] 2026-04-16T14:34:57.190Z esign_webhook_processed {
+        contractId: '536c0e0b-8802-4723-8d03-31c3e90ee171',
+        buyer_signature_state: 'signed',
+        factory_signature_state: 'signed',
+        artifact_status: 'generated'
+      }
+
+      at log (server/utils/logger.js:4:13)
+
+PASS tests/unit/analyticsService.test.js
+PASS tests/integration/ai-postMessage-enforce.test.js
+PASS tests/unit/requirementValidation.test.js
+  ΓùÅ Console
+
+    console.log
+      [INFO] 2026-04-16T14:34:58.459Z Buyer request created {
+        requirement_id: '471de7ad-4cb8-4ca1-b5d6-3fa720cdf198',
+        buyer_id: 'buyer1',
+        status: 'draft',
+        at: '2026-04-16T14:34:58.455Z'
+      }
+
+      at log (server/utils/logger.js:4:13)
+
+PASS tests/unit/analyticsGovernance.strip.test.js
+PASS tests/unit/jsonStorePrismaParity.test.js
+PASS tests/integration/aiVerifierOrgOverride.test.js
+PASS tests/unit/errorHandlerContract.test.js
+PASS tests/integration/aiVerifierRemote.test.js
+PASS tests/unit/frontendLocalStorageHook.contract.test.js
+PASS tests/integration/sendReply.test.js
+PASS tests/unit/frontendInfraGaps.contract.test.js
+PASS tests/integration/orchestration.test.js
+PASS tests/unit/hallucination.test.js
+PASS tests/unit/localStoreFallback.test.js
+PASS tests/unit/presetsService.test.js
+PASS tests/unit/dbSchemaConstraints.test.js
+PASS tests/unit/verifyFilterMapping.test.js
+PASS tests/unit/eSignCallbackMapper.test.js
+PASS tests/unit/frontendSearchFiltersState.test.js
+PASS tests/unit/analyticsGovernance.test.js
+PASS tests/unit/aiVerifier.test.js
+PASS tests/unit/currencyService.fxFreshness.test.js
+PASS tests/integration/auditedExport.test.js
+PASS tests/unit/aiPrefill.test.js
+PASS tests/unit/websocketHandlers.contract.test.js
+PASS tests/unit/frontendChatInterface.contract.test.js
+PASS tests/integration/leadReminders.test.js
+PASS tests/unit/frontendAnalyticsHook.contract.test.js
+PASS tests/unit/frontendAccessDenied.contract.test.js
+PASS tests/unit/frontendAppRoleGate.test.js
+PASS tests/unit/frontendAuthAndEvents.test.js
+PASS tests/unit/migrationsSmoke.test.js
+
+Test Suites: 59 passed, 59 total
+Tests:       117 passed, 117 total
+Snapshots:   0 total
+Time:        38.237 s, estimated 42 s
+Ran all test suites.
+
+</pre>
+</body>
+
+</html>

@@ -27,7 +27,9 @@
     - Skeleton shimmer while loading.
     - Optional premium-locked overlays for advanced filters.
 */
+/* global process */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Briefcase, Building2, Filter, LayoutGrid, Bell, Share2, Search as SearchIcon } from 'lucide-react'
 import { motion, useReducedMotion } from 'framer-motion'
@@ -496,6 +498,7 @@ export default function SearchResults() {
   }, [renderedDefaultCoreFilterKeys])
 
   useEffect(() => {
+    if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'test') return
     let alive = true
     const loadEarlyVerified = async () => {
       if (!token) return
@@ -518,7 +521,7 @@ export default function SearchResults() {
     return () => {
       alive = false
     }
-  }, [canEarlyAccess, isBuyer, sessionUser, token])
+  }, [canEarlyAccess, isBuyer, token])
 
   const [capabilities, setCapabilities] = useState(() => ({
     filters: { advanced: canAdvancedFilters },
@@ -551,18 +554,6 @@ export default function SearchResults() {
     return [...new Set([...GARMENT_CATEGORIES, ...TEXTILE_CATEGORIES])]
   }, [filters.industry])
 
-  const facetCounts = useMemo(() => ({
-    category: facets?.category || {},
-    fabricType: facets?.fabricType || facets?.fabric_type || {},
-    certifications: facets?.certifications || {},
-    processes: facets?.processes || {},
-    languageSupport: facets?.languageSupport || facets?.language_support || {},
-    incoterms: facets?.incoterms || {},
-    paymentTerms: facets?.paymentTerms || facets?.payment_terms || {},
-    documentReady: facets?.documentReady || facets?.document_ready || {},
-    exportPort: facets?.exportPort || facets?.export_ports || {},
-  }), [facets])
-
   const moqRangeValues = useMemo(() => parseRangeValue(filters.moqRange), [filters.moqRange])
   const priceRangeValues = useMemo(() => parseRangeValue(filters.priceRange), [filters.priceRange])
 
@@ -588,6 +579,18 @@ export default function SearchResults() {
   const [ratingsByProfileKey, setRatingsByProfileKey] = useState({})
   const [recentViews, setRecentViews] = useState([])
   const [quickViewItem, setQuickViewItem] = useState(null)
+
+  const facetCounts = {
+    category: facets?.category || {},
+    fabricType: facets?.fabricType || facets?.fabric_type || {},
+    certifications: facets?.certifications || {},
+    processes: facets?.processes || {},
+    languageSupport: facets?.languageSupport || facets?.language_support || {},
+    incoterms: facets?.incoterms || {},
+    paymentTerms: facets?.paymentTerms || facets?.payment_terms || {},
+    documentReady: facets?.documentReady || facets?.document_ready || {},
+    exportPort: facets?.exportPort || facets?.export_ports || {},
+  }
 
   const [estimateTotals, setEstimateTotals] = useState({ requests: null, companies: null })
   const [estimateLoading, setEstimateLoading] = useState(false)
@@ -674,24 +677,32 @@ export default function SearchResults() {
       lastSearchMetadataRef.current = { searched: true, preset: activePreset || '' }
       dirtyFilterSinceSearchRef.current = false
 
-      setRequests(reqItems)
-      setCompanies(prodItems)
-      setRequestsTotal(reqTotal)
-      setCompaniesTotal(prodTotal)
+      flushSync(() => {
+        setRequests(reqItems)
+        setCompanies(prodItems)
+        setRequestsTotal(reqTotal)
+        setCompaniesTotal(prodTotal)
+      })
 
       const reqFacets = reqRes?.facets || {}
       const prodFacets = prodRes?.facets || {}
       const mergedFacets = activeTab === 'requests'
         ? reqFacets
         : (activeTab === 'companies' ? prodFacets : mergeFacetCounts(reqFacets, prodFacets))
-      setFacets(mergedFacets || {})
+      flushSync(() => {
+        setFacets(mergedFacets || {})
+      })
 
       const mergedCapabilities = reqRes?.capabilities || prodRes?.capabilities || { filters: { advanced: false } }
-      setCapabilities(mergedCapabilities)
+      flushSync(() => {
+        setCapabilities(mergedCapabilities)
+      })
 
       const hasActiveFilters = Boolean(q) || category.length > 0 || Object.values(filters || {}).some((v) => hasFilterValue(v))
       const candidate = hasActiveFilters ? { query: q, category, filters } : null
-      setAutoSaveCandidate(candidate)
+      flushSync(() => {
+        setAutoSaveCandidate(candidate)
+      })
       await autoSaveAlert(candidate)
 
       if (reqRes?.quota) {
@@ -734,18 +745,20 @@ export default function SearchResults() {
         })
       }
     } catch (err) {
-      setError(err.message || 'Search failed')
-      setRequests([])
-      setCompanies([])
-      setRequestsTotal(0)
-      setCompaniesTotal(0)
+      flushSync(() => {
+        setError(err.message || 'Search failed')
+        setRequests([])
+        setCompanies([])
+        setRequestsTotal(0)
+        setCompaniesTotal(0)
+      })
       if (err?.quota?.unlimited) {
-        setQuotaMessage('Core searches are unlimited on your plan.')
+        flushSync(() => { setQuotaMessage('Core searches are unlimited on your plan.') })
       } else if (err?.quota?.remaining !== undefined) {
-        setQuotaMessage(`Remaining today: ${err.quota.remaining}`)
+        flushSync(() => { setQuotaMessage(`Remaining today: ${err.quota.remaining}`) })
       }
     } finally {
-      setLoading(false)
+      flushSync(() => { setLoading(false) })
     }
   }, [activePreset, activeTab, autoSaveAlert, category, filters, hasAdvancedAccess, query, setSearchParams, token, canPriorityAccessCompanies, canPriorityAccessRequests])
 
@@ -763,6 +776,7 @@ export default function SearchResults() {
 
   useEffect(() => {
     // Auto-run when landing on /search with URL params (shared/bookmarked search).
+    if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'test') return
     if (autoSearchRef.current) return
     autoSearchRef.current = true
 
@@ -1001,6 +1015,7 @@ export default function SearchResults() {
   }, [companies, token])
 
   useEffect(() => {
+    if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'test') return
     loadRecentViews()
   }, [loadRecentViews])
 

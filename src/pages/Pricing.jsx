@@ -86,7 +86,6 @@ function accentClasses(accent) {
 
 export default function Pricing() {
   const location = useLocation()
-  const hash = location?.hash || ''
   const [pricing, setPricing] = useState(defaultPricing)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
@@ -98,8 +97,8 @@ export default function Pricing() {
 
   useEffect(() => {
     // If route contains a hash (e.g. /pricing#plans), scroll to that section after render.
-    if (typeof window !== 'undefined' && hash) {
-      const id = String(hash).replace(/^#/, '')
+    if (typeof window !== 'undefined' && location?.hash) {
+      const id = String(location.hash || '').replace(/^#/, '')
       if (id) {
         // Allow parent layout scroll-to-top to settle first.
         setTimeout(() => {
@@ -131,7 +130,7 @@ export default function Pricing() {
       alive = false
       controller.abort()
     }
-  }, [hash])
+  }, [location.hash])
 
   const plansByRole = useMemo(() => ({
     buyer: {

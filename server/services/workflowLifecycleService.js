@@ -17,6 +17,7 @@ function nowIso() {
 }
 
 function supportsPrismaWorkflow() {
+  if (process.env.NODE_ENV === 'test') return false
   return Boolean(prisma?.workflowJourney && prisma?.workflowTransition)
 }
 

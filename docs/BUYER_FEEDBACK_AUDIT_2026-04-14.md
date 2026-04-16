@@ -50,3 +50,120 @@ This audit maps only the buyer-requested items from the shared chat messages and
 
 - `npm run lint` now passes with no lint errors/warnings.
 - `npm test` still has DB-dependent failures (remote Prisma/Postgres host not reachable in this environment); these are infrastructure/runtime, not frontend lint issues.
+
+## Consolidated Policy Addendum (Added from latest buyer notes)
+
+This section captures the latest strategic guidance as product policy so it is not lost across chat transcripts.
+
+### A) Verification Badge Policy
+
+- Verification is document-based and backend-approved.
+- After verification approval, each approved license must be shown by name with a check marker and a visible verified label in sequence.
+- Verified status is subscription-based only.
+- Permanent/lifetime purchase of verified status is not allowed.
+- Verification must renew monthly.
+
+### B) Mandatory Verification Documents by Role
+
+#### Factory (6)
+
+1. Company Registration (Registrar of Joint Stock Companies and Firms)
+2. Trade License
+3. TIN (National Board of Revenue)
+4. Authorized Person NID
+5. Company Bank Proof
+6. ERC (Office of the Chief Controller of Imports and Exports)
+
+Purpose: legal entity proof, active business proof, tax validity, accountable person identification, payment destination safety, export legality.
+
+#### Buying House (5)
+
+1. Company Registration
+2. Trade License
+3. TIN
+4. Authorized Person NID
+5. Company Bank Proof
+
+Purpose: legal validity, active business proof, tax validity, accountable person identification, transaction transparency.
+
+### C) Buyer Verification Requirements (by market)
+
+#### EU
+
+- Business Registration
+- VAT Number
+- EORI
+- Bank Proof
+
+#### USA
+
+- Business Registration
+- EIN
+- IOR
+- Bank Proof
+
+### D) EU Country List (for Buyer Verification UX)
+
+The buyer verification form should support/label EU requirements for these countries:
+
+- Austria
+- Belgium
+- Bulgaria
+- Croatia
+- Cyprus
+- Czech Republic
+- Denmark
+- Estonia
+- Finland
+- France
+- Germany
+- Greece
+- Hungary
+- Ireland
+- Italy
+- Latvia
+- Lithuania
+- Luxembourg
+- Malta
+- Netherlands
+- Poland
+- Portugal
+- Romania
+- Slovakia
+- Slovenia
+- Spain
+- Sweden
+
+### E) Trust-Positioning Note
+
+- Optional extra licenses can be accepted and displayed.
+- More valid licensing evidence should increase buyer confidence and international credibility signals.
+- Mandatory verification requirements remain fixed by role/country even when optional licenses are added.
+
+### F) Core Analytics Strategy (Buying House / Enterprise)
+
+Keep dashboard-level analytics focused on 5 to 7 core metrics.
+
+Recommended top 5 operational metrics:
+
+1. Buyer Request Match Rate = matched requests / total relevant requests
+2. Lead to Deal Conversion Rate = contracts signed / buyer conversations
+3. Factory Response Speed = average first response time
+4. Buyer Demand Trend = top requested product categories over time
+5. Trusted Deal Score = completed deals + buyer rating - disputes
+
+### G) Marketplace-Owner Core Metrics (platform-level)
+
+For owner/admin strategy, prioritize these 5 marketplace health metrics:
+
+1. Buyer to Supplier Match Success Rate
+2. Active Buyer vs Active Supplier Ratio (target balance: 1 buyer to 3 to 5 suppliers)
+3. Request to Contract Conversion Rate
+4. Time to First Qualified Response
+5. Repeat Buyer Rate
+
+### H) Dashboard Rule
+
+- Do not overload main dashboards with dozens of metrics.
+- Keep core KPI cards short and decision-oriented.
+- Place deep analytics on a separate detail page.

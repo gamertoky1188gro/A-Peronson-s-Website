@@ -10,11 +10,11 @@ export default function CountryAutocomplete({
   maxResults = 8,
   exclude = [],
 }) {
-  const query = value || ''
   const [open, setOpen] = useState(false)
   const [focused, setFocused] = useState(-1)
   const rootRef = useRef(null)
   const optionRefs = useRef([])
+  const query = String(value || '')
 
   const normalized = (q) => String(q || '').trim().toLowerCase()
 

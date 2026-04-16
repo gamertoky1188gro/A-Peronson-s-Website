@@ -1,7 +1,11 @@
 module.exports = {
-  testEnvironment: 'node',
+  testEnvironment: 'jsdom',
   testMatch: ['**/tests/**/*.test.js', '**/tests/**/*.spec.js'],
-  transform: {},
-  moduleFileExtensions: ['js', 'mjs', 'json', 'node'],
+  extensionsToTreatAsEsm: ['.jsx'],
+  transform: {
+    '^.+\.[jt]sx?$': 'babel-jest',
+  },
+  moduleFileExtensions: ['js', 'jsx', 'mjs', 'cjs', 'json', 'node'],
+  setupFilesAfterEnv: ['<rootDir>/tests/setupTests.js'],
   testTimeout: 20000,
 }

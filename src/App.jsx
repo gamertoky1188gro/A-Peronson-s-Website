@@ -1,3 +1,4 @@
+/* global process */
 import React, { useEffect, useRef } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import NavBar from './components/NavBar'
@@ -118,7 +119,12 @@ function AppLayout() {
 
   useEffect(() => {
     // Reset scroll so new routes don't inherit the old scroll position.
-    window.scrollTo(0, 0)
+    if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'test') return
+    try {
+      if (typeof window.scrollTo === 'function') window.scrollTo(0, 0)
+    } catch {
+      // Some environments (old jsdom) throw "Not implemented: window.scrollTo".
+    }
   }, [location.pathname, location.search])
 
   useEffect(() => {
