@@ -1,8 +1,19 @@
--- AlterTable
-ALTER TABLE "org_policies"
-ADD COLUMN "assignment_strategy" TEXT,
-ADD COLUMN "sla_targets" JSONB,
-ADD COLUMN "escalation_windows" JSONB;
+-- Ensure org_policies table exists and has expected columns
+CREATE TABLE IF NOT EXISTS "org_policies" (
+  "id" TEXT PRIMARY KEY,
+  "org_id" TEXT NOT NULL,
+  "code" TEXT NOT NULL,
+  "description" TEXT,
+  "config" JSONB,
+  "assignment_strategy" TEXT,
+  "sla_targets" JSONB,
+  "escalation_windows" JSONB,
+  "active" BOOLEAN NOT NULL DEFAULT TRUE,
+  "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updated_at" TIMESTAMP(3)
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS "org_id_policy_code" ON "org_policies"("org_id", "code");
 
 -- CreateTable
 CREATE TABLE "lead_assignments" (
