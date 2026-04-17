@@ -27,12 +27,12 @@ const DEFAULT_STAGE_TARGETS = {
 
 const DEFAULT_POLICY = {
   assignment_strategy: 'least_loaded',
-  sla_targets_by_stage: DEFAULT_STAGE_TARGETS,
+  sla_targets: DEFAULT_STAGE_TARGETS,
   escalation_rules: {
     time_based: { warning_minutes: 30, breach_minutes: 60 },
     risk_based: { high_risk_threshold: 80, auto_escalate_threshold: 95 },
   },
-  workload_caps_per_agent: { default_max_active_leads: 10, overrides: {} },
+  workload_caps: { default_max_active_leads: 10, overrides: {} },
 }
 
 async function readStore(fileName) {
@@ -50,8 +50,8 @@ function normalizePolicyInput(payload = {}) {
   const safeAssignment = sanitizeString(String(payload.assignment_strategy || DEFAULT_POLICY.assignment_strategy), 80).toLowerCase()
   const assignment_strategy = VALID_ASSIGNMENT_STRATEGIES.has(safeAssignment) ? safeAssignment : DEFAULT_POLICY.assignment_strategy
 
-  const inputStageTargets = payload?.sla_targets_by_stage && typeof payload.sla_targets_by_stage === 'object'
-    ? payload.sla_targets_by_stage
+  const inputStageTargets = (payload?.sla_targets || payload?.sla_targets_by_stage) && typeof (payload?.sla_targets || payload?.sla_targets_by_stage) === 'object'
+    ? (payload?.sla_targets || payload?.sla_targets_by_stage)
     : {}
   const stageTargets = { ...DEFAULT_STAGE_TARGETS }
   Object.entries(inputStageTargets).forEach(([stage, value]) => {
@@ -66,14 +66,14 @@ function normalizePolicyInput(payload = {}) {
   const timeBased = escalationRules?.time_based && typeof escalationRules.time_based === 'object' ? escalationRules.time_based : {}
   const riskBased = escalationRules?.risk_based && typeof escalationRules.risk_based === 'object' ? escalationRules.risk_based : {}
 
-  const workloadCaps = payload?.workload_caps_per_agent && typeof payload.workload_caps_per_agent === 'object'
-    ? payload.workload_caps_per_agent
+  const workloadCaps = (payload?.workload_caps || payload?.workload_caps_per_agent) && typeof (payload?.workload_caps || payload?.workload_caps_per_agent) === 'object'
+    ? (payload?.workload_caps || payload?.workload_caps_per_agent)
     : {}
   const overrides = workloadCaps?.overrides && typeof workloadCaps.overrides === 'object' ? workloadCaps.overrides : {}
 
   return {
     assignment_strategy,
-    sla_targets_by_stage: stageTargets,
+    sla_targets: stageTargets,
     escalation_rules: {
       time_based: {
         warning_minutes: Math.max(1, Number(timeBased.warning_minutes ?? DEFAULT_POLICY.escalation_rules.time_based.warning_minutes)),
@@ -84,8 +84,8 @@ function normalizePolicyInput(payload = {}) {
         auto_escalate_threshold: Math.max(1, Number(riskBased.auto_escalate_threshold ?? DEFAULT_POLICY.escalation_rules.risk_based.auto_escalate_threshold)),
       },
     },
-    workload_caps_per_agent: {
-      default_max_active_leads: Math.max(1, Number(workloadCaps.default_max_active_leads ?? DEFAULT_POLICY.workload_caps_per_agent.default_max_active_leads)),
+    workload_caps: {
+      default_max_active_leads: Math.max(1, Number(workloadCaps.default_max_active_leads ?? DEFAULT_POLICY.workload_caps.default_max_active_leads)),
       overrides: Object.fromEntries(
         Object.entries(overrides)
           .map(([agentId, cap]) => [sanitizeString(String(agentId || ''), 120), Math.max(1, Number(cap || 1))])
@@ -144,8 +144,8 @@ function computeAgentLoad(leads = [], agentId = '') {
 }
 
 function computeAgentCap(policy, agentId) {
-  const override = Number(policy?.workload_caps_per_agent?.overrides?.[agentId])
-  const base = Number(policy?.workload_caps_per_agent?.default_max_active_leads || 10)
+  const override = Number(policy?.workload_caps?.overrides?.[agentId])
+  const base = Number(policy?.workload_caps?.default_max_active_leads || 10)
   return Number.isFinite(override) && override > 0 ? override : base
 }
 
@@ -210,7 +210,7 @@ async function chooseAssignee({ policy, orgOwnerId, lead, leads, users }) {
 
 async function upsertSlaTimer(lead, policy) {
   const leadStatus = sanitizeString(String(lead?.status || 'new'), 60).toLowerCase().replace(/\s+/g, '_')
-  const targetMinutes = Math.max(1, Number(policy?.sla_targets_by_stage?.[leadStatus] || DEFAULT_STAGE_TARGETS[leadStatus] || 60))
+  const targetMinutes = Math.max(1, Number(policy?.sla_targets?.[leadStatus] || DEFAULT_STAGE_TARGETS[leadStatus] || 60))
   const baseDate = new Date(lead?.updated_at || lead?.created_at || Date.now())
   const deadlineAt = new Date(baseDate.getTime() + targetMinutes * 60000)
   const rows = await readStore(SLA_FILE)
