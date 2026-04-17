@@ -26,3 +26,5 @@ node_modules
 
 # Codex app workspace metadata
 .codex/
+node_modules\electron\dist\electron.exe
+cloudflared-windows-amd64.exe
