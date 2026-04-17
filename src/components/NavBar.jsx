@@ -397,6 +397,27 @@ export default function NavBar() {
     }
   }
 
+  // Add a ref to the mobile menu container
+  const mobileMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+        setMobileOpen(false);
+      }
+    };
+
+    if (mobileOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [mobileOpen]);
+
   return (
     // Top navigation shell.
     // `nav-glass` is a custom utility (src/App.css) that provides: translucent background + blur + safe borders in dark mode.
@@ -577,7 +598,10 @@ export default function NavBar() {
             onClick={() => setMobileOpen(false)}
             className="absolute inset-0 bg-slate-950/30 backdrop-blur-sm"
           />
-          <div className="absolute left-4 right-4 top-20 rounded-2xl bg-white/90 p-3 shadow-2xl ring-1 ring-slate-200/70 backdrop-blur-md dark:bg-slate-950/85 dark:ring-slate-800/60">
+          <div
+            ref={mobileMenuRef}
+            className="absolute left-4 right-4 top-20 rounded-2xl bg-white/90 p-3 shadow-2xl ring-1 ring-slate-200/70 backdrop-blur-md dark:bg-slate-950/85 dark:ring-slate-800/60"
+          >
             <div className="space-y-1">
               {!user ? (
                 publicLinks.map(({ to, label }) => (
