@@ -4,6 +4,7 @@ import { readJson } from '../utils/jsonStore.js'
 import { trackEvent } from './eventTrackingService.js'
 import { logInfo } from '../utils/logger.js'
 import { getOrderCertificationMap } from './orderCertificationService.js'
+import { listFeedPosts } from './feedPostService.js'
 
 const CATEGORIES = ['Shirts', 'Knitwear', 'Denim', 'Women', 'Kids']
 
@@ -33,6 +34,7 @@ function clamp01(value) {
 function getAuthorId(item) {
   if (item.feed_type === 'buyer_request') return item.buyer_id
   if (item.feed_type === 'company_product') return item.company_id
+  if (item.feed_type === 'user_feed_post') return item.user_id
   return ''
 }
 
@@ -87,7 +89,7 @@ function getAgeBoostMultiplier(accountAgeDays) {
 }
 
 function normalizeContent(item = {}) {
-  return `${item.title || ''} ${item.description || ''}`
+  return `${item.title || ''} ${item.description || ''} ${item.description_markdown || ''} ${item.caption || ''}`
     .toLowerCase()
     .replace(/\s+/g, ' ')
     .trim()
@@ -324,8 +326,11 @@ function diversifyFeedItems(items = [], { explorationRate = 0.2, maxSameAuthorRu
 }
 
 export async function getCombinedFeed({ unique = false, type = 'all', category = '', cursor = 0, limit = 12, viewer = null }) {
-  const requests = type === 'products' ? [] : await listRequirements({ status: 'open' })
-  const products = type === 'requests' ? [] : await listProducts({ category })
+  const requests = type === 'products' || type === 'posts' ? [] : await listRequirements({ status: 'open' })
+  const products = type === 'requests' || type === 'posts' ? [] : await listProducts({ category })
+  const feedPosts = type === 'requests' || type === 'products'
+    ? []
+    : await listFeedPosts({ status: 'published' })
   const users = await readJson('users.json')
   const orderCertMap = await getOrderCertificationMap()
   const socialInteractions = await readJson('social_interactions.json')
@@ -352,6 +357,7 @@ export async function getCombinedFeed({ unique = false, type = 'all', category =
   const combined = [
     ...requests.map((r) => ({ ...r, feed_type: 'buyer_request', icon: '💼' })),
     ...products.map((p) => ({ ...p, feed_type: 'company_product', icon: '🏭' })),
+    ...feedPosts.map((post) => ({ ...post, feed_type: 'user_feed_post', icon: '📝' })),
   ]
 
   const itemsByAuthor = combined.reduce((acc, item) => {
@@ -403,6 +409,12 @@ export async function getCombinedFeed({ unique = false, type = 'all', category =
 
     return {
       ...item,
+      author: {
+        id: authorId,
+        name: author?.name || item.company_name || item.organization_name || item.name || 'Unknown',
+        verified: Boolean(author?.verified),
+        role: String(author?.role || ''),
+      },
       order_certification_status: certification?.status || '',
       discussion_active: discussionActive && viewerVerified,
       _ranking: {

@@ -39,6 +39,7 @@ import FloatingAssistant from './components/FloatingAssistant'
 import Footer from './components/Footer'
 import AccessDenied from './pages/AccessDenied'
 import VerificationPage from './pages/VerificationPage'
+import FeedManagement from './pages/FeedManagement'
 import { getCurrentUser } from './lib/auth'
 import { trackClientEvent } from './lib/events'
 
@@ -78,6 +79,7 @@ function AppRoutes() {
       <Route path="/access-denied" element={<AccessDenied />} />
 
       <Route path="/feed" element={<ProtectedRoute roles={AUTH_ROLES}><MainFeed /></ProtectedRoute>} />
+      <Route path="/feed/manage" element={<ProtectedRoute roles={AUTH_ROLES}><FeedManagement /></ProtectedRoute>} />
       <Route path="/search" element={<ProtectedRoute roles={AUTH_ROLES}><SearchResults /></ProtectedRoute>} />
       <Route path="/industry/:slug" element={<ProtectedRoute roles={AUTH_ROLES}><IndustryPage /></ProtectedRoute>} />
       <Route path="/buyer/:id" element={<ProtectedRoute roles={AUTH_ROLES}><BuyerProfile /></ProtectedRoute>} />

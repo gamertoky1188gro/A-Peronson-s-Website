@@ -67,11 +67,18 @@ function buildFeedLeadLabel(item) {
 function normalizeFeedItem(raw) {
   // Backend feed rows can be buyer requests or company products.
   // This function normalizes server shape -> UI shape so downstream components can be consistent.
-  const entityType = raw.feed_type === 'buyer_request' ? 'buyer_request' : 'company_product'
+  const entityType = raw.feed_type === 'buyer_request'
+    ? 'buyer_request'
+    : (raw.feed_type === 'user_feed_post' ? 'user_feed_post' : 'company_product')
   const isBuyerRequest = entityType === 'buyer_request'
-  const authorId = raw.buyer_id || raw.company_id || raw.author_id || ''
-  const accountType = raw.company_role || (isBuyerRequest ? 'buyer' : 'factory')
-  const rolePath = accountType === 'buying_house' ? 'buying-house' : (accountType === 'buyer' ? 'buyer' : 'factory')
+  const isUserFeedPost = entityType === 'user_feed_post'
+  const authorId = raw.buyer_id || raw.company_id || raw.user_id || raw.author_id || ''
+  const accountType = raw.author?.role || raw.company_role || (isBuyerRequest ? 'buyer' : (isUserFeedPost ? 'member' : 'factory'))
+  const rolePath = accountType === 'buying_house'
+    ? 'buying-house'
+    : (accountType === 'buyer'
+      ? 'buyer'
+      : (accountType === 'factory' ? 'factory' : ''))
   const priorityUntil = raw.priority_until ? new Date(raw.priority_until).getTime() : 0
   const priorityActive = raw.priority_active !== undefined
     ? Boolean(raw.priority_active)
@@ -88,10 +95,13 @@ function normalizeFeedItem(raw) {
     },
     verified: Boolean(raw.author?.verified || raw.verified),
     createdAt: formatRelativeTime(raw.created_at),
-    content: isBuyerRequest ? (raw.custom_description || '') : (raw.description || ''),
+    content: isBuyerRequest
+      ? (raw.custom_description || '')
+      : (isUserFeedPost ? (raw.caption || '') : (raw.description || '')),
     title: raw.title || '',
+    descriptionMarkdown: raw.description_markdown || '',
     category: raw.category || '',
-    tags: [raw.category, raw.material].filter(Boolean),
+    tags: [raw.category, raw.material, ...(Array.isArray(raw.hashtags) ? raw.hashtags : [])].filter(Boolean),
     material: raw.material || '',
     quantity: raw.quantity || '',
     timelineDays: raw.timeline_days || '',
@@ -100,6 +110,14 @@ function normalizeFeedItem(raw) {
     moq: raw.moq || '',
     leadTimeDays: raw.lead_time_days || '',
     hasVideo: Boolean(raw.hasVideo || (!raw.video_restricted && raw.video_review_status === 'approved' && raw.video_url)),
+    media: Array.isArray(raw.media) ? raw.media : [],
+    ctaText: raw.cta_text || '',
+    ctaUrl: raw.cta_url || '',
+    mentions: Array.isArray(raw.mentions) ? raw.mentions : [],
+    links: Array.isArray(raw.links) ? raw.links : [],
+    productTags: Array.isArray(raw.product_tags) ? raw.product_tags : [],
+    locationTag: raw.location_tag || '',
+    emojis: Array.isArray(raw.emojis) ? raw.emojis : [],
     discussionActive: Boolean(raw.discussion_active),
     feedMetadata: raw.feed_metadata || {},
     priorityActive,
@@ -212,6 +230,7 @@ export default function MainFeed() {
   const headerLabel = useMemo(() => {
     if (activeType === 'requests') return 'Buyer Requests'
     if (activeType === 'products') return 'Company Products'
+    if (activeType === 'posts') return 'Community Posts'
     return ''
   }, [activeType])
 
@@ -432,15 +451,15 @@ export default function MainFeed() {
   const quickActions = useMemo(() => {
     const role = user?.role || ''
     if (role === 'buyer') {
-      return [{ to: '/buyer-requests', label: 'Post a Buyer Request' }]
+      return [{ to: '/buyer-requests', label: 'Post a Buyer Request' }, { to: '/feed/manage', label: 'Manage Feed Posts' }]
     }
     if (role === 'factory') {
-      return [{ to: '/product-management', label: 'Post a Product' }, { to: '/member-management', label: 'Members' }]
+      return [{ to: '/product-management', label: 'Post a Product' }, { to: '/feed/manage', label: 'Manage Feed Posts' }, { to: '/member-management', label: 'Members' }]
     }
     if (role === 'buying_house') {
-      return [{ to: '/product-management', label: 'Post a Product' }, { to: '/agent', label: 'Go to Agent Dashboard' }]
+      return [{ to: '/product-management', label: 'Post a Product' }, { to: '/feed/manage', label: 'Manage Feed Posts' }, { to: '/agent', label: 'Go to Agent Dashboard' }]
     }
-    return [{ to: '/search', label: 'Search' }]
+    return [{ to: '/feed/manage', label: 'Manage Feed Posts' }, { to: '/search', label: 'Search' }]
   }, [user?.role])
 
   return (

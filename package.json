@@ -22,7 +22,7 @@
     "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --testPathPattern=tests/unit",
     "test:e2e": "playwright test",
     "ci:reindex": "node scripts/ci/reindex-opensearch.mjs",
-    "ci:smoke": "node scripts/ci/smoke-search.mjs",
+    "ci:smoke": "node scripts/ci/smoke-search.mjs", 
     "ci:full": "npm run ci:reindex && npm test && npm run ci:smoke",
     "worker:lead-reminders": "node server/workers/leadRemindersWorker.js"
   },

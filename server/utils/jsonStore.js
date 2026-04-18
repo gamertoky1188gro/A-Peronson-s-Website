@@ -136,6 +136,7 @@ const FILE_HANDLERS = {
     }),
   },
   'company_products.json': tableHandler('product', ['id']),
+  'feed_posts.json': tableHandler('feedPost', ['id']),
   'messages.json': tableHandler('message', ['id']),
   'message_requests.json': tableHandler('messageRequest', ['thread_id']),
   'notifications.json': tableHandler('notification', ['id']),

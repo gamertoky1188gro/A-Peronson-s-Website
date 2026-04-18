@@ -1,10 +1,11 @@
 import React from 'react'
-import { Briefcase, Building2, LayoutGrid, Sparkles } from 'lucide-react'
+import { Briefcase, Building2, LayoutGrid, NotebookText, Sparkles } from 'lucide-react'
 
 const TYPE_OPTIONS = [
   { id: 'all', label: 'All', icon: LayoutGrid },
   { id: 'requests', label: 'Buyer Requests', icon: Briefcase },
   { id: 'products', label: 'Company Products', icon: Building2 },
+  { id: 'posts', label: 'Posts', icon: NotebookText },
 ]
 
 export default function FeedControlBar({
@@ -38,7 +39,7 @@ export default function FeedControlBar({
                   title={opt.label}
                 >
                   <Icon size={16} />
-                  <span className="hidden sm:inline">{opt.id === 'all' ? 'All' : null}</span>
+                  <span className="hidden sm:inline">{opt.label}</span>
                 </button>
               )
             })}

@@ -30,7 +30,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Bell, DollarSign, FileText, LayoutDashboard, Menu, MessageSquare, Moon, Search, ShieldCheck, Sun } from 'lucide-react'
+import { Bell, DollarSign, FileText, LayoutDashboard, Menu, MessageSquare, Moon, NotebookPen, Search, ShieldCheck, Sun } from 'lucide-react'
 import { motion as Motion, useMotionValue, useReducedMotion, useSpring } from 'framer-motion'
 import { apiRequest, clearSession, getCurrentUser, getRoleHome, getToken } from '../lib/auth'
 
@@ -45,6 +45,7 @@ const publicLinks = [
 // Auth navigation (shown for logged-in users). Each item maps to a page route + lucide icon.
 const authenticatedLinks = [
   { to: '/feed', label: 'Feed', icon: LayoutDashboard },
+  { to: '/feed/manage', label: 'Manage Feeds', icon: NotebookPen },
   { to: '/search', label: 'Search', icon: Search },
   { to: '/pricing', label: 'Pricing', icon: DollarSign },
   { to: '/contracts', label: 'Contracts', icon: FileText },

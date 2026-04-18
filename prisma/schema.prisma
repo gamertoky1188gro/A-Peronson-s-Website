@@ -180,6 +180,30 @@ model Product {
   @@map("company_products")
 }
 
+model FeedPost {
+  id                   String   @id
+  user_id              String
+  title                String
+  description_markdown String
+  caption              String?
+  cta_text             String?
+  cta_url              String?
+  hashtags             Json?
+  emojis               Json?
+  mentions             Json?
+  links                Json?
+  product_tags         Json?
+  location_tag         String?
+  media                Json?
+  category             String?
+  status               String   @default("published")
+  created_at           DateTime @default(now())
+  updated_at           DateTime?
+
+  @@index([user_id, created_at])
+  @@map("feed_posts")
+}
+
 model FxRate {
   id        String   @id @default(cuid())
   base      String
