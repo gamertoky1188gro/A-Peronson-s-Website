@@ -118,7 +118,23 @@ const FILE_HANDLERS = {
   },
   'subscriptions.json': tableHandler('subscription', ['id']),
   'verification.json': tableHandler('verification', ['user_id']),
-  'requirements.json': tableHandler('requirement', ['id']),
+  'requirements.json': {
+    read: async () => normalizeRows(await prisma.requirement.findMany({
+      select: {
+        id: true,
+        buyer_id: true,
+        title: true,
+        status: true,
+        currencyOriginal: true,
+        // Add other fields as needed
+      },
+    })),
+    write: async (rows) => syncTable({
+      model: 'requirement',
+      rows,
+      keyFields: ['id'],
+    }),
+  },
   'company_products.json': tableHandler('product', ['id']),
   'messages.json': tableHandler('message', ['id']),
   'message_requests.json': tableHandler('messageRequest', ['thread_id']),
