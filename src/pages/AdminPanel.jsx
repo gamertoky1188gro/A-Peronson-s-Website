@@ -1553,8 +1553,7 @@ export default function AdminPanel() {
       setError(err.message || 'Failed to run network action')
     }
   }
-
-
+  
   async function runSecurityAction(action, payload = {}) {
     const token = getToken()
     if (!token) return
