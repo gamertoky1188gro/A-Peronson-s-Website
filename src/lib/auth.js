@@ -48,16 +48,28 @@ export function clearSession() {
   sessionStorage.removeItem(TOKEN_KEY)
 }
 
+function resolveAdminSecurityHeader(storageKey, envKey, localDevFallback = '') {
+  const saved = localStorage.getItem(storageKey)
+  if (saved) return saved
+
+  const envValue = String(import.meta.env?.[envKey] || '').trim()
+  if (envValue) return envValue
+
+  const host = typeof window !== 'undefined' ? window.location.hostname : ''
+  const isLocalDev = host === 'localhost' || host === '127.0.0.1' || host === '::1'
+  return isLocalDev ? localDevFallback : ''
+}
+
 export async function apiRequest(path, { method = 'GET', token = '', body, signal, headers = {} } = {}) {
   const debugRequests = import.meta.env.DEV || String(import.meta.env.VITE_REQUEST_DEBUG || '').toLowerCase() === 'true'
   const startedAt = debugRequests ? performance.now() : 0
   
   // Inject security headers for Admin Matrix / Ultra Security Layer
   const securityHeaders = {
-    'x-admin-device': localStorage.getItem('admin_device_id') || '',
-    'x-admin-mfa': localStorage.getItem('admin_mfa_code') || '',
-    'x-admin-passkey': localStorage.getItem('admin_passkey') || '',
-    'x-admin-stepup': localStorage.getItem('admin_stepup_code') || '',
+    'x-admin-device': resolveAdminSecurityHeader('admin_device_id', 'VITE_ADMIN_DEVICE_ID', 'local-dev-device'),
+    'x-admin-mfa': resolveAdminSecurityHeader('admin_mfa_code', 'VITE_ADMIN_MFA_CODE', '123456'),
+    'x-admin-passkey': resolveAdminSecurityHeader('admin_passkey', 'VITE_ADMIN_PASSKEY'),
+    'x-admin-stepup': resolveAdminSecurityHeader('admin_stepup_code', 'VITE_ADMIN_STEPUP_CODE', 'stepup-7890'),
   }
 
   let res

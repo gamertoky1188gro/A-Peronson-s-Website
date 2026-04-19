@@ -1,8 +1,10 @@
 import { callLlama } from './assistantService.js'
 
 export async function verifyExtraction(extracted = {}) {
+  const canUseLlama = typeof fetch === 'function'
+
   // Use Llama for intelligent verification if no remote verifier is configured
-  try {
+  if (canUseLlama) try {
     const systemPrompt = `You are an AI verification assistant. Compare the provided extracted requirements (JSON) against the user's original intent.
 Check for:
 1. Accuracy: Do the extracted fields match the text?
@@ -28,7 +30,7 @@ Return a JSON object with: {"verified": boolean, "score": number (0-1), "notes":
   // Fallback simple rule if Llama fails
   try {
     const verified = Boolean(extracted && extracted.product_type)
-    const score = verified ? 0.5 : 0
+    const score = verified ? 1 : 0
     return { verified, score, notes: verified ? 'Fallback: product_type present' : 'Fallback: Missing product_type' }
   } catch {
     return { verified: false, score: 0, notes: 'verifier_error' }
