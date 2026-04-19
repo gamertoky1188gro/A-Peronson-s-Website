@@ -404,121 +404,101 @@ function exportEmailsCsv(rows = []) {
   URL.revokeObjectURL(url)
 }
 
-function AdminSecurityOverlay({ error, onResolve }) {
-  const [mfa, setMfa] = useState(() => localStorage.getItem('admin_mfa_code') || '')
-  const [passkey, setPasskey] = useState(() => localStorage.getItem('admin_passkey') || '')
-  const [stepup, setStepup] = useState(() => localStorage.getItem('admin_stepup_code') || '')
-  const [deviceId, setDeviceId] = useState(() => localStorage.getItem('admin_device_id') || import.meta.env.VITE_ADMIN_DEVICE_ID || 'local-dev-device')
-  const [busy, setBusy] = useState(false)
-  const [localError, setLocalError] = useState('')
-
-  async function handleUnlock() {
-    localStorage.setItem('admin_mfa_code', mfa)
-    localStorage.setItem('admin_passkey', passkey)
-    localStorage.setItem('admin_stepup_code', stepup)
-    localStorage.setItem('admin_device_id', deviceId)
-    onResolve()
-  }
-
-  async function handleRegisterDevice() {
-    setBusy(true)
-    setLocalError('')
-    try {
-      const token = getToken()
-      const res = await apiRequest('/admin/security/actions', {
-        method: 'POST',
-        token,
-        body: {
-          action: 'security.admin.device.add',
-          payload: { device_id: deviceId }
-        }
-      })
-      if (res.ok || res.status === 200) {
-        localStorage.setItem('admin_device_id', deviceId)
-        onResolve()
-      } else {
-        setLocalError(res.error || 'Failed to register device. Ensure MFA/Passkey is correct.')
-      }
-    } catch (err) {
-      setLocalError(err.message || 'Registration failed')
-    } finally {
-      setBusy(false)
-    }
-  }
+function AdminSecurityGate({
+  open,
+  message,
+  mfaCode,
+  setMfaCode,
+  passkeyValue,
+  setPasskeyValue,
+  stepUpCode,
+  setStepUpCode,
+  deviceId,
+  setDeviceId,
+  busy,
+  notice,
+  onUnlock,
+  onRegisterDevice,
+  onDecline,
+}) {
+  if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-6">
-      <div className="admin-panel admin-sweep w-full max-w-md rounded-[32px] p-8 text-center shadow-2xl">
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-500/20 text-rose-400">
-          <Activity className="h-8 w-8" />
-        </div>
-        <h2 className="text-2xl font-bold text-white">Security Access Required</h2>
-        <p className="mt-2 text-sm text-slate-400">
-          {error || 'Your device is not registered or security credentials are required to unlock the Admin Matrix.'}
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/90 p-6 backdrop-blur-md">
+      <div className="admin-panel admin-sweep w-full max-w-lg rounded-3xl p-6 shadow-2xl">
+        <h2 className="text-lg font-bold text-white">Security verification required</h2>
+        <p className="mt-2 text-sm text-slate-300">
+          {message || 'This device is not approved yet. Use your passkey or setup code + MFA to continue.'}
         </p>
 
-        <div className="mt-8 space-y-4 text-left">
-          <label className="block">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 ml-1">MFA Code</span>
+        <div className="mt-5 grid grid-cols-1 gap-3">
+          <label className="text-xs text-slate-400">
+            MFA code
             <input
-              type="text"
-              value={mfa}
-              onChange={(e) => setMfa(e.target.value)}
-              className="mt-1 w-full rounded-2xl bg-slate-900 border-none px-4 py-3 text-sm text-white placeholder:text-slate-700 shadow-borderless focus:ring-2 focus:ring-sky-500/50 transition-all"
+              value={mfaCode}
+              onChange={(e) => setMfaCode(e.target.value)}
+              className="mt-1 w-full rounded-xl bg-slate-900/90 px-3 py-2 text-sm text-white outline-none ring-1 ring-slate-700 focus:ring-sky-500"
               placeholder="Enter MFA code"
             />
           </label>
-
-          <label className="block">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 ml-1">Admin Passkey</span>
+          <label className="text-xs text-slate-400">
+            Passkey
             <input
+              value={passkeyValue}
+              onChange={(e) => setPasskeyValue(e.target.value)}
+              className="mt-1 w-full rounded-xl bg-slate-900/90 px-3 py-2 text-sm text-white outline-none ring-1 ring-slate-700 focus:ring-sky-500"
+              placeholder="Enter passkey"
               type="password"
-              value={passkey}
-              onChange={(e) => setPasskey(e.target.value)}
-              className="mt-1 w-full rounded-2xl bg-slate-900 border-none px-4 py-3 text-sm text-white placeholder:text-slate-700 shadow-borderless focus:ring-2 focus:ring-sky-500/50 transition-all"
-              placeholder="Enter security passkey"
             />
           </label>
-
-          <label className="block">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 ml-1">Device ID</span>
+          <label className="text-xs text-slate-400">
+            Setup/step-up code
             <input
-              type="text"
+              value={stepUpCode}
+              onChange={(e) => setStepUpCode(e.target.value)}
+              className="mt-1 w-full rounded-xl bg-slate-900/90 px-3 py-2 text-sm text-white outline-none ring-1 ring-slate-700 focus:ring-sky-500"
+              placeholder="Enter setup code"
+            />
+          </label>
+          <label className="text-xs text-slate-400">
+            Device ID
+            <input
               value={deviceId}
               onChange={(e) => setDeviceId(e.target.value)}
-              className="mt-1 w-full rounded-2xl bg-slate-900 border-none px-4 py-3 text-sm text-white placeholder:text-slate-700 shadow-borderless focus:ring-2 focus:ring-sky-500/50 transition-all"
-              placeholder="Device identifier (e.g. CCM)"
+              className="mt-1 w-full rounded-xl bg-slate-900/90 px-3 py-2 text-sm text-white outline-none ring-1 ring-slate-700 focus:ring-sky-500"
+              placeholder="Enter your device id"
             />
           </label>
-
-          {localError && (
-            <p className="text-xs font-semibold text-rose-400 mt-2 bg-rose-400/10 py-2 px-3 rounded-xl">
-              {localError}
-            </p>
-          )}
         </div>
 
-        <div className="mt-8 grid grid-cols-2 gap-3">
+        {notice ? <p className="mt-3 text-xs text-sky-200">{notice}</p> : null}
+
+        <div className="mt-5 flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={handleUnlock}
-            className="rounded-2xl bg-slate-800 py-3 text-sm font-bold text-white hover:bg-slate-700 transition-colors"
-          >
-            Unlock Session
-          </button>
-          <button
-            type="button"
+            onClick={onUnlock}
             disabled={busy}
-            onClick={handleRegisterDevice}
-            className="rounded-2xl bg-gradient-to-r from-sky-600 to-indigo-600 py-3 text-sm font-bold text-white shadow-lg hover:brightness-110 transition-all disabled:opacity-50"
+            className="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
           >
-            {busy ? 'Registering...' : 'Register Device'}
+            Unlock access
+          </button>
+          <button
+            type="button"
+            onClick={onRegisterDevice}
+            disabled={busy}
+            className="rounded-full bg-indigo-500/80 px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+          >
+            Register this device
+          </button>
+          <button
+            type="button"
+            onClick={onDecline}
+            disabled={busy}
+            className="rounded-full border border-slate-600 px-4 py-2 text-xs font-semibold text-slate-200 disabled:opacity-60"
+          >
+            Decline
           </button>
         </div>
-
-        <p className="mt-6 text-[10px] text-slate-600">
-          Ultra Security Layer: All access attempts are logged and tied to device hardware fingerprints.
-        </p>
       </div>
     </div>
   )
@@ -622,7 +602,11 @@ export default function AdminPanel() {
   const [mfaCode, setMfaCode] = useState(() => localStorage.getItem('admin_mfa_code') || '')
   const [deviceId, setDeviceId] = useState(() => localStorage.getItem('admin_device_id') || '')
   const [passkeyValue, setPasskeyValue] = useState(() => localStorage.getItem('admin_passkey') || '')
-  const [stepUpCode, setStepUpCode] = useState('')
+  const [stepUpCode, setStepUpCode] = useState(() => localStorage.getItem('admin_stepup_code') || '')
+  const [securityGateOpen, setSecurityGateOpen] = useState(false)
+  const [securityGateMessage, setSecurityGateMessage] = useState('')
+  const [securityGateNotice, setSecurityGateNotice] = useState('')
+  const [securityGateBusy, setSecurityGateBusy] = useState(false)
   const [activeCategory, setActiveCategory] = useState('home')
   const [actionBusy, setActionBusy] = useState('')
 
@@ -683,6 +667,11 @@ export default function AdminPanel() {
   }, [passkeyValue])
 
   useEffect(() => {
+    if (!stepUpCode) return
+    localStorage.setItem('admin_stepup_code', stepUpCode)
+  }, [stepUpCode])
+
+  useEffect(() => {
     const rules = master?.config?.moderation?.clothing_rules
     if (rules) {
       setClothingRulesForm({
@@ -733,6 +722,13 @@ export default function AdminPanel() {
     return headers
   }, [mfaCode, deviceId, stepUpCode, passkeyValue])
 
+  const handleSecurityFailure = useCallback((err) => {
+    if (Number(err?.status) !== 403) return false
+    setSecurityGateOpen(true)
+    setSecurityGateMessage(err?.message || 'Admin security verification failed.')
+    return true
+  }, [])
+
   async function refreshAudit() {
     const token = getToken()
     if (!token) return
@@ -744,7 +740,7 @@ export default function AdminPanel() {
     }
   }
 
-  useEffect(() => {
+  const loadAdminData = useCallback(async () => {
     if (!isOwner) return
     const token = getToken()
     if (!token) return
@@ -753,62 +749,77 @@ export default function AdminPanel() {
     setError('')
     const headers = buildAdminHeaders()
 
-    Promise.all([
-      apiRequest('/admin/master', { token, headers }),
-      apiRequest('/admin/users', { token, headers }),
-      apiRequest('/infra/overview', { token, headers }),
-      apiRequest('/infra/state', { token, headers }),
-      apiRequest('/network/overview', { token, headers }),
-      apiRequest('/network/inventory', { token, headers }),
-      apiRequest('/admin/audit?limit=40', { token, headers }),
-      apiRequest('/verification/admin/queue', { token, headers }),
-      apiRequest('/admin/contracts', { token, headers }),
-      apiRequest('/admin/disputes', { token, headers }),
-      apiRequest('/admin/partner-requests', { token, headers }),
-      apiRequest('/admin/payment-proofs', { token, headers }),
-      apiRequest('/admin/catalog', { token, headers }),
-      apiRequest('/admin/coupons/report', { token, headers }),
-      apiRequest('/admin/server-admin/state', { token, headers }),
-      apiRequest('/admin/cms/state', { token, headers }),
-      apiRequest('/admin/security/state', { token, headers }),
-      apiRequest('/admin/integrations/status', { token, headers }),
-      apiRequest('/admin/signups', { token, headers }),
-      apiRequest('/admin/strikes', { token, headers }),
-      apiRequest('/admin/fraud/verification', { token, headers }),
-      apiRequest('/admin/orgs/ownership', { token, headers }),
-      apiRequest('/admin/wallet/ledger', { token, headers }),
-    ])
-      .then(([masterData, userRows, infraData, infraStateData, networkData, networkInventoryData, auditData, verificationData, contractsData, disputesData, partnersData, proofsData, catalogData, couponReportData, serverAdminData, cmsData, securityData, integrationData, signupsData, strikesData, fraudData, orgOwnershipData, walletLedgerData]) => {
-        setMaster(masterData || null)
-        setUsers(Array.isArray(userRows) ? userRows : [])
-        setInfra(infraData || null)
-        setInfraState(infraStateData || null)
-        setNetwork(networkData || null)
-        setNetworkInventory(networkInventoryData || null)
-        setAudit(Array.isArray(auditData?.items) ? auditData.items : [])
-        setVerificationQueue(Array.isArray(verificationData) ? verificationData : (Array.isArray(verificationData?.items) ? verificationData.items : []))
-        setContractsVault(Array.isArray(contractsData?.items) ? contractsData.items : [])
-        setDisputes(Array.isArray(disputesData?.items) ? disputesData.items : [])
-        setPartnerRequests(Array.isArray(partnersData?.items) ? partnersData.items : [])
-        setPaymentProofs(Array.isArray(proofsData?.items) ? proofsData.items : [])
-        setCatalog(catalogData || null)
-        setCouponReport(couponReportData || null)
-        setServerAdminState(serverAdminData || null)
-        setCmsState(cmsData || null)
-        setSecurityState(securityData || null)
-        setIntegrationStatus(integrationData || null)
-        setSignups(Array.isArray(signupsData?.items) ? signupsData.items : [])
-        setStrikeHistory(Array.isArray(strikesData?.items) ? strikesData.items : [])
-        setFraudReview({
-          items: Array.isArray(fraudData?.items) ? fraudData.items : [],
-          duplicates: Array.isArray(fraudData?.duplicates) ? fraudData.duplicates : [],
-        })
-        setOrgOwnership(orgOwnershipData || { orgs: [], staff_list: [] })
-        setWalletLedger(Array.isArray(walletLedgerData?.items) ? walletLedgerData.items : [])
+    try {
+      const [
+        masterData, userRows, infraData, infraStateData, networkData, networkInventoryData, auditData, verificationData,
+        contractsData, disputesData, partnersData, proofsData, catalogData, couponReportData, serverAdminData, cmsData,
+        securityData, integrationData, signupsData, strikesData, fraudData, orgOwnershipData, walletLedgerData,
+      ] = await Promise.all([
+        apiRequest('/admin/master', { token, headers }),
+        apiRequest('/admin/users', { token, headers }),
+        apiRequest('/infra/overview', { token, headers }),
+        apiRequest('/infra/state', { token, headers }),
+        apiRequest('/network/overview', { token, headers }),
+        apiRequest('/network/inventory', { token, headers }),
+        apiRequest('/admin/audit?limit=40', { token, headers }),
+        apiRequest('/verification/admin/queue', { token, headers }),
+        apiRequest('/admin/contracts', { token, headers }),
+        apiRequest('/admin/disputes', { token, headers }),
+        apiRequest('/admin/partner-requests', { token, headers }),
+        apiRequest('/admin/payment-proofs', { token, headers }),
+        apiRequest('/admin/catalog', { token, headers }),
+        apiRequest('/admin/coupons/report', { token, headers }),
+        apiRequest('/admin/server-admin/state', { token, headers }),
+        apiRequest('/admin/cms/state', { token, headers }),
+        apiRequest('/admin/security/state', { token, headers }),
+        apiRequest('/admin/integrations/status', { token, headers }),
+        apiRequest('/admin/signups', { token, headers }),
+        apiRequest('/admin/strikes', { token, headers }),
+        apiRequest('/admin/fraud/verification', { token, headers }),
+        apiRequest('/admin/orgs/ownership', { token, headers }),
+        apiRequest('/admin/wallet/ledger', { token, headers }),
+      ])
+      setMaster(masterData || null)
+      setUsers(Array.isArray(userRows) ? userRows : [])
+      setInfra(infraData || null)
+      setInfraState(infraStateData || null)
+      setNetwork(networkData || null)
+      setNetworkInventory(networkInventoryData || null)
+      setAudit(Array.isArray(auditData?.items) ? auditData.items : [])
+      setVerificationQueue(Array.isArray(verificationData) ? verificationData : (Array.isArray(verificationData?.items) ? verificationData.items : []))
+      setContractsVault(Array.isArray(contractsData?.items) ? contractsData.items : [])
+      setDisputes(Array.isArray(disputesData?.items) ? disputesData.items : [])
+      setPartnerRequests(Array.isArray(partnersData?.items) ? partnersData.items : [])
+      setPaymentProofs(Array.isArray(proofsData?.items) ? proofsData.items : [])
+      setCatalog(catalogData || null)
+      setCouponReport(couponReportData || null)
+      setServerAdminState(serverAdminData || null)
+      setCmsState(cmsData || null)
+      setSecurityState(securityData || null)
+      setIntegrationStatus(integrationData || null)
+      setSignups(Array.isArray(signupsData?.items) ? signupsData.items : [])
+      setStrikeHistory(Array.isArray(strikesData?.items) ? strikesData.items : [])
+      setFraudReview({
+        items: Array.isArray(fraudData?.items) ? fraudData.items : [],
+        duplicates: Array.isArray(fraudData?.duplicates) ? fraudData.duplicates : [],
       })
-      .catch((err) => setError(err.message || 'Failed to load admin data'))
-      .finally(() => setLoading(false))
-  }, [isOwner, mfaCode, deviceId, buildAdminHeaders])
+      setOrgOwnership(orgOwnershipData || { orgs: [], staff_list: [] })
+      setWalletLedger(Array.isArray(walletLedgerData?.items) ? walletLedgerData.items : [])
+      setSecurityGateOpen(false)
+      setSecurityGateMessage('')
+      setSecurityGateNotice('')
+    } catch (err) {
+      if (!handleSecurityFailure(err)) {
+        setError(err.message || 'Failed to load admin data')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [isOwner, buildAdminHeaders, handleSecurityFailure])
+
+  useEffect(() => {
+    loadAdminData()
+  }, [loadAdminData])
 
   const summary = master?.summary || {}
   const inventory = master?.inventory || FALLBACK_INVENTORY
@@ -1553,7 +1564,8 @@ export default function AdminPanel() {
       setError(err.message || 'Failed to run network action')
     }
   }
-  
+
+
   async function runSecurityAction(action, payload = {}) {
     const token = getToken()
     if (!token) return
@@ -1572,6 +1584,45 @@ export default function AdminPanel() {
     }
   }
 
+  async function handleSecurityUnlock() {
+    await loadAdminData()
+  }
+
+  async function handleRegisterCurrentDevice() {
+    const token = getToken()
+    if (!token || !deviceId) {
+      setSecurityGateNotice('Device id is required before registration.')
+      return
+    }
+    setSecurityGateBusy(true)
+    setSecurityGateNotice('')
+    try {
+      await apiRequest('/admin/security/actions', {
+        method: 'POST',
+        token,
+        headers: buildAdminHeaders({ stepUp: true }),
+        body: {
+          action: 'security.admin.device.add',
+          payload: { device_id: deviceId },
+        },
+      })
+      setSecurityGateNotice('Device registered. Trying access again...')
+      await loadAdminData()
+    } catch (err) {
+      if (!handleSecurityFailure(err)) {
+        setSecurityGateNotice(err?.message || 'Failed to register this device.')
+      }
+    } finally {
+      setSecurityGateBusy(false)
+    }
+  }
+
+  function handleSecurityDecline() {
+    setSecurityGateOpen(false)
+    setSecurityGateMessage('')
+    setSecurityGateNotice('')
+  }
+
   const activeData = inventory.find((cat) => cat.id === activeCategory) || inventory[0]
   const CategoryIcon = CATEGORY_ICONS[activeCategory] || ShieldCheck
   const sidebarItems = useMemo(() => {
@@ -1586,11 +1637,29 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="admin-shell h-screen">
-      <div className="admin-plasma" />
-      <div className="admin-current" />
-      <div className="admin-noise" />
-      <div className="relative z-10 flex h-full w-full gap-6 px-0 py-0">
+    <>
+      <AdminSecurityGate
+        open={securityGateOpen}
+        message={securityGateMessage}
+        mfaCode={mfaCode}
+        setMfaCode={setMfaCode}
+        passkeyValue={passkeyValue}
+        setPasskeyValue={setPasskeyValue}
+        stepUpCode={stepUpCode}
+        setStepUpCode={setStepUpCode}
+        deviceId={deviceId}
+        setDeviceId={setDeviceId}
+        busy={securityGateBusy}
+        notice={securityGateNotice}
+        onUnlock={handleSecurityUnlock}
+        onRegisterDevice={handleRegisterCurrentDevice}
+        onDecline={handleSecurityDecline}
+      />
+      <div className="admin-shell h-screen">
+        <div className="admin-plasma" />
+        <div className="admin-current" />
+        <div className="admin-noise" />
+        <div className="relative z-10 flex h-full w-full gap-6 px-0 py-0">
         <aside className="admin-sidebar admin-panel flex w-[250px] flex-col gap-6 rounded-none px-5 py-6">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500/80 to-indigo-500/60 text-white shadow-[0_0_18px_rgba(75,157,251,0.6)]">
@@ -4653,8 +4722,9 @@ export default function AdminPanel() {
             </div>
           </div>
         </main>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 

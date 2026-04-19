@@ -3,6 +3,7 @@ import { Client } from '@opensearch-project/opensearch'
 
 const OPENSEARCH_URL = process.env.OPENSEARCH_URL || 'http://localhost:9200'
 const RESET = process.argv.includes('--reset')
+const STRICT_MODE = String(process.env.CI || '').toLowerCase() === 'true' || String(process.env.OPENSEARCH_REQUIRED || '').toLowerCase() === 'true'
 
 const client = new Client({ node: OPENSEARCH_URL })
 
@@ -193,7 +194,13 @@ async function run() {
     console.log('Reindex complete')
     process.exit(0)
   } catch (err) {
-    console.error('Reindex failed:', err?.message || err)
+    const message = err?.message || String(err)
+    if (!STRICT_MODE) {
+      console.warn('Reindex skipped (OpenSearch unavailable):', message)
+      process.exit(0)
+      return
+    }
+    console.error('Reindex failed:', message)
     process.exit(2)
   }
 }

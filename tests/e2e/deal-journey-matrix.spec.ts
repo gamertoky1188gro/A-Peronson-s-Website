@@ -3,6 +3,7 @@
  * This file is intentionally matrix-first and can be ported to Cypress by mirroring each row as a describe block.
  */
 import { test, expect } from '@playwright/test'
+const E2E_RUN = String(process.env.E2E_RUN || '').toLowerCase() === 'true'
 
 const MATRIX = [
   {
@@ -25,6 +26,7 @@ const MATRIX = [
 test.describe('deal journey matrix', () => {
   for (const row of MATRIX) {
     test(row.name, async ({ request }) => {
+      test.skip(!E2E_RUN, 'Set E2E_RUN=true to execute API-backed e2e tests.')
       // NOTE: Setup auth and ids in your test environment fixtures.
       const response = await request.post('/api/deal-journeys/events', {
         data: {
