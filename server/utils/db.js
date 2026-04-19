@@ -11,7 +11,14 @@ export function getDbStatus() {
 }
 
 export async function ensureDatabaseConnection() {
+  const allowOffline = ['1', 'true', 'yes'].includes(String(process.env.ALLOW_DB_OFFLINE || '').toLowerCase())
   if (!process.env.DATABASE_URL) {
+    if (allowOffline) {
+      dbConnected = false
+      dbError = 'DATABASE_URL missing (offline mode allowed)'
+      console.warn('[db] DATABASE_URL missing; continuing in offline mode.')
+      return
+    }
     dbConnected = false
     dbError = 'DATABASE_URL is required to start the server (PostgreSQL)'
     throw new Error(dbError)
@@ -31,6 +38,10 @@ export async function ensureDatabaseConnection() {
   } catch (error) {
     dbConnected = false
     dbError = error?.message || 'DB connection failed'
+    if (allowOffline) {
+      console.warn('[db] Failed to connect; continuing in offline mode:', dbError)
+      return
+    }
     throw error
   }
 }

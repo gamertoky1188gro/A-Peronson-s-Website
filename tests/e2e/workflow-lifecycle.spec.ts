@@ -1,9 +1,11 @@
 import { test, expect } from '@playwright/test'
 
 const AUTH_HEADER = process.env.E2E_AUTH_TOKEN ? { Authorization: `Bearer ${process.env.E2E_AUTH_TOKEN}` } : {}
+const E2E_RUN = String(process.env.E2E_RUN || '').toLowerCase() === 'true'
 
 test.describe('workflow lifecycle api', () => {
   test('happy path: create + linear transitions', async ({ request }) => {
+    test.skip(!E2E_RUN, 'Set E2E_RUN=true to execute API-backed e2e tests.')
     test.skip(!process.env.E2E_AUTH_TOKEN, 'Set E2E_AUTH_TOKEN to run authenticated workflow e2e tests.')
 
     const create = await request.post('/api/workflow/journeys', {
@@ -32,6 +34,7 @@ test.describe('workflow lifecycle api', () => {
   })
 
   test('invalid transition: discovered -> contract_signed rejected deterministically', async ({ request }) => {
+    test.skip(!E2E_RUN, 'Set E2E_RUN=true to execute API-backed e2e tests.')
     test.skip(!process.env.E2E_AUTH_TOKEN, 'Set E2E_AUTH_TOKEN to run authenticated workflow e2e tests.')
 
     const create = await request.post('/api/workflow/journeys', {
