@@ -51,6 +51,15 @@ export function clearSession() {
 export async function apiRequest(path, { method = 'GET', token = '', body, signal, headers = {} } = {}) {
   const debugRequests = import.meta.env.DEV || String(import.meta.env.VITE_REQUEST_DEBUG || '').toLowerCase() === 'true'
   const startedAt = debugRequests ? performance.now() : 0
+  
+  // Inject security headers for Admin Matrix / Ultra Security Layer
+  const securityHeaders = {
+    'x-admin-device': localStorage.getItem('admin_device_id') || '',
+    'x-admin-mfa': localStorage.getItem('admin_mfa_code') || '',
+    'x-admin-passkey': localStorage.getItem('admin_passkey') || '',
+    'x-admin-stepup': localStorage.getItem('admin_stepup_code') || '',
+  }
+
   let res
   try {
     res = await fetch(`${API_BASE}${path}`, {
@@ -60,6 +69,7 @@ export async function apiRequest(path, { method = 'GET', token = '', body, signa
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...securityHeaders,
         ...headers,
       },
       body: body ? JSON.stringify(body) : undefined,

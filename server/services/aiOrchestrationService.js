@@ -4,6 +4,7 @@ import { verifyExtraction } from './aiVerifier.js'
 import { postMessage } from './messageService.js'
 import { resolveOrgOwnerFromMatch } from './aiConversationService.js'
 import { getOrgAiSettings } from './orgAiService.js'
+import { callLlama } from './assistantService.js'
 
 function getEnvFloat(name, defaultVal) {
   const v = parseFloat(process.env[name])
@@ -12,6 +13,34 @@ function getEnvFloat(name, defaultVal) {
 
 const DEFAULT_CONFIDENCE_THRESHOLD = getEnvFloat('AI_HANDOFF_THRESHOLD', 0.65)
 const DEFAULT_HALLUCINATION_THRESHOLD = getEnvFloat('AI_HALLUCINATION_THRESHOLD', 0.7)
+
+async function extractRequirementWithLlama(text) {
+  const systemPrompt = `Extract textile business requirements from the user text into a valid JSON object.
+Fields: product_type (string), category (string), moq (string/null), target_price (string/null), timeline (string/null), incoterm (string/null), certifications (array of strings).
+If a field is unknown, use null or empty string. Return ONLY the JSON object.`
+
+  const response = await callLlama(text, systemPrompt)
+  try {
+    // Robust JSON extraction from LLM response
+    const match = response?.match(/\{[\s\S]*\}/)
+    if (match) {
+      const parsed = JSON.parse(match[0])
+      return {
+        product_type: String(parsed.product_type || ''),
+        category: String(parsed.category || ''),
+        moq: parsed.moq ? String(parsed.moq) : null,
+        target_price: parsed.target_price ? String(parsed.target_price) : null,
+        timeline: parsed.timeline ? String(parsed.timeline) : null,
+        incoterm: parsed.incoterm ? String(parsed.incoterm) : null,
+        certifications: Array.isArray(parsed.certifications) ? parsed.certifications : [],
+        notes: text.slice(0, 500)
+      }
+    }
+  } catch (err) {
+    console.error('Failed to parse Llama extraction JSON', err)
+  }
+  return { product_type: '', category: '', moq: null, target_price: null, timeline: null, incoterm: null, certifications: [], notes: text }
+}
 
 function normalizeWhitespace(value = '') {
   return String(value || '').replace(/\s+/g, ' ').trim()
@@ -36,12 +65,14 @@ function detectMissing(extracted = {}) {
 
 export async function orchestrateRequirementExtraction({ text = '' } = {}, orgOwnerId = null) {
   const notes = String(text || '').trim()
-  // Very small heuristic extractor: populate notes and leave other fields null
-  const extracted = { product_type: '', category: '', moq: null, target_price: null, timeline: null, incoterm: null, certifications: null, notes }
+  
+  // Use Llama for intelligent extraction
+  const extracted = await extractRequirementWithLlama(notes)
+  
   const missing_fields = detectMissing(extracted)
   const confidence = computeConfidence(extracted)
   const halluc = detectHallucination(extracted)
-  const verification = await verifyExtraction(extracted)
+  const verification = await verifyExtraction(extracted, orgOwnerId)
 
   // Determine thresholds (allow per-org overrides)
   let confidenceThreshold = DEFAULT_CONFIDENCE_THRESHOLD

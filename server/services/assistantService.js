@@ -56,11 +56,13 @@ const MAX_MATCHED_SNIPPETS = 4
 const MAX_SNIPPET_LENGTH = 320
 const MAX_CONTEXT_CHARS = 1_600
 const MAX_KNOWLEDGE_CONTEXT_CHARS = 1_200
-const LOCAL_LLM_ENDPOINT = process.env.LOCAL_LLM_ENDPOINT || 'http://127.0.0.1:8080/v1/chat/completions'
-const LOCAL_LLM_FALLBACK_ENDPOINT = process.env.LOCAL_LLM_FALLBACK_ENDPOINT || 'http://127.0.0.1:8080/completion'
-const LOCAL_LLM_MODEL = process.env.LOCAL_LLM_MODEL || 'Qwen2.5-0.5B-Instruct-Q4_K_M.gguf'
-const LOCAL_LLM_TIMEOUT_MS = Number(process.env.LOCAL_LLM_TIMEOUT_MS || 25000)
-const MAX_AI_ANSWER_CHARS = 700
+const OLLAMA_HOST = process.env.OLLAMA_HOST || '127.0.0.1'
+const OLLAMA_PORT = process.env.OLLAMA_PORT || '11434'
+const LOCAL_LLM_ENDPOINT = process.env.LOCAL_LLM_ENDPOINT || `http://${OLLAMA_HOST}:${OLLAMA_PORT}/v1/chat/completions`
+const LOCAL_LLM_FALLBACK_ENDPOINT = process.env.LOCAL_LLM_FALLBACK_ENDPOINT || `http://${OLLAMA_HOST}:${OLLAMA_PORT}/completion`
+const LOCAL_LLM_MODEL = process.env.LOCAL_LLM_MODEL || 'llama3'
+const LOCAL_LLM_TIMEOUT_MS = Number(process.env.LOCAL_LLM_TIMEOUT_MS || 45000)
+const MAX_AI_ANSWER_CHARS = 1200
 const CODE_CONTEXT_HINTS = new Set(['api', 'route', 'server', 'controller', 'service', 'code', 'bug', 'error', 'endpoint', 'json', 'database', 'model', 'function'])
 
 let codeFileCache = {
@@ -319,41 +321,56 @@ function buildKnowledgeContext(questionText, entries) {
 
 function buildAgentPrompt(questionText, codeContext, knowledgeContext) {
   const sections = [
-    'You are GarTex Assistant for textile business workflows.',
-    'Always answer the user directly. Keep responses practical and concise.',
-    'Do not use generic fallback text like "I am sorry, I could not find an answer".',
-    'Do not introduce yourself unless user asks who you are.',
-    'If code context is present, use it as supporting evidence. If absent, still answer based on general textile/business knowledge.',
+    'You are the GarTex Assistant, an expert on the GarTexHub textile marketplace platform.',
+    'Your goal is to help users understand and navigate this specific web application.',
+    "Use the following context to provide accurate, specific answers. If the answer isn't in the context, use your general knowledge but stay professional.",
+    'Always be helpful and detailed. Never say "message is incomplete" unless it is truly gibberish.',
   ]
 
   if (knowledgeContext) {
-    sections.push(`Knowledge context:\n${knowledgeContext}`)
+    sections.push(`PROJECT KNOWLEDGE BASE:\n${knowledgeContext}`)
   }
 
   if (codeContext?.summary || codeContext?.prompt_context) {
     const codeBlock = [
+      'TECHNICAL CONTEXT (Source Code):',
       codeContext.summary ? `Relevant files: ${codeContext.summary}` : '',
       codeContext.prompt_context ? `Code snippets:\n${codeContext.prompt_context}` : '',
     ].filter(Boolean).join('\n\n')
     sections.push(codeBlock)
   }
 
-  sections.push(`User question: ${questionText}`)
+  sections.push(`USER QUESTION: ${questionText}`)
+  sections.push('ANSWER:')
   return sections.join('\n\n')
 }
 
-async function callChatCompletions(prompt, signal) {
+export async function callLlama(prompt, systemPrompt = 'You are a helpful GarTex assistant.') {
+  try {
+    logInfo('Assistant calling Ollama/Llama', { endpoint: LOCAL_LLM_ENDPOINT, model: LOCAL_LLM_MODEL })
+    const result = await runWithTimeout((signal) => callChatCompletions(prompt, signal, systemPrompt))
+    if (result) return result
+
+    logInfo('Chat endpoint failed, trying fallback', { endpoint: LOCAL_LLM_FALLBACK_ENDPOINT })
+    return await runWithTimeout((signal) => callLegacyCompletion(prompt, signal))
+  } catch (error) {
+    logError('Llama call failed', error)
+    return null
+  }
+}
+
+async function callChatCompletions(prompt, signal, systemPrompt = 'You are a helpful GarTex assistant.') {
   const response = await fetch(LOCAL_LLM_ENDPOINT, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
       model: LOCAL_LLM_MODEL,
       messages: [
-        { role: 'system', content: 'You are a helpful GarTex assistant.' },
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt },
       ],
       temperature: 0.2,
-      max_tokens: 220,
+      max_tokens: 450,
     }),
     signal,
   })

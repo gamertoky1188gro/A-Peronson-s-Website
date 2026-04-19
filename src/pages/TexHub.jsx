@@ -359,7 +359,7 @@ export default function TexHub() {
   }, [bento, mode])
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#F8FAFC] text-slate-900 transition-colors duration-500 dark:bg-[#05050A] dark:text-slate-100">
+    <div className="relative bg-[#F8FAFC] text-slate-900 transition-colors duration-500 dark:bg-[#05050A] dark:text-slate-100">
       <div className="pointer-events-none absolute inset-0 -z-10 hidden dark:block">
         <div
           className={[

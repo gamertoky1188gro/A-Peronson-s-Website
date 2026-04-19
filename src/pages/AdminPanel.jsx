@@ -401,7 +401,128 @@ function exportEmailsCsv(rows = []) {
   link.href = url
   link.download = 'gartexhub_emails.csv'
   link.click()
+  link.remove()
   URL.revokeObjectURL(url)
+}
+
+function AdminSecurityOverlay({ error, onResolve }) {
+  const [mfa, setMfa] = useState(() => localStorage.getItem('admin_mfa_code') || '')
+  const [passkey, setPasskey] = useState(() => localStorage.getItem('admin_passkey') || '')
+  const [stepup, setStepup] = useState(() => localStorage.getItem('admin_stepup_code') || '')
+  const [deviceId, setDeviceId] = useState(() => localStorage.getItem('admin_device_id') || 'CCM')
+  const [busy, setBusy] = useState(false)
+  const [localError, setLocalError] = useState('')
+
+  async function handleUnlock() {
+    localStorage.setItem('admin_mfa_code', mfa)
+    localStorage.setItem('admin_passkey', passkey)
+    localStorage.setItem('admin_stepup_code', stepup)
+    localStorage.setItem('admin_device_id', deviceId)
+    onResolve()
+  }
+
+  async function handleRegisterDevice() {
+    setBusy(true)
+    setLocalError('')
+    try {
+      const token = getToken()
+      const res = await apiRequest('/admin/security/actions', {
+        method: 'POST',
+        token,
+        body: {
+          action: 'security.admin.device.add',
+          payload: { device_id: deviceId }
+        }
+      })
+      if (res.ok || res.status === 200) {
+        localStorage.setItem('admin_device_id', deviceId)
+        onResolve()
+      } else {
+        setLocalError(res.error || 'Failed to register device. Ensure MFA/Passkey is correct.')
+      }
+    } catch (err) {
+      setLocalError(err.message || 'Registration failed')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-6">
+      <div className="admin-panel admin-sweep w-full max-w-md rounded-[32px] p-8 text-center shadow-2xl">
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-500/20 text-rose-400">
+          <Activity className="h-8 w-8" />
+        </div>
+        <h2 className="text-2xl font-bold text-white">Security Access Required</h2>
+        <p className="mt-2 text-sm text-slate-400">
+          {error || 'Your device is not registered or security credentials are required to unlock the Admin Matrix.'}
+        </p>
+
+        <div className="mt-8 space-y-4 text-left">
+          <label className="block">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 ml-1">MFA Code</span>
+            <input
+              type="text"
+              value={mfa}
+              onChange={(e) => setMfa(e.target.value)}
+              className="mt-1 w-full rounded-2xl bg-slate-900 border-none px-4 py-3 text-sm text-white placeholder:text-slate-700 shadow-borderless focus:ring-2 focus:ring-sky-500/50 transition-all"
+              placeholder="Enter MFA code"
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 ml-1">Admin Passkey</span>
+            <input
+              type="password"
+              value={passkey}
+              onChange={(e) => setPasskey(e.target.value)}
+              className="mt-1 w-full rounded-2xl bg-slate-900 border-none px-4 py-3 text-sm text-white placeholder:text-slate-700 shadow-borderless focus:ring-2 focus:ring-sky-500/50 transition-all"
+              placeholder="Enter security passkey"
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 ml-1">Device ID</span>
+            <input
+              type="text"
+              value={deviceId}
+              onChange={(e) => setDeviceId(e.target.value)}
+              className="mt-1 w-full rounded-2xl bg-slate-900 border-none px-4 py-3 text-sm text-white placeholder:text-slate-700 shadow-borderless focus:ring-2 focus:ring-sky-500/50 transition-all"
+              placeholder="Device identifier (e.g. CCM)"
+            />
+          </label>
+
+          {localError && (
+            <p className="text-xs font-semibold text-rose-400 mt-2 bg-rose-400/10 py-2 px-3 rounded-xl">
+              {localError}
+            </p>
+          )}
+        </div>
+
+        <div className="mt-8 grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={handleUnlock}
+            className="rounded-2xl bg-slate-800 py-3 text-sm font-bold text-white hover:bg-slate-700 transition-colors"
+          >
+            Unlock Session
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={handleRegisterDevice}
+            className="rounded-2xl bg-gradient-to-r from-sky-600 to-indigo-600 py-3 text-sm font-bold text-white shadow-lg hover:brightness-110 transition-all disabled:opacity-50"
+          >
+            {busy ? 'Registering...' : 'Register Device'}
+          </button>
+        </div>
+
+        <p className="mt-6 text-[10px] text-slate-600">
+          Ultra Security Layer: All access attempts are logged and tied to device hardware fingerprints.
+        </p>
+      </div>
+    </div>
+  )
 }
 
 export default function AdminPanel() {
@@ -499,10 +620,8 @@ export default function AdminPanel() {
   const [verificationFilter, setVerificationFilter] = useState('all')
   const [premiumFilter, setPremiumFilter] = useState('all')
   const [userDrafts, setUserDrafts] = useState({})
-  const [mfaCode, setMfaCode] = useState(() => localStorage.getItem('admin_mfa_code') || '')
-  const [deviceId, setDeviceId] = useState(() => localStorage.getItem('admin_device_id') || '')
-  const [passkeyValue, setPasskeyValue] = useState(() => localStorage.getItem('admin_passkey') || '')
-  const [stepUpCode, setStepUpCode] = useState('')
+  const [securityDenied, setSecurityDenied] = useState(false)
+  const [securityError, setSecurityError] = useState('')
   const [activeCategory, setActiveCategory] = useState('home')
   const [actionBusy, setActionBusy] = useState('')
 
@@ -537,11 +656,6 @@ export default function AdminPanel() {
   }, [selectedAction])
 
   useEffect(() => {
-    if (!mfaCode) return
-    localStorage.setItem('admin_mfa_code', mfaCode)
-  }, [mfaCode])
-
-  useEffect(() => {
     const root = document.documentElement
     if (adminDark) {
       root.classList.add('dark')
@@ -553,16 +667,6 @@ export default function AdminPanel() {
   }, [adminDark])
 
   useEffect(() => {
-    if (!deviceId) return
-    localStorage.setItem('admin_device_id', deviceId)
-  }, [deviceId])
-
-  useEffect(() => {
-    if (!passkeyValue) return
-    localStorage.setItem('admin_passkey', passkeyValue)
-  }, [passkeyValue])
-
-  useEffect(() => {
     const rules = master?.config?.moderation?.clothing_rules
     if (rules) {
       setClothingRulesForm({
@@ -570,9 +674,11 @@ export default function AdminPanel() {
         flag_terms: listToTextarea(rules.flag_terms),
         allowed_terms: listToTextarea(rules.allowed_terms),
         context_exceptions: listToTextarea(rules.context_exceptions),
-        reason_rejected: rules?.reason_templates?.rejected || '',
-        reason_pending: rules?.reason_templates?.pending_review || '',
-        reason_fix: rules?.reason_templates?.fix_guidance || '',
+        reason_templates: {
+          rejected: String(rules?.reason_templates?.rejected || '').trim(),
+          pending_review: String(rules?.reason_templates?.pending_review || '').trim(),
+          fix_guidance: String(rules?.reason_templates?.fix_guidance || '').trim(),
+        },
       })
     }
 
@@ -581,9 +687,9 @@ export default function AdminPanel() {
       setEmailConfig({
         enabled: Boolean(email.enabled),
         provider: email.provider || 'smtp',
-        from_name: email.from_name || 'GarTexHub',
-        from_email: email.from_email || '',
-        test_recipient: email.test_recipient || '',
+        from_name: String(email.from_name || '').trim(),
+        from_email: String(email.from_email || '').trim(),
+        test_recipient: String(email.test_recipient || '').trim(),
       })
     }
 
@@ -591,105 +697,104 @@ export default function AdminPanel() {
     if (opensearch) {
       setOpenSearchConfig({
         enabled: Boolean(opensearch.enabled),
-        url: opensearch.url || '',
-        username: opensearch.username || '',
-        password: opensearch.password || '',
-        index_prefix: opensearch.index_prefix || 'gartexhub_',
-        timeout_ms: Number(opensearch.timeout_ms || 3000),
-        verify_tls: opensearch.verify_tls !== false,
+        url: String(opensearch.url || '').trim(),
+        username: String(opensearch.username || '').trim(),
+        password: String(opensearch.password || ''),
+        index_prefix: String(opensearch.index_prefix || '').trim(),
+        timeout_ms: Math.max(500, Math.min(60000, Number(opensearch.timeout_ms || 3000))),
+        verify_tls: Boolean(opensearch.verify_tls),
       })
     }
   }, [master?.config])
 
-  const buildAdminHeaders = useCallback(({ stepUp = false } = {}) => {
-    const headers = {}
-    if (mfaCode) headers['x-admin-mfa'] = mfaCode
-    if (deviceId) headers['x-admin-device'] = deviceId
-    if (passkeyValue) headers['x-admin-passkey'] = passkeyValue
-    if (stepUp && stepUpCode) {
-      headers['x-admin-stepup'] = stepUpCode
-      headers['x-admin-stepup-at'] = new Date().toISOString()
-    }
-    return headers
-  }, [mfaCode, deviceId, stepUpCode, passkeyValue])
-
-  async function refreshAudit() {
+  const refreshAudit = useCallback(async () => {
     const token = getToken()
     if (!token) return
     try {
-      const auditData = await apiRequest('/admin/audit?limit=40', { token, headers: buildAdminHeaders() })
+      const auditData = await apiRequest('/admin/audit?limit=40', { token })
       setAudit(Array.isArray(auditData?.items) ? auditData.items : [])
-    } catch {
-      // ignore
+    } catch (err) {
+      if (err.status === 403) setSecurityDenied(true)
     }
-  }
+  }, [])
 
-  useEffect(() => {
-    if (!isOwner) return
+  const loadAllData = useCallback(async () => {
     const token = getToken()
     if (!token) return
 
     setLoading(true)
-    setError('')
-    const headers = buildAdminHeaders()
+    setSecurityError('')
+    
+    try {
+      const [masterData, userRows, infraData, infraStateData, networkData, networkInventoryData, auditData, verificationData, contractsData, disputesData, partnersData, proofsData, catalogData, couponReportData, serverAdminData, cmsData, securityData, integrationData, signupsData, strikesData, fraudData, orgOwnershipData, walletLedgerData] = await Promise.all([
+        apiRequest('/admin/master', { token }),
+        apiRequest('/admin/users', { token }),
+        apiRequest('/infra/overview', { token }),
+        apiRequest('/infra/state', { token }),
+        apiRequest('/network/overview', { token }),
+        apiRequest('/network/inventory', { token }),
+        apiRequest('/admin/audit?limit=40', { token }),
+        apiRequest('/verification/admin/queue', { token }),
+        apiRequest('/admin/contracts', { token }),
+        apiRequest('/admin/disputes', { token }),
+        apiRequest('/admin/partner-requests', { token }),
+        apiRequest('/admin/payment-proofs', { token }),
+        apiRequest('/admin/catalog', { token }),
+        apiRequest('/admin/coupons/report', { token }),
+        apiRequest('/admin/server-admin/state', { token }),
+        apiRequest('/admin/cms/state', { token }),
+        apiRequest('/admin/security/state', { token }),
+        apiRequest('/admin/integrations/status', { token }),
+        apiRequest('/admin/signups', { token }),
+        apiRequest('/admin/strikes', { token }),
+        apiRequest('/admin/fraud/verification', { token }),
+        apiRequest('/admin/orgs/ownership', { token }),
+        apiRequest('/admin/wallet/ledger', { token }),
+      ])
 
-    Promise.all([
-      apiRequest('/admin/master', { token, headers }),
-      apiRequest('/admin/users', { token, headers }),
-      apiRequest('/infra/overview', { token, headers }),
-      apiRequest('/infra/state', { token, headers }),
-      apiRequest('/network/overview', { token, headers }),
-      apiRequest('/network/inventory', { token, headers }),
-      apiRequest('/admin/audit?limit=40', { token, headers }),
-      apiRequest('/verification/admin/queue', { token, headers }),
-      apiRequest('/admin/contracts', { token, headers }),
-      apiRequest('/admin/disputes', { token, headers }),
-      apiRequest('/admin/partner-requests', { token, headers }),
-      apiRequest('/admin/payment-proofs', { token, headers }),
-      apiRequest('/admin/catalog', { token, headers }),
-      apiRequest('/admin/coupons/report', { token, headers }),
-      apiRequest('/admin/server-admin/state', { token, headers }),
-      apiRequest('/admin/cms/state', { token, headers }),
-      apiRequest('/admin/security/state', { token, headers }),
-      apiRequest('/admin/integrations/status', { token, headers }),
-      apiRequest('/admin/signups', { token, headers }),
-      apiRequest('/admin/strikes', { token, headers }),
-      apiRequest('/admin/fraud/verification', { token, headers }),
-      apiRequest('/admin/orgs/ownership', { token, headers }),
-      apiRequest('/admin/wallet/ledger', { token, headers }),
-    ])
-      .then(([masterData, userRows, infraData, infraStateData, networkData, networkInventoryData, auditData, verificationData, contractsData, disputesData, partnersData, proofsData, catalogData, couponReportData, serverAdminData, cmsData, securityData, integrationData, signupsData, strikesData, fraudData, orgOwnershipData, walletLedgerData]) => {
-        setMaster(masterData || null)
-        setUsers(Array.isArray(userRows) ? userRows : [])
-        setInfra(infraData || null)
-        setInfraState(infraStateData || null)
-        setNetwork(networkData || null)
-        setNetworkInventory(networkInventoryData || null)
-        setAudit(Array.isArray(auditData?.items) ? auditData.items : [])
-        setVerificationQueue(Array.isArray(verificationData) ? verificationData : (Array.isArray(verificationData?.items) ? verificationData.items : []))
-        setContractsVault(Array.isArray(contractsData?.items) ? contractsData.items : [])
-        setDisputes(Array.isArray(disputesData?.items) ? disputesData.items : [])
-        setPartnerRequests(Array.isArray(partnersData?.items) ? partnersData.items : [])
-        setPaymentProofs(Array.isArray(proofsData?.items) ? proofsData.items : [])
-        setCatalog(catalogData || null)
-        setCouponReport(couponReportData || null)
-        setServerAdminState(serverAdminData || null)
-        setCmsState(cmsData || null)
-        setSecurityState(securityData || null)
-        setIntegrationStatus(integrationData || null)
-        setSignups(Array.isArray(signupsData?.items) ? signupsData.items : [])
-        setStrikeHistory(Array.isArray(strikesData?.items) ? strikesData.items : [])
-        setFraudReview({
-          items: Array.isArray(fraudData?.items) ? fraudData.items : [],
-          duplicates: Array.isArray(fraudData?.duplicates) ? fraudData.duplicates : [],
-        })
-        setOrgOwnership(orgOwnershipData || { orgs: [], staff_list: [] })
-        setWalletLedger(Array.isArray(walletLedgerData?.items) ? walletLedgerData.items : [])
+      setMaster(masterData || null)
+      setUsers(Array.isArray(userRows) ? userRows : [])
+      setInfra(infraData || null)
+      setInfraState(infraStateData || null)
+      setNetwork(networkData || null)
+      setNetworkInventory(networkInventoryData || null)
+      setAudit(Array.isArray(auditData?.items) ? auditData.items : [])
+      setVerificationQueue(Array.isArray(verificationData) ? verificationData : (Array.isArray(verificationData?.items) ? verificationData.items : []))
+      setContractsVault(Array.isArray(contractsData?.items) ? contractsData.items : [])
+      setDisputes(Array.isArray(disputesData?.items) ? disputesData.items : [])
+      setPartnerRequests(Array.isArray(partnersData?.items) ? partnersData.items : [])
+      setPaymentProofs(Array.isArray(proofsData?.items) ? proofsData.items : [])
+      setCatalog(catalogData || null)
+      setCouponReport(couponReportData || null)
+      setServerAdminState(serverAdminData || null)
+      setCmsState(cmsData || null)
+      setSecurityState(securityData || null)
+      setIntegrationStatus(integrationData || null)
+      setSignups(Array.isArray(signupsData?.items) ? signupsData.items : [])
+      setStrikeHistory(Array.isArray(strikesData?.items) ? strikesData.items : [])
+      setFraudReview({
+        items: Array.isArray(fraudData?.items) ? fraudData.items : [],
+        duplicates: Array.isArray(fraudData?.duplicates) ? fraudData.duplicates : [],
       })
-      .catch((err) => setError(err.message || 'Failed to load admin data'))
-      .finally(() => setLoading(false))
-  }, [isOwner, mfaCode, deviceId, buildAdminHeaders])
+      setOrgOwnership(orgOwnershipData || { orgs: [], staff_list: [] })
+      setWalletLedger(Array.isArray(walletLedgerData?.items) ? walletLedgerData.items : [])
+      
+      setSecurityDenied(false)
+    } catch (err) {
+      if (err.status === 403) {
+        setSecurityDenied(true)
+      } else {
+        setError(err.message || 'Failed to load panel data')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
+  useEffect(() => {
+    if (!isOwner) return
+    loadAllData()
+  }, [isOwner, loadAllData])
   const summary = master?.summary || {}
   const inventory = master?.inventory || FALLBACK_INVENTORY
   const securityContext = master?.security_context || {}
@@ -827,7 +932,6 @@ export default function AdminPanel() {
   async function saveUserEdits(userId) {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders({ stepUp: true })
     const draft = userDrafts[userId] || {}
 
     const body = {
@@ -847,13 +951,13 @@ export default function AdminPanel() {
 
     const cleaned = Object.fromEntries(Object.entries(body).filter(([, value]) => value !== undefined))
     try {
-      await apiRequest(`/users/${userId}`, { method: 'PATCH', token, headers, body: cleaned })
+      await apiRequest(`/users/${userId}`, { method: 'PATCH', token, body: cleaned })
       setUserDrafts((prev) => {
         const next = { ...prev }
         delete next[userId]
         return next
       })
-      const updatedUsers = await apiRequest('/admin/users', { token, headers })
+      const updatedUsers = await apiRequest('/admin/users', { token })
       setUsers(Array.isArray(updatedUsers) ? updatedUsers : [])
     } catch (err) {
       setError(err.message || 'Failed to update user')
@@ -863,11 +967,10 @@ export default function AdminPanel() {
   async function resetPassword(userId) {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders({ stepUp: true })
     const newPassword = window.prompt('Enter a new password (min 6 chars):')
     if (!newPassword) return
     try {
-      await apiRequest(`/users/${userId}/reset-password`, { method: 'POST', token, headers, body: { new_password: newPassword } })
+      await apiRequest(`/users/${userId}/reset-password`, { method: 'POST', token, body: { new_password: newPassword } })
       setError('')
     } catch (err) {
       setError(err.message || 'Failed to reset password')
@@ -877,10 +980,9 @@ export default function AdminPanel() {
   async function forceLogout(userId) {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders({ stepUp: true })
     if (!window.confirm('Force logout this user?')) return
     try {
-      await apiRequest(`/users/${userId}/force-logout`, { method: 'POST', token, headers })
+      await apiRequest(`/users/${userId}/force-logout`, { method: 'POST', token })
     } catch (err) {
       setError(err.message || 'Failed to force logout')
     }
@@ -889,9 +991,8 @@ export default function AdminPanel() {
   async function lockMessaging(userId, hours = 24) {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders({ stepUp: true })
     try {
-      await apiRequest(`/users/${userId}/lock-messaging`, { method: 'POST', token, headers, body: { lock_hours: hours } })
+      await apiRequest(`/users/${userId}/lock-messaging`, { method: 'POST', token, body: { lock_hours: hours } })
     } catch (err) {
       setError(err.message || 'Failed to lock messaging')
     }
@@ -902,12 +1003,10 @@ export default function AdminPanel() {
     const token = getToken()
     if (!token) return
     setActionBusy(actionConfig.id)
-    const headers = buildAdminHeaders({ stepUp: true })
     try {
       await apiRequest(actionConfig.route, {
         method: 'POST',
         token,
-        headers,
         body: {
           action: actionConfig.id,
           payload: actionForm,
@@ -924,12 +1023,10 @@ export default function AdminPanel() {
   async function runInlineAdminAction(actionId, payload = {}) {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders({ stepUp: true })
     try {
       await apiRequest('/admin/actions', {
         method: 'POST',
         token,
-        headers,
         body: { action: actionId, payload },
       })
       await refreshAudit()
@@ -941,24 +1038,21 @@ export default function AdminPanel() {
   async function refreshVerificationQueue() {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders()
-    const data = await apiRequest('/verification/admin/queue', { token, headers })
+    const data = await apiRequest('/verification/admin/queue', { token })
     setVerificationQueue(Array.isArray(data?.items) ? data.items : [])
   }
 
   async function refreshContractsVault() {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders()
-    const data = await apiRequest('/admin/contracts', { token, headers })
+    const data = await apiRequest('/admin/contracts', { token })
     setContractsVault(Array.isArray(data?.items) ? data.items : [])
   }
 
   async function refreshDisputes() {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders()
-    const data = await apiRequest('/admin/disputes', { token, headers })
+    const data = await apiRequest('/admin/disputes', { token })
     setDisputes(Array.isArray(data?.items) ? data.items : [])
   }
 
@@ -966,7 +1060,6 @@ export default function AdminPanel() {
     const token = getToken()
     if (!token) return
     setSupportLoading(true)
-    const headers = buildAdminHeaders()
     try {
       const params = new URLSearchParams()
       if (supportFilters.status && supportFilters.status !== 'all') params.set('status', supportFilters.status)
@@ -974,7 +1067,7 @@ export default function AdminPanel() {
       if (supportFilters.assigned_to) params.set('assigned_to', supportFilters.assigned_to)
       const query = params.toString()
       const path = query ? `/admin/support/tickets?${query}` : '/admin/support/tickets'
-      const data = await apiRequest(path, { token, headers })
+      const data = await apiRequest(path, { token })
       setSupportTickets(Array.isArray(data?.items) ? data.items : [])
     } catch (err) {
       setSupportTickets([])
@@ -982,44 +1075,41 @@ export default function AdminPanel() {
     } finally {
       setSupportLoading(false)
     }
-  }, [buildAdminHeaders, supportFilters])
+  }, [supportFilters])
 
   const refreshModerationQueues = useCallback(async () => {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders()
     const [pendingData, rejectedData] = await Promise.all([
-      apiRequest('/admin/moderation/products?status=pending_review', { token, headers }),
-      apiRequest('/admin/moderation/products?status=rejected', { token, headers }),
+      apiRequest('/admin/moderation/products?status=pending_review', { token }),
+      apiRequest('/admin/moderation/products?status=rejected', { token }),
     ])
     setModerationPending(Array.isArray(pendingData?.items) ? pendingData.items : [])
     setModerationRejected(Array.isArray(rejectedData?.items) ? rejectedData.items : [])
-  }, [buildAdminHeaders])
+  }, [])
 
   const refreshReportQueues = useCallback(async () => {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders()
     const [systemData, appealData, contentData] = await Promise.all([
-      apiRequest('/admin/reports/system', { token, headers }),
-      apiRequest('/admin/reports/product-appeals', { token, headers }),
-      apiRequest('/admin/reports/content', { token, headers }),
+      apiRequest('/admin/reports/system', { token }),
+      apiRequest('/admin/reports/product-appeals', { token }),
+      apiRequest('/admin/reports/content', { token }),
     ])
     setSystemReports(Array.isArray(systemData?.items) ? systemData.items : [])
     setProductAppealReports(Array.isArray(appealData?.items) ? appealData.items : [])
     setContentReports(Array.isArray(contentData?.items) ? contentData.items : [])
-  }, [buildAdminHeaders])
+  }, [])
 
 
   const refreshMessagePolicyOps = useCallback(async () => {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders()
     try {
       const [queueData, reviewData, metricsData] = await Promise.all([
-        apiRequest('/messages/policy/queue-inspector?status=queued', { token, headers }),
-        apiRequest('/messages/policy/review-queue', { token, headers }),
-        apiRequest('/messages/policy/reports/weekly-decision-quality', { token, headers }),
+        apiRequest('/messages/policy/queue-inspector?status=queued', { token }),
+        apiRequest('/messages/policy/review-queue', { token }),
+        apiRequest('/messages/policy/reports/weekly-decision-quality', { token }),
       ])
       setPolicyQueueItems(Array.isArray(queueData?.rows) ? queueData.rows : [])
       setPolicyReviewRows(Array.isArray(reviewData?.rows) ? reviewData.rows : [])
@@ -1030,7 +1120,7 @@ export default function AdminPanel() {
       setPolicyMetrics(null)
       setError(err.message || 'Failed to load communication policy queues')
     }
-  }, [buildAdminHeaders])
+  }, [])
 
   async function saveClothingRules() {
     const token = getToken()
@@ -1057,7 +1147,7 @@ export default function AdminPanel() {
       const updated = await apiRequest('/admin/config', {
         method: 'PATCH',
         token,
-        headers: buildAdminHeaders({ stepUp: true }),
+
         body: patch,
       })
       setMaster((prev) => (prev ? { ...prev, config: updated } : prev))
@@ -1090,7 +1180,7 @@ export default function AdminPanel() {
       const updated = await apiRequest('/admin/config', {
         method: 'PATCH',
         token,
-        headers: buildAdminHeaders({ stepUp: true }),
+
         body: patch,
       })
       setMaster((prev) => (prev ? { ...prev, config: updated } : prev))
@@ -1125,7 +1215,7 @@ export default function AdminPanel() {
       const updated = await apiRequest('/admin/config', {
         method: 'PATCH',
         token,
-        headers: buildAdminHeaders({ stepUp: true }),
+
         body: patch,
       })
       setMaster((prev) => (prev ? { ...prev, config: updated } : prev))
@@ -1151,7 +1241,7 @@ export default function AdminPanel() {
       const result = await apiRequest('/admin/integrations/actions', {
         method: 'POST',
         token,
-        headers: buildAdminHeaders({ stepUp: true }),
+
         body: {
           action: safeAction,
           payload,
@@ -1182,7 +1272,7 @@ export default function AdminPanel() {
       const result = await apiRequest('/admin/actions', {
         method: 'POST',
         token,
-        headers: buildAdminHeaders({ stepUp: true }),
+
         body: {
           action: 'email.test_send',
           to: emailConfig.test_recipient,
@@ -1198,12 +1288,10 @@ export default function AdminPanel() {
   async function resolveReportAdmin(reportId, action = 'reviewed') {
     const token = getToken()
     if (!token || !reportId) return
-    const headers = buildAdminHeaders({ stepUp: true })
     const note = window.prompt('Resolution note (optional):') || ''
     await apiRequest(`/admin/reports/${encodeURIComponent(reportId)}/resolve`, {
       method: 'POST',
       token,
-      headers,
       body: { action, note },
     })
     await refreshReportQueues()
@@ -1215,11 +1303,9 @@ export default function AdminPanel() {
     if (!token || !ticketId) return
     const assigneeId = window.prompt('Assign to user ID (leave blank to clear):') ?? ''
     if (assigneeId === null) return
-    const headers = buildAdminHeaders({ stepUp: true })
     await apiRequest('/admin/support/assign', {
       method: 'POST',
       token,
-      headers,
       body: { ticket_id: ticketId, assignee_id: assigneeId },
     })
     await refreshSupportTickets()
@@ -1229,11 +1315,9 @@ export default function AdminPanel() {
   async function updateSupportTicketAdmin(ticketId, patch = {}) {
     const token = getToken()
     if (!token || !ticketId) return
-    const headers = buildAdminHeaders({ stepUp: true })
     await apiRequest(`/admin/support/${encodeURIComponent(ticketId)}`, {
       method: 'PATCH',
       token,
-      headers,
       body: patch,
     })
     await refreshSupportTickets()
@@ -1243,34 +1327,30 @@ export default function AdminPanel() {
   async function refreshPartnerRequests() {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders()
-    const data = await apiRequest('/admin/partner-requests', { token, headers })
+    const data = await apiRequest('/admin/partner-requests', { token })
     setPartnerRequests(Array.isArray(data?.items) ? data.items : [])
   }
 
   async function refreshInfraState() {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders()
-    const data = await apiRequest('/infra/state', { token, headers })
+    const data = await apiRequest('/infra/state', { token })
     setInfraState(data || null)
   }
 
   async function refreshNetworkInventory() {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders()
-    const data = await apiRequest('/network/inventory', { token, headers })
+    const data = await apiRequest('/network/inventory', { token })
     setNetworkInventory(data || null)
   }
 
   async function refreshCatalog() {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders()
     const [catalogData, couponData] = await Promise.all([
-      apiRequest('/admin/catalog', { token, headers }),
-      apiRequest('/admin/coupons/report', { token, headers }),
+      apiRequest('/admin/catalog', { token }),
+      apiRequest('/admin/coupons/report', { token }),
     ])
     setCatalog(catalogData || null)
     setCouponReport(couponData || null)
@@ -1279,42 +1359,37 @@ export default function AdminPanel() {
   async function refreshServerAdminState() {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders()
-    const data = await apiRequest('/admin/server-admin/state', { token, headers })
+    const data = await apiRequest('/admin/server-admin/state', { token })
     setServerAdminState(data || null)
   }
 
   async function refreshCmsState() {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders()
-    const data = await apiRequest('/admin/cms/state', { token, headers })
+    const data = await apiRequest('/admin/cms/state', { token })
     setCmsState(data || null)
   }
 
   async function refreshSecurityState() {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders()
-    const data = await apiRequest('/admin/security/state', { token, headers })
+    const data = await apiRequest('/admin/security/state', { token })
     setSecurityState(data || null)
   }
 
   async function refreshIntegrationStatus() {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders()
-    const data = await apiRequest('/admin/integrations/status', { token, headers })
+    const data = await apiRequest('/admin/integrations/status', { token })
     setIntegrationStatus(data || null)
   }
 
   const refreshOpenSearchStatus = useCallback(async () => {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders()
-    const data = await apiRequest('/admin/integrations/opensearch/status', { token, headers })
+    const data = await apiRequest('/admin/integrations/opensearch/status', { token })
     setOpenSearchStatus(data || null)
-  }, [buildAdminHeaders])
+  }, [])
 
   useEffect(() => {
     if (activeCategory !== 'platform') return
@@ -1333,24 +1408,21 @@ export default function AdminPanel() {
   async function refreshSignups() {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders()
-    const data = await apiRequest('/admin/signups', { token, headers })
+    const data = await apiRequest('/admin/signups', { token })
     setSignups(Array.isArray(data?.items) ? data.items : [])
   }
 
   async function refreshStrikeHistory() {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders()
-    const data = await apiRequest('/admin/strikes', { token, headers })
+    const data = await apiRequest('/admin/strikes', { token })
     setStrikeHistory(Array.isArray(data?.items) ? data.items : [])
   }
 
   async function refreshFraudReview() {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders()
-    const data = await apiRequest('/admin/fraud/verification', { token, headers })
+    const data = await apiRequest('/admin/fraud/verification', { token })
     setFraudReview({
       items: Array.isArray(data?.items) ? data.items : [],
       duplicates: Array.isArray(data?.duplicates) ? data.duplicates : [],
@@ -1360,27 +1432,23 @@ export default function AdminPanel() {
   async function refreshOrgOwnership() {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders()
-    const data = await apiRequest('/admin/orgs/ownership', { token, headers })
+    const data = await apiRequest('/admin/orgs/ownership', { token })
     setOrgOwnership(data || { orgs: [], staff_list: [] })
   }
 
   async function refreshWalletLedger() {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders()
-    const data = await apiRequest('/admin/wallet/ledger', { token, headers })
+    const data = await apiRequest('/admin/wallet/ledger', { token })
     setWalletLedger(Array.isArray(data?.items) ? data.items : [])
   }
 
   async function downloadCsv(path, filename) {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders()
     const res = await fetch(`/api${path}`, {
       headers: {
         Authorization: `Bearer ${token}`,
-        ...headers,
       },
     })
     if (!res.ok) {
@@ -1401,12 +1469,10 @@ export default function AdminPanel() {
   async function runInfraAction(action, payload = {}) {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders({ stepUp: true })
     try {
       await apiRequest('/infra/actions', {
         method: 'POST',
         token,
-        headers,
         body: { action, payload },
       })
       await refreshInfraState()
@@ -1419,12 +1485,10 @@ export default function AdminPanel() {
   async function runNetworkAction(action, payload = {}) {
     const token = getToken()
     if (!token) return
-    const headers = buildAdminHeaders({ stepUp: true })
     try {
       await apiRequest('/network/actions', {
         method: 'POST',
         token,
-        headers,
         body: { action, payload },
       })
       await refreshNetworkInventory()
@@ -1433,3110 +1497,4 @@ export default function AdminPanel() {
       setError(err.message || 'Failed to run network action')
     }
   }
-
-
-  async function runSecurityAction(action, payload = {}) {
-    const token = getToken()
-    if (!token) return
-    const headers = buildAdminHeaders({ stepUp: true })
-    try {
-      await apiRequest('/admin/security/actions', {
-        method: 'POST',
-        token,
-        headers,
-        body: { action, payload },
-      })
-      await refreshSecurityState()
-      await refreshAudit()
-    } catch (err) {
-      setError(err.message || 'Failed to run security action')
-    }
-  }
-
-  const activeData = inventory.find((cat) => cat.id === activeCategory) || inventory[0]
-  const CategoryIcon = CATEGORY_ICONS[activeCategory] || ShieldCheck
-  const sidebarItems = useMemo(() => {
-    return [
-      { id: 'home', label: 'Home', icon: Home },
-      ...inventory.map((item) => ({ ...item, icon: CATEGORY_ICONS[item.id] || ShieldCheck })),
-    ]
-  }, [inventory])
-
-  if (!isOwner) {
-    return <AccessDeniedState message="Only owner/admin can access the admin panel." />
-  }
-
-  return (
-    <div className="admin-shell h-screen">
-      <div className="admin-plasma" />
-      <div className="admin-current" />
-      <div className="admin-noise" />
-      <div className="relative z-10 flex h-full w-full gap-6 px-0 py-0">
-        <aside className="admin-sidebar admin-panel flex w-[250px] flex-col gap-6 rounded-none px-5 py-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500/80 to-indigo-500/60 text-white shadow-[0_0_18px_rgba(75,157,251,0.6)]">
-              <Sparkles className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500 dark:text-sky-200/80">GarTexHub</p>
-              <p className="text-base font-semibold text-slate-900 dark:text-white">Admin Matrix</p>
-            </div>
-          </div>
-          <div className="space-y-1">
-            {sidebarItems.map((item) => {
-              const Icon = item.icon
-              const isActive = activeCategory === item.id
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setActiveCategory(item.id)}
-                  className={`admin-sidebar-item${isActive ? 'is-active' : ''}`}
-                >
-                  <span className="admin-sidebar-rail" />
-                  <Icon className="h-4 w-4" />
-                  <span className="admin-sidebar-label">{item.label}</span>
-                </button>
-              )
-            })}
-          </div>
-          <div className="mt-auto admin-card admin-sweep rounded-3xl p-4 text-center">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-slate-400">Upgrade</p>
-            <p className="mt-2 text-xs text-slate-300">Unlock premium monitoring surfaces.</p>
-            <button
-              type="button"
-              className="mt-3 w-full rounded-full bg-gradient-to-r from-sky-500/80 to-indigo-500/70 px-3 py-2 text-xs font-semibold text-white shadow-[0_0_18px_rgba(75,157,251,0.45)]"
-            >
-              Upgrade Now
-            </button>
-          </div>
-        </aside>
-
-        <main className="flex min-w-0 flex-1 flex-col overflow-hidden px-6">
-          <div className="flex flex-wrap items-center justify-between gap-4 pb-2">
-            <div className="admin-panel admin-sweep flex min-w-[220px] flex-1 items-center gap-2 rounded-full px-4 py-2 text-xs text-slate-200 md:max-w-md">
-              <Search className="h-4 w-4 text-sky-200/80" />
-              <input
-                className="w-full bg-transparent text-xs text-slate-200 placeholder:text-slate-400 focus:outline-none"
-                placeholder="Search accounts, contracts, proofs..."
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => setAdminDark((prev) => !prev)}
-              className="admin-panel flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold text-white/90"
-            >
-              {adminDark ? <Sun className="h-4 w-4 text-yellow-300" /> : <Moon className="h-4 w-4 text-slate-700" />}
-              {adminDark ? 'Light' : 'Dark'}
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-y-auto pb-6 pr-2">
-            <div className="space-y-8">
-              {error ? (
-                <div className="admin-panel admin-sweep rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
-                  {error}
-                </div>
-              ) : null}
-
-              {activeCategory === 'home' ? (
-                <>
-                  <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-                    <div className="admin-card admin-sweep p-6">
-                      <div className="flex flex-col gap-4">
-                        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">Owner Admin</p>
-                        <h1 className="text-4xl font-semibold leading-tight text-white sm:text-5xl">
-                          Command Deck
-                        </h1>
-                        <p className="max-w-xl text-sm text-slate-300">
-                          Real-time control for platform, infra, and network operations. Everything is tracked and auditable.
-                        </p>
-                        <div className="flex flex-wrap items-center gap-3">
-                          <span className="inline-flex items-center gap-2 rounded-full bg-[#13171E] px-4 py-1.5 text-xs font-semibold text-white">
-                            <ShieldCheck className="h-4 w-4 text-cyan-300" />
-                            Owner Access
-                          </span>
-                          <span className="inline-flex items-center gap-2 rounded-full bg-[#13171E] px-4 py-1.5 text-xs font-semibold text-slate-200">
-                            Audit logs enabled
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="admin-card admin-float admin-sweep relative overflow-hidden p-6">
-                      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_20%,rgba(75,157,251,0.25),transparent_55%),radial-gradient(circle_at_85%_10%,rgba(129,140,248,0.2),transparent_50%)] opacity-80" />
-                      <div className="flex items-center justify-between text-xs text-slate-200">
-                        <span className="font-semibold uppercase tracking-[0.2em]">System Pulse</span>
-                        <span className="rounded-full bg-[#13171E] px-3 py-1 text-[10px] font-semibold text-white">Live</span>
-                      </div>
-                      <div className="mt-4 grid grid-cols-2 gap-4 text-sm text-white">
-                        <div>
-                          <p className="text-[11px] uppercase text-slate-300">Total accounts</p>
-                          <p className="mt-1 text-2xl font-semibold">{formatNumber(summary?.users?.total)}</p>
-                        </div>
-                        <div>
-                          <p className="text-[11px] uppercase text-slate-300">Pending verifications</p>
-                          <p className="mt-1 text-2xl font-semibold">{formatNumber(summary?.verification?.pending)}</p>
-                        </div>
-                        <div>
-                          <p className="text-[11px] uppercase text-slate-300">Infra alerts</p>
-                          <p className="mt-1 text-2xl font-semibold">{formatNumber(network?.alert_count)}</p>
-                        </div>
-                        <div>
-                          <p className="text-[11px] uppercase text-slate-300">Open tickets</p>
-                          <p className="mt-1 text-2xl font-semibold">{formatNumber(summary?.support?.open)}</p>
-                        </div>
-                      </div>
-                      <div className="mt-5 flex items-center gap-3 text-xs text-slate-200">
-                        <span className="rounded-full bg-[#13171E] px-3 py-1">MFA {securityContext.mfa_required ? 'Required' : 'Optional'}</span>
-                        <span className="rounded-full bg-[#13171E] px-3 py-1">Exec {securityContext.exec_enabled ? 'Enabled' : 'Simulated'}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                    <div className="admin-card admin-sweep rounded-3xl p-6">
-                      <p className="text-sm font-bold">Admin Security</p>
-                      <p className="mt-1 text-xs text-slate-500">MFA, device binding, and step-up codes are enforced on destructive actions.</p>
-                      <div className="mt-4 space-y-3 text-xs">
-                        <label className="flex flex-col gap-1">
-                          <span className="text-[10px] font-semibold uppercase text-slate-500">MFA Code</span>
-                          <input
-                            value={mfaCode}
-                            onChange={(event) => setMfaCode(event.target.value)}
-                            className="w-full rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                            placeholder="Enter MFA code"
-                          />
-                        </label>
-                        <label className="flex flex-col gap-1">
-                          <span className="text-[10px] font-semibold uppercase text-slate-500">Device ID</span>
-                          <input
-                            value={deviceId}
-                            onChange={(event) => setDeviceId(event.target.value)}
-                            className="w-full rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                            placeholder="Bind this device ID"
-                          />
-                        </label>
-                        <label className="flex flex-col gap-1">
-                          <span className="text-[10px] font-semibold uppercase text-slate-500">Step-up Code</span>
-                          <input
-                            value={stepUpCode}
-                            onChange={(event) => setStepUpCode(event.target.value)}
-                            className="w-full rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                            placeholder="Required for destructive actions"
-                          />
-                        </label>
-                        <label className="flex flex-col gap-1">
-                          <span className="text-[10px] font-semibold uppercase text-slate-500">Admin Passkey</span>
-                          <input
-                            value={passkeyValue}
-                            onChange={(event) => setPasskeyValue(event.target.value)}
-                            className="w-full rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                            placeholder="Set a passkey"
-                          />
-                        </label>
-                      </div>
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() => runSecurityAction('security.admin.mfa.set', { code: mfaCode })}
-                          className="rounded-full shadow-borderless dark:shadow-borderlessDark bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-white/10"
-                        >
-                          Save MFA
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => runSecurityAction('security.admin.device.add', { device_id: deviceId })}
-                          className="rounded-full shadow-borderless dark:shadow-borderlessDark bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-white/10"
-                        >
-                          Register Device
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => runSecurityAction('security.admin.passkey.add', { passkey: passkeyValue })}
-                          className="rounded-full shadow-borderless dark:shadow-borderlessDark bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-white/10"
-                        >
-                          Save Passkey
-                        </button>
-                      </div>
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
-                          MFA {securityContext.mfa_required ? 'Required' : 'Optional'}
-                        </span>
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
-                          IP allowlist {securityContext.ip_allowlist?.length ? 'On' : 'Off'}
-                        </span>
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
-                          Device allowlist {securityContext.device_allowlist?.length ? 'On' : 'Off'}
-                        </span>
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
-                          Exec {securityContext.exec_enabled ? 'Enabled' : 'Simulated'}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="admin-card admin-sweep rounded-3xl p-6">
-                      <div className="flex items-center gap-2 text-sm font-bold">
-                        <Activity className="h-4 w-4 text-emerald-500" />
-                        Platform Snapshot
-                      </div>
-                      <div className="mt-4 grid grid-cols-2 gap-3 text-xs text-slate-600 dark:text-slate-300">
-                        <div>
-                          <p className="text-[10px] uppercase text-slate-500">Total accounts</p>
-                          <p className="text-lg font-semibold text-slate-900 dark:text-white">{formatNumber(summary?.users?.total)}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] uppercase text-slate-500">Verification pending</p>
-                          <p className="text-lg font-semibold text-slate-900 dark:text-white">{formatNumber(summary?.verification?.pending)}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] uppercase text-slate-500">Reports open</p>
-                          <p className="text-lg font-semibold text-slate-900 dark:text-white">{formatNumber(summary?.support?.open)}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] uppercase text-slate-500">Domain clicks / visits</p>
-                          <p className="text-lg font-semibold text-slate-900 dark:text-white">
-                            {formatNumber(summary?.traffic?.clicks)} / {formatNumber(summary?.traffic?.visits)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="mt-4 text-xs text-slate-500">
-                        Premium users: {formatNumber(premiumUsers.length)}. Suspended: {formatNumber(summary?.users?.suspended)}.
-                      </div>
-                    </div>
-
-                    <div className="admin-card admin-sweep rounded-3xl p-6">
-                      <div className="flex items-center gap-2 text-sm font-bold">
-                        <Server className="h-4 w-4 text-indigo-500" />
-                        Infra + Network Health
-                      </div>
-                      <div className="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
-                        <div className="flex items-center justify-between">
-                          <span>CPU load (1m)</span>
-                          <span className="font-semibold text-slate-900 dark:text-white">{infra?.cpu?.load_1m?.toFixed?.(2) || '--'}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span>Memory used</span>
-                          <span className="font-semibold text-slate-900 dark:text-white">
-                            {infra?.memory?.used_bytes ? formatNumber(Math.round(infra.memory.used_bytes / (1024 * 1024))) : '--'} MB
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span>Devices up/down</span>
-                          <span className="font-semibold text-slate-900 dark:text-white">{formatNumber(network?.device_up)} / {formatNumber(network?.device_down)}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span>Network alerts</span>
-                          <span className="font-semibold text-slate-900 dark:text-white">{formatNumber(network?.alert_count)}</span>
-                        </div>
-                      </div>
-                      <p className="mt-4 text-xs text-slate-500">Live system stats from infra and network controllers.</p>
-                    </div>
-                  </div>
-
-                  <div className="admin-card admin-sweep rounded-3xl p-6">
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                      <div>
-                        <p className="text-sm font-bold">Action Console</p>
-                        <p className="text-xs text-slate-500">Run platform, infra, and network actions with full audit logging.</p>
-                      </div>
-                      <div className="inline-flex items-center gap-2 text-xs text-slate-500">
-                        <Lock className="h-4 w-4" />
-                        Step-up required for destructive actions
-                      </div>
-                    </div>
-                    <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-[1.2fr_1fr]">
-                      <label className="flex flex-col gap-1 text-xs">
-                        <span className="text-[10px] font-semibold uppercase text-slate-500">Action</span>
-                        <select
-                          value={selectedActionId}
-                          onChange={(event) => setSelectedActionId(event.target.value)}
-                          className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                        >
-                          {ACTION_GROUPS.map((group) => (
-                            <optgroup key={group.label} label={group.label}>
-                              {group.actions.map((action) => (
-                                <option key={action.id} value={action.id}>{action.label}</option>
-                              ))}
-                            </optgroup>
-                          ))}
-                        </select>
-                      </label>
-                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                        {selectedAction?.fields?.length ? selectedAction.fields.map((field) => (
-                          <label key={field.key} className="flex flex-col gap-1 text-xs">
-                            <span className="text-[10px] font-semibold uppercase text-slate-500">{field.label}</span>
-                            <input
-                              value={actionForm[field.key] || ''}
-                              onChange={(event) => setActionForm((prev) => ({ ...prev, [field.key]: event.target.value }))}
-                              className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                              placeholder={field.label}
-                            />
-                          </label>
-                        )) : (
-                          <div className="text-xs text-slate-500">No parameters required.</div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="mt-4 flex items-center justify-end">
-                      <button
-                        type="button"
-                        onClick={() => runAction(selectedAction)}
-                      className="admin-glow rounded-full bg-gradient-to-r from-sky-500/80 to-indigo-500/70 px-4 py-2 text-xs font-semibold text-white shadow-[0_0_18px_rgba(75,157,251,0.5)] hover:brightness-110"
-                        disabled={actionBusy === selectedAction?.id}
-                      >
-                        {actionBusy === selectedAction?.id ? 'Running...' : 'Run action'}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                    <div className="admin-card admin-sweep rounded-3xl p-5">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200/80">Active Users</p>
-                      <div className="mt-4 h-32">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={activeUsersTrend}>
-                            <Line type="monotone" dataKey="count" stroke="#4B9DFB" strokeWidth={2.5} dot={false} isAnimationActive animationDuration={900} />
-                            <Tooltip contentStyle={{ background: '#0f0f12', boxShadow: '0 0 0 1px rgba(255,140,30,0.3), 0 14px 30px rgba(0,0,0,0.35)', borderRadius: 12 }} />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </div>
-                      <p className="mt-3 text-xs text-slate-300">Last 14 days unique logins</p>
-                    </div>
-                    <div className="admin-card admin-sweep rounded-3xl p-5">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200/80">Buyer Requests</p>
-                      <div className="mt-4 h-32">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={buyerRequestTrend}>
-                            <defs>
-                              <linearGradient id="reqGlow" x1="0" y1="0" x2="1" y2="0">
-                                <stop offset="0%" stopColor="#4B9DFB" stopOpacity={0.6} />
-                                <stop offset="100%" stopColor="#6366f1" stopOpacity={0.2} />
-                              </linearGradient>
-                            </defs>
-                            <Area type="monotone" dataKey="count" stroke="#4B9DFB" fill="url(#reqGlow)" strokeWidth={2.2} isAnimationActive animationDuration={950} />
-                            <Tooltip contentStyle={{ background: '#0f0f12', boxShadow: '0 0 0 1px rgba(255,140,30,0.3), 0 14px 30px rgba(0,0,0,0.35)', borderRadius: 12 }} />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                      </div>
-                      <p className="mt-3 text-xs text-slate-300">Demand flow over time</p>
-                    </div>
-                    <div className="admin-card admin-sweep rounded-3xl p-5">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200/80">Contract Status</p>
-                      <div className="mt-4 h-32">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie data={contractStatusData} dataKey="value" innerRadius={40} outerRadius={62} paddingAngle={4} isAnimationActive animationDuration={900}>
-                              {contractStatusData.map((entry, index) => (
-                                <Cell key={entry.name} fill={chartPalette[index % chartPalette.length]} />
-                              ))}
-                            </Pie>
-                            <Tooltip contentStyle={{ background: '#0f0f12', boxShadow: '0 0 0 1px rgba(255,140,30,0.3), 0 14px 30px rgba(0,0,0,0.35)', borderRadius: 12 }} />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      </div>
-                      <p className="mt-3 text-xs text-slate-300">Signed vs pending vs disputes</p>
-                    </div>
-                  </div>
-                  <div className="grid gap-4 lg:grid-cols-3">
-                    {premiumBundles.map((bundle) => (
-                      <div key={bundle.title} className="admin-card admin-sweep rounded-3xl p-5">
-                        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">{bundle.title}</p>
-                        <ul className="mt-4 space-y-2 text-xs text-slate-200">
-                          {bundle.highlights.map((item) => (
-                            <li key={item} className="flex items-start gap-2 text-slate-200">
-                              <span className="mt-[2px] h-1.5 w-1.5 rounded-full bg-sky-400" />
-                              <span>{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              ) : null}
-
-              {activeCategory !== 'home' ? (
-                <>
-                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-
-          <section className="space-y-4">
-            <div className="admin-card admin-sweep rounded-3xl p-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <CategoryIcon className="h-5 w-5 text-orange-200/80" />
-                  <div>
-                    <p className="text-sm font-bold">{activeData?.label || 'Module'}</p>
-                    <p className="text-xs text-slate-500">{activeData?.sections?.length || 0} sections</p>
-                  </div>
-                </div>
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold${statusBadge('live')}`}>live</span>
-              </div>
-            </div>
-
-            {activeCategory === 'platform' ? (
-              <div className="admin-card admin-sweep rounded-3xl p-6">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-bold">User Management</p>
-                    <p className="text-xs text-slate-500">Search users and apply role, verification, plan, or trust controls.</p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <input
-                      value={userQuery}
-                      onChange={(event) => setUserQuery(event.target.value)}
-                      className="w-56 rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                      placeholder="Search name/email/role"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => exportEmailsCsv(users)}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark bg-black/40 px-3 py-2 text-xs font-semibold text-orange-100 hover:bg-[#13171E]"
-                    >
-                      Export CSV
-                    </button>
-                  </div>
-                </div>
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-600">
-                  <select
-                    value={roleFilter}
-                    onChange={(event) => setRoleFilter(event.target.value)}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                  >
-                    <option value="all">All roles</option>
-                    <option value="buyer">buyer</option>
-                    <option value="factory">factory</option>
-                    <option value="buying_house">buying_house</option>
-                    <option value="agent">agent</option>
-                    <option value="admin">admin</option>
-                    <option value="owner">owner</option>
-                  </select>
-                  <select
-                    value={statusFilter}
-                    onChange={(event) => setStatusFilter(event.target.value)}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                  >
-                    <option value="all">All statuses</option>
-                    <option value="active">active</option>
-                    <option value="suspended">suspended</option>
-                    <option value="inactive">inactive</option>
-                    <option value="banned">banned</option>
-                  </select>
-                  <select
-                    value={verificationFilter}
-                    onChange={(event) => setVerificationFilter(event.target.value)}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                  >
-                    <option value="all">All verification</option>
-                    <option value="verified">verified</option>
-                    <option value="unverified">unverified</option>
-                  </select>
-                  <select
-                    value={premiumFilter}
-                    onChange={(event) => setPremiumFilter(event.target.value)}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                  >
-                    <option value="all">All plans</option>
-                    <option value="premium">premium</option>
-                    <option value="free">free</option>
-                  </select>
-                  <select
-                    value={regionFilter}
-                    onChange={(event) => setRegionFilter(event.target.value)}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                  >
-                    {regionOptions.map((region) => (
-                      <option key={region} value={region}>{region === 'all' ? 'All regions' : region}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="mt-4 space-y-3">
-                  {filteredUsers.slice(0, 20).map((u) => {
-                    const draft = userDrafts[u.id] || {}
-                    const roleValue = draft.role ?? u.role ?? 'buyer'
-                    const statusValue = draft.status ?? u.status ?? 'active'
-                    const verifiedValue = draft.verified ?? u.verified ?? false
-                    const subValue = draft.subscription_status ?? u.subscription_status ?? 'free'
-                    const strikeValue = draft.policy_strikes ?? u.policy_strikes ?? 0
-                    const fraudValue = draft.fraud_flags ?? (Array.isArray(u.profile?.fraud_flags) ? u.profile.fraud_flags.join(', ') : '')
-                    const notesValue = draft.admin_notes ?? u.profile?.admin_notes ?? ''
-
-                    return (
-                      <div key={u.id} className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-semibold">{u.name || 'Unnamed'} ({u.email || 'no email'})</p>
-                            <p className="text-[11px] text-slate-500">Role: {u.role} / Status: {u.status} / Verified: {String(u.verified)} / Plan: {u.subscription_status || 'free'}</p>
-                            <p className="text-[11px] text-slate-400">
-                              Created: {u.created_at ? new Date(u.created_at).toLocaleString() : '--'}
-                              {' '}| Country: {u.profile?.country || 'N/A'}
-                              {u.org_owner_id ? ` | Org owner: ${u.org_owner_id}` : ''}
-                              {u.member_id ? ` | Agent ID: ${u.member_id}` : ''}
-                            </p>
-                          </div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => forceLogout(u.id)}
-                              className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
-                            >
-                              Force logout
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => resetPassword(u.id)}
-                              className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
-                            >
-                              Reset password
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => lockMessaging(u.id, 24)}
-                              className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
-                            >
-                              Lock messaging 24h
-                            </button>
-                          </div>
-                        </div>
-                        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                          <label className="flex flex-col gap-1">
-                            <span className="text-[10px] font-semibold uppercase text-slate-500">Role</span>
-                            <select
-                              value={roleValue}
-                              onChange={(event) => updateDraft(u.id, 'role', event.target.value)}
-                              className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
-                            >
-                              <option value="buyer">buyer</option>
-                              <option value="factory">factory</option>
-                              <option value="buying_house">buying_house</option>
-                              <option value="agent">agent</option>
-                              <option value="admin">admin</option>
-                              <option value="owner">owner</option>
-                            </select>
-                          </label>
-                          <label className="flex flex-col gap-1">
-                            <span className="text-[10px] font-semibold uppercase text-slate-500">Status</span>
-                            <select
-                              value={statusValue}
-                              onChange={(event) => updateDraft(u.id, 'status', event.target.value)}
-                              className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
-                            >
-                              <option value="active">active</option>
-                              <option value="suspended">suspended</option>
-                            </select>
-                          </label>
-                          <label className="flex flex-col gap-1">
-                            <span className="text-[10px] font-semibold uppercase text-slate-500">Verified</span>
-                            <select
-                              value={String(verifiedValue)}
-                              onChange={(event) => updateDraft(u.id, 'verified', event.target.value === 'true')}
-                              className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
-                            >
-                              <option value="true">true</option>
-                              <option value="false">false</option>
-                            </select>
-                          </label>
-                          <label className="flex flex-col gap-1">
-                            <span className="text-[10px] font-semibold uppercase text-slate-500">Plan</span>
-                            <select
-                              value={subValue}
-                              onChange={(event) => updateDraft(u.id, 'subscription_status', event.target.value)}
-                              className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
-                            >
-                              <option value="free">free</option>
-                              <option value="premium">premium</option>
-                            </select>
-                          </label>
-                          <label className="flex flex-col gap-1">
-                            <span className="text-[10px] font-semibold uppercase text-slate-500">Strikes</span>
-                            <input
-                              type="number"
-                              min="0"
-                              value={strikeValue}
-                              onChange={(event) => updateDraft(u.id, 'policy_strikes', Number(event.target.value))}
-                              className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
-                            />
-                          </label>
-                          <label className="flex flex-col gap-1">
-                            <span className="text-[10px] font-semibold uppercase text-slate-500">Fraud flags</span>
-                            <input
-                              value={fraudValue}
-                              onChange={(event) => updateDraft(u.id, 'fraud_flags', event.target.value)}
-                              className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
-                              placeholder="flag1, flag2"
-                            />
-                          </label>
-                        </div>
-                        <label className="mt-3 flex flex-col gap-1">
-                          <span className="text-[10px] font-semibold uppercase text-slate-500">Admin notes</span>
-                          <textarea
-                            rows="2"
-                            value={notesValue}
-                            onChange={(event) => updateDraft(u.id, 'admin_notes', event.target.value)}
-                            className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
-                            placeholder="Internal notes visible to admins only"
-                          />
-                        </label>
-                        <div className="mt-3 flex items-center justify-end">
-                          <button
-                            type="button"
-                            onClick={() => saveUserEdits(u.id)}
-                            className="rounded-full bg-slate-900 px-4 py-2 text-[11px] font-semibold text-white hover:bg-slate-800"
-                          >
-                            Save changes
-                          </button>
-                        </div>
-                      </div>
-                    )
-                  })}
-                  {!loading && filteredUsers.length === 0 ? <p className="text-xs text-slate-500">No users match the filter.</p> : null}
-                </div>
-              </div>
-            ) : null}
-
-            {activeCategory === 'platform' ? (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">Signup + Email Export</p>
-                      <p className="text-xs text-slate-500">Live signup feed with CSV exports.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshSignups()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Refresh
-                    </button>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => downloadCsv('/admin/emails/export', 'gartexhub_emails.csv').catch((err) => setError(err.message || 'Export failed'))}
-                      className="rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold text-white"
-                    >
-                      Download email CSV
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => downloadCsv('/admin/exports/run?dataset=users&format=csv', 'users.csv').catch((err) => setError(err.message || 'Export failed'))}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Export users CSV
-                    </button>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {signups.slice(0, 4).map((row) => (
-                      <div key={row.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        {row.name || row.email || row.id} · {row.role || 'role'} · {row.created_at ? new Date(row.created_at).toLocaleDateString() : '--'}
-                      </div>
-                    ))}
-                    {signups.length === 0 ? <div className="text-[11px] text-slate-400">No signups yet.</div> : null}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">Fraud Review</p>
-                      <p className="text-xs text-slate-500">Flagged verification records + duplicates.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshFraudReview()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Refresh
-                    </button>
-                  </div>
-                  <div className="mt-3 text-[11px] text-slate-500">Duplicates detected: {fraudReview.duplicates?.length || 0}</div>
-                  <div className="mt-2 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {fraudReview.items.slice(0, 4).map((row) => (
-                      <div key={row.user_id || row.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        {row.company_name || row.user_id} · Flag: {row.fraud_flag ? 'Yes' : 'No'}
-                      </div>
-                    ))}
-                    {fraudReview.items.length === 0 ? <div className="text-[11px] text-slate-400">No fraud flags.</div> : null}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">Strike History</p>
-                      <p className="text-xs text-slate-500">Audit of policy violations & escalations.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshStrikeHistory()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Refresh
-                    </button>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {strikeHistory.slice(0, 4).map((row) => (
-                      <div key={row.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        {row.user?.name || row.actor_id} · {row.reason} · Strikes {row.strikes}
-                      </div>
-                    ))}
-                    {strikeHistory.length === 0 ? <div className="text-[11px] text-slate-400">No strikes yet.</div> : null}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">Org Ownership</p>
-                      <p className="text-xs text-slate-500">Live org registry + staff limits.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshOrgOwnership()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Refresh
-                    </button>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(orgOwnership.orgs || []).slice(0, 4).map((org) => (
-                      <div key={org.org_owner_id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        {org.org_name} · Staff {org.staff_count}/{org.staff_limit}
-                      </div>
-                    ))}
-                    {(orgOwnership.orgs || []).length === 0 ? <div className="text-[11px] text-slate-400">No orgs found.</div> : null}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">Wallet Ledger</p>
-                      <p className="text-xs text-slate-500">Unified credits, debits, and refunds.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshWalletLedger()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Refresh
-                    </button>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {walletLedger.slice(0, 4).map((row) => (
-                      <div key={row.id || row.created_at} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        {row.entry_type || row.type} · ${row.amount_usd || 0} · {row.reason || row.note || '--'}
-                      </div>
-                    ))}
-                    {walletLedger.length === 0 ? <div className="text-[11px] text-slate-400">No ledger entries.</div> : null}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">Email Segments</p>
-                      <p className="text-xs text-slate-500">Targeted lists with CSV export.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshCatalog()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Refresh
-                    </button>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(catalog?.emails?.segments || []).slice(0, 4).map((segment) => (
-                      <div key={segment.id} className="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        <span>{segment.name || segment.id}</span>
-                        <button
-                          type="button"
-                          onClick={() => downloadCsv(`/admin/emails/segments/export?segment_id=${encodeURIComponent(segment.id)}`, `segment_${segment.id}.csv`).catch((err) => setError(err.message || 'Export failed'))}
-                          className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                        >
-                          Export
-                        </button>
-                      </div>
-                    ))}
-                    {(catalog?.emails?.segments || []).length === 0 ? <div className="text-[11px] text-slate-400">No segments yet.</div> : null}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">Featured Listings</p>
-                      <p className="text-xs text-slate-500">Control marketplace highlights.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshCatalog()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Refresh
-                    </button>
-                  </div>
-                  <div className="mt-3 grid grid-cols-1 gap-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    <select
-                      value={featuredForm.entity_type}
-                      onChange={(event) => setFeaturedForm((prev) => ({ ...prev, entity_type: event.target.value }))}
-                      className="w-full rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
-                    >
-                      <option value="product">Product</option>
-                      <option value="request">Buyer request</option>
-                    </select>
-                    <input
-                      value={featuredForm.entity_id}
-                      onChange={(event) => setFeaturedForm((prev) => ({ ...prev, entity_id: event.target.value }))}
-                      placeholder="Entity ID"
-                      className="w-full rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
-                    />
-                    <input
-                      value={featuredForm.label}
-                      onChange={(event) => setFeaturedForm((prev) => ({ ...prev, label: event.target.value }))}
-                      placeholder="Label (optional)"
-                      className="w-full rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
-                    />
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        await runInlineAdminAction('featured.add', featuredForm)
-                        await refreshCatalog()
-                        setFeaturedForm((prev) => ({ ...prev, entity_id: '', label: '' }))
-                      }}
-                      className="w-full rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
-                    >
-                      Add featured
-                    </button>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(catalog?.featured?.listings || []).slice(0, 4).map((item) => (
-                      <div key={item.id} className="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        <span>{item.title} · {item.entity_type}</span>
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            await runInlineAdminAction('featured.remove', { listing_id: item.id })
-                            await refreshCatalog()
-                          }}
-                          className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                    {(catalog?.featured?.listings || []).length === 0 ? <div className="text-[11px] text-slate-400">No featured listings.</div> : null}
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {activeCategory === 'platform' ? (
-              <div className="admin-card admin-sweep rounded-3xl p-6">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-bold">Verification Queue</p>
-                    <p className="text-xs text-slate-500">Review compliance documents, duplicates, and credibility scores.</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => refreshVerificationQueue()}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
-                  >
-                    Refresh queue
-                  </button>
-                </div>
-                <div className="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
-                  {verificationQueue.slice(0, 20).map((row) => (
-                    <details key={row.user_id} className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-                      <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold text-slate-900 dark:text-white">{row.user?.name || row.user_id}</p>
-                          <p className="text-[11px] text-slate-500">
-                            {row.user?.email || 'no email'} · {row.user?.role || 'role'} · Status: {row.review_status}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">
-                            Credibility {row.credibility?.score ?? '--'}
-                          </span>
-                          {row.expiring_soon ? (
-                            <span className="rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-700">Expiring</span>
-                          ) : null}
-                        </div>
-                      </summary>
-                      <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[1.2fr_1fr]">
-                        <div className="space-y-2">
-                          <p className="text-[11px] font-semibold uppercase text-slate-500">Required Checklist</p>
-                          <div className="flex flex-wrap gap-2">
-                            {row.required_checklist?.map((item) => (
-                              <span key={item.key} className={`rounded-full px-2 py-1 text-[10px] font-semibold${item.submitted ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-                                {item.label}
-                              </span>
-                            ))}
-                          </div>
-                          {row.duplicate_flags?.length ? (
-                            <div className="mt-2 text-[11px] text-rose-600">
-                              Possible duplicates: {row.duplicate_flags.map((flag) => `${flag.field}`).join(', ')}
-                            </div>
-                          ) : null}
-                          <div className="mt-2 text-[11px] text-slate-500">
-                            Subscription remaining: {row.subscription_remaining_days ?? '--'} days
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <p className="text-[11px] font-semibold uppercase text-slate-500">Documents</p>
-                          <div className="space-y-1">
-                            {row.uploaded_documents?.length ? row.uploaded_documents.map((doc) => (
-                              <a key={doc.id} href={doc.public_url || '#'} className="block truncate text-[11px] text-indigo-600">
-                                {doc.type || 'document'} {doc.public_url ? 'view' : ''}
-                              </a>
-                            )) : <p className="text-[11px] text-slate-400">No uploaded documents.</p>}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-3 flex flex-wrap items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            await runInlineAdminAction('verification.approve', { user_id: row.user_id })
-                            await refreshVerificationQueue()
-                          }}
-                          className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            const reason = window.prompt('Reject reason?') || 'rejected_by_admin'
-                            await runInlineAdminAction('verification.reject', { user_id: row.user_id, reason })
-                            await refreshVerificationQueue()
-                          }}
-                          className="rounded-full bg-rose-600 px-3 py-1 text-[11px] font-semibold text-white"
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    </details>
-                  ))}
-                  {verificationQueue.length === 0 ? <p className="text-xs text-slate-500">No pending verifications.</p> : null}
-                </div>
-              </div>
-            ) : null}
-
-            {activeCategory === 'platform' ? (
-              <div className="admin-card admin-sweep rounded-3xl p-6">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-bold">Contracts Vault</p>
-                    <p className="text-xs text-slate-500">Lifecycle, signatures, payment proofs, and disputes.</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => refreshContractsVault()}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
-                  >
-                    Refresh contracts
-                  </button>
-                </div>
-                <div className="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
-                  {contractsVault.slice(0, 12).map((contract) => {
-                    const proofs = paymentProofs.filter((proof) => String(proof.contract_id) === String(contract.id))
-                    return (
-                      <details key={contract.id} className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-                        <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-semibold text-slate-900 dark:text-white">{contract.title || 'Contract'}</p>
-                            <p className="text-[11px] text-slate-500">
-                              {contract.contract_number || contract.id} · {contract.lifecycle_status || contract.status}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2 text-[10px]">
-                            <span className="rounded-full bg-slate-100 px-2 py-1 font-semibold text-slate-600">Buyer: {contract.buyer_signature_state}</span>
-                            <span className="rounded-full bg-slate-100 px-2 py-1 font-semibold text-slate-600">Factory: {contract.factory_signature_state}</span>
-                          </div>
-                        </summary>
-                        <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[1.2fr_1fr]">
-                          <div className="space-y-1 text-[11px]">
-                            <p>Buyer: {contract.buyer_name || contract.buyer_id || 'N/A'}</p>
-                            <p>Factory: {contract.factory_name || contract.factory_id || 'N/A'}</p>
-                            <p>Status: {contract.lifecycle_status || 'unknown'}</p>
-                            {contract.artifact?.pdf_path ? (
-                              <a href={contract.artifact.pdf_path} className="text-indigo-600">View artifact</a>
-                            ) : (
-                              <p className="text-slate-400">No artifact generated</p>
-                            )}
-                          </div>
-                          <div className="space-y-1 text-[11px]">
-                            <p className="text-[10px] font-semibold uppercase text-slate-500">Payment Proofs</p>
-                            {proofs.length ? proofs.map((proof) => (
-                              <div key={proof.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                                {proof.type} ? {proof.status} ? {proof.amount || '--'} {proof.currency || ''}{proof.lc_type ? ` ? ${String(proof.lc_type).toUpperCase()}${proof.lc_type === 'usance' && proof.usance_days ? ` (${proof.usance_days}d)` : ''}` : ''}
-                              </div>
-                            )) : <p className="text-slate-400">No payment proofs.</p>}
-                          </div>
-                        </div>
-                        <div className="mt-3 flex flex-wrap items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              await runInlineAdminAction('contract.lock', { contract_id: contract.id })
-                              await refreshContractsVault()
-                            }}
-                            className="rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold text-white"
-                          >
-                            Lock
-                          </button>
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              await runInlineAdminAction('contract.unlock', { contract_id: contract.id })
-                              await refreshContractsVault()
-                            }}
-                            className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
-                          >
-                            Unlock
-                          </button>
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              await runInlineAdminAction('contract.archive', { contract_id: contract.id })
-                              await refreshContractsVault()
-                            }}
-                            className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
-                          >
-                            Archive
-                          </button>
-                        </div>
-                      </details>
-                    )
-                  })}
-                  {contractsVault.length === 0 ? <p className="text-xs text-slate-500">No contracts available.</p> : null}
-                </div>
-              </div>
-            ) : null}
-
-            {activeCategory === 'platform' ? (
-              <div className="admin-card admin-sweep rounded-3xl p-6">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-bold">Disputes</p>
-                    <p className="text-xs text-slate-500">Review and resolve contract disputes.</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => refreshDisputes()}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
-                  >
-                    Refresh disputes
-                  </button>
-                </div>
-                <div className="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
-                  {disputes.slice(0, 12).map((dispute) => (
-                    <div key={dispute.id} className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold text-slate-900 dark:text-white">{dispute.entity_id}</p>
-                          <p className="text-[11px] text-slate-500">{dispute.reason}</p>
-                        </div>
-                        <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">{dispute.status}</span>
-                      </div>
-                      <div className="mt-3 flex flex-wrap items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            const resolutionAction = window.prompt('Resolution action?') || 'resolved'
-                            const resolutionNote = window.prompt('Resolution note?') || ''
-                            await runInlineAdminAction('dispute.resolve', { report_id: dispute.id, resolution_action: resolutionAction, resolution_note: resolutionNote })
-                            await refreshDisputes()
-                          }}
-                          className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
-                        >
-                          Resolve
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  {disputes.length === 0 ? <p className="text-xs text-slate-500">No disputes found.</p> : null}
-                </div>
-              </div>
-            ) : null}
-
-              {activeCategory === 'platform' ? (
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-bold">Product Moderation Queue</p>
-                    <p className="text-xs text-slate-500">Pending review and rejected product listings.</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => refreshModerationQueues()}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
-                  >
-                    Refresh queue
-                  </button>
-                </div>
-                <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-                    <p className="text-[11px] font-semibold uppercase text-slate-500">Pending Review</p>
-                    <div className="mt-2 space-y-2">
-                      {moderationPending.slice(0, 6).map((row) => (
-                        <div key={row.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2">
-                          <p className="text-sm font-semibold text-slate-900">{row.title || 'Product'}</p>
-                          <p className="text-[11px] text-slate-500">Owner: {row.owner?.name || row.company_id}</p>
-                          <p className="text-[11px] text-slate-500">{row.content_review_reason || 'Pending review'}</p>
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            <button
-                              type="button"
-                              onClick={async () => {
-                                await apiRequest(`/admin/moderation/products/${encodeURIComponent(row.id)}`, {
-                                  method: 'PATCH',
-                                  token: getToken(),
-                                  headers: buildAdminHeaders({ stepUp: true }),
-                                  body: { status: 'approved' },
-                                })
-                                await refreshModerationQueues()
-                              }}
-                              className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
-                            >
-                              Approve
-                            </button>
-                            <button
-                              type="button"
-                              onClick={async () => {
-                                const reason = window.prompt('Reject reason (neutral language):') || ''
-                                await apiRequest(`/admin/moderation/products/${encodeURIComponent(row.id)}`, {
-                                  method: 'PATCH',
-                                  token: getToken(),
-                                  headers: buildAdminHeaders({ stepUp: true }),
-                                  body: { status: 'rejected', reason },
-                                })
-                                await refreshModerationQueues()
-                              }}
-                              className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
-                            >
-                              Reject
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                      {!moderationPending.length ? <p className="text-[11px] text-slate-500">No pending products.</p> : null}
-                    </div>
-                  </div>
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-                    <p className="text-[11px] font-semibold uppercase text-slate-500">Rejected</p>
-                    <div className="mt-2 space-y-2">
-                      {moderationRejected.slice(0, 6).map((row) => (
-                        <div key={row.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2">
-                          <p className="text-sm font-semibold text-slate-900">{row.title || 'Product'}</p>
-                          <p className="text-[11px] text-slate-500">Owner: {row.owner?.name || row.company_id}</p>
-                          <p className="text-[11px] text-slate-500">{row.content_review_reason || 'Rejected'}</p>
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            <button
-                              type="button"
-                              onClick={async () => {
-                                await apiRequest(`/admin/moderation/products/${encodeURIComponent(row.id)}`, {
-                                  method: 'PATCH',
-                                  token: getToken(),
-                                  headers: buildAdminHeaders({ stepUp: true }),
-                                  body: { status: 'approved' },
-                                })
-                                await refreshModerationQueues()
-                              }}
-                              className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
-                            >
-                              Restore
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                      {!moderationRejected.length ? <p className="text-[11px] text-slate-500">No rejected products.</p> : null}
-                    </div>
-                  </div>
-                  </div>
-                </div>
-              ) : null}
-
-
-
-              {activeCategory === 'platform' ? (
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-bold">Communication Policy Queue Inspector</p>
-                      <p className="text-xs text-slate-500">Inspect queued messages, mark false positives, and adjust sender reputation.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshMessagePolicyOps()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
-                    >
-                      Refresh policy queue
-                    </button>
-                  </div>
-                  <div className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-3 text-xs">
-                    <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 lg:col-span-2">
-                      <p className="text-[11px] font-semibold uppercase text-slate-500">Queued Items</p>
-                      <div className="mt-2 space-y-2">
-                        {policyQueueItems.slice(0, 8).map((row) => (
-                          <div key={row.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2">
-                            <p className="text-[11px] text-slate-500">{row.match_id} · {row.sender_id}</p>
-                            <p className="text-sm font-semibold text-slate-900">{row.queue_priority_label || row.queue_rank} ({row.queue_score})</p>
-                            <p className="text-[11px] text-slate-500">Reason: {row.policy_reason}</p>
-                          </div>
-                        ))}
-                        {!policyQueueItems.length ? <p className="text-[11px] text-slate-500">No queued policy items.</p> : null}
-                      </div>
-                    </div>
-                    <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-                      <p className="text-[11px] font-semibold uppercase text-slate-500">Metrics</p>
-                      <div className="mt-2 space-y-1 text-[11px] text-slate-600">
-                        <p>Blocked rate: {Number(policyMetrics?.policy_metrics?.blocked_rate || 0).toFixed(4)}</p>
-                        <p>Queue→Sent: {Number(policyMetrics?.policy_metrics?.queued_to_sent_conversion || 0).toFixed(4)}</p>
-                        <p>False-positive ratio: {Number(policyMetrics?.policy_metrics?.spam_false_positive_ratio || 0).toFixed(4)}</p>
-                      </div>
-                      <p className="mt-3 text-[11px] font-semibold uppercase text-slate-500">Sender reputation adjustment</p>
-                      <div className="mt-2 flex flex-col gap-2">
-                        <input className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2" placeholder="Sender ID" value={reputationSenderId} onChange={(e) => setReputationSenderId(e.target.value)} />
-                        <input className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2" placeholder="Delta (e.g., -5 or 4)" value={reputationDelta} onChange={(e) => setReputationDelta(e.target.value)} />
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            if (!reputationSenderId.trim()) return
-                            await apiRequest(`/messages/policy/reputation/${encodeURIComponent(reputationSenderId.trim())}/adjust`, {
-                              method: 'POST',
-                              token: getToken(),
-                              headers: buildAdminHeaders({ stepUp: true }),
-                              body: { delta: Number(reputationDelta || 0), notes: 'Admin panel adjustment' },
-                            })
-                            await refreshMessagePolicyOps()
-                          }}
-                          className="rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold text-white"
-                        >
-                          Apply adjustment
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-4 rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-                    <p className="text-[11px] font-semibold uppercase text-slate-500">False-positive override candidates</p>
-                    <div className="mt-2 space-y-2">
-                      {policyReviewRows.slice(0, 6).map((row) => (
-                        <div key={row.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2">
-                          <p className="text-[11px] text-slate-500">{row.sender_id} · {row.action} · spam {Number(row.spam_score || 0).toFixed(3)}</p>
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              await apiRequest(`/messages/policy/review-queue/${encodeURIComponent(row.id)}/false-positive`, {
-                                method: 'POST',
-                                token: getToken(),
-                                headers: buildAdminHeaders({ stepUp: true }),
-                                body: { notes: 'Admin override: false positive' },
-                              })
-                              await refreshMessagePolicyOps()
-                            }}
-                            className="mt-1 rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
-                          >
-                            Mark false-positive
-                          </button>
-                        </div>
-                      ))}
-                      {!policyReviewRows.length ? <p className="text-[11px] text-slate-500">No candidates.</p> : null}
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-
-              {activeCategory === 'platform' ? (
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-bold">Clothing Moderation Rules</p>
-                      <p className="text-xs text-slate-500">Edit moderation terms and neutral reason templates (no halal/haram language).</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={saveClothingRules}
-                      disabled={clothingRulesBusy}
-                      className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
-                    >
-                      {clothingRulesBusy ? 'Saving...' : 'Save rules'}
-                    </button>
-                  </div>
-                  <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2 text-xs">
-                    <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-                      <p className="text-[11px] font-semibold uppercase text-slate-500">Forbidden Terms (Auto Reject)</p>
-                      <textarea
-                        rows={6}
-                        value={clothingRulesForm.forbidden_terms}
-                        onChange={(e) => setClothingRulesForm((prev) => ({ ...prev, forbidden_terms: e.target.value }))}
-                        placeholder="One term per line"
-                        className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
-                      />
-                    </div>
-                    <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-                      <p className="text-[11px] font-semibold uppercase text-slate-500">Flag Terms (Pending Review)</p>
-                      <textarea
-                        rows={6}
-                        value={clothingRulesForm.flag_terms}
-                        onChange={(e) => setClothingRulesForm((prev) => ({ ...prev, flag_terms: e.target.value }))}
-                        placeholder="One term per line"
-                        className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
-                      />
-                    </div>
-                    <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-                      <p className="text-[11px] font-semibold uppercase text-slate-500">Allowed Terms (Safe Signal)</p>
-                      <textarea
-                        rows={6}
-                        value={clothingRulesForm.allowed_terms}
-                        onChange={(e) => setClothingRulesForm((prev) => ({ ...prev, allowed_terms: e.target.value }))}
-                        placeholder="One term per line"
-                        className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
-                      />
-                    </div>
-                    <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-                      <p className="text-[11px] font-semibold uppercase text-slate-500">Context Exceptions</p>
-                      <textarea
-                        rows={6}
-                        value={clothingRulesForm.context_exceptions}
-                        onChange={(e) => setClothingRulesForm((prev) => ({ ...prev, context_exceptions: e.target.value }))}
-                        placeholder="e.g., innerwear, lining, undershirt"
-                        className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
-                      />
-                    </div>
-                  </div>
-                  <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3 text-xs">
-                    <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-                      <p className="text-[11px] font-semibold uppercase text-slate-500">Rejected Reason</p>
-                      <textarea
-                        rows={4}
-                        value={clothingRulesForm.reason_rejected}
-                        onChange={(e) => setClothingRulesForm((prev) => ({ ...prev, reason_rejected: e.target.value }))}
-                        className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
-                      />
-                    </div>
-                    <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-                      <p className="text-[11px] font-semibold uppercase text-slate-500">Pending Review Reason</p>
-                      <textarea
-                        rows={4}
-                        value={clothingRulesForm.reason_pending}
-                        onChange={(e) => setClothingRulesForm((prev) => ({ ...prev, reason_pending: e.target.value }))}
-                        className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
-                      />
-                    </div>
-                    <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-                      <p className="text-[11px] font-semibold uppercase text-slate-500">Fix Guidance</p>
-                      <textarea
-                        rows={4}
-                        value={clothingRulesForm.reason_fix}
-                        onChange={(e) => setClothingRulesForm((prev) => ({ ...prev, reason_fix: e.target.value }))}
-                        className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
-                      />
-                    </div>
-                  </div>
-                  {clothingRulesError ? <p className="mt-3 text-xs text-rose-600">{clothingRulesError}</p> : null}
-                  {clothingRulesNotice ? <p className="mt-3 text-xs text-emerald-700">{clothingRulesNotice}</p> : null}
-                </div>
-              ) : null}
-
-              {activeCategory === 'platform' ? (
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-bold">Report Queues</p>
-                    <p className="text-xs text-slate-500">System/support, product appeals, and public content reports.</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => refreshReportQueues()}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
-                  >
-                    Refresh reports
-                  </button>
-                </div>
-                <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3 text-xs">
-                  {[{ title: 'System & Support', items: systemReports }, { title: 'Product Appeals', items: productAppealReports }, { title: 'Content Reports', items: contentReports }].map((group) => (
-                    <div key={group.title} className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-                      <p className="text-[11px] font-semibold uppercase text-slate-500">{group.title}</p>
-                      <div className="mt-2 space-y-2">
-                        {group.items.slice(0, 6).map((row) => (
-                          <div key={row.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2">
-                            <p className="text-sm font-semibold text-slate-900">{row.reason || 'Report'}</p>
-                            <p className="text-[11px] text-slate-500">{row.entity_id}</p>
-                            <div className="mt-2">
-                              <button
-                                type="button"
-                                onClick={() => resolveReportAdmin(row.id, 'reviewed')}
-                                className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
-                              >
-                                Mark reviewed
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                        {!group.items.length ? <p className="text-[11px] text-slate-500">No reports.</p> : null}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            {activeCategory === 'platform' ? (
-              <div className="admin-card admin-sweep rounded-3xl p-6">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-bold">Support Queue</p>
-                    <p className="text-xs text-slate-500">Dedicated support tickets with SLA tracking.</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => refreshSupportTickets()}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
-                  >
-                    Refresh tickets
-                  </button>
-                </div>
-
-                <div className="mt-4 grid grid-cols-1 gap-3 text-xs text-slate-600 sm:grid-cols-4">
-                  <select
-                    value={supportFilters.status}
-                    onChange={(event) => setSupportFilters((prev) => ({ ...prev, status: event.target.value }))}
-                    className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
-                  >
-                    <option value="all">All status</option>
-                    <option value="open">Open</option>
-                    <option value="in_progress">In progress</option>
-                    <option value="resolved">Resolved</option>
-                  </select>
-                  <select
-                    value={supportFilters.priority}
-                    onChange={(event) => setSupportFilters((prev) => ({ ...prev, priority: event.target.value }))}
-                    className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
-                  >
-                    <option value="all">All priority</option>
-                    <option value="standard">Standard</option>
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                    <option value="priority">Priority</option>
-                  </select>
-                  <input
-                    value={supportFilters.assigned_to}
-                    onChange={(event) => setSupportFilters((prev) => ({ ...prev, assigned_to: event.target.value }))}
-                    placeholder="Assigned user ID"
-                    className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => refreshSupportTickets()}
-                    className="rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
-                  >
-                    Apply filters
-                  </button>
-                </div>
-
-                <div className="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
-                  {supportLoading ? <p className="text-xs text-slate-500">Loading tickets...</p> : null}
-                  {!supportLoading && supportTickets.length === 0 ? <p className="text-xs text-slate-500">No support tickets.</p> : null}
-                  {supportTickets.slice(0, 15).map((ticket) => (
-                    <div key={ticket.id} className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold text-slate-900 dark:text-white">{ticket.subject || 'Support ticket'}</p>
-                          <p className="text-[11px] text-slate-500">
-                            User: {ticket.user?.name || ticket.user_id} - {ticket.user?.email || 'no email'}
-                          </p>
-                          <p className="text-[11px] text-slate-500">
-                            Status: {ticket.status || 'open'} - Priority: {ticket.priority || 'standard'}
-                          </p>
-                        </div>
-                        <div className="text-[11px] text-slate-500">
-                          SLA: {ticket.sla_response_due_at ? new Date(ticket.sla_response_due_at).toLocaleString() : '--'} /
-                          {ticket.sla_resolution_due_at ? new Date(ticket.sla_resolution_due_at).toLocaleString() : '--'}
-                        </div>
-                      </div>
-                      <div className="mt-3 flex flex-wrap items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => assignSupportTicketAdmin(ticket.id)}
-                          className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
-                        >
-                          Assign
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => updateSupportTicketAdmin(ticket.id, { status: 'in_progress' })}
-                          className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
-                        >
-                          Mark in progress
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => updateSupportTicketAdmin(ticket.id, { status: 'resolved' })}
-                          className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
-                        >
-                          Resolve
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => updateSupportTicketAdmin(ticket.id, { priority: 'priority' })}
-                          className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
-                        >
-                          Escalate
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            {activeCategory === 'platform' ? (
-              <div className="admin-card admin-sweep rounded-3xl p-6">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-bold">Partner Requests</p>
-                    <p className="text-xs text-slate-500">Force accept/reject/cancel and monitor factory connections.</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => refreshPartnerRequests()}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
-                  >
-                    Refresh requests
-                  </button>
-                </div>
-                <div className="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
-                  {partnerRequests.slice(0, 12).map((request) => (
-                    <div key={request.id} className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold text-slate-900 dark:text-white">{request.requester_id || request.buyer_id}</p>
-                          <p className="text-[11px] text-slate-500">Factory: {request.factory_id || request.receiver_id}</p>
-                        </div>
-                        <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">{request.status}</span>
-                      </div>
-                      <div className="mt-3 flex flex-wrap items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            await runInlineAdminAction('partner.force_accept', { request_id: request.id })
-                            await refreshPartnerRequests()
-                          }}
-                          className="rounded-full bg-emerald-600 px-3 py-1 text-[11px] font-semibold text-white"
-                        >
-                          Force accept
-                        </button>
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            await runInlineAdminAction('partner.force_reject', { request_id: request.id })
-                            await refreshPartnerRequests()
-                          }}
-                          className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
-                        >
-                          Force reject
-                        </button>
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            await runInlineAdminAction('partner.force_cancel', { request_id: request.id })
-                            await refreshPartnerRequests()
-                          }}
-                          className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
-                        >
-                          Force cancel
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  {partnerRequests.length === 0 ? <p className="text-xs text-slate-500">No partner requests.</p> : null}
-                </div>
-              </div>
-            ) : null}
-
-            {activeCategory === 'platform' ? (
-              <div className="admin-card admin-sweep rounded-3xl p-6">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-bold">Platform Master Lists</p>
-                    <p className="text-xs text-slate-500">Every remaining platform module with live list/detail previews.</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => refreshCatalog()}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-xs font-semibold text-slate-600"
-                  >
-                    Refresh catalog
-                  </button>
-                </div>
-                <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-                    <p className="text-[11px] font-semibold uppercase text-slate-500">Org Directory + Staff Limits</p>
-                    <div className="mt-2 space-y-2">
-                      {(catalog?.orgs?.list || []).slice(0, 4).map((org) => (
-                        <div key={org.org_owner_id} className="flex items-center justify-between">
-                          <span>{org.org_name} · {org.role}</span>
-                          <span className="font-semibold">Staff {org.staff_count}/{org.staff_limit}</span>
-                        </div>
-                      ))}
-                      {(catalog?.orgs?.staff_list || []).slice(0, 2).map((staff) => (
-                        <div key={staff.id} className="text-[11px] text-slate-500">Staff: {staff.name || staff.id} · {staff.role}</div>
-                      ))}
-                      {(catalog?.orgs?.buying_house_staff_ids || []).slice(0, 2).map((row) => (
-                        <div key={row.id} className="text-[11px] text-slate-500">Buying house staff: {row.staff_id}</div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-                    <p className="text-[11px] font-semibold uppercase text-slate-500">Verification Compliance</p>
-                    <div className="mt-2 space-y-2">
-                      {(catalog?.verification?.docs_queue || []).slice(0, 3).map((doc) => (
-                        <div key={doc.id} className="flex items-center justify-between">
-                          <span>{doc.user_id || doc.owner_id} · {doc.status}</span>
-                          <span className="text-[10px] text-slate-500">{doc.type || 'doc'}</span>
-                        </div>
-                      ))}
-                      {(catalog?.verification?.badge_audit || []).slice(0, 2).map((entry) => (
-                        <div key={entry.id} className="text-[11px] text-slate-500">Badge {entry.action} · {entry.user_id}</div>
-                      ))}
-                      <div className="text-[11px] text-slate-500">Fraud flags: {(catalog?.verification?.fraud_flags || []).length}</div>
-                      {(catalog?.verification?.duplicates || []).slice(0, 1).map((dup) => (
-                        <div key={`${dup.field}:${dup.value}`} className="text-[11px] text-rose-500">Duplicate {dup.field}: {dup.value}</div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-                    <p className="text-[11px] font-semibold uppercase text-slate-500">Finance Ledgers</p>
-                    <div className="mt-2 space-y-2">
-                      <div className="text-[11px] text-slate-500">Failed renewals: {(catalog?.finance?.failed_renewals || []).length}</div>
-                      <div className="text-[11px] text-slate-500">History entries: {(catalog?.finance?.upgrade_history || []).length}</div>
-                      {(catalog?.finance?.revenue_summary || []).slice(0, 1).map((row) => (
-                        <div key={row.plan} className="text-[11px] text-slate-500">Plan {row.plan}: {row.subscribers} subs</div>
-                      ))}
-                      {(catalog?.finance?.invoices || []).slice(0, 2).map((row) => (
-                        <div key={row.id} className="flex items-center justify-between">
-                          <span>Invoice {row.user_id}</span>
-                          <span>${row.amount_usd}</span>
-                        </div>
-                      ))}
-                      {(catalog?.finance?.payouts || []).slice(0, 2).map((row) => (
-                        <div key={row.id} className="flex items-center justify-between">
-                          <span>Payout {row.user_id}</span>
-                          <span>${row.amount_usd}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-                    <p className="text-[11px] font-semibold uppercase text-slate-500">Wallet + Coupons</p>
-                    <div className="mt-2 space-y-2">
-                      <div className="text-[11px] text-slate-500">Transactions: {(catalog?.wallet?.ledger || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Redemptions: {(catalog?.wallet?.redemptions || []).length}</div>
-                      {(catalog?.wallet?.ledger || []).slice(0, 1).map((row) => (
-                        <div key={row.id} className="text-[11px] text-slate-500">Txn {row.user_id} · ${row.amount_usd}</div>
-                      ))}
-                      {(catalog?.wallet?.redemptions || []).slice(0, 1).map((row) => (
-                        <div key={row.id} className="text-[11px] text-slate-500">Redeem {row.user_id} · ${row.amount_usd}</div>
-                      ))}
-                      {(catalog?.coupons?.campaigns || []).slice(0, 2).map((row) => (
-                        <div key={row.id} className="text-[11px] text-slate-500">Campaign {row.name} · {row.status}</div>
-                      ))}
-                      {(couponReport?.campaigns || []).slice(0, 2).map((row) => (
-                        <div key={row.campaign} className="text-[11px] text-slate-500">
-                          Perf {row.campaign} · {row.redemption_count} reds · ${row.redeemed_total_usd}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-                    <p className="text-[11px] font-semibold uppercase text-slate-500">Partner Network</p>
-                    <div className="mt-2 space-y-2">
-                      <div className="text-[11px] text-slate-500">Requests: {(catalog?.partners?.requests || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Connected: {(catalog?.partners?.connected_factories || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Free-tier limit: {catalog?.partners?.free_tier_limit}</div>
-                      <div className="text-[11px] text-slate-500">Overrides: {(catalog?.partners?.overrides || []).length}</div>
-                      {(catalog?.partners?.connected_factories || []).slice(0, 1).map((row) => (
-                        <div key={row.id || row.requester_id} className="text-[11px] text-slate-500">Factory: {row.factory_id || row.target_id}</div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-                    <p className="text-[11px] font-semibold uppercase text-slate-500">Requests + Matching</p>
-                    <div className="mt-2 space-y-2">
-                      <div className="text-[11px] text-slate-500">Requests: {(catalog?.requests?.list || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Matches: {(catalog?.requests?.matches || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Spam filters: {(catalog?.requests?.spam_filters || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Match quality entries: {(catalog?.requests?.match_quality || []).length}</div>
-                      {(catalog?.requests?.spam_filters || []).slice(0, 1).map((row) => (
-                        <div key={row.id} className="text-[11px] text-slate-500">Filter: {row.pattern}</div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-                    <p className="text-[11px] font-semibold uppercase text-slate-500">Contracts + Proofs</p>
-                    <div className="mt-2 space-y-2">
-                      <div className="text-[11px] text-slate-500">Contracts: {(catalog?.contracts?.vault || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Payment proofs: {(catalog?.contracts?.payment_proofs || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Audit entries: {(catalog?.contracts?.audit_trail || []).length}</div>
-                      {(catalog?.contracts?.audit_trail || []).slice(0, 1).map((row) => (
-                        <div key={row.id} className="text-[11px] text-slate-500">Audit {row.action}</div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-                    <p className="text-[11px] font-semibold uppercase text-slate-500">Calls + Moderation</p>
-                    <div className="mt-2 space-y-2">
-                      <div className="text-[11px] text-slate-500">Call logs: {(catalog?.calls?.logs || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Escalations: {(catalog?.calls?.escalations || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Violations: {(catalog?.moderation?.violations || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Chat transfers: {(catalog?.moderation?.chat_transfers || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Auto spam flags: {(catalog?.moderation?.auto_spam_flags || []).length}</div>
-                      {(catalog?.calls?.logs || []).slice(0, 1).map((row) => (
-                        <div key={row.id} className="text-[11px] text-slate-500">
-                          Call {row.id} · {row.recording_status || 'pending'}{row.failure_reason ? ` (${row.failure_reason})` : ''}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-                    <p className="text-[11px] font-semibold uppercase text-slate-500">Content Review</p>
-                    <div className="mt-2 space-y-2">
-                      <div className="text-[11px] text-slate-500">Video queue: {(catalog?.content?.product_videos || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Docs: {(catalog?.content?.documents || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Flags: {(catalog?.content?.flags || []).length}</div>
-                      {(catalog?.content?.documents || []).filter((doc) => String(doc.moderation_status || '').toLowerCase() === 'pending_review').slice(0, 1).map((doc) => (
-                        <div key={doc.id} className="text-[11px] text-slate-500">Pending doc {doc.id}</div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-                    <p className="text-[11px] font-semibold uppercase text-slate-500">Support + Notifications</p>
-                    <div className="mt-2 space-y-2">
-                      <div className="text-[11px] text-slate-500">Tickets: {(catalog?.support?.tickets || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Reports: {(catalog?.support?.reports || []).length}</div>
-                      <div className="text-[11px] text-slate-500">SLA: {catalog?.support?.sla_targets?.response_minutes || '--'}m / {catalog?.support?.sla_targets?.resolution_hours || '--'}h</div>
-                      <div className="text-[11px] text-slate-500">Templates: {(catalog?.notifications?.templates || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Batch sends: {(catalog?.notifications?.batches || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Monthly triggers: {(catalog?.notifications?.monthly_triggers || []).length}</div>
-                      {(catalog?.support?.tickets || []).slice(0, 1).map((ticket) => (
-                        <div key={ticket.id} className="text-[11px] text-slate-500">Ticket {ticket.subject}</div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-                    <p className="text-[11px] font-semibold uppercase text-slate-500">Analytics + Search</p>
-                    <div className="mt-2 space-y-2">
-                      <div className="text-[11px] text-slate-500">Funnel: {catalog?.analytics?.funnel?.signup || 0} → {catalog?.analytics?.funnel?.deal || 0}</div>
-                      <div className="text-[11px] text-slate-500">Buying house analytics: {(catalog?.analytics?.buying_house || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Agent performance: {(catalog?.analytics?.agent_performance || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Avg response: {catalog?.analytics?.response_speed?.avg_minutes || 0} min</div>
-                      <div className="text-[11px] text-slate-500">Active users (14d): {catalog?.analytics?.active_users?.last_14_days || 0} · Today {catalog?.analytics?.active_users?.last_day || 0}</div>
-                      <div className="text-[11px] text-slate-500">Login events (14d): {catalog?.analytics?.login_summary?.total || 0}</div>
-                      <div className="text-[11px] text-slate-500">Buyer requests (14d): {catalog?.analytics?.buyer_request_summary?.total || 0}</div>
-                      <div className="text-[11px] text-slate-500">Factory uploads (14d): {catalog?.analytics?.factory_performance_summary?.total || 0}</div>
-                      {(catalog?.analytics?.factory_top || []).slice(0, 1).map((row) => (
-                        <div key={row.company_id} className="text-[11px] text-slate-500">Top factory: {row.company_name} · {row.products}</div>
-                      ))}
-                      <div className="text-[11px] text-slate-500">Search alerts: {(catalog?.search?.alerts || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Abuse records: {(catalog?.search?.usage || []).length}</div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-                    <p className="text-[11px] font-semibold uppercase text-slate-500">AI + System Settings</p>
-                    <div className="mt-2 space-y-2">
-                      <div className="text-[11px] text-slate-500">Knowledge entries: {(catalog?.ai?.knowledge_entries || []).length}</div>
-                      <div className="text-[11px] text-slate-500">AI audit logs: {(catalog?.ai?.response_audit || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Feature flags: {Object.keys(catalog?.system?.feature_flags || {}).length}</div>
-                      <div className="text-[11px] text-slate-500">Integrations: {Object.keys(catalog?.system?.integrations || {}).length}</div>
-                      {(catalog?.ai?.summary_logs || []).slice(0, 1).map((log) => (
-                        <div key={log.id} className="text-[11px] text-slate-500">AI log {log.id}</div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-                    <p className="text-[11px] font-semibold uppercase text-slate-500">Traffic + Email Segments</p>
-                    <div className="mt-2 space-y-2">
-                      <div className="text-[11px] text-slate-500">Clicks: {catalog?.traffic?.summary?.clicks || 0}</div>
-                      <div className="text-[11px] text-slate-500">Visits: {catalog?.traffic?.summary?.visits || 0}</div>
-                      <div className="text-[11px] text-slate-500">Sources: {(catalog?.traffic?.sources || []).length}</div>
-                      <div className="text-[11px] text-slate-500">Email segments: {(catalog?.emails?.segments || []).length}</div>
-                      {(catalog?.emails?.segments || []).slice(0, 1).map((seg) => (
-                        <div key={seg.id} className="text-[11px] text-slate-500">Segment: {seg.name}</div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {activeCategory === 'infra' ? (
-              <div className="admin-card admin-sweep rounded-3xl p-6">
-                <div className="flex items-center gap-2">
-                  <Server className="h-5 w-5 text-indigo-500" />
-                  <div>
-                    <p className="text-sm font-bold">System Overview</p>
-                    <p className="text-xs text-slate-500">CPU, memory, storage, and services pulled from infra adapters.</p>
-                  </div>
-                </div>
-                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 text-xs text-slate-600 dark:text-slate-300">
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-3">
-                    <p className="text-[10px] uppercase text-slate-500">CPU</p>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{infra?.cpu?.cores || '--'} cores</p>
-                    <p>Load 1m: {infra?.cpu?.load_1m?.toFixed?.(2) || '--'}</p>
-                  </div>
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-3">
-                    <p className="text-[10px] uppercase text-slate-500">Memory</p>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                      {infra?.memory?.used_bytes ? formatNumber(Math.round(infra.memory.used_bytes / (1024 * 1024))) : '--'} MB used
-                    </p>
-                    <p>Free: {infra?.memory?.free_bytes ? formatNumber(Math.round(infra.memory.free_bytes / (1024 * 1024))) : '--'} MB</p>
-                  </div>
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-3">
-                    <p className="text-[10px] uppercase text-slate-500">Services</p>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{formatNumber(infra?.services?.length)}</p>
-                    <p>Processes: {formatNumber(infra?.processes?.length)}</p>
-                  </div>
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-3">
-                    <p className="text-[10px] uppercase text-slate-500">Storage + I/O</p>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{formatNumber(infra?.storage?.length)} mounts</p>
-                    <p>Disk IOPS: {infra?.io?.disk_iops ?? '--'}</p>
-                    <p>Bandwidth: {infra?.network?.bandwidth_mbps ?? '--'} Mbps</p>
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {activeCategory === 'infra' ? (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">Firewall Rules</p>
-                      <p className="text-xs text-slate-500">Safe presets for allow/deny.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshInfraState()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Refresh
-                    </button>
-                  </div>
-                  <div className="mt-3 grid grid-cols-1 gap-2 text-xs">
-                    <select
-                      value={`${firewallForm.action}:${firewallForm.port || ''}`}
-                      onChange={(event) => {
-                        const [actionValue, portValue] = event.target.value.split(':')
-                        setFirewallForm((prev) => ({ ...prev, action: actionValue, port: portValue || '', protocol: 'tcp' }))
-                      }}
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    >
-                      <option value="allow:">Preset (select)</option>
-                      <option value="allow:22">Allow SSH 22</option>
-                      <option value="allow:80">Allow HTTP 80</option>
-                      <option value="allow:443">Allow HTTPS 443</option>
-                      <option value="block:25">Block SMTP 25</option>
-                    </select>
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        value={firewallForm.port}
-                        onChange={(event) => setFirewallForm((prev) => ({ ...prev, port: event.target.value }))}
-                        placeholder="Port"
-                        className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                      />
-                      <select
-                        value={firewallForm.protocol}
-                        onChange={(event) => setFirewallForm((prev) => ({ ...prev, protocol: event.target.value }))}
-                        className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                      >
-                        <option value="tcp">tcp</option>
-                        <option value="udp">udp</option>
-                      </select>
-                    </div>
-                    <input
-                      value={firewallForm.description}
-                      onChange={(event) => setFirewallForm((prev) => ({ ...prev, description: event.target.value }))}
-                      placeholder="Description"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => runInfraAction(`firewall.${firewallForm.action}_port`, { port: firewallForm.port, protocol: firewallForm.protocol, description: firewallForm.description })}
-                        className="rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
-                      >
-                        Apply rule
-                      </button>
-                    </div>
-                  </div>
-                  <div className="mt-4 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(infraState?.firewall_rules || []).slice(0, 6).map((rule) => (
-                      <div key={rule.id} className="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        <span>{rule.action} {rule.port}/{rule.protocol}</span>
-                        <button
-                          type="button"
-                          onClick={() => runInfraAction('firewall.remove_rule', { rule_id: rule.id })}
-                          className="text-[10px] font-semibold text-rose-600"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                    {(infraState?.firewall_rules || []).length === 0 ? <p className="text-slate-400">No rules yet.</p> : null}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">Package Updates</p>
-                    <p className="text-xs text-slate-500">Safe presets for update checks and installs.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-xs">
-                    <select
-                      value={packageForm.mode}
-                      onChange={(event) => setPackageForm((prev) => ({ ...prev, mode: event.target.value, apply: event.target.value !== 'check' }))}
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    >
-                      <option value="check">Check updates (safe)</option>
-                      <option value="security">Apply security updates</option>
-                      <option value="all">Apply all updates</option>
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => runInfraAction('package.update', { mode: packageForm.mode, apply: packageForm.mode !== 'check' })}
-                      className="w-full rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
-                    >
-                      Run package action
-                    </button>
-                  </div>
-                  <div className="mt-4 text-[11px] text-slate-500">
-                    Last updates: {(infraState?.updates || []).slice(0, 3).map((row) => row.mode).join(', ') || 'none'}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">Cron Manager</p>
-                    <p className="text-xs text-slate-500">Schedule safe recurring tasks.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-xs">
-                    <select
-                      value={cronForm.schedule}
-                      onChange={(event) => {
-                        const value = event.target.value
-                        if (value === '0 2 * * *') {
-                          setCronForm({ name: 'Daily backup', schedule: value, command: 'backup.run' })
-                        } else if (value === '0 0 * * 0') {
-                          setCronForm({ name: 'Weekly cleanup', schedule: value, command: 'log.rotate' })
-                        } else {
-                          setCronForm((prev) => ({ ...prev, schedule: value }))
-                        }
-                      }}
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    >
-                      <option value="">Preset (select)</option>
-                      <option value="0 2 * * *">Daily backup at 2am</option>
-                      <option value="0 0 * * 0">Weekly cleanup (Sunday)</option>
-                    </select>
-                    <input
-                      value={cronForm.name}
-                      onChange={(event) => setCronForm((prev) => ({ ...prev, name: event.target.value }))}
-                      placeholder="Job name"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <input
-                      value={cronForm.schedule}
-                      onChange={(event) => setCronForm((prev) => ({ ...prev, schedule: event.target.value }))}
-                      placeholder="Cron schedule"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <input
-                      value={cronForm.command}
-                      onChange={(event) => setCronForm((prev) => ({ ...prev, command: event.target.value }))}
-                      placeholder="Command"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => runInfraAction('cron.add', cronForm)}
-                      className="w-full rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
-                    >
-                      Add cron job
-                    </button>
-                  </div>
-                  <div className="mt-4 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(infraState?.cron_jobs || []).slice(0, 4).map((job) => (
-                      <div key={job.id} className="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        <span>{job.name} · {job.schedule}</span>
-                        <button
-                          type="button"
-                          onClick={() => runInfraAction('cron.remove', { job_id: job.id })}
-                          className="text-[10px] font-semibold text-rose-600"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                    {(infraState?.cron_jobs || []).length === 0 ? <p className="text-slate-400">No cron jobs yet.</p> : null}
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {activeCategory === 'infra' ? (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">System Logs + Zombie Scan</p>
-                      <p className="text-xs text-slate-500">Syslog snapshots and zombie detection.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => runInfraAction('log.collect', { level: 'info', message: 'Manual log snapshot' })}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Collect logs
-                    </button>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(infraState?.logs || []).slice(0, 4).map((log) => (
-                      <div key={log.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        {log.level || 'info'} · {log.message}
-                      </div>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => runInfraAction('process.scan_zombies')}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Scan zombies
-                    </button>
-                    {(infraState?.zombie_processes || []).slice(0, 2).map((proc) => (
-                      <div key={proc.pid} className="text-[10px] text-rose-500">Zombie: {proc.name} ({proc.pid})</div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">OS Users + SSH Keys</p>
-                    <p className="text-xs text-slate-500">Create/delete accounts and manage keys.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-xs">
-                    <input
-                      value={osUserForm.username}
-                      onChange={(event) => setOsUserForm((prev) => ({ ...prev, username: event.target.value }))}
-                      placeholder="Username"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => runInfraAction('os.user.create', { username: osUserForm.username, role: osUserForm.role })}
-                      className="w-full rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
-                    >
-                      Create OS user
-                    </button>
-                    <input
-                      value={sshKeyForm.label}
-                      onChange={(event) => setSshKeyForm((prev) => ({ ...prev, label: event.target.value }))}
-                      placeholder="SSH key label"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <input
-                      value={sshKeyForm.fingerprint}
-                      onChange={(event) => setSshKeyForm((prev) => ({ ...prev, fingerprint: event.target.value }))}
-                      placeholder="Fingerprint"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => runInfraAction('ssh.key.add', sshKeyForm)}
-                      className="w-full rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-[11px] font-semibold text-slate-600"
-                    >
-                      Add SSH key
-                    </button>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(infraState?.os_users || []).slice(0, 3).map((userRow) => (
-                      <div key={userRow.id} className="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        <span>{userRow.username}</span>
-                        <button
-                          type="button"
-                          onClick={() => runInfraAction('os.user.delete', { username: userRow.username })}
-                          className="text-[10px] font-semibold text-rose-600"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    ))}
-                    {(infraState?.ssh_keys || []).slice(0, 2).map((key) => (
-                      <div key={key.id} className="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        <span>{key.label}</span>
-                        <button
-                          type="button"
-                          onClick={() => runInfraAction('ssh.key.remove', { key_id: key.id })}
-                          className="text-[10px] font-semibold text-rose-600"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">SSL + Backups + Network Settings</p>
-                    <p className="text-xs text-slate-500">Certificates, retention, DNS, timezone.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-xs">
-                    <input
-                      value={sslForm.domain}
-                      onChange={(event) => setSslForm((prev) => ({ ...prev, domain: event.target.value }))}
-                      placeholder="Domain"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => runInfraAction('ssl.cert.issue', { domain: sslForm.domain })}
-                      className="w-full rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
-                    >
-                      Issue SSL cert
-                    </button>
-                    <input
-                      value={infraBackupForm.retention_days}
-                      onChange={(event) => setInfraBackupForm((prev) => ({ ...prev, retention_days: event.target.value }))}
-                      placeholder="Retention days"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => runInfraAction('backup.retention', { retention_days: infraBackupForm.retention_days })}
-                      className="w-full rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-[11px] font-semibold text-slate-600"
-                    >
-                      Update retention
-                    </button>
-                    <input
-                      value={timeForm.timezone}
-                      onChange={(event) => setTimeForm((prev) => ({ ...prev, timezone: event.target.value }))}
-                      placeholder="Timezone (e.g. UTC)"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => runInfraAction('system.timezone.set', { timezone: timeForm.timezone })}
-                      className="w-full rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-[11px] font-semibold text-slate-600"
-                    >
-                      Set timezone
-                    </button>
-                  </div>
-                  <div className="mt-3 text-[11px] text-slate-600 dark:text-slate-300">
-                    Retention: {infraState?.backups?.retention_days || 0} days · SSLs: {(infraState?.ssl_certs || []).length}
-                    <div>Timezone: {infraState?.time_settings?.timezone || 'unset'}</div>
-                    <div>NTP sync: {infraState?.time_settings?.last_sync_at || 'never'}</div>
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {activeCategory === 'network' ? (
-              <div className="admin-card admin-sweep rounded-3xl p-6">
-                <div className="flex items-center gap-2">
-                  <Network className="h-5 w-5 text-emerald-500" />
-                  <div>
-                    <p className="text-sm font-bold">Network Overview</p>
-                    <p className="text-xs text-slate-500">Topology status, alerts, and real-time diagnostics.</p>
-                  </div>
-                </div>
-                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 text-xs text-slate-600 dark:text-slate-300">
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-3">
-                    <p className="text-[10px] uppercase text-slate-500">Devices</p>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{formatNumber(network?.device_total)}</p>
-                    <p>Up: {formatNumber(network?.device_up)} / Down: {formatNumber(network?.device_down)}</p>
-                  </div>
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-3">
-                    <p className="text-[10px] uppercase text-slate-500">Alerts</p>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{formatNumber(network?.alert_count)}</p>
-                    <p>Latency: {network?.traffic_summary?.latency_ms ?? '--'} ms</p>
-                    <p>Jitter: {network?.traffic_summary?.jitter_ms ?? '--'} ms</p>
-                  </div>
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-3">
-                    <p className="text-[10px] uppercase text-slate-500">Bandwidth</p>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{network?.traffic_summary?.bandwidth_mbps ?? '--'} Mbps</p>
-                    <p>Loss: {network?.traffic_summary?.packet_loss_pct ?? '--'}%</p>
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {activeCategory === 'network' ? (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">Device Inventory</p>
-                      <p className="text-xs text-slate-500">Realtime device status.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshNetworkInventory()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Refresh
-                    </button>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(networkInventory?.devices || []).slice(0, 6).map((device) => (
-                      <div key={device.id} className="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        <span>{device.name || device.id} · {device.status}</span>
-                        <button
-                          type="button"
-                          onClick={() => runNetworkAction('device.reboot', { device_id: device.id })}
-                          className="text-[10px] font-semibold text-indigo-600"
-                        >
-                          Reboot
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">VLAN Management</p>
-                    <p className="text-xs text-slate-500">Create and retire VLANs.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-xs">
-                    <input
-                      value={vlanForm.vlan_id}
-                      onChange={(event) => setVlanForm((prev) => ({ ...prev, vlan_id: event.target.value }))}
-                      placeholder="VLAN ID"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <input
-                      value={vlanForm.name}
-                      onChange={(event) => setVlanForm((prev) => ({ ...prev, name: event.target.value }))}
-                      placeholder="Name"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <input
-                      value={vlanForm.subnet}
-                      onChange={(event) => setVlanForm((prev) => ({ ...prev, subnet: event.target.value }))}
-                      placeholder="Subnet"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <input
-                      value={vlanForm.gateway}
-                      onChange={(event) => setVlanForm((prev) => ({ ...prev, gateway: event.target.value }))}
-                      placeholder="Gateway"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => runNetworkAction('vlan.create', vlanForm)}
-                      className="w-full rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
-                    >
-                      Add VLAN
-                    </button>
-                  </div>
-                  <div className="mt-4 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(networkInventory?.vlans || []).slice(0, 4).map((vlan) => (
-                      <div key={vlan.id} className="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        <span>VLAN {vlan.id} · {vlan.subnet}</span>
-                        <button
-                          type="button"
-                          onClick={() => runNetworkAction('vlan.delete', { vlan_id: vlan.id })}
-                          className="text-[10px] font-semibold text-rose-600"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">IPAM + Config Backups</p>
-                    <p className="text-xs text-slate-500">Reserve IPs and capture configs.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-xs">
-                    <input
-                      value={ipamForm.ip}
-                      onChange={(event) => setIpamForm((prev) => ({ ...prev, ip: event.target.value }))}
-                      placeholder="IP address"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <input
-                      value={ipamForm.owner}
-                      onChange={(event) => setIpamForm((prev) => ({ ...prev, owner: event.target.value }))}
-                      placeholder="Owner"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => runNetworkAction('ipam.reserve', ipamForm)}
-                      className="w-full rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
-                    >
-                      Reserve IP
-                    </button>
-                    <input
-                      value={backupForm.device_id}
-                      onChange={(event) => setBackupForm({ device_id: event.target.value })}
-                      placeholder="Device ID for backup"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => runNetworkAction('config.backup', backupForm)}
-                      className="w-full rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-[11px] font-semibold text-slate-600"
-                    >
-                      Run config backup
-                    </button>
-                  </div>
-                  <div className="mt-4 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(networkInventory?.ipam_reservations || []).slice(0, 3).map((row) => (
-                      <div key={row.id} className="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        <span>{row.ip} · {row.owner || 'reserved'}</span>
-                        <button
-                          type="button"
-                          onClick={() => runNetworkAction('ipam.release', { ip: row.ip })}
-                          className="text-[10px] font-semibold text-rose-600"
-                        >
-                          Release
-                        </button>
-                      </div>
-                    ))}
-                    {(networkInventory?.config_backups || []).slice(0, 2).map((row) => (
-                      <div key={row.id} className="text-[11px] text-slate-500">Backup {row.device_id || 'device'} · {row.created_at}</div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {activeCategory === 'network' ? (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">IDS/IPS + Rogue AP</p>
-                    <p className="text-xs text-slate-500">Security monitoring feeds.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(networkInventory?.ids_alerts || []).slice(0, 3).map((alert) => (
-                      <div key={alert.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        {alert.severity} · {alert.message}
-                      </div>
-                    ))}
-                    {(networkInventory?.rogue_aps || []).slice(0, 2).map((ap) => (
-                      <div key={ap.id} className="text-[11px] text-rose-500">Rogue AP: {ap.ssid}</div>
-                    ))}
-                    <div className="text-[11px] text-slate-500">Firmware jobs: {(networkInventory?.firmware_jobs || []).length}</div>
-                    <div className="text-[11px] text-slate-500">Bulk config jobs: {(networkInventory?.bulk_config_jobs || []).length}</div>
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">NetFlow + Alert Integrations</p>
-                    <p className="text-xs text-slate-500">Traffic analytics and alert sinks.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(networkInventory?.flow_stats || []).slice(0, 2).map((flow) => (
-                      <div key={flow.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        Flows: {flow.total_flows}
-                      </div>
-                    ))}
-                    {(networkInventory?.alert_integrations || []).slice(0, 2).map((integration) => (
-                      <div key={integration.id} className="text-[11px] text-slate-500">{integration.type}: {integration.target}</div>
-                    ))}
-                    <div className="text-[11px] text-slate-500">Config audits: {(networkInventory?.config_audit || []).length}</div>
-                    <div className="text-[11px] text-slate-500">QoS policies: {(networkInventory?.qos_policies || []).length}</div>
-                    <div className="text-[11px] text-slate-500">Traffic shaping: {(networkInventory?.traffic_shapes || []).length}</div>
-                    <div className="text-[11px] text-slate-500">Restore jobs: {(networkInventory?.config_restore_jobs || []).length}</div>
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">Client Monitoring + Auth Servers</p>
-                    <p className="text-xs text-slate-500">Connected clients and RADIUS/TACACS.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(networkInventory?.clients || []).slice(0, 3).map((client) => (
-                      <div key={client.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        {client.ip || client.mac} · {client.status || 'online'}
-                      </div>
-                    ))}
-                    {(networkInventory?.auth_servers || []).slice(0, 2).map((srv) => (
-                      <div key={srv.id} className="text-[11px] text-slate-500">{srv.type}: {srv.host}</div>
-                    ))}
-                    <div className="text-[11px] text-slate-500">Active tunnels: {(networkInventory?.tunnels || []).length}</div>
-                    <div className="text-[11px] text-slate-500">VPN tunnels: {(networkInventory?.vpn_tunnels || []).length}</div>
-                    <div className="text-[11px] text-slate-500">Firewall policies: {(networkInventory?.firewall_policies || []).length}</div>
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {activeCategory === 'server-admin' ? (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">Web Server + PHP</p>
-                      <p className="text-xs text-slate-500">Config editor and version manager.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshServerAdminState()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Refresh
-                    </button>
-                  </div>
-                  <div className="mt-3 text-[11px] text-slate-600 dark:text-slate-300">
-                    Web: {serverAdminState?.web_server?.type} · {serverAdminState?.web_server?.status}
-                  </div>
-                  <div className="mt-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    PHP {serverAdminState?.php?.version}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">Domains + Apps</p>
-                    <p className="text-xs text-slate-500">DNS, installers, and file manager.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(serverAdminState?.domains || []).slice(0, 3).map((domain) => (
-                      <div key={domain.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        {domain.domain} · {domain.status}
-                      </div>
-                    ))}
-                    {(serverAdminState?.apps || []).slice(0, 2).map((app) => (
-                      <div key={app.id} className="text-[11px] text-slate-500">{app.name} · {app.version}</div>
-                    ))}
-                    <div className="text-[11px] text-slate-500">Files: {(serverAdminState?.files || []).length}</div>
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">RBAC + Queues + Backups</p>
-                    <p className="text-xs text-slate-500">Admin roles and task queues.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(serverAdminState?.rbac_roles || []).slice(0, 3).map((role) => (
-                      <div key={role.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        {role.name} · {role.permissions?.length || 0} perms
-                      </div>
-                    ))}
-                    {(serverAdminState?.task_queues || []).slice(0, 2).map((queue) => (
-                      <div key={queue.id} className="text-[11px] text-slate-500">{queue.name} · {queue.pending} pending</div>
-                    ))}
-                    <div className="text-[11px] text-slate-500">IDS status: {serverAdminState?.security?.ids_status || 'idle'}</div>
-                    <div className="text-[11px] text-slate-500">DB admin sessions: {(serverAdminState?.db_admin_sessions || []).length}</div>
-                    <div className="text-[11px] text-slate-500">Backup providers: {(serverAdminState?.backups?.providers || []).length}</div>
-                    <div className="text-[11px] text-slate-500">Auto updates: {serverAdminState?.automation?.auto_updates ? 'On' : 'Off'} · Window {serverAdminState?.automation?.patch_window || '--'}</div>
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">Integrations + Installers</p>
-                      <p className="text-xs text-slate-500">Provider wiring and tooling status.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshIntegrationStatus()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Refresh
-                    </button>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    <div className="text-[11px] text-slate-500">Signature: {integrationStatus?.signature?.provider || '--'} · {integrationStatus?.signature?.configured ? 'configured' : 'missing'}</div>
-                    <div className="text-[11px] text-slate-500">Bank validation: {integrationStatus?.bank_validation?.provider || '--'} · {integrationStatus?.bank_validation?.configured ? 'configured' : 'missing'}</div>
-                    <div className="text-[11px] text-slate-500">IDS/IPS: {integrationStatus?.ids_ips?.source || '--'} · {integrationStatus?.ids_ips?.configured ? 'configured' : 'missing'}</div>
-                    <div className="text-[11px] text-slate-500">RADIUS/TACACS: {(integrationStatus?.radius?.configured || integrationStatus?.tacacs?.configured) ? 'configured' : 'missing'}</div>
-                    <div className="text-[11px] text-slate-500">Rogue AP: {integrationStatus?.rogue_ap?.configured ? 'configured' : 'missing'} · NetFlow: {integrationStatus?.netflow?.configured ? 'configured' : 'missing'}</div>
-                    <div className="text-[11px] text-slate-500">Alert delivery: Slack {integrationStatus?.alert_delivery?.slack ? 'on' : 'off'} · SMS {integrationStatus?.alert_delivery?.sms ? 'on' : 'off'} · Email {integrationStatus?.alert_delivery?.email ? 'on' : 'off'}</div>
-                    <div className="text-[11px] text-slate-500">Backups: S3 {integrationStatus?.backups?.s3 ? 'on' : 'off'} · GCS {integrationStatus?.backups?.gcs ? 'on' : 'off'} · Spaces {integrationStatus?.backups?.spaces ? 'on' : 'off'}</div>
-                    <div className="text-[11px] text-slate-500">Installer: {integrationStatus?.installers?.source || 'unknown'} · {integrationStatus?.installers?.os || '--'}</div>
-                    <div className="text-[11px] text-slate-500">Registrar: {integrationStatus?.registrar?.provider || '--'} · {integrationStatus?.registrar?.configured ? 'configured' : 'missing'}</div>
-                    {serverAdminState?.db_admin_ui?.configured ? (
-                      <a
-                        href={serverAdminState.db_admin_ui.phpmyadmin_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-[11px] font-semibold text-slate-700 underline"
-                      >
-                        Open phpMyAdmin
-                      </a>
-                    ) : (
-                      <div className="text-[11px] text-slate-500">phpMyAdmin: not configured</div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">OpenSearch</p>
-                      <p className="text-xs text-slate-500">Faceted search engine + fast estimates.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshOpenSearchStatus()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Refresh
-                    </button>
-                  </div>
-
-                  <div className="mt-3 space-y-1 text-[11px] text-slate-600 dark:text-slate-300">
-                    <div className="text-[11px] text-slate-500">
-                      Enabled: {openSearchConfig.enabled ? 'On' : 'Off'} Â· Configured: {openSearchStatus?.configured ? 'yes' : 'no'} Â· Reachable: {openSearchStatus?.reachable ? 'yes' : 'no'}
-                    </div>
-                    {openSearchStatus?.indices ? (
-                      <div className="text-[11px] text-slate-500">
-                        Products: {openSearchStatus.indices.products?.exists ? 'ok' : 'missing'} ({openSearchStatus.indices.products?.count ?? 0}) Â·
-                        Requirements: {openSearchStatus.indices.requirements?.exists ? 'ok' : 'missing'} ({openSearchStatus.indices.requirements?.count ?? 0})
-                      </div>
-                    ) : null}
-                    {openSearchStatus?.last_ok_at ? (
-                      <div className="text-[11px] text-slate-500">Last OK: {openSearchStatus.last_ok_at}</div>
-                    ) : null}
-                    {openSearchStatus?.last_error ? (
-                      <div className="text-[11px] text-rose-600">Last error: {openSearchStatus.last_error}</div>
-                    ) : null}
-                  </div>
-
-                  <div className="mt-3 grid grid-cols-1 gap-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={openSearchConfig.enabled}
-                        onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, enabled: e.target.checked }))}
-                        className="h-4 w-4"
-                      />
-                      Enable OpenSearch
-                    </label>
-                    <input
-                      value={openSearchConfig.url}
-                      onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, url: e.target.value }))}
-                      placeholder="OpenSearch URL (e.g. http://localhost:9200)"
-                      className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-[11px] text-slate-700"
-                    />
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        value={openSearchConfig.username}
-                        onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, username: e.target.value }))}
-                        placeholder="Username (optional)"
-                        className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-[11px] text-slate-700"
-                      />
-                      <input
-                        type="password"
-                        value={openSearchConfig.password}
-                        onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, password: e.target.value }))}
-                        placeholder="Password (optional)"
-                        className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-[11px] text-slate-700"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        value={openSearchConfig.index_prefix}
-                        onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, index_prefix: e.target.value }))}
-                        placeholder="Index prefix"
-                        className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-[11px] text-slate-700"
-                      />
-                      <input
-                        type="number"
-                        value={openSearchConfig.timeout_ms}
-                        onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, timeout_ms: e.target.value }))}
-                        placeholder="Timeout (ms)"
-                        className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-[11px] text-slate-700"
-                      />
-                    </div>
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={openSearchConfig.verify_tls}
-                        onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, verify_tls: e.target.checked }))}
-                        className="h-4 w-4"
-                      />
-                      Verify TLS certificate
-                    </label>
-
-                    {openSearchNotice ? <div className="text-[11px] text-emerald-600">{openSearchNotice}</div> : null}
-                    {openSearchError ? <div className="text-[11px] text-rose-600">{openSearchError}</div> : null}
-
-                    <div className="mt-1 flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={saveOpenSearchConfig}
-                        disabled={openSearchConfigBusy}
-                        className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-semibold text-slate-600 disabled:opacity-60"
-                      >
-                        {openSearchConfigBusy ? 'Saving...' : 'Save settings'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => runOpenSearchAction('opensearch.test_connection')}
-                        disabled={Boolean(openSearchActionBusy)}
-                        className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-semibold text-slate-600 disabled:opacity-60"
-                      >
-                        {openSearchActionBusy === 'opensearch.test_connection' ? 'Testing...' : 'Test connection'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => runOpenSearchAction('opensearch.ensure_indices')}
-                        disabled={Boolean(openSearchActionBusy)}
-                        className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-semibold text-slate-600 disabled:opacity-60"
-                      >
-                        Ensure indices
-                      </button>
-                    </div>
-
-                    <div className="mt-1 flex flex-wrap items-center gap-2">
-                      <label className="flex items-center gap-2 text-[10px] text-slate-500">
-                        <input
-                          type="checkbox"
-                          checked={openSearchReset}
-                          onChange={(e) => setOpenSearchReset(e.target.checked)}
-                          className="h-3 w-3"
-                        />
-                        Reset
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => runOpenSearchAction('opensearch.reindex_all', { reset: openSearchReset })}
-                        disabled={Boolean(openSearchActionBusy)}
-                        className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-semibold text-slate-600 disabled:opacity-60"
-                      >
-                        Reindex all
-                      </button>
-                    </div>
-
-                    <div className="mt-1 flex flex-wrap gap-2">
-                      <input
-                        value={openSearchOrgId}
-                        onChange={(e) => setOpenSearchOrgId(e.target.value)}
-                        placeholder="Org ID (reindex org)"
-                        className="flex-1 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-[11px] text-slate-700"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => runOpenSearchAction('opensearch.reindex_org', { org_id: openSearchOrgId })}
-                        disabled={Boolean(openSearchActionBusy) || !String(openSearchOrgId || '').trim()}
-                        className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-semibold text-slate-600 disabled:opacity-60"
-                      >
-                        Reindex org
-                      </button>
-                    </div>
-
-                    <div className="text-[10px] text-slate-400">
-                      Save settings → Ensure indices → Reindex (all or org). Search uses OpenSearch only when enabled + reachable.
-                    </div>
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">Email Notifications</p>
-                    <p className="text-xs text-slate-500">SMTP or Gmail API delivery for reminders.</p>
-                  </div>
-                  <div className="mt-3 grid grid-cols-1 gap-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={emailConfig.enabled}
-                        onChange={(e) => setEmailConfig((prev) => ({ ...prev, enabled: e.target.checked }))}
-                        className="h-4 w-4"
-                      />
-                      Enabled
-                    </label>
-                    <select
-                      value={emailConfig.provider}
-                      onChange={(e) => setEmailConfig((prev) => ({ ...prev, provider: e.target.value }))}
-                      className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-[11px] text-slate-700"
-                    >
-                      <option value="smtp">SMTP</option>
-                      <option value="gmail_api">Gmail API</option>
-                    </select>
-                    <input
-                      value={emailConfig.from_name}
-                      onChange={(e) => setEmailConfig((prev) => ({ ...prev, from_name: e.target.value }))}
-                      placeholder="From name"
-                      className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-[11px] text-slate-700"
-                    />
-                    <input
-                      value={emailConfig.from_email}
-                      onChange={(e) => setEmailConfig((prev) => ({ ...prev, from_email: e.target.value }))}
-                      placeholder="From email"
-                      className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-[11px] text-slate-700"
-                    />
-                    <input
-                      value={emailConfig.test_recipient}
-                      onChange={(e) => setEmailConfig((prev) => ({ ...prev, test_recipient: e.target.value }))}
-                      placeholder="Test recipient"
-                      className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-[11px] text-slate-700"
-                    />
-                    {emailConfigNotice ? <div className="text-[11px] text-emerald-600">{emailConfigNotice}</div> : null}
-                    {emailConfigError ? <div className="text-[11px] text-rose-600">{emailConfigError}</div> : null}
-                    <div className="mt-1 flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={saveEmailConfig}
-                        disabled={emailConfigBusy}
-                        className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-semibold text-slate-600 disabled:opacity-60"
-                      >
-                        {emailConfigBusy ? 'Saving...' : 'Save settings'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={sendEmailTest}
-                        className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-semibold text-slate-600"
-                      >
-                        Send test
-                      </button>
-                    </div>
-                    <div className="text-[10px] text-slate-400">
-                      Secrets remain in env vars. If provider is not configured, email is skipped silently.
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {activeCategory === 'cms' ? (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">Articles + Pages</p>
-                      <p className="text-xs text-slate-500">Headless CMS editor output.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshCmsState()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Refresh
-                    </button>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(cmsState?.articles || []).slice(0, 3).map((article) => (
-                      <div key={article.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        {article.title} · {article.status}
-                      </div>
-                    ))}
-                    {(cmsState?.pages || []).slice(0, 2).map((page) => (
-                      <div key={page.id} className="text-[11px] text-slate-500">{page.title}</div>
-                    ))}
-                    <div className="text-[11px] text-slate-500">Media items: {(cmsState?.media || []).length}</div>
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">Theme + SEO + Cache</p>
-                    <p className="text-xs text-slate-500">Frontend configuration.</p>
-                  </div>
-                  <div className="mt-3 text-[11px] text-slate-600 dark:text-slate-300">
-                    Theme: {cmsState?.theme?.active}
-                  </div>
-                  <div className="mt-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    SEO title: {cmsState?.seo?.default_title}
-                  </div>
-                  <div className="mt-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    Cache cleared: {cmsState?.cache?.last_cleared_at || 'never'}
-                  </div>
-                  <div className="mt-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    Env vars: {Object.keys(cmsState?.env?.vars || {}).length}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">Deployments + Backups</p>
-                    <p className="text-xs text-slate-500">Automation and cron scripts.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(cmsState?.deployments || []).slice(0, 2).map((deploy) => (
-                      <div key={deploy.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        {deploy.branch} · {deploy.status}
-                      </div>
-                    ))}
-                    <div className="text-[11px] text-slate-500">Versions: {(cmsState?.versions || []).length}</div>
-                    {(cmsState?.cron_scripts || []).slice(0, 2).map((job) => (
-                      <div key={job.id} className="text-[11px] text-slate-500">{job.command} · {job.schedule}</div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {activeCategory === 'ultra-security' ? (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">Zero Trust + MFA</p>
-                      <p className="text-xs text-slate-500">Session control and device fingerprints.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshSecurityState()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Refresh
-                    </button>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    <div>Zero-trust: {securityState?.zero_trust?.enabled ? 'On' : 'Off'}</div>
-                    <div>MFA required: {securityState?.mfa?.required ? 'Yes' : 'No'}</div>
-                    <div>Session timeout: {securityState?.session?.timeout_minutes} min</div>
-                    <div>IP allowlist: {(securityState?.ip_whitelist || []).length}</div>
-                    <div>Geo-fence: {securityState?.geo_fence?.enabled ? 'On' : 'Off'}</div>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => runSecurityAction('security.zero_trust.toggle', { enabled: !securityState?.zero_trust?.enabled })}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Toggle zero-trust
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => runSecurityAction('security.encryption.rotate')}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Rotate keys
-                    </button>
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">Incident Response</p>
-                    <p className="text-xs text-slate-500">Incident dashboard and approvals.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(securityState?.incidents || []).slice(0, 3).map((incident) => (
-                      <div key={incident.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        {incident.title} · {incident.status}
-                      </div>
-                    ))}
-                    {(securityState?.data_exports?.pending || []).slice(0, 2).map((req) => (
-                      <div key={req.id} className="text-[11px] text-slate-500">Export {req.dataset} · {req.status}</div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">Forensic + Immutable Backups</p>
-                    <p className="text-xs text-slate-500">Tamper-proof logs and snapshots.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    <div>Forensic logs: {(securityState?.forensic_logs || []).length}</div>
-                    <div>Immutable snapshots: {securityState?.immutable_backups?.last_snapshot_at || 'none'}</div>
-                    <div>Last key rotation: {securityState?.encryption?.last_rotated_at || 'never'}</div>
-                    <div>Tamper-proof logs: {securityState?.tamper_proof_logs?.enabled ? 'On' : 'Off'}</div>
-                    <div>System events: {(securityState?.system_events || []).length}</div>
-                    {(securityState?.system_events || []).slice(0, 2).map((evt) => (
-                      <div key={evt.id} className="text-[11px] text-slate-500">{evt.level || 'event'} · {evt.message}</div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            <div className="space-y-4">
-              {activeData?.sections?.map((section) => {
-                const metrics = SECTION_METRICS[section.id] || []
-                const features = Array.isArray(section.features) ? section.features : []
-                return (
-                  <details key={section.id} className="admin-card admin-sweep rounded-3xl p-6">
-                    <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-bold">{section.title}</p>
-                        <p className="text-xs text-slate-500">{features.length} capabilities</p>
-                      </div>
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold${statusBadge('live')}`}>live</span>
-                    </summary>
-                    <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
-                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                        {features.map((item) => (
-                          <div key={item} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-[11px] text-slate-600 dark:text-slate-300">
-                            {item}
-                          </div>
-                        ))}
-                      </div>
-                      <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs text-slate-600 dark:text-slate-300">
-                        <p className="text-[10px] font-semibold uppercase text-slate-500">Live Metrics</p>
-                        <div className="mt-2 space-y-2">
-                          {metrics.length ? metrics.map((metric) => {
-                            const value = resolvePath(summary, metric.path)
-                            const display = metric.format === 'currency' ? formatCurrency(value) : formatNumber(value)
-                            return (
-                              <div key={metric.label} className="flex items-center justify-between">
-                                <span>{metric.label}</span>
-                                <span className="font-semibold text-slate-900 dark:text-white">{value === undefined ? '--' : display}</span>
-                              </div>
-                            )
-                          }) : <div className="text-xs text-slate-500">Metrics coming from live feeds.</div>}
-                        </div>
-                      </div>
-                    </div>
-                  </details>
-                )
-              })}
-            </div>
-          </section>
-
-          <aside className="space-y-4">
-              <div className="admin-card admin-sweep rounded-3xl p-5">
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200/80">Verification Queue</p>
-                    <p className="text-[11px] text-slate-400">EU/USA docs pending review.</p>
-                  </div>
-                <button
-                  type="button"
-                  onClick={() => refreshVerificationQueue()}
-                  className="rounded-full shadow-borderless dark:shadow-borderlessDark bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-[#13171E]"
-                >
-                  Refresh
-                </button>
-              </div>
-              <div className="mt-3 space-y-2 text-xs">
-                {verificationQueue.slice(0, 3).map((row) => (
-                  <div key={row.id || row.user_id} className="rounded-2xl shadow-borderless dark:shadow-borderlessDark px-3 py-2">
-                    <p className="text-[11px] font-semibold">{row.user_name || row.user_email || row.user_id}</p>
-                    <p className="text-[10px] text-slate-400">Doc: {row.doc_type || row.type || 'business'} · Status: {row.status || 'pending'}</p>
-                  </div>
-                ))}
-                {!verificationQueue.length ? (
-                  <p className="text-[11px] text-slate-400">No pending verifications in queue.</p>
-                ) : null}
-              </div>
-            </div>
-
-              <div className="admin-card admin-sweep rounded-3xl p-5">
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200/80">Dispute Radar</p>
-                    <p className="text-[11px] text-slate-400">Contracts with open issues.</p>
-                  </div>
-                <button
-                  type="button"
-                  onClick={() => refreshDisputes()}
-                  className="rounded-full shadow-borderless dark:shadow-borderlessDark bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-[#13171E]"
-                >
-                  Sync
-                </button>
-              </div>
-              <div className="mt-3 space-y-2 text-xs">
-                {disputes.slice(0, 3).map((dispute) => (
-                  <div key={dispute.id} className="rounded-2xl shadow-borderless dark:shadow-borderlessDark px-3 py-2">
-                    <p className="text-[11px] font-semibold">{dispute.title || dispute.contract_id || 'Dispute'}</p>
-                    <p className="text-[10px] text-slate-400">Status: {dispute.status || 'open'} · Priority: {dispute.priority || 'normal'}</p>
-                  </div>
-                ))}
-                {!disputes.length ? (
-                  <p className="text-[11px] text-slate-400">No active disputes.</p>
-                ) : null}
-              </div>
-            </div>
-
-              <div className="admin-card admin-sweep rounded-3xl p-5">
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200/80">Audit Pulse</p>
-                    <p className="text-[11px] text-slate-400">Most recent admin actions.</p>
-                  </div>
-                <button
-                  type="button"
-                  onClick={() => refreshAudit()}
-                  className="rounded-full shadow-borderless dark:shadow-borderlessDark bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-[#13171E]"
-                >
-                  Refresh
-                </button>
-              </div>
-              <div className="mt-3 space-y-2 text-xs">
-                {audit.slice(0, 5).map((entry) => (
-                  <div key={entry.id || entry.at} className="rounded-2xl shadow-borderless dark:shadow-borderlessDark px-3 py-2">
-                    <p className="text-[11px] font-semibold">{entry.action || 'Admin action'}</p>
-                    <p className="text-[10px] text-slate-400">{entry.at ? new Date(entry.at).toLocaleString() : '--'} · {entry.actor || 'system'}</p>
-                  </div>
-                ))}
-                {!audit.length ? (
-                  <p className="text-[11px] text-slate-400">No recent activity.</p>
-                ) : null}
-              </div>
-            </div>
-          </aside>
-        </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-bold">Admin Audit Log</p>
-                      <p className="text-xs text-slate-500">Immutable, tamper-evident audit trail for every admin action.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshAudit()}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark bg-black/40 px-3 py-1 text-xs font-semibold text-sky-100 hover:bg-[#13171E]"
-                    >
-                      Refresh log
-                    </button>
-                  </div>
-                  <div className="mt-4 grid grid-cols-1 gap-2">
-                    {audit.slice(0, 10).map((entry) => (
-                      <div key={entry.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-[11px] text-slate-600 dark:text-slate-300">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div className="font-semibold text-slate-900 dark:text-white">{entry.action || entry.path}</div>
-                          <div>{entry.at ? new Date(entry.at).toLocaleString() : '--'}</div>
-                        </div>
-                        <div className="mt-1 text-[10px] text-slate-500">Actor: {entry.actor_id || 'system'} / Status: {entry.status}</div>
-                        <div className="mt-1 text-[10px] text-slate-500">IP: {entry.ip || '--'} / Device: {entry.device_id || '--'}</div>
-                      </div>
-                    ))}
-                    {audit.length === 0 ? <p className="text-xs text-slate-500">No audit entries yet.</p> : null}
-                  </div>
-                </div>
-                </>
-              ) : null}
-            </div>
-          </div>
-        </main>
-      </div>
-    </div>
-  )
 }
-
-

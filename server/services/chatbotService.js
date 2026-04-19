@@ -1,11 +1,10 @@
 import crypto from 'crypto'
 import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
-import { moderateTextOrRedact } from './policyService.js'
 import { createNotification } from './notificationService.js'
 import { addLeadNoteForMatch } from './leadService.js'
 import { getRequirementById, updateRequirement } from './requirementService.js'
-import { listKnowledge } from './assistantService.js'
+import { listKnowledge, callLlama } from './assistantService.js'
 
 const USERS_FILE = 'users.json'
 const MESSAGES_FILE = 'messages.json'
@@ -57,10 +56,6 @@ function buildCompanyFacts(user) {
   }
 }
 
-function keywordIncludes(text, keywords = []) {
-  const lower = String(text || '').toLowerCase()
-  return keywords.some((k) => lower.includes(String(k || '').toLowerCase()))
-}
 
 function scoreKnowledgeMatch(questionText, entry) {
   const q = String(questionText || '').toLowerCase()
@@ -88,43 +83,6 @@ function findKnowledgeAnswer(questionText, entries = []) {
   return { answer: best.answer, entry: best, score: bestScore }
 }
 
-function botMatchResponse({ question = '', companyUser }) {
-  const q = String(question || '').toLowerCase()
-  const facts = buildCompanyFacts(companyUser)
-
-  // Simple high-signal Q/A patterns (MVP) based on project.md.
-  if (keywordIncludes(q, ['moq', 'minimum order', 'min order', 'minimum quantity'])) {
-    if (facts.moq) return `Our minimum order quantity (MOQ) is **${facts.moq}**.`
-    return null
-  }
-
-  if (keywordIncludes(q, ['lead time', 'delivery', 'timeline'])) {
-    if (facts.leadTime) return `Typical lead time is **${facts.leadTime} days** (depends on fabric and trims).`
-    return null
-  }
-
-  if (keywordIncludes(q, ['capacity', 'monthly', 'production'])) {
-    if (facts.capacity) return `Our production capacity is **${facts.capacity}**.`
-    return null
-  }
-
-  if (keywordIncludes(q, ['cert', 'certification', 'compliance', 'audit'])) {
-    if (facts.certifications.length) return `Certifications: **${facts.certifications.join(', ')}**.`
-    return `We support document-based verification. If you need specific compliance documents, please mention the requirement.`
-  }
-
-  if (keywordIncludes(q, ['category', 'product', 'items', 'what do you make', 'specialize'])) {
-    if (facts.categories.length) return `We focus on: **${facts.categories.join(', ')}**.`
-    return null
-  }
-
-  if (keywordIncludes(q, ['country', 'location', 'where are you'])) {
-    if (facts.country) return `We are based in **${facts.country}**.`
-    return null
-  }
-
-  return null
-}
 
 function extractNumberFromText(text, pattern) {
   if (!text) return null
@@ -157,22 +115,6 @@ function computeMissingFields(requirement) {
   })
 }
 
-function computeQualificationScore(requirement, companyUser) {
-  const missing = computeMissingFields(requirement)
-  const completeness = 1 - (missing.length / Math.max(1, QUALIFICATION_FIELDS.length))
-
-  const facts = buildCompanyFacts(companyUser)
-  const reqCategory = String(requirement?.category || requirement?.industry || requirement?.product || '').toLowerCase().trim()
-  const companyCategories = facts.categories.map((c) => String(c || '').toLowerCase().trim()).filter(Boolean)
-
-  let fitScore = 0.5
-  if (reqCategory && companyCategories.length) {
-    fitScore = companyCategories.some((c) => c.includes(reqCategory) || reqCategory.includes(c)) ? 0.85 : 0.35
-  }
-
-  const score = (0.7 * completeness) + (0.3 * fitScore)
-  return { score: Math.max(0, Math.min(1, Math.round(score * 100) / 100)), missing, fitScore }
-}
 
 function buildQualificationQuestion(missing) {
   if (!missing.length) return ''
@@ -340,6 +282,38 @@ export async function getChatbotProfileSummary(targetUserId) {
   }
 }
 
+async function generateGenerativeBotReply({ question, companyUser, knowledgeAnswer, qualificationQuestion, companyFacts }) {
+  const orgOwnerId = resolveOrgOwnerForCompany(companyUser)
+  const entries = await listKnowledge(orgOwnerId)
+  const knowledgeContext = entries.slice(0, 5).map(e => `Q: ${e.question}\nA: ${e.answer}`).join('\n\n')
+
+  const systemPrompt = `You are a professional AI assistant for ${companyUser.name || 'a textile factory'}.
+Your goal is to answer buyer inquiries naturally using the provided company facts and knowledge base.
+
+Company Facts:
+- MOQ: ${companyFacts.moq || 'Contact for details'}
+- Capacity: ${companyFacts.capacity || 'Contact for details'}
+- Lead Time: ${companyFacts.leadTime || 'Contact for details'}
+- Certifications: ${companyFacts.certifications.join(', ') || 'Available upon request'}
+- Country: ${companyFacts.country || 'Global'}
+
+Knowledge Context:
+${knowledgeContext}
+
+Rules:
+1. Be concise, professional, and helpful.
+2. Use the company facts accurately.
+3. If you don't know the answer, politely ask for more details or suggest a human agent will follow up.
+4. If a qualification question is provided, integrate it naturally into your response.`
+
+  let userPrompt = `User Question: ${question}`
+  if (knowledgeAnswer) userPrompt += `\nMatched Knowledge: ${knowledgeAnswer.answer}`
+  if (qualificationQuestion) userPrompt += `\nRequirement Follow-up: ${qualificationQuestion}`
+
+  const response = await callLlama(userPrompt, systemPrompt)
+  return response || knowledgeAnswer?.answer || qualificationQuestion || 'I will have an agent look into your request shortly.'
+}
+
 export async function maybeGenerateBotReply({ match_id, sender_id, message }) {
   const matchId = sanitizeString(String(match_id || ''), 160)
   const senderId = sanitizeString(String(sender_id || ''), 120)
@@ -349,14 +323,12 @@ export async function maybeGenerateBotReply({ match_id, sender_id, message }) {
   const users = await readJson(USERS_FILE)
   const usersById = new Map((Array.isArray(users) ? users : []).map((u) => [String(u.id), u]))
 
-  // Determine the company-side user that would "own" the bot in this thread.
   const marketplace = parseMarketplaceMatchId(matchId)
   if (!marketplace) return { reply: null, reason: 'unsupported_match' }
 
   const companyUser = usersById.get(String(marketplace.factoryId)) || null
   if (!companyUser) return { reply: null, reason: 'company_missing' }
 
-  // Ignore bot replies to the company/agent sending messages themselves.
   if (String(companyUser.id || '') === String(senderId || '')) {
     return { reply: null, reason: 'sender_is_company' }
   }
@@ -397,62 +369,33 @@ export async function maybeGenerateBotReply({ match_id, sender_id, message }) {
     if (Object.keys(patch || {}).length > 0) {
       try {
         await updateRequirement(requirement.id, patch, { id: 'system', role: 'admin' })
-      } catch {
-        // ignore patch failures
-      }
+      } catch { /* ignore */ }
 
-      const noteLines = notes.length ? `AI pre-qual captured: ${notes.join(', ')}` : 'AI pre-qual captured details.'
       await addLeadNoteForMatch({
         matchId,
         orgOwnerId: companyUser.id,
-        note: noteLines,
+        note: notes.length ? `AI pre-qual captured: ${notes.join(', ')}` : 'AI pre-qual captured details.',
         authorId: 'system',
       })
     }
 
     const updatedRequirement = Object.keys(patch || {}).length ? { ...requirement, ...patch } : requirement
     const missingFields = computeMissingFields(updatedRequirement)
-    qualificationQuestion = buildQualificationQuestion(missingFields)
-    if (autoReplySettings.qualification_prompt) {
-      qualificationQuestion = autoReplySettings.qualification_prompt
-    }
-    if (qualificationQuestion) {
-      await addLeadNoteForMatch({
-        matchId,
-        orgOwnerId: companyUser.id,
-        note: `AI pre-qual question asked: ${qualificationQuestion}`,
-        authorId: 'system',
-      })
-    }
-
-    const { score, missing, fitScore } = computeQualificationScore(updatedRequirement, companyUser)
-    const summaryLine = [
-      `AI Pre-Qual Summary: Score ${score}`,
-      missing.length ? `Missing: ${missing.map((m) => m.label).join(', ')}` : 'Missing: none',
-      `Fit: ${fitScore >= 0.7 ? 'high' : fitScore >= 0.45 ? 'medium' : 'low'}`,
-    ].join(' | ')
-    await addLeadNoteForMatch({
-      matchId,
-      orgOwnerId: companyUser.id,
-      note: summaryLine,
-      authorId: 'system',
-    })
+    qualificationQuestion = autoReplySettings.qualification_prompt || buildQualificationQuestion(missingFields)
   }
 
-  let rawReply = knowledgeAnswer?.answer || ''
-  if (!rawReply) {
-    rawReply = botMatchResponse({ question, companyUser })
-  }
-  if (!rawReply && qualificationQuestion) {
-    rawReply = qualificationQuestion
-  } else if (rawReply && qualificationQuestion) {
-    rawReply = `${rawReply}\n\nQuick check: ${qualificationQuestion}`
-  }
-  if (!rawReply && autoReplySettings.fallback) {
-    rawReply = autoReplySettings.fallback
-  }
-  if (!rawReply) {
-    // Handoff: notify org owner + assigned agent if any.
+  // GENERATIVE LLM RESPONSE
+  const companyFacts = buildCompanyFacts(companyUser)
+  const safeReply = await generateGenerativeBotReply({
+    question,
+    companyUser,
+    knowledgeAnswer,
+    qualificationQuestion,
+    companyFacts
+  })
+
+  if (!safeReply) {
+    // Handoff logic...
     const orgOwnerId = resolveOrgOwnerForCompany(companyUser)
     const assignedAgentId = await findAssignedAgentForMatch(matchId, orgOwnerId)
 
@@ -477,24 +420,9 @@ export async function maybeGenerateBotReply({ match_id, sender_id, message }) {
     return { reply: null, reason: 'handoff' }
   }
 
-  // Run moderation on bot reply as well (avoid accidental policy leakage).
-  let safeReply = rawReply
-  try {
-    const moderated = await moderateTextOrRedact({
-      actor: companyUser,
-      text: rawReply,
-      entity_type: 'chatbot_reply',
-      entity_id: matchId,
-    })
-    safeReply = moderated.text
-  } catch {
-    // silent
-  }
-
   const signature = autoReplySettings.signature ? `\n\n${autoReplySettings.signature}` : ''
   const greeting = autoReplySettings.greeting ? `${autoReplySettings.greeting}\n\n` : ''
-  const toneHint = autoReplySettings.tone ? `Tone: ${autoReplySettings.tone}. ` : ''
-  const finalReply = `${greeting}${toneHint}${safeReply}${signature}`.trim()
+  const finalReply = `${greeting}${safeReply}${signature}`.trim()
 
   const entry = {
     id: crypto.randomUUID(),
@@ -506,7 +434,6 @@ export async function maybeGenerateBotReply({ match_id, sender_id, message }) {
     type: 'bot',
     timestamp: new Date().toISOString(),
     moderated: false,
-    moderation_reason: '',
     meta: { bot: true },
   }
 

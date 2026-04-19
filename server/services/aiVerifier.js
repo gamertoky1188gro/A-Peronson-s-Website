@@ -1,72 +1,35 @@
-import { getOrgAiSettings } from './orgAiService.js'
+import { callLlama } from './assistantService.js'
 
-export async function verifyExtraction(extracted = {}, orgOwnerId = null) {
-  // Pluggable verifier: prefer remote LLM verifier if configured via env or per-org settings
-  // Otherwise fall back to lightweight rule-based verification.
+export async function verifyExtraction(extracted = {}) {
+  // Use Llama for intelligent verification if no remote verifier is configured
   try {
-    let verifierUrl = process.env.AI_VERIFIER_URL || null
-    let apiKey = process.env.AI_VERIFIER_API_KEY || null
+    const systemPrompt = `You are an AI verification assistant. Compare the provided extracted requirements (JSON) against the user's original intent.
+Check for:
+1. Accuracy: Do the extracted fields match the text?
+2. Hallucinations: Did the AI make up any details not in the text?
+Return a JSON object with: {"verified": boolean, "score": number (0-1), "notes": string}.`
 
-    // allow org-level overrides from org ai settings
-    if (orgOwnerId) {
-      try {
-        const orgSettings = await getOrgAiSettings(orgOwnerId)
-        if (orgSettings && orgSettings.ai_verifier_url) verifierUrl = orgSettings.ai_verifier_url
-        if (orgSettings && orgSettings.ai_verifier_api_key) apiKey = orgSettings.ai_verifier_api_key
-      } catch {
-        void 0
-      }
-    }
-
-    if (verifierUrl) {
-      const fetchFn = typeof fetch === 'function' ? fetch : null
-      if (fetchFn) {
-        const attempts = Number(process.env.AI_VERIFIER_RETRY_ATTEMPTS || 2)
-        const timeoutMs = Number(process.env.AI_VERIFIER_TIMEOUT_MS || 10000)
-
-        for (let attempt = 0; attempt < attempts; attempt++) {
-          try {
-            const controller = typeof AbortController !== 'undefined' ? new AbortController() : null
-            const signal = controller ? controller.signal : undefined
-            let timer = null
-            if (controller) timer = setTimeout(() => controller.abort(), timeoutMs)
-
-            const resp = await fetchFn(verifierUrl, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
-              },
-              body: JSON.stringify({ extracted }),
-              signal,
-            })
-
-            if (timer) clearTimeout(timer)
-
-            if (resp && resp.ok) {
-              const json = await resp.json()
-              if (json && typeof json.verified === 'boolean') {
-                return { verified: Boolean(json.verified), score: Number(json.score || 0), notes: json.notes || 'verified_by_remote' }
-              }
-            }
-          } catch (err) {
-            // on last attempt, rethrow to be handled by outer catch
-            if (attempt === attempts - 1) throw err
-            // backoff small jitter
-            await new Promise((r) => setTimeout(r, 100 * (attempt + 1)))
-          }
-        }
+    const prompt = `Original Notes: ${extracted.notes || 'No notes provided.'}\nExtracted Data: ${JSON.stringify(extracted)}`
+    
+    const response = await callLlama(prompt, systemPrompt)
+    const match = response?.match(/\{[\s\S]*\}/)
+    if (match) {
+      const parsed = JSON.parse(match[0])
+      return {
+        verified: Boolean(parsed.verified),
+        score: Number(parsed.score || 0),
+        notes: String(parsed.notes || 'verified_by_llama')
       }
     }
   } catch (err) {
-    if (process.env.NODE_ENV !== 'test') console.debug('aiVerifier remote check failed', err?.message || err)
+    if (process.env.NODE_ENV !== 'test') console.debug('Llama verification failed', err?.message || err)
   }
 
-  // Fallback simple rule: require product_type for basic verification
+  // Fallback simple rule if Llama fails
   try {
     const verified = Boolean(extracted && extracted.product_type)
-    const score = verified ? 1 : 0
-    return { verified, score, notes: verified ? 'Basic rule: product_type present' : 'Missing product_type' }
+    const score = verified ? 0.5 : 0
+    return { verified, score, notes: verified ? 'Fallback: product_type present' : 'Fallback: Missing product_type' }
   } catch {
     return { verified: false, score: 0, notes: 'verifier_error' }
   }
