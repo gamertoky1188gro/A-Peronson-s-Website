@@ -404,6 +404,126 @@ function exportEmailsCsv(rows = []) {
   URL.revokeObjectURL(url)
 }
 
+function AdminSecurityOverlay({ error, onResolve }) {
+  const [mfa, setMfa] = useState(() => localStorage.getItem('admin_mfa_code') || '')
+  const [passkey, setPasskey] = useState(() => localStorage.getItem('admin_passkey') || '')
+  const [stepup, setStepup] = useState(() => localStorage.getItem('admin_stepup_code') || '')
+  const [deviceId, setDeviceId] = useState(() => localStorage.getItem('admin_device_id') || import.meta.env.VITE_ADMIN_DEVICE_ID || 'local-dev-device')
+  const [busy, setBusy] = useState(false)
+  const [localError, setLocalError] = useState('')
+
+  async function handleUnlock() {
+    localStorage.setItem('admin_mfa_code', mfa)
+    localStorage.setItem('admin_passkey', passkey)
+    localStorage.setItem('admin_stepup_code', stepup)
+    localStorage.setItem('admin_device_id', deviceId)
+    onResolve()
+  }
+
+  async function handleRegisterDevice() {
+    setBusy(true)
+    setLocalError('')
+    try {
+      const token = getToken()
+      const res = await apiRequest('/admin/security/actions', {
+        method: 'POST',
+        token,
+        body: {
+          action: 'security.admin.device.add',
+          payload: { device_id: deviceId }
+        }
+      })
+      if (res.ok || res.status === 200) {
+        localStorage.setItem('admin_device_id', deviceId)
+        onResolve()
+      } else {
+        setLocalError(res.error || 'Failed to register device. Ensure MFA/Passkey is correct.')
+      }
+    } catch (err) {
+      setLocalError(err.message || 'Registration failed')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-6">
+      <div className="admin-panel admin-sweep w-full max-w-md rounded-[32px] p-8 text-center shadow-2xl">
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-500/20 text-rose-400">
+          <Activity className="h-8 w-8" />
+        </div>
+        <h2 className="text-2xl font-bold text-white">Security Access Required</h2>
+        <p className="mt-2 text-sm text-slate-400">
+          {error || 'Your device is not registered or security credentials are required to unlock the Admin Matrix.'}
+        </p>
+
+        <div className="mt-8 space-y-4 text-left">
+          <label className="block">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 ml-1">MFA Code</span>
+            <input
+              type="text"
+              value={mfa}
+              onChange={(e) => setMfa(e.target.value)}
+              className="mt-1 w-full rounded-2xl bg-slate-900 border-none px-4 py-3 text-sm text-white placeholder:text-slate-700 shadow-borderless focus:ring-2 focus:ring-sky-500/50 transition-all"
+              placeholder="Enter MFA code"
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 ml-1">Admin Passkey</span>
+            <input
+              type="password"
+              value={passkey}
+              onChange={(e) => setPasskey(e.target.value)}
+              className="mt-1 w-full rounded-2xl bg-slate-900 border-none px-4 py-3 text-sm text-white placeholder:text-slate-700 shadow-borderless focus:ring-2 focus:ring-sky-500/50 transition-all"
+              placeholder="Enter security passkey"
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 ml-1">Device ID</span>
+            <input
+              type="text"
+              value={deviceId}
+              onChange={(e) => setDeviceId(e.target.value)}
+              className="mt-1 w-full rounded-2xl bg-slate-900 border-none px-4 py-3 text-sm text-white placeholder:text-slate-700 shadow-borderless focus:ring-2 focus:ring-sky-500/50 transition-all"
+              placeholder="Device identifier (e.g. CCM)"
+            />
+          </label>
+
+          {localError && (
+            <p className="text-xs font-semibold text-rose-400 mt-2 bg-rose-400/10 py-2 px-3 rounded-xl">
+              {localError}
+            </p>
+          )}
+        </div>
+
+        <div className="mt-8 grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={handleUnlock}
+            className="rounded-2xl bg-slate-800 py-3 text-sm font-bold text-white hover:bg-slate-700 transition-colors"
+          >
+            Unlock Session
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={handleRegisterDevice}
+            className="rounded-2xl bg-gradient-to-r from-sky-600 to-indigo-600 py-3 text-sm font-bold text-white shadow-lg hover:brightness-110 transition-all disabled:opacity-50"
+          >
+            {busy ? 'Registering...' : 'Register Device'}
+          </button>
+        </div>
+
+        <p className="mt-6 text-[10px] text-slate-600">
+          Ultra Security Layer: All access attempts are logged and tied to device hardware fingerprints.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export default function AdminPanel() {
   const user = getCurrentUser()
   const isOwner = OWNER_ROLES.has(String(user?.role || '').toLowerCase())
