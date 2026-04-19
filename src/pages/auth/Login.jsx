@@ -17,8 +17,7 @@
     - POST /api/auth/login  (via `apiRequest('/auth/login')`)
 
   Notes:
-    - Styling is still using legacy `neo-page` / `cyberpunk-card` utilities.
-      (We are only adding comments here; not changing styles/behavior.)
+    - Tailwind-only styling (no legacy App.css utilities).
 */
 import React, { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
@@ -193,7 +192,7 @@ export default function Login() {
 
   return (
     // Page wrapper: centers the login panel and applies the current "neo/cyberpunk" base style utilities.
-    <div className="min-h-screen neo-page cyberpunk-page bg-slate-50 dark:bg-[#020617] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#020617] flex items-center justify-center p-4">
       {/* Login card container (max width keeps form readable). */}
       <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-[0_18px_60px_rgba(15,23,42,0.08)] ring-1 ring-slate-200/60 dark:bg-slate-900/70 dark:shadow-none dark:ring-white/10">
         <div className="flex items-center justify-between gap-3">
@@ -214,14 +213,14 @@ export default function Login() {
               type="text"
               required
               placeholder="Enter your email or Agent ID"
-              className="w-full rounded-lg borderless-shadow px-4 py-3 bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100"
+              className="w-full rounded-lg shadow-borderless dark:shadow-borderlessDark px-4 py-3 bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100"
             />
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Agents: Use your assigned Agent ID to login</p>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">Password</label>
             {/* Password is required; actual auth validation happens server-side. */}
-            <div className="flex items-center gap-2 rounded-lg borderless-shadow px-3 py-2 bg-white dark:bg-[#0b1224] focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
+            <div className="flex items-center gap-2 rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 bg-white dark:bg-[#0b1224] focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
               <input
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -272,7 +271,7 @@ export default function Login() {
             type="button"
             onClick={handlePasskeyLogin}
             disabled={passkeyLoading}
-            className="w-full px-4 py-3 rounded-lg borderless-shadow text-slate-700 dark:text-slate-100 disabled:opacity-70"
+            className="w-full px-4 py-3 rounded-lg shadow-borderless dark:shadow-borderlessDark text-slate-700 dark:text-slate-100 disabled:opacity-70"
           >
             {passkeyLoading ? 'Opening passkey...' : 'Sign in with passkey'}
           </button>
@@ -280,7 +279,7 @@ export default function Login() {
             type="button"
             onClick={handlePasskeyEnroll}
             disabled={enrollLoading}
-            className="w-full px-4 py-3 rounded-lg borderless-shadow text-slate-700 dark:text-slate-100 disabled:opacity-70"
+            className="w-full px-4 py-3 rounded-lg shadow-borderless dark:shadow-borderlessDark text-slate-700 dark:text-slate-100 disabled:opacity-70"
           >
             {enrollLoading ? 'Setting up passkey...' : 'Set up passkey (first time)'}
           </button>

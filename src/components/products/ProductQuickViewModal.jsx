@@ -111,8 +111,8 @@ export default function ProductQuickViewModal({ open, onClose, item, onViewed })
   return (
     <div className="fixed inset-0 z-50">
       <button type="button" aria-label="Close quick view" onClick={handleClose} className="absolute inset-0 bg-black/40" />
-      <div className="absolute left-1/2 top-1/2 w-[92vw] max-w-2xl -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white shadow-2xl borderless-shadow overflow-hidden">
-        <header className="flex items-center justify-between gap-3 px-5 py-4 borderless-divider-b">
+      <div className="absolute left-1/2 top-1/2 w-[92vw] max-w-2xl -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white shadow-2xl shadow-borderless dark:shadow-borderlessDark overflow-hidden">
+        <header className="flex items-center justify-between gap-3 px-5 py-4 shadow-dividerB dark:shadow-dividerBDark">
           <div className="min-w-0">
             <p className="text-sm font-bold text-slate-900 truncate">{item?.title || item?.product?.title || 'Product'}</p>
             {author ? (
@@ -127,7 +127,7 @@ export default function ProductQuickViewModal({ open, onClose, item, onViewed })
         </header>
 
         <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="rounded-2xl borderless-shadow bg-slate-50 p-4">
+          <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-4">
             {coverUrl ? (
               <img src={coverUrl} alt="Product cover" className="h-40 w-full rounded-xl object-cover mb-4" />
             ) : (
@@ -159,13 +159,13 @@ export default function ProductQuickViewModal({ open, onClose, item, onViewed })
             ) : null}
           </div>
 
-          <div className="rounded-2xl borderless-shadow bg-white p-4">
+          <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white p-4">
             <p className="text-xs font-bold text-slate-700">Description</p>
             <p className="mt-3 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
               {item?.description || item?.product?.description || 'No description provided.'}
             </p>
             {canAppeal ? (
-              <div className="mt-4 rounded-xl borderless-shadow bg-rose-50 px-3 py-3">
+              <div className="mt-4 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-rose-50 px-3 py-3">
                 <p className="text-xs font-semibold text-rose-900">This product was rejected.</p>
                 <p className="mt-1 text-xs text-rose-700">{contentReviewReason || 'This product needs changes to meet content standards.'}</p>
                 <button
@@ -182,7 +182,7 @@ export default function ProductQuickViewModal({ open, onClose, item, onViewed })
           </div>
         </div>
 
-        <footer className="px-5 py-4 borderless-divider-t bg-white flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <footer className="px-5 py-4 shadow-dividerT dark:shadow-dividerTDark bg-white flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="text-[11px] text-slate-500">
             Views are private and help you revisit items quickly.
           </div>
@@ -191,7 +191,7 @@ export default function ProductQuickViewModal({ open, onClose, item, onViewed })
               <Link
                 to={profileLink}
                 onClick={handleClose}
-                className="rounded-full borderless-shadow px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                className="rounded-full shadow-borderless dark:shadow-borderlessDark px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
               >
                 View company profile
               </Link>

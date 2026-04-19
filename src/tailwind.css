@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+/* Tailwind v4: make `dark:` respond to the `.dark` class (not OS media). */
+@custom-variant dark (&:where(.dark, .dark *));
+

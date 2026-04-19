@@ -51,7 +51,19 @@ const fallbackAbout = {
 }
 
 function Skeleton({ className='' }) {
-  return <div className={['skeleton', className].join(' ')} />
+  return (
+    <div
+      className={[
+        'relative overflow-hidden bg-slate-200/80 dark:bg-white/5',
+        "after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%]",
+        'after:pointer-events-none after:opacity-70 dark:after:opacity-90',
+        'after:animate-skeleton',
+        'after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)]',
+        'dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]',
+        className,
+      ].join(' ')}
+    />
+  )
 }
 
 function MotionItem({ index, className='', children }) {

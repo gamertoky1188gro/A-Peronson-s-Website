@@ -1042,7 +1042,7 @@ export default function ChatInterface() {
           <button
             type="button"
             onClick={() => openAttachmentPreview(message?.attachment, attachmentUrl)}
-            className="block w-full overflow-hidden rounded-xl borderless-shadow text-left transition-opacity hover:opacity-95"
+            className="block w-full overflow-hidden rounded-xl shadow-borderless dark:shadow-borderlessDark text-left transition-opacity hover:opacity-95"
             title="View image"
           >
             <img src={attachmentUrl} alt={message?.attachment?.name || 'Shared image'} className="max-h-64 w-full object-cover" />
@@ -1068,7 +1068,7 @@ export default function ChatInterface() {
           <button
             type="button"
             onClick={() => openAttachmentPreview(message?.attachment, attachmentUrl)}
-            className="relative block w-full overflow-hidden rounded-xl borderless-shadow text-left"
+            className="relative block w-full overflow-hidden rounded-xl shadow-borderless dark:shadow-borderlessDark text-left"
             title="View video"
           >
             <video src={attachmentUrl} muted playsInline preload="metadata" className="max-h-64 w-full object-cover" />
@@ -1111,7 +1111,7 @@ export default function ChatInterface() {
       return (
         <div className="space-y-2">
           <MarkdownMessage text={message.message} />
-          <a href={firstUrl} target="_blank" rel="noreferrer" className="block rounded-xl borderless-shadow bg-slate-50 p-2 dark:bg-black/20">
+          <a href={firstUrl} target="_blank" rel="noreferrer" className="block rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-2 dark:bg-black/20">
             <div className="mb-2 h-24 overflow-hidden rounded-lg bg-slate-200 flex items-center justify-center text-xs text-slate-500 dark:bg-[#1f2448] dark:text-[#b8bfe8]">
               {meta.host}
             </div>
@@ -1403,75 +1403,6 @@ export default function ChatInterface() {
         .chat-interface-container input::placeholder {
           color: ${isLight ? '#94a3b8' : '#7f86ae'} !important;
         }
-        .chat-markdown {
-          font-size: 13px;
-          line-height: 1.45;
-          color: inherit;
-          word-break: break-word;
-        }
-        .chat-markdown > :first-child { margin-top: 0; }
-        .chat-markdown > :last-child { margin-bottom: 0; }
-        .chat-markdown p { margin: 0.25rem 0; }
-        .chat-markdown h1, .chat-markdown h2, .chat-markdown h3, .chat-markdown h4, .chat-markdown h5, .chat-markdown h6 {
-          margin: 0.45rem 0 0.25rem;
-          font-weight: 800;
-          line-height: 1.25;
-        }
-        .chat-markdown h1 { font-size: 1.15rem; }
-        .chat-markdown h2 { font-size: 1.08rem; }
-        .chat-markdown h3 { font-size: 1.02rem; }
-        .chat-markdown ul, .chat-markdown ol { margin: 0.25rem 0; padding-left: 1.2rem; }
-        .chat-markdown ul { list-style: disc; }
-        .chat-markdown ol { list-style: decimal; }
-        .chat-markdown li { margin: 0.12rem 0; }
-        .chat-markdown blockquote {
-          margin: 0.35rem 0;
-          padding-left: 0.75rem;
-          box-shadow: inset 3px 0 0 ${isLight ? '#cbd5e1' : '#2f295c'};
-          color: ${isLight ? '#334155' : '#cdd2ff'};
-          opacity: ${isLight ? 0.9 : 0.95};
-        }
-        .chat-markdown code {
-          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-          font-size: 0.92em;
-          padding: 0.12rem 0.28rem;
-          border-radius: 0.35rem;
-          background: ${isLight ? 'rgba(15, 23, 42, 0.08)' : 'rgba(0,0,0,0.35)'};
-        }
-        .chat-markdown pre {
-          margin: 0.35rem 0;
-          padding: 0.75rem;
-          border-radius: 0.85rem;
-          overflow-x: auto;
-          background: ${isLight ? '#0b1020' : 'rgba(0,0,0,0.35)'};
-          color: #e2e8f0;
-        }
-        .chat-markdown pre code {
-          padding: 0;
-          background: transparent;
-        }
-        .chat-markdown table {
-          width: 100%;
-          border-collapse: collapse;
-          margin: 0.4rem 0;
-          font-size: 12px;
-        }
-        .chat-markdown th, .chat-markdown td {
-          box-shadow: inset 0 0 0 1px ${isLight ? '#e2e8f0' : 'rgba(255,255,255,0.12)'};
-          padding: 0.35rem 0.5rem;
-        }
-        .chat-markdown th {
-          background: ${isLight ? '#f1f5f9' : 'rgba(255,255,255,0.06)'};
-          font-weight: 700;
-        }
-        .chat-markdown input[type="checkbox"] {
-          accent-color: var(--gt-blue);
-        }
-        .chat-markdown hr {
-          height: 1px;
-          box-shadow: inset 0 -1px 0 ${isLight ? '#e2e8f0' : 'rgba(255,255,255,0.12)'};
-          margin: 0.5rem 0;
-        }
       `}</style>
       {notice ? (
         <div className="mx-3 mt-2 rounded-xl px-4 py-3 text-sm font-medium shadow-sm"
@@ -1492,7 +1423,7 @@ export default function ChatInterface() {
       />
       {callPromptThread ? (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-sm rounded-2xl borderless-shadow bg-[#14122b] p-6 text-white shadow-2xl">
+          <div className="w-full max-w-sm rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-[#14122b] p-6 text-white shadow-2xl">
             <div className="flex items-center gap-4">
               {callPromptThread.avatar ? (
                 <img
@@ -1514,7 +1445,7 @@ export default function ChatInterface() {
             <div className="mt-6 flex items-center justify-between gap-3">
               <button
                 onClick={closeCallPrompt}
-                className="flex-1 rounded-xl borderless-shadow bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-300 hover:bg-red-500/20"
+                className="flex-1 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-300 hover:bg-red-500/20"
               >
                 Decline
               </button>
@@ -1549,8 +1480,8 @@ export default function ChatInterface() {
                   to={item.to}
                   className={`relative flex h-10 w-10 items-center justify-center rounded-[12px] transition-all${
                     isActive
-                      ? (isLight ? 'bg-[var(--gt-blue)] text-white' : 'bg-[rgba(10,102,194,0.18)] text-[#D4FF59]')
-                      : (isLight ? 'text-slate-400 hover:bg-white hover:text-[var(--gt-blue)]' : 'bg-[#171031] text-[#8f95bb] hover:text-white')
+                      ? (isLight ? 'bg-gtBlue text-white' : 'bg-[rgba(10,102,194,0.18)] text-[#D4FF59]')
+                      : (isLight ? 'text-slate-400 hover:bg-white hover:text-gtBlue' : 'bg-[#171031] text-[#8f95bb] hover:text-white')
                   }`}
                   title={item.label}
                 >
@@ -1569,7 +1500,7 @@ export default function ChatInterface() {
           </button>
         </aside>
 
-        <aside className="hidden lg:block rounded-[24px] p-5 overflow-hidden borderless-shadow" style={{ background: theme.panelBg, boxShadow: theme.shadow }}>
+        <aside className="hidden lg:block rounded-[24px] p-5 overflow-hidden shadow-borderless dark:shadow-borderlessDark" style={{ background: theme.panelBg, boxShadow: theme.shadow }}>
           <div className="mb-6">
             <h2 className="text-xl font-bold tracking-tight">Messages</h2>
             <p className="text-xs font-medium" style={{ color: theme.textMuted }}>{currentUser?.email || 'No email available'}</p>
@@ -1578,7 +1509,7 @@ export default function ChatInterface() {
           <div className="relative mb-6">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
-              className="h-11 w-full appearance-none rounded-[14px] borderless-shadow pl-10 pr-11 text-[13px] outline-none transition-all"
+              className="h-11 w-full appearance-none rounded-[14px] shadow-borderless dark:shadow-borderlessDark pl-10 pr-11 text-[13px] outline-none transition-all"
               style={{ background: theme.inputBg, color: theme.textPrimary }}
               placeholder="Search conversations..."
               value={query}
@@ -1588,7 +1519,7 @@ export default function ChatInterface() {
 
           <div className="mb-3 flex items-center justify-between px-1">
             <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: theme.textMuted }}>Direct Messages</h3>
-            <span className="text-[10px] font-bold text-[var(--gt-blue)]">{allVisibleThreads.length}</span>
+            <span className="text-[10px] font-bold text-gtBlue">{allVisibleThreads.length}</span>
           </div>
 
           <div className="h-[calc(100vh-250px)] space-y-1 overflow-auto pr-1 custom-scrollbar">
@@ -1603,7 +1534,7 @@ export default function ChatInterface() {
                 return (
                   <button
                     key={thread.id}
-                    className={`group w-full rounded-[16px] px-3 py-3 text-left transition-all${hasUnread && !isActive ? 'ring-1 ring-[var(--gt-blue)]/20' : ''}`}
+                    className={`group w-full rounded-[16px] px-3 py-3 text-left transition-all${hasUnread && !isActive ? 'ring-1 ring-gtBlue/20' : ''}`}
                     style={{ background: isActive ? theme.threadActiveBg : (hasUnread ? (isLight ? '#eef6ff' : '#1b1f3b') : 'transparent') }}
                     onClick={() => setActiveThreadId(thread.id)}
                   >
@@ -1613,7 +1544,7 @@ export default function ChatInterface() {
                         {thread.avatar ? (
                           <img src={avatarUrl(thread.avatar)} alt={threadName} className="h-11 w-11 rounded-full object-cover shadow-sm" />
                         ) : (
-                          <div className={`flex h-11 w-11 items-center justify-center rounded-full text-xs font-bold shadow-sm${isActive ? 'bg-[var(--gt-blue)] text-white' : 'bg-slate-100 text-slate-500'}`}>{getInitials(threadName)}</div>
+                          <div className={`flex h-11 w-11 items-center justify-center rounded-full text-xs font-bold shadow-sm${isActive ? 'bg-gtBlue text-white' : 'bg-slate-100 text-slate-500'}`}>{getInitials(threadName)}</div>
                         )}
                         <span
                           className="absolute bottom-0 right-0 h-3 w-3 rounded-full"
@@ -1625,7 +1556,7 @@ export default function ChatInterface() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-1">
-                          <p className={`truncate text-[14px] font-semibold${isActive ? 'text-[var(--gt-blue)]' : ''}`}>{threadName}</p>
+                          <p className={`truncate text-[14px] font-semibold${isActive ? 'text-gtBlue' : ''}`}>{threadName}</p>
                           <div className="ml-2 flex flex-shrink-0 items-center gap-1">
                             {thread.policyStatus && thread.policyStatus !== 'delivered' ? (
                               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-700">Queued</span>
@@ -1639,7 +1570,7 @@ export default function ChatInterface() {
                         <div className="flex items-center justify-between gap-2">
                           <p className={`truncate text-xs${isActive ? 'text-slate-600' : hasUnread ? 'text-slate-700' : 'text-slate-400'}`}>{thread.last || 'No messages'}</p>
                           {hasUnread ? (
-                            <span className="min-w-[18px] rounded-full bg-[var(--gt-blue)] px-2 py-0.5 text-[10px] font-bold text-white">
+                            <span className="min-w-[18px] rounded-full bg-gtBlue px-2 py-0.5 text-[10px] font-bold text-white">
                               {thread.unread}
                             </span>
                           ) : null}
@@ -1652,10 +1583,10 @@ export default function ChatInterface() {
           </div>
         </aside>
 
-        <main className="rounded-[24px] p-0 flex flex-col h-full overflow-hidden borderless-shadow" style={{ background: theme.panelBg, boxShadow: theme.shadow }}>
+        <main className="rounded-[24px] p-0 flex flex-col h-full overflow-hidden shadow-borderless dark:shadow-borderlessDark" style={{ background: theme.panelBg, boxShadow: theme.shadow }}>
           {activeThread ? (
             <>
-              <div className="flex items-center justify-between px-6 py-4 borderless-divider-b">
+              <div className="flex items-center justify-between px-6 py-4 shadow-dividerB dark:shadow-dividerBDark">
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     {activeAvatar ? (
@@ -1690,7 +1621,7 @@ export default function ChatInterface() {
                   {isLockOwner ? (
                     <button
                       onClick={grantAccess}
-                      className="rounded-full borderless-shadow px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
+                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
                       title="Grant access to another member"
                     >
                       Grant access
@@ -1699,7 +1630,7 @@ export default function ChatInterface() {
                   {(isLockOwner || isAdminUser) ? (
                     <button
                       onClick={transferAccess}
-                      className="rounded-full borderless-shadow px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
+                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
                       title="Transfer this conversation to another agent"
                     >
                       Transfer
@@ -1726,7 +1657,7 @@ export default function ChatInterface() {
               </div>
 
               {!hasRecordedCall ? (
-                <div className="mx-6 mt-4 rounded-xl borderless-shadow bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
+                <div className="mx-6 mt-4 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <span>
                       Video calls are recommended for trust. No recorded call exists yet for this conversation.
@@ -1744,7 +1675,7 @@ export default function ChatInterface() {
 
               <div className="flex-1 space-y-4 overflow-auto p-6 custom-scrollbar" style={{ background: isLight ? '#f8fafc' : 'transparent' }}>
                 <div className="flex justify-center mb-6">
-                  <span className="rounded-full bg-transparent borderless-shadow px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600">{todayLabel}</span>
+                  <span className="rounded-full bg-transparent shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600">{todayLabel}</span>
                 </div>
                 {activeMessages.length > 0 ? (
                   activeMessages.map((message) => {
@@ -1758,13 +1689,13 @@ export default function ChatInterface() {
                       <div key={message.id} className={`flex${isOwn ? 'justify-end' : 'justify-start'}`}>
                         <div className={`group relative max-w-[80%] sm:max-w-[70%] rounded-[20px] px-4 py-3 text-[13.5px] shadow-sm transition-all ${
                           isOwn 
-                            ? 'bg-[var(--gt-blue)] text-white rounded-br-none' 
+                            ? 'bg-gtBlue text-white rounded-br-none' 
                             : isBot
                               ? `${isLight ? 'bg-[#EFF6FF] ring-1 ring-[#BFDBFE]' : 'bg-[#0B1224] ring-1 ring-white/5'} rounded-bl-none`
                               : `${isLight ? 'bg-white ring-1 ring-slate-200/70' : 'bg-[#2a2744]'} rounded-bl-none`
                         }`} style={!isOwn ? { color: theme.textPrimary } : undefined}>
                           {isBot ? (
-                            <div className="mb-1 text-[10px] font-extrabold uppercase tracking-widest text-[var(--gt-blue)]">
+                            <div className="mb-1 text-[10px] font-extrabold uppercase tracking-widest text-gtBlue">
                               AI Assistant
                             </div>
                           ) : null}
@@ -1794,7 +1725,7 @@ export default function ChatInterface() {
                 )}
               </div>
 
-              <div className="p-4 borderless-divider-t">
+              <div className="p-4 shadow-dividerT dark:shadow-dividerTDark">
                 {isLockRestricted ? (
                   <div className="mb-3 flex items-center justify-between gap-3 rounded-xl bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
                     <span>
@@ -1810,7 +1741,7 @@ export default function ChatInterface() {
                   </div>
                 ) : null}
                 {prequalNeedsInfo ? (
-                  <div className="mb-3 rounded-xl borderless-shadow bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
+                  <div className="mb-3 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span>
                         AI pre-qual flagged missing info. {prequal?.missing ? `Missing: ${prequal.missing}.` : 'Request more details before negotiating.'}
@@ -1864,7 +1795,7 @@ export default function ChatInterface() {
                     }}
                   />
                   <input ref={fileInputRef} type="file" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) sendAttachment(file) }} disabled={!canSendMessage} />
-                  <button className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[var(--gt-blue)] text-white shadow-md transition-transform hover:scale-105 active:scale-95 disabled:opacity-60" onClick={sendMessage} disabled={!canSendMessage}>
+                  <button className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gtBlue text-white shadow-md transition-transform hover:scale-105 active:scale-95 disabled:opacity-60" onClick={sendMessage} disabled={!canSendMessage}>
                     <SendHorizontal size={18} />
                   </button>
                 </div>
@@ -1874,7 +1805,7 @@ export default function ChatInterface() {
                   </p>
                 ) : null}
                 {uploadStatus || scheduleStatus ? (
-                  <p className="mt-2 px-4 text-[11px] font-medium text-[var(--gt-blue)]">{uploadStatus || scheduleStatus}</p>
+                  <p className="mt-2 px-4 text-[11px] font-medium text-gtBlue">{uploadStatus || scheduleStatus}</p>
                 ) : null}
               </div>
             </>
@@ -1886,7 +1817,7 @@ export default function ChatInterface() {
               </div>}
         </main>
 
-        <aside className="hidden xl:block rounded-[24px] p-6 h-full overflow-auto borderless-shadow" style={{ background: theme.panelBg, boxShadow: theme.shadow }}>
+        <aside className="hidden xl:block rounded-[24px] p-6 h-full overflow-auto shadow-borderless dark:shadow-borderlessDark" style={{ background: theme.panelBg, boxShadow: theme.shadow }}>
           {activeThread ? (
             <>
               <div className="mb-8 text-center">
@@ -1902,18 +1833,18 @@ export default function ChatInterface() {
               </div>
 
               {leadLoading ? (
-                <div className="mb-6 rounded-2xl borderless-shadow bg-slate-50 p-3 text-[11px] text-slate-500 dark:bg-slate-800/30">
+                <div className="mb-6 rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3 text-[11px] text-slate-500 dark:bg-slate-800/30">
                   Loading AI pre-qualification summary...
                 </div>
               ) : prequal ? (
-                <div className="mb-6 rounded-2xl borderless-shadow bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-slate-800/30">
+                <div className="mb-6 rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-slate-800/30">
                   <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">AI Pre-Qual Summary</p>
                   <p className="mt-1">Score: <span className="font-semibold">{prequal.score ?? '--'}</span></p>
                   <p className="mt-1">Missing: {prequal.missing || 'None'}</p>
                 </div>
               ) : null}
 
-              <div className="mb-6 rounded-2xl borderless-shadow bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-slate-800/30">
+              <div className="mb-6 rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-slate-800/30">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">AI Conversation Summary</p>
                   <button
@@ -1938,7 +1869,7 @@ export default function ChatInterface() {
                 )}
               </div>
 
-              <div className="mb-6 rounded-2xl borderless-shadow bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-slate-800/30">
+              <div className="mb-6 rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-slate-800/30">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">AI Negotiation Helper</p>
                   <button
@@ -1984,7 +1915,7 @@ export default function ChatInterface() {
                   { id: 'sharedMedia', label: 'Media', count: sharedMedia.length, icon: Search },
                   { id: 'sharedPost', label: 'Posts', count: sharedPosts.length, icon: Home }
                 ].map((section) => (
-                  <div key={section.id} className="overflow-hidden rounded-[18px] borderless-shadow">
+                  <div key={section.id} className="overflow-hidden rounded-[18px] shadow-borderless dark:shadow-borderlessDark">
                     <button 
                       className="flex w-full items-center justify-between p-4 text-xs font-bold uppercase tracking-wider transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50" 
                       style={{ background: isLight ? '#f8fafc' : '#101328', color: theme.textMuted }}
@@ -2007,7 +1938,7 @@ export default function ChatInterface() {
                                   key={item.id}
                                   type="button"
                                   onClick={() => openAttachmentPreview(item.attachment, url)}
-                                  className="flex w-full items-center gap-2 rounded-xl borderless-shadow bg-slate-50/50 p-2.5 text-left text-[11px] font-medium transition-colors dark:bg-slate-800/30"
+                                  className="flex w-full items-center gap-2 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50/50 p-2.5 text-left text-[11px] font-medium transition-colors dark:bg-slate-800/30"
                                   title="Preview"
                                 >
                                   <div className="h-6 w-6 rounded bg-white flex items-center justify-center shadow-xs dark:bg-slate-700"><Plus size={12} className="opacity-30" /></div>

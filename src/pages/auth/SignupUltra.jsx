@@ -80,10 +80,10 @@ export default function SignupUltra() {
   }
 
   return (
-    <div className="min-h-screen neo-page cyberpunk-page bg-slate-50 dark:bg-[#020617] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#020617] flex items-center justify-center p-4">
       <div className="w-full max-w-2xl bg-white rounded-xl p-8 shadow-[0_0_20px_rgba(10,102,194,0.35)] ring-1 ring-slate-200/60 dark:bg-slate-900/70 dark:shadow-none dark:ring-white/10">
         <div className="flex items-center gap-2 mb-2">
-          <span className="bg-[var(--gt-blue)] text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-tighter">Ultra Access</span>
+          <span className="bg-gtBlue text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-tighter">Ultra Access</span>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Elevated Registration</h1>
         </div>
         <p className="text-sm text-slate-500 dark:text-slate-300">Authorized personnel only. Create Admin, Agent, or Owner accounts directly.</p>
@@ -91,15 +91,15 @@ export default function SignupUltra() {
         <form className="mt-6 grid md:grid-cols-2 gap-4" onSubmit={handleSubmit}>
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">Full Name</label>
-            <input className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors borderless-shadow bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100" value={form.name} onChange={(e) => onChange('name', e.target.value)} required />
+            <input className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100" value={form.name} onChange={(e) => onChange('name', e.target.value)} required />
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">Secret Email</label>
-            <input type="email" className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors borderless-shadow bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100" value={form.email} onChange={(e) => onChange('email', e.target.value)} required />
+            <input type="email" className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100" value={form.email} onChange={(e) => onChange('email', e.target.value)} required />
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">Master Password</label>
-            <div className="flex items-center gap-2 rounded-lg borderless-shadow px-3 py-2 bg-white dark:bg-[#0b1224] focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
+            <div className="flex items-center gap-2 rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 bg-white dark:bg-[#0b1224] focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
               <input
                 type={passwordVisible ? 'text' : 'password'}
                 placeholder="--------"
@@ -115,7 +115,7 @@ export default function SignupUltra() {
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">Confirm Password</label>
-            <div className="flex items-center gap-2 rounded-lg borderless-shadow px-3 py-2 bg-white dark:bg-[#0b1224] focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
+            <div className="flex items-center gap-2 rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 bg-white dark:bg-[#0b1224] focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
               <input
                 type={confirmVisible ? 'text' : 'password'}
                 placeholder="--------"
@@ -131,7 +131,7 @@ export default function SignupUltra() {
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">Elevated Role</label>
-            <select className="w-full px-4 py-2.5 rounded-lg outline-none bg-white dark:bg-[#0b1224] text-slate-900 dark:text-slate-100 transition-colors borderless-shadow" value={form.role} onChange={(e) => onChange('role', e.target.value)}>
+            <select className="w-full px-4 py-2.5 rounded-lg outline-none bg-white dark:bg-[#0b1224] text-slate-900 dark:text-slate-100 transition-colors shadow-borderless dark:shadow-borderlessDark" value={form.role} onChange={(e) => onChange('role', e.target.value)}>
               <option value="admin">Administrator</option>
               <option value="owner">System Owner</option>
               <option value="agent">Operational Agent</option>
@@ -142,24 +142,24 @@ export default function SignupUltra() {
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">HQ Country</label>
-            <input className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors borderless-shadow bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100" value={form.country} onChange={(e) => onChange('country', e.target.value)} required />
+            <input className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100" value={form.country} onChange={(e) => onChange('country', e.target.value)} required />
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1">Organization / Entity</label>
-            <input className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors borderless-shadow bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100" value={form.organization} onChange={(e) => onChange('organization', e.target.value)} />
+            <input className="w-full px-4 py-2.5 rounded-lg outline-none transition-colors shadow-borderless dark:shadow-borderlessDark bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100" value={form.organization} onChange={(e) => onChange('organization', e.target.value)} />
           </div>
 
-          <div className="md:col-span-2 bg-blue-50 rounded-xl p-4 text-xs text-[#0a3d78] leading-relaxed borderless-shadow dark:bg-[#0a1a33] dark:text-slate-200 dark:ring-1 dark:ring-[#0A66C2]/30">
+          <div className="md:col-span-2 bg-blue-50 rounded-xl p-4 text-xs text-[#0a3d78] leading-relaxed shadow-borderless dark:shadow-borderlessDark dark:bg-[#0a1a33] dark:text-slate-200 dark:ring-1 dark:ring-[#0A66C2]/30">
             <p className="font-bold mb-1 underline">⚠️ Security Notice:</p>
             <p>Admin and Owner accounts are automatically granted full system verification and override capabilities. All actions performed through this terminal are logged for security auditing. High-level accounts must maintain 2FA after initial login.</p>
           </div>
 
-          {error ? <p className="md:col-span-2 text-sm font-bold text-rose-600 bg-rose-50 p-2 rounded borderless-shadow dark:bg-rose-500/10 dark:text-rose-200">Auth Error: {error}</p> : null}
+          {error ? <p className="md:col-span-2 text-sm font-bold text-rose-600 bg-rose-50 p-2 rounded shadow-borderless dark:shadow-borderlessDark dark:bg-rose-500/10 dark:text-rose-200">Auth Error: {error}</p> : null}
 
           <div className="md:col-span-2 pt-2">
             <button 
               disabled={loading} 
-              className="w-full py-3.5 rounded-lg bg-[var(--gt-blue)] hover:bg-[var(--gt-blue-hover)] text-white font-bold shadow-lg shadow-blue-200 transition-all active:scale-[0.98] disabled:opacity-50"
+              className="w-full py-3.5 rounded-lg bg-gtBlue hover:bg-gtBlueHover text-white font-bold shadow-lg shadow-blue-200 transition-all active:scale-[0.98] disabled:opacity-50"
             >
               {loading ? 'INITIALIZING ACCOUNT...' : 'PROVISION ACCOUNT'}
             </button>

@@ -122,25 +122,25 @@ export default function AgentDashboard() {
     <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-500 dark:bg-[#020617] dark:text-slate-100">
       <div className="max-w-6xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
         <aside className="lg:col-span-1">
-          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-4 space-y-3 sticky top-20">
-            <Link to="/agent?tab=requests" className="block font-semibold text-[#0A66C2] cursor-pointer">📋 My Requests</Link>
-            <div className="text-sm text-[#5A5A5A]">Assigned: {totals.open_buyer_requests ?? 0}</div>
+          <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 space-y-3 sticky top-20 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
+            <Link to="/agent?tab=requests" className="block font-semibold text-gtBlue cursor-pointer">📋 My Requests</Link>
+            <div className="text-sm text-slate-600 dark:text-slate-300">Assigned: {totals.open_buyer_requests ?? 0}</div>
           </div>
 
-          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-4 mt-4 sticky top-56">
-            <Link to="/agent?tab=chats" className="block font-semibold text-[#0A66C2] cursor-pointer mb-3">💬 My Chats</Link>
-            <div className="text-sm text-[#5A5A5A] mt-2">Active conversations: {totals.chats ?? 0}</div>
+          <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 mt-4 sticky top-56 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
+            <Link to="/agent?tab=chats" className="block font-semibold text-gtBlue cursor-pointer mb-3">💬 My Chats</Link>
+            <div className="text-sm text-slate-600 dark:text-slate-300 mt-2">Active conversations: {totals.chats ?? 0}</div>
           </div>
 
-          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-4 mt-4">
-            <Link to="/agent?tab=factories" className="block font-semibold text-[#0A66C2] cursor-pointer mb-3">🏭 Connected Factories</Link>
-            <div className="text-sm text-[#5A5A5A]">{totals.partner_network ?? 0} connected</div>
+          <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 mt-4 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
+            <Link to="/agent?tab=factories" className="block font-semibold text-gtBlue cursor-pointer mb-3">🏭 Connected Factories</Link>
+            <div className="text-sm text-slate-600 dark:text-slate-300">{totals.partner_network ?? 0} connected</div>
           </div>
 
-          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-4 mt-4">
+          <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 mt-4 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
             <h3 className="font-semibold mb-2">Plan</h3>
-            <div className="text-sm text-[#5A5A5A]">{subscription?.plan || 'free'} plan</div>
-            <div className="text-sm text-[#5A5A5A]">{isEnterprise ? 'Enterprise analytics on' : 'Free analytics view'}</div>
+            <div className="text-sm text-slate-600 dark:text-slate-300">{subscription?.plan || 'free'} plan</div>
+            <div className="text-sm text-slate-600 dark:text-slate-300">{isEnterprise ? 'Enterprise analytics on' : 'Free analytics view'}</div>
           </div>
 
           <Link to="/login" className="block w-full mt-4 px-3 py-2 text-center bg-red-50 text-red-600 rounded-md font-medium hover:bg-red-100">Logout</Link>
@@ -150,13 +150,13 @@ export default function AgentDashboard() {
           {loading ? <div className="bg-white rounded-xl p-4">Loading agent metrics...</div> : null}
           {error ? <div className="bg-red-50 text-red-600 rounded-xl p-4">{error}</div> : null}
 
-          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-4">
-            <div className="flex items-center justify-between mb-3 borderless-divider-b pb-3">
+          <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
+            <div className="flex items-center justify-between mb-3 shadow-dividerB dark:shadow-dividerBDark pb-3">
               <h3 className="font-semibold">Agent Activity</h3>
               <div className="flex gap-2">
-                <button onClick={() => setActiveTab('requests')} className={`px-3 py-1 rounded${activeTab === 'requests' ? 'bg-[#0A66C2] text-white' : 'borderless-shadow bg-white/70 text-slate-700'}`}>Requests</button>
-                <button onClick={() => setActiveTab('chats')} className={`px-3 py-1 rounded${activeTab === 'chats' ? 'bg-[#0A66C2] text-white' : 'borderless-shadow bg-white/70 text-slate-700'}`}>Chats</button>
-                <button onClick={() => setActiveTab('leads')} className={`px-3 py-1 rounded${activeTab === 'leads' ? 'bg-[#0A66C2] text-white' : 'borderless-shadow bg-white/70 text-slate-700'}`}>Leads</button>
+                <button onClick={() => setActiveTab('requests')} className={`px-3 py-1 rounded${activeTab === 'requests' ? 'bg-gtBlue text-white' : 'bg-white shadow-borderless ring-1 ring-slate-200/60 text-slate-700 hover:bg-slate-50 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10 dark:text-slate-200 dark:hover:bg-white/8'}`}>Requests</button>
+                <button onClick={() => setActiveTab('chats')} className={`px-3 py-1 rounded${activeTab === 'chats' ? 'bg-gtBlue text-white' : 'bg-white shadow-borderless ring-1 ring-slate-200/60 text-slate-700 hover:bg-slate-50 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10 dark:text-slate-200 dark:hover:bg-white/8'}`}>Chats</button>
+                <button onClick={() => setActiveTab('leads')} className={`px-3 py-1 rounded${activeTab === 'leads' ? 'bg-gtBlue text-white' : 'bg-white shadow-borderless ring-1 ring-slate-200/60 text-slate-700 hover:bg-slate-50 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10 dark:text-slate-200 dark:hover:bg-white/8'}`}>Leads</button>
               </div>
             </div>
 
@@ -177,7 +177,7 @@ export default function AgentDashboard() {
                 <div className="rounded-lg bg-slate-50 p-3 text-sm">
                   <div className="flex items-center justify-between gap-3">
                     <p>Queue ownership: <strong>{queueSummary.queue.length}</strong> leads</p>
-                    <button type="button" className="text-xs px-2 py-1 rounded bg-white borderless-shadow" onClick={refreshQueueSummary}>Refresh queue</button>
+                    <button type="button" className="text-xs px-2 py-1 rounded bg-white shadow-borderless dark:shadow-borderlessDark" onClick={refreshQueueSummary}>Refresh queue</button>
                   </div>
                   <div className="mt-2 text-xs text-slate-600">Escalations pending: {queueSummary?.escalations?.filter((item) => !item.resolved_at).length || 0}</div>
                   <div className="mt-1 text-xs text-slate-600">My workload rows: {queueSummary?.workload?.length || 0}</div>
@@ -187,46 +187,46 @@ export default function AgentDashboard() {
             )}
           </div>
 
-          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-4">
-            <div className="flex items-center justify-between mb-3 borderless-divider-b pb-3">
+          <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
+            <div className="flex items-center justify-between mb-3 shadow-dividerB dark:shadow-dividerBDark pb-3">
               <h3 className="font-semibold">AI Suggested Reply</h3>
               <button
                 type="button"
                 onClick={generateAiReply}
-                className="px-3 py-1 rounded bg-[#0A66C2] text-white text-xs font-semibold"
+                className="px-3 py-1 rounded bg-gtBlue hover:bg-gtBlueHover text-white text-xs font-semibold disabled:opacity-70"
                 disabled={aiLoading}
               >
                 {aiLoading ? 'Thinking...' : 'Generate'}
               </button>
             </div>
 
-            <p className="text-sm text-[#5A5A5A] mb-2">Paste a short prompt or let the assistant draft a default reply.</p>
+            <p className="text-sm text-slate-600 dark:text-slate-300 mb-2">Paste a short prompt or let the assistant draft a default reply.</p>
             <textarea
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
-              className="w-full borderless-shadow rounded px-3 py-2 text-sm mb-3"
+              className="w-full bg-white shadow-borderless ring-1 ring-slate-200/60 rounded px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-gtBlue/25 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10"
               rows={3}
               placeholder="Example: Reply to a buyer asking for MOQ and lead time."
             />
 
             {aiError ? <div className="text-xs text-rose-600 mb-2">{aiError}</div> : null}
             {aiSuggestion ? (
-              <div className="rounded-lg borderless-shadow bg-slate-50 p-3 text-sm">
+              <div className="rounded-lg shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3 text-sm dark:bg-white/5">
                 <textarea
-                  className="w-full rounded borderless-shadow bg-white px-2 py-2 whitespace-pre-wrap"
+                  className="w-full rounded shadow-borderless dark:shadow-borderlessDark bg-white px-2 py-2 whitespace-pre-wrap dark:bg-black/30"
                   rows={6}
                   value={aiSuggestion}
                   onChange={(e) => setAiSuggestion(e.target.value)}
                 />
                 {aiChecklist.length ? (
-                  <div className="mt-2 rounded bg-amber-50 px-2 py-2 text-xs text-amber-700">
+                  <div className="mt-2 rounded bg-amber-50 px-2 py-2 text-xs text-amber-700 dark:bg-amber-500/10 dark:text-amber-200">
                     Missing-info checklist: {aiChecklist.join(', ')}
                   </div>
                 ) : null}
                 <div className="mt-2 flex flex-wrap items-center gap-3">
-                  <button type="button" onClick={copySuggestion} className="text-xs font-semibold text-[#0A66C2] hover:underline">Copy suggestion</button>
+                  <button type="button" onClick={copySuggestion} className="text-xs font-semibold text-gtBlue hover:underline">Copy suggestion</button>
                   <button type="button" onClick={approveSuggestion} className="rounded bg-slate-900 px-2 py-1 text-xs font-semibold text-white">Approve draft</button>
-                  <button type="button" onClick={sendSuggestion} className="rounded bg-[#0A66C2] px-2 py-1 text-xs font-semibold text-white">One-click send</button>
+                  <button type="button" onClick={sendSuggestion} className="rounded bg-gtBlue hover:bg-gtBlueHover px-2 py-1 text-xs font-semibold text-white">One-click send</button>
                 </div>
                 {approvalState?.status ? <div className="mt-2 text-xs text-slate-600">Approval: {approvalState.status}</div> : null}
                 {sendState?.status ? <div className="mt-1 text-xs text-slate-600">Send status: {sendState.status}</div> : null}

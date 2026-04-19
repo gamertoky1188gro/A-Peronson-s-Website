@@ -1529,7 +1529,7 @@ export default function CallInterface() {
         </div>
       ) : null}
       {/* Top Header */}
-      <header className="flex h-16 items-center justify-between gap-4 borderless-divider-b bg-white/70 px-4 shadow-sm backdrop-blur-xl dark:bg-slate-950/40 sm:px-6">
+      <header className="flex h-16 items-center justify-between gap-4 shadow-dividerB dark:shadow-dividerBDark bg-white/70 px-4 shadow-sm backdrop-blur-xl dark:bg-slate-950/40 sm:px-6">
         <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <button
             type="button"
@@ -1610,7 +1610,7 @@ export default function CallInterface() {
 
             {mediaGate && !hasLocalStream && (
               <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 p-6">
-                <div className="w-full max-w-md rounded-2xl borderless-shadow bg-white/10 p-6 text-center text-white backdrop-blur-md">
+                <div className="w-full max-w-md rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white/10 p-6 text-center text-white backdrop-blur-md">
                   <div className="text-lg font-semibold">{mediaGate.title}</div>
                   <div className="mt-2 text-sm text-white/80">{mediaGate.message}</div>
                   <div className="mt-5 flex items-center justify-center gap-3">
@@ -1714,7 +1714,7 @@ export default function CallInterface() {
           </div>
 
           {/* Transcription Bar */}
-          <div className="flex items-center gap-3 borderless-divider-t bg-white/70 px-4 py-3 backdrop-blur-xl dark:bg-white/5 sm:px-6">
+          <div className="flex items-center gap-3 shadow-dividerT dark:shadow-dividerTDark bg-white/70 px-4 py-3 backdrop-blur-xl dark:bg-white/5 sm:px-6">
             <div className="flex items-end gap-1.5 text-sky-600 dark:text-cyan-300" aria-hidden="true">
               {[0.28, 0.44, 0.72, 0.44, 0.28].map((base, index) => (
                 <span
@@ -1733,7 +1733,7 @@ export default function CallInterface() {
         {/* Right Side: Chat Sidebar */}
         {isChatOpen ? (
           <aside className="flex w-full flex-col overflow-hidden rounded-[28px] bg-white/70 shadow-xl shadow-slate-900/5 ring-1 ring-slate-200/60 backdrop-blur-xl dark:bg-white/5 dark:ring-white/10 lg:w-[380px]">
-            <div className="flex h-14 items-center justify-between gap-3 borderless-divider-b bg-white/40 px-5 backdrop-blur-xl dark:bg-white/5">
+            <div className="flex h-14 items-center justify-between gap-3 shadow-dividerB dark:shadow-dividerBDark bg-white/40 px-5 backdrop-blur-xl dark:bg-white/5">
               <div className="min-w-0">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300/80">Chat</h2>
                 <p className="truncate text-[11px] text-slate-500 dark:text-slate-300/70">{remoteName}</p>
@@ -1806,7 +1806,7 @@ export default function CallInterface() {
                 ) : null}
               </div>
             </div>
-            <div className="borderless-divider-b bg-white/30 p-3 dark:bg-white/5">
+            <div className="shadow-dividerB dark:shadow-dividerBDark bg-white/30 p-3 dark:bg-white/5">
               <JourneyTimeline title="Journey Timeline" matchId={effectiveMatchId || ''} />
             </div>
 
@@ -1841,7 +1841,7 @@ export default function CallInterface() {
             <div ref={chatEndRef} />
           </div>
 
-            <div className="borderless-divider-t p-4">
+            <div className="shadow-dividerT dark:shadow-dividerTDark p-4">
               <div className="relative flex items-center gap-2 rounded-2xl bg-white/70 p-2 shadow-sm ring-1 ring-slate-200/60 focus-within:ring-sky-500/30 dark:bg-white/5 dark:ring-white/10">
                 <div ref={emojiPopoverRef} className="relative ml-1">
                   <button

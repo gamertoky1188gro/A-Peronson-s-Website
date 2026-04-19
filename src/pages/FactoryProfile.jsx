@@ -243,36 +243,36 @@ export default function FactoryProfile() {
 
             <div className="mt-4 flex gap-2">
               <button onClick={contact} className="flex-1 rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182]">Contact</button>
-              <button onClick={follow} className="flex-1 rounded-full borderless-shadow px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+              <button onClick={follow} className="flex-1 rounded-full shadow-borderless dark:shadow-borderlessDark px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
                 {relationship.following ? 'Following' : 'Follow'}
               </button>
-              <button onClick={connect} className="flex-1 rounded-full borderless-shadow px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+              <button onClick={connect} className="flex-1 rounded-full shadow-borderless dark:shadow-borderlessDark px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
                 {relationship.friend_status === 'friends' ? 'Connected' : (relationship.friend_status === 'requested' ? 'Requested' : 'Connect')}
               </button>
             </div>
 
             <div className="mt-4 grid grid-cols-1 gap-3">
-              <div className="rounded-xl borderless-shadow bg-slate-50 p-3">
+              <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3">
                 <p className="text-[11px] text-slate-500">Industry</p>
                 <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.industry || 'Garments & Textile'}</p>
               </div>
-              <div className="rounded-xl borderless-shadow bg-slate-50 p-3">
+              <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3">
                 <p className="text-[11px] text-slate-500">Organization</p>
                 <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.organization_name || user.profile?.organization || user.name}</p>
               </div>
-              <div className="rounded-xl borderless-shadow bg-slate-50 p-3">
+              <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3">
                 <p className="text-[11px] text-slate-500">Rating</p>
                 <p className="mt-1 text-sm font-semibold text-slate-900">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
                 <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
               </div>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-3">
-              <div className="rounded-xl borderless-shadow bg-white p-3">
+              <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white p-3">
                 <p className="text-[11px] text-slate-500">Capacity</p>
                 <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.monthly_capacity || '--'}</p>
                 <p className="text-[11px] text-slate-600">Monthly</p>
               </div>
-              <div className="rounded-xl borderless-shadow bg-white p-3">
+              <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white p-3">
                 <p className="text-[11px] text-slate-500">MOQ</p>
                 <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.moq || '--'}</p>
                 <p className="text-[11px] text-slate-600">Declared</p>
@@ -298,7 +298,7 @@ export default function FactoryProfile() {
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
             className="rounded-2xl bg-[#ffffff] shadow-sm ring-1 ring-slate-200/60 overflow-hidden dark:bg-slate-900/50 dark:ring-slate-800"
           >
-            <div className="relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 borderless-divider-b dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
+            <div className="relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 shadow-dividerB dark:shadow-dividerBDark dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
               {['overview', 'products', 'videos', 'reviews'].map((tab) => (
                 <button
                   key={tab}
@@ -423,7 +423,7 @@ export default function FactoryProfile() {
                 <div className="space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {products.map((p) => (
-                      <div key={p.id} className="rounded-2xl borderless-shadow bg-white p-4">
+                      <div key={p.id} className="rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white p-4">
                         {p.cover_image_public_url ? (
                           <img src={p.cover_image_public_url} alt={p.title || 'Product'} className="h-32 w-full rounded-xl object-cover mb-3" />
                         ) : null}
@@ -440,7 +440,7 @@ export default function FactoryProfile() {
                     <button
                       type="button"
                       onClick={() => loadProducts({ reset: false })}
-                      className="rounded-full borderless-shadow bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                      className="rounded-full shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                     >
                       Load more
                     </button>
@@ -456,7 +456,7 @@ export default function FactoryProfile() {
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {visibleVideos.map((p) => (
-                      <div key={p.id} className="rounded-2xl borderless-shadow bg-white p-4">
+                      <div key={p.id} className="rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white p-4">
                         <p className="text-sm font-bold text-slate-900">{p.title || 'Video'}</p>
                         <p className="mt-1 text-xs text-slate-600">Status: {String(p.video_review_status || '--').replaceAll('_', ' ')}</p>
                         <p className="mt-2 text-sm text-slate-700 line-clamp-3">{p.description || ''}</p>
@@ -474,7 +474,7 @@ export default function FactoryProfile() {
 
               {activeTab === 'reviews' ? (
                 <div className="space-y-3">
-                  <div className="rounded-xl borderless-shadow bg-slate-50 p-3">
+                  <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3">
                     <p className="text-sm font-bold text-slate-900">Rating summary</p>
                     <p className="mt-1 text-sm text-slate-700">
                       {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 - {ratingSummary?.aggregate?.total_count ?? 0} reviews - {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
@@ -483,7 +483,7 @@ export default function FactoryProfile() {
                   {(ratingSummary?.recent_reviews || []).map((r) => {
                     const canEdit = currentUser?.id && String(currentUser.id) === String(r.from_user_id || '')
                     return (
-                      <div key={r.id} className="rounded-2xl borderless-shadow bg-white p-4">
+                      <div key={r.id} className="rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white p-4">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1">
                             <p className="text-sm font-semibold text-slate-900">{r.score}* -- {r.reviewer_name || 'Anonymous'}</p>
@@ -494,7 +494,7 @@ export default function FactoryProfile() {
                             <div className="flex flex-col gap-2">
                               <button
                                 type="button"
-                                className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50"
+                                className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50"
                                 onClick={async () => {
                                   const score = window.prompt('Update rating (1-5)', String(r.score || '5'))
                                   if (!score) return
@@ -511,7 +511,7 @@ export default function FactoryProfile() {
                               </button>
                               <button
                                 type="button"
-                                className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-50"
+                                className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-50"
                                 onClick={async () => {
                                   if (!window.confirm('Delete this review?')) return
                                   try {

@@ -1,4 +1,4 @@
-﻿/*
+/*
   Route: /search
   Access: Protected (login required)
   Allowed roles: buyer, buying_house, factory, owner, admin, agent
@@ -38,9 +38,688 @@ import ProductQuickViewModal from '../components/products/ProductQuickViewModal'
 import { trackClientEvent } from '../lib/events'
 import { recordLeadSource } from '../lib/leadSource'
 import L from 'leaflet'
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
+import markerIcon from 'leaflet/dist/images/marker-icon.png'
+import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 import { ADVANCED_FILTER_KEYS, DEFAULT_CORE_FILTER_KEYS, validateCoreFilterRenderKeys } from './searchFiltersConfig'
 
 const Motion = motion
+
+// Leaflet CSS is intentionally inlined (per repo styling policy: no external CSS imports).
+const LEAFLET_CSS = `/* required styles */
+
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-pane > svg,
+.leaflet-pane > canvas,
+.leaflet-zoom-box,
+.leaflet-image-layer,
+.leaflet-layer {
+\tposition: absolute;
+\tleft: 0;
+\ttop: 0;
+\t}
+.leaflet-container {
+\toverflow: hidden;
+\t}
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+\t-webkit-user-select: none;
+\t   -moz-user-select: none;
+\t        user-select: none;
+\t  -webkit-user-drag: none;
+\t}
+/* Prevents IE11 from highlighting tiles in blue */
+.leaflet-tile::selection {
+\tbackground: transparent;
+}
+/* Safari renders non-retina tile on retina better with this, but Chrome is worse */
+.leaflet-safari .leaflet-tile {
+\timage-rendering: -webkit-optimize-contrast;
+\t}
+/* hack that prevents hw layers "stretching" when loading new tiles */
+.leaflet-safari .leaflet-tile-container {
+\twidth: 1600px;
+\theight: 1600px;
+\t-webkit-transform-origin: 0 0;
+\t}
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+\tdisplay: block;
+\t}
+/* .leaflet-container svg: reset svg max-width decleration shipped in Joomla! (joomla.org) 3.x */
+/* .leaflet-container img: map is broken in FF if you have max-width: 100% on tiles */
+.leaflet-container .leaflet-overlay-pane svg {
+\tmax-width: none !important;
+\tmax-height: none !important;
+\t}
+.leaflet-container .leaflet-marker-pane img,
+.leaflet-container .leaflet-shadow-pane img,
+.leaflet-container .leaflet-tile-pane img,
+.leaflet-container img.leaflet-image-layer,
+.leaflet-container .leaflet-tile {
+\tmax-width: none !important;
+\tmax-height: none !important;
+\twidth: auto;
+\tpadding: 0;
+\t}
+
+.leaflet-container img.leaflet-tile {
+\t/* See: https://bugs.chromium.org/p/chromium/issues/detail?id=600120 */
+\tmix-blend-mode: plus-lighter;
+}
+
+.leaflet-container.leaflet-touch-zoom {
+\t-ms-touch-action: pan-x pan-y;
+\ttouch-action: pan-x pan-y;
+\t}
+.leaflet-container.leaflet-touch-drag {
+\t-ms-touch-action: pinch-zoom;
+\t/* Fallback for FF which doesn't support pinch-zoom */
+\ttouch-action: none;
+\ttouch-action: pinch-zoom;
+}
+.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {
+\t-ms-touch-action: none;
+\ttouch-action: none;
+}
+.leaflet-container {
+\t-webkit-tap-highlight-color: transparent;
+}
+.leaflet-container a {
+\t-webkit-tap-highlight-color: rgba(51, 181, 229, 0.4);
+}
+.leaflet-tile {
+\tfilter: inherit;
+\tvisibility: hidden;
+\t}
+.leaflet-tile-loaded {
+\tvisibility: inherit;
+\t}
+.leaflet-zoom-box {
+\twidth: 0;
+\theight: 0;
+\t-moz-box-sizing: border-box;
+\t     box-sizing: border-box;
+\tz-index: 800;
+\t}
+/* workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=888319 */
+.leaflet-overlay-pane svg {
+\t-moz-user-select: none;
+\t}
+
+.leaflet-pane         { z-index: 400; }
+
+.leaflet-tile-pane    { z-index: 200; }
+.leaflet-overlay-pane { z-index: 400; }
+.leaflet-shadow-pane  { z-index: 500; }
+.leaflet-marker-pane  { z-index: 600; }
+.leaflet-tooltip-pane   { z-index: 650; }
+.leaflet-popup-pane   { z-index: 700; }
+
+.leaflet-map-pane canvas { z-index: 100; }
+.leaflet-map-pane svg    { z-index: 200; }
+
+.leaflet-vml-shape {
+\twidth: 1px;
+\theight: 1px;
+\t}
+.lvml {
+\tbehavior: url(#default#VML);
+\tdisplay: inline-block;
+\tposition: absolute;
+\t}
+
+
+/* control positioning */
+
+.leaflet-control {
+\tposition: relative;
+\tz-index: 800;
+\tpointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+\tpointer-events: auto;
+\t}
+.leaflet-top,
+.leaflet-bottom {
+\tposition: absolute;
+\tz-index: 1000;
+\tpointer-events: none;
+\t}
+.leaflet-top {
+\ttop: 0;
+\t}
+.leaflet-right {
+\tright: 0;
+\t}
+.leaflet-bottom {
+\tbottom: 0;
+\t}
+.leaflet-left {
+\tleft: 0;
+\t}
+.leaflet-control {
+\tfloat: left;
+\tclear: both;
+\t}
+.leaflet-right .leaflet-control {
+\tfloat: right;
+\t}
+.leaflet-top .leaflet-control {
+\tmargin-top: 10px;
+\t}
+.leaflet-bottom .leaflet-control {
+\tmargin-bottom: 10px;
+\t}
+.leaflet-left .leaflet-control {
+\tmargin-left: 10px;
+\t}
+.leaflet-right .leaflet-control {
+\tmargin-right: 10px;
+\t}
+
+
+/* zoom and fade animations */
+
+.leaflet-fade-anim .leaflet-popup {
+\topacity: 0;
+\t-webkit-transition: opacity 0.2s linear;
+\t   -moz-transition: opacity 0.2s linear;
+\t        transition: opacity 0.2s linear;
+\t}
+.leaflet-fade-anim .leaflet-map-pane .leaflet-popup {
+\topacity: 1;
+\t}
+.leaflet-zoom-animated {
+\t-webkit-transform-origin: 0 0;
+\t    -ms-transform-origin: 0 0;
+\t        transform-origin: 0 0;
+\t}
+svg.leaflet-zoom-animated {
+\twill-change: transform;
+}
+
+.leaflet-zoom-anim .leaflet-zoom-animated {
+\t-webkit-transition: -webkit-transform 0.25s cubic-bezier(0,0,0.25,1);
+\t   -moz-transition:    -moz-transform 0.25s cubic-bezier(0,0,0.25,1);
+\t        transition:         transform 0.25s cubic-bezier(0,0,0.25,1);
+\t}
+.leaflet-zoom-anim .leaflet-tile,
+.leaflet-pan-anim .leaflet-tile {
+\t-webkit-transition: none;
+\t   -moz-transition: none;
+\t        transition: none;
+\t}
+
+.leaflet-zoom-anim .leaflet-zoom-hide {
+\tvisibility: hidden;
+\t}
+
+
+/* cursors */
+
+.leaflet-interactive {
+\tcursor: pointer;
+\t}
+.leaflet-grab {
+\tcursor: -webkit-grab;
+\tcursor:    -moz-grab;
+\tcursor:         grab;
+\t}
+.leaflet-crosshair,
+.leaflet-crosshair .leaflet-interactive {
+\tcursor: crosshair;
+\t}
+.leaflet-popup-pane,
+.leaflet-control {
+\tcursor: auto;
+\t}
+.leaflet-dragging .leaflet-grab,
+.leaflet-dragging .leaflet-grab .leaflet-interactive,
+.leaflet-dragging .leaflet-marker-draggable {
+\tcursor: move;
+\tcursor: -webkit-grabbing;
+\tcursor:    -moz-grabbing;
+\tcursor:         grabbing;
+\t}
+
+
+/* marker & overlays interactivity */
+
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-image-layer,
+.leaflet-pane > svg path,
+.leaflet-tile-container {
+\tpointer-events: none;
+\t}
+
+.leaflet-marker-icon.leaflet-interactive,
+.leaflet-image-layer.leaflet-interactive,
+.leaflet-pane > svg path.leaflet-interactive,
+svg.leaflet-image-layer.leaflet-interactive path {
+\tpointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+\tpointer-events: auto;
+\t}
+
+
+/* visual tweaks */
+
+.leaflet-container {
+\tbackground: #ddd;
+\toutline-offset: 1px;
+\t}
+.leaflet-container a {
+\tcolor: #0078A8;
+\t}
+.leaflet-zoom-box {
+\tborder: 2px dotted #38f;
+\tbackground: rgba(255,255,255,0.5);
+\t}
+
+
+/* general typography */
+
+.leaflet-container {
+\tfont-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+\tfont-size: 12px;
+\tfont-size: 0.75rem;
+\tline-height: 1.5;
+\t}
+
+
+/* general toolbar styles */
+
+.leaflet-bar {
+\tbox-shadow: 0 1px 5px rgba(0,0,0,0.65);
+\tborder-radius: 4px;
+\t}
+.leaflet-bar a {
+\tbackground-color: #fff;
+\tborder-bottom: 1px solid #ccc;
+\twidth: 26px;
+\theight: 26px;
+\tline-height: 26px;
+\tdisplay: block;
+\ttext-align: center;
+\ttext-decoration: none;
+\tcolor: black;
+\t}
+.leaflet-bar a,
+.leaflet-control-layers-toggle {
+\tbackground-position: 50% 50%;
+\tbackground-repeat: no-repeat;
+\tdisplay: block;
+\t}
+.leaflet-bar a:hover,
+.leaflet-bar a:focus {
+\tbackground-color: #f4f4f4;
+\t}
+.leaflet-bar a:first-child {
+\tborder-top-left-radius: 4px;
+\tborder-top-right-radius: 4px;
+\t}
+.leaflet-bar a:last-child {
+\tborder-bottom-left-radius: 4px;
+\tborder-bottom-right-radius: 4px;
+\tborder-bottom: none;
+\t}
+.leaflet-bar a.leaflet-disabled {
+\tcursor: default;
+\tbackground-color: #f4f4f4;
+\tcolor: #bbb;
+\t}
+
+.leaflet-touch .leaflet-bar a {
+\twidth: 30px;
+\theight: 30px;
+\tline-height: 30px;
+\t}
+.leaflet-touch .leaflet-bar a:first-child {
+\tborder-top-left-radius: 2px;
+\tborder-top-right-radius: 2px;
+\t}
+.leaflet-touch .leaflet-bar a:last-child {
+\tborder-bottom-left-radius: 2px;
+\tborder-bottom-right-radius: 2px;
+\t}
+
+
+/* zoom control */
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+\tfont: bold 18px 'Lucida Console', Monaco, monospace;
+\ttext-indent: 1px;
+\t}
+.leaflet-touch .leaflet-control-zoom-in,
+.leaflet-touch .leaflet-control-zoom-out {
+\tfont-size: 22px;
+\t}
+
+
+/* layers control */
+
+.leaflet-control-layers {
+\tbox-shadow: 0 1px 5px rgba(0,0,0,0.4);
+\tbackground: #fff;
+\tborder-radius: 5px;
+\t}
+.leaflet-control-layers-toggle {
+\tbackground-image: url(images/layers.png);
+\twidth: 36px;
+\theight: 36px;
+\t}
+.leaflet-retina .leaflet-control-layers-toggle {
+\tbackground-image: url(images/layers-2x.png);
+\tbackground-size: 26px 26px;
+\t}
+.leaflet-touch .leaflet-control-layers-toggle {
+\twidth: 44px;
+\theight: 44px;
+\t}
+.leaflet-control-layers .leaflet-control-layers-list,
+.leaflet-control-layers-expanded .leaflet-control-layers-toggle {
+\tdisplay: none;
+\t}
+.leaflet-control-layers-expanded .leaflet-control-layers-list {
+\tdisplay: block;
+\tposition: relative;
+\t}
+.leaflet-control-layers-expanded {
+\tpadding: 6px 10px 6px 6px;
+\tcolor: #333;
+\tbackground: #fff;
+\t}
+.leaflet-control-layers-scrollbar {
+\toverflow-y: scroll;
+\tpadding-right: 5px;
+\t}
+.leaflet-control-layers-selector {
+\tmargin-top: 2px;
+\tposition: relative;
+\ttop: 1px;
+\t}
+.leaflet-control-layers label {
+\tdisplay: block;
+\t}
+.leaflet-control-layers-separator {
+\theight: 0;
+\tborder-top: 1px solid #ddd;
+\tmargin: 5px -10px 5px -6px;
+\t}
+.leaflet-default-icon-path { /* used only in path-guessing heuristic, see L.Icon.Default */
+\tbackground-image: url(images/marker-icon.png);
+\t}
+
+
+/* attribution and scale controls */
+
+.leaflet-container .leaflet-control-attribution {
+\tbackground: #fff;
+\tbackground: rgba(255, 255, 255, 0.8);
+\tmargin: 0;
+\t}
+.leaflet-control-attribution,
+.leaflet-control-scale-line {
+\tpadding: 0 5px;
+\tcolor: #333;
+\t}
+.leaflet-control-attribution a {
+\ttext-decoration: none;
+\t}
+.leaflet-control-attribution a:hover,
+.leaflet-control-attribution a:focus {
+\ttext-decoration: underline;
+\t}
+.leaflet-attribution-flag {
+\tdisplay: inline !important;
+\tvertical-align: baseline !important;
+\twidth: 1em !important;
+\theight: 0.6669em !important;
+\t}
+.leaflet-left .leaflet-control-scale {
+\tmargin-left: 5px;
+\t}
+.leaflet-bottom .leaflet-control-scale {
+\tmargin-bottom: 5px;
+\t}
+.leaflet-control-scale-line {
+\tborder: 2px solid #777;
+\tborder-top: none;
+\tline-height: 1.1;
+\tpadding: 2px 5px 1px;
+\twhite-space: nowrap;
+\toverflow: hidden;
+\t-moz-box-sizing: border-box;
+\t     box-sizing: border-box;
+\tbackground: #fff;
+\tbackground: rgba(255, 255, 255, 0.5);
+\t}
+.leaflet-control-scale-line:not(:first-child) {
+\tborder-top: 2px solid #777;
+\tborder-bottom: none;
+\tmargin-top: -2px;
+\t}
+.leaflet-control-scale-line:not(:first-child):not(:last-child) {
+\tborder-bottom: 2px solid #777;
+\t}
+
+.leaflet-touch .leaflet-control-attribution,
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+\tbox-shadow: none;
+\t}
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+\tborder: 2px solid rgba(0,0,0,0.2);
+\tbackground-clip: padding-box;
+\t}
+
+
+/* popup */
+
+.leaflet-popup {
+\tposition: absolute;
+\ttext-align: center;
+\tmargin-bottom: 20px;
+\t}
+.leaflet-popup-content-wrapper {
+\tpadding: 1px;
+\ttext-align: left;
+\tborder-radius: 12px;
+\t}
+.leaflet-popup-content {
+\tmargin: 13px 24px 13px 20px;
+\tline-height: 1.3;
+\tfont-size: 13px;
+\tfont-size: 1.08333em;
+\tmin-height: 1px;
+\t}
+.leaflet-popup-content p {
+\tmargin: 17px 0;
+\tmargin: 1.3em 0;
+\t}
+.leaflet-popup-tip-container {
+\twidth: 40px;
+\theight: 20px;
+\tposition: absolute;
+\tleft: 50%;
+\tmargin-top: -1px;
+\tmargin-left: -20px;
+\toverflow: hidden;
+\tpointer-events: none;
+\t}
+.leaflet-popup-tip {
+\twidth: 17px;
+\theight: 17px;
+\tpadding: 1px;
+
+\tmargin: -10px auto 0;
+\tpointer-events: auto;
+
+\t-webkit-transform: rotate(45deg);
+\t   -moz-transform: rotate(45deg);
+\t    -ms-transform: rotate(45deg);
+\t        transform: rotate(45deg);
+\t}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+\tbackground: white;
+\tcolor: #333;
+\tbox-shadow: 0 3px 14px rgba(0,0,0,0.4);
+\t}
+.leaflet-container a.leaflet-popup-close-button {
+\tposition: absolute;
+\ttop: 0;
+\tright: 0;
+\tborder: none;
+\ttext-align: center;
+\twidth: 24px;
+\theight: 24px;
+\tfont: 16px/24px Tahoma, Verdana, sans-serif;
+\tcolor: #757575;
+\ttext-decoration: none;
+\tbackground: transparent;
+\t}
+.leaflet-container a.leaflet-popup-close-button:hover,
+.leaflet-container a.leaflet-popup-close-button:focus {
+\tcolor: #585858;
+\t}
+.leaflet-popup-scrolled {
+\toverflow: auto;
+\t}
+
+.leaflet-oldie .leaflet-popup-content-wrapper {
+\t-ms-zoom: 1;
+\t}
+.leaflet-oldie .leaflet-popup-tip {
+\twidth: 24px;
+\tmargin: 0 auto;
+
+\t-ms-filter: "progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678)";
+\tfilter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678);
+\t}
+
+.leaflet-oldie .leaflet-control-zoom,
+.leaflet-oldie .leaflet-control-layers,
+.leaflet-oldie .leaflet-popup-content-wrapper,
+.leaflet-oldie .leaflet-popup-tip {
+\tborder: 1px solid #999;
+\t}
+
+
+/* div icon */
+
+.leaflet-div-icon {
+\tbackground: #fff;
+\tborder: 1px solid #666;
+\t}
+
+
+/* Tooltip */
+/* Base styles for the element that has a tooltip */
+.leaflet-tooltip {
+\tposition: absolute;
+\tpadding: 6px;
+\tbackground-color: #fff;
+\tborder: 1px solid #fff;
+\tborder-radius: 3px;
+\tcolor: #222;
+\twhite-space: nowrap;
+\t-webkit-user-select: none;
+\t-moz-user-select: none;
+\t-ms-user-select: none;
+\tuser-select: none;
+\tpointer-events: none;
+\tbox-shadow: 0 1px 3px rgba(0,0,0,0.4);
+\t}
+.leaflet-tooltip.leaflet-interactive {
+\tcursor: pointer;
+\tpointer-events: auto;
+\t}
+.leaflet-tooltip-top:before,
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+\tposition: absolute;
+\tpointer-events: none;
+\tborder: 6px solid transparent;
+\tbackground: transparent;
+\tcontent: "";
+\t}
+
+/* Directions */
+
+.leaflet-tooltip-bottom {
+\tmargin-top: 6px;
+}
+.leaflet-tooltip-top {
+\tmargin-top: -6px;
+}
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-top:before {
+\tleft: 50%;
+\tmargin-left: -6px;
+\t}
+.leaflet-tooltip-top:before {
+\tbottom: 0;
+\tmargin-bottom: -12px;
+\tborder-top-color: #fff;
+\t}
+.leaflet-tooltip-bottom:before {
+\ttop: 0;
+\tmargin-top: -12px;
+\tmargin-left: -6px;
+\tborder-bottom-color: #fff;
+\t}
+.leaflet-tooltip-left {
+\tmargin-left: -6px;
+}
+.leaflet-tooltip-right {
+\tmargin-left: 6px;
+}
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+\ttop: 50%;
+\tmargin-top: -6px;
+\t}
+.leaflet-tooltip-left:before {
+\tright: 0;
+\tmargin-right: -12px;
+\tborder-left-color: #fff;
+\t}
+.leaflet-tooltip-right:before {
+\tleft: 0;
+\tmargin-left: -12px;
+\tborder-right-color: #fff;
+\t}
+
+/* Printing */
+
+@media print {
+\t/* Prevent printers from removing background-images of controls. */
+\t.leaflet-control {
+\t\t-webkit-print-color-adjust: exact;
+\t\tprint-color-adjust: exact;
+\t\t}
+\t}
+`
+
+function LeafletStyles() {
+  return <style>{LEAFLET_CSS}</style>
+}
+
+// Ensure Leaflet's default marker icons resolve correctly in Vite builds.
+delete L.Icon.Default.prototype._getIconUrl
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+})
 
 const TAB_OPTIONS = [
   { id: 'all', label: 'All', icon: LayoutGrid },
@@ -308,19 +987,19 @@ function ResultSkeletonCard({ index }) {
     <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800" aria-hidden="true">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="h-3 w-1/3 rounded-full skeleton" />
-          <div className="mt-3 h-3 w-3/4 rounded-full skeleton" />
-          <div className="mt-2 h-3 w-2/3 rounded-full skeleton" />
+          <div className="h-3 w-1/3 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
+          <div className="mt-3 h-3 w-3/4 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
+          <div className="mt-2 h-3 w-2/3 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
           <div className="mt-4 grid grid-cols-2 gap-2">
-            <div className="h-3 rounded-full skeleton" />
-            <div className="h-3 rounded-full skeleton" />
-            <div className="h-3 rounded-full skeleton" />
-            <div className="h-3 rounded-full skeleton" />
+            <div className="h-3 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
+            <div className="h-3 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
+            <div className="h-3 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
+            <div className="h-3 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
           </div>
         </div>
         <div className="flex flex-col gap-2">
-          <div className="h-9 w-28 rounded-full skeleton" />
-          <div className="h-9 w-28 rounded-full skeleton" />
+          <div className="h-9 w-28 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
+          <div className="h-9 w-28 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
         </div>
       </div>
       <span className="sr-only">Loading result {index + 1}</span>
@@ -346,7 +1025,7 @@ function ChipGroup({ options = [], values = [], onChange, disabled, counts = {} 
             }}
             className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${
               selected
-                ? ' bg-[var(--gt-blue)] text-white ring-transparent dark:bg-[var(--gt-blue)] dark:text-white'
+                ? ' bg-gtBlue text-white ring-transparent dark:bg-gtBlue dark:text-white'
                 : ' bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10'
             } ${disabled ? 'opacity-50' : ''}`}
           >
@@ -380,7 +1059,7 @@ function BucketChips({ options = [], value = '', onChange, disabled }) {
             }}
             className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${
               selected
-                ? ' bg-[var(--gt-blue)] text-white ring-transparent dark:bg-[var(--gt-blue)] dark:text-white'
+                ? ' bg-gtBlue text-white ring-transparent dark:bg-gtBlue dark:text-white'
                 : ' bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10'
             } ${disabled ? 'opacity-50' : ''}`}
           >
@@ -1493,6 +2172,7 @@ export default function SearchResults() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
+      <LeafletStyles />
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="rounded-2xl bg-white/70 p-4 shadow-sm ring-1 ring-slate-200/60 backdrop-blur-md dark:bg-slate-950/40 dark:ring-white/10">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -1518,7 +2198,7 @@ export default function SearchResults() {
               <button
                 type="button"
                 onClick={saveAlert}
-                className="inline-flex items-center gap-2 rounded-full bg-[var(--gt-blue)] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95"
+                className="inline-flex items-center gap-2 rounded-full bg-gtBlue px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-gtBlueHover active:scale-95"
               >
                 <Bell size={16} />
                 Save search
@@ -1556,7 +2236,7 @@ export default function SearchResults() {
             <button
               type="button"
               onClick={runSearch}
-              className="rounded-full bg-[var(--gt-blue)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95 disabled:opacity-60"
+              className="rounded-full bg-gtBlue px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-gtBlueHover active:scale-95 disabled:opacity-60"
               disabled={loading}
             >
               {loading ? 'Searching...' : 'Search'}
@@ -1567,7 +2247,7 @@ export default function SearchResults() {
             <button
               type="button"
               onClick={clearCategories}
-              className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${category.length ? ' bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50' : ' bg-[var(--gt-blue)] text-white ring-transparent'}`}
+              className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${category.length ? ' bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50' : ' bg-gtBlue text-white ring-transparent'}`}
             >
               All categories
             </button>
@@ -1576,7 +2256,7 @@ export default function SearchResults() {
                 key={option}
                 type="button"
                 onClick={() => toggleCategory(option)}
-                className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${category.includes(option) ? ' bg-[var(--gt-blue)] text-white ring-transparent' : ' bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50'}`}
+                className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${category.includes(option) ? ' bg-gtBlue text-white ring-transparent' : ' bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50'}`}
               >
                 {option}
                 {Number.isFinite(Number(getFacetCount(facetCounts.category, option))) ? (
@@ -1774,7 +2454,7 @@ export default function SearchResults() {
                             key={value || 'any'}
                             type="button"
                             onClick={() => updateCoreFilter('orgType', value)}
-                            className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${active ? ' bg-[var(--gt-blue)] text-white ring-transparent' : ' bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50'}`}
+                            className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${active ? ' bg-gtBlue text-white ring-transparent' : ' bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50'}`}
                           >
                             {label}
                           </button>
@@ -1924,7 +2604,7 @@ export default function SearchResults() {
                               type="button"
                               onClick={() => addPantone(pantoneDraft)}
                               disabled={premiumLocked}
-                              className="rounded-lg bg-[var(--gt-blue)] px-3 py-2 text-[11px] font-semibold text-white disabled:opacity-60"
+                              className="rounded-lg bg-gtBlue px-3 py-2 text-[11px] font-semibold text-white disabled:opacity-60"
                             >
                               Add
                             </button>
@@ -2242,7 +2922,7 @@ export default function SearchResults() {
                                   type="button"
                                   onClick={addRoleSeat}
                                   disabled={premiumLocked || !roleSeatDraftRole}
-                                  className="rounded-lg bg-[var(--gt-blue)] px-3 py-2 text-[11px] font-semibold text-white disabled:opacity-60"
+                                  className="rounded-lg bg-gtBlue px-3 py-2 text-[11px] font-semibold text-white disabled:opacity-60"
                                 >
                                   Add
                                 </button>
@@ -2307,7 +2987,7 @@ export default function SearchResults() {
                               type="button"
                               onClick={useCurrentLocation}
                               disabled={premiumLocked}
-                              className="rounded-lg bg-[var(--gt-blue)] px-3 py-2 text-[11px] font-semibold text-white disabled:opacity-60"
+                              className="rounded-lg bg-gtBlue px-3 py-2 text-[11px] font-semibold text-white disabled:opacity-60"
                             >
                               Use my location
                             </button>
@@ -2315,13 +2995,13 @@ export default function SearchResults() {
                           {geoLoading ? <div className="mt-2 text-[10px] text-slate-500">Searching locations...</div> : null}
                           {geoError ? <div className="mt-2 text-[10px] text-rose-600">{geoError}</div> : null}
                           {geoResults.length ? (
-                            <div className="mt-2 max-h-32 space-y-1 overflow-auto rounded-lg borderless-shadow bg-white p-2">
+                            <div className="mt-2 max-h-32 space-y-1 overflow-auto rounded-lg shadow-borderless dark:shadow-borderlessDark bg-white p-2">
                               {geoResults.map((result) => (
                                 <button
                                   key={result.id}
                                   type="button"
                                   onClick={() => selectGeoResult(result)}
-                                  className="w-full text-left text-[11px] text-slate-700 hover:text-[var(--gt-blue)]"
+                                  className="w-full text-left text-[11px] text-slate-700 hover:text-gtBlue"
                                 >
                                   {result.label}
                                 </button>
@@ -2338,7 +3018,7 @@ export default function SearchResults() {
                             <button
                               type="button"
                               onClick={() => setShowMapPreview((prev) => !prev)}
-                              className="text-[10px] font-semibold text-[var(--gt-blue)]"
+                              className="text-[10px] font-semibold text-gtBlue"
                             >
                               {showMapPreview ? 'Hide map' : 'Show map'}
                             </button>
@@ -2357,7 +3037,7 @@ export default function SearchResults() {
                             <span className="text-[11px] font-semibold">{filters.distanceKm || 0}km</span>
                           </div>
                           {showMapPreview && filters.locationLat && filters.locationLng ? (
-                            <div className="mt-2 h-36 overflow-hidden rounded-lg borderless-shadow">
+                            <div className="mt-2 h-36 overflow-hidden rounded-lg shadow-borderless dark:shadow-borderlessDark">
                               <div ref={mapRef} className="h-full w-full" />
                             </div>
                           ) : null}
@@ -2384,8 +3064,8 @@ export default function SearchResults() {
                 <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Status & presets</p>
                 <div className="mt-2 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                   {quotaMessage ? <p>{quotaMessage}</p> : <p>Run a search to see quota status.</p>}
-                  {upgradePrompt ? <p className="text-amber-800 bg-amber-50 borderless-shadow rounded-xl p-2">{upgradePrompt}</p> : null}
-                  {alertFeedback ? <p className="text-sky-800 bg-sky-50 borderless-shadow rounded-xl p-2">{alertFeedback}</p> : null}
+                  {upgradePrompt ? <p className="text-amber-800 bg-amber-50 shadow-borderless dark:shadow-borderlessDark rounded-xl p-2">{upgradePrompt}</p> : null}
+                  {alertFeedback ? <p className="text-sky-800 bg-sky-50 shadow-borderless dark:shadow-borderlessDark rounded-xl p-2">{alertFeedback}</p> : null}
                 </div>
 
                 <div className="mt-4">
@@ -2405,7 +3085,7 @@ export default function SearchResults() {
                         <div key={p.key} className="flex items-center justify-between gap-2 rounded-xl bg-white p-2 ring-1 ring-slate-200/70">
                           <div className="min-w-0 text-xs text-slate-700">{p.key.replace('_', ' ')} preset</div>
                           <div className="flex gap-2">
-                            <button type="button" onClick={() => applyPreset(p.key)} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Load</button>
+                            <button type="button" onClick={() => applyPreset(p.key)} className="rounded-full bg-gtBlue px-3 py-1 text-[11px] font-semibold text-white">Load</button>
                             <button type="button" onClick={() => shareLocalPreset(p)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Share</button>
                             <button type="button" onClick={() => createServerPresetFromLocal(p.key)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Copy to server</button>
                             <button type="button" onClick={() => deleteLocalPreset(p.key)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-rose-600 ring-1 ring-rose-200/30">Delete</button>
@@ -2426,7 +3106,7 @@ export default function SearchResults() {
                             <div key={sp.id} className="flex items-center justify-between gap-2 rounded-xl bg-white p-2 ring-1 ring-slate-200/70">
                               <div className="min-w-0 text-xs text-slate-700">{sp.name}{String(sp.owner_id) === String(sessionUser?.id) ? ' (you)' : ''}</div>
                               <div className="flex gap-2">
-                                <button type="button" onClick={() => applyServerPreset(sp)} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Load</button>
+                                <button type="button" onClick={() => applyServerPreset(sp)} className="rounded-full bg-gtBlue px-3 py-1 text-[11px] font-semibold text-white">Load</button>
                                 {String(sp.owner_id) === String(sessionUser?.id) ? (
                                   <>
                                     <button type="button" onClick={() => updateServerPreset(sp.id)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Save</button>
@@ -2443,7 +3123,7 @@ export default function SearchResults() {
                             <button type="button" onClick={() => {
                               const name = window.prompt('Preset name')
                               if (name) createServerPresetFromCurrent(name)
-                            }} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Save current as server preset</button>
+                            }} className="rounded-full bg-gtBlue px-3 py-1 text-[11px] font-semibold text-white">Save current as server preset</button>
                           </div>
                         </div>
                       </div>
@@ -2452,12 +3132,12 @@ export default function SearchResults() {
                 </div>
 
                 {autoSaveCandidate ? (
-                  <div className="mt-4 rounded-xl borderless-shadow bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-white/5 dark:text-slate-200">
+                  <div className="mt-4 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-white/5 dark:text-slate-200">
                     <p className="font-semibold text-slate-700 dark:text-slate-100">Save this search as a preset</p>
                     <div className="mt-2 flex flex-wrap gap-2">
-                      <button type="button" onClick={() => savePreset('buyer')} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Buyer</button>
-                      <button type="button" onClick={() => savePreset('buying_house')} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Buying house</button>
-                      <button type="button" onClick={() => savePreset('factory')} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Factory</button>
+                      <button type="button" onClick={() => savePreset('buyer')} className="rounded-full bg-gtBlue px-3 py-1 text-[11px] font-semibold text-white">Buyer</button>
+                      <button type="button" onClick={() => savePreset('buying_house')} className="rounded-full bg-gtBlue px-3 py-1 text-[11px] font-semibold text-white">Buying house</button>
+                      <button type="button" onClick={() => savePreset('factory')} className="rounded-full bg-gtBlue px-3 py-1 text-[11px] font-semibold text-white">Factory</button>
                       <button type="button" onClick={() => setAutoSaveCandidate(null)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200/70 dark:text-slate-200 dark:ring-white/10">Dismiss</button>
                     </div>
                   </div>
@@ -2469,7 +3149,7 @@ export default function SearchResults() {
 
         <div className="mt-5 grid grid-cols-12 gap-4">
           <div className="col-span-12 xl:col-span-9 rounded-2xl bg-white/70 shadow-sm ring-1 ring-slate-200/60 backdrop-blur-md overflow-hidden dark:bg-slate-950/30 dark:ring-white/10">
-            <div className="relative flex items-center gap-2 px-4 py-3 bg-white/40 dark:bg-slate-950/20 borderless-divider-b dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
+            <div className="relative flex items-center gap-2 px-4 py-3 bg-white/40 dark:bg-slate-950/20 shadow-dividerB dark:shadow-dividerBDark dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
               {TAB_OPTIONS.map((t) => {
                 const Icon = t.icon
                 const active = activeTab === t.id
@@ -2618,7 +3298,7 @@ export default function SearchResults() {
                                   id: r.id,
                                   label: r.title || r.category || 'Buyer request',
                                 }, { requirementId: r.id })}
-                                className="rounded-full bg-[var(--gt-blue)] px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95"
+                                className="rounded-full bg-gtBlue px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-gtBlueHover active:scale-95"
                               >
                                 Contact
                               </button>
@@ -2706,7 +3386,7 @@ export default function SearchResults() {
                                   id: p.id,
                                   label: p.title || 'Product',
                                 }, { productId: p.id })}
-                                className="rounded-full bg-[var(--gt-blue)] px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95"
+                                className="rounded-full bg-gtBlue px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-gtBlueHover active:scale-95"
                               >
                                 Contact
                               </button>
@@ -2731,7 +3411,7 @@ export default function SearchResults() {
                   <div className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
                     Upgrade to Premium to unlock early access to newly verified factories.
                     <div className="mt-2">
-                      <Link to="/pricing" className="text-[11px] font-semibold text-[var(--gt-blue)] hover:underline">View Premium options</Link>
+                      <Link to="/pricing" className="text-[11px] font-semibold text-gtBlue hover:underline">View Premium options</Link>
                     </div>
                   </div>
                 ) : earlyVerifiedError ? (
@@ -2774,7 +3454,7 @@ export default function SearchResults() {
                 )}
               </div>
               <div className="mt-3">
-                <Link to="/notifications" className="text-xs font-semibold text-[var(--gt-blue)] hover:underline">Open full history</Link>
+                <Link to="/notifications" className="text-xs font-semibold text-gtBlue hover:underline">Open full history</Link>
               </div>
             </div>
 

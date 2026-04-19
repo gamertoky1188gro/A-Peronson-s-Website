@@ -182,7 +182,7 @@ export default function MemberManagement() {
   }
 
   return (
-    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
+    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-500 dark:bg-[#020617] dark:text-slate-100">
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -192,21 +192,21 @@ export default function MemberManagement() {
           <button className="px-4 py-2 bg-[#0A66C2] text-white rounded-md disabled:opacity-50" onClick={() => setShowCreate(true)} disabled={!canManageMembers}>+ Add New Member</button>
         </div>
 
-        {!!error && <div className="mb-3 text-sm text-red-700 bg-red-50 borderless-shadow rounded p-2">{error}</div>}
-        {!!success && <div className="mb-3 text-sm text-green-700 bg-green-50 borderless-shadow rounded p-2">{success}</div>}
+        {!!error && <div className="mb-3 text-sm text-red-700 bg-red-50 shadow-borderless dark:shadow-borderlessDark rounded p-2">{error}</div>}
+        {!!success && <div className="mb-3 text-sm text-green-700 bg-green-50 shadow-borderless dark:shadow-borderlessDark rounded p-2">{success}</div>}
 
         {forbidden || !canManageMembers ? <AccessDeniedState message="You do not have permission to manage members for this organization." /> : null}
 
         {forbidden || !canManageMembers ? null : (
-          <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-sm borderless-shadow p-4">
+          <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
             <div className="mb-4 flex items-center gap-3">
-              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search members" className="px-3 py-2 borderless-shadow rounded w-64" />
+              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search members" className="px-3 py-2 shadow-borderless dark:shadow-borderlessDark rounded w-64" />
               <div className="text-sm text-[#5A5A5A]">
                 Plan: {planLabel} • Free limit: {constraints.free_member_limit} • Premium limit: {premiumLimitLabel}
               </div>
             </div>
             {!canTeamAccess ? (
-              <div className="mb-3 rounded-lg borderless-shadow bg-amber-50 p-3 text-xs text-amber-900">
+              <div className="mb-3 rounded-lg shadow-borderless dark:shadow-borderlessDark bg-amber-50 p-3 text-xs text-amber-900">
                 Team/agent access management is a Premium feature. Upgrade to edit permissions and access controls.
               </div>
             ) : null}
@@ -231,7 +231,7 @@ export default function MemberManagement() {
                     <tr><td className="py-4 px-3" colSpan={6}>No members found.</td></tr>
                   )}
                   {!loading && filtered.map((m) => (
-                    <tr key={m.id} className="borderless-divider-t">
+                    <tr key={m.id} className="shadow-dividerT dark:shadow-dividerTDark">
                       <td className="py-2 px-3">{m.name}</td>
                       <td className="py-2 px-3">{m.username}</td>
                       <td className="py-2 px-3">{m.member_id || m.account_id}</td>
@@ -239,9 +239,9 @@ export default function MemberManagement() {
                       <td className="py-2 px-3">{m.status}</td>
                       <td className="py-2 px-3">
                         <button className="px-2 py-1 bg-[#0A66C2] text-white rounded mr-2" onClick={() => setActivePermissionMember(m)}>Edit</button>
-                        <button className="px-2 py-1 borderless-shadow rounded mr-2" onClick={() => handleResetPassword(m.id)}>Reset</button>
-                        <button className="px-2 py-1 borderless-shadow rounded mr-2 text-amber-700" onClick={() => handleDeactivateOrRemove(m.id, false)}>Deactivate</button>
-                        <button className="px-2 py-1 borderless-shadow rounded text-red-600" onClick={() => handleDeactivateOrRemove(m.id, true)}>Remove</button>
+                        <button className="px-2 py-1 shadow-borderless dark:shadow-borderlessDark rounded mr-2" onClick={() => handleResetPassword(m.id)}>Reset</button>
+                        <button className="px-2 py-1 shadow-borderless dark:shadow-borderlessDark rounded mr-2 text-amber-700" onClick={() => handleDeactivateOrRemove(m.id, false)}>Deactivate</button>
+                        <button className="px-2 py-1 shadow-borderless dark:shadow-borderlessDark rounded text-red-600" onClick={() => handleDeactivateOrRemove(m.id, true)}>Remove</button>
                       </td>
                     </tr>
                   ))}
@@ -255,13 +255,13 @@ export default function MemberManagement() {
       {showCreate && (
         <Modal title="Create member" onClose={() => setShowCreate(false)}>
           <form className="space-y-3" onSubmit={handleCreateMember}>
-            <input className="w-full borderless-shadow rounded px-3 py-2" placeholder="Member name" value={createForm.name} onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })} />
-            <input className="w-full borderless-shadow rounded px-3 py-2" placeholder="Unique username" value={createForm.username} onChange={(e) => setCreateForm({ ...createForm, username: e.target.value })} />
-            <input className="w-full borderless-shadow rounded px-3 py-2" placeholder="Unique member ID" value={createForm.member_id} onChange={(e) => setCreateForm({ ...createForm, member_id: e.target.value })} />
+            <input className="w-full shadow-borderless dark:shadow-borderlessDark rounded px-3 py-2" placeholder="Member name" value={createForm.name} onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })} />
+            <input className="w-full shadow-borderless dark:shadow-borderlessDark rounded px-3 py-2" placeholder="Unique username" value={createForm.username} onChange={(e) => setCreateForm({ ...createForm, username: e.target.value })} />
+            <input className="w-full shadow-borderless dark:shadow-borderlessDark rounded px-3 py-2" placeholder="Unique member ID" value={createForm.member_id} onChange={(e) => setCreateForm({ ...createForm, member_id: e.target.value })} />
             <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
               Role is fixed to <span className="font-semibold">Agent</span>. Agents login using their <span className="font-semibold">Member ID</span>.
             </div>
-            <input className="w-full borderless-shadow rounded px-3 py-2" placeholder="Initial password (optional -- auto-generate if empty)" value={createForm.password} onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })} />
+            <input className="w-full shadow-borderless dark:shadow-borderlessDark rounded px-3 py-2" placeholder="Initial password (optional -- auto-generate if empty)" value={createForm.password} onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })} />
 
             <PermissionMatrixEditor
               matrix={createForm.permission_matrix}
@@ -330,7 +330,7 @@ function PermissionMatrixEditor({ matrix, sections, onChange, disabled = false }
       <div className="text-sm mb-1">Permission matrix (view/edit per module)</div>
       <div className={`space-y-2${disabled ? ' opacity-60' : ''}`}>
         {sections.map((section) => (
-          <div key={section} className="flex items-center justify-between borderless-shadow rounded px-3 py-2">
+          <div key={section} className="flex items-center justify-between shadow-borderless dark:shadow-borderlessDark rounded px-3 py-2">
             <span className="text-sm font-medium capitalize">{section}</span>
             <div className="flex items-center gap-4 text-sm">
               <label className="flex items-center gap-1">
@@ -385,14 +385,14 @@ function MemberEditor({ member, constraints, getConflictMessage, onSave, canTeam
 
   return (
     <div className="space-y-3">
-      <input className="w-full borderless-shadow rounded px-3 py-2" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Member name" />
-      <input className="w-full borderless-shadow rounded px-3 py-2" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} placeholder="Username" />
-      <input className="w-full borderless-shadow rounded px-3 py-2" value={form.member_id} onChange={(e) => setForm({ ...form, member_id: e.target.value })} placeholder="Member ID" />
+      <input className="w-full shadow-borderless dark:shadow-borderlessDark rounded px-3 py-2" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Member name" />
+      <input className="w-full shadow-borderless dark:shadow-borderlessDark rounded px-3 py-2" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} placeholder="Username" />
+      <input className="w-full shadow-borderless dark:shadow-borderlessDark rounded px-3 py-2" value={form.member_id} onChange={(e) => setForm({ ...form, member_id: e.target.value })} placeholder="Member ID" />
       <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
         Role: <span className="font-semibold">Agent</span> (fixed)
       </div>
 
-      <select className="w-full borderless-shadow rounded px-3 py-2" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
+      <select className="w-full shadow-borderless dark:shadow-borderlessDark rounded px-3 py-2" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
         <option value="active">active</option>
         <option value="inactive">inactive</option>
       </select>

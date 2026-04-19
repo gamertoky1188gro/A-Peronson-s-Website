@@ -131,7 +131,7 @@ export default function RatingFeedback() {
           </p>
         </div>
 
-        {feedback ? <div className="rounded-xl borderless-shadow bg-white p-3 text-sm text-slate-700">{feedback}</div> : null}
+        {feedback ? <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white p-3 text-sm text-slate-700">{feedback}</div> : null}
 
         {items.length === 0 ? (
           <div className="rounded-2xl bg-white p-6 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
@@ -149,7 +149,7 @@ export default function RatingFeedback() {
             return (
               <div
                 key={row.id}
-                className={`rounded-2xl bg-white p-5 shadow-sm ring-1${isFocused ? 'ring-[var(--gt-blue)]' : 'ring-slate-200/60'}dark:bg-slate-900/50 dark:ring-slate-800`}
+                className={`rounded-2xl bg-white p-5 shadow-sm ring-1${isFocused ? 'ring-gtBlue' : 'ring-slate-200/60'}dark:bg-slate-900/50 dark:ring-slate-800`}
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
@@ -163,7 +163,7 @@ export default function RatingFeedback() {
                 </div>
 
                 {suggested ? (
-                  <div className="mt-4 rounded-xl borderless-shadow bg-emerald-50 p-3 text-xs text-emerald-900">
+                  <div className="mt-4 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-emerald-50 p-3 text-xs text-emerald-900">
                     Suggested rating: <span className="font-semibold">{suggested.toFixed(1)}</span>
                     {Array.isArray(row.suggested_reasons) && row.suggested_reasons.length ? (
                       <span className="ml-2 text-emerald-800">({row.suggested_reasons.join(', ')})</span>
@@ -187,7 +187,7 @@ export default function RatingFeedback() {
                     value={draft.comment}
                     onChange={(e) => updateDraft(row.id, { comment: e.target.value })}
                     placeholder="Optional comment for this interaction..."
-                    className="w-full rounded-xl borderless-shadow bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-slate-950/40 dark:text-slate-100"
+                    className="w-full rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-slate-950/40 dark:text-slate-100"
                     rows={3}
                   />
                 </div>
@@ -200,7 +200,7 @@ export default function RatingFeedback() {
                   <button
                     type="button"
                     onClick={() => submitRating(row)}
-                    className="rounded-full bg-[var(--gt-blue)] px-4 py-2 text-xs font-semibold text-white hover:bg-[var(--gt-blue-hover)]"
+                    className="rounded-full bg-gtBlue px-4 py-2 text-xs font-semibold text-white hover:bg-gtBlueHover"
                   >
                     Submit rating
                   </button>

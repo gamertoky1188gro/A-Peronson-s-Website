@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 import { readJson, writeJson } from '../utils/jsonStore.js'
 import { sanitizeString } from '../utils/validators.js'
+import { emitNotificationCreated, emitNotificationRead } from '../realtime/realtimeBus.js'
 
 const ALERTS_FILE = 'search_alerts.json'
 const NOTIFICATIONS_FILE = 'notifications.json'
@@ -23,6 +24,7 @@ export async function createNotification(userId, payload = {}) {
   }
   notifications.push(row)
   await writeJson(NOTIFICATIONS_FILE, notifications)
+  emitNotificationCreated(userId, row)
   return row
 }
 
@@ -140,6 +142,7 @@ export async function markNotificationRead(userId, id) {
   if (idx < 0) return null
   notifications[idx].read = true
   await writeJson(NOTIFICATIONS_FILE, notifications)
+  emitNotificationRead(userId, id)
   return notifications[idx]
 }
 

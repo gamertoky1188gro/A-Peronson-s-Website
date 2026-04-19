@@ -19,9 +19,9 @@ function formatDate(value) {
 }
 
 function statusBadgeClass(status = '') {
-  if (status === 'breached') return 'bg-rose-100 text-rose-700'
-  if (status === 'warning') return 'bg-amber-100 text-amber-800'
-  return 'bg-emerald-100 text-emerald-700'
+  if (status === 'breached') return 'bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-200'
+  if (status === 'warning') return 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200'
+  return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-200'
 }
 
 function formatCountdown(deadlineAt) {
@@ -255,7 +255,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
   const assignedAgent = selected?.assigned_agent_id ? lookup[selected.assigned_agent_id] : null
 
   return (
-    <div className="bg-white neo-panel cyberpunk-card rounded-xl shadow-md p-4">
+    <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
       <div className="flex flex-col gap-4 lg:flex-row">
         <div className="lg:w-2/5">
           <div className="flex items-center justify-between gap-3 mb-3">
@@ -274,7 +274,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
               <button
                 type="button"
                 onClick={loadLeads}
-                className="px-3 py-1.5 text-sm rounded-md borderless-shadow hover:bg-slate-50 active:scale-[0.98]"
+                className="px-3 py-1.5 text-sm rounded-md bg-white shadow-borderless ring-1 ring-slate-200/60 hover:bg-slate-50 active:scale-[0.98] dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10 dark:hover:bg-white/8"
                 disabled={loading}
               >
                 Refresh
@@ -299,8 +299,8 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                   type="button"
                   onClick={() => setSelectedId(lead.id)}
                   className={[
-                    'w-full text-left rounded-lg borderless-shadow px-3 py-2 transition',
-                    isActive ? 'bg-[#F4F9FF] ring-1 ring-[var(--gt-blue)]' : 'hover:bg-slate-50',
+                    'w-full text-left rounded-lg bg-white shadow-borderless ring-1 ring-slate-200/60 px-3 py-2 transition dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10',
+                    isActive ? 'bg-gtBlue/10 ring-gtBlue/40 dark:bg-gtBlue/15 dark:ring-gtBlue/40' : 'hover:bg-slate-50 dark:hover:bg-white/8',
                   ].join(' ')}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -308,7 +308,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                       {avatarUrl ? (
                         <img src={avatarUrl} alt={label} className="h-8 w-8 rounded-full object-cover" />
                       ) : (
-                        <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-600">
+                        <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-200">
                           {String(label).slice(0, 2).toUpperCase()}
                         </div>
                       )}
@@ -335,11 +335,11 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
 
         <div className="lg:w-3/5">
           {!selectedId ? (
-            <div className="rounded-xl borderless-shadow p-6 text-sm text-slate-500">
+            <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark p-6 text-sm text-slate-500">
               Select a lead to view details, notes, and reminders.
             </div>
           ) : (
-            <div className="rounded-xl borderless-shadow p-4">
+            <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark p-4">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
                   <p className="text-xs uppercase tracking-widest text-slate-500">Counterparty</p>
@@ -364,7 +364,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                   <select
                     value={selected?.status || 'new'}
                     onChange={(e) => updateLead({ status: e.target.value })}
-                    className="rounded-md borderless-shadow px-3 py-2 text-sm"
+                    className="rounded-md shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-sm"
                     disabled={saving}
                   >
                     {STATUS_OPTIONS.map((opt) => (
@@ -373,7 +373,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                   </select>
                   <button
                     type="button"
-                    className="rounded-md borderless-shadow px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                    className="rounded-md shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                     disabled={!selected?.match_id}
                     onClick={() => {
                       if (!selected?.match_id) return
@@ -407,7 +407,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                         const assignmentReason = window.prompt('Assignment reason (audit trail)', 'manual_reassignment') || 'manual_reassignment'
                         updateLead({ assigned_agent_id: assignedAgentId, assignment_reason: assignmentReason })
                       }}
-                      className="mt-2 text-sm text-[var(--gt-blue)] hover:underline"
+                      className="mt-2 text-sm text-gtBlue hover:underline"
                       disabled={saving}
                     >
                       Assign / Reassign
@@ -441,7 +441,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                   <button
                     type="button"
                     onClick={createReminder}
-                    className="mt-2 text-sm text-[var(--gt-blue)] hover:underline"
+                    className="mt-2 text-sm text-gtBlue hover:underline"
                     disabled={saving}
                   >
                     Set reminder
@@ -455,7 +455,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                     <p className="text-xs uppercase tracking-widest text-slate-500">Team queue snapshot</p>
                     <div className="mt-2 grid gap-2 md:grid-cols-2">
                       {(queueMeta.team_queues || []).slice(0, 4).map((queue) => (
-                        <div key={queue.agent_id} className="rounded-md borderless-shadow px-2 py-1 text-xs">
+                        <div key={queue.agent_id} className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs">
                           <div className="font-medium">{queue.agent_name || queue.agent_id}</div>
                           <div className="text-slate-500">Load: {queue.current_load} leads</div>
                         </div>
@@ -464,7 +464,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                     <p className="mt-3 text-xs uppercase tracking-widest text-slate-500">Escalation queue</p>
                     <div className="mt-2 space-y-1">
                       {(queueMeta.escalations || []).slice(0, 5).map((item) => (
-                        <div key={item.id} className="rounded-md borderless-shadow px-2 py-1 text-xs flex items-center justify-between gap-2">
+                        <div key={item.id} className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs flex items-center justify-between gap-2">
                           <span className="truncate">Lead {item.lead_id} · {item.reason}</span>
                           <span className="text-slate-500">{formatDate(item.triggered_at)}</span>
                         </div>
@@ -478,13 +478,13 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                     value={noteDraft}
                     onChange={(e) => setNoteDraft(e.target.value)}
                     placeholder="Add a note for your team..."
-                    className="flex-1 rounded-md borderless-shadow px-3 py-2 text-sm"
+                    className="flex-1 rounded-md shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-sm"
                     disabled={saving}
                   />
                   <button
                     type="button"
                     onClick={submitNote}
-                    className="px-3 py-2 rounded-md bg-[var(--gt-blue)] text-white text-sm font-medium hover:bg-[var(--gt-blue-hover)] active:scale-[0.98]"
+                    className="px-3 py-2 rounded-md bg-gtBlue text-white text-sm font-medium hover:bg-gtBlueHover active:scale-[0.98]"
                     disabled={saving}
                   >
                     Add
@@ -494,7 +494,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                 <div className="mt-3 space-y-2 max-h-[260px] overflow-auto pr-1">
                   {(selected?.notes || []).length === 0 ? <div className="text-sm text-slate-500">No notes yet.</div> : null}
                   {(selected?.notes || []).map((note) => (
-                    <div key={note.id} className="rounded-lg borderless-shadow p-3">
+                    <div key={note.id} className="rounded-lg shadow-borderless dark:shadow-borderlessDark p-3">
                       <p className="text-sm text-slate-900">{note.note}</p>
                       <p className="mt-1 text-xs text-slate-500">{formatDate(note.created_at)}</p>
                     </div>
@@ -508,7 +508,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                     <p className="text-xs uppercase tracking-widest text-slate-500">Assignment audit trail</p>
                     <div className="mt-2 space-y-1">
                       {selectedAssignments.map((item) => (
-                        <div key={item.id} className="rounded-lg borderless-shadow px-3 py-2 text-xs">
+                        <div key={item.id} className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs">
                           <span className="font-medium">{item.reason || 'assignment'}</span>
                           <span className="text-slate-500"> · {formatDate(item.assigned_at || item.created_at)}</span>
                         </div>
@@ -520,7 +520,7 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                 <div className="mt-2 space-y-2">
                   {(selected?.reminders || []).length === 0 ? <div className="text-sm text-slate-500">No reminders yet.</div> : null}
                   {(selected?.reminders || []).map((reminder) => (
-                    <div key={reminder.id} className="rounded-lg borderless-shadow p-3">
+                    <div key={reminder.id} className="rounded-lg shadow-borderless dark:shadow-borderlessDark p-3">
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-sm font-medium">{reminder.message}</p>
                         <p className="text-xs text-slate-500">{formatDate(reminder.remind_at)}</p>

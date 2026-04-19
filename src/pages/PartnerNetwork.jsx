@@ -85,26 +85,26 @@ export default function PartnerNetwork() {
   const canManage = permissions.can_manage && !permissions.view_only
 
   return (
-    <div className="min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card text-[#1A1A1A]">
+    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-500 dark:bg-[#020617] dark:text-slate-100">
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
           <div>
             <h1 className="text-2xl font-bold">Partner Network</h1>
-            <p className="text-sm text-[#5A5A5A]">Manage connected factories and request workflow by account ID</p>
-            {permissions.view_only && <p className="text-xs text-amber-700 mt-1">Agent mode: view-only access enabled.</p>}
+            <p className="text-sm text-slate-600 dark:text-slate-300">Manage connected factories and request workflow by account ID</p>
+            {permissions.view_only && <p className="text-xs text-amber-700 mt-1 dark:text-amber-200">Agent mode: view-only access enabled.</p>}
           </div>
           <div className="flex items-center gap-2">
             <input
               value={targetAccountId}
               onChange={(e) => setTargetAccountId(e.target.value)}
               placeholder="Target account ID"
-              className="px-3 py-2 borderless-shadow rounded w-64"
+              className="px-3 py-2 shadow-borderless ring-1 ring-slate-200/60 rounded w-64 bg-white focus:outline-none focus:ring-2 focus:ring-gtBlue/25 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10"
               disabled={!canManage || loading}
             />
             <button
               onClick={sendRequest}
               disabled={!canManage || loading || !targetAccountId.trim()}
-              className="px-4 py-2 bg-[#0A66C2] text-white rounded-md disabled:opacity-60"
+              className="px-4 py-2 bg-gtBlue hover:bg-gtBlueHover text-white rounded-md disabled:opacity-60"
             >
               Send Request
             </button>
@@ -112,8 +112,8 @@ export default function PartnerNetwork() {
         </div>
 
         <div className="mb-4 flex items-center gap-3">
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search partners" className="px-3 py-2 borderless-shadow rounded w-72" />
-          <div className="text-sm text-[#5A5A5A]">Signed in as: {user?.role || 'unknown'}</div>
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search partners" className="px-3 py-2 shadow-borderless ring-1 ring-slate-200/60 rounded w-72 bg-white focus:outline-none focus:ring-2 focus:ring-gtBlue/25 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10" />
+          <div className="text-sm text-slate-600 dark:text-slate-300">Signed in as: {user?.role || 'unknown'}</div>
         </div>
 
         <div className="mb-4">
@@ -122,7 +122,7 @@ export default function PartnerNetwork() {
               <button
                 key={item.key}
                 onClick={() => setTab(item.key)}
-                className={`px-3 py-2 rounded${tab === item.key ? 'bg-[#0A66C2] text-white' : 'borderless-shadow bg-white/70 text-slate-700'}`}
+                className={`px-3 py-2 rounded${tab === item.key ? 'bg-gtBlue hover:bg-gtBlueHover text-white' : 'bg-white shadow-borderless ring-1 ring-slate-200/60 text-slate-700 hover:bg-slate-50 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10 dark:text-slate-200 dark:hover:bg-white/8'}`}
               >
                 {item.label}
               </button>
@@ -131,7 +131,7 @@ export default function PartnerNetwork() {
         </div>
 
         {error ? <div className="mb-3 text-sm text-red-600">{error}</div> : null}
-        {loading ? <div className="mb-3 text-sm text-[#5A5A5A]">Loading...</div> : null}
+        {loading ? <div className="mb-3 text-sm text-slate-600 dark:text-slate-300">Loading...</div> : null}
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredRows.map((row) => {
@@ -139,17 +139,17 @@ export default function PartnerNetwork() {
             const isIncoming = row.direction === 'incoming'
             const isMine = row.requester_id === user?.id
             return (
-              <div key={row.id} className="bg-white neo-panel cyberpunk-card borderless-shadow rounded-lg p-4 shadow-sm">
+              <div key={row.id} className="rounded-2xl bg-white shadow-borderless ring-1 ring-slate-200/60 p-4 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <div className="font-semibold">{counterparty.name || 'Unknown account'}</div>
-                    <div className="text-sm text-[#5A5A5A]">Account ID: {counterparty.id}</div>
-                    <div className="text-xs text-[#5A5A5A] capitalize">Role: {counterparty.role || 'unknown'}</div>
+                    <div className="text-sm text-slate-600 dark:text-slate-300">Account ID: {counterparty.id}</div>
+                    <div className="text-xs text-slate-600 dark:text-slate-300 capitalize">Role: {counterparty.role || 'unknown'}</div>
                   </div>
-                  {counterparty.verified && <div className="text-sm text-[#0A66C2] font-semibold">✓ Verified</div>}
+                  {counterparty.verified && <div className="text-sm text-gtBlue font-semibold">✓ Verified</div>}
                 </div>
 
-                <div className="text-sm text-[#5A5A5A] mb-3">
+                <div className="text-sm text-slate-600 dark:text-slate-300 mb-3">
                   <div>Status: <span className="capitalize font-medium">{row.status}</span></div>
                   <div>Direction: <span className="capitalize">{row.direction}</span></div>
                 </div>
@@ -157,20 +157,20 @@ export default function PartnerNetwork() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <Link
                     to={counterparty.role === 'factory' ? `/factory/${counterparty.id}` : `/buying-house/${counterparty.id}`}
-                    className="px-3 py-1 bg-[#0A66C2] text-white rounded"
+                    className="px-3 py-1 bg-gtBlue hover:bg-gtBlueHover text-white rounded"
                   >
                     View Profile
                   </Link>
 
                   {row.status === 'pending' && canManage && isIncoming && (
                     <>
-                      <button onClick={() => applyAction(row.id, 'accept')} className="px-3 py-1 borderless-shadow rounded text-sm" disabled={loading}>Accept</button>
-                      <button onClick={() => applyAction(row.id, 'reject')} className="px-3 py-1 borderless-shadow rounded text-sm" disabled={loading}>Reject</button>
+                      <button onClick={() => applyAction(row.id, 'accept')} className="px-3 py-1 shadow-borderless dark:shadow-borderlessDark rounded text-sm" disabled={loading}>Accept</button>
+                      <button onClick={() => applyAction(row.id, 'reject')} className="px-3 py-1 shadow-borderless dark:shadow-borderlessDark rounded text-sm" disabled={loading}>Reject</button>
                     </>
                   )}
 
                   {row.status === 'pending' && canManage && isMine && (
-                    <button onClick={() => applyAction(row.id, 'cancel')} className="px-3 py-1 borderless-shadow rounded text-sm" disabled={loading}>Cancel</button>
+                    <button onClick={() => applyAction(row.id, 'cancel')} className="px-3 py-1 shadow-borderless dark:shadow-borderlessDark rounded text-sm" disabled={loading}>Cancel</button>
                   )}
                 </div>
               </div>
@@ -178,7 +178,7 @@ export default function PartnerNetwork() {
           })}
         </div>
 
-        {!loading && filteredRows.length === 0 && <div className="text-sm text-[#5A5A5A] mt-4">No requests found for this filter.</div>}
+        {!loading && filteredRows.length === 0 && <div className="text-sm text-slate-600 dark:text-slate-300 mt-4">No requests found for this filter.</div>}
       </div>
 
     </div>

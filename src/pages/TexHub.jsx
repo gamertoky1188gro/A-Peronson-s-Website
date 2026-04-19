@@ -28,6 +28,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiRequest } from '../lib/auth'
 import { AnimatePresence, motion, useMotionValue, useReducedMotion, useSpring } from 'framer-motion'
+import SpotlightCard from '../components/ui/SpotlightCard'
 
 const Motion = motion
 
@@ -47,20 +48,11 @@ function VerifiedBadge({ label = 'Verified' }) {
 }
 
 function Surface({ className='', children }) {
-  function handleSpotlightMove(event) {
-    // Mouse-follow spotlight:
-    // - store cursor position inside the card as CSS variables
-    // - `spotlight-card::before` reads these variables to draw a radial gradient highlight
-    const rect = event.currentTarget.getBoundingClientRect()
-    event.currentTarget.style.setProperty('--spotlight-x', `${event.clientX - rect.left}px`)
-    event.currentTarget.style.setProperty('--spotlight-y', `${event.clientY - rect.top}px`)
-  }
-
   return (
-    <div
+    <SpotlightCard
       className={[
         // Visual: borderless card with depth via shadows (light) + lifted slate surface (dark).
-        'spotlight-card rounded-3xl bg-white/75 backdrop-blur-sm',
+        'rounded-3xl bg-white/75 backdrop-blur-sm',
         'shadow-[0_18px_46px_rgba(15,23,42,0.08)]',
         'dark:bg-[#0D0D14] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]',
         'transition duration-300 ease-out will-change-transform',
@@ -68,38 +60,29 @@ function Surface({ className='', children }) {
         'dark:hover:-translate-y-1',
         className,
       ].join(' ')}
-      onMouseMove={handleSpotlightMove}
     >
       {children}
-    </div>
+    </SpotlightCard>
   )
 }
 
 function GlassSurface({ className='', children }) {
-  function handleSpotlightMove(event) {
-    // Same spotlight behavior as `Surface`, but on a darker "secure room" glass surface.
-    const rect = event.currentTarget.getBoundingClientRect()
-    event.currentTarget.style.setProperty('--spotlight-x', `${event.clientX - rect.left}px`)
-    event.currentTarget.style.setProperty('--spotlight-y', `${event.clientY - rect.top}px`)
-  }
-
   return (
-    <div
+    <SpotlightCard
       className={[
         // Intentionally dark glass in *both* light + dark mode (Contract Vault = "secure room" vibe).
         // Avoid multiple `bg-*` utilities here (Tailwind utility ordering can make overrides unreliable).
         // `ring-1 ring-white/12` gives the "glass edge" without using borders (which are globally overridden in dark mode).
-        'spotlight-card rounded-3xl bg-white/10 backdrop-blur-md text-[#1E293B] dark:text-white',
+        'rounded-3xl bg-white/10 backdrop-blur-md text-[#1E293B] dark:text-white',
         'shadow-[0_22px_60px_rgba(2,6,23,0.55)]',
         'ring-1 ring-white/12',
         'transition duration-300 ease-out will-change-transform',
         'hover:-translate-y-0.5 hover:shadow-[0_30px_80px_rgba(2,6,23,0.65)]',
         className,
       ].join(' ')}
-      onMouseMove={handleSpotlightMove}
     >
       {children}
-    </div>
+    </SpotlightCard>
   )
 }
 
@@ -213,7 +196,19 @@ function MagneticLinkButton({ to, className='', children }) {
 
 function SkeletonLine({ className='' }) {
   // Skeleton shimmer utility (App.css): used during loading to avoid layout shifts.
-  return <div className={['skeleton rounded-xl', className].join(' ')} />
+  return (
+    <div
+      className={[
+        'rounded-xl relative overflow-hidden bg-slate-200/80 dark:bg-white/5',
+        "after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%]",
+        'after:pointer-events-none after:opacity-70 dark:after:opacity-90',
+        'after:animate-skeleton',
+        'after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)]',
+        'dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]',
+        className,
+      ].join(' ')}
+    />
+  )
 }
 
 export default function TexHub() {
@@ -364,7 +359,7 @@ export default function TexHub() {
   }, [bento, mode])
 
   return (
-    <div className="neo-page relative min-h-screen overflow-x-hidden bg-[#F8FAFC] dark:bg-[#05050A]">
+    <div className="relative min-h-screen overflow-x-hidden bg-[#F8FAFC] text-slate-900 transition-colors duration-500 dark:bg-[#05050A] dark:text-slate-100">
       <div className="pointer-events-none absolute inset-0 -z-10 hidden dark:block">
         <div
           className={[
@@ -410,7 +405,7 @@ export default function TexHub() {
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <MagneticLinkButton
                 to="/signup"
-                className="shimmer-btn px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
+                className="shimmer-btn px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-gtBlue text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-gtBlueHover hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
               >
                 Create Buyer Account
               </MagneticLinkButton>
@@ -607,7 +602,7 @@ export default function TexHub() {
               </p>
             </div>
 
-            <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 dark:gap-px">
+            <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
               {marketingSections.map((section, idx) => (
                 <BentoMotion key={section.id || section.title || String(idx)} index={idx} className="md:col-span-1">
                   <Surface className="p-7">
@@ -649,7 +644,7 @@ export default function TexHub() {
               mode === 'professional' ? 'dark:bg-[#05050A]' : 'dark:bg-[#0B0A18]',
             ].join(' ')}
           >
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-6 dark:gap-px">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-6">
             <BentoMotion index={0} className="md:col-span-3">
             <Surface className="p-7">
               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.professionalFeed.title}</h4>
@@ -843,7 +838,9 @@ export default function TexHub() {
                       key={i}
                       className={[
                         'aspect-video',
-                        loading ? 'skeleton' : 'bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-900 dark:to-slate-800',
+                        loading
+                          ? "relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]"
+                          : 'bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-900 dark:to-slate-800',
                         !loading && i % 3 === 1 ? 'from-slate-100 to-slate-300 dark:from-slate-950 dark:to-slate-800' : '',
                       ].join(' ')}
                     />
@@ -919,7 +916,7 @@ export default function TexHub() {
               <div className="flex flex-wrap gap-3 lg:col-span-5 lg:justify-end">
                 <MagneticLinkButton
                   to="/signup"
-                  className="shimmer-btn px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
+                  className="shimmer-btn px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-gtBlue text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-gtBlueHover hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
                 >
                   Create account
                 </MagneticLinkButton>

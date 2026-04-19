@@ -170,7 +170,7 @@ export default function MvpDashboard() {
   }
 
   return (
-    <div className="page neo-page cyberpunk-page">
+    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-500 dark:bg-[#020617] dark:text-slate-100">
       <header className="topbar">
         <div>
           <h1>GarTexHub Enterprise UX MVP</h1>

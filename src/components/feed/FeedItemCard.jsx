@@ -163,7 +163,7 @@ export default function FeedItemCard({
               href={item.ctaUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-[var(--gt-blue)] px-4 py-2 text-xs font-semibold text-white hover:bg-[var(--gt-blue-hover)]"
+              className="inline-flex items-center gap-2 rounded-full bg-gtBlue px-4 py-2 text-xs font-semibold text-white hover:bg-gtBlueHover"
             >
               {item.ctaText}
               <ArrowUpRight size={14} />
@@ -172,7 +172,7 @@ export default function FeedItemCard({
         ) : null}
 
         {item.hasVideo ? (
-          <div className="mt-3 rounded-xl borderless-shadow bg-white p-4 text-center dark:bg-white/5">
+          <div className="mt-3 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white p-4 text-center dark:bg-white/5">
             <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Video available</p>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">Open the profile to view the gallery.</p>
           </div>
@@ -205,7 +205,7 @@ export default function FeedItemCard({
         {isUserFeedPost && Array.isArray(item.links) && item.links.length ? (
           <div className="mt-2 flex flex-col gap-1">
             {item.links.slice(0, 4).map((url, i) => (
-              <a key={`${item.id}-url-${i}`} href={url} target="_blank" rel="noreferrer" className="text-xs text-[var(--gt-blue)] hover:underline break-all">
+              <a key={`${item.id}-url-${i}`} href={url} target="_blank" rel="noreferrer" className="text-xs text-gtBlue hover:underline break-all">
                 {url}
               </a>
             ))}
@@ -229,10 +229,10 @@ export default function FeedItemCard({
 
       <footer className="relative px-4 py-3 bg-white/70 dark:bg-slate-950/30 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 text-xs">
-          <button type="button" onClick={onOpenComments} className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-[var(--gt-blue)] dark:hover:text-[var(--gt-blue)]">
+          <button type="button" onClick={onOpenComments} className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-gtBlue dark:hover:text-gtBlue">
             <MessageSquareText size={16} /> Comment
           </button>
-          <button type="button" onClick={onShare} className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-[var(--gt-blue)] dark:hover:text-[var(--gt-blue)]">
+          <button type="button" onClick={onShare} className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-gtBlue dark:hover:text-gtBlue">
             <Share2 size={16} /> Share
           </button>
           <button type="button" onClick={onReport} className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400">
@@ -246,7 +246,7 @@ export default function FeedItemCard({
               type="button"
               onClick={onExpressInterest}
               disabled={Boolean(expressInterestDisabled)}
-              className="rounded-full bg-[var(--gt-blue)] px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-[var(--gt-blue-hover)] active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="rounded-full bg-gtBlue px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-gtBlueHover active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {expressInterestDisabled ? 'Claiming...' : 'Express Interest'}
             </button>
@@ -254,7 +254,7 @@ export default function FeedItemCard({
             <button
               type="button"
               onClick={() => onMessage?.(item)}
-              className="rounded-full bg-[var(--gt-blue)] px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-[var(--gt-blue-hover)] active:scale-95 inline-flex items-center gap-2"
+              className="rounded-full bg-gtBlue px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-gtBlueHover active:scale-95 inline-flex items-center gap-2"
             >
               <MessageCircle size={16} /> Message
             </button>

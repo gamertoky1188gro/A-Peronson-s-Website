@@ -67,7 +67,7 @@ export default function RoleSelect({ value, onChange, options = [], className = 
         aria-expanded={open}
         onClick={toggle}
         onKeyDown={handleKeyDown}
-        className="w-full flex items-center justify-between rounded-lg borderless-shadow px-3 py-3 text-sm font-semibold bg-white dark:bg-[#0b1224]"
+        className="w-full flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-3 text-sm font-semibold bg-white dark:bg-[#0b1224]"
       >
         <div className="flex items-center gap-3">
           <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] text-white font-semibold text-xs shrink-0">
@@ -84,7 +84,7 @@ export default function RoleSelect({ value, onChange, options = [], className = 
         <ul
           role="listbox"
           aria-label="Account type"
-          className="absolute z-50 mt-2 w-full rounded-lg bg-white dark:bg-[#071228] borderless-shadow p-1"
+          className="absolute z-50 mt-2 w-full rounded-lg bg-white dark:bg-[#071228] shadow-borderless dark:shadow-borderlessDark p-1"
           onKeyDown={handleKeyDown}
         >
           {options.map((opt, idx) => {
@@ -101,11 +101,11 @@ export default function RoleSelect({ value, onChange, options = [], className = 
                   onMouseEnter={() => setFocused(idx)}
                   className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-md text-sm transition ${
                     isSelected
-                      ? 'text-[var(--gt-blue)] bg-blue-50 dark:bg-[rgba(10,102,194,0.08)]'
+                      ? 'text-gtBlue bg-blue-50 dark:bg-[rgba(10,102,194,0.08)]'
                       : 'text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800/40'
                   }`}
                 >
-                  <span className={`w-6 h-6 inline-flex items-center justify-center rounded-full text-xs font-semibold ${isSelected ? 'bg-[var(--gt-blue)] text-white' : 'bg-slate-100 dark:bg-[#071228] dark:text-slate-200'}`}>
+                  <span className={`w-6 h-6 inline-flex items-center justify-center rounded-full text-xs font-semibold ${isSelected ? 'bg-gtBlue text-white' : 'bg-slate-100 dark:bg-[#071228] dark:text-slate-200'}`}>
                     {String(opt.label || '').charAt(0) || ''}
                   </span>
                   <span className="truncate">{opt.label}</span>

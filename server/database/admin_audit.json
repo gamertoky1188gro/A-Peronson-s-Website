@@ -1073,5 +1073,186 @@
     },
     "prev_hash": "4c8d09cb0b715b8d7002cb528c187faf0981a73913b2d054e854ac45d8a47327",
     "hash": "e8aed7581ba4a1832fcdec58e54b5a6247588dc0338d960f74da0fa6d9c2d2d5"
+  },
+  {
+    "id": "authz:1776534865260:ogx4pplx",
+    "type": "authorization.granted",
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-04-18T17:54:25.260Z",
+    "prev_hash": "e8aed7581ba4a1832fcdec58e54b5a6247588dc0338d960f74da0fa6d9c2d2d5",
+    "hash": "16cdbcfe722c3d9c5832fe1cf71cd6d4608f8fc49b2d927e5673a8cb92034f30"
+  },
+  {
+    "id": "authz:1776534865584:05d91va7",
+    "type": "authorization.granted",
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-04-18T17:54:25.584Z",
+    "prev_hash": "16cdbcfe722c3d9c5832fe1cf71cd6d4608f8fc49b2d927e5673a8cb92034f30",
+    "hash": "3b6c2aafd8c9065fdaa4b693121d4b84f08e1a64d1cf121b794092be8bf2e6d3"
+  },
+  {
+    "id": "authz:1776534865596:6y9ryatp",
+    "type": "authorization.granted",
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-04-18T17:54:25.596Z",
+    "prev_hash": "3b6c2aafd8c9065fdaa4b693121d4b84f08e1a64d1cf121b794092be8bf2e6d3",
+    "hash": "b498e3f4e5c3d8ec6efbaf1dee32af0ca48ddf96861e459386f9287cd54beb65"
+  },
+  {
+    "id": "0e877254-3411-4ada-9bba-ab37adf3b81f",
+    "at": "2026-04-18T17:54:28.149Z",
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "b498e3f4e5c3d8ec6efbaf1dee32af0ca48ddf96861e459386f9287cd54beb65",
+    "hash": "42a0141868308fdb11e2d555fbd05015171414fd09b88148e8e8966bde260eb1"
+  },
+  {
+    "id": "authz:1776536437068:gp0md536",
+    "type": "authorization.granted",
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-04-18T18:20:37.070Z",
+    "prev_hash": "42a0141868308fdb11e2d555fbd05015171414fd09b88148e8e8966bde260eb1",
+    "hash": "096956542cb0c9d06a328b69355e0c3f386dfa5e8b4d19da9e83ca41b3584f1f"
+  },
+  {
+    "id": "authz:1776536437589:9docnu74",
+    "type": "authorization.granted",
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-04-18T18:20:37.589Z",
+    "prev_hash": "096956542cb0c9d06a328b69355e0c3f386dfa5e8b4d19da9e83ca41b3584f1f",
+    "hash": "abae59f43dcefe161ff163423013660815a608823a0ceebe36f2d0451a99b4e7"
+  },
+  {
+    "id": "authz:1776536437768:pr4s49zl",
+    "type": "authorization.granted",
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-04-18T18:20:37.768Z",
+    "prev_hash": "abae59f43dcefe161ff163423013660815a608823a0ceebe36f2d0451a99b4e7",
+    "hash": "a11e20605a317a7b5caef21ae6fbf0f31e633aab7391bd1a2dd48551d5b9cd7c"
+  },
+  {
+    "id": "e8dd4f30-527f-4a5f-84ac-4732fb7189a2",
+    "at": "2026-04-18T18:20:40.165Z",
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "a11e20605a317a7b5caef21ae6fbf0f31e633aab7391bd1a2dd48551d5b9cd7c",
+    "hash": "df11d68925a446d66e80f50c8174505379f31024606e68a1ebb65550f78acc16"
+  },
+  {
+    "id": "5b8b6233-a823-4613-83c9-e02433d329a1",
+    "at": "2026-04-18T19:10:37.578Z",
+    "actor_id": "owner-test",
+    "actor_role": "owner",
+    "action": "platform_analytics_overview_requested",
+    "path": "/analytics/platform/overview",
+    "status": 200,
+    "payload": {
+      "scope_level": "platform_overview_aggregated",
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "df11d68925a446d66e80f50c8174505379f31024606e68a1ebb65550f78acc16",
+    "hash": "c5084d41c05425562a4c8afb37e7b8318fdf0b2d94f6419ded49412100726467"
+  },
+  {
+    "id": "4b8a0e4d-b4ad-4451-bc95-71bb9a873f2d",
+    "at": "2026-04-18T19:10:37.581Z",
+    "actor_id": "owner-test",
+    "actor_role": "owner",
+    "action": "platform_analytics_trends_requested",
+    "path": "/analytics/platform/trends",
+    "status": 200,
+    "payload": {
+      "scope_level": "platform_trends_global_anonymized",
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
+      "org_scope": "org:global",
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "c5084d41c05425562a4c8afb37e7b8318fdf0b2d94f6419ded49412100726467",
+    "hash": "5f520ba3e71e27ee124a39692163514fdbd95832dd444f35044159eda904a508"
   }
 ]

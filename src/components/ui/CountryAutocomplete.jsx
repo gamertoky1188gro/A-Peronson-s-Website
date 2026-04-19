@@ -85,7 +85,7 @@ export default function CountryAutocomplete({
     return (
       <>
         {text.slice(0, idx)}
-        <span className="font-semibold text-[var(--gt-blue)]">{text.slice(idx, idx + q.length)}</span>
+        <span className="font-semibold text-gtBlue">{text.slice(idx, idx + q.length)}</span>
         {text.slice(idx + q.length)}
       </>
     )
@@ -107,7 +107,7 @@ export default function CountryAutocomplete({
         onKeyDown={onKeyDown}
         required={required}
         placeholder={placeholder}
-        className="w-full px-4 py-3 borderless-shadow rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20 bg-white dark:bg-[#0f172a] text-slate-900 dark:text-slate-100"
+        className="w-full px-4 py-3 shadow-borderless dark:shadow-borderlessDark rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20 bg-white dark:bg-[#0f172a] text-slate-900 dark:text-slate-100"
       />
 
       {open && filtered.length > 0 ? (
@@ -128,7 +128,7 @@ export default function CountryAutocomplete({
                   onMouseEnter={() => setFocused(idx)}
                   className={`w-full text-left px-3 py-2 rounded-md text-sm transition ${
                     isSelected
-                      ? 'bg-blue-50 text-[var(--gt-blue)] dark:bg-[rgba(10,102,194,0.08)]'
+                      ? 'bg-blue-50 text-gtBlue dark:bg-[rgba(10,102,194,0.08)]'
                       : 'text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800/40'
                   }`}
                 >

@@ -16,8 +16,7 @@
     - POST /api/auth/register (via `apiRequest('/auth/register')`)
 
   Notes:
-    - This file currently uses legacy `neo-page` / `cyberpunk-card` styles.
-      We are only adding comments, not altering visuals or behavior.
+    - Tailwind-only styling (no legacy App.css utilities).
 */
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -119,15 +118,15 @@ export default function Signup() {
         <form className="mt-8 grid md:grid-cols-2 gap-4" onSubmit={handleSubmit}>
           <div>
             <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">Full Name</label>
-            <input className="w-full px-4 py-3 borderless-shadow rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20 bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100" value={form.name} onChange={(e) => onChange('name', e.target.value)} required />
+            <input className="w-full px-4 py-3 shadow-borderless dark:shadow-borderlessDark rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20 bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100" value={form.name} onChange={(e) => onChange('name', e.target.value)} required />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">Email</label>
-            <input type="email" className="w-full px-4 py-3 borderless-shadow rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20 bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100" value={form.email} onChange={(e) => onChange('email', e.target.value)} required />
+            <input type="email" className="w-full px-4 py-3 shadow-borderless dark:shadow-borderlessDark rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20 bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100" value={form.email} onChange={(e) => onChange('email', e.target.value)} required />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">Password</label>
-            <div className="flex items-center gap-2 rounded-lg borderless-shadow px-3 py-2 bg-white dark:bg-[#0b1224] focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
+            <div className="flex items-center gap-2 rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 bg-white dark:bg-[#0b1224] focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
               <input
                 type={passwordVisible ? 'text' : 'password'}
                 className="w-full bg-transparent outline-none text-slate-900 dark:text-slate-100"
@@ -146,7 +145,7 @@ export default function Signup() {
           </div>
           <div>
             <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">Confirm Password</label>
-            <div className="flex items-center gap-2 rounded-lg borderless-shadow px-3 py-2 bg-white dark:bg-[#0b1224] focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
+            <div className="flex items-center gap-2 rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 bg-white dark:bg-[#0b1224] focus-within:ring-2 focus-within:ring-[#0A66C2]/20">
               <input
                 type={confirmVisible ? 'text' : 'password'}
                 className="w-full bg-transparent outline-none text-slate-900 dark:text-slate-100"
@@ -187,7 +186,7 @@ export default function Signup() {
           </div>
           <div>
             <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-200">Organization Name</label>
-            <input className="w-full px-4 py-3 borderless-shadow rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20 bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100" value={form.organization} onChange={(e) => onChange('organization', e.target.value)} />
+            <input className="w-full px-4 py-3 shadow-borderless dark:shadow-borderlessDark rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20 bg-white text-slate-900 dark:bg-[#0b1224] dark:text-slate-100" value={form.organization} onChange={(e) => onChange('organization', e.target.value)} />
           </div>
           {/* API error state (e.g. email already used). */}
           {error ? <p className="md:col-span-2 text-sm text-red-500 dark:text-rose-300">{error}</p> : null}
@@ -199,7 +198,7 @@ export default function Signup() {
             </button>
             <Link
               to="/login"
-              className="px-5 py-3 rounded-lg borderless-shadow text-slate-700 font-semibold hover:bg-slate-50 dark:text-white dark:bg-slate-800/60 dark:hover:bg-slate-700/50 dark:ring-1 dark:ring-white/10"
+              className="px-5 py-3 rounded-lg shadow-borderless dark:shadow-borderlessDark text-slate-700 font-semibold hover:bg-slate-50 dark:text-white dark:bg-slate-800/60 dark:hover:bg-slate-700/50 dark:ring-1 dark:ring-white/10"
             >
               Already have an account? Login
             </Link>

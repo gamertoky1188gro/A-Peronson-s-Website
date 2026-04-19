@@ -25,7 +25,7 @@ describe('Prisma schema DB constraints', () => {
     expect(schema).toMatch(/model\s+FxRate\s+\{[\s\S]*?quote\s+String/)
     expect(schema).toMatch(/model\s+FxRate\s+\{[\s\S]*?rate\s+Float/)
     expect(schema).toMatch(/model\s+FxRate\s+\{[\s\S]*?expiresAt\s+DateTime/)
-    expect(schema).toMatch(/@@unique\(\[base, quote\], name: "fx_base_quote"\)/)
+    expect(schema).toMatch(/@@unique\(\[base, quote\], name: "fx_base_quote"(, map: "fx_base_quote")?\)/)
     expect(schema).toMatch(/@@index\(\[expiresAt\]\)/)
 
     expect(schema).toMatch(/model\s+CurrencyConfig\s+\{[\s\S]*?id\s+String\s+@id\s+@default\("default"\)/)

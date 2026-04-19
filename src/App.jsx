@@ -198,9 +198,9 @@ function AppLayout() {
   }, [])
 
   return (
-    <div className="app-shell min-h-screen bg-[var(--bg)]">
+    <div className="app-shell flex min-h-screen flex-col bg-slate-50 text-slate-900 dark:bg-[#0b1220] dark:text-slate-100">
       {!hideChrome ? <NavBar /> : null}
-      <main className={`${hideChrome ? '' : 'pb-10'}min-h-screen bg-[var(--bg)]`}>
+      <main className={`${hideChrome ? '' : 'pb-10 '}flex-1 min-h-0 bg-slate-50 dark:bg-[#0b1220]`}>
         <AppRoutes />
       </main>
       {!hideChrome ? <Footer /> : null}

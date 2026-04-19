@@ -5,6 +5,7 @@ import path from 'path'
 import fs from 'fs'
 import http from 'http'
 import { WebSocketServer } from 'ws'
+import { REALTIME_EVENTS, realtimeBus } from './realtime/realtimeBus.js'
 import authRoutes from './routes/authRoutes.js'
 import userRoutes from './routes/userRoutes.js'
 import requirementRoutes from './routes/requirementRoutes.js'
@@ -86,10 +87,12 @@ startEventQualityReporter()
 app.use(cors())
 app.use(express.json({ limit: '5mb' }))
 
-const uploadsRoot = path.join(process.cwd(), 'server', 'uploads')
-const chatUploadsRoot = path.join(uploadsRoot, 'chat')
-if (!fs.existsSync(uploadsRoot)) fs.mkdirSync(uploadsRoot, { recursive: true })
-if (!fs.existsSync(chatUploadsRoot)) fs.mkdirSync(chatUploadsRoot, { recursive: true })
+  const uploadsRoot = path.join(process.cwd(), 'server', 'uploads')
+  const chatUploadsRoot = path.join(uploadsRoot, 'chat')
+  const feedUploadsRoot = path.join(uploadsRoot, 'feed')
+  if (!fs.existsSync(uploadsRoot)) fs.mkdirSync(uploadsRoot, { recursive: true })
+  if (!fs.existsSync(chatUploadsRoot)) fs.mkdirSync(chatUploadsRoot, { recursive: true })
+  if (!fs.existsSync(feedUploadsRoot)) fs.mkdirSync(feedUploadsRoot, { recursive: true })
 
 app.use('/uploads', express.static(uploadsRoot))
 
@@ -204,6 +207,14 @@ function broadcastToUsers(userIds = [], payload) {
   })
   return undelivered
 }
+
+realtimeBus.on(REALTIME_EVENTS.notificationCreated, ({ userId, notification }) => {
+  broadcastToUsers([String(userId)], { type: 'notification_created', notification })
+})
+
+realtimeBus.on(REALTIME_EVENTS.notificationRead, ({ userId, id }) => {
+  broadcastToUsers([String(userId)], { type: 'notification_read', id })
+})
 
 function leaveCallRoom(socket) {
   const callId = socket.callRoomId

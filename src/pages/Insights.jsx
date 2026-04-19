@@ -251,7 +251,7 @@ export default function Insights() {
                     unlimited advanced filters, expanded analytics, and exports.
                   </div>
                   <div className="mt-4">
-                    <button className="px-3 py-2 bg-[var(--gt-blue)] hover:bg-[var(--gt-blue-hover)] text-white rounded">
+                    <button className="px-3 py-2 bg-gtBlue hover:bg-gtBlueHover text-white rounded">
                       Upgrade to Enterprise
                     </button>
                   </div>
@@ -456,13 +456,13 @@ export default function Insights() {
                   <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Agent Performance</p>
                   <div className="mt-2 space-y-2 text-sm text-slate-700 dark:text-slate-300">
                     {premiumInsights.agent_performance_analytics.map((agent) => (
-                      <div key={agent.agent_id} className="flex items-center justify-between rounded-lg borderless-shadow px-3 py-2">
+                      <div key={agent.agent_id} className="flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2">
                         <span className="truncate">{agent.name || agent.agent_id}</span>
                         <span className="text-xs font-semibold">{agent.assigned_leads ?? 0} leads</span>
                       </div>
                     ))}
                   </div>
-                    <div className="mt-3 rounded-xl borderless-shadow p-3">
+                    <div className="mt-3 rounded-xl shadow-borderless dark:shadow-borderlessDark p-3">
                     <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Agent Outcomes</p>
                     <div className="mt-2 space-y-2 text-xs text-slate-700 dark:text-slate-300">
                       <div className="grid grid-cols-6 gap-2 text-[10px] uppercase tracking-widest text-slate-400">
@@ -473,7 +473,7 @@ export default function Insights() {
                         <span className="text-right">Converted</span>
                       </div>
                       {premiumInsights.agent_performance_analytics.map((agent) => (
-                        <div key={`${agent.agent_id}-outcomes`} className="grid grid-cols-6 gap-2 rounded-lg borderless-shadow px-3 py-2">
+                        <div key={`${agent.agent_id}-outcomes`} className="grid grid-cols-6 gap-2 rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2">
                           <span className="col-span-2 truncate">{agent.name || agent.agent_id}</span>
                           <span className="text-right">{agent.assigned_leads ?? 0}</span>
                           <span className="text-right">{agent.closed_leads ?? 0}</span>
@@ -491,7 +491,7 @@ export default function Insights() {
                   <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Buying Pattern Analysis</p>
                   <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-700 dark:text-slate-300">
                     {premiumInsights.buying_pattern_analysis.map((row) => (
-                      <span key={row.label} className="rounded-full borderless-shadow px-3 py-1">
+                      <span key={row.label} className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1">
                         {row.label} - {row.count}
                       </span>
                     ))}
@@ -503,7 +503,7 @@ export default function Insights() {
                   <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Lead Distribution</p>
                   <div className="mt-2 space-y-2 text-xs text-slate-700 dark:text-slate-300">
                     {Object.entries(premiumInsights.lead_distribution).map(([agentId, count]) => (
-                      <div key={agentId} className="flex items-center justify-between rounded-lg borderless-shadow px-3 py-2">
+                      <div key={agentId} className="flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2">
                         <span className="truncate">{agentId}</span>
                         <span className="font-semibold">{count}</span>
                       </div>
@@ -514,7 +514,7 @@ export default function Insights() {
 
               {['factory', 'buying_house'].includes(String(premiumRole || '').toLowerCase()) ? (
                 <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="rounded-xl borderless-shadow p-3">
+                  <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark p-3">
                     <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Recent Profile Viewers</p>
                     {viewerLoading ? (
                       <div className="mt-2 text-xs text-slate-500">Loading viewers...</div>
@@ -529,7 +529,7 @@ export default function Insights() {
                       </div>
                     )}
                   </div>
-                  <div className="rounded-xl borderless-shadow p-3">
+                  <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark p-3">
                     <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Recent Product Viewers</p>
                     {viewerLoading ? (
                       <div className="mt-2 text-xs text-slate-500">Loading viewers...</div>
@@ -568,7 +568,7 @@ export default function Insights() {
                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Top Viewed Products</p>
                     <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
                       {topProducts.length ? topProducts.map((row) => (
-                        <div key={row.product_id} className="flex items-center justify-between rounded-lg borderless-shadow px-3 py-2">
+                        <div key={row.product_id} className="flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2">
                           <span className="truncate">{row.title}</span>
                           <span className="text-xs font-semibold">{row.views}</span>
                         </div>
@@ -579,7 +579,7 @@ export default function Insights() {
                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Profile Visits by Country</p>
                     <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
                       {visitCountries.length ? visitCountries.map((row) => (
-                        <div key={row.country} className="flex items-center justify-between rounded-lg borderless-shadow px-3 py-2">
+                        <div key={row.country} className="flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2">
                           <span className="truncate">{row.country}</span>
                           <span className="text-xs font-semibold">{row.count}</span>
                         </div>
@@ -592,7 +592,7 @@ export default function Insights() {
                   <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Top Lead Sources</p>
                   <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
                     {leadSources.length ? leadSources.map((row) => (
-                      <div key={`${row.source_type || row.label}-${row.source_id || row.label}`} className="flex items-center justify-between rounded-lg borderless-shadow px-3 py-2">
+                      <div key={`${row.source_type || row.label}-${row.source_id || row.label}`} className="flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2">
                         <div className="min-w-0">
                           <span className="block truncate">{row.label}</span>
                           {row.source_type ? <span className="text-[10px] text-slate-400">{row.source_type.replace(/_/g, ' ')}</span> : null}
@@ -636,7 +636,7 @@ export default function Insights() {
                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Top Categories by Country</p>
                     <div className="mt-3 space-y-3 text-sm text-slate-700 dark:text-slate-300">
                       {platformByCountry.length ? platformByCountry.map((row) => (
-                        <div key={row.country} className="rounded-lg borderless-shadow px-3 py-2">
+                        <div key={row.country} className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2">
                           <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">{row.country}</div>
                           <div className="mt-1 text-sm">{(row.categories || []).map((c) => c.label).join(', ') || '--'}</div>
                         </div>
@@ -647,7 +647,7 @@ export default function Insights() {
                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Price Range Demand</p>
                     <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
                       {platformPriceDemand.length ? platformPriceDemand.map((row) => (
-                        <div key={row.bucket} className="flex items-center justify-between rounded-lg borderless-shadow px-3 py-2">
+                        <div key={row.bucket} className="flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2">
                           <span className="truncate">{row.bucket}</span>
                           <span className="text-xs font-semibold">{row.count}</span>
                         </div>
@@ -666,7 +666,7 @@ export default function Insights() {
                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Top Search Categories</p>
                     <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
                       {platformSearchGlobal.length ? platformSearchGlobal.map((row) => (
-                        <div key={row.label} className="flex items-center justify-between rounded-lg borderless-shadow px-3 py-2">
+                        <div key={row.label} className="flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2">
                           <span className="truncate">{row.label}</span>
                           <span className="text-xs font-semibold">{row.count}</span>
                         </div>
@@ -677,7 +677,7 @@ export default function Insights() {
                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Trending Searches (30d)</p>
                     <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
                       {platformTrending.length ? platformTrending.map((row) => (
-                        <div key={row.label} className="flex items-center justify-between rounded-lg borderless-shadow px-3 py-2">
+                        <div key={row.label} className="flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2">
                           <span className="truncate">{row.label}</span>
                           <span className="text-xs font-semibold">{row.delta}</span>
                         </div>
@@ -690,7 +690,7 @@ export default function Insights() {
                   <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Search Categories by Country</p>
                   <div className="mt-3 space-y-3 text-sm text-slate-700 dark:text-slate-300">
                     {platformSearchByCountry.length ? platformSearchByCountry.map((row) => (
-                      <div key={row.country} className="rounded-lg borderless-shadow px-3 py-2">
+                      <div key={row.country} className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2">
                         <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">{row.country}</div>
                         <div className="mt-1 text-sm">{(row.categories || []).map((c) => c.label).join(', ') || '--'}</div>
                       </div>
@@ -702,7 +702,7 @@ export default function Insights() {
                   <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Monthly Demand Trend</p>
                   <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
                     {platformMonthly.length ? platformMonthly.map((row) => (
-                      <div key={row.month} className="flex items-center justify-between rounded-lg borderless-shadow px-3 py-2">
+                      <div key={row.month} className="flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2">
                         <span>{row.month}</span>
                         <span className="text-xs font-semibold">{row.count}</span>
                       </div>

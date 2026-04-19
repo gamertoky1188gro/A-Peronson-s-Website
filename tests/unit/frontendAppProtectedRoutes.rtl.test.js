@@ -69,6 +69,11 @@ async function renderAppWithUser(user, path) {
 
   jest.unstable_mockModule('../../src/lib/auth.js', () => ({
     getCurrentUser: () => mockUser,
+    getToken: () => '',
+    apiRequest: async () => ({}),
+    hasEntitlement: () => false,
+    getRoleHome: () => '/',
+    clearSession: () => {},
   }))
   jest.unstable_mockModule('../../src/lib/events.js', () => ({
     trackClientEvent: (...args) => mockTrackClientEvent(...args),

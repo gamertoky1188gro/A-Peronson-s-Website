@@ -1,4 +1,4 @@
-﻿/*
+/*
   Route: /support
   Access: Protected (login required)
 
@@ -168,7 +168,7 @@ export default function SupportReports() {
           <div>
             <label className="block text-sm font-medium">Subject</label>
             <input
-              className="mt-1 w-full rounded-lg borderless-shadow px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-sm"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="Short summary of the issue"
@@ -179,7 +179,7 @@ export default function SupportReports() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium">Category</label>
-              <select className="mt-1 w-full rounded-lg borderless-shadow px-3 py-2 text-sm" value={category} onChange={(e) => setCategory(e.target.value)}>
+              <select className="mt-1 w-full rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-sm" value={category} onChange={(e) => setCategory(e.target.value)}>
                 {CATEGORY_OPTIONS.map((option) => (
                   <option key={option} value={option}>{option}</option>
                 ))}
@@ -188,7 +188,7 @@ export default function SupportReports() {
             <div>
               <label className="block text-sm font-medium">Priority</label>
               <select
-                className="mt-1 w-full rounded-lg borderless-shadow px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-sm"
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
                 disabled={!canPrioritySupport}
@@ -208,7 +208,7 @@ export default function SupportReports() {
           <div>
             <label className="block text-sm font-medium">Description</label>
             <textarea
-              className="mt-1 w-full min-h-[140px] rounded-lg borderless-shadow px-3 py-2 text-sm"
+              className="mt-1 w-full min-h-[140px] rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-sm"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Write the full details here"
@@ -220,7 +220,7 @@ export default function SupportReports() {
             <div>
               <label className="block text-sm font-medium">Page URL (optional)</label>
               <input
-                className="mt-1 w-full rounded-lg borderless-shadow px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-sm"
                 value={pageUrl}
                 onChange={(e) => setPageUrl(e.target.value)}
                 placeholder="https://..."
@@ -229,7 +229,7 @@ export default function SupportReports() {
             <div>
               <label className="block text-sm font-medium">Contact Email (optional)</label>
               <input
-                className="mt-1 w-full rounded-lg borderless-shadow px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-sm"
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
                 placeholder="you@example.com"
@@ -241,7 +241,7 @@ export default function SupportReports() {
             <label className="block text-sm font-medium">Screenshot / File (optional)</label>
             <input
               type="file"
-              className="mt-1 w-full rounded-lg borderless-shadow px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-sm"
               onChange={(e) => setAttachment(e.target.files?.[0] || null)}
             />
           </div>
@@ -256,7 +256,7 @@ export default function SupportReports() {
             <button
               type="submit"
               disabled={loading}
-              className="rounded-lg bg-[var(--gt-blue)] px-4 py-2 text-sm font-semibold text-white hover:bg-[var(--gt-blue-hover)] disabled:opacity-70"
+              className="rounded-lg bg-gtBlue px-4 py-2 text-sm font-semibold text-white hover:bg-gtBlueHover disabled:opacity-70"
             >
               {loading ? 'Submitting...' : 'Submit Report'}
             </button>
@@ -276,7 +276,7 @@ export default function SupportReports() {
           ) : null}
           <div className="space-y-4">
           {tickets.map((ticket) => (
-              <div key={ticket.id} className="rounded-xl borderless-shadow p-4">
+              <div key={ticket.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <div className="text-sm font-semibold">{ticket.subject || 'Support ticket'}</div>
@@ -297,7 +297,7 @@ export default function SupportReports() {
                   <button
                     type="button"
                     onClick={() => loadMessages(ticket.id)}
-                    className="text-xs text-[var(--gt-blue)] hover:underline"
+                    className="text-xs text-gtBlue hover:underline"
                   >
                     View messages
                   </button>
@@ -317,7 +317,7 @@ export default function SupportReports() {
 
                 <div className="mt-3 flex items-center gap-2">
                   <input
-                    className="flex-1 rounded-lg borderless-shadow px-3 py-2 text-xs"
+                    className="flex-1 rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
                     placeholder="Send a follow-up message"
                     value={messageDrafts[ticket.id] || ''}
                     onChange={(e) => setMessageDrafts((prev) => ({ ...prev, [ticket.id]: e.target.value }))}
@@ -325,7 +325,7 @@ export default function SupportReports() {
                   <button
                     type="button"
                     onClick={() => submitMessage(ticket.id)}
-                    className="rounded-lg bg-[var(--gt-blue)] px-3 py-2 text-xs font-semibold text-white hover:bg-[var(--gt-blue-hover)]"
+                    className="rounded-lg bg-gtBlue px-3 py-2 text-xs font-semibold text-white hover:bg-gtBlueHover"
                   >
                     Send
                   </button>

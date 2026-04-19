@@ -153,21 +153,21 @@ function FeedSkeletonCard({ index }) {
       aria-hidden="true"
     >
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-full skeleton" />
+        <div className="h-10 w-10 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
         <div className="flex-1 space-y-2">
-          <div className="h-3 w-1/3 rounded-full skeleton" />
-          <div className="h-2 w-1/4 rounded-full skeleton" />
+          <div className="h-3 w-1/3 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
+          <div className="h-2 w-1/4 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
         </div>
-        <div className="h-6 w-16 rounded-full skeleton" />
+        <div className="h-6 w-16 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
       </div>
       <div className="mt-4 space-y-2">
-        <div className="h-3 w-2/3 rounded-full skeleton" />
-        <div className="h-3 w-1/2 rounded-full skeleton" />
-        <div className="h-24 w-full rounded-xl skeleton" />
+        <div className="h-3 w-2/3 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
+        <div className="h-3 w-1/2 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
+        <div className="h-24 w-full rounded-xl relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
       </div>
       <div className="mt-4 flex items-center justify-between">
-        <div className="h-3 w-32 rounded-full skeleton" />
-        <div className="h-9 w-32 rounded-full skeleton" />
+        <div className="h-3 w-32 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
+        <div className="h-9 w-32 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
       </div>
       <span className="sr-only">Loading feed item {index + 1}</span>
     </div>
@@ -497,14 +497,14 @@ export default function MainFeed() {
               </div>
             </div>
 
-            <div className="mt-4 borderless-divider-t pt-4">
+            <div className="mt-4 shadow-dividerT dark:shadow-dividerTDark pt-4">
               <p className="text-xs font-semibold text-slate-700 mb-2">Quick actions</p>
               <div className="flex flex-wrap gap-2">
                 {quickActions.map((a) => (
                   <Link
                     key={a.to}
                     to={a.to}
-                    className="rounded-full borderless-shadow bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                    className="rounded-full shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                   >
                     {a.label}
                   </Link>
@@ -571,7 +571,7 @@ export default function MainFeed() {
                 <div className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
                   Unlock early access to newly verified factories with a Premium plan.
                   <div className="mt-2">
-                    <Link to="/pricing" className="text-[11px] font-semibold text-[var(--gt-blue)] hover:underline">View Premium options</Link>
+                    <Link to="/pricing" className="text-[11px] font-semibold text-gtBlue hover:underline">View Premium options</Link>
                   </div>
                 </div>
               ) : (
@@ -664,7 +664,7 @@ export default function MainFeed() {
 
           {loadingMore ? (
             <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-              <div className="h-3 w-40 rounded-full skeleton mx-auto" />
+              <div className="h-3 w-40 mx-auto rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
             </div>
           ) : null}
 

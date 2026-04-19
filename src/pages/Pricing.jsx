@@ -57,7 +57,19 @@ const defaultPricing = {
 
 function Skeleton({ className='' }) {
   // Shimmer skeleton block (App.css `.skeleton`).
-  return <div className={['skeleton', className].join(' ')} />
+  return (
+    <div
+      className={[
+        'relative overflow-hidden bg-slate-200/80 dark:bg-white/5',
+        "after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%]",
+        'after:pointer-events-none after:opacity-70 dark:after:opacity-90',
+        'after:animate-skeleton',
+        'after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)]',
+        'dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]',
+        className,
+      ].join(' ')}
+    />
+  )
 }
 
 function MotionItem({ index, className='', children }) {
@@ -465,7 +477,7 @@ const premiumFeatures = [
           {visibleSections.map((section, sectionIndex) => {
             const rolePlan = plansByRole[section.key]
             return (
-              <div key={section.key} className="rounded-3xl borderless-shadow bg-white/70 p-6 shadow-[0_10px_30px_rgba(2,6,23,0.06)] dark:bg-[#0f172a]/70 dark:shadow-none dark:ring-1 dark:ring-white/10">
+              <div key={section.key} className="rounded-3xl shadow-borderless dark:shadow-borderlessDark bg-white/70 p-6 shadow-[0_10px_30px_rgba(2,6,23,0.06)] dark:bg-[#0f172a]/70 dark:shadow-none dark:ring-1 dark:ring-white/10">
                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{section.title}</p>
@@ -528,7 +540,7 @@ const premiumFeatures = [
                 className={[
                   'conic-beam rounded-xl p-7',
                   'bg-[rgba(255,255,255,0.70)] backdrop-blur-md',
-                  'borderless-shadow shadow-[0_10px_38px_-18px_rgba(0,0,0,0.22)]',
+                  'shadow-borderless dark:shadow-borderlessDark shadow-[0_10px_38px_-18px_rgba(0,0,0,0.22)]',
                   'transition duration-300 ease-out',
                   'hover:-translate-y-0.5 hover:shadow-[0_16px_54px_-22px_rgba(0,0,0,0.26)]',
                   'dark:bg-[rgba(24,24,27,0.70)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
@@ -667,7 +679,7 @@ const premiumFeatures = [
                 key={bundle.title}
                 className={[
                   'rounded-2xl p-6',
-                  'borderless-shadow bg-[rgba(9,9,11,0.04)]',
+                  'shadow-borderless dark:shadow-borderlessDark bg-[rgba(9,9,11,0.04)]',
                   'shadow-[0_20px_40px_-26px_rgba(0,0,0,0.85)] dark:bg-[rgba(250,250,250,0.04)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
                 ].join(' ')}
               >
@@ -691,7 +703,7 @@ const premiumFeatures = [
             <p className="mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">Horizontal lines only. Clear, audit-ready differences.</p>
           </div>
 
-          <div className="mt-6 overflow-x-auto rounded-xl bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#18181b] dark:borderless-shadow dark:shadow-none">
+          <div className="mt-6 overflow-x-auto rounded-xl bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#18181b] dark:shadow-borderless dark:shadow-borderlessDark dark:shadow-none">
             <table className="min-w-full text-left text-sm">
               <thead>
                 <tr className="text-xs font-semibold uppercase tracking-[0.12em] text-[#52525b] dark:text-[#a1a1aa]">

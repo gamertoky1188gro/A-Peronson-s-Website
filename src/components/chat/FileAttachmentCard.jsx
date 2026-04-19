@@ -251,7 +251,7 @@ export default function FileAttachmentCard({
   const downloadName = safeDownloadName(name)
 
   return (
-    <div className={`w-full overflow-hidden rounded-2xl borderless-shadow${containerTone}`}>
+    <div className={`w-full overflow-hidden rounded-2xl shadow-borderless dark:shadow-borderlessDark${containerTone}`}>
       {kind === 'pdf' ? (
         <button
           type="button"
@@ -310,7 +310,7 @@ export default function FileAttachmentCard({
         </div>
       </button>
 
-      <div className="grid grid-cols-2 borderless-divider-t">
+      <div className="grid grid-cols-2 shadow-dividerT dark:shadow-dividerTDark">
         <button
           type="button"
           onClick={() => onOpen?.()}
@@ -321,7 +321,7 @@ export default function FileAttachmentCard({
         <a
           href={url}
           download={downloadName}
-          className={`px-3 py-2 text-center text-[12px] font-semibold transition-colors${buttonTone}borderless-divider-l`}
+          className={`px-3 py-2 text-center text-[12px] font-semibold transition-colors${buttonTone}shadow-dividerL dark:shadow-dividerLDark`}
         >
           Save as...
         </a>

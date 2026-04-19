@@ -27,6 +27,7 @@ import { Bell, Factory, History, ShieldAlert, Sparkles, Trash2 } from 'lucide-re
 import { motion, useReducedMotion } from 'framer-motion'
 import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
 import ProductQuickViewModal from '../components/products/ProductQuickViewModal'
+import { connectNotificationsRealtime, subscribeNotificationsRealtime } from '../lib/notificationsRealtime'
 
 const Motion = motion
 
@@ -133,6 +134,25 @@ export default function NotificationsCenter() {
   }, [loadAlerts, loadNotifications])
 
   useEffect(() => {
+    if (!token) return undefined
+    connectNotificationsRealtime(token)
+    const unsubscribe = subscribeNotificationsRealtime((msg) => {
+      if (!msg) return
+      if (msg.type === 'notification_created' && msg.notification?.id) {
+        setItems((prev) => {
+          const exists = prev.some((n) => String(n?.id) === String(msg.notification.id))
+          if (exists) return prev
+          return [msg.notification, ...prev]
+        })
+      }
+      if (msg.type === 'notification_read' && msg.id) {
+        setItems((prev) => prev.map((n) => (String(n?.id) === String(msg.id) ? { ...n, read: true } : n)))
+      }
+    })
+    return unsubscribe
+  }, [token])
+
+  useEffect(() => {
     if (tab !== 'viewed') return
     if (views.length) return
     loadViews({ reset: true })
@@ -141,7 +161,7 @@ export default function NotificationsCenter() {
   async function markRead(id) {
     if (!token || !id) return
     await apiRequest(`/notifications/${encodeURIComponent(id)}/read`, { method: 'PATCH', token })
-    await loadNotifications()
+    setItems((prev) => prev.map((n) => (String(n?.id) === String(id) ? { ...n, read: true } : n)))
   }
 
   async function respondPartnerRequest(requestId, action, notificationId) {
@@ -149,8 +169,8 @@ export default function NotificationsCenter() {
     await apiRequest(`/partners/requests/${encodeURIComponent(requestId)}/${action}`, { method: 'POST', token })
     if (notificationId) {
       await apiRequest(`/notifications/${encodeURIComponent(notificationId)}/read`, { method: 'PATCH', token })
+      setItems((prev) => prev.map((n) => (String(n?.id) === String(notificationId) ? { ...n, read: true } : n)))
     }
-    await loadNotifications()
   }
 
   async function deleteAlert(id) {
@@ -226,11 +246,11 @@ export default function NotificationsCenter() {
                     <div key={`notif-skel-${i}`} className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-950/30 dark:ring-white/10">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1 space-y-2">
-                          <div className="h-3 w-1/3 rounded-full skeleton" />
-                          <div className="h-3 w-2/3 rounded-full skeleton" />
-                          <div className="h-3 w-1/2 rounded-full skeleton" />
+                          <div className="h-3 w-1/3 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
+                          <div className="h-3 w-2/3 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
+                          <div className="h-3 w-1/2 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
                         </div>
-                        <div className="h-8 w-20 rounded-full skeleton" />
+                        <div className="h-8 w-20 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
                       </div>
                     </div>
                   ))}
@@ -274,7 +294,7 @@ export default function NotificationsCenter() {
                             <button
                               type="button"
                               onClick={() => respondPartnerRequest(i?.meta?.request_id || i.entity_id, 'reject', i.id)}
-                              className="rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 text-center"
+                              className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 text-center"
                             >
                               Reject
                             </button>
@@ -295,7 +315,7 @@ export default function NotificationsCenter() {
                           </Link>
                         ) : null}
                         {!i.read ? (
-                          <button onClick={() => markRead(i.id)} className="rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                          <button onClick={() => markRead(i.id)} className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
                             Mark read
                           </button>
                         ) : null}
@@ -315,7 +335,7 @@ export default function NotificationsCenter() {
                 <button
                   type="button"
                   onClick={() => loadViews({ reset: true })}
-                  className="rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                 >
                   Refresh
                 </button>
@@ -335,7 +355,7 @@ export default function NotificationsCenter() {
                       <button
                         type="button"
                         onClick={() => setQuickViewItem({ ...row.product, author: row.author })}
-                        className="rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                        className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                       >
                         Quick view
                       </button>
@@ -382,7 +402,7 @@ export default function NotificationsCenter() {
                   <button
                     type="button"
                     onClick={() => deleteAlert(a.id)}
-                    className="rounded-full borderless-shadow p-2 hover:bg-rose-50"
+                    className="rounded-full shadow-borderless dark:shadow-borderlessDark p-2 hover:bg-rose-50"
                     aria-label="Delete alert"
                     title="Delete alert"
                   >

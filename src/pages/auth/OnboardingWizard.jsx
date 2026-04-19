@@ -33,7 +33,7 @@ const DEFAULT_CATEGORIES = [
 function StepHeader({ step, title, subtitle }) {
   return (
     <div className="mb-6">
-      <div className="inline-flex items-center gap-2 rounded-full bg-[rgba(10,102,194,0.10)] px-3 py-1 text-[11px] font-extrabold uppercase tracking-widest text-[var(--gt-blue)]">
+      <div className="inline-flex items-center gap-2 rounded-full bg-[rgba(10,102,194,0.10)] px-3 py-1 text-[11px] font-extrabold uppercase tracking-widest text-gtBlue">
         Step {step} / 3
       </div>
       <h1 className="mt-4 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{title}</h1>
@@ -153,7 +153,7 @@ export default function OnboardingWizard() {
                 value={profileImage}
                 onChange={(e) => setProfileImage(e.target.value)}
                 placeholder="https://..."
-                className="mt-2 w-full rounded-xl borderless-shadow bg-white px-4 py-3 text-sm outline-none transition dark:bg-[#0b1224]"
+                className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-3 text-sm outline-none transition dark:bg-[#0b1224]"
               />
               {profileImage ? (
                 <div className="mt-4 flex items-center gap-3">
@@ -176,7 +176,7 @@ export default function OnboardingWizard() {
                 value={organizationName}
                 onChange={(e) => setOrganizationName(e.target.value)}
                 placeholder="Your company / buying house name"
-                className="mt-2 w-full rounded-xl borderless-shadow bg-white px-4 py-3 text-sm outline-none transition dark:bg-[#0b1224]"
+                className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-3 text-sm outline-none transition dark:bg-[#0b1224]"
               />
               <div className="mt-3 text-xs text-slate-500 dark:text-slate-400">
                 Account role: <span className="font-semibold text-slate-700 dark:text-slate-200">{String(user?.role || '').replace('_', ' ')}</span>
@@ -202,7 +202,7 @@ export default function OnboardingWizard() {
                       className={[
                         'rounded-xl px-3 py-2 text-xs font-semibold transition',
                         active
-                          ? 'bg-[var(--gt-blue)] text-white shadow-[0_10px_24px_rgba(10,102,194,0.20)]'
+                          ? 'bg-gtBlue text-white shadow-[0_10px_24px_rgba(10,102,194,0.20)]'
                           : 'bg-slate-50 text-slate-700 ring-1 ring-slate-200/60 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10',
                       ].join(' ')}
                     >
@@ -222,7 +222,7 @@ export default function OnboardingWizard() {
               <BackButton
                 onClick={back}
                 disabled={step === 1 || saving}
-                className="rounded-xl borderless-shadow bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60 dark:bg-[#0b1224] dark:text-slate-200"
+                className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60 dark:bg-[#0b1224] dark:text-slate-200"
               >
                 Back
               </BackButton>
@@ -231,7 +231,7 @@ export default function OnboardingWizard() {
                   type="button"
                   onClick={next}
                   disabled={saving}
-                  className="rounded-xl bg-[var(--gt-blue)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--gt-blue-hover)] disabled:opacity-60"
+                  className="rounded-xl bg-gtBlue px-4 py-2 text-sm font-semibold text-white transition hover:bg-gtBlueHover disabled:opacity-60"
                 >
                   Continue
                 </button>
@@ -240,7 +240,7 @@ export default function OnboardingWizard() {
                   type="button"
                   onClick={() => submit()}
                   disabled={saving}
-                  className="rounded-xl bg-[var(--gt-blue)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--gt-blue-hover)] disabled:opacity-60"
+                  className="rounded-xl bg-gtBlue px-4 py-2 text-sm font-semibold text-white transition hover:bg-gtBlueHover disabled:opacity-60"
                 >
                   {saving ? 'Saving...' : 'Finish setup'}
                 </button>

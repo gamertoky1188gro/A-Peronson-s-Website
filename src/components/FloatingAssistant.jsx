@@ -211,7 +211,7 @@ export default function FloatingAssistant() {
 
       {/* Slide-in drawer panel (off-canvas). */}
       <div
-        className={`fixed top-0 right-0 h-full w-full md:w-[400px] bg-white shadow-2xl z-50 transform transition-transform duration-300 flex flex-col borderless-divider-l ${
+        className={`fixed top-0 right-0 h-full w-full md:w-[400px] bg-white shadow-2xl z-50 transform transition-transform duration-300 flex flex-col shadow-dividerL dark:shadow-dividerLDark ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -262,7 +262,7 @@ export default function FloatingAssistant() {
           {loading && (
             // Typing indicator bubble shown while awaiting server reply.
             <div className="flex justify-start animate-in fade-in duration-200">
-              <div className="bg-white borderless-shadow p-4 rounded-2xl rounded-tl-none shadow-sm">
+              <div className="bg-white shadow-borderless dark:shadow-borderlessDark p-4 rounded-2xl rounded-tl-none shadow-sm">
                 <div className="flex gap-1.5">
                   <div className="w-2 h-2 bg-gray-300 rounded-full animate-bounce [animation-duration:0.8s]"></div>
                   <div className="w-2 h-2 bg-gray-300 rounded-full animate-bounce [animation-duration:0.8s] [animation-delay:0.2s]"></div>
@@ -274,7 +274,7 @@ export default function FloatingAssistant() {
         </div>
 
         {/* Composer/footer: quick suggestions + input + send button. */}
-        <div className="p-4 borderless-divider-t bg-white shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+        <div className="p-4 shadow-dividerT dark:shadow-dividerTDark bg-white shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
           {messages.length < 3 && !loading && (
             // Quick suggestion chips appear early to guide first-time users.
             <div className="flex flex-wrap gap-2 mb-4 animate-in fade-in slide-in-from-bottom-1 duration-500">
@@ -282,7 +282,7 @@ export default function FloatingAssistant() {
                 <button 
                   key={i} 
                   onClick={() => handleSend(s)}
-                  className="text-[11px] bg-sky-50 text-[#0A66C2] borderless-shadow px-3 py-1.5 rounded-full hover:bg-sky-100 transition-all hover:scale-105 active:scale-95"
+                  className="text-[11px] bg-sky-50 text-[#0A66C2] shadow-borderless dark:shadow-borderlessDark px-3 py-1.5 rounded-full hover:bg-sky-100 transition-all hover:scale-105 active:scale-95"
                 >
                   {s}
                 </button>

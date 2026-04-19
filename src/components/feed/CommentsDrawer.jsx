@@ -135,7 +135,7 @@ export default function CommentsDrawer({ open, onClose, item }) {
             />
           </>
         ) : null}
-        <div className="bg-white borderless-shadow rounded-xl p-3" style={{ marginLeft: `${indent}px` }}>
+        <div className="bg-white shadow-borderless dark:shadow-borderlessDark rounded-xl p-3" style={{ marginLeft: `${indent}px` }}>
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-xs font-semibold text-slate-900 truncate">
@@ -161,7 +161,7 @@ export default function CommentsDrawer({ open, onClose, item }) {
                 onChange={(e) => setReplyInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && submitReply(comment.id)}
                 placeholder="Write a reply..."
-                className="flex-1 rounded-full bg-slate-100 borderless-shadow px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
+                className="flex-1 rounded-full bg-slate-100 shadow-borderless dark:shadow-borderlessDark px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
               />
               <button
                 type="button"
@@ -214,8 +214,8 @@ export default function CommentsDrawer({ open, onClose, item }) {
   return (
     <div className="fixed inset-0 z-50">
       <button type="button" aria-label="Close comments" onClick={onClose} className="absolute inset-0 bg-black/40" />
-      <aside className="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col borderless-divider-l">
-        <header className="flex items-center justify-between gap-3 px-4 py-3 borderless-divider-b">
+      <aside className="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col shadow-dividerL dark:shadow-dividerLDark">
+        <header className="flex items-center justify-between gap-3 px-4 py-3 shadow-dividerB dark:shadow-dividerBDark">
           <div>
             <p className="text-sm font-semibold text-slate-900">Comments</p>
             <p className="text-[11px] text-slate-500 truncate">{item?.author?.name || 'Post'}</p>
@@ -227,20 +227,20 @@ export default function CommentsDrawer({ open, onClose, item }) {
 
         <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/60">
           {loading ? <div className="text-sm text-slate-500">Loading comments...</div> : null}
-          {!loading && error ? <div className="text-sm text-rose-700 bg-rose-50 borderless-shadow rounded-lg p-3">{error}</div> : null}
+          {!loading && error ? <div className="text-sm text-rose-700 bg-rose-50 shadow-borderless dark:shadow-borderlessDark rounded-lg p-3">{error}</div> : null}
           {!loading && !error && comments.length === 0 ? <div className="text-sm text-slate-500">No comments yet.</div> : null}
 
           {!loading && commentTree.map((node) => renderCommentNode(node, 0))}
         </div>
 
-        <footer className="p-4 borderless-divider-t bg-white">
+        <footer className="p-4 shadow-dividerT dark:shadow-dividerTDark bg-white">
           <div className="flex gap-2 items-center">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && submitComment()}
               placeholder="Write a comment..."
-              className="flex-1 rounded-full bg-slate-100 borderless-shadow px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
+              className="flex-1 rounded-full bg-slate-100 shadow-borderless dark:shadow-borderlessDark px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
             />
             <button
               type="button"
