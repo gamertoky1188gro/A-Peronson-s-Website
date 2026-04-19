@@ -409,7 +409,7 @@ function AdminSecurityOverlay({ error, onResolve }) {
   const [mfa, setMfa] = useState(() => localStorage.getItem('admin_mfa_code') || '')
   const [passkey, setPasskey] = useState(() => localStorage.getItem('admin_passkey') || '')
   const [stepup, setStepup] = useState(() => localStorage.getItem('admin_stepup_code') || '')
-  const [deviceId, setDeviceId] = useState(() => localStorage.getItem('admin_device_id') || 'CCM')
+  const [deviceId, setDeviceId] = useState(() => localStorage.getItem('admin_device_id') || import.meta.env.VITE_ADMIN_DEVICE_ID || 'local-dev-device')
   const [busy, setBusy] = useState(false)
   const [localError, setLocalError] = useState('')
 
