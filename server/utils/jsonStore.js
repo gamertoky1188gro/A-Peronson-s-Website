@@ -47,6 +47,40 @@ function normalizeUserRow(row = {}) {
   return next
 }
 
+function toInt(value, fallback = 0) {
+  const num = Number(value)
+  return Number.isFinite(num) ? Math.trunc(num) : fallback
+}
+
+function toFloat(value, fallback = 0) {
+  const num = Number(value)
+  return Number.isFinite(num) ? num : fallback
+}
+
+function normalizeCommunicationPolicyConfigRow(row = {}) {
+  const messageCaps = row?.message_caps && typeof row.message_caps === 'object' ? row.message_caps : {}
+  const priorityMultipliers = row?.priority_multipliers && typeof row.priority_multipliers === 'object' ? row.priority_multipliers : {}
+  const spamThresholds = row?.spam_thresholds && typeof row.spam_thresholds === 'object' ? row.spam_thresholds : {}
+
+  const premiumMultiplier = toFloat(row?.premium_multiplier, toFloat(priorityMultipliers.premium, 1.2))
+  const verifiedMultiplier = toFloat(row?.verified_multiplier, toFloat(priorityMultipliers.verified, 1.3))
+
+  return {
+    id: String(row?.id || 'global'),
+    scope: String(row?.scope || 'global'),
+    org_id: row?.org_id ? String(row.org_id) : null,
+    max_outreach_per_window: toInt(row?.max_outreach_per_window ?? messageCaps.outbound_per_window, 12),
+    outreach_window_minutes: toInt(row?.outreach_window_minutes ?? messageCaps.window_minutes, 15),
+    cooldown_seconds: toInt(row?.cooldown_seconds ?? messageCaps.cooldown_seconds, 30),
+    premium_boost: toInt(row?.premium_boost, Math.round((premiumMultiplier - 1) * 100)),
+    verified_boost: toInt(row?.verified_boost, Math.round((verifiedMultiplier - 1) * 100)),
+    keyword_risk_threshold_soft: toFloat(row?.keyword_risk_threshold_soft ?? spamThresholds.queue, 0.45),
+    keyword_risk_threshold_hard: toFloat(row?.keyword_risk_threshold_hard ?? spamThresholds.hard_block, 0.75),
+    updated_by: row?.updated_by ? String(row.updated_by) : null,
+    updated_at: row?.updated_at || null,
+  }
+}
+
 function keyForRow(row, keyFields) {
   return keyFields.map((field) => String(row?.[field] ?? '')).join('::')
 }
@@ -179,11 +213,25 @@ const FILE_HANDLERS = {
   'message_reads.json': tableHandler('messageRead', ['match_id', 'user_id'], 'match_id_user_id'),
   'message_queue_items.json': tableHandler('messageQueue', ['id']),
   'message_policy_logs.json': tableHandler('messagePolicyDecision', ['id']),
-  'communication_limits.json': tableHandler('communicationPolicyConfig', ['id']),
+  'communication_limits.json': {
+    read: async () => normalizeRows(await prisma.communicationPolicyConfig.findMany()),
+    write: async (rows) => syncTable({
+      model: 'communicationPolicyConfig',
+      rows: Array.isArray(rows) ? rows.map(normalizeCommunicationPolicyConfigRow) : rows,
+      keyFields: ['id'],
+    }),
+  },
   'message_queue.json': tableHandler('messageQueue', ['id']),
   'message_policy_decisions.json': tableHandler('messagePolicyDecision', ['id']),
   'sender_reputation.json': tableHandler('senderReputation', ['id']),
-  'communication_policy_configs.json': tableHandler('communicationPolicyConfig', ['id']),
+  'communication_policy_configs.json': {
+    read: async () => normalizeRows(await prisma.communicationPolicyConfig.findMany()),
+    write: async (rows) => syncTable({
+      model: 'communicationPolicyConfig',
+      rows: Array.isArray(rows) ? rows.map(normalizeCommunicationPolicyConfigRow) : rows,
+      keyFields: ['id'],
+    }),
+  },
 }
 
 const ratingsHandler = {

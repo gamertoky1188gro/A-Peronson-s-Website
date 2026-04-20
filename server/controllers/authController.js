@@ -127,12 +127,19 @@ export async function passkeyLoginVerify(req, res) {
   try {
     const identifier = req.body?.identifier
     const credential = req.body?.credential
+    const purpose = String(req.body?.purpose || '').trim().toLowerCase()
     if (!credential) return res.status(400).json({ error: 'Missing credential' })
     const result = await verifyAuthentication({ identifier, req, credential })
     const user = result?.user
     const passkey = result?.passkey || null
     if (String(user.status || '').toLowerCase() === 'deleted') {
       return res.status(403).json({ error: 'Account deleted' })
+    }
+    if (purpose === 'admin_security') {
+      const role = String(user?.role || '').toLowerCase()
+      if (!['owner', 'admin'].includes(role)) {
+        return res.status(403).json({ error: 'Only admin/owner accounts can use passkey for admin security.' })
+      }
     }
     const token = signToken(user, { authViaPasskey: true })
     const entitlements = await getEntitlements(user)

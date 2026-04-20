@@ -31,6 +31,10 @@ const OPENSEARCH_REINDEX_PROFILE_KEYS = new Set([
   'location_lng',
 ])
 
+function generateSetupCode(prefix = 'setup') {
+  return `${prefix}-${crypto.randomBytes(4).toString('hex')}`
+}
+
 function cleanUser(user) {
   const { password_hash: _passwordHash, passkeys, ...safe } = user
   return {
@@ -103,6 +107,21 @@ function connectionSnapshot(connections, viewerId, targetId) {
 
 export async function listUsers() {
   const users = await readJson(FILE)
+  let touched = false
+  users.forEach((user) => {
+    user.profile = { ...(user.profile || {}) }
+    if (!String(user.profile.mfa_setup_code || '').trim()) {
+      user.profile.mfa_setup_code = generateSetupCode('mfa')
+      touched = true
+    }
+    if (!String(user.profile.stepup_setup_code || '').trim()) {
+      user.profile.stepup_setup_code = generateSetupCode('stepup')
+      touched = true
+    }
+  })
+  if (touched) {
+    await writeJson(FILE, users)
+  }
   return users.map(cleanUser)
 }
 
@@ -275,6 +294,8 @@ export async function registerUser(payload) {
       monthly_capacity: sanitizeString(payload.profile?.monthly_capacity || '', 80),
       moq: sanitizeString(payload.profile?.moq || '', 40),
       lead_time_days: sanitizeString(payload.profile?.lead_time_days || '', 40),
+      mfa_setup_code: sanitizeString(payload.profile?.mfa_setup_code || generateSetupCode('mfa'), 120),
+      stepup_setup_code: sanitizeString(payload.profile?.stepup_setup_code || generateSetupCode('stepup'), 120),
     },
   }
 
@@ -467,6 +488,12 @@ export async function adminUpdateUser(userId, patch = {}) {
   }
   if (patch.admin_notes !== undefined) {
     profile.admin_notes = sanitizeString(String(patch.admin_notes || ''), 800)
+  }
+  if (patch.mfa_setup_code !== undefined) {
+    profile.mfa_setup_code = sanitizeString(String(patch.mfa_setup_code || ''), 120)
+  }
+  if (patch.stepup_setup_code !== undefined) {
+    profile.stepup_setup_code = sanitizeString(String(patch.stepup_setup_code || ''), 120)
   }
 
   const next = {

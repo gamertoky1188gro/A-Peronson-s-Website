@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Activity, Database, Home, Lock, Network, Search, Server, Settings, ShieldCheck, Sparkles, Sun, Moon } from 'lucide-react'
+import { startAuthentication } from '@simplewebauthn/browser'
 import { Area, AreaChart, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import AccessDeniedState from '../components/AccessDeniedState'
-import { apiRequest, getCurrentUser, getToken } from '../lib/auth'
+import { apiRequest, getCurrentUser, getToken, saveSession } from '../lib/auth'
 
 const OWNER_ROLES = new Set(['owner', 'admin'])
 
@@ -409,16 +410,12 @@ function AdminSecurityGate({
   message,
   mfaCode,
   setMfaCode,
-  passkeyValue,
-  setPasskeyValue,
   stepUpCode,
   setStepUpCode,
-  deviceId,
-  setDeviceId,
-  busy,
+  passkeyBusy,
   notice,
+  onPasskeyAuth,
   onUnlock,
-  onRegisterDevice,
   onDecline,
 }) {
   if (!open) return null
@@ -443,13 +440,14 @@ function AdminSecurityGate({
           </label>
           <label className="text-xs text-slate-400">
             Passkey
-            <input
-              value={passkeyValue}
-              onChange={(e) => setPasskeyValue(e.target.value)}
-              className="mt-1 w-full rounded-xl bg-slate-900/90 px-3 py-2 text-sm text-white outline-none ring-1 ring-slate-700 focus:ring-sky-500"
-              placeholder="Enter passkey"
-              type="password"
-            />
+            <button
+              type="button"
+              onClick={onPasskeyAuth}
+              disabled={passkeyBusy}
+              className="mt-1 w-full rounded-xl bg-indigo-500/80 px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
+            >
+              {passkeyBusy ? 'Opening passkey...' : 'Verify with passkey'}
+            </button>
           </label>
           <label className="text-xs text-slate-400">
             Setup/step-up code
@@ -460,15 +458,6 @@ function AdminSecurityGate({
               placeholder="Enter setup code"
             />
           </label>
-          <label className="text-xs text-slate-400">
-            Device ID
-            <input
-              value={deviceId}
-              onChange={(e) => setDeviceId(e.target.value)}
-              className="mt-1 w-full rounded-xl bg-slate-900/90 px-3 py-2 text-sm text-white outline-none ring-1 ring-slate-700 focus:ring-sky-500"
-              placeholder="Enter your device id"
-            />
-          </label>
         </div>
 
         {notice ? <p className="mt-3 text-xs text-sky-200">{notice}</p> : null}
@@ -477,23 +466,15 @@ function AdminSecurityGate({
           <button
             type="button"
             onClick={onUnlock}
-            disabled={busy}
+            disabled={passkeyBusy}
             className="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
           >
             Unlock access
           </button>
           <button
             type="button"
-            onClick={onRegisterDevice}
-            disabled={busy}
-            className="rounded-full bg-indigo-500/80 px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
-          >
-            Register this device
-          </button>
-          <button
-            type="button"
             onClick={onDecline}
-            disabled={busy}
+            disabled={passkeyBusy}
             className="rounded-full border border-slate-600 px-4 py-2 text-xs font-semibold text-slate-200 disabled:opacity-60"
           >
             Decline
@@ -601,12 +582,12 @@ export default function AdminPanel() {
   const [userDrafts, setUserDrafts] = useState({})
   const [mfaCode, setMfaCode] = useState(() => localStorage.getItem('admin_mfa_code') || '')
   const [deviceId, setDeviceId] = useState(() => localStorage.getItem('admin_device_id') || '')
-  const [passkeyValue, setPasskeyValue] = useState(() => localStorage.getItem('admin_passkey') || '')
+  const [passkeyValue] = useState(() => localStorage.getItem('admin_passkey') || '')
   const [stepUpCode, setStepUpCode] = useState(() => localStorage.getItem('admin_stepup_code') || '')
+  const [passkeyBusy, setPasskeyBusy] = useState(false)
   const [securityGateOpen, setSecurityGateOpen] = useState(false)
   const [securityGateMessage, setSecurityGateMessage] = useState('')
   const [securityGateNotice, setSecurityGateNotice] = useState('')
-  const [securityGateBusy, setSecurityGateBusy] = useState(false)
   const [activeCategory, setActiveCategory] = useState('home')
   const [actionBusy, setActionBusy] = useState('')
 
@@ -659,6 +640,12 @@ export default function AdminPanel() {
   useEffect(() => {
     if (!deviceId) return
     localStorage.setItem('admin_device_id', deviceId)
+  }, [deviceId])
+
+  useEffect(() => {
+    if (deviceId) return
+    const fallback = `device-${Math.random().toString(36).slice(2, 10)}`
+    setDeviceId(fallback)
   }, [deviceId])
 
   useEffect(() => {
@@ -974,6 +961,8 @@ export default function AdminPanel() {
             .filter(Boolean)
         : undefined,
       admin_notes: draft.admin_notes,
+      mfa_setup_code: draft.mfa_setup_code,
+      stepup_setup_code: draft.stepup_setup_code,
     }
 
     const cleaned = Object.fromEntries(Object.entries(body).filter(([, value]) => value !== undefined))
@@ -1588,32 +1577,32 @@ export default function AdminPanel() {
     await loadAdminData()
   }
 
-  async function handleRegisterCurrentDevice() {
-    const token = getToken()
-    if (!token || !deviceId) {
-      setSecurityGateNotice('Device id is required before registration.')
+  async function handleGatePasskeyAuth() {
+    const current = getCurrentUser()
+    const identifier = current?.email || current?.member_id
+    if (!identifier) {
+      setSecurityGateNotice('Unable to resolve current account for passkey verification.')
       return
     }
-    setSecurityGateBusy(true)
+    setPasskeyBusy(true)
     setSecurityGateNotice('')
     try {
-      await apiRequest('/admin/security/actions', {
+      const optionsRes = await apiRequest('/auth/passkey/login/options', {
         method: 'POST',
-        token,
-        headers: buildAdminHeaders({ stepUp: true }),
-        body: {
-          action: 'security.admin.device.add',
-          payload: { device_id: deviceId },
-        },
+        body: { identifier, purpose: 'admin_security' },
       })
-      setSecurityGateNotice('Device registered. Trying access again...')
+      const assertion = await startAuthentication(optionsRes.options)
+      const verify = await apiRequest('/auth/passkey/login/verify', {
+        method: 'POST',
+        body: { identifier, credential: assertion, purpose: 'admin_security' },
+      })
+      saveSession(verify.user, verify.token)
+      setSecurityGateNotice('Passkey verified. Reloading admin panel…')
       await loadAdminData()
     } catch (err) {
-      if (!handleSecurityFailure(err)) {
-        setSecurityGateNotice(err?.message || 'Failed to register this device.')
-      }
+      setSecurityGateNotice(err?.message || 'Passkey verification failed.')
     } finally {
-      setSecurityGateBusy(false)
+      setPasskeyBusy(false)
     }
   }
 
@@ -1643,16 +1632,12 @@ export default function AdminPanel() {
         message={securityGateMessage}
         mfaCode={mfaCode}
         setMfaCode={setMfaCode}
-        passkeyValue={passkeyValue}
-        setPasskeyValue={setPasskeyValue}
         stepUpCode={stepUpCode}
         setStepUpCode={setStepUpCode}
-        deviceId={deviceId}
-        setDeviceId={setDeviceId}
-        busy={securityGateBusy}
+        passkeyBusy={passkeyBusy}
         notice={securityGateNotice}
+        onPasskeyAuth={handleGatePasskeyAuth}
         onUnlock={handleSecurityUnlock}
-        onRegisterDevice={handleRegisterCurrentDevice}
         onDecline={handleSecurityDecline}
       />
       <div className="admin-shell h-screen">
@@ -1781,87 +1766,7 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                    <div className="admin-card admin-sweep rounded-3xl p-6">
-                      <p className="text-sm font-bold">Admin Security</p>
-                      <p className="mt-1 text-xs text-slate-500">MFA, device binding, and step-up codes are enforced on destructive actions.</p>
-                      <div className="mt-4 space-y-3 text-xs">
-                        <label className="flex flex-col gap-1">
-                          <span className="text-[10px] font-semibold uppercase text-slate-500">MFA Code</span>
-                          <input
-                            value={mfaCode}
-                            onChange={(event) => setMfaCode(event.target.value)}
-                            className="w-full rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                            placeholder="Enter MFA code"
-                          />
-                        </label>
-                        <label className="flex flex-col gap-1">
-                          <span className="text-[10px] font-semibold uppercase text-slate-500">Device ID</span>
-                          <input
-                            value={deviceId}
-                            onChange={(event) => setDeviceId(event.target.value)}
-                            className="w-full rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                            placeholder="Bind this device ID"
-                          />
-                        </label>
-                        <label className="flex flex-col gap-1">
-                          <span className="text-[10px] font-semibold uppercase text-slate-500">Step-up Code</span>
-                          <input
-                            value={stepUpCode}
-                            onChange={(event) => setStepUpCode(event.target.value)}
-                            className="w-full rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                            placeholder="Required for destructive actions"
-                          />
-                        </label>
-                        <label className="flex flex-col gap-1">
-                          <span className="text-[10px] font-semibold uppercase text-slate-500">Admin Passkey</span>
-                          <input
-                            value={passkeyValue}
-                            onChange={(event) => setPasskeyValue(event.target.value)}
-                            className="w-full rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                            placeholder="Set a passkey"
-                          />
-                        </label>
-                      </div>
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() => runSecurityAction('security.admin.mfa.set', { code: mfaCode })}
-                          className="rounded-full shadow-borderless dark:shadow-borderlessDark bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-white/10"
-                        >
-                          Save MFA
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => runSecurityAction('security.admin.device.add', { device_id: deviceId })}
-                          className="rounded-full shadow-borderless dark:shadow-borderlessDark bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-white/10"
-                        >
-                          Register Device
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => runSecurityAction('security.admin.passkey.add', { passkey: passkeyValue })}
-                          className="rounded-full shadow-borderless dark:shadow-borderlessDark bg-black/40 px-3 py-1 text-[10px] font-semibold text-sky-100 hover:bg-white/10"
-                        >
-                          Save Passkey
-                        </button>
-                      </div>
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
-                          MFA {securityContext.mfa_required ? 'Required' : 'Optional'}
-                        </span>
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
-                          IP allowlist {securityContext.ip_allowlist?.length ? 'On' : 'Off'}
-                        </span>
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
-                          Device allowlist {securityContext.device_allowlist?.length ? 'On' : 'Off'}
-                        </span>
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
-                          Exec {securityContext.exec_enabled ? 'Enabled' : 'Simulated'}
-                        </span>
-                      </div>
-                    </div>
-
+                  <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     <div className="admin-card admin-sweep rounded-3xl p-6">
                       <div className="flex items-center gap-2 text-sm font-bold">
                         <Activity className="h-4 w-4 text-emerald-500" />
@@ -2147,6 +2052,8 @@ export default function AdminPanel() {
                     const strikeValue = draft.policy_strikes ?? u.policy_strikes ?? 0
                     const fraudValue = draft.fraud_flags ?? (Array.isArray(u.profile?.fraud_flags) ? u.profile.fraud_flags.join(', ') : '')
                     const notesValue = draft.admin_notes ?? u.profile?.admin_notes ?? ''
+                    const mfaSetupCode = draft.mfa_setup_code ?? u.profile?.mfa_setup_code ?? ''
+                    const stepupSetupCode = draft.stepup_setup_code ?? u.profile?.stepup_setup_code ?? ''
 
                     return (
                       <div key={u.id} className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
@@ -2264,6 +2171,26 @@ export default function AdminPanel() {
                             placeholder="Internal notes visible to admins only"
                           />
                         </label>
+                        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                          <label className="flex flex-col gap-1">
+                            <span className="text-[10px] font-semibold uppercase text-slate-500">MFA setup code</span>
+                            <input
+                              value={mfaSetupCode}
+                              onChange={(event) => updateDraft(u.id, 'mfa_setup_code', event.target.value)}
+                              className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
+                              placeholder="Per-account MFA setup code"
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1">
+                            <span className="text-[10px] font-semibold uppercase text-slate-500">Step-up setup code</span>
+                            <input
+                              value={stepupSetupCode}
+                              onChange={(event) => updateDraft(u.id, 'stepup_setup_code', event.target.value)}
+                              className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
+                              placeholder="Per-account step-up setup code"
+                            />
+                          </label>
+                        </div>
                         <div className="mt-3 flex items-center justify-end">
                           <button
                             type="button"
