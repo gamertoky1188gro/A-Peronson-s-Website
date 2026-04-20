@@ -33,13 +33,14 @@ export async function requireAdminSecurity(req, res, next) {
     return deny(res)
   }
 
+  const passkeyLogin = Boolean(req.user?.auth_via_passkey)
   const authConfig = await getAdminAuthConfig()
 
   if (!isAllowedIp(req, authConfig.ip_allowlist)) {
     return res.status(403).json({ error: 'Admin access denied from this IP.' })
   }
 
-  if (!isAllowedDevice(req, authConfig.device_allowlist)) {
+  if (!isAllowedDevice(req, authConfig.device_allowlist) && !passkeyLogin) {
     return res.status(403).json({ error: 'Admin access denied for this device.' })
   }
 
@@ -53,7 +54,6 @@ export async function requireAdminSecurity(req, res, next) {
 
   if (Array.isArray(authConfig.passkeys) && authConfig.passkeys.length) {
     const provided = String(req.headers['x-admin-passkey'] || '').trim()
-    const passkeyLogin = Boolean(req.user?.auth_via_passkey)
     if ((!provided || !authConfig.passkeys.includes(provided)) && !passkeyLogin) {
       return res.status(403).json({ error: 'Admin passkey required.' })
     }
