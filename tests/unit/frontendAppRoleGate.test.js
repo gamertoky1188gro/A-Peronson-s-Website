@@ -20,7 +20,7 @@ describe('App protected routes and role gates', () => {
     const source = await readAppSource()
 
     expect(source).toMatch(/const AUTH_ROLES = \['buyer', 'buying_house', 'factory', 'owner', 'admin', 'agent'\]/)
-    expect(source).toMatch(/path="\/admin"[\s\S]*?roles=\{\['owner', 'admin'\]\}/)
+    expect(source).toMatch(/path="\/admin"[\s\S]*?roles=\{\['owner'\]\}/)
     expect(source).toMatch(/path="\/agent"[\s\S]*?roles=\{\['buying_house', 'owner', 'admin', 'agent'\]\}/)
     expect(source).toMatch(/path="\/search"[\s\S]*?<ProtectedRoute roles=\{AUTH_ROLES\}>/)
     expect(source).toMatch(/path="\/access-denied" element=\{<AccessDenied \/>\}/)

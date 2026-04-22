@@ -1905,20 +1905,23 @@ export async function performAdminAction(action, payload = {}, actor) {
     const domain = sanitizeString(String(payload.domain || 'site'), 120)
     const clicks = toNumber(payload.clicks, 0)
     const visits = toNumber(payload.visits, 0)
-    await updateLocalJson('traffic_analytics.json', (current = { summary: {}, sources: [], domains: [] }) => {
+    const spend = toNumber(payload.spend, 0)
+    await updateLocalJson('traffic_analytics.json', (current = { summary: { clicks: 0, visits: 0, spend: 0 }, sources: [], domains: [] }) => {
       const summary = { ...(current.summary || {}) }
       summary.clicks = (summary.clicks || 0) + clicks
       summary.visits = (summary.visits || 0) + visits
+      summary.spend = (summary.spend || 0) + spend
       const domains = Array.isArray(current.domains) ? current.domains : []
       const existing = domains.find((d) => String(d.domain) === domain)
       if (existing) {
         existing.clicks = (existing.clicks || 0) + clicks
         existing.visits = (existing.visits || 0) + visits
+        existing.spend = (existing.spend || 0) + spend
       } else {
-        domains.push({ domain, clicks, visits })
+        domains.push({ domain, clicks, visits, spend })
       }
       return { ...current, summary, domains }
-    }, { summary: {}, sources: [], domains: [] })
+    }, { summary: { clicks: 0, visits: 0, spend: 0 }, sources: [], domains: [] })
     return { ok: true }
   }
 

@@ -1,7 +1,87 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Activity, Database, Home, Lock, Network, Search, Server, Settings, ShieldCheck, Sparkles, Sun, Moon } from 'lucide-react'
+import {
+  Activity,
+  AlertTriangle,
+  ArrowRight,
+  Cloud,
+  Inbox,
+  ServerCog,
+  Workflow,
+  BadgeCheck,
+  BarChart3,
+  Bell,
+  BookOpen,
+  CalendarClock,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  ClipboardList,
+  Clock3,
+  Cpu,
+  Database,
+  Download,
+  Eye,
+  FileText,
+  Globe,
+  Globe2,
+  Gauge,
+  HardDrive,
+  Layers3,
+  LayoutDashboard,
+  CircuitBoard,
+  KeyRound,
+  LockKeyhole,
+  Loader2,
+  MoonStar,
+  PanelLeftClose,
+  RefreshCw,
+  Search,
+  ShieldCheck,
+  Filter,
+  Sparkles,
+  SlidersHorizontal,
+  SunMedium,
+  TerminalSquare,
+  Trash2,
+  UserCog,
+  Users,
+  Wifi,
+  Wrench,
+  ArrowUpRight,
+  Network,
+  Ticket,
+  Mail,
+  ShieldAlert,
+  Moon,
+  Sun,
+  Shield,
+  MonitorCog,
+  Crown,
+  Home,
+  Lock,
+  Settings,
+  Sparkle,
+  Server,
+  XCircle
+} from 'lucide-react'
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import { startAuthentication } from '@simplewebauthn/browser'
-import { Area, AreaChart, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import AccessDeniedState from '../components/AccessDeniedState'
 import { apiRequest, getCurrentUser, getToken, saveSession } from '../lib/auth'
 
@@ -25,6 +105,72 @@ const CATEGORY_ICONS = {
   'ultra-security': Lock,
 }
 
+const INFRA_CAPABILITIES = [
+  {
+    title: 'System Health & Performance Monitoring',
+    count: 5,
+    icon: Activity,
+    subtitle: 'Real-time signals, resource visibility, and operational pulse.',
+  },
+  {
+    title: 'OS & Software Maintenance',
+    count: 4,
+    icon: Server,
+    subtitle: 'Safe updates, package checks, and controlled maintenance flows.',
+  },
+  {
+    title: 'User & Security Administration',
+    count: 5,
+    icon: UserCog,
+    subtitle: 'Accounts, SSH keys, access, and permission hygiene.',
+  },
+  {
+    title: 'Backup & Disaster Recovery',
+    count: 3,
+    icon: Database,
+    subtitle: 'Retention, recovery posture, and scheduled protection.',
+  },
+  {
+    title: 'Networking & System Settings',
+    count: 2,
+    icon: Wifi,
+    subtitle: 'Firewall, SSL, DNS, timezone, and NTP coordination.',
+  },
+]
+
+const NETWORK_CAPABILITIES = [
+  {
+    title: 'Real-Time Monitoring & Visibility',
+    count: 4,
+    items: ['Interface health', 'Packet loss', 'Latency heatmap', 'Topology map'],
+  },
+  {
+    title: 'Configuration & Management',
+    count: 5,
+    items: ['Device templates', 'Change pushes', 'Versioned config', 'Rollback safety'],
+  },
+  {
+    title: 'Security Management',
+    count: 5,
+    items: ['IDS/IPS feeds', 'Rogue AP detection', 'Policy drift', 'Threat posture'],
+  },
+  {
+    title: 'Traffic & Bandwidth Analysis',
+    count: 3,
+    items: ['NetFlow insight', 'QoS review', 'Bandwidth trends'],
+  },
+  {
+    title: 'Troubleshooting & Alerting',
+    count: 3,
+    items: ['Incident timeline', 'Anomaly triage', 'Auto-escalation'],
+  },
+  {
+    title: 'Asset & User Management',
+    count: 3,
+    items: ['Inventory sync', 'Auth roles', 'Ownership tracking'],
+  },
+]
+
 function listToTextarea(value) {
   return Array.isArray(value) ? value.join('\n') : ''
 }
@@ -33,6 +179,10 @@ function textareaToList(value) {
   const raw = String(value || '').split(/[\n,]/)
   const cleaned = raw.map((entry) => entry.trim()).filter(Boolean)
   return [...new Set(cleaned)]
+}
+
+function cn(...classes) {
+  return classes.filter(Boolean).join(' ')
 }
 
 const SECTION_METRICS = {
@@ -125,6 +275,8 @@ const SECTION_METRICS = {
   traffic: [
     { label: 'Clicks', path: 'traffic.clicks' },
     { label: 'Visits', path: 'traffic.visits' },
+    { label: 'Spend', path: 'traffic.spend', format: 'currency' },
+    { label: 'CPC', path: 'traffic.cpc', format: 'currency' },
   ],
   emails: [
     { label: 'Emails', path: 'emails.total' },
@@ -269,7 +421,7 @@ const ACTION_GROUPS = [
       { id: 'system.search_limits', label: 'Update search limits', route: '/admin/actions', fields: [{ key: 'advanced_filter_gate', label: 'Gate advanced (true/false)' }, { key: 'abusive_search_threshold', label: 'Abuse threshold' }] },
       { id: 'integrations.update', label: 'Update integrations', route: '/admin/actions', fields: [{ key: 'integrations', label: 'Integrations JSON' }] },
       { id: 'integrations.crm.export', label: 'Run CRM export', route: '/admin/actions', fields: [{ key: 'note', label: 'Note' }] },
-      { id: 'traffic.record', label: 'Record traffic event', route: '/admin/actions', fields: [{ key: 'domain', label: 'Domain' }, { key: 'clicks', label: 'Clicks' }, { key: 'visits', label: 'Visits' }] },
+      { id: 'traffic.record', label: 'Record traffic event', route: '/admin/actions', fields: [{ key: 'domain', label: 'Domain' }, { key: 'clicks', label: 'Clicks' }, { key: 'visits', label: 'Visits' }, { key: 'spend', label: 'Spend (USD)' }] },
       { id: 'email.segment.create', label: 'Create email segment', route: '/admin/actions', fields: [{ key: 'name', label: 'Segment name' }, { key: 'filter', label: 'Filter JSON' }] },
       { id: 'email.segment.update', label: 'Update email segment', route: '/admin/actions', fields: [{ key: 'segment_id', label: 'Segment ID' }, { key: 'name', label: 'Segment name' }, { key: 'filter', label: 'Filter JSON' }] },
       { id: 'email.segment.delete', label: 'Delete email segment', route: '/admin/actions', fields: [{ key: 'segment_id', label: 'Segment ID' }] },
@@ -405,6 +557,158 @@ function exportEmailsCsv(rows = []) {
   URL.revokeObjectURL(url)
 }
 
+const pieColors = ["#38bdf8", "#60a5fa", "#0f172a"];
+
+const buyerBenefits = [
+  "Advanced Search Filters",
+  "Priority Buyer Request Placement",
+  "Dedicated Support",
+  "Contract History & Audit Trail",
+  "Early Access to New Verified Factories",
+  "Buying Pattern Analysis",
+  "Order Completion Certification",
+  "AI Auto-reply Customization",
+  "Smart Supplier Matching",
+  "Request Performance Insights",
+  "Profile, product boost & increased reach",
+];
+
+const factoryBenefits = [
+  "Profile, product boost & increased reach",
+  "Advanced analytics (who viewed, inquiry rate)",
+  "Priority in search results & filters",
+  "AI auto-reply customization",
+  "Dedicated account manager",
+  "Custom branding on profile",
+  "Enterprise analytics dashboard",
+  "Unlimited agent/sub-ID creation",
+  "Buying Pattern Analysis",
+  "Order Completion Certification",
+  "Dedicated Support",
+  "Contract history & audit trail",
+];
+
+const buyingHouseBenefits = [
+  "Profile, product boost & increased reach",
+  "Advanced analytics (who viewed, inquiry rate)",
+  "Priority in search results & filters",
+  "AI auto-reply customization",
+  "Dedicated account manager",
+  "Custom branding on profile",
+  "Enterprise analytics dashboard",
+  "Unlimited agent/sub-ID creation",
+  "Request Buying House performance insights",
+  "Buyer interest analytics",
+  "Agent performance analytics & reporting",
+  "More product/video posting capacity",
+  "Lead distribution across agents",
+  "Buyer communication insights",
+  "Buyer Request Priority Access",
+  "Buyer Conversion Insights",
+  "Unlimited Partner Network access",
+];
+
+function SkeletonChart({ height = 320 }) {
+  return (
+    <div style={{ height }} className="flex flex-col gap-4">
+      <div className="flex-1 rounded-2xl bg-slate-100/50 dark:bg-white/5 animate-pulse" />
+      <div className="flex justify-between gap-4">
+        <div className="h-4 w-12 rounded bg-slate-100/50 dark:bg-white/5 animate-pulse" />
+        <div className="h-4 w-12 rounded bg-slate-100/50 dark:bg-white/5 animate-pulse" />
+        <div className="h-4 w-12 rounded bg-slate-100/50 dark:bg-white/5 animate-pulse" />
+      </div>
+    </div>
+  )
+}
+
+function SectionTitle({ title, subtitle, icon: TitleIcon }) {
+  return (
+    <div className="mb-4 flex items-center justify-between gap-4">
+      <div>
+        <div className="flex items-center gap-2">
+          <div className="rounded-2xl border border-sky-400/20 bg-sky-400/10 p-2 text-sky-300 shadow-lg shadow-sky-500/10">
+            <TitleIcon className="h-4 w-4" />
+          </div>
+          <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
+            {title}
+          </h2>
+        </div>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
+      </div>
+    </div>
+  );
+}
+
+function MetricCard({ label, value, hint, icon: CardIcon, loading = false }) {
+  if (loading) {
+    return (
+      <div className="rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.35)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <SkeletonLine className="h-4 w-24 opacity-50" />
+            <SkeletonLine className="mt-3 h-8 w-20" />
+            <SkeletonLine className="mt-3 h-3 w-32 opacity-40" />
+          </div>
+          <SkeletonLine className="h-11 w-11 rounded-2xl opacity-30" />
+        </div>
+      </div>
+    )
+  }
+  return (
+    <div className="group rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.35)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-sky-300/70 hover:shadow-[0_24px_80px_-28px_rgba(14,165,233,0.45)] dark:border-white/10 dark:bg-slate-950/70">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
+          <div className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
+            {value}
+          </div>
+          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{hint}</p>
+        </div>
+        <div className="rounded-2xl border border-sky-400/15 bg-gradient-to-br from-sky-400/20 to-blue-500/10 p-3 text-sky-500 shadow-lg shadow-sky-500/10 dark:text-sky-300">
+          <CardIcon className="h-5 w-5" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Pill({ children }) {
+  return (
+    <span className="inline-flex items-center gap-2 rounded-full border border-sky-500/15 bg-sky-500/8 px-3 py-1 text-xs font-medium text-sky-700 shadow-sm shadow-sky-500/5 dark:text-sky-300">
+      {children}
+    </span>
+  );
+}
+
+function BenefitCard({ title, items, accent = "sky" }) {
+  return (
+    <div className="rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-[0_20px_60px_-30px_rgba(59,130,246,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h3 className="text-base font-semibold text-slate-900 dark:text-white">{title}</h3>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Premium capability stack and operational advantages.
+          </p>
+        </div>
+        <div className={`rounded-2xl border border-${accent}-400/20 bg-${accent}-400/10 p-2 text-${accent}-400`}>
+          <Sparkles className="h-4 w-4" />
+        </div>
+      </div>
+      <div className="mt-5 grid gap-2 sm:grid-cols-2">
+        {items.map((item) => (
+          <div
+            key={item}
+            className="flex items-start gap-2 rounded-2xl border border-slate-200/70 bg-slate-50/90 p-3 text-sm text-slate-700 dark:border-white/5 dark:bg-white/5 dark:text-slate-300"
+          >
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-sky-500" />
+            <span>{item}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function AdminSecurityGate({
   open,
   message,
@@ -425,7 +729,7 @@ function AdminSecurityGate({
       <div className="admin-panel admin-sweep w-full max-w-lg rounded-3xl p-6 shadow-2xl">
         <h2 className="text-lg font-bold text-white">Security verification required</h2>
         <p className="mt-2 text-sm text-slate-300">
-          {message || 'This device is not approved yet. Use your passkey or setup code + MFA to continue.'}
+          {message || 'Admin security verification required. Use any one of the following methods to unlock the panel.'}
         </p>
 
         <div className="mt-5 grid grid-cols-1 gap-3">
@@ -485,6 +789,365 @@ function AdminSecurityGate({
   )
 }
 
+function SkeletonLine({ className = '' }) {
+  return <div className={`skeleton rounded-xl ${className}`} />
+}
+
+function Badge({ children, tone = 'default', darkMode = true }) {
+  const base = darkMode
+    ? {
+        default: 'border-slate-800 bg-slate-900 text-slate-300',
+        live: 'border-emerald-400/30 bg-emerald-500/10 text-emerald-300',
+        info: 'border-sky-400/30 bg-sky-500/10 text-sky-300',
+        danger: 'border-rose-400/30 bg-rose-500/10 text-rose-300',
+      }
+    : {
+        default: 'border-slate-200 bg-slate-50 text-slate-700',
+        live: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+        info: 'border-sky-200 bg-sky-50 text-sky-700',
+        danger: 'border-rose-200 bg-rose-50 text-rose-700',
+      }
+
+  return <span className={cn('inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium', base[tone])}>{children}</span>
+}
+
+function StatCard({ icon: Icon, title, value, meta, tone = 'sky', darkMode }) {
+  const toneClasses = darkMode
+    ? {
+        sky: 'border-sky-400/20 bg-slate-950/70 text-sky-300',
+        blue: 'border-blue-400/20 bg-slate-950/70 text-blue-300',
+        emerald: 'border-emerald-400/20 bg-slate-950/70 text-emerald-300',
+        amber: 'border-amber-400/20 bg-slate-950/70 text-amber-300',
+      }
+    : {
+        sky: 'border-sky-200 bg-white text-sky-600',
+        blue: 'border-blue-200 bg-white text-blue-600',
+        emerald: 'border-emerald-200 bg-white text-emerald-600',
+        amber: 'border-amber-200 bg-white text-amber-600',
+      }
+
+  const shell = darkMode
+    ? 'border-slate-800 bg-slate-950/70 shadow-[0_18px_60px_-30px_rgba(2,132,199,0.35)]'
+    : 'border-slate-200 bg-white shadow-sm'
+
+  return (
+    <div className={cn('rounded-3xl border p-5 transition hover:-translate-y-0.5', shell)}>
+      <div className={cn('inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium', toneClasses[tone])}>
+        <Icon className="h-3.5 w-3.5" />
+        {title}
+      </div>
+      <div className={cn('mt-4 text-2xl font-semibold tracking-tight', darkMode ? 'text-white' : 'text-slate-900')}>{value}</div>
+      <p className={cn('mt-1 text-sm', darkMode ? 'text-slate-400' : 'text-slate-500')}>{meta}</p>
+    </div>
+  )
+}
+
+function SectionCard({
+  title,
+  subtitle,
+  icon: Icon,
+  children,
+  actionLabel,
+  actionIcon: ActionIcon = RefreshCw,
+  onAction,
+  darkMode,
+}) {
+  const shell = darkMode
+    ? 'border-slate-800 bg-slate-950/70 shadow-[0_22px_80px_-38px_rgba(15,23,42,0.35)]'
+    : 'border-slate-200 bg-white shadow-sm'
+  const titleClass = darkMode ? 'text-white' : 'text-slate-900'
+  const subClass = darkMode ? 'text-slate-400' : 'text-slate-500'
+  const buttonClass = darkMode
+    ? 'border-sky-400/20 bg-sky-500/10 text-sky-200 hover:bg-sky-500/15'
+    : 'border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100'
+  const iconShell = darkMode
+    ? 'border-sky-400/20 bg-sky-500/10 text-sky-300'
+    : 'border-sky-200 bg-sky-50 text-sky-600'
+
+  return (
+    <section className={cn('rounded-[28px] border p-5 transition', shell)}>
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <div className={cn('rounded-2xl border p-3', iconShell)}>
+            <Icon className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className={cn('text-lg font-semibold tracking-tight', titleClass)}>{title}</h3>
+            <p className={cn('mt-1 max-w-2xl text-sm', subClass)}>{subtitle}</p>
+          </div>
+        </div>
+        {actionLabel ? (
+          <button
+            type="button"
+            onClick={onAction}
+            disabled={!onAction}
+            className={cn(
+              'inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60',
+              buttonClass
+            )}
+          >
+            <ActionIcon className="h-4 w-4" />
+            {actionLabel}
+          </button>
+        ) : null}
+      </div>
+      {children}
+    </section>
+  )
+}
+
+function cmsChipClass(dark, active = false) {
+  return [
+    'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition',
+    dark
+      ? active
+        ? 'border-sky-400/30 bg-sky-400/15 text-sky-100 shadow-[0_0_0_1px_rgba(56,189,248,0.12)]'
+        : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
+      : active
+        ? 'border-sky-500/20 bg-sky-50 text-sky-700 shadow-sm'
+        : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50',
+  ].join(' ')
+}
+
+function CmsMiniBadge({ dark, children }) {
+  return (
+    <span
+      className={[
+        'inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium',
+        dark ? 'border-sky-400/20 bg-sky-400/10 text-sky-200' : 'border-sky-200 bg-sky-50 text-sky-700',
+      ].join(' ')}
+    >
+      {children}
+    </span>
+  )
+}
+
+function CmsStatCard({ dark, icon: Icon, label, value, meta, trend }) {
+  return (
+    <div
+      className={[
+        'group relative overflow-hidden rounded-3xl border p-5 shadow-sm backdrop-blur-xl transition hover:-translate-y-0.5',
+        dark
+          ? 'border-white/10 bg-slate-950/70 text-white shadow-[0_12px_40px_rgba(2,8,23,0.35)]'
+          : 'border-slate-200/80 bg-white text-slate-900 shadow-[0_12px_30px_rgba(15,23,42,0.06)]',
+      ].join(' ')}
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-sky-400/10 via-transparent to-blue-500/5 opacity-0 transition group-hover:opacity-100" />
+      <div className="relative flex items-start justify-between gap-4">
+        <div>
+          <p className={dark ? 'text-xs uppercase tracking-[0.28em] text-slate-400' : 'text-xs uppercase tracking-[0.28em] text-slate-500'}>
+            {label}
+          </p>
+          <div className="mt-2 flex items-end gap-3">
+            <h3 className="text-3xl font-semibold tracking-tight">{value}</h3>
+            {trend ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-medium text-emerald-500">
+                <ArrowUpRight className="h-3 w-3" /> {trend}
+              </span>
+            ) : null}
+          </div>
+          <p className={dark ? 'mt-2 text-sm text-slate-400' : 'mt-2 text-sm text-slate-600'}>{meta}</p>
+        </div>
+        <div className="rounded-2xl border border-sky-400/20 bg-sky-400/10 p-3 text-sky-400">
+          <Icon className="h-5 w-5" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CmsSectionCard({ dark, title, subtitle, icon: Icon, action, children, accent = 'sky' }) {
+  return (
+    <section
+      className={[
+        'overflow-hidden rounded-3xl border backdrop-blur-xl',
+        dark
+          ? 'border-white/10 bg-slate-950/70 shadow-[0_18px_55px_rgba(2,8,23,0.4)]'
+          : 'border-slate-200/80 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.06)]',
+      ].join(' ')}
+    >
+      <div className={['flex flex-wrap items-start justify-between gap-4 border-b p-5', dark ? 'border-white/10' : 'border-slate-100'].join(' ')}>
+        <div className="flex items-start gap-4">
+          <div
+            className={[
+              'rounded-2xl p-3',
+              accent === 'sky'
+                ? dark
+                  ? 'bg-sky-400/10 text-sky-300'
+                  : 'bg-sky-50 text-sky-600'
+                : dark
+                  ? 'bg-blue-400/10 text-blue-300'
+                  : 'bg-blue-50 text-blue-600',
+            ].join(' ')}
+          >
+            <Icon className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className={dark ? 'text-lg font-semibold text-white' : 'text-lg font-semibold text-slate-900'}>{title}</h2>
+            <p className={dark ? 'mt-1 text-sm text-slate-400' : 'mt-1 text-sm text-slate-600'}>{subtitle}</p>
+          </div>
+        </div>
+        {action}
+      </div>
+      <div className="p-5">{children}</div>
+    </section>
+  )
+}
+
+function ultraMetricShell(dark) {
+  return dark
+    ? 'bg-white/5 border-white/10 text-slate-100 shadow-[0_20px_60px_rgba(2,8,23,0.35)]'
+    : 'bg-white border-slate-200 text-slate-900 shadow-[0_20px_60px_rgba(15,23,42,0.08)]'
+}
+
+function UltraPill({ dark, active = false, children }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium',
+        active
+          ? dark
+            ? 'border-cyan-400/30 bg-cyan-500/15 text-cyan-200'
+            : 'border-cyan-300 bg-cyan-50 text-cyan-700'
+          : dark
+            ? 'border-white/10 bg-white/5 text-slate-300'
+            : 'border-slate-200 bg-slate-100 text-slate-700'
+      )}
+    >
+      {children}
+    </span>
+  )
+}
+
+function UltraStatCard({ dark, label, value, sub, icon: Icon, tone = 'default' }) {
+  const toneClass =
+    tone === 'good'
+      ? 'from-cyan-500/20 to-sky-500/10 ring-cyan-400/30'
+      : tone === 'warn'
+        ? 'from-amber-500/20 to-orange-500/10 ring-amber-400/30'
+        : tone === 'danger'
+          ? 'from-rose-500/20 to-red-500/10 ring-rose-400/30'
+          : 'from-sky-500/20 to-blue-500/10 ring-sky-400/30'
+
+  return (
+    <div className={cn(ultraMetricShell(dark), 'relative overflow-hidden rounded-3xl border p-5 backdrop-blur-xl')}>
+      <div className={cn('absolute inset-0 bg-gradient-to-br opacity-80', toneClass)} />
+      <div className="relative flex items-start justify-between gap-4">
+        <div>
+          <p className={cn('text-sm font-medium', dark ? 'text-slate-300' : 'text-slate-600')}>{label}</p>
+          <div className="mt-2 flex items-end gap-2">
+            <h3 className="text-3xl font-semibold tracking-tight">{value}</h3>
+            {sub ? <span className={cn('pb-1 text-xs', dark ? 'text-slate-400' : 'text-slate-500')}>{sub}</span> : null}
+          </div>
+        </div>
+        <div className={cn('rounded-2xl p-3', dark ? 'bg-slate-950/30' : 'bg-slate-100')}>
+          <Icon className="h-5 w-5 text-cyan-300" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function UltraSectionCard({ dark, title, subtitle, children, right }) {
+  return (
+    <section className={cn(ultraMetricShell(dark), 'relative overflow-hidden rounded-[28px] border p-6 backdrop-blur-xl')}>
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className={cn('text-xl font-semibold tracking-tight', dark ? 'text-white' : 'text-slate-900')}>{title}</h2>
+            <span className="inline-flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-300">
+              live
+            </span>
+          </div>
+          {subtitle ? <p className={cn('mt-2 max-w-2xl text-sm leading-6', dark ? 'text-slate-400' : 'text-slate-600')}>{subtitle}</p> : null}
+        </div>
+        {right}
+      </div>
+      {children}
+    </section>
+  )
+}
+
+function UltraToggle({ dark, on, label, hint, onToggle }) {
+  return (
+    <div className={cn('flex items-center justify-between gap-4 rounded-2xl border p-4', dark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
+      <div>
+        <p className={cn('font-medium', dark ? 'text-white' : 'text-slate-900')}>{label}</p>
+        {hint ? <p className={cn('mt-1 text-sm', dark ? 'text-slate-400' : 'text-slate-500')}>{hint}</p> : null}
+      </div>
+      <div className="flex items-center gap-3">
+        <span className={cn('text-sm', on ? 'text-cyan-300' : dark ? 'text-slate-400' : 'text-slate-500')}>{on ? 'On' : 'Off'}</span>
+        <button
+          type="button"
+          onClick={onToggle}
+          className={cn(
+            'flex h-10 w-20 items-center rounded-full border px-1 transition',
+            on ? 'border-cyan-400/40 bg-cyan-500/20' : dark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white'
+          )}
+          aria-pressed={on}
+        >
+          <div className={cn('h-8 w-8 rounded-full shadow-md transition-transform', on ? 'translate-x-10 bg-cyan-400' : dark ? 'bg-slate-400' : 'bg-slate-500')} />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function UltraTinyChart({ dark }) {
+  const points = [22, 28, 24, 34, 30, 46, 40, 54, 50, 66, 58, 72]
+  const width = 640
+  const height = 180
+  const max = Math.max(...points)
+  const min = Math.min(...points)
+  const pad = 16
+  const step = (width - pad * 2) / (points.length - 1)
+  const y = (v) => height - pad - ((v - min) / (max - min)) * (height - pad * 2)
+  const path = points
+    .map((p, i) => `${i === 0 ? 'M' : 'L'}${pad + i * step} ${y(p)}`)
+    .join(' ')
+  const area = `${path} L ${width - pad} ${height - pad} L ${pad} ${height - pad} Z`
+
+  return (
+    <div className={cn('rounded-[24px] border p-4', dark ? 'border-white/10 bg-slate-950/25' : 'border-slate-200 bg-white')}>
+      <div className="mb-3 flex items-center justify-between">
+        <div>
+          <p className={cn('text-sm font-medium', dark ? 'text-white' : 'text-slate-900')}>Live Metrics</p>
+          <p className={cn('text-xs', dark ? 'text-slate-400' : 'text-slate-500')}>Metrics coming from live feeds.</p>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-cyan-300">
+          <Activity className="h-4 w-4" />
+          streaming
+        </div>
+      </div>
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-44 w-full">
+        <defs>
+          <linearGradient id="ultraSkyFill" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="rgba(56,189,248,0.38)" />
+            <stop offset="100%" stopColor="rgba(56,189,248,0)" />
+          </linearGradient>
+        </defs>
+        <path d={area} fill="url(#ultraSkyFill)" />
+        <path d={path} fill="none" stroke="currentColor" strokeWidth="3" className="text-cyan-300" />
+        {points.map((p, i) => (
+          <circle key={i} cx={pad + i * step} cy={y(p)} r="4.2" className="fill-cyan-300 text-cyan-300" />
+        ))}
+      </svg>
+      <div className="mt-2 grid grid-cols-3 gap-3 text-center text-xs">
+        {[
+          ['Requests', '12.8k'],
+          ['Integrity', '99.98%'],
+          ['Latency', '148ms'],
+        ].map(([label, value]) => (
+          <div key={label} className={cn('rounded-2xl border p-3', dark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
+            <div className={cn('font-semibold', dark ? 'text-white' : 'text-slate-900')}>{value}</div>
+            <div className={dark ? 'text-slate-400' : 'text-slate-500'}>{label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function AdminPanel() {
   const user = getCurrentUser()
   const isOwner = OWNER_ROLES.has(String(user?.role || '').toLowerCase())
@@ -515,6 +1178,14 @@ export default function AdminPanel() {
   const [walletLedger, setWalletLedger] = useState([])
   const [featuredForm, setFeaturedForm] = useState({ entity_type: 'product', entity_id: '', label: '' })
   const [audit, setAudit] = useState([])
+  const [infraSearch, setInfraSearch] = useState('')
+  const [networkQuery, setNetworkQuery] = useState('')
+  const [networkAuditQuery, setNetworkAuditQuery] = useState('')
+  const [networkNav, setNetworkNav] = useState('overview')
+  const [serverAdminAuditQuery, setServerAdminAuditQuery] = useState('')
+  const [cmsTab, setCmsTab] = useState('cms')
+  const [cmsAuditQuery, setCmsAuditQuery] = useState('')
+  const [ultraAuditQuery, setUltraAuditQuery] = useState('')
   const [users, setUsers] = useState([])
   const [verificationQueue, setVerificationQueue] = useState([])
   const [contractsVault, setContractsVault] = useState([])
@@ -842,9 +1513,146 @@ export default function AdminPanel() {
     })
   }, [users, userQuery, roleFilter, statusFilter, regionFilter, verificationFilter, premiumFilter])
 
+  const filteredInfraAuditRows = useMemo(() => {
+    const query = infraSearch.trim().toLowerCase()
+    if (!query) return audit
+    return audit.filter((entry) => {
+      const haystack = [
+        entry?.action,
+        entry?.path,
+        entry?.actor,
+        entry?.actor_id,
+        entry?.ip,
+        entry?.device_id,
+        entry?.status,
+      ]
+        .map((value) => String(value || '').toLowerCase())
+        .join(' ')
+      return haystack.includes(query)
+    })
+  }, [audit, infraSearch])
+
+  const filteredNetworkDevices = useMemo(() => {
+    const devices = Array.isArray(networkInventory?.devices) ? networkInventory.devices : []
+    const query = networkQuery.trim().toLowerCase()
+    if (!query) return devices
+    return devices.filter((device) => {
+      const value = `${device?.name || ''} ${device?.id || ''} ${device?.status || ''}`.toLowerCase()
+      return value.includes(query)
+    })
+  }, [networkInventory?.devices, networkQuery])
+
+  const filteredNetworkAuditRows = useMemo(() => {
+    const query = networkAuditQuery.trim().toLowerCase()
+    if (!query) return audit
+    return audit.filter((entry) => {
+      const haystack = [
+        entry?.action,
+        entry?.path,
+        entry?.actor,
+        entry?.actor_id,
+        entry?.ip,
+        entry?.device_id,
+        entry?.status,
+      ]
+        .map((value) => String(value || '').toLowerCase())
+        .join(' ')
+      return haystack.includes(query)
+    })
+  }, [audit, networkAuditQuery])
+
+  const filteredServerAdminAuditRows = useMemo(() => {
+    const query = serverAdminAuditQuery.trim().toLowerCase()
+    if (!query) return audit
+    return audit.filter((entry) => {
+      const haystack = [
+        entry?.action,
+        entry?.path,
+        entry?.actor,
+        entry?.actor_id,
+        entry?.ip,
+        entry?.device_id,
+        entry?.status,
+      ]
+        .map((value) => String(value || '').toLowerCase())
+        .join(' ')
+      return haystack.includes(query)
+    })
+  }, [audit, serverAdminAuditQuery])
+
+  const filteredCmsAuditRows = useMemo(() => {
+    const query = cmsAuditQuery.trim().toLowerCase()
+    if (!query) return audit
+    return audit.filter((entry) => {
+      const haystack = [
+        entry?.action,
+        entry?.path,
+        entry?.actor,
+        entry?.actor_id,
+        entry?.ip,
+        entry?.device_id,
+        entry?.status,
+      ]
+        .map((value) => String(value || '').toLowerCase())
+        .join(' ')
+      return haystack.includes(query)
+    })
+  }, [audit, cmsAuditQuery])
+
+  const filteredUltraAuditRows = useMemo(() => {
+    const query = ultraAuditQuery.trim().toLowerCase()
+    if (!query) return audit
+    return audit.filter((entry) => {
+      const haystack = [
+        entry?.action,
+        entry?.path,
+        entry?.actor,
+        entry?.actor_id,
+        entry?.ip,
+        entry?.device_id,
+        entry?.status,
+      ]
+        .map((value) => String(value || '').toLowerCase())
+        .join(' ')
+      return haystack.includes(query)
+    })
+  }, [audit, ultraAuditQuery])
+
   const analyticsOverview = catalog?.analytics || {}
   const activeUsersTrend = Array.isArray(analyticsOverview.active_users_trend) ? analyticsOverview.active_users_trend : []
   const buyerRequestTrend = Array.isArray(analyticsOverview.buyer_request_trend) ? analyticsOverview.buyer_request_trend : []
+  const cmsTrendData = useMemo(() => {
+    if (activeUsersTrend.length) {
+      return activeUsersTrend.slice(-7).map((row, idx) => ({
+        name: row?.name || row?.day || row?.label || `D${idx + 1}`,
+        value: Number(row?.value ?? row?.count ?? row?.users ?? 0) || 0,
+      }))
+    }
+    return [
+      { name: 'Mon', value: 24 },
+      { name: 'Tue', value: 38 },
+      { name: 'Wed', value: 29 },
+      { name: 'Thu', value: 57 },
+      { name: 'Fri', value: 44 },
+      { name: 'Sat', value: 66 },
+      { name: 'Sun', value: 52 },
+    ]
+  }, [activeUsersTrend])
+
+  const ultraSecurityCapabilities = useMemo(
+    () => [
+      'Zero-trust access controls',
+      'Mandatory MFA for admin',
+      'Session timeout + device fingerprinting',
+      'IP whitelisting + geo-fencing',
+      'Tamper-proof audit logs',
+      'Encryption key rotation',
+      'Incident response dashboard',
+      'Data-export approvals with dual confirmation',
+      'Forensic logs + immutable backups',
+    ],
+    []
+  )
   const contractStatusData = useMemo(() => {
     const counts = { signed: 0, pending: 0, dispute: 0 }
     contractsVault.forEach((row) => {
@@ -853,87 +1661,20 @@ export default function AdminPanel() {
       else if (status.includes('dispute')) counts.dispute += 1
       else counts.pending += 1
     })
+
+    const total = counts.signed + counts.pending + counts.dispute
+    if (total === 0) {
+      return [
+        { name: 'No Data', value: 1 }
+      ]
+    }
+
     return [
       { name: 'Signed', value: counts.signed },
       { name: 'Pending', value: counts.pending },
       { name: 'Dispute', value: counts.dispute },
     ]
   }, [contractsVault])
-  const chartPalette = ['#4B9DFB', '#6366f1', '#22c55e']
-  const premiumBundles = [
-    {
-      title: 'Buyer (Premium)',
-      highlights: [
-        'Advanced Search Filters',
-        'Priority Buyer Request Placement',
-        'Dedicated Support',
-        'Contract History & Audit Trail',
-        'Early Access to New Verified Factories',
-        'Buying Pattern Analysis',
-        'Order Completion Certification',
-        'AI Auto-reply Customization',
-        'Smart Supplier Matching',
-        'Request Performance Insights',
-        'Profile, product boost & increased reach',
-      ],
-    },
-    {
-      title: 'Factory (Premium)',
-      highlights: [
-        'Profile, product boost & increased reach',
-        'Advanced analytics (who viewed, inquiry rate)',
-        'Priority in search results & filters',
-        'AI auto-reply customization',
-        'Dedicated account manager',
-        'Custom branding on profile',
-        'Enterprise analytics dashboard',
-        'Unlimited agent/sub-ID creation',
-        'Buying Pattern Analysis',
-        'Order Completion Certification',
-        'Dedicated Support',
-        'Contract history & audit trail',
-        'Multi-agent management',
-        'Multiple team/agent access controls',
-        'Request & factory performance insights',
-        'Buyer interest analytics',
-        'Agent performance analytics & reporting',
-        'More product/video posting capacity',
-        'Lead distribution across agents',
-        'Buyer communication insights',
-        'Buyer Request Priority Access',
-        'Buyer Conversion Insights',
-        'Unlimited Partner Network request acceptance',
-      ],
-    },
-    {
-      title: 'Buying House (Premium)',
-      highlights: [
-        'Profile, product boost & increased reach',
-        'Advanced analytics (who viewed, inquiry rate)',
-        'Priority in search results & filters',
-        'AI auto-reply customization',
-        'Dedicated account manager',
-        'Custom branding on profile',
-        'Enterprise analytics dashboard',
-        'Unlimited agent/sub-ID creation',
-        'Buying Pattern Analysis',
-        'Order Completion Certification',
-        'Dedicated Support',
-        'Contract history & audit trail',
-        'Multi-agent management',
-        'Multiple team/agent access controls',
-        'Request Buying House performance insights',
-        'Buyer interest analytics',
-        'Agent performance analytics & reporting',
-        'More product/video posting capacity',
-        'Lead distribution across agents',
-        'Buyer communication insights',
-        'Buyer Request Priority Access',
-        'Buyer Conversion Insights',
-        'Unlimited Partner Network access',
-      ],
-    },
-  ]
 
   function updateDraft(id, field, value) {
     setUserDrafts((prev) => ({
@@ -1376,6 +2117,18 @@ export default function AdminPanel() {
     setInfraState(data || null)
   }
 
+  async function refreshInfraAll() {
+    const token = getToken()
+    if (!token) return
+    const headers = buildAdminHeaders()
+    const [overviewData, stateData] = await Promise.all([
+      apiRequest('/infra/overview', { token, headers }),
+      apiRequest('/infra/state', { token, headers }),
+    ])
+    setInfra(overviewData || null)
+    setInfraState(stateData || null)
+  }
+
   async function refreshNetworkInventory() {
     const token = getToken()
     if (!token) return
@@ -1518,6 +2271,19 @@ export default function AdminPanel() {
     window.URL.revokeObjectURL(url)
   }
 
+  function downloadJson(filename, data) {
+    const json = JSON.stringify(data, null, 2)
+    const blob = new Blob([json], { type: 'application/json' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+  }
+
   async function runInfraAction(action, payload = {}) {
     const token = getToken()
     if (!token) return
@@ -1612,14 +2378,88 @@ export default function AdminPanel() {
     setSecurityGateNotice('')
   }
 
-  const activeData = inventory.find((cat) => cat.id === activeCategory) || inventory[0]
-  const CategoryIcon = CATEGORY_ICONS[activeCategory] || ShieldCheck
+  const theme = useMemo(() => {
+    return adminDark
+      ? {
+          shell: "bg-slate-950 text-slate-100",
+          background: "bg-[radial-gradient(ellipse_at_top,_rgba(14,165,233,0.22),_transparent_45%),linear-gradient(to_bottom_right,_#020617,_#07111f_55%,_#081221)]",
+          panel: "bg-white/5 border-white/10 backdrop-blur-xl",
+          muted: "text-slate-400",
+          soft: "text-slate-300",
+          item: "hover:bg-white/6 hover:border-cyan-400/20",
+          itemActive:
+            "bg-gradient-to-r from-cyan-500/18 to-sky-500/12 border-cyan-300/20",
+          glow: "shadow-[0_0_32px_rgba(56,189,248,0.14)]",
+          chip: "bg-cyan-400/10 text-cyan-200 border-cyan-300/15",
+          accentText: "text-cyan-200",
+        }
+      : {
+          shell: "bg-slate-50 text-slate-900",
+          background: "bg-[radial-gradient(ellipse_at_top,_rgba(56,189,248,0.16),_transparent_45%),linear-gradient(to_bottom_right,_#f8fbff,_#eef6ff_55%,_#f7fbff)]",
+          panel: "bg-white border-slate-200",
+          muted: "text-slate-500",
+          soft: "text-slate-600",
+          item: "hover:bg-sky-50 hover:border-sky-200",
+          itemActive:
+            "bg-gradient-to-r from-sky-100 to-cyan-50 border-sky-200",
+          glow: "shadow-[0_0_24px_rgba(59,130,246,0.10)]",
+          chip: "bg-sky-100 text-sky-700 border-sky-200",
+          accentText: "text-sky-700",
+        };
+  }, [adminDark]);
+
   const sidebarItems = useMemo(() => {
-    return [
-      { id: 'home', label: 'Home', icon: Home },
-      ...inventory.map((item) => ({ ...item, icon: CATEGORY_ICONS[item.id] || ShieldCheck })),
+    const items = [
+      { id: 'home', label: 'HomeCore', icon: LayoutDashboard, sub: 'Platform & Business Control', accent: true },
     ]
+    
+    inventory.forEach(item => {
+      let sub = 'Management'
+      let icon = CATEGORY_ICONS[item.id] || ShieldCheck
+      let accent = false
+      
+      if (item.id === 'platform') {
+         return
+      } else if (item.id === 'infra') {
+         sub = 'Management'
+         icon = Server
+      } else if (item.id === 'network') {
+         sub = 'Enterprise Level'
+         icon = Network
+      } else if (item.id === 'server-admin') {
+         sub = 'Full Stack'
+         icon = MonitorCog
+      } else if (item.id === 'cms') {
+         sub = 'Powerful publishing flow'
+         icon = Database
+      } else if (item.id === 'ultra-security') {
+         sub = 'Advanced'
+         icon = Shield
+      }
+      
+      items.push({ ...item, icon, sub, accent })
+    })
+
+    return items
   }, [inventory])
+
+  const activeData = useMemo(() => {
+    if (activeCategory === 'home') return { label: 'HomeCore', sub: 'Platform & Business Control', sections: [] }
+    return inventory.find((cat) => cat.id === activeCategory) || inventory[0]
+  }, [activeCategory, inventory])
+
+  const CategoryIcon = useMemo(() => {
+     const item = sidebarItems.find(i => i.id === activeCategory)
+     return item?.icon || ShieldCheck
+  }, [activeCategory, sidebarItems])
+
+  const infraInputClass = adminDark
+    ? 'w-full rounded-2xl border border-slate-800 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-sky-400/60'
+    : 'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-sky-400/60'
+
+  const infraFieldPanel = adminDark
+    ? 'rounded-2xl border border-slate-800 bg-slate-900/60 p-4'
+    : 'rounded-2xl border border-slate-200 bg-slate-50 p-4'
 
   if (!isOwner) {
     return <AccessDeniedState message="Only owner/admin can access the admin panel." />
@@ -1640,53 +2480,106 @@ export default function AdminPanel() {
         onUnlock={handleSecurityUnlock}
         onDecline={handleSecurityDecline}
       />
-      <div className="admin-shell h-screen">
+      <div className={`admin-shell h-screen w-screen ${theme.shell} ${theme.background} flex overflow-hidden transition-colors`}>
         <div className="admin-plasma" />
         <div className="admin-current" />
         <div className="admin-noise" />
-        <div className="relative z-10 flex h-full w-full gap-6 px-0 py-0">
-        <aside className="admin-sidebar admin-panel flex w-[250px] flex-col gap-6 rounded-none px-5 py-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500/80 to-indigo-500/60 text-white shadow-[0_0_18px_rgba(75,157,251,0.6)]">
-              <Sparkles className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500 dark:text-sky-200/80">GarTexHub</p>
-              <p className="text-base font-semibold text-slate-900 dark:text-white">Admin Matrix</p>
-            </div>
+        
+        <aside
+          className={`relative z-20 h-full w-[320px] overflow-hidden border-r ${theme.panel} ${theme.glow} transition-all duration-300`}
+        >
+          <div className="absolute inset-0 pointer-events-none">
+            <div className={`absolute -top-20 -right-20 h-56 w-56 rounded-full blur-3xl ${adminDark ? "bg-cyan-500/18" : "bg-sky-300/35"}`} />
+            <div className={`absolute -bottom-24 -left-16 h-56 w-56 rounded-full blur-3xl ${adminDark ? "bg-blue-500/12" : "bg-cyan-300/25"}`} />
           </div>
-          <div className="space-y-1">
-            {sidebarItems.map((item) => {
-              const Icon = item.icon
-              const isActive = activeCategory === item.id
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setActiveCategory(item.id)}
-                  className={`admin-sidebar-item${isActive ? 'is-active' : ''}`}
-                >
-                  <span className="admin-sidebar-rail" />
-                  <Icon className="h-4 w-4" />
-                  <span className="admin-sidebar-label">{item.label}</span>
-                </button>
-              )
-            })}
-          </div>
-          <div className="mt-auto admin-card admin-sweep rounded-3xl p-4 text-center">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-slate-400">Upgrade</p>
-            <p className="mt-2 text-xs text-slate-300">Unlock premium monitoring surfaces.</p>
-            <button
-              type="button"
-              className="mt-3 w-full rounded-full bg-gradient-to-r from-sky-500/80 to-indigo-500/70 px-3 py-2 text-xs font-semibold text-white shadow-[0_0_18px_rgba(75,157,251,0.45)]"
-            >
-              Upgrade Now
-            </button>
+
+          <div className="relative flex h-full flex-col p-5">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className={`grid h-12 w-12 place-items-center rounded-2xl ${adminDark ? "bg-gradient-to-br from-cyan-400 via-sky-500 to-blue-600" : "bg-gradient-to-br from-sky-400 via-cyan-400 to-blue-500"} shadow-[0_0_24px_rgba(56,189,248,0.25)]`}>
+                  <span className="text-lg font-black tracking-tight text-white">G</span>
+                </div>
+                <div>
+                  <div className={`text-lg font-semibold tracking-tight ${theme.soft}`}>GarTexHub</div>
+                  <div className={`mt-0.5 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-medium ${theme.chip}`}>
+                    <Crown className="h-3.5 w-3.5" />
+                    Admin Matrix
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setAdminDark((v) => !v)}
+                className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl border transition-all duration-300 ${
+                  adminDark
+                    ? "border-white/10 bg-white/5 hover:bg-white/10"
+                    : "border-slate-200 bg-white hover:bg-slate-50"
+                }`}
+              >
+                {adminDark ? <SunMedium className="h-5 w-5 text-cyan-200" /> : <Moon className="h-5 w-5 text-sky-700" />}
+              </button>
+            </div>
+
+            {/* Navigation */}
+            <nav className="mt-6 space-y-2 overflow-y-auto overflow-x-hidden pr-1">
+              {sidebarItems.map((item) => {
+                const Icon = item.icon
+                const isActive = activeCategory === item.id
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setActiveCategory(item.id)}
+                    className={`group relative flex w-full items-center gap-3 rounded-[16px] border px-4 py-3 text-left transition-all duration-300 ${
+                      isActive ? theme.itemActive : theme.item
+                    } ${isActive ? 'border-cyan-300/20' : 'border-transparent'}`}
+                  >
+                    <div
+                      className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition-all duration-300 ${
+                        isActive
+                          ? adminDark
+                            ? "border-cyan-300/20 bg-cyan-400/12"
+                            : "border-sky-200 bg-sky-100"
+                          : adminDark
+                            ? "border-white/10 bg-white/5 group-hover:border-cyan-300/15"
+                            : "border-slate-200 bg-slate-50 group-hover:border-sky-200"
+                      }`}
+                    >
+                      <Icon className={`h-5 w-5 ${isActive ? theme.accentText : theme.soft}`} />
+                    </div>
+
+                    {/* Tooltip */}
+                    <div className="absolute left-[70px] z-50 whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-[-5px] group-hover:translate-x-0 transition-all duration-200 pointer-events-none">
+                      <div className={`px-3 py-1.5 rounded-lg text-xs font-medium shadow-lg ${adminDark ? "bg-slate-900 text-white border border-white/10" : "bg-white text-slate-900 border border-slate-200"}`}>
+                        {item.label}
+                      </div>
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className={`truncate text-sm font-medium ${adminDark ? "text-white" : "text-slate-900"}`}>
+                          {item.label}
+                        </span>
+                        {item.accent && (
+                          <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] ${theme.chip}`}>
+                            Core
+                          </span>
+                        )}
+                      </div>
+                      <p className={`mt-0.5 truncate text-xs ${theme.muted}`}>{item.sub}</p>
+                    </div>
+
+                    <ChevronRight className={`h-4 w-4 transition-transform group-hover:translate-x-0.5 ${isActive ? theme.accentText : theme.muted}`} />
+                  </button>
+                )
+              })}
+            </nav>
           </div>
         </aside>
 
-        <main className="flex min-w-0 flex-1 flex-col overflow-hidden px-6">
-          <div className="flex flex-wrap items-center justify-between gap-4 pb-2">
+        <main className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden px-6 py-6">
+          <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
             <div className="admin-panel admin-sweep flex min-w-[220px] flex-1 items-center gap-2 rounded-full px-4 py-2 text-xs text-slate-200 md:max-w-md">
               <Search className="h-4 w-4 text-sky-200/80" />
               <input
@@ -1714,236 +2607,465 @@ export default function AdminPanel() {
 
               {activeCategory === 'home' ? (
                 <>
-                  <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-                    <div className="admin-card admin-sweep p-6">
-                      <div className="flex flex-col gap-4">
-                        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-400">Owner Admin</p>
-                        <h1 className="text-4xl font-semibold leading-tight text-white sm:text-5xl">
-                          Command Deck
-                        </h1>
-                        <p className="max-w-xl text-sm text-slate-300">
-                          Real-time control for platform, infra, and network operations. Everything is tracked and auditable.
-                        </p>
-                        <div className="flex flex-wrap items-center gap-3">
-                          <span className="inline-flex items-center gap-2 rounded-full bg-[#13171E] px-4 py-1.5 text-xs font-semibold text-white">
-                            <ShieldCheck className="h-4 w-4 text-cyan-300" />
-                            Owner Access
-                          </span>
-                          <span className="inline-flex items-center gap-2 rounded-full bg-[#13171E] px-4 py-1.5 text-xs font-semibold text-slate-200">
-                            Audit logs enabled
-                          </span>
+                  <div className="mb-6 overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/75 p-5 shadow-[0_24px_80px_-35px_rgba(14,165,233,0.35)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                      <div className="flex items-start gap-4">
+                        <div className="rounded-[1.4rem] border border-sky-400/20 bg-gradient-to-br from-sky-400 to-blue-500 p-3 text-white shadow-lg shadow-sky-500/25">
+                          <ShieldCheck className="h-7 w-7" />
+                        </div>
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+                              Owner Admin
+                            </h1>
+                            <Pill>
+                              {loading ? (
+                                <>
+                                  <span className="h-2 w-2 animate-pulse rounded-full bg-amber-400 shadow-[0_0_0_4px_rgba(251,191,36,0.15)]" />
+                                  Checking...
+                                </>
+                              ) : error ? (
+                                <>
+                                  <span className="h-2 w-2 rounded-full bg-rose-400 shadow-[0_0_0_4px_rgba(251,113,113,0.15)]" />
+                                  Degraded
+                                </>
+                              ) : (
+                                <>
+                                  <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(52,211,153,0.15)]" />
+                                  Live
+                                </>
+                              )}
+                            </Pill>
+                            <Pill>
+                              <LockKeyhole className="h-3.5 w-3.5" />
+                              MFA {securityContext.mfa_required ? 'Required' : 'Optional'}
+                            </Pill>
+                            <Pill>
+                              <Sparkles className="h-3.5 w-3.5" />
+                              Exec {securityContext.exec_enabled ? 'Enabled' : 'Simulated'}
+                            </Pill>
+                          </div>
+                          <div className="mt-2 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                            <LayoutDashboard className="h-4 w-4 text-sky-500" />
+                            <span className="font-medium text-slate-700 dark:text-slate-200">Command Deck</span>
+                            <span>• Real-time control for platform, infra, and network operations. Everything is tracked and auditable.</span>
+                          </div>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <Pill>
+                              <ShieldCheck className="h-3.5 w-3.5" />
+                              Owner Access
+                            </Pill>
+                            <Pill>
+                              <ClipboardList className="h-3.5 w-3.5" />
+                              Audit logs enabled
+                            </Pill>
+                            <Pill>
+                              <Activity className="h-3.5 w-3.5" />
+                              System Pulse
+                            </Pill>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="admin-card admin-float admin-sweep relative overflow-hidden p-6">
-                      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_20%,rgba(75,157,251,0.25),transparent_55%),radial-gradient(circle_at_85%_10%,rgba(129,140,248,0.2),transparent_50%)] opacity-80" />
-                      <div className="flex items-center justify-between text-xs text-slate-200">
-                        <span className="font-semibold uppercase tracking-[0.2em]">System Pulse</span>
-                        <span className="rounded-full bg-[#13171E] px-3 py-1 text-[10px] font-semibold text-white">Live</span>
-                      </div>
-                      <div className="mt-4 grid grid-cols-2 gap-4 text-sm text-white">
-                        <div>
-                          <p className="text-[11px] uppercase text-slate-300">Total accounts</p>
-                          <p className="mt-1 text-2xl font-semibold">{formatNumber(summary?.users?.total)}</p>
-                        </div>
-                        <div>
-                          <p className="text-[11px] uppercase text-slate-300">Pending verifications</p>
-                          <p className="mt-1 text-2xl font-semibold">{formatNumber(summary?.verification?.pending)}</p>
-                        </div>
-                        <div>
-                          <p className="text-[11px] uppercase text-slate-300">Infra alerts</p>
-                          <p className="mt-1 text-2xl font-semibold">{formatNumber(network?.alert_count)}</p>
-                        </div>
-                        <div>
-                          <p className="text-[11px] uppercase text-slate-300">Open tickets</p>
-                          <p className="mt-1 text-2xl font-semibold">{formatNumber(summary?.support?.open)}</p>
-                        </div>
-                      </div>
-                      <div className="mt-5 flex items-center gap-3 text-xs text-slate-200">
-                        <span className="rounded-full bg-[#13171E] px-3 py-1">MFA {securityContext.mfa_required ? 'Required' : 'Optional'}</span>
-                        <span className="rounded-full bg-[#13171E] px-3 py-1">Exec {securityContext.exec_enabled ? 'Enabled' : 'Simulated'}</span>
+
+                      <div className="flex flex-wrap items-center gap-3">
+                        <button
+                          onClick={() => setAdminDark((v) => !v)}
+                          className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-lg dark:border-white/10 dark:bg-white/5 dark:text-slate-100"
+                        >
+                          {adminDark ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
+                          {adminDark ? "Light mode" : "Dark mode"}
+                        </button>
+                        <button 
+                          onClick={() => downloadCsv('/admin/exports/run?dataset=full_system&format=pdf', 'system_audit.pdf').catch(e => setError(e.message))}
+                          className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_14px_40px_-16px_rgba(14,165,233,0.85)] transition hover:-translate-y-0.5"
+                        >
+                          <Download className="h-4 w-4" />
+                          Export report
+                        </button>
                       </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                    <div className="admin-card admin-sweep rounded-3xl p-6">
-                      <div className="flex items-center gap-2 text-sm font-bold">
-                        <Activity className="h-4 w-4 text-emerald-500" />
-                        Platform Snapshot
-                      </div>
-                      <div className="mt-4 grid grid-cols-2 gap-3 text-xs text-slate-600 dark:text-slate-300">
-                        <div>
-                          <p className="text-[10px] uppercase text-slate-500">Total accounts</p>
-                          <p className="text-lg font-semibold text-slate-900 dark:text-white">{formatNumber(summary?.users?.total)}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] uppercase text-slate-500">Verification pending</p>
-                          <p className="text-lg font-semibold text-slate-900 dark:text-white">{formatNumber(summary?.verification?.pending)}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] uppercase text-slate-500">Reports open</p>
-                          <p className="text-lg font-semibold text-slate-900 dark:text-white">{formatNumber(summary?.support?.open)}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] uppercase text-slate-500">Domain clicks / visits</p>
-                          <p className="text-lg font-semibold text-slate-900 dark:text-white">
-                            {formatNumber(summary?.traffic?.clicks)} / {formatNumber(summary?.traffic?.visits)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="mt-4 text-xs text-slate-500">
-                        Premium users: {formatNumber(premiumUsers.length)}. Suspended: {formatNumber(summary?.users?.suspended)}.
-                      </div>
-                    </div>
-
-                    <div className="admin-card admin-sweep rounded-3xl p-6">
-                      <div className="flex items-center gap-2 text-sm font-bold">
-                        <Server className="h-4 w-4 text-indigo-500" />
-                        Infra + Network Health
-                      </div>
-                      <div className="mt-4 space-y-3 text-xs text-slate-600 dark:text-slate-300">
-                        <div className="flex items-center justify-between">
-                          <span>CPU load (1m)</span>
-                          <span className="font-semibold text-slate-900 dark:text-white">{infra?.cpu?.load_1m?.toFixed?.(2) || '--'}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span>Memory used</span>
-                          <span className="font-semibold text-slate-900 dark:text-white">
-                            {infra?.memory?.used_bytes ? formatNumber(Math.round(infra.memory.used_bytes / (1024 * 1024))) : '--'} MB
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span>Devices up/down</span>
-                          <span className="font-semibold text-slate-900 dark:text-white">{formatNumber(network?.device_up)} / {formatNumber(network?.device_down)}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span>Network alerts</span>
-                          <span className="font-semibold text-slate-900 dark:text-white">{formatNumber(network?.alert_count)}</span>
-                        </div>
-                      </div>
-                      <p className="mt-4 text-xs text-slate-500">Live system stats from infra and network controllers.</p>
-                    </div>
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                    <MetricCard loading={loading} label="Total accounts" value={formatNumber(summary?.users?.total)} hint="Owner access enabled" icon={Users} />
+                    <MetricCard loading={loading} label="Pending verifications" value={formatNumber(summary?.verification?.pending)} hint="Audit gate clear" icon={ShieldCheck} />
+                    <MetricCard loading={loading} label="Infra alerts" value={formatNumber(network?.alert_count)} hint="System pulse live" icon={Bell} />
+                    <MetricCard loading={loading} label="Open tickets" value={formatNumber(summary?.support?.open)} hint="Support queue empty" icon={Ticket} />
                   </div>
 
-                  <div className="admin-card admin-sweep rounded-3xl p-6">
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                      <div>
-                        <p className="text-sm font-bold">Action Console</p>
-                        <p className="text-xs text-slate-500">Run platform, infra, and network actions with full audit logging.</p>
+                  <div className="mt-4 grid gap-4 xl:grid-cols-[1.35fr_0.95fr]">
+                    <div className="rounded-[2rem] border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.3)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
+                      <SectionTitle
+                        title="Platform Snapshot"
+                        subtitle="Core platform health, account state, and audience flow at a glance."
+                        icon={Globe}
+                      />
+                      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                        <div className="rounded-3xl border border-slate-200/70 bg-slate-50/90 p-4 dark:border-white/5 dark:bg-white/5">
+                          <p className="text-sm text-slate-500 dark:text-slate-400">Total accounts</p>
+                          <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
+                            {loading ? <SkeletonLine className="h-8 w-20" /> : formatNumber(summary?.users?.total)}
+                          </div>
+                        </div>
+                        <div className="rounded-3xl border border-slate-200/70 bg-slate-50/90 p-4 dark:border-white/5 dark:bg-white/5">
+                          <p className="text-sm text-slate-500 dark:text-slate-400">Verification pending</p>
+                          <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
+                            {loading ? <SkeletonLine className="h-8 w-16" /> : formatNumber(summary?.verification?.pending)}
+                          </div>
+                        </div>
+                        <div className="rounded-3xl border border-slate-200/70 bg-slate-50/90 p-4 dark:border-white/5 dark:bg-white/5">
+                          <p className="text-sm text-slate-500 dark:text-slate-400">Reports open</p>
+                          <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
+                            {loading ? <SkeletonLine className="h-8 w-16" /> : formatNumber(summary?.support?.open)}
+                          </div>
+                        </div>
+                        <div className="rounded-3xl border border-slate-200/70 bg-slate-50/90 p-4 dark:border-white/5 dark:bg-white/5">
+                          <p className="text-sm text-slate-500 dark:text-slate-400">Domain clicks / visits</p>
+                          <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
+                            {loading ? (
+                              <SkeletonLine className="h-8 w-32" />
+                            ) : (
+                              `${formatNumber(summary?.traffic?.clicks)} / ${formatNumber(summary?.traffic?.visits)}`
+                            )}
+                          </div>
+                          <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                            {loading ? (
+                              <SkeletonLine className="h-4 w-36" />
+                            ) : (
+                              <>
+                                Spend: {formatCurrency(summary?.traffic?.spend || 0)} · CPC:{' '}
+                                {summary?.traffic?.cpc ? formatCurrency(summary.traffic.cpc) : '--'}
+                              </>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="inline-flex items-center gap-2 text-xs text-slate-500">
-                        <Lock className="h-4 w-4" />
+
+                      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                        <div className="rounded-3xl border border-slate-200/70 bg-slate-50/90 p-4 dark:border-white/5 dark:bg-white/5">
+                          <div className="mb-3 flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Infra + Network Health</p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400">Live system stats from infra and network controllers.</p>
+                            </div>
+                            <div className="rounded-2xl bg-sky-500/10 p-2 text-sky-500 dark:text-sky-300">
+                              <Network className="h-4 w-4" />
+                            </div>
+                          </div>
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-3 dark:border-white/5 dark:bg-slate-950/50">
+                              <div className="flex items-center justify-between gap-3">
+                                <div>
+                                  <p className="text-xs text-slate-500 dark:text-slate-400">CPU usage (%)</p>
+                                  <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
+                                    {loading ? <SkeletonLine className="h-7 w-12" /> : `${infra?.cpu?.usage_percent?.toFixed?.(0) || '0'}%`}
+                                  </div>
+                                </div>
+                                <Cpu className="h-4 w-4 text-sky-500" />
+                              </div>
+                            </div>
+                            <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-3 dark:border-white/5 dark:bg-slate-950/50">
+                              <div className="flex items-center justify-between gap-3">
+                                <div>
+                                  <p className="text-xs text-slate-500 dark:text-slate-400">Memory used</p>
+                                  <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
+                                    {loading ? (
+                                      <SkeletonLine className="h-7 w-20" />
+                                    ) : (
+                                      `${infra?.memory?.used_bytes ? formatNumber(Math.round(infra.memory.used_bytes / (1024 * 1024))) : '0'} MB`
+                                    )}
+                                  </div>
+                                </div>
+                                <Layers3 className="h-4 w-4 text-sky-500" />
+                              </div>
+                            </div>
+                            <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-3 dark:border-white/5 dark:bg-slate-950/50">
+                              <div className="flex items-center justify-between gap-3">
+                                <div>
+                                  <p className="text-xs text-slate-500 dark:text-slate-400">Devices up/down</p>
+                                  <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
+                                    {loading ? (
+                                      <SkeletonLine className="h-7 w-24" />
+                                    ) : (
+                                      `${formatNumber(network?.device_up)} / ${formatNumber(network?.device_down)}`
+                                    )}
+                                  </div>
+                                </div>
+                                <Network className="h-4 w-4 text-sky-500" />
+                              </div>
+                            </div>
+                            <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-3 dark:border-white/5 dark:bg-slate-950/50">
+                              <div className="flex items-center justify-between gap-3">
+                                <div>
+                                  <p className="text-xs text-slate-500 dark:text-slate-400">Network alerts</p>
+                                  <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
+                                    {loading ? <SkeletonLine className="h-7 w-12" /> : formatNumber(network?.alert_count)}
+                                  </div>
+                                </div>
+                                <AlertTriangle className="h-4 w-4 text-sky-500" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="rounded-3xl border border-slate-200/70 bg-slate-50/90 p-4 dark:border-white/5 dark:bg-white/5">
+                          <div className="mb-3 flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-slate-700 dark:text-slate-200">System Pulse</p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400">Operational readiness and administrative controls.</p>
+                            </div>
+                            <div className="rounded-2xl bg-emerald-500/10 p-2 text-emerald-500 dark:text-emerald-300">
+                              <Activity className="h-4 w-4" />
+                            </div>
+                          </div>
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between rounded-2xl border border-slate-200/70 bg-white/80 px-4 py-3 dark:border-white/5 dark:bg-slate-950/50">
+                              <span className="text-sm text-slate-600 dark:text-slate-300">Live status</span>
+                              {loading ? (
+                                <span className="inline-flex items-center gap-2 text-sm font-medium text-amber-500 dark:text-amber-300">
+                                  <span className="h-2 w-2 animate-pulse rounded-full bg-amber-400" /> Checking...
+                                </span>
+                              ) : error ? (
+                                <span className="inline-flex items-center gap-2 text-sm font-medium text-rose-500 dark:text-rose-300">
+                                  <span className="h-2 w-2 rounded-full bg-rose-400" /> Degraded
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-2 text-sm font-medium text-emerald-500 dark:text-emerald-300">
+                                  <span className="h-2 w-2 rounded-full bg-emerald-400" /> Live
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center justify-between rounded-2xl border border-slate-200/70 bg-white/80 px-4 py-3 dark:border-white/5 dark:bg-slate-950/50">
+                              <span className="text-sm text-slate-600 dark:text-slate-300">Premium users</span>
+                              <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                                {loading ? <SkeletonLine className="h-5 w-12" /> : formatNumber(premiumUsers.length)}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between rounded-2xl border border-slate-200/70 bg-white/80 px-4 py-3 dark:border-white/5 dark:bg-slate-950/50">
+                              <span className="text-sm text-slate-600 dark:text-slate-300">Suspended</span>
+                              <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                                {loading ? <SkeletonLine className="h-5 w-12" /> : formatNumber(summary?.users?.suspended)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-[2rem] border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.3)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
+                      <SectionTitle
+                        title="Action Console"
+                        subtitle="Run platform, infra, and network actions with full audit logging."
+                        icon={Wrench}
+                      />
+                      <div className="rounded-3xl border border-amber-400/20 bg-amber-400/10 p-4 text-sm text-amber-800 dark:text-amber-200">
                         Step-up required for destructive actions
                       </div>
-                    </div>
-                    <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-[1.2fr_1fr]">
-                      <label className="flex flex-col gap-1 text-xs">
-                        <span className="text-[10px] font-semibold uppercase text-slate-500">Action</span>
-                        <select
-                          value={selectedActionId}
-                          onChange={(event) => setSelectedActionId(event.target.value)}
-                          className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                        >
-                          {ACTION_GROUPS.map((group) => (
-                            <optgroup key={group.label} label={group.label}>
-                              {group.actions.map((action) => (
-                                <option key={action.id} value={action.id}>{action.label}</option>
+                      <div className="mt-4 space-y-4">
+                        <label className="block">
+                          <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">Action</span>
+                          <div className="relative">
+                            <select
+                              value={selectedActionId}
+                              onChange={(e) => setSelectedActionId(e.target.value)}
+                              className="w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-10 text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-500/10 dark:border-white/10 dark:bg-slate-950 dark:text-white"
+                            >
+                              {ACTION_GROUPS.map((group) => (
+                                <optgroup key={group.label} label={group.label}>
+                                  {group.actions.map((action) => (
+                                    <option key={action.id} value={action.id}>{action.label}</option>
+                                  ))}
+                                </optgroup>
                               ))}
-                            </optgroup>
-                          ))}
-                        </select>
-                      </label>
-                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                        {selectedAction?.fields?.length ? selectedAction.fields.map((field) => (
-                          <label key={field.key} className="flex flex-col gap-1 text-xs">
-                            <span className="text-[10px] font-semibold uppercase text-slate-500">{field.label}</span>
-                            <input
-                              value={actionForm[field.key] || ''}
-                              onChange={(event) => setActionForm((prev) => ({ ...prev, [field.key]: event.target.value }))}
-                              className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                              placeholder={field.label}
-                            />
-                          </label>
-                        )) : (
-                          <div className="text-xs text-slate-500">No parameters required.</div>
+                            </select>
+                            <ChevronRight className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 rotate-90 text-slate-400" />
+                          </div>
+                        </label>
+
+                        {selectedAction?.fields?.length ? (
+                          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                             {selectedAction.fields.map((field) => (
+                               <label key={field.key} className="flex flex-col gap-1 text-xs">
+                                 <span className="text-[10px] font-semibold uppercase text-slate-500">{field.label}</span>
+                                 <input
+                                   value={actionForm[field.key] || ''}
+                                   onChange={(event) => setActionForm((prev) => ({ ...prev, [field.key]: event.target.value }))}
+                                   className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
+                                   placeholder={field.label}
+                                 />
+                               </label>
+                             ))}
+                          </div>
+                        ) : (
+                          <div className="rounded-3xl border border-slate-200/70 bg-slate-50/90 p-4 dark:border-white/5 dark:bg-white/5">
+                            <div className="flex items-center gap-3">
+                              <div className="rounded-2xl bg-sky-500/10 p-2 text-sky-500 dark:text-sky-300">
+                                {selectedAction?.icon ? <selectedAction.icon className="h-4 w-4" /> : <Settings className="h-4 w-4" />}
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-slate-900 dark:text-white">{selectedAction?.label}</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">No parameters required.</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        <button 
+                          onClick={() => runAction(selectedAction)}
+                          disabled={actionBusy === selectedAction?.id}
+                          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-blue-500 to-sky-600 px-4 py-3 font-semibold text-white shadow-[0_20px_60px_-18px_rgba(14,165,233,0.9)] transition hover:-translate-y-0.5"
+                        >
+                          {actionBusy === selectedAction?.id ? 'Running...' : 'Run action'}
+                          <ArrowUpRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid gap-4 xl:grid-cols-3">
+                    <div className="rounded-[2rem] border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70 xl:col-span-2">
+                      <SectionTitle
+                        title="Active Users"
+                        subtitle="Last 14 days unique logins"
+                        icon={Users}
+                      />
+                      <div className="h-[320px]">
+                        {loading ? (
+                          <SkeletonChart height={320} />
+                        ) : (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={activeUsersTrend}>
+                              <defs>
+                                <linearGradient id="activeUsersFill" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#38bdf8" stopOpacity={0.45} />
+                                  <stop offset="95%" stopColor="#38bdf8" stopOpacity={0.02} />
+                                </linearGradient>
+                              </defs>
+                              <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.14} />
+                              <XAxis dataKey="day" tickLine={false} axisLine={false} />
+                              <YAxis tickLine={false} axisLine={false} />
+                              <Tooltip />
+                              <Area type="monotone" dataKey="count" stroke="#0ea5e9" fill="url(#activeUsersFill)" strokeWidth={3} />
+                            </AreaChart>
+                          </ResponsiveContainer>
                         )}
                       </div>
                     </div>
-                    <div className="mt-4 flex items-center justify-end">
-                      <button
-                        type="button"
-                        onClick={() => runAction(selectedAction)}
-                      className="admin-glow rounded-full bg-gradient-to-r from-sky-500/80 to-indigo-500/70 px-4 py-2 text-xs font-semibold text-white shadow-[0_0_18px_rgba(75,157,251,0.5)] hover:brightness-110"
-                        disabled={actionBusy === selectedAction?.id}
-                      >
-                        {actionBusy === selectedAction?.id ? 'Running...' : 'Run action'}
-                      </button>
+
+                    <div className="rounded-[2rem] border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
+                      <SectionTitle
+                        title="Contract Status"
+                        subtitle="Signed vs pending vs disputes"
+                        icon={ShieldCheck}
+                      />
+                      <div className="h-[320px]">
+                        {loading ? (
+                          <SkeletonChart height={320} />
+                        ) : (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={contractStatusData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={72}
+                                outerRadius={110}
+                                paddingAngle={4}
+                                dataKey="value"
+                              >
+                                {contractStatusData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip
+                                contentStyle={{
+                                  backgroundColor: adminDark ? '#020617' : '#ffffff',
+                                  border: 'none',
+                                  borderRadius: '16px',
+                                  boxShadow: '0 20px 40px -10px rgba(0,0,0,0.2)'
+                                }}
+                              />
+                              <Legend verticalAlign="bottom" height={36}/>
+                            </PieChart>
+                          </ResponsiveContainer>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                    <div className="admin-card admin-sweep rounded-3xl p-5">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200/80">Active Users</p>
-                      <div className="mt-4 h-32">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={activeUsersTrend}>
-                            <Line type="monotone" dataKey="count" stroke="#4B9DFB" strokeWidth={2.5} dot={false} isAnimationActive animationDuration={900} />
-                            <Tooltip contentStyle={{ background: '#0f0f12', boxShadow: '0 0 0 1px rgba(255,140,30,0.3), 0 14px 30px rgba(0,0,0,0.35)', borderRadius: 12 }} />
-                          </LineChart>
-                        </ResponsiveContainer>
+                  <div className="mt-4 grid gap-4 xl:grid-cols-2">
+                    <div className="rounded-[2rem] border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
+                      <SectionTitle
+                        title="Buyer Requests"
+                        subtitle="Demand flow over time"
+                        icon={Search}
+                      />
+                      <div className="h-[280px]">
+                        {loading ? (
+                          <SkeletonChart height={280} />
+                        ) : (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={buyerRequestTrend}>
+                              <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.14} />
+                              <XAxis dataKey="day" tickLine={false} axisLine={false} />
+                              <YAxis tickLine={false} axisLine={false} />
+                              <Tooltip />
+                              <Area type="monotone" dataKey="count" stroke="#38bdf8" strokeWidth={3} fillOpacity={1} fill="url(#colorCount)" />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        )}
                       </div>
-                      <p className="mt-3 text-xs text-slate-300">Last 14 days unique logins</p>
                     </div>
-                    <div className="admin-card admin-sweep rounded-3xl p-5">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200/80">Buyer Requests</p>
-                      <div className="mt-4 h-32">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={buyerRequestTrend}>
-                            <defs>
-                              <linearGradient id="reqGlow" x1="0" y1="0" x2="1" y2="0">
-                                <stop offset="0%" stopColor="#4B9DFB" stopOpacity={0.6} />
-                                <stop offset="100%" stopColor="#6366f1" stopOpacity={0.2} />
-                              </linearGradient>
-                            </defs>
-                            <Area type="monotone" dataKey="count" stroke="#4B9DFB" fill="url(#reqGlow)" strokeWidth={2.2} isAnimationActive animationDuration={950} />
-                            <Tooltip contentStyle={{ background: '#0f0f12', boxShadow: '0 0 0 1px rgba(255,140,30,0.3), 0 14px 30px rgba(0,0,0,0.35)', borderRadius: 12 }} />
-                          </AreaChart>
-                        </ResponsiveContainer>
+
+                    <div className="rounded-[2rem] border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
+                      <SectionTitle
+                        title="Infra Overview"
+                        subtitle="CPU, memory, and network stability in one view"
+                        icon={Cpu}
+                      />
+                      <div className="h-[280px]">
+                        {loading ? (
+                          <SkeletonChart height={280} />
+                        ) : (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={[
+                              { label: "CPU", value: infra?.cpu?.usage_percent ?? (infra?.cpu?.load_1m || 0) },
+                              { label: "Memory", value: infra?.memory?.used_bytes ? Math.round((infra.memory.used_bytes / infra.memory.total_bytes) * 100) : 0 },
+                              { label: "Devices", value: network?.device_total || 0 },
+                              { label: "Alerts", value: network?.alert_count || 0 },
+                            ]}>
+                              <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.14} />
+                              <XAxis dataKey="label" tickLine={false} axisLine={false} />
+                              <YAxis tickLine={false} axisLine={false} />
+                              <Tooltip />
+                              <Bar dataKey="value" radius={[12, 12, 0, 0]}>
+                                {[
+                                  "#38bdf8",
+                                  "#60a5fa",
+                                  "#0ea5e9",
+                                  "#93c5fd",
+                                ].map((fill) => (
+                                  <Cell key={fill} fill={fill} />
+                                ))}
+                              </Bar>
+                            </BarChart>
+                          </ResponsiveContainer>
+                        )}
                       </div>
-                      <p className="mt-3 text-xs text-slate-300">Demand flow over time</p>
-                    </div>
-                    <div className="admin-card admin-sweep rounded-3xl p-5">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200/80">Contract Status</p>
-                      <div className="mt-4 h-32">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <Pie data={contractStatusData} dataKey="value" innerRadius={40} outerRadius={62} paddingAngle={4} isAnimationActive animationDuration={900}>
-                              {contractStatusData.map((entry, index) => (
-                                <Cell key={entry.name} fill={chartPalette[index % chartPalette.length]} />
-                              ))}
-                            </Pie>
-                            <Tooltip contentStyle={{ background: '#0f0f12', boxShadow: '0 0 0 1px rgba(255,140,30,0.3), 0 14px 30px rgba(0,0,0,0.35)', borderRadius: 12 }} />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      </div>
-                      <p className="mt-3 text-xs text-slate-300">Signed vs pending vs disputes</p>
                     </div>
                   </div>
-                  <div className="grid gap-4 lg:grid-cols-3">
-                    {premiumBundles.map((bundle) => (
-                      <div key={bundle.title} className="admin-card admin-sweep rounded-3xl p-5">
-                        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">{bundle.title}</p>
-                        <ul className="mt-4 space-y-2 text-xs text-slate-200">
-                          {bundle.highlights.map((item) => (
-                            <li key={item} className="flex items-start gap-2 text-slate-200">
-                              <span className="mt-[2px] h-1.5 w-1.5 rounded-full bg-sky-400" />
-                              <span>{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
+
+                  <div className="mt-4 rounded-[2rem] border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
+                    <SectionTitle
+                      title="Premium Capability Matrix"
+                      subtitle="Buyer, Factory, and Buying House premium feature sets"
+                      icon={Sparkles}
+                    />
+                    <div className="grid gap-4 xl:grid-cols-3">
+                      <BenefitCard title="Buyer (Premium)" items={buyerBenefits} />
+                      <BenefitCard title="Factory (Premium)" items={factoryBenefits} />
+                      <BenefitCard title="Buying House (Premium)" items={buyingHouseBenefits} />
+                    </div>
                   </div>
                 </>
               ) : null}
@@ -3390,6 +4512,8 @@ export default function AdminPanel() {
                     <div className="mt-2 space-y-2">
                       <div className="text-[11px] text-slate-500">Clicks: {catalog?.traffic?.summary?.clicks || 0}</div>
                       <div className="text-[11px] text-slate-500">Visits: {catalog?.traffic?.summary?.visits || 0}</div>
+                      <div className="text-[11px] text-slate-500">Spend: {formatCurrency(catalog?.traffic?.summary?.spend || 0)}</div>
+                      <div className="text-[11px] text-slate-500">CPC: {catalog?.traffic?.summary?.cpc ? formatCurrency(catalog.traffic.summary.cpc) : '--'}</div>
                       <div className="text-[11px] text-slate-500">Sources: {(catalog?.traffic?.sources || []).length}</div>
                       <div className="text-[11px] text-slate-500">Email segments: {(catalog?.emails?.segments || []).length}</div>
                       {(catalog?.emails?.segments || []).slice(0, 1).map((seg) => (
@@ -3402,1136 +4526,3176 @@ export default function AdminPanel() {
             ) : null}
 
             {activeCategory === 'infra' ? (
-              <div className="admin-card admin-sweep rounded-3xl p-6">
-                <div className="flex items-center gap-2">
-                  <Server className="h-5 w-5 text-indigo-500" />
-                  <div>
-                    <p className="text-sm font-bold">System Overview</p>
-                    <p className="text-xs text-slate-500">CPU, memory, storage, and services pulled from infra adapters.</p>
-                  </div>
-                </div>
-                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 text-xs text-slate-600 dark:text-slate-300">
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-3">
-                    <p className="text-[10px] uppercase text-slate-500">CPU</p>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{infra?.cpu?.cores || '--'} cores</p>
-                    <p>Load 1m: {infra?.cpu?.load_1m?.toFixed?.(2) || '--'}</p>
-                  </div>
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-3">
-                    <p className="text-[10px] uppercase text-slate-500">Memory</p>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                      {infra?.memory?.used_bytes ? formatNumber(Math.round(infra.memory.used_bytes / (1024 * 1024))) : '--'} MB used
-                    </p>
-                    <p>Free: {infra?.memory?.free_bytes ? formatNumber(Math.round(infra.memory.free_bytes / (1024 * 1024))) : '--'} MB</p>
-                  </div>
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-3">
-                    <p className="text-[10px] uppercase text-slate-500">Services</p>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{formatNumber(infra?.services?.length)}</p>
-                    <p>Processes: {formatNumber(infra?.processes?.length)}</p>
-                  </div>
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-3">
-                    <p className="text-[10px] uppercase text-slate-500">Storage + I/O</p>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{formatNumber(infra?.storage?.length)} mounts</p>
-                    <p>Disk IOPS: {infra?.io?.disk_iops ?? '--'}</p>
-                    <p>Bandwidth: {infra?.network?.bandwidth_mbps ?? '--'} Mbps</p>
+              <div
+                className={cn(
+                  'rounded-[32px] border p-4 sm:p-5',
+                  adminDark ? 'border-slate-800/70 bg-slate-950/50' : 'border-slate-200 bg-white/75'
+                )}
+              >
+                <div
+                  className={cn(
+                    'rounded-[28px] p-4 sm:p-5',
+                    adminDark
+                      ? 'bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),_transparent_38%),linear-gradient(180deg,#07111f_0%,#020617_100%)] text-slate-100'
+                      : 'bg-[radial-gradient(circle_at_top,_rgba(125,211,252,0.22),_transparent_36%),linear-gradient(180deg,#f8fdff_0%,#eef7ff_100%)] text-slate-900'
+                  )}
+                >
+                  <div className="mx-auto max-w-[1700px]">
+                    <header
+                      className={cn(
+                        'sticky top-3 z-30 mb-6 rounded-[28px] border px-4 py-4 lg:px-6',
+                        adminDark
+                          ? 'border-slate-800 bg-slate-950/75 shadow-[0_18px_70px_-34px_rgba(15,23,42,0.4)]'
+                          : 'border-slate-200 bg-white shadow-sm'
+                      )}
+                    >
+                      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 via-blue-500 to-cyan-400 text-white shadow-lg shadow-sky-500/30">
+                            <LayoutDashboard className="h-6 w-6" />
+                          </div>
+                          <div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h1 className={cn('text-xl font-semibold tracking-tight sm:text-2xl', adminDark ? 'text-white' : 'text-slate-900')}>
+                                Server / System / Infrastructure Management
+                              </h1>
+                              <Badge tone="live" darkMode={adminDark}>
+                                live
+                              </Badge>
+                            </div>
+                            <p className={cn('mt-1 text-sm', adminDark ? 'text-slate-400' : 'text-slate-500')}>
+                              Professional operations console with auditability, safety guards, and premium status surfaces.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-1 flex-col gap-3 xl:max-w-3xl xl:flex-row xl:items-center xl:justify-end">
+                          <div className="relative w-full xl:max-w-xl">
+                            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                            <input
+                              value={infraSearch}
+                              onChange={(event) => setInfraSearch(event.target.value)}
+                              placeholder="Search users, logs, rules, services, APIs..."
+                              className={cn(infraInputClass, 'pl-11')}
+                            />
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() => setAdminDark((v) => !v)}
+                              className={cn(
+                                'inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition',
+                                adminDark
+                                  ? 'border-sky-400/20 bg-sky-500/10 text-sky-200 hover:bg-sky-500/15'
+                                  : 'border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100'
+                              )}
+                            >
+                              {adminDark ? <SunMedium className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                              {adminDark ? 'Light mode' : 'Dark mode'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </header>
+
+                    <div className="mb-6 grid gap-4 lg:grid-cols-4">
+                      <StatCard
+                        icon={Server}
+                        title="CPU"
+                        value={`${infra?.cpu?.cores || '--'} cores`}
+                        meta={`Usage: ${infra?.cpu?.usage_percent?.toFixed?.(0) || '0'}%`}
+                        tone="sky"
+                        darkMode={adminDark}
+                      />
+                      <StatCard
+                        icon={Database}
+                        title="Memory"
+                        value={`${infra?.memory?.used_bytes ? formatNumber(Math.round(infra.memory.used_bytes / (1024 * 1024))) : '--'} MB used`}
+                        meta={`Free: ${infra?.memory?.free_bytes ? formatNumber(Math.round(infra.memory.free_bytes / (1024 * 1024))) : '--'} MB`}
+                        tone="blue"
+                        darkMode={adminDark}
+                      />
+                      <StatCard
+                        icon={Users}
+                        title="Services"
+                        value={`${formatNumber(infra?.services?.length)}`}
+                        meta={`Processes: ${formatNumber(infra?.processes?.length)}`}
+                        tone="emerald"
+                        darkMode={adminDark}
+                      />
+                      <StatCard
+                        icon={Database}
+                        title="Storage + I/O"
+                        value={`${formatNumber(infra?.storage?.length)} mounts`}
+                        meta={`Disk IOPS: ${infra?.io?.disk_iops ?? '--'} · Bandwidth: ${infra?.network?.bandwidth_mbps ?? '--'} Mbps`}
+                        tone="amber"
+                        darkMode={adminDark}
+                      />
+                    </div>
+
+                    <div className="grid gap-6 xl:grid-cols-12">
+                      <div className="space-y-6 xl:col-span-8">
+                        <SectionCard
+                          title="System Overview"
+                          subtitle="CPU, memory, storage, and services pulled from infra adapters."
+                          icon={Activity}
+                          actionLabel="Refresh"
+                          onAction={() => refreshInfraAll()}
+                          darkMode={adminDark}
+                        >
+                          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                            {[
+                              ['CPU', `${infra?.cpu?.cores || '--'} cores`, `Usage: ${infra?.cpu?.usage_percent?.toFixed?.(0) || '0'}%`],
+                              [
+                                'Memory',
+                                `${infra?.memory?.used_bytes ? formatNumber(Math.round(infra.memory.used_bytes / (1024 * 1024))) : '--'} MB used`,
+                                `Free: ${infra?.memory?.free_bytes ? formatNumber(Math.round(infra.memory.free_bytes / (1024 * 1024))) : '--'} MB`,
+                              ],
+                              ['Services', `${formatNumber(infra?.services?.length)}`, `Processes: ${formatNumber(infra?.processes?.length)}`],
+                              [
+                                'Storage + I/O',
+                                `${formatNumber(infra?.storage?.length)} mounts`,
+                                `Disk IOPS: ${infra?.io?.disk_iops ?? '--'} · Bandwidth: ${infra?.network?.bandwidth_mbps ?? '--'} Mbps`,
+                              ],
+                            ].map(([label, value, meta]) => (
+                              <div key={label} className={infraFieldPanel}>
+                                <div className={adminDark ? 'text-slate-400' : 'text-slate-500'}>{label}</div>
+                                <div className={cn('mt-2 text-2xl font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>{value}</div>
+                                <div className={adminDark ? 'mt-1 text-sm text-slate-400' : 'mt-1 text-sm text-slate-500'}>{meta}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </SectionCard>
+
+                        <div className="grid gap-6 md:grid-cols-2">
+                          <SectionCard
+                            title="Verification Queue"
+                            subtitle="EU/USA docs pending review."
+                            icon={ShieldCheck}
+                            actionLabel="Refresh"
+                            actionIcon={RefreshCw}
+                            onAction={() => refreshVerificationQueue()}
+                            darkMode={adminDark}
+                          >
+                            <div className="space-y-3">
+                              {verificationQueue.slice(0, 3).map((row) => (
+                                <div
+                                  key={row.id || row.user_id}
+                                  className={cn('rounded-3xl border px-4 py-3 text-sm', adminDark ? 'border-slate-800 bg-slate-900/70 text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-600')}
+                                >
+                                  <div className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{row.user_name || row.user_email || row.user_id}</div>
+                                  <div className={adminDark ? 'mt-1 text-xs text-slate-400' : 'mt-1 text-xs text-slate-500'}>
+                                    Doc: {row.doc_type || row.type || 'business'} · Status: {row.status || 'pending'}
+                                  </div>
+                                </div>
+                              ))}
+                              {!verificationQueue.length ? (
+                                <div className={cn('rounded-3xl border border-dashed p-5 text-sm', adminDark ? 'border-slate-800 bg-slate-900/70 text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-500')}>
+                                  No pending verifications in queue.
+                                </div>
+                              ) : null}
+                            </div>
+                          </SectionCard>
+
+                          <SectionCard
+                            title="Dispute Radar"
+                            subtitle="Contracts with open issues."
+                            icon={AlertTriangle}
+                            actionLabel="Sync"
+                            actionIcon={RefreshCw}
+                            onAction={() => refreshDisputes()}
+                            darkMode={adminDark}
+                          >
+                            <div className="space-y-3">
+                              {disputes.slice(0, 3).map((dispute) => (
+                                <div
+                                  key={dispute.id}
+                                  className={cn('rounded-3xl border px-4 py-3 text-sm', adminDark ? 'border-slate-800 bg-slate-900/70 text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-600')}
+                                >
+                                  <div className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{dispute.title || dispute.contract_id || 'Dispute'}</div>
+                                  <div className={adminDark ? 'mt-1 text-xs text-slate-400' : 'mt-1 text-xs text-slate-500'}>
+                                    Status: {dispute.status || 'open'} · Priority: {dispute.priority || 'normal'}
+                                  </div>
+                                </div>
+                              ))}
+                              {!disputes.length ? (
+                                <div className={cn('rounded-3xl border border-dashed p-5 text-sm', adminDark ? 'border-slate-800 bg-slate-900/70 text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-500')}>
+                                  No active disputes.
+                                </div>
+                              ) : null}
+                            </div>
+                          </SectionCard>
+                        </div>
+
+                        <SectionCard
+                          title="Audit Pulse"
+                          subtitle="Most recent admin actions."
+                          icon={ShieldCheck}
+                          actionLabel="Refresh"
+                          actionIcon={RefreshCw}
+                          onAction={() => refreshAudit()}
+                          darkMode={adminDark}
+                        >
+                          <div className="space-y-3">
+                            {filteredInfraAuditRows.slice(0, 5).map((entry) => (
+                              <div
+                                key={entry.id || entry.at}
+                                className={cn('flex items-center justify-between rounded-2xl border px-4 py-3', adminDark ? 'border-slate-800 bg-slate-900/60' : 'border-slate-200 bg-white')}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className={cn('flex h-9 w-9 items-center justify-center rounded-2xl', adminDark ? 'bg-sky-500/10 text-sky-300' : 'bg-sky-50 text-sky-600')}>
+                                    <TerminalSquare className="h-4 w-4" />
+                                  </div>
+                                  <div>
+                                    <div className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{entry.action || entry.path || 'Admin action'}</div>
+                                    <div className={adminDark ? 'text-xs text-slate-400' : 'text-xs text-slate-500'}>
+                                      {entry.at ? new Date(entry.at).toLocaleString() : '--'} · {entry.actor || 'system'}
+                                    </div>
+                                  </div>
+                                </div>
+                                <Badge tone="info" darkMode={adminDark}>
+                                  {entry.status ?? 200}
+                                </Badge>
+                              </div>
+                            ))}
+                            {!filteredInfraAuditRows.length ? (
+                              <div className={cn('rounded-3xl border border-dashed p-5 text-sm', adminDark ? 'border-slate-800 bg-slate-900/70 text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-500')}>
+                                No recent activity.
+                              </div>
+                            ) : null}
+                          </div>
+                        </SectionCard>
+
+                        <div className="grid gap-6 md:grid-cols-2">
+                          <SectionCard
+                            title="Firewall Rules"
+                            subtitle="Safe presets for allow/deny."
+                            icon={Shield}
+                            actionLabel="Refresh"
+                            onAction={() => refreshInfraState()}
+                            darkMode={adminDark}
+                          >
+                            <div className="space-y-3">
+                              <div>
+                                <label className={cn('mb-2 block text-xs font-medium uppercase tracking-[0.18em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>
+                                  Preset
+                                </label>
+                                <div className="relative">
+                                  <select
+                                    value={`${firewallForm.action}:${firewallForm.port || ''}`}
+                                    onChange={(event) => {
+                                      const [actionValue, portValue] = event.target.value.split(':')
+                                      setFirewallForm((prev) => ({ ...prev, action: actionValue, port: portValue || '', protocol: 'tcp' }))
+                                    }}
+                                    className={cn(infraInputClass, 'appearance-none pr-10')}
+                                  >
+                                    <option value="allow:">Preset (select)</option>
+                                    <option value="allow:22">Allow SSH 22</option>
+                                    <option value="allow:80">Allow HTTP 80</option>
+                                    <option value="allow:443">Allow HTTPS 443</option>
+                                    <option value="block:25">Block SMTP 25</option>
+                                  </select>
+                                  <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <label className={cn('mb-2 block text-xs font-medium uppercase tracking-[0.18em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>
+                                    Port
+                                  </label>
+                                  <input
+                                    value={firewallForm.port}
+                                    onChange={(event) => setFirewallForm((prev) => ({ ...prev, port: event.target.value }))}
+                                    placeholder="22"
+                                    className={infraInputClass}
+                                  />
+                                </div>
+                                <div>
+                                  <label className={cn('mb-2 block text-xs font-medium uppercase tracking-[0.18em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>
+                                    Protocol
+                                  </label>
+                                  <select
+                                    value={firewallForm.protocol}
+                                    onChange={(event) => setFirewallForm((prev) => ({ ...prev, protocol: event.target.value }))}
+                                    className={infraInputClass}
+                                  >
+                                    <option value="tcp">tcp</option>
+                                    <option value="udp">udp</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div>
+                                <label className={cn('mb-2 block text-xs font-medium uppercase tracking-[0.18em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>
+                                  Description
+                                </label>
+                                <input
+                                  value={firewallForm.description}
+                                  onChange={(event) => setFirewallForm((prev) => ({ ...prev, description: event.target.value }))}
+                                  placeholder="Allow ingress from trusted host"
+                                  className={infraInputClass}
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  runInfraAction(`firewall.${firewallForm.action}_port`, {
+                                    port: firewallForm.port,
+                                    protocol: firewallForm.protocol,
+                                    description: firewallForm.description,
+                                  })
+                                }
+                                className={cn(
+                                  'w-full rounded-2xl px-4 py-3.5 text-sm font-semibold text-white transition',
+                                  adminDark ? 'bg-gradient-to-r from-sky-500 to-cyan-400 shadow-lg shadow-sky-500/25' : 'bg-sky-600 hover:bg-sky-500'
+                                )}
+                              >
+                                Apply rule
+                              </button>
+                              <div className="space-y-2">
+                                {(infraState?.firewall_rules || []).slice(0, 6).map((rule) => (
+                                  <div
+                                    key={rule.id}
+                                    className={cn('flex items-center justify-between rounded-2xl border px-4 py-3 text-sm', adminDark ? 'border-slate-800 bg-slate-900/60' : 'border-slate-200 bg-white')}
+                                  >
+                                    <div className={cn('text-sm font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{rule.action} {rule.port}/{rule.protocol}</div>
+                                    <button
+                                      type="button"
+                                      onClick={() => runInfraAction('firewall.remove_rule', { rule_id: rule.id })}
+                                      className={cn('inline-flex items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-semibold', adminDark ? 'border-rose-400/20 bg-rose-500/10 text-rose-300' : 'border-rose-200 bg-rose-50 text-rose-700')}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" /> Remove
+                                    </button>
+                                  </div>
+                                ))}
+                                {(infraState?.firewall_rules || []).length === 0 ? (
+                                  <div className={cn('rounded-2xl border border-dashed p-4 text-sm', adminDark ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-500')}>
+                                    No rules yet.
+                                  </div>
+                                ) : null}
+                              </div>
+                            </div>
+                          </SectionCard>
+
+                          <SectionCard
+                            title="Package Updates"
+                            subtitle="Safe presets for update checks and installs."
+                            icon={Server}
+                            actionLabel="Run package action"
+                            actionIcon={Download}
+                            onAction={() => runInfraAction('package.update', { mode: packageForm.mode, apply: packageForm.mode !== 'check' })}
+                            darkMode={adminDark}
+                          >
+                            <div className="space-y-3">
+                              <div className="relative">
+                                <select
+                                  value={packageForm.mode}
+                                  onChange={(event) => setPackageForm((prev) => ({ ...prev, mode: event.target.value, apply: event.target.value !== 'check' }))}
+                                  className={cn(infraInputClass, 'appearance-none pr-10')}
+                                >
+                                  <option value="check">Check updates (safe)</option>
+                                  <option value="security">Apply security updates</option>
+                                  <option value="all">Apply all updates</option>
+                                </select>
+                                <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                              </div>
+                              <div className="grid gap-3 sm:grid-cols-2">
+                                <div className={infraFieldPanel}>
+                                  <div className={cn('flex items-center gap-2 text-sm font-medium', adminDark ? 'text-white' : 'text-slate-900')}>
+                                    <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Safe check
+                                  </div>
+                                  <p className={adminDark ? 'mt-2 text-sm text-slate-400' : 'mt-2 text-sm text-slate-500'}>
+                                    Run controlled update scans without auto-installing risky packages.
+                                  </p>
+                                </div>
+                                <div className={infraFieldPanel}>
+                                  <div className={cn('flex items-center gap-2 text-sm font-medium', adminDark ? 'text-white' : 'text-slate-900')}>
+                                    <ShieldCheck className="h-4 w-4 text-sky-500" /> Admin guard
+                                  </div>
+                                  <p className={adminDark ? 'mt-2 text-sm text-slate-400' : 'mt-2 text-sm text-slate-500'}>
+                                    Only verified operators may apply changes on production nodes.
+                                  </p>
+                                </div>
+                              </div>
+                              <div className={cn('rounded-2xl border border-dashed p-4 text-sm', adminDark ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-500')}>
+                                Last updates: {(infraState?.updates || []).slice(0, 3).map((row) => row.mode).join(', ') || 'none'}
+                              </div>
+                            </div>
+                          </SectionCard>
+                        </div>
+
+                        <div className="grid gap-6 md:grid-cols-2">
+                          <SectionCard
+                            title="Cron Manager"
+                            subtitle="Schedule safe recurring tasks."
+                            icon={Clock3}
+                            actionLabel="Add cron job"
+                            actionIcon={ArrowRight}
+                            onAction={() => runInfraAction('cron.add', cronForm)}
+                            darkMode={adminDark}
+                          >
+                            <div className="space-y-3">
+                              <div className="relative">
+                                <select
+                                  value={cronForm.schedule}
+                                  onChange={(event) => {
+                                    const value = event.target.value
+                                    if (value === '0 2 * * *') {
+                                      setCronForm({ name: 'Daily backup', schedule: value, command: 'backup.run' })
+                                    } else if (value === '0 0 * * 0') {
+                                      setCronForm({ name: 'Weekly cleanup', schedule: value, command: 'log.rotate' })
+                                    } else {
+                                      setCronForm((prev) => ({ ...prev, schedule: value }))
+                                    }
+                                  }}
+                                  className={cn(infraInputClass, 'appearance-none pr-10')}
+                                >
+                                  <option value="">Preset (select)</option>
+                                  <option value="0 2 * * *">Daily backup at 2am</option>
+                                  <option value="0 0 * * 0">Weekly cleanup (Sunday)</option>
+                                </select>
+                                <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                              </div>
+                              <input value={cronForm.name} onChange={(event) => setCronForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Job name" className={infraInputClass} />
+                              <input value={cronForm.schedule} onChange={(event) => setCronForm((prev) => ({ ...prev, schedule: event.target.value }))} placeholder="Cron schedule" className={infraInputClass} />
+                              <input value={cronForm.command} onChange={(event) => setCronForm((prev) => ({ ...prev, command: event.target.value }))} placeholder="Command" className={infraInputClass} />
+                              <div className="space-y-2">
+                                {(infraState?.cron_jobs || []).slice(0, 4).map((job) => (
+                                  <div
+                                    key={job.id}
+                                    className={cn('flex items-center justify-between rounded-2xl border px-4 py-3 text-sm', adminDark ? 'border-slate-800 bg-slate-900/60' : 'border-slate-200 bg-white')}
+                                  >
+                                    <div className={cn('text-sm font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{job.name} · {job.schedule}</div>
+                                    <button
+                                      type="button"
+                                      onClick={() => runInfraAction('cron.remove', { job_id: job.id })}
+                                      className={cn('inline-flex items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-semibold', adminDark ? 'border-rose-400/20 bg-rose-500/10 text-rose-300' : 'border-rose-200 bg-rose-50 text-rose-700')}
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" /> Remove
+                                    </button>
+                                  </div>
+                                ))}
+                                {(infraState?.cron_jobs || []).length === 0 ? (
+                                  <div className={cn('rounded-2xl border border-dashed p-4 text-sm', adminDark ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-500')}>
+                                    No cron jobs yet.
+                                  </div>
+                                ) : null}
+                              </div>
+                            </div>
+                          </SectionCard>
+
+                          <SectionCard
+                            title="System Logs + Zombie Scan"
+                            subtitle="Syslog snapshots and zombie detection."
+                            icon={AlertTriangle}
+                            actionLabel="Collect logs"
+                            actionIcon={RefreshCw}
+                            onAction={() => runInfraAction('log.collect', { level: 'info', message: 'Manual log snapshot' })}
+                            darkMode={adminDark}
+                          >
+                            <div className="space-y-3">
+                              <button
+                                type="button"
+                                onClick={() => runInfraAction('process.scan_zombies')}
+                                className={cn(
+                                  'w-full rounded-2xl px-4 py-3 text-sm font-semibold transition',
+                                  adminDark ? 'border border-sky-400/20 bg-sky-500/10 text-sky-200 hover:bg-sky-500/15' : 'border border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100'
+                                )}
+                              >
+                                Scan zombies
+                              </button>
+                              <div className="grid gap-3 sm:grid-cols-2">
+                                <div className={infraFieldPanel}>
+                                  <div className={adminDark ? 'text-xs uppercase tracking-[0.2em] text-slate-400' : 'text-xs uppercase tracking-[0.2em] text-slate-500'}>
+                                    Log integrity
+                                  </div>
+                                  <div className={cn('mt-2 flex items-center gap-2 text-sm font-medium', adminDark ? 'text-white' : 'text-slate-900')}>
+                                    <Lock className="h-4 w-4 text-emerald-500" /> Tamper-evident
+                                  </div>
+                                </div>
+                                <div className={infraFieldPanel}>
+                                  <div className={adminDark ? 'text-xs uppercase tracking-[0.2em] text-slate-400' : 'text-xs uppercase tracking-[0.2em] text-slate-500'}>
+                                    Zombie scan
+                                  </div>
+                                  <div className={cn('mt-2 flex items-center gap-2 text-sm font-medium', adminDark ? 'text-white' : 'text-slate-900')}>
+                                    {(infraState?.zombie_processes || []).length ? (
+                                      <>
+                                        <XCircle className="h-4 w-4 text-rose-500" /> {(infraState?.zombie_processes || []).length} anomalies
+                                      </>
+                                    ) : (
+                                      <>
+                                        <CheckCircle2 className="h-4 w-4 text-sky-500" /> No anomalies
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                {(infraState?.logs || []).slice(0, 4).map((log) => (
+                                  <div key={log.id} className={cn('rounded-2xl border px-4 py-3 text-sm', adminDark ? 'border-slate-800 bg-slate-900/60 text-slate-300' : 'border-slate-200 bg-white text-slate-700')}>
+                                    {log.level || 'info'} · {log.message}
+                                  </div>
+                                ))}
+                                {(infraState?.zombie_processes || []).slice(0, 2).map((proc) => (
+                                  <div key={proc.pid} className={cn('rounded-2xl border px-4 py-3 text-sm', adminDark ? 'border-rose-400/20 bg-rose-500/10 text-rose-300' : 'border-rose-200 bg-rose-50 text-rose-700')}>
+                                    Zombie: {proc.name} ({proc.pid})
+                                  </div>
+                                ))}
+                                {(infraState?.logs || []).length === 0 ? (
+                                  <div className={cn('rounded-2xl border border-dashed p-4 text-sm', adminDark ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-500')}>
+                                    No logs collected yet.
+                                  </div>
+                                ) : null}
+                              </div>
+                            </div>
+                          </SectionCard>
+                        </div>
+                      </div>
+
+                      <div className="space-y-6 xl:col-span-4">
+                        <SectionCard
+                          title="OS Users + SSH Keys"
+                          subtitle="Create/delete accounts and manage keys."
+                          icon={Users}
+                          actionLabel="Manage access"
+                          actionIcon={Shield}
+                          onAction={() => refreshInfraState()}
+                          darkMode={adminDark}
+                        >
+                          <div className="space-y-3">
+                            <input value={osUserForm.username} onChange={(event) => setOsUserForm((prev) => ({ ...prev, username: event.target.value }))} placeholder="Username" className={infraInputClass} />
+                            <button
+                              type="button"
+                              onClick={() => runInfraAction('os.user.create', { username: osUserForm.username, role: osUserForm.role })}
+                              className={cn('w-full rounded-2xl px-4 py-3 text-sm font-semibold text-white', adminDark ? 'bg-gradient-to-r from-sky-500 to-blue-500' : 'bg-sky-600')}
+                            >
+                              Create OS user
+                            </button>
+                            <input value={sshKeyForm.label} onChange={(event) => setSshKeyForm((prev) => ({ ...prev, label: event.target.value }))} placeholder="SSH key label" className={infraInputClass} />
+                            <input value={sshKeyForm.fingerprint} onChange={(event) => setSshKeyForm((prev) => ({ ...prev, fingerprint: event.target.value }))} placeholder="Fingerprint" className={infraInputClass} />
+                            <button
+                              type="button"
+                              onClick={() => runInfraAction('ssh.key.add', sshKeyForm)}
+                              className={cn('w-full rounded-2xl border px-4 py-3 text-sm font-semibold', adminDark ? 'border-sky-400/20 bg-sky-500/10 text-sky-200' : 'border-sky-200 bg-sky-50 text-sky-700')}
+                            >
+                              Add SSH key
+                            </button>
+
+                            <div className="space-y-2 pt-2">
+                              {(infraState?.os_users || []).slice(0, 4).map((userRow) => (
+                                <div
+                                  key={userRow.id}
+                                  className={cn('flex items-center justify-between rounded-2xl border px-4 py-3', adminDark ? 'border-slate-800 bg-slate-900/60' : 'border-slate-200 bg-white')}
+                                >
+                                  <div className={cn('flex items-center gap-2 text-sm font-medium', adminDark ? 'text-white' : 'text-slate-900')}>
+                                    <Shield className="h-4 w-4 text-sky-500" /> {userRow.username}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => runInfraAction('os.user.delete', { username: userRow.username })}
+                                    className={cn('inline-flex items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-semibold', adminDark ? 'border-rose-400/20 bg-rose-500/10 text-rose-300' : 'border-rose-200 bg-rose-50 text-rose-700')}
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" /> Delete
+                                  </button>
+                                </div>
+                              ))}
+                              {(infraState?.ssh_keys || []).slice(0, 3).map((key) => (
+                                <div
+                                  key={key.id}
+                                  className={cn('flex items-center justify-between rounded-2xl border px-4 py-3', adminDark ? 'border-slate-800 bg-slate-900/60' : 'border-slate-200 bg-white')}
+                                >
+                                  <div className={cn('flex items-center gap-2 text-sm font-medium', adminDark ? 'text-white' : 'text-slate-900')}>
+                                    <LockKeyhole className="h-4 w-4 text-sky-500" /> {key.label}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => runInfraAction('ssh.key.remove', { key_id: key.id })}
+                                    className={cn('inline-flex items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-semibold', adminDark ? 'border-rose-400/20 bg-rose-500/10 text-rose-300' : 'border-rose-200 bg-rose-50 text-rose-700')}
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" /> Remove
+                                  </button>
+                                </div>
+                              ))}
+                              {(infraState?.os_users || []).length === 0 && (infraState?.ssh_keys || []).length === 0 ? (
+                                <div className={cn('rounded-2xl border border-dashed p-4 text-sm', adminDark ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-500')}>
+                                  No OS users or SSH keys found.
+                                </div>
+                              ) : null}
+                            </div>
+                          </div>
+                        </SectionCard>
+
+                        <SectionCard
+                          title="SSL + Backups + Network Settings"
+                          subtitle="Certificates, retention, DNS, timezone."
+                          icon={Wifi}
+                          actionLabel="Save settings"
+                          actionIcon={SlidersHorizontal}
+                          onAction={async () => {
+                            if (sslForm.domain) await runInfraAction('ssl.cert.issue', { domain: sslForm.domain })
+                            if (infraBackupForm.retention_days) await runInfraAction('backup.retention', { retention_days: infraBackupForm.retention_days })
+                            if (timeForm.timezone) await runInfraAction('system.timezone.set', { timezone: timeForm.timezone })
+                          }}
+                          darkMode={adminDark}
+                        >
+                          <div className="space-y-3">
+                            <input value={sslForm.domain} onChange={(event) => setSslForm((prev) => ({ ...prev, domain: event.target.value }))} placeholder="Domain" className={infraInputClass} />
+                            <button
+                              type="button"
+                              onClick={() => runInfraAction('ssl.cert.issue', { domain: sslForm.domain })}
+                              className={cn('w-full rounded-2xl px-4 py-3 text-sm font-semibold text-white', adminDark ? 'bg-gradient-to-r from-sky-500 to-cyan-400' : 'bg-sky-600')}
+                            >
+                              Issue SSL cert
+                            </button>
+                            <div className="grid grid-cols-2 gap-3">
+                              <input
+                                value={infraBackupForm.retention_days}
+                                onChange={(event) => setInfraBackupForm((prev) => ({ ...prev, retention_days: event.target.value }))}
+                                placeholder="Retention days"
+                                className={infraInputClass}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => runInfraAction('backup.retention', { retention_days: infraBackupForm.retention_days })}
+                                className={cn('rounded-2xl border px-4 py-3 text-sm font-semibold', adminDark ? 'border-sky-400/20 bg-sky-500/10 text-sky-200' : 'border-sky-200 bg-sky-50 text-sky-700')}
+                              >
+                                Update retention
+                              </button>
+                            </div>
+                            <input value={timeForm.timezone} onChange={(event) => setTimeForm((prev) => ({ ...prev, timezone: event.target.value }))} placeholder="Timezone (e.g. UTC)" className={infraInputClass} />
+                            <button
+                              type="button"
+                              onClick={() => runInfraAction('system.timezone.set', { timezone: timeForm.timezone })}
+                              className={cn('w-full rounded-2xl border px-4 py-3 text-sm font-semibold', adminDark ? 'border-sky-400/20 bg-sky-500/10 text-sky-200' : 'border-sky-200 bg-sky-50 text-sky-700')}
+                            >
+                              Set timezone
+                            </button>
+                            <div className={cn('rounded-2xl p-4 text-sm', adminDark ? 'border border-slate-800 bg-slate-900/60 text-slate-400' : 'border border-slate-200 bg-slate-50 text-slate-600')}>
+                              <div className="flex items-center justify-between gap-4">
+                                <span>Retention: {infraState?.backups?.retention_days || 0} days · SSLs: {(infraState?.ssl_certs || []).length}</span>
+                                <span className={adminDark ? 'font-medium text-white' : 'font-medium text-slate-900'}>
+                                  Timezone: {infraState?.time_settings?.timezone || 'unset'}
+                                </span>
+                              </div>
+                              <div className="mt-2 text-xs">NTP sync: {infraState?.time_settings?.last_sync_at || 'never'}</div>
+                            </div>
+                          </div>
+                        </SectionCard>
+
+                        <SectionCard
+                          title="Admin Audit Log"
+                          subtitle="Immutable, tamper-evident audit trail for every admin action."
+                          icon={ShieldCheck}
+                          actionLabel="Refresh log"
+                          actionIcon={RefreshCw}
+                          onAction={() => refreshAudit()}
+                          darkMode={adminDark}
+                        >
+                          <div className="space-y-3">
+                            {filteredInfraAuditRows.slice(0, 8).map((entry) => (
+                              <div key={entry.id || entry.at} className={cn('rounded-2xl border p-4', adminDark ? 'border-slate-800 bg-slate-900/60' : 'border-slate-200 bg-white')}>
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <div className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{entry.action || entry.path || 'Admin action'}</div>
+                                    <div className={adminDark ? 'mt-1 text-xs text-slate-400' : 'mt-1 text-xs text-slate-500'}>{entry.at ? new Date(entry.at).toLocaleString() : '--'} · {entry.actor || 'system'}</div>
+                                  </div>
+                                  <Badge tone="live" darkMode={adminDark}>
+                                    {entry.status ?? 200}
+                                  </Badge>
+                                </div>
+                                <div className={adminDark ? 'mt-3 grid gap-1 text-xs text-slate-400' : 'mt-3 grid gap-1 text-xs text-slate-500'}>
+                                  <div>Actor: {entry.actor_id || entry.actor || 'system'}</div>
+                                  <div>IP: {entry.ip || '--'} / Device: {entry.device_id || '--'}</div>
+                                </div>
+                              </div>
+                            ))}
+                            {!filteredInfraAuditRows.length ? (
+                              <div className={cn('rounded-2xl border border-dashed p-4 text-sm', adminDark ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-500')}>
+                                No audit entries yet.
+                              </div>
+                            ) : null}
+                          </div>
+                        </SectionCard>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 grid gap-4 xl:grid-cols-5">
+                      {INFRA_CAPABILITIES.map((cap) => {
+                        const Icon = cap.icon
+                        return (
+                          <div
+                            key={cap.title}
+                            className={cn(
+                              'rounded-[26px] border p-5',
+                              adminDark ? 'border-slate-800 bg-slate-950/70 shadow-[0_18px_70px_-36px_rgba(15,23,42,0.35)]' : 'border-slate-200 bg-white shadow-sm'
+                            )}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className={cn('rounded-2xl border p-3', adminDark ? 'border-sky-400/20 bg-sky-500/10 text-sky-300' : 'border-sky-200 bg-sky-50 text-sky-600')}>
+                                <Icon className="h-5 w-5" />
+                              </div>
+                              <Badge tone="live" darkMode={adminDark}>
+                                live
+                              </Badge>
+                            </div>
+                            <div className={cn('mt-4 text-base font-semibold tracking-tight', adminDark ? 'text-white' : 'text-slate-900')}>{cap.title}</div>
+                            <div className={cn('mt-2 text-3xl font-semibold', adminDark ? 'text-sky-300' : 'text-sky-600')}>{cap.count}</div>
+                            <p className={adminDark ? 'mt-2 text-sm text-slate-400' : 'mt-2 text-sm text-slate-500'}>{cap.subtitle}</p>
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    <footer
+                      className={cn(
+                        'mt-6 rounded-[28px] border px-5 py-4 text-sm',
+                        adminDark ? 'border-slate-800 bg-slate-950/70 text-slate-400 shadow-[0_18px_70px_-36px_rgba(15,23,42,0.3)]' : 'border-slate-200 bg-white text-slate-500 shadow-sm'
+                      )}
+                    >
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex items-center gap-2">
+                          <Server className="h-4 w-4 text-sky-500" /> Premium infrastructure control surface
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-cyan-400" /> Blue-sky themed • audit-first • responsive
+                        </div>
+                      </div>
+                    </footer>
                   </div>
                 </div>
               </div>
             ) : null}
 
-            {activeCategory === 'infra' ? (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">Firewall Rules</p>
-                      <p className="text-xs text-slate-500">Safe presets for allow/deny.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshInfraState()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Refresh
-                    </button>
-                  </div>
-                  <div className="mt-3 grid grid-cols-1 gap-2 text-xs">
-                    <select
-                      value={`${firewallForm.action}:${firewallForm.port || ''}`}
-                      onChange={(event) => {
-                        const [actionValue, portValue] = event.target.value.split(':')
-                        setFirewallForm((prev) => ({ ...prev, action: actionValue, port: portValue || '', protocol: 'tcp' }))
-                      }}
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    >
-                      <option value="allow:">Preset (select)</option>
-                      <option value="allow:22">Allow SSH 22</option>
-                      <option value="allow:80">Allow HTTP 80</option>
-                      <option value="allow:443">Allow HTTPS 443</option>
-                      <option value="block:25">Block SMTP 25</option>
-                    </select>
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        value={firewallForm.port}
-                        onChange={(event) => setFirewallForm((prev) => ({ ...prev, port: event.target.value }))}
-                        placeholder="Port"
-                        className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                      />
-                      <select
-                        value={firewallForm.protocol}
-                        onChange={(event) => setFirewallForm((prev) => ({ ...prev, protocol: event.target.value }))}
-                        className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                      >
-                        <option value="tcp">tcp</option>
-                        <option value="udp">udp</option>
-                      </select>
-                    </div>
-                    <input
-                      value={firewallForm.description}
-                      onChange={(event) => setFirewallForm((prev) => ({ ...prev, description: event.target.value }))}
-                      placeholder="Description"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <div className="flex items-center gap-2">
+            {activeCategory === 'network' ? (
+              <div className={cn('relative overflow-hidden rounded-[32px] border p-4 sm:p-5', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/75')}>
+                <div className="absolute inset-0 -z-10 overflow-hidden">
+                  <div className={cn('absolute -top-40 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full blur-3xl', adminDark ? 'bg-sky-500/20' : 'bg-sky-400/20')} />
+                  <div className={cn('absolute top-40 -left-20 h-72 w-72 rounded-full blur-3xl', adminDark ? 'bg-blue-500/15' : 'bg-blue-300/25')} />
+                  <div className={cn('absolute bottom-0 right-0 h-96 w-96 rounded-full blur-3xl', adminDark ? 'bg-cyan-500/10' : 'bg-cyan-300/20')} />
+                </div>
+
+                <div className="mx-auto max-w-[1600px] space-y-6">
+                  <section className={cn('rounded-[32px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/75')}>
+                    <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg">
+                          <CircuitBoard className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <h1 className={cn('text-2xl font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>Network Control</h1>
+                          <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>Enterprise monitoring, configuration, security, and audit</p>
+                        </div>
+                      </div>
+
                       <button
                         type="button"
-                        onClick={() => runInfraAction(`firewall.${firewallForm.action}_port`, { port: firewallForm.port, protocol: firewallForm.protocol, description: firewallForm.description })}
-                        className="rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
+                        onClick={() => setAdminDark(adminDark ? false : true)}
+                        className={cn('inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white')}
                       >
-                        Apply rule
+                        {adminDark ? <SunMedium className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                        Toggle Theme
                       </button>
                     </div>
-                  </div>
-                  <div className="mt-4 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(infraState?.firewall_rules || []).slice(0, 6).map((rule) => (
-                      <div key={rule.id} className="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        <span>{rule.action} {rule.port}/{rule.protocol}</span>
+
+                    <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                      {[
+                        { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+                        { id: 'inventory', label: 'Inventory', icon: Wifi },
+                        { id: 'security', label: 'Security', icon: Lock },
+                        { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+                        { id: 'audit', label: 'Audit', icon: ShieldCheck },
+                        { id: 'users', label: 'Users', icon: Users },
+                      ].map(({ id, label, icon: Icon }) => (
                         <button
+                          key={id}
                           type="button"
-                          onClick={() => runInfraAction('firewall.remove_rule', { rule_id: rule.id })}
-                          className="text-[10px] font-semibold text-rose-600"
+                          onClick={() => setNetworkNav(id)}
+                          className={cn(
+                            'flex items-center justify-between rounded-2xl px-4 py-3 text-sm transition',
+                            networkNav === id
+                              ? 'bg-sky-500 text-white'
+                              : adminDark
+                                ? 'bg-white/5 text-slate-100 hover:bg-white/10'
+                                : 'bg-slate-100 text-slate-900 hover:bg-slate-200'
+                          )}
                         >
-                          Remove
+                          <span className="flex items-center gap-2">
+                            <Icon className="h-4 w-4" />
+                            {label}
+                          </span>
+                          <ChevronRight className="h-4 w-4 opacity-70" />
                         </button>
-                      </div>
-                    ))}
-                    {(infraState?.firewall_rules || []).length === 0 ? <p className="text-slate-400">No rules yet.</p> : null}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">Package Updates</p>
-                    <p className="text-xs text-slate-500">Safe presets for update checks and installs.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-xs">
-                    <select
-                      value={packageForm.mode}
-                      onChange={(event) => setPackageForm((prev) => ({ ...prev, mode: event.target.value, apply: event.target.value !== 'check' }))}
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    >
-                      <option value="check">Check updates (safe)</option>
-                      <option value="security">Apply security updates</option>
-                      <option value="all">Apply all updates</option>
-                    </select>
-                    <button
-                      type="button"
-                      onClick={() => runInfraAction('package.update', { mode: packageForm.mode, apply: packageForm.mode !== 'check' })}
-                      className="w-full rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
-                    >
-                      Run package action
-                    </button>
-                  </div>
-                  <div className="mt-4 text-[11px] text-slate-500">
-                    Last updates: {(infraState?.updates || []).slice(0, 3).map((row) => row.mode).join(', ') || 'none'}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">Cron Manager</p>
-                    <p className="text-xs text-slate-500">Schedule safe recurring tasks.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-xs">
-                    <select
-                      value={cronForm.schedule}
-                      onChange={(event) => {
-                        const value = event.target.value
-                        if (value === '0 2 * * *') {
-                          setCronForm({ name: 'Daily backup', schedule: value, command: 'backup.run' })
-                        } else if (value === '0 0 * * 0') {
-                          setCronForm({ name: 'Weekly cleanup', schedule: value, command: 'log.rotate' })
-                        } else {
-                          setCronForm((prev) => ({ ...prev, schedule: value }))
-                        }
-                      }}
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    >
-                      <option value="">Preset (select)</option>
-                      <option value="0 2 * * *">Daily backup at 2am</option>
-                      <option value="0 0 * * 0">Weekly cleanup (Sunday)</option>
-                    </select>
-                    <input
-                      value={cronForm.name}
-                      onChange={(event) => setCronForm((prev) => ({ ...prev, name: event.target.value }))}
-                      placeholder="Job name"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <input
-                      value={cronForm.schedule}
-                      onChange={(event) => setCronForm((prev) => ({ ...prev, schedule: event.target.value }))}
-                      placeholder="Cron schedule"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <input
-                      value={cronForm.command}
-                      onChange={(event) => setCronForm((prev) => ({ ...prev, command: event.target.value }))}
-                      placeholder="Command"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => runInfraAction('cron.add', cronForm)}
-                      className="w-full rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
-                    >
-                      Add cron job
-                    </button>
-                  </div>
-                  <div className="mt-4 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(infraState?.cron_jobs || []).slice(0, 4).map((job) => (
-                      <div key={job.id} className="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        <span>{job.name} · {job.schedule}</span>
-                        <button
-                          type="button"
-                          onClick={() => runInfraAction('cron.remove', { job_id: job.id })}
-                          className="text-[10px] font-semibold text-rose-600"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                    {(infraState?.cron_jobs || []).length === 0 ? <p className="text-slate-400">No cron jobs yet.</p> : null}
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {activeCategory === 'infra' ? (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">System Logs + Zombie Scan</p>
-                      <p className="text-xs text-slate-500">Syslog snapshots and zombie detection.</p>
+                      ))}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => runInfraAction('log.collect', { level: 'info', message: 'Manual log snapshot' })}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Collect logs
-                    </button>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(infraState?.logs || []).slice(0, 4).map((log) => (
-                      <div key={log.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        {log.level || 'info'} · {log.message}
-                      </div>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => runInfraAction('process.scan_zombies')}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Scan zombies
-                    </button>
-                    {(infraState?.zombie_processes || []).slice(0, 2).map((proc) => (
-                      <div key={proc.pid} className="text-[10px] text-rose-500">Zombie: {proc.name} ({proc.pid})</div>
-                    ))}
-                  </div>
-                </div>
 
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">OS Users + SSH Keys</p>
-                    <p className="text-xs text-slate-500">Create/delete accounts and manage keys.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-xs">
-                    <input
-                      value={osUserForm.username}
-                      onChange={(event) => setOsUserForm((prev) => ({ ...prev, username: event.target.value }))}
-                      placeholder="Username"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => runInfraAction('os.user.create', { username: osUserForm.username, role: osUserForm.role })}
-                      className="w-full rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
-                    >
-                      Create OS user
-                    </button>
-                    <input
-                      value={sshKeyForm.label}
-                      onChange={(event) => setSshKeyForm((prev) => ({ ...prev, label: event.target.value }))}
-                      placeholder="SSH key label"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <input
-                      value={sshKeyForm.fingerprint}
-                      onChange={(event) => setSshKeyForm((prev) => ({ ...prev, fingerprint: event.target.value }))}
-                      placeholder="Fingerprint"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => runInfraAction('ssh.key.add', sshKeyForm)}
-                      className="w-full rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-[11px] font-semibold text-slate-600"
-                    >
-                      Add SSH key
-                    </button>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(infraState?.os_users || []).slice(0, 3).map((userRow) => (
-                      <div key={userRow.id} className="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        <span>{userRow.username}</span>
-                        <button
-                          type="button"
-                          onClick={() => runInfraAction('os.user.delete', { username: userRow.username })}
-                          className="text-[10px] font-semibold text-rose-600"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    ))}
-                    {(infraState?.ssh_keys || []).slice(0, 2).map((key) => (
-                      <div key={key.id} className="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        <span>{key.label}</span>
-                        <button
-                          type="button"
-                          onClick={() => runInfraAction('ssh.key.remove', { key_id: key.id })}
-                          className="text-[10px] font-semibold text-rose-600"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">SSL + Backups + Network Settings</p>
-                    <p className="text-xs text-slate-500">Certificates, retention, DNS, timezone.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-xs">
-                    <input
-                      value={sslForm.domain}
-                      onChange={(event) => setSslForm((prev) => ({ ...prev, domain: event.target.value }))}
-                      placeholder="Domain"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => runInfraAction('ssl.cert.issue', { domain: sslForm.domain })}
-                      className="w-full rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
-                    >
-                      Issue SSL cert
-                    </button>
-                    <input
-                      value={infraBackupForm.retention_days}
-                      onChange={(event) => setInfraBackupForm((prev) => ({ ...prev, retention_days: event.target.value }))}
-                      placeholder="Retention days"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => runInfraAction('backup.retention', { retention_days: infraBackupForm.retention_days })}
-                      className="w-full rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-[11px] font-semibold text-slate-600"
-                    >
-                      Update retention
-                    </button>
-                    <input
-                      value={timeForm.timezone}
-                      onChange={(event) => setTimeForm((prev) => ({ ...prev, timezone: event.target.value }))}
-                      placeholder="Timezone (e.g. UTC)"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => runInfraAction('system.timezone.set', { timezone: timeForm.timezone })}
-                      className="w-full rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-[11px] font-semibold text-slate-600"
-                    >
-                      Set timezone
-                    </button>
-                  </div>
-                  <div className="mt-3 text-[11px] text-slate-600 dark:text-slate-300">
-                    Retention: {infraState?.backups?.retention_days || 0} days · SSLs: {(infraState?.ssl_certs || []).length}
-                    <div>Timezone: {infraState?.time_settings?.timezone || 'unset'}</div>
-                    <div>NTP sync: {infraState?.time_settings?.last_sync_at || 'never'}</div>
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {activeCategory === 'network' ? (
-              <div className="admin-card admin-sweep rounded-3xl p-6">
-                <div className="flex items-center gap-2">
-                  <Network className="h-5 w-5 text-emerald-500" />
-                  <div>
-                    <p className="text-sm font-bold">Network Overview</p>
-                    <p className="text-xs text-slate-500">Topology status, alerts, and real-time diagnostics.</p>
-                  </div>
-                </div>
-                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 text-xs text-slate-600 dark:text-slate-300">
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-3">
-                    <p className="text-[10px] uppercase text-slate-500">Devices</p>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{formatNumber(network?.device_total)}</p>
-                    <p>Up: {formatNumber(network?.device_up)} / Down: {formatNumber(network?.device_down)}</p>
-                  </div>
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-3">
-                    <p className="text-[10px] uppercase text-slate-500">Alerts</p>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{formatNumber(network?.alert_count)}</p>
-                    <p>Latency: {network?.traffic_summary?.latency_ms ?? '--'} ms</p>
-                    <p>Jitter: {network?.traffic_summary?.jitter_ms ?? '--'} ms</p>
-                  </div>
-                  <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-3">
-                    <p className="text-[10px] uppercase text-slate-500">Bandwidth</p>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{network?.traffic_summary?.bandwidth_mbps ?? '--'} Mbps</p>
-                    <p>Loss: {network?.traffic_summary?.packet_loss_pct ?? '--'}%</p>
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {activeCategory === 'network' ? (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">Device Inventory</p>
-                      <p className="text-xs text-slate-500">Realtime device status.</p>
+                    <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                      {['SLA 99.98%', 'Security Green', 'Latency Stable', 'Infra Healthy'].map((item) => (
+                        <div key={item} className={cn('rounded-2xl p-4 text-sm', adminDark ? 'bg-white/5 text-slate-200' : 'bg-slate-100 text-slate-800')}>
+                          {item}
+                        </div>
+                      ))}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshNetworkInventory()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Refresh
-                    </button>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(networkInventory?.devices || []).slice(0, 6).map((device) => (
-                      <div key={device.id} className="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        <span>{device.name || device.id} · {device.status}</span>
+                  </section>
+
+                  <section className={cn('rounded-[32px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/75')}>
+                    <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+                      <div className="max-w-3xl">
+                        <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-[0.22em] text-sky-400 shadow-sm backdrop-blur-xl">
+                          <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.9)]" />
+                          Network Monitoring &amp; Management
+                          <span className={cn('rounded-full px-2 py-0.5', adminDark ? 'bg-white/10 text-slate-200' : 'bg-slate-100 text-slate-700')}>Enterprise Level</span>
+                        </div>
+                        <h2 className={cn('mt-4 text-3xl font-semibold tracking-tight sm:text-4xl', adminDark ? 'text-white' : 'text-slate-900')}>Network Overview</h2>
+                        <p className={cn('mt-3 max-w-2xl text-sm leading-7 sm:text-base', adminDark ? 'text-slate-300' : 'text-slate-600')}>
+                          Topology status, alerts, and real-time diagnostics with premium visibility across devices, security, traffic, and audit history.
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-3">
                         <button
                           type="button"
-                          onClick={() => runNetworkAction('device.reboot', { device_id: device.id })}
-                          className="text-[10px] font-semibold text-indigo-600"
+                          onClick={() => setAdminDark((v) => !v)}
+                          className={cn(
+                            'inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition-all',
+                            adminDark ? 'border-white/10 bg-white/5 hover:bg-white/10' : 'border-slate-200 bg-white hover:bg-slate-50'
+                          )}
                         >
-                          Reboot
+                          {adminDark ? <SunMedium className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                          {adminDark ? 'Light mode' : 'Dark mode'}
                         </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">VLAN Management</p>
-                    <p className="text-xs text-slate-500">Create and retire VLANs.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-xs">
-                    <input
-                      value={vlanForm.vlan_id}
-                      onChange={(event) => setVlanForm((prev) => ({ ...prev, vlan_id: event.target.value }))}
-                      placeholder="VLAN ID"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <input
-                      value={vlanForm.name}
-                      onChange={(event) => setVlanForm((prev) => ({ ...prev, name: event.target.value }))}
-                      placeholder="Name"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <input
-                      value={vlanForm.subnet}
-                      onChange={(event) => setVlanForm((prev) => ({ ...prev, subnet: event.target.value }))}
-                      placeholder="Subnet"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <input
-                      value={vlanForm.gateway}
-                      onChange={(event) => setVlanForm((prev) => ({ ...prev, gateway: event.target.value }))}
-                      placeholder="Gateway"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => runNetworkAction('vlan.create', vlanForm)}
-                      className="w-full rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
-                    >
-                      Add VLAN
-                    </button>
-                  </div>
-                  <div className="mt-4 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(networkInventory?.vlans || []).slice(0, 4).map((vlan) => (
-                      <div key={vlan.id} className="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        <span>VLAN {vlan.id} · {vlan.subnet}</span>
                         <button
                           type="button"
-                          onClick={() => runNetworkAction('vlan.delete', { vlan_id: vlan.id })}
-                          className="text-[10px] font-semibold text-rose-600"
+                          onClick={() =>
+                            downloadJson('network_report.json', {
+                              generated_at: new Date().toISOString(),
+                              overview: network,
+                              inventory: networkInventory,
+                              audit: audit.slice(0, 100),
+                            })
+                          }
+                          className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 transition-transform hover:-translate-y-0.5"
                         >
-                          Delete
+                          <Download className="h-4 w-4" />
+                          Export report
                         </button>
                       </div>
-                    ))}
-                  </div>
-                </div>
+                    </div>
 
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">IPAM + Config Backups</p>
-                    <p className="text-xs text-slate-500">Reserve IPs and capture configs.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-xs">
-                    <input
-                      value={ipamForm.ip}
-                      onChange={(event) => setIpamForm((prev) => ({ ...prev, ip: event.target.value }))}
-                      placeholder="IP address"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <input
-                      value={ipamForm.owner}
-                      onChange={(event) => setIpamForm((prev) => ({ ...prev, owner: event.target.value }))}
-                      placeholder="Owner"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => runNetworkAction('ipam.reserve', ipamForm)}
-                      className="w-full rounded-full bg-slate-900 px-3 py-2 text-[11px] font-semibold text-white"
-                    >
-                      Reserve IP
-                    </button>
-                    <input
-                      value={backupForm.device_id}
-                      onChange={(event) => setBackupForm({ device_id: event.target.value })}
-                      placeholder="Device ID for backup"
-                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => runNetworkAction('config.backup', backupForm)}
-                      className="w-full rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-[11px] font-semibold text-slate-600"
-                    >
-                      Run config backup
-                    </button>
-                  </div>
-                  <div className="mt-4 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(networkInventory?.ipam_reservations || []).slice(0, 3).map((row) => (
-                      <div key={row.id} className="flex items-center justify-between rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        <span>{row.ip} · {row.owner || 'reserved'}</span>
+                    <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                        {[
+                          { label: 'Devices', value: formatNumber(network?.device_total), sub: `Up: ${formatNumber(network?.device_up)} / Down: ${formatNumber(network?.device_down)}`, icon: Network },
+                          { label: 'Alerts', value: formatNumber(network?.alert_count), sub: `Latency: ${network?.traffic_summary?.latency_ms ?? '--'} ms`, icon: AlertTriangle },
+                          { label: 'Jitter', value: `${network?.traffic_summary?.jitter_ms ?? '--'} ms`, sub: `Bandwidth: ${network?.traffic_summary?.bandwidth_mbps ?? '--'} Mbps`, icon: Activity },
+                          { label: 'Loss', value: `${network?.traffic_summary?.packet_loss_pct ?? '--'}%`, sub: 'Topologies stable', icon: ShieldCheck },
+                        ].map((card) => {
+                          const Icon = card.icon
+                          return (
+                            <div
+                              key={card.label}
+                              className={cn(
+                                'group rounded-[24px] border p-5 transition-all hover:-translate-y-0.5',
+                                adminDark ? 'border-white/10 bg-slate-900/50 hover:bg-slate-900/70' : 'border-slate-200 bg-white hover:shadow-lg'
+                              )}
+                            >
+                              <div className="flex items-start justify-between gap-4">
+                                <div>
+                                  <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-500')}>{card.label}</p>
+                                  <div className="mt-2 flex items-end gap-2">
+                                    <h3 className={cn('text-3xl font-semibold tracking-tight', adminDark ? 'text-white' : 'text-slate-900')}>{card.value}</h3>
+                                  </div>
+                                  <p className={cn('mt-2 text-sm', adminDark ? 'text-slate-300' : 'text-slate-600')}>{card.sub}</p>
+                                </div>
+                                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-400 ring-1 ring-inset ring-sky-400/20">
+                                  <Icon className="h-5 w-5" />
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                    </div>
+
+                    <div className="mt-6 grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
+                        <div className={cn('rounded-[28px] border p-5', adminDark ? 'border-white/10 bg-slate-900/50' : 'border-slate-200 bg-white')}>
+                          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                              <p className="text-xs uppercase tracking-[0.22em] text-sky-400">Device Inventory</p>
+                              <h3 className={cn('mt-1 text-xl font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>Realtime device status</h3>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => refreshNetworkInventory()}
+                                className={cn('inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium', adminDark ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-100 hover:bg-slate-200')}
+                              >
+                                <RefreshCw className="h-4 w-4" />
+                                Refresh
+                              </button>
+                              <div className={cn('flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm', adminDark ? 'bg-emerald-500/10 text-emerald-300' : 'bg-emerald-50 text-emerald-700')}>
+                                <div className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.9)]" />
+                                Live data
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="mt-4">
+                            <div className="relative">
+                              <Search className={cn('pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2', adminDark ? 'text-slate-500' : 'text-slate-400')} />
+                              <input
+                                value={networkQuery}
+                                onChange={(event) => setNetworkQuery(event.target.value)}
+                                placeholder="Search devices..."
+                                className={cn(
+                                  'w-full rounded-2xl border py-3 pl-11 pr-4 text-sm outline-none transition-all',
+                                  adminDark
+                                    ? 'border-white/10 bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-sky-400/60'
+                                    : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                                )}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="mt-4 space-y-3">
+                            {filteredNetworkDevices.map((device) => {
+                              const status = String(device?.status || '').toLowerCase()
+                              const isUp = status === 'up' || status === 'online' || status === 'healthy'
+                              return (
+                                <div
+                                  key={device.id}
+                                  className={cn(
+                                    'flex flex-col gap-3 rounded-2xl border p-4 sm:flex-row sm:items-center sm:justify-between',
+                                    adminDark ? 'border-white/10 bg-white/[0.03]' : 'border-slate-200 bg-slate-50'
+                                  )}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <div className={cn('flex h-11 w-11 items-center justify-center rounded-2xl', adminDark ? 'bg-sky-500/15 text-sky-400' : 'bg-sky-100 text-sky-600')}>
+                                      <HardDrive className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                      <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{device.name || device.id}</p>
+                                      <div className="mt-1 flex items-center gap-2 text-sm">
+                                        <span
+                                          className={cn(
+                                            'inline-flex items-center gap-1 rounded-full px-2.5 py-1',
+                                            isUp
+                                              ? 'bg-emerald-500/10 text-emerald-400'
+                                              : adminDark
+                                                ? 'bg-rose-500/10 text-rose-300'
+                                                : 'bg-rose-50 text-rose-700'
+                                          )}
+                                        >
+                                          <span className={cn('h-1.5 w-1.5 rounded-full', isUp ? 'bg-emerald-400' : 'bg-rose-500')} />
+                                          {device.status || 'unknown'}
+                                        </span>
+                                        <span className={adminDark ? 'text-slate-400' : 'text-slate-500'}>Stable link</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => runNetworkAction('device.reboot', { device_id: device.id })}
+                                    className={cn(
+                                      'inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition-all',
+                                      adminDark ? 'border-white/10 bg-white/5 hover:bg-white/10' : 'border-slate-200 bg-white hover:bg-slate-100'
+                                    )}
+                                  >
+                                    Reboot
+                                    <ArrowRight className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              )
+                            })}
+                            {filteredNetworkDevices.length === 0 ? (
+                              <div className={cn('rounded-2xl border border-dashed p-4 text-sm', adminDark ? 'border-white/10 text-slate-400' : 'border-slate-200 text-slate-500')}>
+                                No devices found.
+                              </div>
+                            ) : null}
+                          </div>
+                        </div>
+
+                        <div className={cn('rounded-[28px] border p-5', adminDark ? 'border-white/10 bg-slate-900/50' : 'border-slate-200 bg-white')}>
+                          <div>
+                            <p className="text-xs uppercase tracking-[0.22em] text-sky-400">Quick Actions</p>
+                            <h3 className={cn('mt-1 text-xl font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>Operations toolkit</h3>
+                          </div>
+                          <div className="mt-4 space-y-3">
+                            {[
+                              { label: 'VLAN Management', icon: Globe2, desc: 'Create and retire VLANs.' },
+                              { label: 'IPAM + Config Backups', icon: Database, desc: 'Reserve IPs and capture configs.' },
+                              { label: 'IDS/IPS + Rogue AP', icon: ShieldCheck, desc: 'Security monitoring feeds.' },
+                              { label: 'NetFlow + Alert Integrations', icon: Activity, desc: 'Traffic analytics and alert sinks.' },
+                              { label: 'Client Monitoring + Auth Servers', icon: Users, desc: 'Connected clients and RADIUS/TACACS.' },
+                            ].map((item) => {
+                              const Icon = item.icon
+                              return (
+                                <div key={item.label} className={cn('rounded-2xl border p-4', adminDark ? 'border-white/10 bg-white/[0.03]' : 'border-slate-200 bg-slate-50')}>
+                                  <div className="flex items-start gap-3">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-400">
+                                      <Icon className="h-4 w-4" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{item.label}</p>
+                                      <p className={cn('mt-1 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>{item.desc}</p>
+                                    </div>
+                                    <ArrowUpRight className={cn('h-4 w-4', adminDark ? 'text-slate-500' : 'text-slate-400')} />
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                    </div>
+                  </section>
+
+                  <section className="grid gap-6 xl:grid-cols-2">
+                      <div className={cn('rounded-[32px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/75')}>
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-xs uppercase tracking-[0.22em] text-sky-400">VLAN Management</p>
+                            <h3 className={cn('mt-1 text-2xl font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>Create and retire VLANs</h3>
+                          </div>
+                          <BadgeCheck className="h-6 w-6 text-sky-400" />
+                        </div>
+                        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                          {[
+                            ['VLAN ID', vlanForm.vlan_id, (value) => setVlanForm((prev) => ({ ...prev, vlan_id: value }))],
+                            ['Name', vlanForm.name, (value) => setVlanForm((prev) => ({ ...prev, name: value }))],
+                            ['Subnet', vlanForm.subnet, (value) => setVlanForm((prev) => ({ ...prev, subnet: value }))],
+                            ['Gateway', vlanForm.gateway, (value) => setVlanForm((prev) => ({ ...prev, gateway: value }))],
+                          ].map(([label, value, setter]) => (
+                            <div key={label} className={cn('rounded-2xl border p-4', adminDark ? 'border-white/10 bg-slate-900/50' : 'border-slate-200 bg-slate-50')}>
+                              <p className={cn('text-xs uppercase tracking-[0.2em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>{label}</p>
+                              <input
+                                value={value}
+                                onChange={(event) => setter(event.target.value)}
+                                className={cn(
+                                  'mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none',
+                                  adminDark ? 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/60' : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                                )}
+                              />
+                            </div>
+                          ))}
+                        </div>
                         <button
                           type="button"
-                          onClick={() => runNetworkAction('ipam.release', { ip: row.ip })}
-                          className="text-[10px] font-semibold text-rose-600"
+                          onClick={() => runNetworkAction('vlan.create', vlanForm)}
+                          className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30"
                         >
-                          Release
+                          Add VLAN
+                          <ArrowRight className="h-4 w-4" />
+                        </button>
+                        <div className="mt-4 space-y-2">
+                          {(networkInventory?.vlans || []).slice(0, 6).map((vlan) => (
+                            <div key={vlan.id} className={cn('flex items-center justify-between rounded-2xl border px-4 py-3', adminDark ? 'border-white/10 bg-white/[0.03]' : 'border-slate-200 bg-white')}>
+                              <div className={cn('text-sm font-medium', adminDark ? 'text-white' : 'text-slate-900')}>VLAN {vlan.id} · {vlan.subnet}</div>
+                              <button
+                                type="button"
+                                onClick={() => runNetworkAction('vlan.delete', { vlan_id: vlan.id })}
+                                className={cn('rounded-xl border px-3 py-1.5 text-xs font-semibold', adminDark ? 'border-rose-400/20 bg-rose-500/10 text-rose-300' : 'border-rose-200 bg-rose-50 text-rose-700')}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          ))}
+                          {(networkInventory?.vlans || []).length === 0 ? (
+                            <div className={cn('rounded-2xl border border-dashed p-4 text-sm', adminDark ? 'border-white/10 text-slate-400' : 'border-slate-200 text-slate-500')}>
+                              No VLANs yet.
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+
+                      <div className={cn('rounded-[32px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/75')}>
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-xs uppercase tracking-[0.22em] text-sky-400">IPAM + Config Backups</p>
+                            <h3 className={cn('mt-1 text-2xl font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>Reserve IPs and capture configs</h3>
+                          </div>
+                          <Lock className="h-6 w-6 text-sky-400" />
+                        </div>
+                        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                          {[
+                            ['IP address', ipamForm.ip, (value) => setIpamForm((prev) => ({ ...prev, ip: value }))],
+                            ['Owner', ipamForm.owner, (value) => setIpamForm((prev) => ({ ...prev, owner: value }))],
+                            ['Device ID for backup', backupForm.device_id, (value) => setBackupForm({ device_id: value })],
+                          ].map(([label, value, setter]) => (
+                            <div key={label} className={cn('rounded-2xl border p-4', adminDark ? 'border-white/10 bg-slate-900/50' : 'border-slate-200 bg-slate-50')}>
+                              <p className={cn('text-xs uppercase tracking-[0.2em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>{label}</p>
+                              <input
+                                value={value}
+                                onChange={(event) => setter(event.target.value)}
+                                className={cn(
+                                  'mt-2 w-full rounded-xl border px-3 py-2 text-sm outline-none',
+                                  adminDark ? 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/60' : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                                )}
+                              />
+                            </div>
+                          ))}
+                          <div className={cn('rounded-2xl border p-4', adminDark ? 'border-white/10 bg-slate-900/50' : 'border-slate-200 bg-slate-50')}>
+                            <p className={cn('text-xs uppercase tracking-[0.2em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>Backup target</p>
+                            <p className={cn('mt-2 font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>Encrypted vault</p>
+                          </div>
+                        </div>
+                        <div className="mt-4 flex flex-wrap gap-3">
+                          <button
+                            type="button"
+                            onClick={() => runNetworkAction('ipam.reserve', ipamForm)}
+                            className={cn('rounded-2xl px-4 py-3 text-sm font-semibold', adminDark ? 'bg-white/5 hover:bg-white/10 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-900')}
+                          >
+                            Reserve IP
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => runNetworkAction('config.backup', backupForm)}
+                            className="rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30"
+                          >
+                            Run config backup
+                          </button>
+                        </div>
+                        <div className="mt-4 space-y-2">
+                          {(networkInventory?.ipam_reservations || []).slice(0, 4).map((row) => (
+                            <div key={row.id} className={cn('flex items-center justify-between rounded-2xl border px-4 py-3', adminDark ? 'border-white/10 bg-white/[0.03]' : 'border-slate-200 bg-white')}>
+                              <div className={cn('text-sm font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{row.ip} · {row.owner || 'reserved'}</div>
+                              <button
+                                type="button"
+                                onClick={() => runNetworkAction('ipam.release', { ip: row.ip })}
+                                className={cn('rounded-xl border px-3 py-1.5 text-xs font-semibold', adminDark ? 'border-rose-400/20 bg-rose-500/10 text-rose-300' : 'border-rose-200 bg-rose-50 text-rose-700')}
+                              >
+                                Release
+                              </button>
+                            </div>
+                          ))}
+                          {(networkInventory?.config_backups || []).slice(0, 3).map((row) => (
+                            <div key={row.id} className={cn('rounded-2xl border px-4 py-3 text-sm', adminDark ? 'border-white/10 bg-white/[0.03] text-slate-300' : 'border-slate-200 bg-white text-slate-700')}>
+                              Backup {row.device_id || 'device'} · {row.created_at}
+                            </div>
+                          ))}
+                          {(networkInventory?.ipam_reservations || []).length === 0 && (networkInventory?.config_backups || []).length === 0 ? (
+                            <div className={cn('rounded-2xl border border-dashed p-4 text-sm', adminDark ? 'border-white/10 text-slate-400' : 'border-slate-200 text-slate-500')}>
+                              No reservations or backups yet.
+                            </div>
+                          ) : null}
+                        </div>
+                      </div>
+                  </section>
+
+                  <section className={cn('rounded-[32px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/75')}>
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.22em] text-sky-400">Operational Surfaces</p>
+                          <h3 className={cn('mt-1 text-2xl font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>Security • Analytics • Users</h3>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => refreshNetworkInventory()}
+                          className={cn('inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium', adminDark ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-100 hover:bg-slate-200')}
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                          Refresh
                         </button>
                       </div>
-                    ))}
-                    {(networkInventory?.config_backups || []).slice(0, 2).map((row) => (
-                      <div key={row.id} className="text-[11px] text-slate-500">Backup {row.device_id || 'device'} · {row.created_at}</div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : null}
+                      <div className="mt-5 grid gap-4 md:grid-cols-3">
+                        <div className={cn('rounded-[24px] border p-5', adminDark ? 'border-white/10 bg-slate-900/50' : 'border-slate-200 bg-white')}>
+                          <p className="text-xs uppercase tracking-[0.22em] text-sky-400">IDS/IPS + Rogue AP</p>
+                          <p className={cn('mt-1 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>Security monitoring feeds.</p>
+                          <div className={cn('mt-4 space-y-2 text-sm', adminDark ? 'text-slate-300' : 'text-slate-700')}>
+                            {(networkInventory?.ids_alerts || []).slice(0, 3).map((alert) => (
+                              <div key={alert.id} className={cn('rounded-2xl border px-4 py-3', adminDark ? 'border-white/10 bg-white/[0.03]' : 'border-slate-200 bg-slate-50')}>
+                                {alert.severity} · {alert.message}
+                              </div>
+                            ))}
+                            {(networkInventory?.rogue_aps || []).slice(0, 2).map((ap) => (
+                              <div key={ap.id} className={cn('rounded-2xl border px-4 py-3', adminDark ? 'border-rose-400/20 bg-rose-500/10 text-rose-300' : 'border-rose-200 bg-rose-50 text-rose-700')}>
+                                Rogue AP: {ap.ssid}
+                              </div>
+                            ))}
+                            <div className={cn('rounded-2xl border px-4 py-3 text-sm', adminDark ? 'border-white/10 bg-white/[0.03] text-slate-300' : 'border-slate-200 bg-slate-50 text-slate-700')}>
+                              Firmware jobs: {(networkInventory?.firmware_jobs || []).length} · Bulk config jobs: {(networkInventory?.bulk_config_jobs || []).length}
+                            </div>
+                          </div>
+                        </div>
 
-            {activeCategory === 'network' ? (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">IDS/IPS + Rogue AP</p>
-                    <p className="text-xs text-slate-500">Security monitoring feeds.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(networkInventory?.ids_alerts || []).slice(0, 3).map((alert) => (
-                      <div key={alert.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        {alert.severity} · {alert.message}
-                      </div>
-                    ))}
-                    {(networkInventory?.rogue_aps || []).slice(0, 2).map((ap) => (
-                      <div key={ap.id} className="text-[11px] text-rose-500">Rogue AP: {ap.ssid}</div>
-                    ))}
-                    <div className="text-[11px] text-slate-500">Firmware jobs: {(networkInventory?.firmware_jobs || []).length}</div>
-                    <div className="text-[11px] text-slate-500">Bulk config jobs: {(networkInventory?.bulk_config_jobs || []).length}</div>
-                  </div>
-                </div>
+                        <div className={cn('rounded-[24px] border p-5', adminDark ? 'border-white/10 bg-slate-900/50' : 'border-slate-200 bg-white')}>
+                          <p className="text-xs uppercase tracking-[0.22em] text-sky-400">NetFlow + Alert Integrations</p>
+                          <p className={cn('mt-1 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>Traffic analytics and alert sinks.</p>
+                          <div className={cn('mt-4 space-y-2 text-sm', adminDark ? 'text-slate-300' : 'text-slate-700')}>
+                            {(networkInventory?.flow_stats || []).slice(0, 2).map((flow) => (
+                              <div key={flow.id} className={cn('rounded-2xl border px-4 py-3', adminDark ? 'border-white/10 bg-white/[0.03]' : 'border-slate-200 bg-slate-50')}>
+                                Flows: {flow.total_flows}
+                              </div>
+                            ))}
+                            {(networkInventory?.alert_integrations || []).slice(0, 2).map((integration) => (
+                              <div key={integration.id} className={cn('rounded-2xl border px-4 py-3', adminDark ? 'border-white/10 bg-white/[0.03]' : 'border-slate-200 bg-slate-50')}>
+                                {integration.type}: {integration.target}
+                              </div>
+                            ))}
+                            <div className={cn('rounded-2xl border px-4 py-3 text-sm', adminDark ? 'border-white/10 bg-white/[0.03] text-slate-300' : 'border-slate-200 bg-slate-50 text-slate-700')}>
+                              Config audits: {(networkInventory?.config_audit || []).length} · QoS policies: {(networkInventory?.qos_policies || []).length}
+                            </div>
+                            <div className={cn('rounded-2xl border px-4 py-3 text-sm', adminDark ? 'border-white/10 bg-white/[0.03] text-slate-300' : 'border-slate-200 bg-slate-50 text-slate-700')}>
+                              Traffic shaping: {(networkInventory?.traffic_shapes || []).length} · Restore jobs: {(networkInventory?.config_restore_jobs || []).length}
+                            </div>
+                          </div>
+                        </div>
 
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">NetFlow + Alert Integrations</p>
-                    <p className="text-xs text-slate-500">Traffic analytics and alert sinks.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(networkInventory?.flow_stats || []).slice(0, 2).map((flow) => (
-                      <div key={flow.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        Flows: {flow.total_flows}
+                        <div className={cn('rounded-[24px] border p-5', adminDark ? 'border-white/10 bg-slate-900/50' : 'border-slate-200 bg-white')}>
+                          <p className="text-xs uppercase tracking-[0.22em] text-sky-400">Client Monitoring + Auth Servers</p>
+                          <p className={cn('mt-1 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>Connected clients and RADIUS/TACACS.</p>
+                          <div className={cn('mt-4 space-y-2 text-sm', adminDark ? 'text-slate-300' : 'text-slate-700')}>
+                            {(networkInventory?.clients || []).slice(0, 3).map((client) => (
+                              <div key={client.id} className={cn('rounded-2xl border px-4 py-3', adminDark ? 'border-white/10 bg-white/[0.03]' : 'border-slate-200 bg-slate-50')}>
+                                {client.ip || client.mac} · {client.status || 'online'}
+                              </div>
+                            ))}
+                            {(networkInventory?.auth_servers || []).slice(0, 2).map((srv) => (
+                              <div key={srv.id} className={cn('rounded-2xl border px-4 py-3', adminDark ? 'border-white/10 bg-white/[0.03]' : 'border-slate-200 bg-slate-50')}>
+                                {srv.type}: {srv.host}
+                              </div>
+                            ))}
+                            <div className={cn('rounded-2xl border px-4 py-3 text-sm', adminDark ? 'border-white/10 bg-white/[0.03] text-slate-300' : 'border-slate-200 bg-slate-50 text-slate-700')}>
+                              Active tunnels: {(networkInventory?.tunnels || []).length} · VPN tunnels: {(networkInventory?.vpn_tunnels || []).length}
+                            </div>
+                            <div className={cn('rounded-2xl border px-4 py-3 text-sm', adminDark ? 'border-white/10 bg-white/[0.03] text-slate-300' : 'border-slate-200 bg-slate-50 text-slate-700')}>
+                              Firewall policies: {(networkInventory?.firewall_policies || []).length}
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    ))}
-                    {(networkInventory?.alert_integrations || []).slice(0, 2).map((integration) => (
-                      <div key={integration.id} className="text-[11px] text-slate-500">{integration.type}: {integration.target}</div>
-                    ))}
-                    <div className="text-[11px] text-slate-500">Config audits: {(networkInventory?.config_audit || []).length}</div>
-                    <div className="text-[11px] text-slate-500">QoS policies: {(networkInventory?.qos_policies || []).length}</div>
-                    <div className="text-[11px] text-slate-500">Traffic shaping: {(networkInventory?.traffic_shapes || []).length}</div>
-                    <div className="text-[11px] text-slate-500">Restore jobs: {(networkInventory?.config_restore_jobs || []).length}</div>
-                  </div>
-                </div>
+                  </section>
 
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">Client Monitoring + Auth Servers</p>
-                    <p className="text-xs text-slate-500">Connected clients and RADIUS/TACACS.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(networkInventory?.clients || []).slice(0, 3).map((client) => (
-                      <div key={client.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        {client.ip || client.mac} · {client.status || 'online'}
+                  <section className={cn('rounded-[32px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/75')}>
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.22em] text-sky-400">Network Capabilities</p>
+                        <h3 className={cn('mt-1 text-2xl font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>6 capability groups</h3>
                       </div>
-                    ))}
-                    {(networkInventory?.auth_servers || []).slice(0, 2).map((srv) => (
-                      <div key={srv.id} className="text-[11px] text-slate-500">{srv.type}: {srv.host}</div>
-                    ))}
-                    <div className="text-[11px] text-slate-500">Active tunnels: {(networkInventory?.tunnels || []).length}</div>
-                    <div className="text-[11px] text-slate-500">VPN tunnels: {(networkInventory?.vpn_tunnels || []).length}</div>
-                    <div className="text-[11px] text-slate-500">Firewall policies: {(networkInventory?.firewall_policies || []).length}</div>
-                  </div>
+                      <div className="flex items-center gap-3">
+                        <div className={cn('flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium', adminDark ? 'bg-emerald-500/10 text-emerald-300' : 'bg-emerald-50 text-emerald-700')}>
+                          <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                          live
+                        </div>
+                        <button type="button" className={cn('inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium', adminDark ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-100 hover:bg-slate-200')}>
+                          <Filter className="h-4 w-4" />
+                          Filter
+                        </button>
+                        <button type="button" className={cn('inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium', adminDark ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-100 hover:bg-slate-200')}>
+                          <SlidersHorizontal className="h-4 w-4" />
+                          Sort
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                      {NETWORK_CAPABILITIES.map((section) => (
+                        <div key={section.title} className={cn('rounded-[24px] border p-5', adminDark ? 'border-white/10 bg-slate-900/50' : 'border-slate-200 bg-white')}>
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-xs uppercase tracking-[0.2em] text-sky-400">live</p>
+                              <h4 className={cn('mt-1 text-lg font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>{section.title}</h4>
+                            </div>
+                            <div className={cn('rounded-2xl px-3 py-1.5 text-sm font-semibold', adminDark ? 'bg-sky-500/10 text-sky-300' : 'bg-sky-50 text-sky-700')}>
+                              {section.count} capabilities
+                            </div>
+                          </div>
+                          <ul className={cn('mt-4 space-y-2 text-sm', adminDark ? 'text-slate-300' : 'text-slate-600')}>
+                            {section.items.map((item) => (
+                              <li key={item} className="flex items-center gap-2">
+                                <CheckCircle2 className="h-4 w-4 text-sky-400" />
+                                {item}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+                        <div className={cn('rounded-[32px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/75')}>
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-xs uppercase tracking-[0.22em] text-sky-400">Verification Queue</p>
+                              <h3 className={cn('mt-1 text-2xl font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>EU/USA docs pending review</h3>
+                            </div>
+                            <Bell className="h-6 w-6 text-sky-400" />
+                          </div>
+                          <div className={cn('mt-5 rounded-[24px] border p-5', adminDark ? 'border-white/10 bg-slate-900/50' : 'border-slate-200 bg-white')}>
+                            {verificationQueue.length ? (
+                              <div className="space-y-2">
+                                {verificationQueue.slice(0, 4).map((row) => (
+                                  <div key={row.id || row.user_id} className={cn('rounded-2xl border px-4 py-3 text-sm', adminDark ? 'border-white/10 bg-white/[0.03]' : 'border-slate-200 bg-slate-50')}>
+                                    <div className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{row.user_name || row.user_email || row.user_id}</div>
+                                    <div className={cn('mt-1 text-xs', adminDark ? 'text-slate-400' : 'text-slate-600')}>Doc: {row.doc_type || row.type || 'business'} · Status: {row.status || 'pending'}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className={cn('text-sm', adminDark ? 'text-slate-300' : 'text-slate-600')}>No pending verifications in queue.</p>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => refreshVerificationQueue()}
+                              className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30"
+                            >
+                              Refresh
+                              <RefreshCw className="h-4 w-4" />
+                            </button>
+                          </div>
+
+                          <div className="mt-4 space-y-3">
+                            <div className={cn('rounded-2xl border p-4', adminDark ? 'border-white/10 bg-white/[0.03]' : 'border-slate-200 bg-slate-50')}>
+                              <div className="flex items-center justify-between gap-3">
+                                <h4 className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>Dispute Radar</h4>
+                                <button type="button" onClick={() => refreshDisputes()} className="inline-flex items-center gap-2 text-sm text-sky-400">
+                                  Sync
+                                  <ArrowRight className="h-4 w-4" />
+                                </button>
+                              </div>
+                              {disputes.length ? (
+                                <div className="mt-2 space-y-2">
+                                  {disputes.slice(0, 3).map((dispute) => (
+                                    <div key={dispute.id} className={cn('rounded-2xl border px-4 py-3 text-sm', adminDark ? 'border-white/10 bg-slate-900/50 text-slate-300' : 'border-slate-200 bg-white text-slate-700')}>
+                                      {dispute.title || dispute.contract_id || 'Dispute'} · {dispute.status || 'open'}
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className={cn('mt-2 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>No active disputes.</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className={cn('rounded-[32px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/75')}>
+                          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                              <p className="text-xs uppercase tracking-[0.22em] text-sky-400">Audit Pulse</p>
+                              <h3 className={cn('mt-1 text-2xl font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>Most recent admin actions</h3>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => refreshAudit()}
+                              className={cn('inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium', adminDark ? 'bg-white/5 hover:bg-white/10' : 'bg-slate-100 hover:bg-slate-200')}
+                            >
+                              <RefreshCw className="h-4 w-4" />
+                              Refresh
+                            </button>
+                          </div>
+                          <div className="mt-5 grid gap-3 lg:grid-cols-2">
+                            {filteredNetworkAuditRows.slice(0, 6).map((entry) => (
+                              <div key={entry.id || entry.at} className={cn('rounded-2xl border p-4', adminDark ? 'border-white/10 bg-slate-900/50' : 'border-slate-200 bg-white')}>
+                                <div className="flex items-center justify-between gap-3">
+                                  <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{entry.path || entry.action || 'Admin action'}</p>
+                                  <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-400">{entry.status ?? 200}</span>
+                                </div>
+                                <p className={cn('mt-2 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>{entry.at ? new Date(entry.at).toLocaleString() : '--'} · system</p>
+                              </div>
+                            ))}
+                            {!filteredNetworkAuditRows.length ? (
+                              <div className={cn('rounded-2xl border border-dashed p-4 text-sm', adminDark ? 'border-white/10 text-slate-400' : 'border-slate-200 text-slate-500')}>
+                                No recent activity.
+                              </div>
+                            ) : null}
+                          </div>
+                        </div>
+                      </section>
+
+                      <section className={cn('rounded-[32px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/75')}>
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                          <div>
+                            <p className="text-xs uppercase tracking-[0.22em] text-sky-400">Admin Audit Log</p>
+                            <h3 className={cn('mt-1 text-2xl font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>Immutable, tamper-evident audit trail</h3>
+                          </div>
+                          <div className="relative w-full max-w-md">
+                            <Search className={cn('pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2', adminDark ? 'text-slate-500' : 'text-slate-400')} />
+                            <input
+                              value={networkAuditQuery}
+                              onChange={(event) => setNetworkAuditQuery(event.target.value)}
+                              placeholder="Search audit..."
+                              className={cn(
+                                'w-full rounded-2xl border py-3 pl-11 pr-4 text-sm outline-none transition-all',
+                                adminDark
+                                  ? 'border-white/10 bg-slate-900/60 text-slate-100 placeholder:text-slate-500 focus:border-sky-400/60'
+                                  : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                              )}
+                            />
+                          </div>
+                        </div>
+
+                        <div className={cn('mt-5 overflow-hidden rounded-[24px] border', adminDark ? 'border-white/10' : 'border-slate-200')}>
+                          <div
+                            className={cn(
+                              'grid grid-cols-[1.4fr_0.9fr_1.4fr_0.8fr] gap-3 border-b px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em]',
+                              adminDark ? 'border-white/10 bg-white/[0.03] text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-500'
+                            )}
+                          >
+                            <div>Endpoint</div>
+                            <div>Time</div>
+                            <div>Actor / Device</div>
+                            <div>Status</div>
+                          </div>
+                          <div className={cn('divide-y', adminDark ? 'divide-white/10' : 'divide-slate-200')}>
+                            {filteredNetworkAuditRows.slice(0, 30).map((entry) => (
+                              <div
+                                key={entry.id || entry.at}
+                                className={cn('grid grid-cols-[1.4fr_0.9fr_1.4fr_0.8fr] gap-3 px-4 py-4 text-sm', adminDark ? 'bg-slate-950/30' : 'bg-white')}
+                              >
+                                <div className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{entry.path || entry.action || '--'}</div>
+                                <div className={adminDark ? 'text-slate-400' : 'text-slate-600'}>{entry.at ? new Date(entry.at).toLocaleString() : '--'}</div>
+                                <div className={adminDark ? 'text-slate-300' : 'text-slate-700'}>
+                                  <div className="truncate">Actor: {entry.actor_id || entry.actor || 'system'}</div>
+                                  <div className={adminDark ? 'text-slate-500' : 'text-slate-500'}>IP: {entry.ip || '--'} / Device: {entry.device_id || '--'}</div>
+                                </div>
+                                <div>
+                                  <span className="inline-flex rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-400">{entry.status ?? 200}</span>
+                                </div>
+                              </div>
+                            ))}
+                            {!filteredNetworkAuditRows.length ? (
+                              <div className={cn('px-4 py-4 text-sm', adminDark ? 'text-slate-400' : 'text-slate-500')}>No audit entries found.</div>
+                            ) : null}
+                          </div>
+                        </div>
+                  </section>
                 </div>
               </div>
             ) : null}
 
             {activeCategory === 'server-admin' ? (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">Web Server + PHP</p>
-                      <p className="text-xs text-slate-500">Config editor and version manager.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshServerAdminState()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Refresh
-                    </button>
-                  </div>
-                  <div className="mt-3 text-[11px] text-slate-600 dark:text-slate-300">
-                    Web: {serverAdminState?.web_server?.type} · {serverAdminState?.web_server?.status}
-                  </div>
-                  <div className="mt-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    PHP {serverAdminState?.php?.version}
-                  </div>
+              <div className={cn('relative overflow-hidden rounded-[32px] border p-4 sm:p-6', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/75')}>
+                <div className="absolute inset-0 -z-10 overflow-hidden">
+                  <div className={cn('absolute -top-40 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full blur-3xl', adminDark ? 'bg-sky-500/20' : 'bg-sky-400/20')} />
+                  <div className={cn('absolute top-40 -left-20 h-72 w-72 rounded-full blur-3xl', adminDark ? 'bg-blue-500/15' : 'bg-blue-300/25')} />
+                  <div className={cn('absolute bottom-0 right-0 h-96 w-96 rounded-full blur-3xl', adminDark ? 'bg-cyan-500/10' : 'bg-cyan-300/20')} />
                 </div>
 
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">Domains + Apps</p>
-                    <p className="text-xs text-slate-500">DNS, installers, and file manager.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(serverAdminState?.domains || []).slice(0, 3).map((domain) => (
-                      <div key={domain.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        {domain.domain} · {domain.status}
-                      </div>
-                    ))}
-                    {(serverAdminState?.apps || []).slice(0, 2).map((app) => (
-                      <div key={app.id} className="text-[11px] text-slate-500">{app.name} · {app.version}</div>
-                    ))}
-                    <div className="text-[11px] text-slate-500">Files: {(serverAdminState?.files || []).length}</div>
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">RBAC + Queues + Backups</p>
-                    <p className="text-xs text-slate-500">Admin roles and task queues.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(serverAdminState?.rbac_roles || []).slice(0, 3).map((role) => (
-                      <div key={role.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        {role.name} · {role.permissions?.length || 0} perms
-                      </div>
-                    ))}
-                    {(serverAdminState?.task_queues || []).slice(0, 2).map((queue) => (
-                      <div key={queue.id} className="text-[11px] text-slate-500">{queue.name} · {queue.pending} pending</div>
-                    ))}
-                    <div className="text-[11px] text-slate-500">IDS status: {serverAdminState?.security?.ids_status || 'idle'}</div>
-                    <div className="text-[11px] text-slate-500">DB admin sessions: {(serverAdminState?.db_admin_sessions || []).length}</div>
-                    <div className="text-[11px] text-slate-500">Backup providers: {(serverAdminState?.backups?.providers || []).length}</div>
-                    <div className="text-[11px] text-slate-500">Auto updates: {serverAdminState?.automation?.auto_updates ? 'On' : 'Off'} · Window {serverAdminState?.automation?.patch_window || '--'}</div>
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">Integrations + Installers</p>
-                      <p className="text-xs text-slate-500">Provider wiring and tooling status.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshIntegrationStatus()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Refresh
-                    </button>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    <div className="text-[11px] text-slate-500">Signature: {integrationStatus?.signature?.provider || '--'} · {integrationStatus?.signature?.configured ? 'configured' : 'missing'}</div>
-                    <div className="text-[11px] text-slate-500">Bank validation: {integrationStatus?.bank_validation?.provider || '--'} · {integrationStatus?.bank_validation?.configured ? 'configured' : 'missing'}</div>
-                    <div className="text-[11px] text-slate-500">IDS/IPS: {integrationStatus?.ids_ips?.source || '--'} · {integrationStatus?.ids_ips?.configured ? 'configured' : 'missing'}</div>
-                    <div className="text-[11px] text-slate-500">RADIUS/TACACS: {(integrationStatus?.radius?.configured || integrationStatus?.tacacs?.configured) ? 'configured' : 'missing'}</div>
-                    <div className="text-[11px] text-slate-500">Rogue AP: {integrationStatus?.rogue_ap?.configured ? 'configured' : 'missing'} · NetFlow: {integrationStatus?.netflow?.configured ? 'configured' : 'missing'}</div>
-                    <div className="text-[11px] text-slate-500">Alert delivery: Slack {integrationStatus?.alert_delivery?.slack ? 'on' : 'off'} · SMS {integrationStatus?.alert_delivery?.sms ? 'on' : 'off'} · Email {integrationStatus?.alert_delivery?.email ? 'on' : 'off'}</div>
-                    <div className="text-[11px] text-slate-500">Backups: S3 {integrationStatus?.backups?.s3 ? 'on' : 'off'} · GCS {integrationStatus?.backups?.gcs ? 'on' : 'off'} · Spaces {integrationStatus?.backups?.spaces ? 'on' : 'off'}</div>
-                    <div className="text-[11px] text-slate-500">Installer: {integrationStatus?.installers?.source || 'unknown'} · {integrationStatus?.installers?.os || '--'}</div>
-                    <div className="text-[11px] text-slate-500">Registrar: {integrationStatus?.registrar?.provider || '--'} · {integrationStatus?.registrar?.configured ? 'configured' : 'missing'}</div>
-                    {serverAdminState?.db_admin_ui?.configured ? (
-                      <a
-                        href={serverAdminState.db_admin_ui.phpmyadmin_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-[11px] font-semibold text-slate-700 underline"
-                      >
-                        Open phpMyAdmin
-                      </a>
-                    ) : (
-                      <div className="text-[11px] text-slate-500">phpMyAdmin: not configured</div>
+                <div className="mx-auto max-w-7xl space-y-6">
+                  <header
+                    className={cn(
+                      'flex flex-col gap-4 rounded-[2rem] border p-5 shadow-2xl shadow-sky-900/10 backdrop-blur-xl lg:flex-row lg:items-center lg:justify-between',
+                      adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/70'
                     )}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">OpenSearch</p>
-                      <p className="text-xs text-slate-500">Faceted search engine + fast estimates.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshOpenSearchStatus()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Refresh
-                    </button>
-                  </div>
-
-                  <div className="mt-3 space-y-1 text-[11px] text-slate-600 dark:text-slate-300">
-                    <div className="text-[11px] text-slate-500">
-                      Enabled: {openSearchConfig.enabled ? 'On' : 'Off'} Â· Configured: {openSearchStatus?.configured ? 'yes' : 'no'} Â· Reachable: {openSearchStatus?.reachable ? 'yes' : 'no'}
-                    </div>
-                    {openSearchStatus?.indices ? (
-                      <div className="text-[11px] text-slate-500">
-                        Products: {openSearchStatus.indices.products?.exists ? 'ok' : 'missing'} ({openSearchStatus.indices.products?.count ?? 0}) Â·
-                        Requirements: {openSearchStatus.indices.requirements?.exists ? 'ok' : 'missing'} ({openSearchStatus.indices.requirements?.count ?? 0})
+                  >
+                    <div className="flex items-start gap-4">
+                      <div
+                        className={cn(
+                          'rounded-3xl border bg-gradient-to-br p-4 shadow-lg',
+                          adminDark
+                            ? 'border-sky-400/20 from-sky-400/20 to-blue-500/10 text-sky-200 shadow-sky-500/10'
+                            : 'border-sky-200 from-sky-100 to-blue-50 text-sky-700 shadow-sky-200/40'
+                        )}
+                      >
+                        <Sparkles className="h-7 w-7" />
                       </div>
-                    ) : null}
-                    {openSearchStatus?.last_ok_at ? (
-                      <div className="text-[11px] text-slate-500">Last OK: {openSearchStatus.last_ok_at}</div>
-                    ) : null}
-                    {openSearchStatus?.last_error ? (
-                      <div className="text-[11px] text-rose-600">Last error: {openSearchStatus.last_error}</div>
-                    ) : null}
-                  </div>
-
-                  <div className="mt-3 grid grid-cols-1 gap-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={openSearchConfig.enabled}
-                        onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, enabled: e.target.checked }))}
-                        className="h-4 w-4"
-                      />
-                      Enable OpenSearch
-                    </label>
-                    <input
-                      value={openSearchConfig.url}
-                      onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, url: e.target.value }))}
-                      placeholder="OpenSearch URL (e.g. http://localhost:9200)"
-                      className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-[11px] text-slate-700"
-                    />
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        value={openSearchConfig.username}
-                        onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, username: e.target.value }))}
-                        placeholder="Username (optional)"
-                        className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-[11px] text-slate-700"
-                      />
-                      <input
-                        type="password"
-                        value={openSearchConfig.password}
-                        onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, password: e.target.value }))}
-                        placeholder="Password (optional)"
-                        className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-[11px] text-slate-700"
-                      />
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h1 className={cn('text-2xl font-semibold tracking-tight sm:text-3xl', adminDark ? 'text-white' : 'text-slate-900')}>
+                            Server Admin + App Management
+                          </h1>
+                          <Pill>Full Stack</Pill>
+                          <Pill>
+                            <span
+                              className={cn(
+                                'h-2 w-2 rounded-full',
+                                adminDark
+                                  ? 'bg-emerald-400 shadow-[0_0_0_4px_rgba(52,211,153,0.15)]'
+                                  : 'bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,0.12)]'
+                              )}
+                            />
+                            live
+                          </Pill>
+                        </div>
+                        <p className={cn('mt-2 max-w-3xl text-sm leading-6', adminDark ? 'text-slate-300' : 'text-slate-600')}>
+                          Premium control plane for servers, apps, security, backups, search, and audit operations with a blue-sky themed surface.
+                        </p>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        value={openSearchConfig.index_prefix}
-                        onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, index_prefix: e.target.value }))}
-                        placeholder="Index prefix"
-                        className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-[11px] text-slate-700"
-                      />
-                      <input
-                        type="number"
-                        value={openSearchConfig.timeout_ms}
-                        onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, timeout_ms: e.target.value }))}
-                        placeholder="Timeout (ms)"
-                        className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-[11px] text-slate-700"
-                      />
-                    </div>
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={openSearchConfig.verify_tls}
-                        onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, verify_tls: e.target.checked }))}
-                        className="h-4 w-4"
-                      />
-                      Verify TLS certificate
-                    </label>
 
-                    {openSearchNotice ? <div className="text-[11px] text-emerald-600">{openSearchNotice}</div> : null}
-                    {openSearchError ? <div className="text-[11px] text-rose-600">{openSearchError}</div> : null}
-
-                    <div className="mt-1 flex flex-wrap gap-2">
+                    <div className="flex flex-wrap items-center gap-3">
                       <button
                         type="button"
-                        onClick={saveOpenSearchConfig}
-                        disabled={openSearchConfigBusy}
-                        className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-semibold text-slate-600 disabled:opacity-60"
+                        onClick={() => setAdminDark((v) => !v)}
+                        className={cn(
+                          'inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium shadow-lg transition hover:-translate-y-0.5',
+                          adminDark
+                            ? 'border-white/10 bg-white/10 text-white shadow-sky-950/20 hover:bg-white/15'
+                            : 'border-slate-200 bg-white text-slate-700 shadow-slate-200/40 hover:bg-slate-50'
+                        )}
                       >
-                        {openSearchConfigBusy ? 'Saving...' : 'Save settings'}
+                        {adminDark ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
+                        {adminDark ? 'Light mode' : 'Dark mode'}
                       </button>
                       <button
                         type="button"
-                        onClick={() => runOpenSearchAction('opensearch.test_connection')}
-                        disabled={Boolean(openSearchActionBusy)}
-                        className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-semibold text-slate-600 disabled:opacity-60"
+                        onClick={() => {
+                          refreshServerAdminState()
+                          refreshIntegrationStatus()
+                          refreshOpenSearchStatus()
+                          refreshAudit()
+                        }}
+                        className={cn(
+                          'inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition',
+                          adminDark
+                            ? 'border-sky-400/20 bg-sky-500/10 text-sky-200 hover:bg-sky-500/15'
+                            : 'border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100'
+                        )}
                       >
-                        {openSearchActionBusy === 'opensearch.test_connection' ? 'Testing...' : 'Test connection'}
+                        <RefreshCw className="h-4 w-4" /> Refresh
                       </button>
                       <button
                         type="button"
-                        onClick={() => runOpenSearchAction('opensearch.ensure_indices')}
-                        disabled={Boolean(openSearchActionBusy)}
-                        className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-semibold text-slate-600 disabled:opacity-60"
+                        onClick={() =>
+                          downloadJson('server_admin_snapshot.json', {
+                            at: new Date().toISOString(),
+                            server_admin: serverAdminState,
+                            integrations: integrationStatus,
+                            opensearch: { config: openSearchConfig, status: openSearchStatus },
+                            email: emailConfig,
+                            audit: audit.slice(0, 40),
+                          })
+                        }
+                        className={cn(
+                          'inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition',
+                          adminDark ? 'border-white/10 bg-white/10 text-white hover:bg-white/15' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                        )}
                       >
-                        Ensure indices
+                        <Download className="h-4 w-4" /> Export
                       </button>
                     </div>
+                  </header>
 
-                    <div className="mt-1 flex flex-wrap items-center gap-2">
-                      <label className="flex items-center gap-2 text-[10px] text-slate-500">
+                  <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <MetricCard loading={loading} label="Total accounts" value={formatNumber(users.length)} hint="Owner access enabled" icon={Users} />
+                    <MetricCard loading={loading} label="Pending verifications" value={formatNumber(verificationQueue.length)} hint="Audit gate clear" icon={ShieldCheck} />
+                    <MetricCard loading={loading} label="Infra alerts" value={formatNumber((infraState?.zombie_processes || []).length)} hint="System pulse live" icon={Bell} />
+                    <MetricCard loading={loading} label="Open tickets" value={formatNumber(supportTickets.length)} hint="Support queue view" icon={Inbox} />
+                  </section>
+
+                  <section className="grid gap-4 xl:grid-cols-3">
+                    <div className={cn('xl:col-span-2 rounded-[2rem] border p-5 shadow-xl shadow-sky-900/10 backdrop-blur-xl', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/70')}>
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <p className={cn('text-xs uppercase tracking-[0.22em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>4 sections</p>
+                          <h2 className={cn('mt-1 text-xl font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>Live operations overview</h2>
+                        </div>
+                        <Pill>24/7 active</Pill>
+                      </div>
+
+                      <div className="mt-5 grid gap-4 md:grid-cols-2">
+                        {[
+                          {
+                            title: 'Web Server + PHP',
+                            description: 'Config editor and version manager.',
+                            icon: Server,
+                            onRefresh: refreshServerAdminState,
+                            lines: [`Web: ${serverAdminState?.web_server?.type || '--'} · ${serverAdminState?.web_server?.status || '--'}`, `PHP ${serverAdminState?.php?.version || '--'}`],
+                            accent: 'from-sky-500/20 via-cyan-500/10 to-blue-500/10',
+                          },
+                          {
+                            title: 'Domains + Apps',
+                            description: 'DNS, installers, and file manager.',
+                            icon: Globe2,
+                            onRefresh: refreshServerAdminState,
+                            lines: [
+                              ...((serverAdminState?.domains || []).slice(0, 2).map((domain) => `${domain.domain} · ${domain.status}`) || []),
+                              ...((serverAdminState?.apps || []).slice(0, 1).map((app) => `${app.name} · ${app.version}`) || []),
+                              `Files: ${(serverAdminState?.files || []).length}`,
+                            ],
+                            accent: 'from-cyan-500/20 via-sky-500/10 to-blue-500/10',
+                          },
+                          {
+                            title: 'RBAC + Queues + Backups',
+                            description: 'Admin roles and task queues.',
+                            icon: Lock,
+                            onRefresh: refreshServerAdminState,
+                            lines: [
+                              `IDS status: ${serverAdminState?.security?.ids_status || 'idle'}`,
+                              `DB admin sessions: ${(serverAdminState?.db_admin_sessions || []).length}`,
+                              `Backup providers: ${(serverAdminState?.backups?.providers || []).length}`,
+                              `Auto updates: ${serverAdminState?.automation?.auto_updates ? 'On' : 'Off'} · Window ${serverAdminState?.automation?.patch_window || '--'}`,
+                            ],
+                            accent: 'from-blue-500/20 via-indigo-500/10 to-sky-500/10',
+                          },
+                          {
+                            title: 'Integrations + Installers',
+                            description: 'Provider wiring and tooling status.',
+                            icon: Workflow,
+                            onRefresh: refreshIntegrationStatus,
+                            lines: [
+                              `Signature: ${integrationStatus?.signature?.provider || '--'} · ${integrationStatus?.signature?.status || 'missing'}`,
+                              `Bank validation: ${integrationStatus?.bank_validation?.provider || '--'} · ${integrationStatus?.bank_validation?.status || 'missing'}`,
+                              `IDS/IPS: ${integrationStatus?.ids_ips?.status || 'missing'}`,
+                              `Alert delivery: Slack ${integrationStatus?.alerts?.slack ? 'on' : 'off'} · SMS ${integrationStatus?.alerts?.sms ? 'on' : 'off'} · Email ${integrationStatus?.alerts?.email ? 'on' : 'off'}`,
+                              `Backups: S3 ${integrationStatus?.backups?.s3 ? 'on' : 'off'} · GCS ${integrationStatus?.backups?.gcs ? 'on' : 'off'} · Spaces ${integrationStatus?.backups?.spaces ? 'on' : 'off'}`,
+                              `Installer: ${integrationStatus?.installer?.provider || 'winget'} · ${integrationStatus?.installer?.platform || 'windows'}`,
+                            ],
+                            accent: 'from-sky-500/20 via-blue-500/10 to-cyan-500/10',
+                          },
+                        ].map((card) => {
+                          const Icon = card.icon
+                          return (
+                            <div key={card.title} className={cn('rounded-3xl border p-5 shadow-lg shadow-sky-950/10', adminDark ? `border-white/10 bg-gradient-to-br ${card.accent}` : 'border-slate-200 bg-white')}>
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex items-start gap-3">
+                                  <div className={cn('rounded-2xl border p-3 backdrop-blur-md', adminDark ? 'border-white/10 bg-slate-950/30 text-sky-100' : 'border-sky-200 bg-sky-50 text-sky-700')}>
+                                    <Icon className="h-5 w-5" />
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <h3 className={cn('font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>{card.title}</h3>
+                                      <Pill>live</Pill>
+                                    </div>
+                                    <p className={cn('mt-1 text-sm', adminDark ? 'text-slate-300' : 'text-slate-600')}>{card.description}</p>
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={card.onRefresh}
+                                  className={cn(
+                                    'inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-semibold transition',
+                                    adminDark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                                  )}
+                                >
+                                  <RefreshCw className="h-3.5 w-3.5" /> Refresh
+                                </button>
+                              </div>
+
+                              <div className="mt-4 space-y-2">
+                                {card.lines.filter(Boolean).slice(0, 6).map((line) => (
+                                  <div
+                                    key={line}
+                                    className={cn(
+                                      'rounded-2xl border px-4 py-3 text-sm shadow-sm',
+                                      adminDark ? 'border-white/10 bg-slate-950/35 text-slate-200' : 'border-slate-200 bg-white text-slate-700'
+                                    )}
+                                  >
+                                    {line}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    <div className={cn('rounded-[2rem] border p-5 shadow-xl shadow-sky-900/10 backdrop-blur-xl', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/70')}>
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className={cn('text-xs uppercase tracking-[0.22em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>Platform Snapshot</p>
+                          <h2 className={cn('mt-1 text-xl font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>System health</h2>
+                        </div>
+                        <Shield className={cn('h-5 w-5', adminDark ? 'text-sky-300' : 'text-sky-600')} />
+                      </div>
+
+                      <div className="mt-5 space-y-3">
+                        {[
+                          ['MFA Required', securityContext.mfa_required ? 'On' : 'Off'],
+                          ['Exec Enabled', securityContext.exec_enabled ? 'On' : 'Simulated'],
+                          ['OpenSearch', openSearchConfig.enabled ? 'On' : 'Off'],
+                          ['Email delivery', emailConfig.enabled ? 'Enabled' : 'Skipped if not configured'],
+                          ['Backup providers', `${(serverAdminState?.backups?.providers || []).length} configured`],
+                        ].map(([label, value]) => (
+                          <div key={label} className={cn('rounded-2xl border px-4 py-3', adminDark ? 'border-white/10 bg-slate-950/35' : 'border-slate-200 bg-white')}>
+                            <div className="flex items-center justify-between gap-3">
+                              <span className={cn('text-sm', adminDark ? 'text-slate-300' : 'text-slate-600')}>{label}</span>
+                              <Pill>{value}</Pill>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className={cn('mt-5 rounded-3xl border p-4', adminDark ? 'border-sky-400/20 bg-sky-500/10' : 'border-sky-200 bg-sky-50')}>
+                        <div className="flex items-start gap-3">
+                          <TerminalSquare className={cn('mt-0.5 h-5 w-5', adminDark ? 'text-sky-300' : 'text-sky-600')} />
+                          <div>
+                            <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>OpenSearch control</p>
+                            <p className={cn('mt-1 text-sm', adminDark ? 'text-slate-300' : 'text-slate-600')}>
+                              Enable search only when reachable, then save settings, ensure indices, and reindex.
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setOpenSearchConfig((prev) => ({ ...prev, enabled: true }))}
+                          className={cn(
+                            'mt-4 inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:translate-y-[-1px]',
+                            adminDark ? 'bg-sky-500 shadow-sky-500/25' : 'bg-sky-600 shadow-sky-500/20'
+                          )}
+                        >
+                          Enable OpenSearch <ArrowRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className={cn('rounded-[2rem] border p-5 shadow-xl shadow-sky-900/10 backdrop-blur-xl', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/70')}>
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className={cn('text-xs uppercase tracking-[0.22em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>Configuration surfaces</p>
+                        <h2 className={cn('mt-1 text-xl font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>OpenSearch + Email Notifications</h2>
+                      </div>
+                      <Pill>Premium controls</Pill>
+                    </div>
+
+                    <div className="mt-5 grid gap-5 lg:grid-cols-2">
+                      <div className={cn('rounded-3xl border p-5', adminDark ? 'border-white/10 bg-slate-950/30' : 'border-slate-200 bg-white')}>
+                        <div className="flex items-center gap-3">
+                          <Search className={cn('h-5 w-5', adminDark ? 'text-sky-300' : 'text-sky-600')} />
+                          <div>
+                            <h3 className={cn('font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>OpenSearch</h3>
+                            <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>Faceted search engine + fast estimates.</p>
+                          </div>
+                        </div>
+                        <div className={cn('mt-2 text-sm', adminDark ? 'text-slate-300' : 'text-slate-600')}>
+                          Enabled: {openSearchConfig.enabled ? 'On' : 'Off'} · Configured: {openSearchStatus?.configured ? 'yes' : 'no'} · Reachable: {openSearchStatus?.reachable ? 'yes' : 'no'}
+                        </div>
+
+                        <div className="mt-4 grid gap-4 md:grid-cols-2">
+                          <label className="md:col-span-2">
+                            <span className={cn('mb-2 block text-xs font-medium uppercase tracking-[0.2em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>OpenSearch URL</span>
+                            <input
+                              value={openSearchConfig.url}
+                              onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, url: e.target.value }))}
+                              placeholder="http://localhost:9200"
+                              className={cn(
+                                'w-full rounded-2xl border px-4 py-3 text-sm outline-none',
+                                adminDark
+                                  ? 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40'
+                                  : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                              )}
+                            />
+                          </label>
+                          <label>
+                            <span className={cn('mb-2 block text-xs font-medium uppercase tracking-[0.2em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>Username (optional)</span>
+                            <input
+                              value={openSearchConfig.username}
+                              onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, username: e.target.value }))}
+                              placeholder="username"
+                              className={cn(
+                                'w-full rounded-2xl border px-4 py-3 text-sm outline-none',
+                                adminDark
+                                  ? 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40'
+                                  : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                              )}
+                            />
+                          </label>
+                          <label>
+                            <span className={cn('mb-2 block text-xs font-medium uppercase tracking-[0.2em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>Password (optional)</span>
+                            <input
+                              value={openSearchConfig.password}
+                              onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, password: e.target.value }))}
+                              placeholder="••••••••"
+                              className={cn(
+                                'w-full rounded-2xl border px-4 py-3 text-sm outline-none',
+                                adminDark
+                                  ? 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40'
+                                  : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                              )}
+                            />
+                          </label>
+                          <label>
+                            <span className={cn('mb-2 block text-xs font-medium uppercase tracking-[0.2em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>Index prefix</span>
+                            <input
+                              value={openSearchConfig.index_prefix}
+                              onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, index_prefix: e.target.value }))}
+                              placeholder="app"
+                              className={cn(
+                                'w-full rounded-2xl border px-4 py-3 text-sm outline-none',
+                                adminDark
+                                  ? 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40'
+                                  : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                              )}
+                            />
+                          </label>
+                          <label>
+                            <span className={cn('mb-2 block text-xs font-medium uppercase tracking-[0.2em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>Timeout (ms)</span>
+                            <input
+                              type="number"
+                              value={openSearchConfig.timeout_ms}
+                              onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, timeout_ms: e.target.value }))}
+                              placeholder="3000"
+                              className={cn(
+                                'w-full rounded-2xl border px-4 py-3 text-sm outline-none',
+                                adminDark
+                                  ? 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40'
+                                  : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                              )}
+                            />
+                          </label>
+                        </div>
+
+                        <div className="mt-4 flex flex-wrap items-center gap-3">
+                          <label className={cn('inline-flex items-center gap-2 text-sm', adminDark ? 'text-slate-300' : 'text-slate-700')}>
+                            <input
+                              type="checkbox"
+                              checked={openSearchConfig.enabled}
+                              onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, enabled: e.target.checked }))}
+                              className="h-4 w-4"
+                            />
+                            Enabled
+                          </label>
+                          <label className={cn('inline-flex items-center gap-2 text-sm', adminDark ? 'text-slate-300' : 'text-slate-700')}>
+                            <input
+                              type="checkbox"
+                              checked={openSearchConfig.verify_tls}
+                              onChange={(e) => setOpenSearchConfig((prev) => ({ ...prev, verify_tls: e.target.checked }))}
+                              className="h-4 w-4"
+                            />
+                            Verify TLS certificate
+                          </label>
+                          <button
+                            type="button"
+                            onClick={refreshOpenSearchStatus}
+                            className={cn(
+                              'inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition',
+                              adminDark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                            )}
+                          >
+                            <RefreshCw className="h-4 w-4" /> Refresh status
+                          </button>
+                        </div>
+
+                        {openSearchNotice ? <div className="mt-3 text-sm text-emerald-400">{openSearchNotice}</div> : null}
+                        {openSearchError ? <div className="mt-3 text-sm text-rose-300">{openSearchError}</div> : null}
+
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={saveOpenSearchConfig}
+                            disabled={openSearchConfigBusy}
+                            className={cn(
+                              'inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium transition disabled:opacity-60',
+                              adminDark ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20 hover:translate-y-[-1px]' : 'bg-sky-600 text-white shadow-lg shadow-sky-500/20 hover:translate-y-[-1px]'
+                            )}
+                          >
+                            {openSearchConfigBusy ? 'Saving...' : 'Save settings'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => runOpenSearchAction('opensearch.test_connection')}
+                            disabled={Boolean(openSearchActionBusy)}
+                            className={cn(
+                              'inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition disabled:opacity-60',
+                              adminDark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                            )}
+                          >
+                            {openSearchActionBusy === 'opensearch.test_connection' ? 'Testing...' : 'Test connection'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => runOpenSearchAction('opensearch.ensure_indices')}
+                            disabled={Boolean(openSearchActionBusy)}
+                            className={cn(
+                              'inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition disabled:opacity-60',
+                              adminDark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                            )}
+                          >
+                            Ensure indices
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => runOpenSearchAction('opensearch.reindex_all', { reset: openSearchReset })}
+                            disabled={Boolean(openSearchActionBusy)}
+                            className={cn(
+                              'inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition disabled:opacity-60',
+                              adminDark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                            )}
+                          >
+                            Reindex all
+                          </button>
+                        </div>
+
+                        <div className="mt-3 flex flex-wrap items-center gap-3">
+                          <label className={cn('inline-flex items-center gap-2 text-sm', adminDark ? 'text-slate-300' : 'text-slate-700')}>
+                            <input type="checkbox" checked={openSearchReset} onChange={(e) => setOpenSearchReset(e.target.checked)} className="h-4 w-4" />
+                            Reset
+                          </label>
+                          <input
+                            value={openSearchOrgId}
+                            onChange={(e) => setOpenSearchOrgId(e.target.value)}
+                            placeholder="Org ID (reindex org)"
+                            className={cn(
+                              'flex-1 rounded-2xl border px-4 py-3 text-sm outline-none',
+                              adminDark
+                                ? 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40'
+                                : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                            )}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => runOpenSearchAction('opensearch.reindex_org', { org_id: openSearchOrgId })}
+                            disabled={Boolean(openSearchActionBusy) || !String(openSearchOrgId || '').trim()}
+                            className={cn(
+                              'inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition disabled:opacity-60',
+                              adminDark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                            )}
+                          >
+                            Reindex org
+                          </button>
+                        </div>
+
+                        <p className={cn('mt-3 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>
+                          Save settings → Ensure indices → Reindex (all or org). Search uses OpenSearch only when enabled + reachable.
+                        </p>
+                      </div>
+
+                      <div className={cn('rounded-3xl border p-5', adminDark ? 'border-white/10 bg-slate-950/30' : 'border-slate-200 bg-white')}>
+                        <div className="flex items-center gap-3">
+                          <Mail className={cn('h-5 w-5', adminDark ? 'text-sky-300' : 'text-sky-600')} />
+                          <div>
+                            <h3 className={cn('font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>Email Notifications</h3>
+                            <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>SMTP or Gmail API delivery for reminders.</p>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 grid gap-4 md:grid-cols-2">
+                          <label className="md:col-span-2">
+                            <span className={cn('mb-2 block text-xs font-medium uppercase tracking-[0.2em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>Enabled</span>
+                            <label className={cn('inline-flex items-center gap-2 text-sm', adminDark ? 'text-slate-200' : 'text-slate-700')}>
+                              <input type="checkbox" checked={emailConfig.enabled} onChange={(e) => setEmailConfig((prev) => ({ ...prev, enabled: e.target.checked }))} className="h-4 w-4" />
+                              {emailConfig.enabled ? 'On' : 'Off'}
+                            </label>
+                          </label>
+
+                          <label>
+                            <span className={cn('mb-2 block text-xs font-medium uppercase tracking-[0.2em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>Provider</span>
+                            <select
+                              value={emailConfig.provider}
+                              onChange={(e) => setEmailConfig((prev) => ({ ...prev, provider: e.target.value }))}
+                              className={cn(
+                                'w-full rounded-2xl border px-4 py-3 text-sm outline-none',
+                                adminDark ? 'border-white/10 bg-white/5 text-white focus:border-sky-400/40' : 'border-slate-200 bg-white text-slate-900 focus:border-sky-400'
+                              )}
+                            >
+                              <option value="smtp">SMTP</option>
+                              <option value="gmail_api">Gmail API</option>
+                            </select>
+                          </label>
+
+                          <label>
+                            <span className={cn('mb-2 block text-xs font-medium uppercase tracking-[0.2em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>From name</span>
+                            <input
+                              value={emailConfig.from_name}
+                              onChange={(e) => setEmailConfig((prev) => ({ ...prev, from_name: e.target.value }))}
+                              placeholder="Admin Team"
+                              className={cn(
+                                'w-full rounded-2xl border px-4 py-3 text-sm outline-none',
+                                adminDark
+                                  ? 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40'
+                                  : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                              )}
+                            />
+                          </label>
+
+                          <label>
+                            <span className={cn('mb-2 block text-xs font-medium uppercase tracking-[0.2em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>From email</span>
+                            <input
+                              value={emailConfig.from_email}
+                              onChange={(e) => setEmailConfig((prev) => ({ ...prev, from_email: e.target.value }))}
+                              placeholder="admin@example.com"
+                              className={cn(
+                                'w-full rounded-2xl border px-4 py-3 text-sm outline-none',
+                                adminDark
+                                  ? 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40'
+                                  : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                              )}
+                            />
+                          </label>
+
+                          <label className="md:col-span-2">
+                            <span className={cn('mb-2 block text-xs font-medium uppercase tracking-[0.2em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>Test recipient</span>
+                            <input
+                              value={emailConfig.test_recipient}
+                              onChange={(e) => setEmailConfig((prev) => ({ ...prev, test_recipient: e.target.value }))}
+                              placeholder="recipient@example.com"
+                              className={cn(
+                                'w-full rounded-2xl border px-4 py-3 text-sm outline-none',
+                                adminDark
+                                  ? 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40'
+                                  : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                              )}
+                            />
+                          </label>
+                        </div>
+
+                        {emailConfigNotice ? <div className="mt-3 text-sm text-emerald-400">{emailConfigNotice}</div> : null}
+                        {emailConfigError ? <div className="mt-3 text-sm text-rose-300">{emailConfigError}</div> : null}
+
+                        <div className="mt-4 flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={saveEmailConfig}
+                            disabled={emailConfigBusy}
+                            className="inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:translate-y-[-1px] disabled:opacity-60"
+                          >
+                            {emailConfigBusy ? 'Saving...' : 'Save settings'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={sendEmailTest}
+                            className={cn(
+                              'inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition',
+                              adminDark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                            )}
+                          >
+                            Send test
+                          </button>
+                        </div>
+
+                        <div className={cn('mt-4 rounded-2xl border p-4 text-sm', adminDark ? 'border-amber-500/20 bg-amber-500/10 text-amber-100' : 'border-amber-200 bg-amber-50 text-amber-800')}>
+                          Secrets remain in env vars. If provider is not configured, email is skipped silently.
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="mt-6 grid gap-4 lg:grid-cols-2">
+                    <div className={cn('rounded-[2rem] border p-5 shadow-xl shadow-sky-900/10 backdrop-blur-xl', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/70')}>
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className={cn('text-xs uppercase tracking-[0.22em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>Capabilities</p>
+                          <h2 className={cn('mt-1 text-xl font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>Live modules</h2>
+                        </div>
+                        <Pill>7 groups</Pill>
+                      </div>
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                        {[
+                          { title: 'Real-Time Monitoring & Analytics', count: 4, icon: Activity },
+                          { title: 'Security Management', count: 4, icon: ShieldCheck },
+                          { title: 'Server Config & Optimization', count: 4, icon: ServerCog },
+                          { title: 'Backup & Data Protection', count: 3, icon: Cloud },
+                          { title: 'Website/App Management', count: 3, icon: LayoutDashboard },
+                          { title: 'User Account Management (System Admin)', count: 2, icon: Users },
+                          { title: 'Automation', count: 2, icon: Workflow },
+                        ].map((item) => {
+                          const Icon = item.icon
+                          return (
+                            <div key={item.title} className={cn('rounded-3xl border p-4', adminDark ? 'border-white/10 bg-slate-950/30' : 'border-slate-200 bg-white')}>
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex items-start gap-3">
+                                  <div className={cn('rounded-2xl border p-2.5', adminDark ? 'border-sky-400/20 bg-sky-500/10 text-sky-300' : 'border-sky-200 bg-sky-50 text-sky-600')}>
+                                    <Icon className="h-4 w-4" />
+                                  </div>
+                                  <div>
+                                    <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{item.title}</p>
+                                    <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>{item.count} capabilities</p>
+                                  </div>
+                                </div>
+                                <Pill>live</Pill>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    <div className={cn('rounded-[2rem] border p-5 shadow-xl shadow-sky-900/10 backdrop-blur-xl', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/70')}>
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className={cn('text-xs uppercase tracking-[0.22em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>Audit trail</p>
+                          <h2 className={cn('mt-1 text-xl font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>Admin Audit Log</h2>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={refreshAudit}
+                          className={cn(
+                            'rounded-2xl border px-4 py-2 text-sm font-medium transition',
+                            adminDark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                          )}
+                        >
+                          Refresh log
+                        </button>
+                      </div>
+
+                      <div className={cn('mt-4 flex items-center gap-3 rounded-2xl border px-4 py-3', adminDark ? 'border-white/10 bg-slate-950/30' : 'border-slate-200 bg-white')}>
+                        <Search className={cn('h-4 w-4', adminDark ? 'text-slate-400' : 'text-slate-500')} />
                         <input
-                          type="checkbox"
-                          checked={openSearchReset}
-                          onChange={(e) => setOpenSearchReset(e.target.checked)}
-                          className="h-3 w-3"
+                          value={serverAdminAuditQuery}
+                          onChange={(e) => setServerAdminAuditQuery(e.target.value)}
+                          placeholder="Filter logs by route or actor"
+                          className={cn('w-full bg-transparent text-sm outline-none', adminDark ? 'text-slate-100 placeholder:text-slate-500' : 'text-slate-900 placeholder:text-slate-400')}
                         />
-                        Reset
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => runOpenSearchAction('opensearch.reindex_all', { reset: openSearchReset })}
-                        disabled={Boolean(openSearchActionBusy)}
-                        className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-semibold text-slate-600 disabled:opacity-60"
-                      >
-                        Reindex all
-                      </button>
-                    </div>
+                      </div>
 
-                    <div className="mt-1 flex flex-wrap gap-2">
-                      <input
-                        value={openSearchOrgId}
-                        onChange={(e) => setOpenSearchOrgId(e.target.value)}
-                        placeholder="Org ID (reindex org)"
-                        className="flex-1 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-[11px] text-slate-700"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => runOpenSearchAction('opensearch.reindex_org', { org_id: openSearchOrgId })}
-                        disabled={Boolean(openSearchActionBusy) || !String(openSearchOrgId || '').trim()}
-                        className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-semibold text-slate-600 disabled:opacity-60"
-                      >
-                        Reindex org
-                      </button>
+                      <div className="mt-4 space-y-3">
+                        {filteredServerAdminAuditRows.slice(0, 6).map((item) => (
+                          <div key={`${item.id || item.at}`} className={cn('rounded-3xl border p-4', adminDark ? 'border-white/10 bg-slate-950/30' : 'border-slate-200 bg-white')}>
+                            <div className="flex flex-wrap items-start justify-between gap-3">
+                              <div>
+                                <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{item.path || item.action || '--'}</p>
+                                <p className={cn('mt-1 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>
+                                  {item.at ? new Date(item.at).toLocaleString() : '--'} · system
+                                </p>
+                              </div>
+                              <Pill>Status: {item.status ?? 200}</Pill>
+                            </div>
+                            <div className={cn('mt-3 grid gap-2 text-xs sm:grid-cols-3', adminDark ? 'text-slate-400' : 'text-slate-600')}>
+                              <div>Actor: {item.actor_id || item.actor || 'system'}</div>
+                              <div>IP: {item.ip || '--'}</div>
+                              <div>Device: {item.device_id || '--'}</div>
+                            </div>
+                          </div>
+                        ))}
+                        {filteredServerAdminAuditRows.length === 0 ? (
+                          <div className={cn('rounded-3xl border border-dashed p-5 text-sm', adminDark ? 'border-white/10 bg-white/[0.03] text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-600')}>
+                            No audit entries found.
+                          </div>
+                        ) : null}
+                      </div>
                     </div>
+                  </section>
 
-                    <div className="text-[10px] text-slate-400">
-                      Save settings → Ensure indices → Reindex (all or org). Search uses OpenSearch only when enabled + reachable.
+                  <section className={cn('rounded-[2rem] border p-5 shadow-xl shadow-sky-900/10 backdrop-blur-xl', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/70')}>
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className={cn('text-xs uppercase tracking-[0.22em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>Design system</p>
+                        <h2 className={cn('mt-1 text-xl font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>Blue-sky premium admin experience</h2>
+                      </div>
+                      <Pill>Responsive</Pill>
                     </div>
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">Email Notifications</p>
-                    <p className="text-xs text-slate-500">SMTP or Gmail API delivery for reminders.</p>
-                  </div>
-                  <div className="mt-3 grid grid-cols-1 gap-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={emailConfig.enabled}
-                        onChange={(e) => setEmailConfig((prev) => ({ ...prev, enabled: e.target.checked }))}
-                        className="h-4 w-4"
-                      />
-                      Enabled
-                    </label>
-                    <select
-                      value={emailConfig.provider}
-                      onChange={(e) => setEmailConfig((prev) => ({ ...prev, provider: e.target.value }))}
-                      className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-[11px] text-slate-700"
-                    >
-                      <option value="smtp">SMTP</option>
-                      <option value="gmail_api">Gmail API</option>
-                    </select>
-                    <input
-                      value={emailConfig.from_name}
-                      onChange={(e) => setEmailConfig((prev) => ({ ...prev, from_name: e.target.value }))}
-                      placeholder="From name"
-                      className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-[11px] text-slate-700"
-                    />
-                    <input
-                      value={emailConfig.from_email}
-                      onChange={(e) => setEmailConfig((prev) => ({ ...prev, from_email: e.target.value }))}
-                      placeholder="From email"
-                      className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-[11px] text-slate-700"
-                    />
-                    <input
-                      value={emailConfig.test_recipient}
-                      onChange={(e) => setEmailConfig((prev) => ({ ...prev, test_recipient: e.target.value }))}
-                      placeholder="Test recipient"
-                      className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-[11px] text-slate-700"
-                    />
-                    {emailConfigNotice ? <div className="text-[11px] text-emerald-600">{emailConfigNotice}</div> : null}
-                    {emailConfigError ? <div className="text-[11px] text-rose-600">{emailConfigError}</div> : null}
-                    <div className="mt-1 flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={saveEmailConfig}
-                        disabled={emailConfigBusy}
-                        className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-semibold text-slate-600 disabled:opacity-60"
-                      >
-                        {emailConfigBusy ? 'Saving...' : 'Save settings'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={sendEmailTest}
-                        className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-semibold text-slate-600"
-                      >
-                        Send test
-                      </button>
+                    <div className="mt-4 grid gap-4 md:grid-cols-3">
+                      {[
+                        ['Clean surface', 'Large rounded cards, soft borders, and glassy depth.'],
+                        ['Fast scanning', 'Strong hierarchy, compact labels, and clear live states.'],
+                        ['Dual mode', 'Dark and light themes tuned for blue-sky visuals.'],
+                      ].map(([title, text]) => (
+                        <div key={title} className={cn('rounded-3xl border p-4', adminDark ? 'border-white/10 bg-slate-950/30' : 'border-slate-200 bg-white')}>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className={cn('h-4 w-4', adminDark ? 'text-sky-300' : 'text-sky-600')} />
+                            <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{title}</p>
+                          </div>
+                          <p className={cn('mt-2 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>{text}</p>
+                        </div>
+                      ))}
                     </div>
-                    <div className="text-[10px] text-slate-400">
-                      Secrets remain in env vars. If provider is not configured, email is skipped silently.
-                    </div>
-                  </div>
+                  </section>
                 </div>
               </div>
             ) : null}
 
             {activeCategory === 'cms' ? (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-bold">Articles + Pages</p>
-                      <p className="text-xs text-slate-500">Headless CMS editor output.</p>
+              <div
+                className={cn(
+                  'rounded-[32px] border p-4 sm:p-5',
+                  adminDark ? 'border-slate-800/70 bg-slate-950/50' : 'border-slate-200 bg-white/75'
+                )}
+              >
+                <div
+                  className={cn(
+                    'rounded-[28px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6',
+                    adminDark
+                      ? 'border-white/10 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.16),_transparent_32%),linear-gradient(180deg,#020617_0%,#07111f_50%,#030712_100%)] text-white'
+                      : 'border-slate-200/80 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.16),_transparent_32%),linear-gradient(180deg,#f8fbff_0%,#eef7ff_48%,#f8fafc_100%)] text-slate-900'
+                  )}
+                >
+                  <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+                    <div className="max-w-3xl">
+                      <div className="mb-3 flex flex-wrap items-center gap-2">
+                        <CmsMiniBadge dark={adminDark}>CMS + Content Management</CmsMiniBadge>
+                        <span className={cmsChipClass(adminDark, true)}>
+                          <span className="h-2 w-2 rounded-full bg-sky-400" /> live
+                        </span>
+                        <span className={cmsChipClass(adminDark)}>
+                          <ShieldCheck className="h-3.5 w-3.5" /> secured
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={cn(
+                            'rounded-2xl border p-3',
+                            adminDark ? 'border-sky-400/20 bg-sky-400/10 text-sky-300' : 'border-sky-200 bg-sky-50 text-sky-600'
+                          )}
+                        >
+                          <LayoutDashboard className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Admin Command Center</h1>
+                          <p className={cn('mt-2 max-w-2xl text-sm sm:text-base', adminDark ? 'text-slate-300' : 'text-slate-700')}>
+                            A premium control surface for headless CMS, frontend configuration, automation, deployment, verification, and audit telemetry.
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshCmsState()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
+
+                    <div className="flex flex-wrap items-center gap-3">
+                      <div className={cn('flex items-center gap-2 rounded-2xl border px-3 py-2', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200/80 bg-white/80')}>
+                        <Search className="h-4 w-4 text-sky-400" />
+                        <input
+                          value={cmsAuditQuery}
+                          onChange={(e) => setCmsAuditQuery(e.target.value)}
+                          placeholder="Search logs..."
+                          className={cn(
+                            'w-44 bg-transparent text-sm outline-none',
+                            adminDark ? 'text-slate-100 placeholder:text-slate-500' : 'text-slate-900 placeholder:text-slate-400'
+                          )}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setAdminDark((v) => !v)}
+                        className={cn(
+                          'inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5',
+                          adminDark ? 'border-white/10 bg-white/5 hover:bg-white/10' : 'border-slate-200/80 bg-white hover:bg-slate-50'
+                        )}
+                      >
+                        {adminDark ? <SunMedium className="h-4 w-4 text-amber-300" /> : <Moon className="h-4 w-4 text-slate-700" />}
+                        {adminDark ? 'Light mode' : 'Dark mode'}
+                      </button>
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5"
+                      >
+                        <Sparkles className="h-4 w-4" /> Premium Action
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                    <CmsStatCard
+                      dark={adminDark}
+                      icon={BookOpen}
+                      label="Content items"
+                      value={String((cmsState?.articles || []).length + (cmsState?.pages || []).length)}
+                      meta={`Articles: ${(cmsState?.articles || []).length} · Pages: ${(cmsState?.pages || []).length}`}
+                      trend={cmsState?.articles?.length ? `+${Math.min(2, cmsState.articles.length)} this week` : ''}
+                    />
+                    <CmsStatCard
+                      dark={adminDark}
+                      icon={HardDrive}
+                      label="Media items"
+                      value={String((cmsState?.media || []).length)}
+                      meta="Assets and uploads tracked"
+                    />
+                    <CmsStatCard
+                      dark={adminDark}
+                      icon={Workflow}
+                      label="Deployments"
+                      value={String((cmsState?.deployments || []).length)}
+                      meta={`Cron scripts: ${(cmsState?.cron_scripts || []).length}`}
+                    />
+                    <CmsStatCard
+                      dark={adminDark}
+                      icon={FileText}
+                      label="Versions"
+                      value={String((cmsState?.versions || []).length)}
+                      meta={`Theme: ${cmsState?.theme?.active || '--'}`}
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-6 flex flex-wrap gap-2">
+                  <button type="button" onClick={() => setCmsTab('cms')} className={cmsChipClass(adminDark, cmsTab === 'cms')}>
+                    <BookOpen className="h-3.5 w-3.5" /> CMS
+                  </button>
+                  <button type="button" onClick={() => setCmsTab('frontend')} className={cmsChipClass(adminDark, cmsTab === 'frontend')}>
+                    <Globe2 className="h-3.5 w-3.5" /> Frontend
+                  </button>
+                  <button type="button" onClick={() => setCmsTab('deploy')} className={cmsChipClass(adminDark, cmsTab === 'deploy')}>
+                    <Workflow className="h-3.5 w-3.5" /> Deployment
+                  </button>
+                  <button type="button" onClick={() => setCmsTab('audit')} className={cmsChipClass(adminDark, cmsTab === 'audit')}>
+                    <ShieldCheck className="h-3.5 w-3.5" /> Audit
+                  </button>
+                </div>
+
+                <div className="mt-6 grid gap-6 lg:grid-cols-12">
+                  <div className="space-y-6 lg:col-span-8">
+                    {cmsTab === 'cms' || cmsTab === 'frontend' || cmsTab === 'deploy' ? (
+                      <CmsSectionCard
+                        dark={adminDark}
+                        icon={Layers3}
+                        title="CMS + Content Management"
+                        subtitle="3 sections · live"
+                        action={
+                          <button
+                            type="button"
+                            onClick={() => refreshCmsState()}
+                            className={cn(
+                              'inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium',
+                              adminDark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                            )}
+                          >
+                            <RefreshCw className="h-4 w-4" /> Refresh
+                          </button>
+                        }
+                      >
+                        <div className="grid gap-4 md:grid-cols-3">
+                          {[
+                            {
+                              title: 'Articles + Pages',
+                              desc: 'Headless CMS editor output.',
+                              meta: `Media items: ${(cmsState?.media || []).length}`,
+                            },
+                            {
+                              title: 'Theme + SEO + Cache',
+                              desc: 'Frontend configuration.',
+                              meta: `Cache cleared: ${cmsState?.cache?.last_cleared_at || 'never'}`,
+                            },
+                            {
+                              title: 'Deployments + Backups',
+                              desc: 'Automation and cron scripts.',
+                              meta: `Versions: ${(cmsState?.versions || []).length}`,
+                            },
+                          ].map((card) => (
+                            <div
+                              key={card.title}
+                              className={cn(
+                                'rounded-2xl border p-4',
+                                adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50/70'
+                              )}
+                            >
+                              <div className="flex items-center justify-between gap-3">
+                                <h3 className={cn('font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>{card.title}</h3>
+                                <ChevronRight className={cn('h-4 w-4', adminDark ? 'text-slate-400' : 'text-slate-500')} />
+                              </div>
+                              <p className={cn('mt-2 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>{card.desc}</p>
+                              <div className="mt-4 flex items-center justify-between gap-3">
+                                <span className={cn('text-xs', adminDark ? 'text-slate-400' : 'text-slate-500')}>{card.meta}</span>
+                                <span className={cmsChipClass(adminDark)}>
+                                  <Clock3 className="h-3.5 w-3.5" /> synced
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CmsSectionCard>
+                    ) : null}
+
+                    {(cmsTab === 'cms' || cmsTab === 'frontend') ? (
+                      <div className="grid gap-6 xl:grid-cols-2">
+                        <CmsSectionCard
+                          dark={adminDark}
+                          icon={LockKeyhole}
+                          title="Headless CMS Integration"
+                          subtitle="3 capabilities · live"
+                          action={<CmsMiniBadge dark={adminDark}>Ready</CmsMiniBadge>}
+                        >
+                          <div className="space-y-3">
+                            {[
+                              ['Content API', 'Deliver structured data to every surface.'],
+                              ['Media pipeline', 'Image transforms, upload tracking, and delivery.'],
+                              ['Role-safe publishing', 'Approval gates and audit attribution.'],
+                            ].map(([title, desc]) => (
+                              <div
+                                key={title}
+                                className={cn(
+                                  'flex items-start gap-3 rounded-2xl border p-4',
+                                  adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50/70'
+                                )}
+                              >
+                                <div className="mt-1 rounded-xl bg-sky-400/10 p-2 text-sky-400">
+                                  <Database className="h-4 w-4" />
+                                </div>
+                                <div>
+                                  <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{title}</p>
+                                  <p className={cn('mt-1 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>{desc}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </CmsSectionCard>
+
+                        <CmsSectionCard
+                          dark={adminDark}
+                          icon={Globe2}
+                          title="Frontend Configuration"
+                          subtitle="4 capabilities · live"
+                          action={
+                            <button
+                              type="button"
+                              onClick={() => refreshCmsState()}
+                              className={cn(
+                                'inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium',
+                                adminDark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                              )}
+                            >
+                              <RefreshCw className="h-4 w-4" /> Refresh
+                            </button>
+                          }
+                        >
+                          <div className="space-y-3">
+                            {[
+                              ['Theme', cmsState?.theme?.active ? `Active: ${cmsState.theme.active}` : 'Not configured'],
+                              ['SEO title', cmsState?.seo?.default_title || 'Not set'],
+                              ['Cache', cmsState?.cache?.last_cleared_at ? `Cleared: ${cmsState.cache.last_cleared_at}` : 'Clearable from the dashboard'],
+                              ['Env vars', `${Object.keys(cmsState?.env?.vars || {}).length} active values exposed`],
+                            ].map(([label, value]) => (
+                              <div
+                                key={label}
+                                className={cn(
+                                  'flex items-center justify-between rounded-2xl border px-4 py-3',
+                                  adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white'
+                                )}
+                              >
+                                <div>
+                                  <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>{label}</p>
+                                  <p className={cn('mt-0.5 font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{value}</p>
+                                </div>
+                                <CmsMiniBadge dark={adminDark}>{label === 'Cache' ? 'mutable' : 'set'}</CmsMiniBadge>
+                              </div>
+                            ))}
+                          </div>
+                        </CmsSectionCard>
+                      </div>
+                    ) : null}
+
+                    {(cmsTab === 'deploy' || cmsTab === 'cms') ? (
+                      <CmsSectionCard
+                        dark={adminDark}
+                        icon={Workflow}
+                        title="Deployment & Automation"
+                        subtitle="3 capabilities · live"
+                        action={<CmsMiniBadge dark={adminDark}>Cron-enabled</CmsMiniBadge>}
+                      >
+                        <div className="grid gap-4 md:grid-cols-3">
+                          {[
+                            ['Build orchestration', 'Versioned deploys with clear audit roots.'],
+                            ['Backup jobs', 'Automated snapshots and restore paths.'],
+                            ['Schedulers', 'Cron scripts for recurring admin tasks.'],
+                          ].map(([title, desc]) => (
+                            <div
+                              key={title}
+                              className={cn(
+                                'rounded-2xl border p-4',
+                                adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50/70'
+                              )}
+                            >
+                              <div className="flex items-center justify-between">
+                                <h3 className={cn('font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>{title}</h3>
+                                <TerminalSquare className="h-4 w-4 text-sky-400" />
+                              </div>
+                              <p className={cn('mt-2 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>{desc}</p>
+                              <div className="mt-4 flex items-center gap-2 text-xs text-sky-400">
+                                <ArrowRight className="h-3.5 w-3.5" /> operational
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CmsSectionCard>
+                    ) : null}
+
+                    {cmsTab === 'audit' ? (
+                      <CmsSectionCard
+                        dark={adminDark}
+                        icon={ShieldCheck}
+                        title="Audit Pulse"
+                        subtitle="Most recent admin actions"
+                        action={
+                          <button
+                            type="button"
+                            onClick={() => refreshAudit()}
+                            className={cn(
+                              'inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium',
+                              adminDark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                            )}
+                          >
+                            <RefreshCw className="h-4 w-4" /> Refresh
+                          </button>
+                        }
+                      >
+                        <div className="space-y-3">
+                          {filteredCmsAuditRows.slice(0, 5).map((item) => (
+                            <div
+                              key={`${item.id || item.at || item.path}`}
+                              className={cn(
+                                'flex flex-col gap-3 rounded-2xl border p-4 md:flex-row md:items-center md:justify-between',
+                                adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50/70'
+                              )}
+                            >
+                              <div>
+                                <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{item.path || item.action || '--'}</p>
+                                <p className={cn('mt-1 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>
+                                  {item.at ? new Date(item.at).toLocaleString() : '--'} · system
+                                </p>
+                              </div>
+                              <span className={cmsChipClass(adminDark)}>
+                                <Activity className="h-3.5 w-3.5" /> {item.status ?? 200}
+                              </span>
+                            </div>
+                          ))}
+                          {filteredCmsAuditRows.length === 0 ? (
+                            <div className={cn('rounded-2xl border border-dashed p-5 text-sm', adminDark ? 'border-white/10 bg-white/[0.03] text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-600')}>
+                              No audit entries found.
+                            </div>
+                          ) : null}
+                        </div>
+                      </CmsSectionCard>
+                    ) : null}
+                  </div>
+
+                  <div className="space-y-6 lg:col-span-4">
+                    <CmsSectionCard
+                      dark={adminDark}
+                      icon={Gauge}
+                      title="Platform Snapshot"
+                      subtitle="Live signal and trend"
+                      action={<CmsMiniBadge dark={adminDark}>Realtime</CmsMiniBadge>}
                     >
-                      Refresh
-                    </button>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(cmsState?.articles || []).slice(0, 3).map((article) => (
-                      <div key={article.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        {article.title} · {article.status}
+                      <div className={cn('rounded-3xl border p-4', adminDark ? 'border-white/10 bg-slate-950/80' : 'border-slate-200 bg-white')}>
+                        <div className="mb-4 flex items-center justify-between">
+                          <div>
+                            <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>Command health</p>
+                            <p className={cn('mt-1 text-2xl font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>98.7%</p>
+                          </div>
+                          <div className="rounded-2xl bg-sky-400/10 p-3 text-sky-400">
+                            <Activity className="h-5 w-5" />
+                          </div>
+                        </div>
+                        <div className="h-56">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={cmsTrendData}>
+                              <defs>
+                                <linearGradient id="cmsFillSky" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#38bdf8" stopOpacity={adminDark ? 0.35 : 0.25} />
+                                  <stop offset="95%" stopColor="#38bdf8" stopOpacity={0.02} />
+                                </linearGradient>
+                              </defs>
+                              <CartesianGrid
+                                strokeDasharray="3 3"
+                                stroke={adminDark ? 'rgba(148,163,184,0.18)' : 'rgba(148,163,184,0.25)'}
+                                vertical={false}
+                              />
+                              <XAxis
+                                dataKey="name"
+                                tick={{ fill: adminDark ? '#94a3b8' : '#64748b', fontSize: 12 }}
+                                axisLine={false}
+                                tickLine={false}
+                              />
+                              <YAxis
+                                tick={{ fill: adminDark ? '#94a3b8' : '#64748b', fontSize: 12 }}
+                                axisLine={false}
+                                tickLine={false}
+                                width={24}
+                              />
+                              <Tooltip
+                                contentStyle={{
+                                  background: adminDark ? 'rgba(2,6,23,0.95)' : 'rgba(255,255,255,0.98)',
+                                  border: adminDark ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(226,232,240,1)',
+                                  borderRadius: 16,
+                                  color: adminDark ? '#fff' : '#0f172a',
+                                }}
+                              />
+                              <Area
+                                type="monotone"
+                                dataKey="value"
+                                stroke={adminDark ? 'rgba(186,230,253,0.95)' : 'rgba(2,132,199,0.92)'}
+                                strokeWidth={3}
+                                fill="url(#cmsFillSky)"
+                              />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
-                    ))}
-                    {(cmsState?.pages || []).slice(0, 2).map((page) => (
-                      <div key={page.id} className="text-[11px] text-slate-500">{page.title}</div>
-                    ))}
-                    <div className="text-[11px] text-slate-500">Media items: {(cmsState?.media || []).length}</div>
-                  </div>
-                </div>
+                    </CmsSectionCard>
 
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">Theme + SEO + Cache</p>
-                    <p className="text-xs text-slate-500">Frontend configuration.</p>
-                  </div>
-                  <div className="mt-3 text-[11px] text-slate-600 dark:text-slate-300">
-                    Theme: {cmsState?.theme?.active}
-                  </div>
-                  <div className="mt-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    SEO title: {cmsState?.seo?.default_title}
-                  </div>
-                  <div className="mt-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    Cache cleared: {cmsState?.cache?.last_cleared_at || 'never'}
-                  </div>
-                  <div className="mt-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    Env vars: {Object.keys(cmsState?.env?.vars || {}).length}
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">Deployments + Backups</p>
-                    <p className="text-xs text-slate-500">Automation and cron scripts.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(cmsState?.deployments || []).slice(0, 2).map((deploy) => (
-                      <div key={deploy.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        {deploy.branch} · {deploy.status}
+                    <CmsSectionCard
+                      dark={adminDark}
+                      icon={BadgeCheck}
+                      title="Verification Queue"
+                      subtitle="EU/USA docs pending review"
+                      action={
+                        <button
+                          type="button"
+                          onClick={() => refreshVerificationQueue()}
+                          className={cn(
+                            'inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium',
+                            adminDark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                          )}
+                        >
+                          <RefreshCw className="h-4 w-4" /> Refresh
+                        </button>
+                      }
+                    >
+                      <div className={cn('rounded-3xl border p-5', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50/70')}>
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>
+                              {verificationQueue.length ? `${verificationQueue.length} items pending review.` : 'No pending verifications in queue.'}
+                            </p>
+                            <p className={cn('mt-1 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>
+                              All onboarding documents are currently in a clean state.
+                            </p>
+                          </div>
+                          <span className={cmsChipClass(adminDark)}>
+                            <BadgeCheck className="h-3.5 w-3.5" /> {verificationQueue.length ? 'pending' : 'clear'}
+                          </span>
+                        </div>
                       </div>
-                    ))}
-                    <div className="text-[11px] text-slate-500">Versions: {(cmsState?.versions || []).length}</div>
-                    {(cmsState?.cron_scripts || []).slice(0, 2).map((job) => (
-                      <div key={job.id} className="text-[11px] text-slate-500">{job.command} · {job.schedule}</div>
-                    ))}
+                    </CmsSectionCard>
+
+                    <CmsSectionCard
+                      dark={adminDark}
+                      icon={FileText}
+                      title="Dispute Radar"
+                      subtitle="Contracts with open issues"
+                      action={
+                        <button
+                          type="button"
+                          onClick={() => refreshDisputes()}
+                          className={cn(
+                            'inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium',
+                            adminDark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                          )}
+                        >
+                          <RefreshCw className="h-4 w-4" /> Sync
+                        </button>
+                      }
+                    >
+                      <div className={cn('rounded-3xl border p-5', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50/70')}>
+                        <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>
+                          {disputes.length ? `${disputes.length} open disputes.` : 'No active disputes.'}
+                        </p>
+                        <p className={cn('mt-1 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>
+                          Contract review and escalation feeds are currently idle.
+                        </p>
+                      </div>
+                    </CmsSectionCard>
+
+                    <CmsSectionCard
+                      dark={adminDark}
+                      icon={Clock3}
+                      title="Admin Audit Log"
+                      subtitle="Immutable, tamper-evident audit trail for every admin action."
+                      action={
+                        <button
+                          type="button"
+                          onClick={() => refreshAudit()}
+                          className={cn(
+                            'inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium',
+                            adminDark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                          )}
+                        >
+                          <RefreshCw className="h-4 w-4" /> Refresh log
+                        </button>
+                      }
+                    >
+                      <div className="max-h-[540px] space-y-3 overflow-auto pr-1">
+                        {filteredCmsAuditRows.map((log) => (
+                          <div
+                            key={`${log.id || log.at}-${log.path || log.action}`}
+                            className={cn('rounded-2xl border p-4', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white')}
+                          >
+                            <div className="flex items-start justify-between gap-4">
+                              <div>
+                                <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{log.path || log.action || '--'}</p>
+                                <p className={cn('mt-1 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>
+                                  {log.at ? new Date(log.at).toLocaleString() : '--'}
+                                </p>
+                              </div>
+                              <span className={cmsChipClass(adminDark)}>
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" /> {log.status ?? 200}
+                              </span>
+                            </div>
+                            <div className={cn('mt-3 grid gap-2 text-xs sm:grid-cols-2', adminDark ? 'text-slate-400' : 'text-slate-600')}>
+                              <div>Actor: {log.actor_id || log.actor || 'system'}</div>
+                              <div>IP: {log.ip || '--'} / Device: {log.device_id || '--'}</div>
+                            </div>
+                          </div>
+                        ))}
+                        {filteredCmsAuditRows.length === 0 ? (
+                          <div className={cn('rounded-2xl border border-dashed p-5 text-sm', adminDark ? 'border-white/10 bg-white/[0.03] text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-600')}>
+                            No audit entries found.
+                          </div>
+                        ) : null}
+                      </div>
+                    </CmsSectionCard>
                   </div>
                 </div>
               </div>
             ) : null}
 
             {activeCategory === 'ultra-security' ? (
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex items-center justify-between gap-2">
+              <div
+                className={cn(
+                  'rounded-[32px] border p-4 sm:p-5',
+                  adminDark ? 'border-slate-800/70 bg-slate-950/50' : 'border-slate-200 bg-white/75'
+                )}
+              >
+                <div
+                  className={cn(
+                    'rounded-[32px] border p-5 backdrop-blur-xl',
+                    adminDark
+                      ? 'border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.24),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.18),_transparent_22%),linear-gradient(180deg,_#020617_0%,_#07111f_55%,_#050b16_100%)] text-slate-100'
+                      : 'border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_26%),radial-gradient(circle_at_top_right,_rgba(37,99,235,0.10),_transparent_22%),linear-gradient(180deg,_#eff8ff_0%,_#f8fbff_55%,_#eef6ff_100%)] text-slate-900'
+                  )}
+                >
+                  <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                     <div>
-                      <p className="text-sm font-bold">Zero Trust + MFA</p>
-                      <p className="text-xs text-slate-500">Session control and device fingerprints.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshSecurityState()}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Refresh
-                    </button>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    <div>Zero-trust: {securityState?.zero_trust?.enabled ? 'On' : 'Off'}</div>
-                    <div>MFA required: {securityState?.mfa?.required ? 'Yes' : 'No'}</div>
-                    <div>Session timeout: {securityState?.session?.timeout_minutes} min</div>
-                    <div>IP allowlist: {(securityState?.ip_whitelist || []).length}</div>
-                    <div>Geo-fence: {securityState?.geo_fence?.enabled ? 'On' : 'Off'}</div>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => runSecurityAction('security.zero_trust.toggle', { enabled: !securityState?.zero_trust?.enabled })}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Toggle zero-trust
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => runSecurityAction('security.encryption.rotate')}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[10px] font-semibold text-slate-600"
-                    >
-                      Rotate keys
-                    </button>
-                  </div>
-                </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">Incident Response</p>
-                    <p className="text-xs text-slate-500">Incident dashboard and approvals.</p>
-                  </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    {(securityState?.incidents || []).slice(0, 3).map((incident) => (
-                      <div key={incident.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1">
-                        {incident.title} · {incident.status}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">
+                          <ShieldCheck className="h-4 w-4" /> ultra security layer
+                        </span>
+                        <UltraPill dark={adminDark} active>
+                          Advanced
+                        </UltraPill>
+                        <UltraPill dark={adminDark}>Live</UltraPill>
                       </div>
-                    ))}
-                    {(securityState?.data_exports?.pending || []).slice(0, 2).map((req) => (
-                      <div key={req.id} className="text-[11px] text-slate-500">Export {req.dataset} · {req.status}</div>
-                    ))}
-                  </div>
-                </div>
+                      <h1 className={cn('mt-4 text-3xl font-semibold tracking-tight sm:text-4xl', adminDark ? 'text-white' : 'text-slate-900')}>
+                        Zero Trust, incident response, and immutable audit control in one command deck.
+                      </h1>
+                      <p className={cn('mt-3 max-w-3xl text-sm leading-6 sm:text-base', adminDark ? 'text-slate-300' : 'text-slate-700')}>
+                        A premium admin surface for secure operations, session governance, forensic logs, and tamper-evident oversight.
+                      </p>
+                    </div>
 
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div>
-                    <p className="text-sm font-bold">Forensic + Immutable Backups</p>
-                    <p className="text-xs text-slate-500">Tamper-proof logs and snapshots.</p>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setAdminDark((v) => !v)}
+                        className={cn(
+                          'inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition hover:-translate-y-0.5',
+                          adminDark ? 'border-white/10 bg-white/10 text-white' : 'border-slate-200 bg-white text-slate-900'
+                        )}
+                      >
+                        {adminDark ? <SunMedium className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                        {adminDark ? 'Light mode' : 'Dark mode'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          refreshSecurityState()
+                          refreshAudit()
+                        }}
+                        className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-cyan-500/25 transition hover:-translate-y-0.5"
+                      >
+                        <RefreshCw className="h-4 w-4" /> Refresh
+                      </button>
+                    </div>
                   </div>
-                  <div className="mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    <div>Forensic logs: {(securityState?.forensic_logs || []).length}</div>
-                    <div>Immutable snapshots: {securityState?.immutable_backups?.last_snapshot_at || 'none'}</div>
-                    <div>Last key rotation: {securityState?.encryption?.last_rotated_at || 'never'}</div>
-                    <div>Tamper-proof logs: {securityState?.tamper_proof_logs?.enabled ? 'On' : 'Off'}</div>
-                    <div>System events: {(securityState?.system_events || []).length}</div>
-                    {(securityState?.system_events || []).slice(0, 2).map((evt) => (
-                      <div key={evt.id} className="text-[11px] text-slate-500">{evt.level || 'event'} · {evt.message}</div>
-                    ))}
+
+                  <div className="mt-6 grid gap-5 xl:grid-cols-12">
+                    <div className="space-y-5 xl:col-span-8">
+                      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                        <UltraStatCard
+                          dark={adminDark}
+                          label="Zero-trust"
+                          value={securityState?.zero_trust?.enabled ? 'On' : 'Off'}
+                          icon={Shield}
+                          tone={securityState?.zero_trust?.enabled ? 'good' : 'warn'}
+                        />
+                        <UltraStatCard
+                          dark={adminDark}
+                          label="MFA required"
+                          value={securityState?.mfa?.required ? 'Yes' : 'No'}
+                          icon={BadgeCheck}
+                          tone={securityState?.mfa?.required ? 'good' : 'warn'}
+                        />
+                        <UltraStatCard
+                          dark={adminDark}
+                          label="Session timeout"
+                          value={String(securityState?.session?.timeout_minutes ?? 30)}
+                          sub="min"
+                          icon={Clock3}
+                        />
+                        <UltraStatCard
+                          dark={adminDark}
+                          label="IP allowlist"
+                          value={String((securityState?.ip_whitelist || []).length)}
+                          icon={Globe2}
+                          tone="good"
+                        />
+                      </div>
+
+                      <UltraSectionCard
+                        dark={adminDark}
+                        title="Zero Trust + MFA"
+                        subtitle="Session control and device fingerprints."
+                        right={
+                          <div className="flex items-center gap-2 text-sm text-cyan-300">
+                            <LockKeyhole className="h-4 w-4" />
+                            hardened access
+                          </div>
+                        }
+                      >
+                        <div className="grid gap-4 lg:grid-cols-2">
+                          <div className="space-y-4">
+                            <UltraToggle
+                              dark={adminDark}
+                              on={Boolean(securityState?.zero_trust?.enabled)}
+                              label="Toggle zero-trust"
+                              hint="Strict session validation and conditional access."
+                              onToggle={() =>
+                                runSecurityAction('security.zero_trust.toggle', { enabled: !securityState?.zero_trust?.enabled })
+                              }
+                            />
+
+                            <div className={cn('grid gap-4 rounded-2xl border p-4', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>Rotate keys</p>
+                                  <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-500')}>Encryption keys and session secrets.</p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => runSecurityAction('security.encryption.rotate')}
+                                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2 text-sm font-semibold text-white"
+                                >
+                                  <KeyRound className="h-4 w-4" /> Rotate
+                                </button>
+                              </div>
+
+                              <div className={cn('grid gap-3 sm:grid-cols-2', adminDark ? 'text-slate-200' : 'text-slate-800')}>
+                                <div className={cn('rounded-xl border p-3', adminDark ? 'border-white/10 bg-black/10' : 'border-slate-200 bg-white')}>
+                                  <p className={cn('text-xs uppercase tracking-[0.18em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>Session fingerprint</p>
+                                  <p className="mt-1 font-medium">{securityState?.device_fingerprinting?.enabled ? 'Enabled' : 'Off'}</p>
+                                </div>
+                                <div className={cn('rounded-xl border p-3', adminDark ? 'border-white/10 bg-black/10' : 'border-slate-200 bg-white')}>
+                                  <p className={cn('text-xs uppercase tracking-[0.18em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>Geo-fence</p>
+                                  <p className="mt-1 font-medium">{securityState?.geo_fence?.enabled ? 'On' : 'Off'}</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="grid gap-4">
+                            <div className={cn('rounded-2xl border p-4', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
+                              <div className="mb-3 flex items-center justify-between">
+                                <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>Current security state</p>
+                                <span className="inline-flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-semibold text-cyan-300">
+                                  <ShieldCheck className="h-3.5 w-3.5" /> active
+                                </span>
+                              </div>
+                              <div className="space-y-3 text-sm">
+                                {[
+                                  ['Zero-trust', securityState?.zero_trust?.enabled ? 'On' : 'Off'],
+                                  ['MFA required', securityState?.mfa?.required ? 'Yes' : 'No'],
+                                  ['Session timeout', `${securityState?.session?.timeout_minutes ?? 30} min`],
+                                  ['IP allowlist', String((securityState?.ip_whitelist || []).length)],
+                                  ['Geo-fence', securityState?.geo_fence?.enabled ? 'On' : 'Off'],
+                                ].map(([key, value]) => (
+                                  <div
+                                    key={key}
+                                    className={cn('flex items-center justify-between border-b border-dashed pb-2 last:border-0 last:pb-0', adminDark ? 'border-white/10' : 'border-slate-200')}
+                                  >
+                                    <span className={adminDark ? 'text-slate-400' : 'text-slate-600'}>{key}</span>
+                                    <span className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{value}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className={cn('rounded-2xl border p-4', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>Incident Response</p>
+                                  <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-500')}>Incident dashboard and approvals.</p>
+                                </div>
+                                <AlertTriangle className="h-5 w-5 text-amber-400" />
+                              </div>
+                              <div className="mt-4 flex flex-wrap gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => runSecurityAction('security.export.request', { dataset: 'full' })}
+                                  className="rounded-xl border border-amber-400/30 bg-amber-500/10 px-4 py-2 text-sm font-medium text-amber-200"
+                                >
+                                  Approvals queue
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => runSecurityAction('security.incident.create', { title: 'Lockdown', severity: 'high' })}
+                                  className={cn('rounded-xl border px-4 py-2 text-sm font-medium', adminDark ? 'border-white/10 text-slate-200' : 'border-slate-200 text-slate-800')}
+                                >
+                                  Lockdown playbook
+                                </button>
+                              </div>
+                              <div className={cn('mt-4 space-y-2 text-[11px]', adminDark ? 'text-slate-300' : 'text-slate-700')}>
+                                {(securityState?.incidents || []).slice(0, 3).map((incident) => (
+                                  <div key={incident.id} className={cn('rounded-xl border px-3 py-2', adminDark ? 'border-white/10 bg-slate-950/25' : 'border-slate-200 bg-white')}>
+                                    {incident.title} · {incident.status}
+                                  </div>
+                                ))}
+                                {(securityState?.data_exports?.pending || []).slice(0, 2).map((req) => (
+                                  <div key={req.id} className={cn('text-[11px]', adminDark ? 'text-slate-400' : 'text-slate-600')}>
+                                    Export {req.dataset} · {req.status}
+                                  </div>
+                                ))}
+                                {!securityState?.incidents?.length && !(securityState?.data_exports?.pending || []).length ? (
+                                  <div className={adminDark ? 'text-slate-400' : 'text-slate-600'}>No active incidents.</div>
+                                ) : null}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </UltraSectionCard>
+
+                      <UltraSectionCard
+                        dark={adminDark}
+                        title="Forensic + Immutable Backups"
+                        subtitle="Tamper-proof logs and snapshots."
+                        right={<UltraPill dark={adminDark} active>Immutable</UltraPill>}
+                      >
+                        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                          <UltraStatCard dark={adminDark} label="Forensic logs" value={String((securityState?.forensic_logs || []).length)} icon={BookOpen} />
+                          <UltraStatCard dark={adminDark} label="Immutable snapshots" value={securityState?.immutable_backups?.last_snapshot_at || 'none'} icon={Database} tone="warn" />
+                          <UltraStatCard dark={adminDark} label="Last key rotation" value={securityState?.encryption?.last_rotated_at || 'never'} icon={KeyRound} tone="warn" />
+                          <UltraStatCard dark={adminDark} label="Tamper-proof logs" value={securityState?.tamper_proof_logs?.enabled ? 'On' : 'Off'} icon={ShieldAlert} tone={securityState?.tamper_proof_logs?.enabled ? 'good' : 'warn'} />
+                        </div>
+
+                        <div className="mt-4 grid gap-4 lg:grid-cols-3">
+                          <div className={cn('rounded-2xl border p-4 lg:col-span-2', adminDark ? 'border-white/10 bg-slate-950/25' : 'border-slate-200 bg-white')}>
+                            <div className="mb-3 flex items-center justify-between">
+                              <div>
+                                <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>Zero-Trust &amp; Incident Response</p>
+                                <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-500')}>{ultraSecurityCapabilities.length} capabilities</p>
+                              </div>
+                              <Sparkles className="h-5 w-5 text-cyan-300" />
+                            </div>
+                            <div className="grid gap-2 sm:grid-cols-2">
+                              {ultraSecurityCapabilities.map((cap) => (
+                                <div key={cap} className={cn('flex items-start gap-2 rounded-xl border p-3 text-sm', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
+                                  <CheckCircle2 className="mt-0.5 h-4 w-4 flex-none text-cyan-300" />
+                                  <span className={cn(adminDark ? 'text-slate-200' : 'text-slate-800')}>{cap}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className={cn('rounded-2xl border p-4', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
+                            <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>Risk posture</p>
+                            <div className="mt-4 space-y-4">
+                              {[
+                                ['Access risk', 'Low', 'w-2/5', 'from-sky-500 to-cyan-400', 'text-cyan-300'],
+                                ['Backup integrity', 'High', 'w-4/5', 'from-cyan-400 to-sky-500', 'text-cyan-300'],
+                                ['Response readiness', 'Review', 'w-3/5', 'from-amber-400 to-orange-400', 'text-amber-300'],
+                              ].map(([label, value, widthClass, gradient, valueClass]) => (
+                                <div key={label}>
+                                  <div className="mb-2 flex items-center justify-between text-sm">
+                                    <span className={adminDark ? 'text-slate-300' : 'text-slate-700'}>{label}</span>
+                                    <span className={valueClass}>{value}</span>
+                                  </div>
+                                  <div className={cn('h-2 rounded-full', adminDark ? 'bg-white/10' : 'bg-slate-200')}>
+                                    <div className={cn('h-2 rounded-full bg-gradient-to-r', widthClass, gradient)} />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </UltraSectionCard>
+                    </div>
+
+                    <div className="space-y-5 xl:col-span-4">
+                      <UltraTinyChart dark={adminDark} />
+
+                      <UltraSectionCard
+                        dark={adminDark}
+                        title="Verification Queue"
+                        subtitle="EU/USA docs pending review."
+                        right={
+                          <button
+                            type="button"
+                            onClick={() => refreshVerificationQueue()}
+                            className={cn(
+                              'inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm',
+                              adminDark ? 'border-white/10 bg-white/5 text-slate-200' : 'border-slate-200 bg-white text-slate-900'
+                            )}
+                          >
+                            <RefreshCw className="h-4 w-4" /> Refresh
+                          </button>
+                        }
+                      >
+                        <div className={cn('rounded-2xl border p-4', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
+                          <div className="space-y-2 text-xs">
+                            {verificationQueue.slice(0, 3).map((row) => (
+                              <div key={row.id || row.user_id} className={cn('rounded-2xl border px-3 py-2', adminDark ? 'border-white/10 bg-slate-950/25' : 'border-slate-200 bg-white')}>
+                                <p className={cn('text-[11px] font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>{row.user_name || row.user_email || row.user_id}</p>
+                                <p className={cn('text-[10px]', adminDark ? 'text-slate-400' : 'text-slate-600')}>Doc: {row.doc_type || row.type || 'business'} · Status: {row.status || 'pending'}</p>
+                              </div>
+                            ))}
+                            {!verificationQueue.length ? <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>No pending verifications in queue.</p> : null}
+                          </div>
+                        </div>
+                      </UltraSectionCard>
+
+                      <UltraSectionCard
+                        dark={adminDark}
+                        title="Dispute Radar"
+                        subtitle="Contracts with open issues."
+                        right={
+                          <button
+                            type="button"
+                            onClick={() => refreshDisputes()}
+                            className={cn(
+                              'inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm',
+                              adminDark ? 'border-white/10 bg-white/5 text-slate-200' : 'border-slate-200 bg-white text-slate-900'
+                            )}
+                          >
+                            <RefreshCw className="h-4 w-4" /> Sync
+                          </button>
+                        }
+                      >
+                        <div className={cn('rounded-2xl border p-4', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
+                          <div className="space-y-2 text-xs">
+                            {disputes.slice(0, 3).map((dispute) => (
+                              <div key={dispute.id} className={cn('rounded-2xl border px-3 py-2', adminDark ? 'border-white/10 bg-slate-950/25' : 'border-slate-200 bg-white')}>
+                                <p className={cn('text-[11px] font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>{dispute.title || dispute.contract_id || 'Dispute'}</p>
+                                <p className={cn('text-[10px]', adminDark ? 'text-slate-400' : 'text-slate-600')}>Status: {dispute.status || 'open'} · Priority: {dispute.priority || 'normal'}</p>
+                              </div>
+                            ))}
+                            {!disputes.length ? <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>No active disputes.</p> : null}
+                          </div>
+                        </div>
+                      </UltraSectionCard>
+
+                      <UltraSectionCard
+                        dark={adminDark}
+                        title="Audit Pulse"
+                        subtitle="Most recent admin actions."
+                        right={
+                          <button
+                            type="button"
+                            onClick={() => refreshAudit()}
+                            className={cn(
+                              'inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm',
+                              adminDark ? 'border-white/10 bg-white/5 text-slate-200' : 'border-slate-200 bg-white text-slate-900'
+                            )}
+                          >
+                            <RefreshCw className="h-4 w-4" /> Refresh
+                          </button>
+                        }
+                      >
+                        <div className="space-y-3">
+                          {audit.slice(0, 5).map((entry) => (
+                            <div key={entry.id || entry.at} className={cn('rounded-2xl border p-3', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
+                              <div className="flex items-start justify-between gap-4">
+                                <div>
+                                  <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{entry.path || entry.action || 'Admin action'}</p>
+                                  <p className={cn('mt-1 text-xs', adminDark ? 'text-slate-400' : 'text-slate-600')}>{entry.at ? new Date(entry.at).toLocaleString() : '--'} · system</p>
+                                </div>
+                                <ArrowUpRight className="h-4 w-4 text-cyan-300" />
+                              </div>
+                              <div className={cn('mt-3 text-xs', adminDark ? 'text-slate-400' : 'text-slate-600')}>
+                                Actor: {entry.actor_id || entry.actor || 'system'} / Status: {entry.status ?? 200}
+                                <br />
+                                IP: {entry.ip || '--'} / Device: {entry.device_id || '--'}
+                              </div>
+                            </div>
+                          ))}
+                          {!audit.length ? <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>No recent activity.</p> : null}
+                        </div>
+                      </UltraSectionCard>
+                    </div>
                   </div>
+
+                  <section className={cn('mt-5 rounded-[32px] border p-6 backdrop-blur-xl', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/80')}>
+                    <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+                      <div>
+                        <h2 className={cn('text-xl font-semibold tracking-tight', adminDark ? 'text-white' : 'text-slate-900')}>Admin Audit Log</h2>
+                        <p className={cn('mt-2 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>
+                          Immutable, tamper-evident audit trail for every admin action.
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className={cn('flex items-center gap-2 rounded-2xl border px-3 py-2', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white')}>
+                          <Search className={cn('h-4 w-4', adminDark ? 'text-slate-400' : 'text-slate-500')} />
+                          <input
+                            value={ultraAuditQuery}
+                            onChange={(e) => setUltraAuditQuery(e.target.value)}
+                            placeholder="Search audit..."
+                            className={cn('w-44 bg-transparent text-sm outline-none', adminDark ? 'text-slate-100 placeholder:text-slate-500' : 'text-slate-900 placeholder:text-slate-400')}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => refreshAudit()}
+                          className={cn(
+                            'inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium',
+                            adminDark ? 'border-white/10 bg-white/10 text-white' : 'border-slate-200 bg-white text-slate-900'
+                          )}
+                        >
+                          <RefreshCw className="h-4 w-4" /> Refresh log
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-3">
+                      {filteredUltraAuditRows.slice(0, 10).map((entry) => (
+                        <div
+                          key={`${entry.id || entry.at}-${entry.path || entry.action}`}
+                          className={cn(
+                            'grid gap-2 rounded-2xl border p-4 md:grid-cols-[1.4fr_0.8fr_1fr] md:items-center',
+                            adminDark ? 'border-white/10 bg-slate-950/25' : 'border-slate-200 bg-slate-50'
+                          )}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="rounded-2xl bg-cyan-500/10 p-2 text-cyan-300">
+                              <ShieldAlert className="h-4 w-4" />
+                            </div>
+                            <div>
+                              <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{entry.path || entry.action || '--'}</p>
+                              <p className={cn('text-xs', adminDark ? 'text-slate-400' : 'text-slate-600')}>
+                                Actor: {entry.actor_id || entry.actor || 'system'} / Status: {entry.status ?? 200}
+                              </p>
+                            </div>
+                          </div>
+                          <div className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>
+                            {entry.at ? new Date(entry.at).toLocaleString() : '--'}
+                          </div>
+                          <div className="flex items-center justify-between gap-3">
+                            <div className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>
+                              IP: {entry.ip || '--'} / Device: {entry.device_id || '--'}
+                            </div>
+                            <ChevronRight className={cn('h-4 w-4', adminDark ? 'text-slate-500' : 'text-slate-400')} />
+                          </div>
+                        </div>
+                      ))}
+                      {filteredUltraAuditRows.length === 0 ? (
+                        <div className={cn('rounded-2xl border border-dashed p-5 text-sm', adminDark ? 'border-white/10 bg-white/[0.03] text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-600')}>
+                          No audit entries found.
+                        </div>
+                      ) : null}
+                    </div>
+                  </section>
                 </div>
               </div>
             ) : null}
 
-            <div className="space-y-4">
-              {activeData?.sections?.map((section) => {
-                const metrics = SECTION_METRICS[section.id] || []
-                const features = Array.isArray(section.features) ? section.features : []
-                return (
-                  <details key={section.id} className="admin-card admin-sweep rounded-3xl p-6">
-                    <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-bold">{section.title}</p>
-                        <p className="text-xs text-slate-500">{features.length} capabilities</p>
-                      </div>
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold${statusBadge('live')}`}>live</span>
-                    </summary>
-                    <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
-                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                        {features.map((item) => (
-                          <div key={item} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-[11px] text-slate-600 dark:text-slate-300">
-                            {item}
+            {activeCategory === 'ultra-security' ? null : (
+              <div className="space-y-4">
+                {activeData?.sections?.map((section) => {
+                  const metrics = SECTION_METRICS[section.id] || []
+                  const features = Array.isArray(section.features) ? section.features : []
+                  return (
+                    <details key={section.id} className="admin-card admin-sweep rounded-3xl p-6">
+                      <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-bold">{section.title}</p>
+                          <p className="text-xs text-slate-500">{features.length} capabilities</p>
+                        </div>
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold${statusBadge('live')}`}>live</span>
+                      </summary>
+                      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                          {features.map((item) => (
+                            <div key={item} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-[11px] text-slate-600 dark:text-slate-300">
+                              {item}
+                            </div>
+                          ))}
+                        </div>
+                        <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs text-slate-600 dark:text-slate-300">
+                          <p className="text-[10px] font-semibold uppercase text-slate-500">Live Metrics</p>
+                          <div className="mt-2 space-y-2">
+                            {metrics.length ? metrics.map((metric) => {
+                              const value = resolvePath(summary, metric.path)
+                              const display = metric.format === 'currency' ? formatCurrency(value) : formatNumber(value)
+                              return (
+                                <div key={metric.label} className="flex items-center justify-between">
+                                  <span>{metric.label}</span>
+                                  <span className="font-semibold text-slate-900 dark:text-white">{value === undefined ? '--' : display}</span>
+                                </div>
+                              )
+                            }) : <div className="text-xs text-slate-500">Metrics coming from live feeds.</div>}
                           </div>
-                        ))}
-                      </div>
-                      <div className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs text-slate-600 dark:text-slate-300">
-                        <p className="text-[10px] font-semibold uppercase text-slate-500">Live Metrics</p>
-                        <div className="mt-2 space-y-2">
-                          {metrics.length ? metrics.map((metric) => {
-                            const value = resolvePath(summary, metric.path)
-                            const display = metric.format === 'currency' ? formatCurrency(value) : formatNumber(value)
-                            return (
-                              <div key={metric.label} className="flex items-center justify-between">
-                                <span>{metric.label}</span>
-                                <span className="font-semibold text-slate-900 dark:text-white">{value === undefined ? '--' : display}</span>
-                              </div>
-                            )
-                          }) : <div className="text-xs text-slate-500">Metrics coming from live feeds.</div>}
                         </div>
                       </div>
-                    </div>
-                  </details>
-                )
-              })}
-            </div>
+                    </details>
+                  )
+                })}
+              </div>
+            )}
           </section>
 
+          {activeCategory === 'ultra-security' ? null : (
           <aside className="space-y-4">
               <div className="admin-card admin-sweep rounded-3xl p-5">
                 <div className="flex items-center justify-between gap-2">
@@ -4614,42 +7778,43 @@ export default function AdminPanel() {
               </div>
             </div>
           </aside>
+          )}
         </div>
-
-                <div className="admin-card admin-sweep rounded-3xl p-6">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-bold">Admin Audit Log</p>
-                      <p className="text-xs text-slate-500">Immutable, tamper-evident audit trail for every admin action.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => refreshAudit()}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark bg-black/40 px-3 py-1 text-xs font-semibold text-sky-100 hover:bg-[#13171E]"
-                    >
-                      Refresh log
-                    </button>
-                  </div>
-                  <div className="mt-4 grid grid-cols-1 gap-2">
-                    {audit.slice(0, 10).map((entry) => (
-                      <div key={entry.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-[11px] text-slate-600 dark:text-slate-300">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div className="font-semibold text-slate-900 dark:text-white">{entry.action || entry.path}</div>
-                          <div>{entry.at ? new Date(entry.at).toLocaleString() : '--'}</div>
-                        </div>
-                        <div className="mt-1 text-[10px] text-slate-500">Actor: {entry.actor_id || 'system'} / Status: {entry.status}</div>
-                        <div className="mt-1 text-[10px] text-slate-500">IP: {entry.ip || '--'} / Device: {entry.device_id || '--'}</div>
+                {activeCategory === 'ultra-security' ? null : (
+                  <div className="admin-card admin-sweep rounded-3xl p-6">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-bold">Admin Audit Log</p>
+                        <p className="text-xs text-slate-500">Immutable, tamper-evident audit trail for every admin action.</p>
                       </div>
-                    ))}
-                    {audit.length === 0 ? <p className="text-xs text-slate-500">No audit entries yet.</p> : null}
+                      <button
+                        type="button"
+                        onClick={() => refreshAudit()}
+                        className="rounded-full shadow-borderless dark:shadow-borderlessDark bg-black/40 px-3 py-1 text-xs font-semibold text-sky-100 hover:bg-[#13171E]"
+                      >
+                        Refresh log
+                      </button>
+                    </div>
+                    <div className="mt-4 grid grid-cols-1 gap-2">
+                      {audit.slice(0, 10).map((entry) => (
+                        <div key={entry.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-[11px] text-slate-600 dark:text-slate-300">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="font-semibold text-slate-900 dark:text-white">{entry.action || entry.path}</div>
+                            <div>{entry.at ? new Date(entry.at).toLocaleString() : '--'}</div>
+                          </div>
+                          <div className="mt-1 text-[10px] text-slate-500">Actor: {entry.actor_id || 'system'} / Status: {entry.status}</div>
+                          <div className="mt-1 text-[10px] text-slate-500">IP: {entry.ip || '--'} / Device: {entry.device_id || '--'}</div>
+                        </div>
+                      ))}
+                      {audit.length === 0 ? <p className="text-xs text-slate-500">No audit entries yet.</p> : null}
+                    </div>
                   </div>
-                </div>
+                )}
                 </>
               ) : null}
             </div>
           </div>
         </main>
-        </div>
       </div>
     </>
   )

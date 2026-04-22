@@ -532,6 +532,24 @@ async function getServiceList() {
   })
 }
 
+async function getCpuUsagePercent() {
+  if (isWindows()) {
+    try {
+      const result = await runCommand('powershell -NoProfile -Command "(Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average"')
+      if (result.ok && result.stdout) {
+        const val = parseFloat(result.stdout.trim())
+        if (!Number.isNaN(val)) return Math.round(val)
+      }
+    } catch {
+      return 0
+    }
+    return 0
+  }
+  const load = os.loadavg()
+  const cores = os.cpus().length || 1
+  return Math.min(100, Math.round((load[0] / cores) * 100))
+}
+
 export async function getSystemOverview() {
   const cpus = os.cpus()
   const totalMem = os.totalmem()
@@ -544,6 +562,7 @@ export async function getSystemOverview() {
   const ifaceCount = Object.keys(interfaces || {}).length
   const bandwidthEstimate = await getBandwidthMbps()
   const diskIops = await getDiskIops()
+  const usagePercent = await getCpuUsagePercent()
 
   return {
     generated_at: new Date().toISOString(),
@@ -554,6 +573,7 @@ export async function getSystemOverview() {
     cpu: {
       cores: cpus.length,
       model: cpus[0]?.model || '',
+      usage_percent: usagePercent,
       load_1m: load[0] || 0,
       load_5m: load[1] || 0,
       load_15m: load[2] || 0,

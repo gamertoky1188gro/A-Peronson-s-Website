@@ -1323,5 +1323,335 @@
     },
     "prev_hash": "d0c3393dcf49144e50b3f759cfbc22cffba3210762bd5c3b549447168ce58476",
     "hash": "3764d9cfbcdaaa4ee288c25bc92f29028fdc8db02794bcb4561d4dcc84e25c78"
+  },
+  {
+    "id": "ba311985-f99f-40a4-a5b9-97416d8ccee4",
+    "at": "2026-04-22T13:04:31.534Z",
+    "duration_ms": 776,
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "ccm",
+    "method": "POST",
+    "path": "/api/admin/security/actions",
+    "status": 200,
+    "action": "security.zero_trust.toggle",
+    "payload": {
+      "action": "security.zero_trust.toggle",
+      "payload": {
+        "enabled": true
+      }
+    },
+    "prev_hash": "3764d9cfbcdaaa4ee288c25bc92f29028fdc8db02794bcb4561d4dcc84e25c78",
+    "hash": "bbe074ac651ece4e7358bc8f47cd43c5ff56e2de78ebeea1a2c6ad3bfdfc4d4c"
+  },
+  {
+    "id": "a7818ff8-53bb-4745-9b88-b7874e68c731",
+    "at": "2026-04-22T13:04:32.319Z",
+    "duration_ms": 690,
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "ccm",
+    "method": "POST",
+    "path": "/api/admin/security/actions",
+    "status": 200,
+    "action": "security.zero_trust.toggle",
+    "payload": {
+      "action": "security.zero_trust.toggle",
+      "payload": {
+        "enabled": true
+      }
+    },
+    "prev_hash": "bbe074ac651ece4e7358bc8f47cd43c5ff56e2de78ebeea1a2c6ad3bfdfc4d4c",
+    "hash": "f329648b276f3c37a7026a39d346ffa947e33ba059fca8f7d385b7368e61ac60"
+  },
+  {
+    "id": "b20d2f98-2e32-4ccd-b5a5-69fa548369dd",
+    "at": "2026-04-22T13:04:34.527Z",
+    "duration_ms": 2194,
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "ccm",
+    "method": "GET",
+    "path": "/api/admin/security/state",
+    "status": 200,
+    "action": "GET /api/admin/security/state",
+    "payload": {},
+    "prev_hash": "f329648b276f3c37a7026a39d346ffa947e33ba059fca8f7d385b7368e61ac60",
+    "hash": "647d8910aed7fef45c3863d80df29ad9cc8dd55a769800c62fc1dc54dc390821"
+  },
+  {
+    "id": "bc5a9b6a-8090-48d9-ab2a-ee1bb07e0b49",
+    "at": "2026-04-22T13:04:35.378Z",
+    "duration_ms": 3,
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "ccm",
+    "method": "GET",
+    "path": "/api/admin/audit?limit=40",
+    "status": 200,
+    "action": "GET /api/admin/audit?limit=40",
+    "payload": {},
+    "prev_hash": "647d8910aed7fef45c3863d80df29ad9cc8dd55a769800c62fc1dc54dc390821",
+    "hash": "8f9376b6f8d222f39dd93f6471513425c5099f01d5852bd9f8aa6bec44c1a2ac"
+  },
+  {
+    "id": "12dfa07b-82cf-4a7f-9c57-1d9897cade76",
+    "at": "2026-04-22T13:04:35.388Z",
+    "duration_ms": 817,
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "ccm",
+    "method": "POST",
+    "path": "/api/admin/security/actions",
+    "status": 200,
+    "action": "security.zero_trust.toggle",
+    "payload": {
+      "action": "security.zero_trust.toggle",
+      "payload": {
+        "enabled": true
+      }
+    },
+    "prev_hash": "8f9376b6f8d222f39dd93f6471513425c5099f01d5852bd9f8aa6bec44c1a2ac",
+    "hash": "b1dd05eb169931395556bed5d3bfa80bf07748ff08fb4bf752fc5ebeb490249e"
+  },
+  {
+    "id": "c03eebdc-c4c8-404b-8f15-ddd1ca5d4e26",
+    "at": "2026-04-22T13:04:36.827Z",
+    "duration_ms": 1457,
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "ccm",
+    "method": "GET",
+    "path": "/api/admin/security/state",
+    "status": 200,
+    "action": "GET /api/admin/security/state",
+    "payload": {},
+    "prev_hash": "b1dd05eb169931395556bed5d3bfa80bf07748ff08fb4bf752fc5ebeb490249e",
+    "hash": "3150c5ecbc0e676155116cb418e8f7d824c4aab6f56cb75f987323ecfd4f0995"
+  },
+  {
+    "id": "97434dbe-6c5b-418a-b621-6e3f07304b39",
+    "at": "2026-04-22T13:04:37.634Z",
+    "duration_ms": 4,
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "ccm",
+    "method": "GET",
+    "path": "/api/admin/audit?limit=40",
+    "status": 200,
+    "action": "GET /api/admin/audit?limit=40",
+    "payload": {},
+    "prev_hash": "3150c5ecbc0e676155116cb418e8f7d824c4aab6f56cb75f987323ecfd4f0995",
+    "hash": "5c4a36c7f9431960dc528c072f5e78c8ba07cd3e4e8e820e2fd329fa7cf44107"
+  },
+  {
+    "id": "64b879bb-2eb2-4669-bfd6-257db216c2a4",
+    "at": "2026-04-22T13:04:38.605Z",
+    "duration_ms": 686,
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "ccm",
+    "method": "POST",
+    "path": "/api/admin/security/actions",
+    "status": 200,
+    "action": "security.zero_trust.toggle",
+    "payload": {
+      "action": "security.zero_trust.toggle",
+      "payload": {
+        "enabled": false
+      }
+    },
+    "prev_hash": "5c4a36c7f9431960dc528c072f5e78c8ba07cd3e4e8e820e2fd329fa7cf44107",
+    "hash": "fe0b7f550dec09053b19223ae7a458837c867b02b4a276752e0a8a9d6d6c3383"
+  },
+  {
+    "id": "df76bba1-a73b-4aa5-92c3-367d5b55997b",
+    "at": "2026-04-22T13:04:40.762Z",
+    "duration_ms": 1201,
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "ccm",
+    "method": "GET",
+    "path": "/api/admin/security/state",
+    "status": 200,
+    "action": "GET /api/admin/security/state",
+    "payload": {},
+    "prev_hash": "fe0b7f550dec09053b19223ae7a458837c867b02b4a276752e0a8a9d6d6c3383",
+    "hash": "b4af2d8867bd1b43c1b16998485fcd294aac14a5aa7f15f16fff05dc911c5353"
+  },
+  {
+    "id": "7a6934e3-9c7b-4b25-b5ed-1d1aa7db6d7e",
+    "at": "2026-04-22T13:04:41.594Z",
+    "duration_ms": 2,
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "ccm",
+    "method": "GET",
+    "path": "/api/admin/audit?limit=40",
+    "status": 200,
+    "action": "GET /api/admin/audit?limit=40",
+    "payload": {},
+    "prev_hash": "b4af2d8867bd1b43c1b16998485fcd294aac14a5aa7f15f16fff05dc911c5353",
+    "hash": "433436fecb185872b8169ce1661daa5192fd4b428370c5a09d253a726d99b1df"
+  },
+  {
+    "id": "ffcf2d4b-efb3-4add-9df3-f8698609e4b2",
+    "at": "2026-04-22T13:04:42.591Z",
+    "duration_ms": 1024,
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "ccm",
+    "method": "GET",
+    "path": "/api/admin/security/state",
+    "status": 200,
+    "action": "GET /api/admin/security/state",
+    "payload": {},
+    "prev_hash": "433436fecb185872b8169ce1661daa5192fd4b428370c5a09d253a726d99b1df",
+    "hash": "56ee99795d40bebf1707c5dc0c45838c97d351731388f89a880df681c07e44d6"
+  },
+  {
+    "id": "35d047a2-8ec3-4021-b009-2e06cc07e799",
+    "at": "2026-04-22T13:04:43.398Z",
+    "duration_ms": 2,
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "ccm",
+    "method": "GET",
+    "path": "/api/admin/audit?limit=40",
+    "status": 200,
+    "action": "GET /api/admin/audit?limit=40",
+    "payload": {},
+    "prev_hash": "56ee99795d40bebf1707c5dc0c45838c97d351731388f89a880df681c07e44d6",
+    "hash": "78e8f7c7aeecb8c2e96d46098f8571ec6db8adf6987a833262b0714e987d96a0"
+  },
+  {
+    "id": "b7e6d478-45b1-4f9f-8892-07c709af632e",
+    "at": "2026-04-22T13:15:53.477Z",
+    "duration_ms": 921,
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "ccm",
+    "method": "GET",
+    "path": "/api/admin/users",
+    "status": 200,
+    "action": "GET /api/admin/users",
+    "payload": {},
+    "prev_hash": "78e8f7c7aeecb8c2e96d46098f8571ec6db8adf6987a833262b0714e987d96a0",
+    "hash": "c489e459fb01c8f3bc4a477200c1ee8c3f4e7f84808e2812c0fbc32b5320df0c"
+  },
+  {
+    "id": "54149035-5496-4a90-8335-917c682f8373",
+    "at": "2026-04-22T13:15:54.597Z",
+    "duration_ms": 19,
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "ccm",
+    "method": "GET",
+    "path": "/api/admin/audit?limit=40",
+    "status": 200,
+    "action": "GET /api/admin/audit?limit=40",
+    "payload": {},
+    "prev_hash": "c489e459fb01c8f3bc4a477200c1ee8c3f4e7f84808e2812c0fbc32b5320df0c",
+    "hash": "2c239d59388bd801ef32662ea4f9c9d8787d543cde9a3ca71474fbd65fc4ee5e"
+  },
+  {
+    "id": "bf2cf39d-6b96-4b79-b10c-0ef28aba7400",
+    "at": "2026-04-22T13:21:57.861Z",
+    "actor_id": "owner-test",
+    "actor_role": "owner",
+    "action": "platform_analytics_overview_requested",
+    "path": "/analytics/platform/overview",
+    "status": 200,
+    "payload": {
+      "scope_level": "platform_overview_aggregated",
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "2c239d59388bd801ef32662ea4f9c9d8787d543cde9a3ca71474fbd65fc4ee5e",
+    "hash": "4a13b7e5efd4558d271b87202a5dd05e554b89279220f919ae002a9d589ee8a0"
+  },
+  {
+    "id": "d0c56930-95e6-4e5f-b17f-564b2e702ce9",
+    "at": "2026-04-22T13:21:57.866Z",
+    "actor_id": "owner-test",
+    "actor_role": "owner",
+    "action": "platform_analytics_trends_requested",
+    "path": "/analytics/platform/trends",
+    "status": 200,
+    "payload": {
+      "scope_level": "platform_trends_global_anonymized",
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
+      "org_scope": "org:global",
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "4a13b7e5efd4558d271b87202a5dd05e554b89279220f919ae002a9d589ee8a0",
+    "hash": "e713b3423947e9b09f7f5e3fe09a50db695492d693343b04dce34ca0f1472cb0"
+  },
+  {
+    "id": "53e9d922-418c-4b4a-bd09-5a56c87aa0df",
+    "at": "2026-04-22T13:22:41.895Z",
+    "actor_id": "owner-test",
+    "actor_role": "owner",
+    "action": "platform_analytics_overview_requested",
+    "path": "/analytics/platform/overview",
+    "status": 200,
+    "payload": {
+      "scope_level": "platform_overview_aggregated",
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "e713b3423947e9b09f7f5e3fe09a50db695492d693343b04dce34ca0f1472cb0",
+    "hash": "54c304a135bd1621f3cc4add506cae93b3d3e2838700c783a205a6c3cbd9475e"
+  },
+  {
+    "id": "43187460-f56a-420c-98b2-eaf2f6b97fcd",
+    "at": "2026-04-22T13:22:41.898Z",
+    "actor_id": "owner-test",
+    "actor_role": "owner",
+    "action": "platform_analytics_trends_requested",
+    "path": "/analytics/platform/trends",
+    "status": 200,
+    "payload": {
+      "scope_level": "platform_trends_global_anonymized",
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
+      "org_scope": "org:global",
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "54c304a135bd1621f3cc4add506cae93b3d3e2838700c783a205a6c3cbd9475e",
+    "hash": "74dc79bb1e39e9f3c977d09f1d28ff6efeda705a93168971f0de1fdb3ac33f45"
   }
 ]

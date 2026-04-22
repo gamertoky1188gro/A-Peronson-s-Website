@@ -228,7 +228,7 @@ function buildVerificationDocs(documents = []) {
 }
 
 function computeTrafficAnalytics(analyticsRows = [], stored = {}) {
-  const summary = { clicks: 0, visits: 0 }
+  const summary = { clicks: 0, visits: 0, spend: 0 }
   const sources = new Map()
   const domains = new Map()
 
@@ -269,15 +269,17 @@ function computeTrafficAnalytics(analyticsRows = [], stored = {}) {
   const mergedSummary = {
     clicks: (storedSummary.clicks || 0) + summary.clicks,
     visits: (storedSummary.visits || 0) + summary.visits,
+    spend: (storedSummary.spend || 0) + summary.spend,
   }
 
   const storedDomains = Array.isArray(stored?.domains) ? stored.domains : []
   const storedSources = Array.isArray(stored?.sources) ? stored.sources : []
   storedDomains.forEach((row) => {
     if (!row?.domain) return
-    const existing = domains.get(row.domain) || { domain: row.domain, clicks: 0, visits: 0 }
+    const existing = domains.get(row.domain) || { domain: row.domain, clicks: 0, visits: 0, spend: 0 }
     existing.clicks += row.clicks || 0
     existing.visits += row.visits || 0
+    existing.spend += row.spend || 0
     domains.set(row.domain, existing)
   })
   storedSources.forEach((row) => {
@@ -288,10 +290,17 @@ function computeTrafficAnalytics(analyticsRows = [], stored = {}) {
     sources.set(row.source, existing)
   })
 
+  const withRates = (row = {}) => {
+    const clicks = Number(row.clicks || 0)
+    const spend = Number(row.spend || 0)
+    const cpc = clicks > 0 ? spend / clicks : null
+    return { ...row, clicks, spend, cpc }
+  }
+
   return {
-    summary: mergedSummary,
+    summary: withRates(mergedSummary),
     sources: [...sources.values()],
-    domains: [...domains.values()],
+    domains: [...domains.values()].map(withRates),
   }
 }
 
@@ -421,7 +430,7 @@ export async function getAdminCatalog() {
     readLocalJson(NOTIFICATION_BATCHES_FILE, []),
     readLocalJson(MONTHLY_TRIGGERS_FILE, []),
     readLocalJson(AI_RESPONSE_AUDIT_FILE, []),
-    readLocalJson(TRAFFIC_ANALYTICS_FILE, { summary: {}, sources: [], domains: [] }),
+    readLocalJson(TRAFFIC_ANALYTICS_FILE, { summary: { clicks: 0, visits: 0, spend: 0 }, sources: [], domains: [] }),
     readLocalJson(EMAIL_SEGMENTS_FILE, []),
     readLocalJson(COUPON_CAMPAIGNS_FILE, []),
     readLocalJson(PARTNER_OVERRIDES_FILE, []),

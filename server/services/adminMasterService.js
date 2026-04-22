@@ -621,6 +621,16 @@ export async function getAdminMasterSummary(user) {
   const clicks = dashboard?.interaction_summary?.total_clicks || 0
   const visits = dashboard?.interaction_summary?.total_page_views || 0
 
+  const trafficStored = await readLocalJson('traffic_analytics.json', { summary: { clicks: 0, visits: 0, spend: 0 }, sources: [], domains: [] })
+  const storedSummary = trafficStored?.summary || {}
+  const storedClicks = Number(storedSummary.clicks || 0)
+  const storedVisits = Number(storedSummary.visits || 0)
+  const storedSpend = Number(storedSummary.spend || 0)
+
+  const trafficClicks = storedClicks || clicks
+  const trafficVisits = storedVisits || visits
+  const trafficCpc = trafficClicks > 0 ? storedSpend / trafficClicks : null
+
     const adminAuth = await getAdminAuthConfig()
     return {
       generated_at: new Date().toISOString(),
@@ -727,8 +737,10 @@ export async function getAdminMasterSummary(user) {
         api_keys: (config.integrations?.api_keys || []).length,
       },
       traffic: {
-        clicks,
-        visits,
+        clicks: trafficClicks,
+        visits: trafficVisits,
+        spend: storedSpend,
+        cpc: trafficCpc,
       },
       emails: {
         total: userRows.length,
