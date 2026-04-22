@@ -1200,3 +1200,137 @@ model GovernanceMonthlyReport {
 
   @@map("governance_monthly_reports")
 }
+
+// =====================================================
+// Dynamic Admin Panel Configuration
+// =====================================================
+
+model AdminModule {
+  id              String    @id @default(cuid())
+  module_id        String    @unique
+  label            String
+  icon_name        String?
+  sort_order       Int       @default(0)
+  active          Boolean   @default(true)
+  sections         AdminSection[]
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  @@map("admin_modules")
+}
+
+model AdminSection {
+  id              String    @id @default(cuid())
+  section_id       String    @unique
+  module_id        String
+  title           String
+  sort_order       Int       @default(0)
+  active          Boolean   @default(true)
+  features        Json?
+  module          AdminModule @relation(fields: [module_id], references: [id], onDelete: Cascade)
+
+  @@map("admin_sections")
+}
+
+model AdminAction {
+  id              String    @id @default(cuid())
+  action_id       String    @unique
+  label           String
+  category        String?
+  group_label     String?
+  sort_order      Int       @default(0)
+  active          Boolean   @default(true)
+  fields          Json
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  @@map("admin_actions")
+}
+
+model AdminCapability {
+  id              String    @id @default(cuid())
+  capability_id   String    @unique
+  module_id        String
+  title            String
+  count            Int       @default(0)
+  icon_name        String?
+  subtitle        String?
+  sort_order       Int       @default(0)
+  active           Boolean   @default(true)
+
+  @@map("admin_capabilities")
+}
+
+model AdminUiConfig {
+  id              String    @id @default("default")
+  section_metrics Json?
+  chart_palette   String[]
+  empty_states   Json?
+  updated_at     DateTime  @updatedAt
+
+  @@map("admin_ui_config")
+}
+
+model AdminMockData {
+  id              String    @id @default(cuid())
+  data_key        String    @unique
+  data_type       String
+  payload        Json
+  active          Boolean   @default(true)
+  sort_order      Int       @default(0)
+
+  @@map("admin_mock_data")
+}
+
+model AdminRoleConfig {
+  id              String    @id @default(cuid())
+  role_key        String    @unique
+  label           String
+  is_admin_role   Boolean   @default(false)
+  benefits        String[]
+  active          Boolean   @default(true)
+
+  @@map("admin_role_config")
+}
+
+model GovernanceConfig {
+  id              String    @id @default("default")
+  initial_policy  Json?
+  initial_version Json?
+  initial_simulation Json?
+  initial_template Json?
+  default_rules   Json?
+  updated_at      DateTime  @updatedAt
+
+  @@map("governance_config")
+}
+
+model AdminBranding {
+  id              String    @id @default(cuid())
+  brand_key       String    @unique
+  value          String
+  active         Boolean   @default(true)
+
+  @@map("admin_branding")
+}
+
+model AdminSecurityPurpose {
+  id              String    @id @default(cuid())
+  purpose_key     String    @unique
+  purpose_type   String
+  active         Boolean   @default(true)
+
+  @@map("admin_security_purposes")
+}
+
+model AdminConfigHistory {
+  id              String    @id @default(cuid())
+  config_type     String
+  changed_by      String
+  previous_value  Json?
+  new_value       Json?
+  created_at      DateTime  @default(now())
+
+  @@index([config_type, created_at])
+  @@map("admin_config_history")
+}

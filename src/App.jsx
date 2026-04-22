@@ -102,8 +102,8 @@ function AppRoutes() {
       <Route path="/insights" element={<ProtectedRoute roles={INSIGHTS_ROLES}><Insights /></ProtectedRoute>} />
       <Route path="/owner" element={<ProtectedRoute roles={OWNER_ROLES}><OwnerDashboard /></ProtectedRoute>} />
       <Route path="/agent" element={<ProtectedRoute roles={['buying_house', 'owner', 'admin', 'agent']}><AgentDashboard /></ProtectedRoute>} />
-      <Route path="/admin" element={<ProtectedRoute roles={['owner']}><AdminPanel /></ProtectedRoute>} />
-      <Route path="/admin/governance" element={<ProtectedRoute roles={['owner']}><AdminGovernance /></ProtectedRoute>} />
+<Route path="/admin" element={<ProtectedRoute roles={['owner', 'admin']}><AdminPanel /></ProtectedRoute>} />
+      <Route path="/admin/governance" element={<ProtectedRoute roles={['owner', 'admin']}><AdminGovernance /></ProtectedRoute>} />
 
       <Route path="/mvp" element={<MvpDashboard />} />
       <Route path="*" element={<Navigate to="/" replace />} />

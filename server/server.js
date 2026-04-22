@@ -11,6 +11,7 @@ import userRoutes from './routes/userRoutes.js'
 import requirementRoutes from './routes/requirementRoutes.js'
 import documentRoutes from './routes/documentRoutes.js'
 import adminRoutes from './routes/adminRoutes.js'
+import adminConfigRoutes from './routes/adminConfigRoutes.js'
 import systemRoutes from './routes/systemRoutes.js'
 import notificationRoutes from './routes/notificationRoutes.js'
 import socialRoutes from './routes/socialRoutes.js'
@@ -118,6 +119,7 @@ app.use('/api/documents', documentRoutes)
 app.use('/api/verification', verificationRoutes)
 app.use('/api/subscriptions', subscriptionRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api/admin', adminConfigRoutes)
 app.use('/api/feed', feedRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/onboarding', onboardingRoutes)

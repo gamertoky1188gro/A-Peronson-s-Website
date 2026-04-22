@@ -103,6 +103,66 @@ const DEFAULT_CONFIG = {
     },
   },
   org_quotas: {},
+  ui: {
+    admin_panel: {
+      allowed_roles: ['owner', 'admin'],
+      fallback_inventory: [
+        { id: 'platform', label: 'Core Platform & Business Control', icon_name: 'ShieldCheck' },
+        { id: 'infra', label: 'Server / System / Infrastructure Management', icon_name: 'Server' },
+        { id: 'network', label: 'Network Monitoring & Management', icon_name: 'Network' },
+        { id: 'server-admin', label: 'Server Admin + App Management', icon_name: 'Database' },
+        { id: 'cms', label: 'CMS + Content Management', icon_name: 'Settings' },
+        { id: 'ultra-security', label: 'Ultra Security Layer', icon_name: 'Lock' },
+      ],
+      theme: {
+        pie_palette: ['#38bdf8', '#60a5fa', '#0f172a'],
+      },
+      fallbacks: {
+        cms: {
+          weekly_trend: [
+            { name: 'Mon', value: 24 },
+            { name: 'Tue', value: 38 },
+            { name: 'Wed', value: 29 },
+            { name: 'Thu', value: 57 },
+            { name: 'Fri', value: 44 },
+            { name: 'Sat', value: 66 },
+            { name: 'Sun', value: 52 },
+          ],
+        },
+        ultra_security: {
+          mini_chart_points: [22, 28, 24, 34, 30, 46, 40, 54, 50, 66, 58, 72],
+          mini_chart_kpis: [
+            { label: 'Requests', value: '12.8k' },
+            { label: 'Integrity', value: '99.98%' },
+            { label: 'Latency', value: '148ms' },
+          ],
+          capabilities: [
+            'Zero-trust access controls',
+            'Mandatory MFA for admin',
+            'Session timeout + device fingerprinting',
+            'IP whitelisting + geo-fencing',
+            'Tamper-proof audit logs',
+            'Encryption key rotation',
+            'Incident response dashboard',
+            'Data-export approvals with dual confirmation',
+            'Forensic logs + immutable backups',
+          ],
+        },
+        contract_status: {
+          no_data_label: 'No Data',
+        },
+      },
+      copy: {
+        empty_states: {
+          'verification.pending.short': 'No pending verifications.',
+          'verification.pending': 'No pending verifications in queue.',
+          'disputes.none': 'No active disputes.',
+          'firewall.rules.none': 'No rules yet.',
+          'cron.jobs.none': 'No cron jobs yet.',
+        },
+      },
+    },
+  },
 }
 
 export async function getAdminConfig() {

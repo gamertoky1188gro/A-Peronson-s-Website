@@ -57,11 +57,12 @@ import {
   Shield,
   MonitorCog,
   Crown,
-  Home,
+Home,
   Lock,
   Settings,
   Sparkle,
   Server,
+  Sliders,
   XCircle
 } from 'lucide-react'
 import {
@@ -84,25 +85,65 @@ import {
 import { startAuthentication } from '@simplewebauthn/browser'
 import AccessDeniedState from '../components/AccessDeniedState'
 import { apiRequest, getCurrentUser, getToken, saveSession } from '../lib/auth'
+import { useInventory, useUiConfig, useCapabilities, useActions, useActionGroups, useRoleConfig, INFRA_CAPABILITIES_DEFAULT, NETWORK_CAPABILITIES_DEFAULT, ULTRA_CAPABILITIES_DEFAULT, DEFAULT_PIE_PALETTE, DEFAULT_CMS_WEEKLY_TREND, DEFAULT_ULTRA_MINI_CHART_POINTS, DEFAULT_ULTRA_MINI_CHART_KPIS, DEFAULT_EMPTY_STATE_COPY, BUYER_BENEFITS_DEFAULT, FACTORY_BENEFITS_DEFAULT, BUYING_HOUSE_BENEFITS_DEFAULT } from '../hooks/useAdminConfig'
 
-const OWNER_ROLES = new Set(['owner', 'admin'])
-
-const FALLBACK_INVENTORY = [
-  { id: 'platform', label: 'Core Platform & Business Control', sections: [] },
-  { id: 'infra', label: 'Server / System / Infrastructure Management', sections: [] },
-  { id: 'network', label: 'Network Monitoring & Management', sections: [] },
-  { id: 'server-admin', label: 'Server Admin + App Management', sections: [] },
-  { id: 'cms', label: 'CMS + Content Management', sections: [] },
-  { id: 'ultra-security', label: 'Ultra Security Layer', sections: [] },
+const KNOWN_ROLES = new Set(['buyer', 'factory', 'buying_house', 'owner', 'admin', 'agent'])
+const DEFAULT_ADMIN_PANEL_ALLOWED_ROLES = ['owner', 'admin']
+const DEFAULT_ADMIN_PANEL_FALLBACK_INVENTORY = [
+  { id: 'platform', label: 'Core Platform & Business Control', icon_name: 'ShieldCheck', sections: [] },
+  { id: 'infra', label: 'Server / System / Infrastructure Management', icon_name: 'Server', sections: [] },
+  { id: 'network', label: 'Network Monitoring & Management', icon_name: 'Network', sections: [] },
+  { id: 'server-admin', label: 'Server Admin + App Management', icon_name: 'Database', sections: [] },
+  { id: 'cms', label: 'CMS + Content Management', icon_name: 'Settings', sections: [] },
+  { id: 'ultra-security', label: 'Ultra Security Layer', icon_name: 'Lock', sections: [] },
+  { id: 'config', label: 'Config Editor', icon_name: 'Sliders', sections: [] },
 ]
 
-const CATEGORY_ICONS = {
-  platform: ShieldCheck,
-  infra: Server,
-  network: Network,
-  'server-admin': Database,
-  cms: Settings,
-  'ultra-security': Lock,
+const ICON_REGISTRY = {
+  ShieldCheck,
+  Server,
+  Network,
+  Database,
+  Settings,
+  Lock,
+  MonitorCog,
+  Shield,
+  LayoutDashboard,
+  Sliders,
+}
+
+function normalizeRole(value = '') {
+  return String(value || '').trim().toLowerCase()
+}
+
+function getAdminPanelAllowedRoles(config) {
+  const raw = config?.ui?.admin_panel?.allowed_roles
+  const list = Array.isArray(raw) ? raw.map(normalizeRole).filter(Boolean) : []
+  const filtered = list.filter((role) => KNOWN_ROLES.has(role))
+  if (!filtered.length) return DEFAULT_ADMIN_PANEL_ALLOWED_ROLES
+  return filtered
+}
+
+function getAdminPanelFallbackInventory(config) {
+  const raw = config?.ui?.admin_panel?.fallback_inventory
+  if (!Array.isArray(raw) || !raw.length) return DEFAULT_ADMIN_PANEL_FALLBACK_INVENTORY
+
+  const rows = raw
+    .map((row) => {
+      const id = String(row?.id || '').trim()
+      const label = String(row?.label || '').trim()
+      const iconName = String(row?.icon_name || '').trim()
+      if (!id || !label) return null
+      return { id, label, icon_name: iconName, sections: [] }
+    })
+    .filter(Boolean)
+
+  return rows.length ? rows : DEFAULT_ADMIN_PANEL_FALLBACK_INVENTORY
+}
+
+function getIconComponent(iconName = '', fallback = ShieldCheck) {
+  const key = String(iconName || '').trim()
+  return ICON_REGISTRY[key] || fallback
 }
 
 const INFRA_CAPABILITIES = [
@@ -557,7 +598,77 @@ function exportEmailsCsv(rows = []) {
   URL.revokeObjectURL(url)
 }
 
-const pieColors = ["#38bdf8", "#60a5fa", "#0f172a"];
+const DEFAULT_CONTRACT_NO_DATA_LABEL = 'No Data'
+
+function isHexColor(value) {
+  const v = String(value || '').trim()
+  return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(v)
+}
+
+function getAdminPanelPiePalette(config) {
+  const raw = config?.ui?.admin_panel?.theme?.pie_palette
+  const list = Array.isArray(raw) ? raw.map((c) => String(c || '').trim()).filter(Boolean) : []
+  const filtered = list.filter(isHexColor)
+  const safe = filtered.length >= 2 ? filtered.slice(0, 12) : DEFAULT_PIE_PALETTE
+  return safe
+}
+
+function getCmsWeeklyTrendFallback(config) {
+  const raw = config?.ui?.admin_panel?.fallbacks?.cms?.weekly_trend
+  if (!Array.isArray(raw) || !raw.length) return DEFAULT_CMS_WEEKLY_TREND
+  const rows = raw
+    .map((row) => {
+      const name = String(row?.name || row?.day || row?.label || '').trim()
+      const value = Number(row?.value ?? row?.count ?? row?.users ?? 0)
+      if (!name || !Number.isFinite(value)) return null
+      return { name, value }
+    })
+    .filter(Boolean)
+  return rows.length ? rows.slice(0, 31) : DEFAULT_CMS_WEEKLY_TREND
+}
+
+function getUltraMiniChartPoints(config) {
+  const raw = config?.ui?.admin_panel?.fallbacks?.ultra_security?.mini_chart_points
+  if (!Array.isArray(raw) || raw.length < 3) return DEFAULT_ULTRA_MINI_CHART_POINTS
+  const points = raw.map((n) => Number(n)).filter((n) => Number.isFinite(n))
+  return points.length >= 3 ? points.slice(0, 60) : DEFAULT_ULTRA_MINI_CHART_POINTS
+}
+
+function getUltraMiniChartKpis(config) {
+  const raw = config?.ui?.admin_panel?.fallbacks?.ultra_security?.mini_chart_kpis
+  if (!Array.isArray(raw) || !raw.length) return DEFAULT_ULTRA_MINI_CHART_KPIS
+  const rows = raw
+    .map((row) => {
+      const label = String(row?.label || '').trim()
+      const value = String(row?.value || '').trim()
+      if (!label || !value) return null
+      return { label, value }
+    })
+    .filter(Boolean)
+  return rows.length ? rows.slice(0, 6) : DEFAULT_ULTRA_MINI_CHART_KPIS
+}
+
+function getUltraSecurityCapabilities(config) {
+  const raw = config?.ui?.admin_panel?.fallbacks?.ultra_security?.capabilities
+  const list = Array.isArray(raw) ? raw.map((v) => String(v || '').trim()).filter(Boolean) : []
+  const unique = [...new Set(list)]
+  return unique.length ? unique.slice(0, 30) : ULTRA_CAPABILITIES_DEFAULT
+}
+
+function getContractNoDataLabel(config) {
+  const raw = config?.ui?.admin_panel?.fallbacks?.contract_status?.no_data_label
+  const value = String(raw || '').trim()
+  return value || DEFAULT_CONTRACT_NO_DATA_LABEL
+}
+
+function getEmptyStateCopy(config, key, fallback) {
+  const k = String(key || '').trim()
+  const raw = config?.ui?.admin_panel?.copy?.empty_states?.[k]
+  const value = String(raw || '').trim()
+  if (value) return value
+  if (DEFAULT_EMPTY_STATE_COPY[k]) return DEFAULT_EMPTY_STATE_COPY[k]
+  return fallback
+}
 
 const buyerBenefits = [
   "Advanced Search Filters",
@@ -1093,19 +1204,21 @@ function UltraToggle({ dark, on, label, hint, onToggle }) {
   )
 }
 
-function UltraTinyChart({ dark }) {
-  const points = [22, 28, 24, 34, 30, 46, 40, 54, 50, 66, 58, 72]
+function UltraTinyChart({ dark, points = DEFAULT_ULTRA_MINI_CHART_POINTS, kpis = DEFAULT_ULTRA_MINI_CHART_KPIS }) {
+  const safePoints = Array.isArray(points) && points.length >= 3 ? points : DEFAULT_ULTRA_MINI_CHART_POINTS
   const width = 640
   const height = 180
-  const max = Math.max(...points)
-  const min = Math.min(...points)
+  const max = Math.max(...safePoints)
+  const min = Math.min(...safePoints)
+  const range = max - min || 1
   const pad = 16
-  const step = (width - pad * 2) / (points.length - 1)
-  const y = (v) => height - pad - ((v - min) / (max - min)) * (height - pad * 2)
-  const path = points
+  const step = (width - pad * 2) / (safePoints.length - 1)
+  const y = (v) => height - pad - ((v - min) / range) * (height - pad * 2)
+  const path = safePoints
     .map((p, i) => `${i === 0 ? 'M' : 'L'}${pad + i * step} ${y(p)}`)
     .join(' ')
   const area = `${path} L ${width - pad} ${height - pad} L ${pad} ${height - pad} Z`
+  const safeKpis = Array.isArray(kpis) && kpis.length ? kpis.slice(0, 6) : DEFAULT_ULTRA_MINI_CHART_KPIS
 
   return (
     <div className={cn('rounded-[24px] border p-4', dark ? 'border-white/10 bg-slate-950/25' : 'border-slate-200 bg-white')}>
@@ -1128,19 +1241,15 @@ function UltraTinyChart({ dark }) {
         </defs>
         <path d={area} fill="url(#ultraSkyFill)" />
         <path d={path} fill="none" stroke="currentColor" strokeWidth="3" className="text-cyan-300" />
-        {points.map((p, i) => (
+        {safePoints.map((p, i) => (
           <circle key={i} cx={pad + i * step} cy={y(p)} r="4.2" className="fill-cyan-300 text-cyan-300" />
         ))}
       </svg>
       <div className="mt-2 grid grid-cols-3 gap-3 text-center text-xs">
-        {[
-          ['Requests', '12.8k'],
-          ['Integrity', '99.98%'],
-          ['Latency', '148ms'],
-        ].map(([label, value]) => (
-          <div key={label} className={cn('rounded-2xl border p-3', dark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
-            <div className={cn('font-semibold', dark ? 'text-white' : 'text-slate-900')}>{value}</div>
-            <div className={dark ? 'text-slate-400' : 'text-slate-500'}>{label}</div>
+        {safeKpis.slice(0, 3).map((row) => (
+          <div key={row.label} className={cn('rounded-2xl border p-3', dark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
+            <div className={cn('font-semibold', dark ? 'text-white' : 'text-slate-900')}>{row.value}</div>
+            <div className={dark ? 'text-slate-400' : 'text-slate-500'}>{row.label}</div>
           </div>
         ))}
       </div>
@@ -1150,7 +1259,7 @@ function UltraTinyChart({ dark }) {
 
 export default function AdminPanel() {
   const user = getCurrentUser()
-  const isOwner = OWNER_ROLES.has(String(user?.role || '').toLowerCase())
+  const userRole = normalizeRole(user?.role)
   const [adminDark, setAdminDark] = useState(() => {
     const stored = localStorage.getItem('admin_theme')
     if (stored === 'light') return false
@@ -1160,7 +1269,7 @@ export default function AdminPanel() {
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [master, setMaster] = useState(null)
+const [master, setMaster] = useState(null)
   const [catalog, setCatalog] = useState(null)
   const [infra, setInfra] = useState(null)
   const [network, setNetwork] = useState(null)
@@ -1174,7 +1283,16 @@ export default function AdminPanel() {
   const [signups, setSignups] = useState([])
   const [strikeHistory, setStrikeHistory] = useState([])
   const [fraudReview, setFraudReview] = useState({ items: [], duplicates: [] })
-  const [orgOwnership, setOrgOwnership] = useState({ orgs: [], staff_list: [] })
+const [orgOwnership, setOrgOwnership] = useState({ orgs: [], staff_list: [] })
+
+  const { inventory: dynamicInventory } = useInventory()
+  const { piePalette: dynamicPiePalette, emptyStates: dynamicEmptyStates } = useUiConfig()
+  const { capabilities: _infraCapabilities } = useCapabilities('infra')
+  const { capabilities: _networkCapabilities } = useCapabilities('network')
+  const { capabilities: _ultraCapabilities } = useCapabilities('ultra-security')
+  const { actions: _adminActions } = useActions()
+  const { groups: dynamicActionGroups } = useActionGroups()
+  const _roleConfig = useRoleConfig()
   const [walletLedger, setWalletLedger] = useState([])
   const [featuredForm, setFeaturedForm] = useState({ entity_type: 'product', entity_id: '', label: '' })
   const [audit, setAudit] = useState([])
@@ -1239,6 +1357,22 @@ export default function AdminPanel() {
   const [clothingRulesBusy, setClothingRulesBusy] = useState(false)
   const [clothingRulesNotice, setClothingRulesNotice] = useState('')
   const [clothingRulesError, setClothingRulesError] = useState('')
+
+  const [adminUiSettingsForm, setAdminUiSettingsForm] = useState({
+    allowed_roles: '',
+    fallback_inventory_json: '',
+    pie_palette: '',
+    cms_weekly_trend_json: '',
+    ultra_mini_points_json: '',
+    ultra_mini_kpis_json: '',
+    ultra_capabilities: '',
+    contract_no_data_label: '',
+    empty_states_json: '',
+  })
+  const [adminUiSettingsDirty, setAdminUiSettingsDirty] = useState(false)
+  const [adminUiSettingsBusy, setAdminUiSettingsBusy] = useState(false)
+  const [adminUiSettingsNotice, setAdminUiSettingsNotice] = useState('')
+  const [adminUiSettingsError, setAdminUiSettingsError] = useState('')
   const [systemReports, setSystemReports] = useState([])
   const [productAppealReports, setProductAppealReports] = useState([])
   const [contentReports, setContentReports] = useState([])
@@ -1262,12 +1396,29 @@ export default function AdminPanel() {
   const [activeCategory, setActiveCategory] = useState('home')
   const [actionBusy, setActionBusy] = useState('')
 
+  const [configEditorTab, setConfigEditorTab] = useState('inventory')
+  const [configEditorData, setConfigEditorData] = useState({ inventory: [], actions: [], ui: {} })
+  const [configEditorLoading, setConfigEditorLoading] = useState(false)
+  const [configEditorSaving, setConfigEditorSaving] = useState(false)
+  const [configEditorNotice, setConfigEditorNotice] = useState('')
+  const [configEditorError, setConfigEditorError] = useState('')
+
+const adminPanelAllowedRoles = useMemo(() => getAdminPanelAllowedRoles(master?.config), [master?.config])
+  const isAllowedAdminViewer = adminPanelAllowedRoles.includes(userRole)
+
+  const actionGroups = useMemo(() => {
+    if (dynamicActionGroups && dynamicActionGroups.length > 0) {
+      return dynamicActionGroups
+    }
+    return ACTION_GROUPS
+  }, [dynamicActionGroups])
+
   const actionOptions = useMemo(() => {
-    return ACTION_GROUPS.flatMap((group) => group.actions.map((action) => ({
+    return actionGroups.flatMap((group) => group.actions.map((action) => ({
       ...action,
       group: group.label,
     })))
-  }, [])
+  }, [actionGroups])
   const [selectedActionId, setSelectedActionId] = useState(actionOptions[0]?.id || '')
   const selectedAction = actionOptions.find((action) => action.id === selectedActionId)
   const [actionForm, setActionForm] = useState({})
@@ -1366,7 +1517,43 @@ export default function AdminPanel() {
         verify_tls: opensearch.verify_tls !== false,
       })
     }
-  }, [master?.config])
+
+    if (!adminUiSettingsDirty) {
+      const allowedRoles = getAdminPanelAllowedRoles(master?.config)
+      const fallbackInventory = getAdminPanelFallbackInventory(master?.config).map((row) => ({
+        id: row.id,
+        label: row.label,
+        icon_name: row.icon_name || '',
+      }))
+      const piePalette = getAdminPanelPiePalette(master?.config)
+      const cmsWeeklyTrend = getCmsWeeklyTrendFallback(master?.config)
+      const ultraPoints = getUltraMiniChartPoints(master?.config)
+      const ultraKpis = getUltraMiniChartKpis(master?.config)
+      const ultraCapabilities = getUltraSecurityCapabilities(master?.config)
+      const contractNoDataLabel = getContractNoDataLabel(master?.config)
+      const rawEmptyStates = master?.config?.ui?.admin_panel?.copy?.empty_states
+      const sanitizedEmptyStates = rawEmptyStates && typeof rawEmptyStates === 'object' && !Array.isArray(rawEmptyStates)
+        ? Object.fromEntries(
+            Object.entries(rawEmptyStates).map(([key, value]) => [String(key || '').trim(), String(value || '').trim()]).filter(([k, v]) => k && v)
+          )
+        : {}
+      const emptyStates = { ...DEFAULT_EMPTY_STATE_COPY, ...sanitizedEmptyStates }
+
+      setAdminUiSettingsForm({
+        allowed_roles: allowedRoles.join(', '),
+        fallback_inventory_json: JSON.stringify(fallbackInventory, null, 2),
+        pie_palette: listToTextarea(piePalette),
+        cms_weekly_trend_json: JSON.stringify(cmsWeeklyTrend, null, 2),
+        ultra_mini_points_json: JSON.stringify(ultraPoints, null, 2),
+        ultra_mini_kpis_json: JSON.stringify(ultraKpis, null, 2),
+        ultra_capabilities: listToTextarea(ultraCapabilities),
+        contract_no_data_label: contractNoDataLabel,
+        empty_states_json: JSON.stringify(emptyStates, null, 2),
+      })
+      setAdminUiSettingsNotice('')
+      setAdminUiSettingsError('')
+    }
+  }, [master?.config, adminUiSettingsDirty])
 
   const buildAdminHeaders = useCallback(({ stepUp = false } = {}) => {
     const headers = {}
@@ -1399,7 +1586,7 @@ export default function AdminPanel() {
   }
 
   const loadAdminData = useCallback(async () => {
-    if (!isOwner) return
+    if (!isAllowedAdminViewer) return
     const token = getToken()
     if (!token) return
 
@@ -1473,14 +1660,20 @@ export default function AdminPanel() {
     } finally {
       setLoading(false)
     }
-  }, [isOwner, buildAdminHeaders, handleSecurityFailure])
+  }, [isAllowedAdminViewer, buildAdminHeaders, handleSecurityFailure])
 
   useEffect(() => {
     loadAdminData()
   }, [loadAdminData])
 
-  const summary = master?.summary || {}
-  const inventory = master?.inventory || FALLBACK_INVENTORY
+const summary = master?.summary || {}
+  const uiFallbackInventory = useMemo(() => getAdminPanelFallbackInventory(master?.config), [master?.config])
+  const inventory = useMemo(() => {
+    const inv = Array.isArray(master?.inventory) ? master.inventory : []
+    if (inv.length) return inv
+    if (dynamicInventory && dynamicInventory.length > 0) return dynamicInventory
+    return uiFallbackInventory
+  }, [master?.inventory, uiFallbackInventory, dynamicInventory])
   const securityContext = master?.security_context || {}
   const premiumUsers = useMemo(() => users.filter((u) => String(u.subscription_status || '').toLowerCase() === 'premium'), [users])
   const regionOptions = useMemo(() => {
@@ -1618,9 +1811,31 @@ export default function AdminPanel() {
     })
   }, [audit, ultraAuditQuery])
 
-  const analyticsOverview = catalog?.analytics || {}
-  const activeUsersTrend = Array.isArray(analyticsOverview.active_users_trend) ? analyticsOverview.active_users_trend : []
-  const buyerRequestTrend = Array.isArray(analyticsOverview.buyer_request_trend) ? analyticsOverview.buyer_request_trend : []
+const piePalette = useMemo(() => {
+    const existing = getAdminPanelPiePalette(master?.config)
+    if (existing && existing.length >= 2) return existing
+    if (dynamicPiePalette && dynamicPiePalette.length >= 2) return dynamicPiePalette
+    return existing
+  }, [master?.config, dynamicPiePalette])
+  const cmsWeeklyTrendFallback = useMemo(() => getCmsWeeklyTrendFallback(master?.config), [master?.config])
+  const ultraMiniChartPoints = useMemo(() => getUltraMiniChartPoints(master?.config), [master?.config])
+  const ultraMiniChartKpis = useMemo(() => getUltraMiniChartKpis(master?.config), [master?.config])
+  const contractNoDataLabel = useMemo(() => getContractNoDataLabel(master?.config), [master?.config])
+  const emptyCopy = useCallback((key, fallback) => {
+    const existing = getEmptyStateCopy(master?.config, key, fallback)
+    if (existing && existing !== fallback) return existing
+    return dynamicEmptyStates?.[key] || fallback
+  }, [master?.config, dynamicEmptyStates])
+
+const analyticsOverview = catalog?.analytics || {}
+  const activeUsersTrend = useMemo(() => {
+    const trend = analyticsOverview.active_users_trend
+    return Array.isArray(trend) ? trend : []
+  }, [analyticsOverview?.active_users_trend])
+  const buyerRequestTrend = useMemo(() => {
+    const trend = analyticsOverview.buyer_request_trend
+    return Array.isArray(trend) ? trend : []
+  }, [analyticsOverview?.buyer_request_trend])
   const cmsTrendData = useMemo(() => {
     if (activeUsersTrend.length) {
       return activeUsersTrend.slice(-7).map((row, idx) => ({
@@ -1628,31 +1843,10 @@ export default function AdminPanel() {
         value: Number(row?.value ?? row?.count ?? row?.users ?? 0) || 0,
       }))
     }
-    return [
-      { name: 'Mon', value: 24 },
-      { name: 'Tue', value: 38 },
-      { name: 'Wed', value: 29 },
-      { name: 'Thu', value: 57 },
-      { name: 'Fri', value: 44 },
-      { name: 'Sat', value: 66 },
-      { name: 'Sun', value: 52 },
-    ]
-  }, [activeUsersTrend])
+    return cmsWeeklyTrendFallback
+  }, [activeUsersTrend, cmsWeeklyTrendFallback])
 
-  const ultraSecurityCapabilities = useMemo(
-    () => [
-      'Zero-trust access controls',
-      'Mandatory MFA for admin',
-      'Session timeout + device fingerprinting',
-      'IP whitelisting + geo-fencing',
-      'Tamper-proof audit logs',
-      'Encryption key rotation',
-      'Incident response dashboard',
-      'Data-export approvals with dual confirmation',
-      'Forensic logs + immutable backups',
-    ],
-    []
-  )
+  const ultraSecurityCapabilities = useMemo(() => getUltraSecurityCapabilities(master?.config), [master?.config])
   const contractStatusData = useMemo(() => {
     const counts = { signed: 0, pending: 0, dispute: 0 }
     contractsVault.forEach((row) => {
@@ -1665,7 +1859,7 @@ export default function AdminPanel() {
     const total = counts.signed + counts.pending + counts.dispute
     if (total === 0) {
       return [
-        { name: 'No Data', value: 1 }
+        { name: contractNoDataLabel, value: 1 }
       ]
     }
 
@@ -1674,7 +1868,7 @@ export default function AdminPanel() {
       { name: 'Pending', value: counts.pending },
       { name: 'Dispute', value: counts.dispute },
     ]
-  }, [contractsVault])
+  }, [contractsVault, contractNoDataLabel])
 
   function updateDraft(id, field, value) {
     setUserDrafts((prev) => ({
@@ -2000,6 +2194,145 @@ export default function AdminPanel() {
     }
   }
 
+  async function saveAdminUiSettings() {
+    const token = getToken()
+    if (!token) return
+
+    setAdminUiSettingsBusy(true)
+    setAdminUiSettingsNotice('')
+    setAdminUiSettingsError('')
+
+    try {
+      const roles = textareaToList(adminUiSettingsForm.allowed_roles).map(normalizeRole).filter((r) => KNOWN_ROLES.has(r))
+      if (!roles.length) throw new Error('Allowed roles cannot be empty.')
+
+      let inventory = []
+      try {
+        const parsed = JSON.parse(adminUiSettingsForm.fallback_inventory_json || '[]')
+        if (!Array.isArray(parsed)) throw new Error('fallback_inventory must be a JSON array.')
+        inventory = parsed
+          .map((row) => {
+            const id = String(row?.id || '').trim()
+            const label = String(row?.label || '').trim()
+            const iconName = String(row?.icon_name || '').trim()
+            if (!id || !label) return null
+            return { id, label, icon_name: iconName }
+          })
+          .filter(Boolean)
+      } catch (err) {
+        throw new Error(`Invalid fallback inventory JSON: ${err.message || 'parse error'}`)
+      }
+
+      if (!inventory.length) throw new Error('Fallback inventory cannot be empty.')
+
+      const piePalette = textareaToList(adminUiSettingsForm.pie_palette).map((c) => String(c || '').trim()).filter(isHexColor)
+      if (piePalette.length < 2) throw new Error('Pie palette must include at least 2 valid hex colors.')
+
+      let cmsWeeklyTrend = []
+      try {
+        const parsed = JSON.parse(adminUiSettingsForm.cms_weekly_trend_json || '[]')
+        if (!Array.isArray(parsed)) throw new Error('cms weekly trend must be a JSON array.')
+        cmsWeeklyTrend = parsed
+          .map((row) => {
+            const name = String(row?.name || row?.day || row?.label || '').trim()
+            const value = Number(row?.value ?? row?.count ?? row?.users ?? 0)
+            if (!name || !Number.isFinite(value)) return null
+            return { name, value }
+          })
+          .filter(Boolean)
+      } catch (err) {
+        throw new Error(`Invalid CMS weekly trend JSON: ${err.message || 'parse error'}`)
+      }
+      if (!cmsWeeklyTrend.length) throw new Error('CMS weekly trend fallback cannot be empty.')
+
+      let ultraMiniPoints = []
+      try {
+        const parsed = JSON.parse(adminUiSettingsForm.ultra_mini_points_json || '[]')
+        if (!Array.isArray(parsed)) throw new Error('ultra mini chart points must be a JSON array.')
+        ultraMiniPoints = parsed.map((n) => Number(n)).filter((n) => Number.isFinite(n))
+      } catch (err) {
+        throw new Error(`Invalid Ultra mini-chart points JSON: ${err.message || 'parse error'}`)
+      }
+      if (ultraMiniPoints.length < 3) throw new Error('Ultra mini-chart points must include at least 3 numbers.')
+
+      let ultraMiniKpis = []
+      try {
+        const parsed = JSON.parse(adminUiSettingsForm.ultra_mini_kpis_json || '[]')
+        if (!Array.isArray(parsed)) throw new Error('ultra mini chart KPIs must be a JSON array.')
+        ultraMiniKpis = parsed
+          .map((row) => {
+            const label = String(row?.label || '').trim()
+            const value = String(row?.value || '').trim()
+            if (!label || !value) return null
+            return { label, value }
+          })
+          .filter(Boolean)
+      } catch (err) {
+        throw new Error(`Invalid Ultra mini-chart KPIs JSON: ${err.message || 'parse error'}`)
+      }
+      if (!ultraMiniKpis.length) throw new Error('Ultra mini-chart KPIs cannot be empty.')
+
+      const ultraCapabilities = textareaToList(adminUiSettingsForm.ultra_capabilities).map((v) => String(v || '').trim()).filter(Boolean)
+      if (!ultraCapabilities.length) throw new Error('Ultra Security capabilities cannot be empty.')
+
+      const contractNoDataLabel = String(adminUiSettingsForm.contract_no_data_label || '').trim() || DEFAULT_CONTRACT_NO_DATA_LABEL
+
+      let emptyStates = {}
+      try {
+        const parsed = JSON.parse(adminUiSettingsForm.empty_states_json || '{}')
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('empty_states must be a JSON object.')
+        emptyStates = Object.fromEntries(
+          Object.entries(parsed).map(([k, v]) => [String(k || '').trim(), String(v || '').trim()]).filter(([k, v]) => k && v)
+        )
+      } catch (err) {
+        throw new Error(`Invalid empty-state copy JSON: ${err.message || 'parse error'}`)
+      }
+
+      const patch = {
+        ui: {
+          admin_panel: {
+            allowed_roles: roles,
+            fallback_inventory: inventory,
+            theme: {
+              pie_palette: piePalette.slice(0, 12),
+            },
+            fallbacks: {
+              cms: {
+                weekly_trend: cmsWeeklyTrend.slice(0, 31),
+              },
+              ultra_security: {
+                mini_chart_points: ultraMiniPoints.slice(0, 60),
+                mini_chart_kpis: ultraMiniKpis.slice(0, 6),
+                capabilities: ultraCapabilities.slice(0, 30),
+              },
+              contract_status: {
+                no_data_label: contractNoDataLabel,
+              },
+            },
+            copy: {
+              empty_states: emptyStates,
+            },
+          },
+        },
+      }
+
+      const updated = await apiRequest('/admin/config', {
+        method: 'PATCH',
+        token,
+        headers: buildAdminHeaders({ stepUp: true }),
+        body: patch,
+      })
+
+      setMaster((prev) => (prev ? { ...prev, config: updated } : prev))
+      setAdminUiSettingsDirty(false)
+      setAdminUiSettingsNotice('Admin UI settings saved.')
+    } catch (err) {
+      setAdminUiSettingsError(err.message || 'Unable to save Admin UI settings.')
+    } finally {
+      setAdminUiSettingsBusy(false)
+    }
+  }
+
   async function runOpenSearchAction(action, payload = {}) {
     const token = getToken()
     if (!token) return
@@ -2197,11 +2530,37 @@ export default function AdminPanel() {
     refreshMessagePolicyOps()
   }, [activeCategory, refreshSupportTickets, refreshModerationQueues, refreshReportQueues, refreshMessagePolicyOps])
 
-  useEffect(() => {
+useEffect(() => {
     if (activeCategory !== 'server-admin') return
-    if (!isOwner) return
+    if (!isAllowedAdminViewer) return
     refreshOpenSearchStatus()
-  }, [activeCategory, isOwner, refreshOpenSearchStatus])
+  }, [activeCategory, isAllowedAdminViewer, refreshOpenSearchStatus])
+
+  useEffect(() => {
+    if (activeCategory !== 'config') return
+    async function fetchConfigData() {
+      setConfigEditorLoading(true)
+      setConfigEditorNotice('')
+      setConfigEditorError('')
+      try {
+        const [inventory, actions, ui] = await Promise.all([
+          apiRequest('/admin/config/inventory', { method: 'GET' }),
+          apiRequest('/admin/config/actions/groups', { method: 'GET' }),
+          apiRequest('/admin/config/ui', { method: 'GET' }),
+        ])
+        setConfigEditorData({
+          inventory: inventory || [],
+          actions: actions || [],
+          ui: ui || {},
+        })
+      } catch (err) {
+        setConfigEditorError('Failed to load config: ' + err.message)
+      } finally {
+        setConfigEditorLoading(false)
+      }
+    }
+    fetchConfigData()
+  }, [activeCategory])
 
   async function refreshSignups() {
     const token = getToken()
@@ -2409,44 +2768,51 @@ export default function AdminPanel() {
   }, [adminDark]);
 
   const sidebarItems = useMemo(() => {
+    const uiById = new Map(uiFallbackInventory.map((row) => [row.id, row]))
     const items = [
       { id: 'home', label: 'HomeCore', icon: LayoutDashboard, sub: 'Platform & Business Control', accent: true },
     ]
     
     inventory.forEach(item => {
       let sub = 'Management'
-      let icon = CATEGORY_ICONS[item.id] || ShieldCheck
+      const ui = uiById.get(item.id)
+      const label = ui?.label || item.label
+      const iconName = ui?.icon_name || item.icon_name || ''
+      let icon = getIconComponent(iconName, ShieldCheck)
       let accent = false
       
       if (item.id === 'platform') {
          return
       } else if (item.id === 'infra') {
          sub = 'Management'
-         icon = Server
+         icon = getIconComponent(iconName, Server)
       } else if (item.id === 'network') {
          sub = 'Enterprise Level'
-         icon = Network
+         icon = getIconComponent(iconName, Network)
       } else if (item.id === 'server-admin') {
          sub = 'Full Stack'
-         icon = MonitorCog
+         icon = getIconComponent(iconName, MonitorCog)
       } else if (item.id === 'cms') {
          sub = 'Powerful publishing flow'
-         icon = Database
+         icon = getIconComponent(iconName, Database)
       } else if (item.id === 'ultra-security') {
          sub = 'Advanced'
-         icon = Shield
+         icon = getIconComponent(iconName, Shield)
       }
       
-      items.push({ ...item, icon, sub, accent })
+      items.push({ ...item, label, icon, sub, accent })
     })
 
     return items
-  }, [inventory])
+  }, [inventory, uiFallbackInventory])
 
   const activeData = useMemo(() => {
     if (activeCategory === 'home') return { label: 'HomeCore', sub: 'Platform & Business Control', sections: [] }
-    return inventory.find((cat) => cat.id === activeCategory) || inventory[0]
-  }, [activeCategory, inventory])
+    const cat = inventory.find((row) => row.id === activeCategory) || inventory[0]
+    if (!cat) return { label: 'Admin', sub: '', sections: [] }
+    const ui = uiFallbackInventory.find((row) => row.id === cat.id)
+    return { ...cat, label: ui?.label || cat.label }
+  }, [activeCategory, inventory, uiFallbackInventory])
 
   const CategoryIcon = useMemo(() => {
      const item = sidebarItems.find(i => i.id === activeCategory)
@@ -2461,8 +2827,9 @@ export default function AdminPanel() {
     ? 'rounded-2xl border border-slate-800 bg-slate-900/60 p-4'
     : 'rounded-2xl border border-slate-200 bg-slate-50 p-4'
 
-  if (!isOwner) {
-    return <AccessDeniedState message="Only owner/admin can access the admin panel." />
+  if (!isAllowedAdminViewer) {
+    const roles = adminPanelAllowedRoles.join(', ')
+    return <AccessDeniedState message={`Admin panel access is limited to: ${roles || 'owner, admin'}.`} />
   }
 
   return (
@@ -2870,7 +3237,7 @@ export default function AdminPanel() {
                               onChange={(e) => setSelectedActionId(e.target.value)}
                               className="w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-10 text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-500/10 dark:border-white/10 dark:bg-slate-950 dark:text-white"
                             >
-                              {ACTION_GROUPS.map((group) => (
+                              {actionGroups.map((group) => (
                                 <optgroup key={group.label} label={group.label}>
                                   {group.actions.map((action) => (
                                     <option key={action.id} value={action.id}>{action.label}</option>
@@ -2974,7 +3341,7 @@ export default function AdminPanel() {
                                 dataKey="value"
                               >
                                 {contractStatusData.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                                  <Cell key={`cell-${index}`} fill={piePalette[index % piePalette.length]} />
                                 ))}
                               </Pie>
                               <Tooltip
@@ -3658,7 +4025,9 @@ export default function AdminPanel() {
                       </div>
                     </details>
                   ))}
-                  {verificationQueue.length === 0 ? <p className="text-xs text-slate-500">No pending verifications.</p> : null}
+                  {verificationQueue.length === 0 ? (
+                    <p className="text-xs text-slate-500">{emptyCopy('verification.pending.short', 'No pending verifications.')}</p>
+                  ) : null}
                 </div>
               </div>
             ) : null}
@@ -4691,7 +5060,7 @@ export default function AdminPanel() {
                               ))}
                               {!verificationQueue.length ? (
                                 <div className={cn('rounded-3xl border border-dashed p-5 text-sm', adminDark ? 'border-slate-800 bg-slate-900/70 text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-500')}>
-                                  No pending verifications in queue.
+                                  {emptyCopy('verification.pending', 'No pending verifications in queue.')}
                                 </div>
                               ) : null}
                             </div>
@@ -4720,7 +5089,7 @@ export default function AdminPanel() {
                               ))}
                               {!disputes.length ? (
                                 <div className={cn('rounded-3xl border border-dashed p-5 text-sm', adminDark ? 'border-slate-800 bg-slate-900/70 text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-500')}>
-                                  No active disputes.
+                                  {emptyCopy('disputes.none', 'No active disputes.')}
                                 </div>
                               ) : null}
                             </div>
@@ -4869,7 +5238,7 @@ export default function AdminPanel() {
                                 ))}
                                 {(infraState?.firewall_rules || []).length === 0 ? (
                                   <div className={cn('rounded-2xl border border-dashed p-4 text-sm', adminDark ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-500')}>
-                                    No rules yet.
+                                    {emptyCopy('firewall.rules.none', 'No rules yet.')}
                                   </div>
                                 ) : null}
                               </div>
@@ -4976,7 +5345,7 @@ export default function AdminPanel() {
                                 ))}
                                 {(infraState?.cron_jobs || []).length === 0 ? (
                                   <div className={cn('rounded-2xl border border-dashed p-4 text-sm', adminDark ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-500')}>
-                                    No cron jobs yet.
+                                    {emptyCopy('cron.jobs.none', 'No cron jobs yet.')}
                                   </div>
                                 ) : null}
                               </div>
@@ -5828,7 +6197,9 @@ export default function AdminPanel() {
                                 ))}
                               </div>
                             ) : (
-                              <p className={cn('text-sm', adminDark ? 'text-slate-300' : 'text-slate-600')}>No pending verifications in queue.</p>
+                              <p className={cn('text-sm', adminDark ? 'text-slate-300' : 'text-slate-600')}>
+                                {emptyCopy('verification.pending', 'No pending verifications in queue.')}
+                              </p>
                             )}
                             <button
                               type="button"
@@ -5858,7 +6229,9 @@ export default function AdminPanel() {
                                   ))}
                                 </div>
                               ) : (
-                                <p className={cn('mt-2 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>No active disputes.</p>
+                                <p className={cn('mt-2 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>
+                                  {emptyCopy('disputes.none', 'No active disputes.')}
+                                </p>
                               )}
                             </div>
                           </div>
@@ -6548,6 +6921,250 @@ export default function AdminPanel() {
                     </div>
                   </section>
 
+                  <section className={cn('mt-6 rounded-[2rem] border p-5 shadow-xl shadow-sky-900/10 backdrop-blur-xl', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/70')}>
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className={cn('text-xs uppercase tracking-[0.22em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>Admin UI Settings</p>
+                        <h2 className={cn('mt-1 text-xl font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>Role gating + UI fallbacks + copy</h2>
+                        <p className={cn('mt-2 max-w-3xl text-sm', adminDark ? 'text-slate-300' : 'text-slate-600')}>
+                          These settings control what the Admin Panel UI shows when backend inventory is unavailable, and which roles may view the admin panel UI.
+                          Backend security still enforces access for all <span className="font-medium">/api/admin</span> routes.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={saveAdminUiSettings}
+                        disabled={adminUiSettingsBusy}
+                        className={cn(
+                          'inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition disabled:opacity-60',
+                          adminDark ? 'bg-sky-500 shadow-sky-500/25 hover:translate-y-[-1px]' : 'bg-sky-600 shadow-sky-500/20 hover:translate-y-[-1px]'
+                        )}
+                      >
+                        {adminUiSettingsBusy ? 'Saving...' : 'Save settings'}
+                      </button>
+                    </div>
+
+                    {adminUiSettingsNotice ? <div className="mt-3 text-sm text-emerald-400">{adminUiSettingsNotice}</div> : null}
+                    {adminUiSettingsError ? <div className="mt-3 text-sm text-rose-300">{adminUiSettingsError}</div> : null}
+
+                    <div className="mt-5 grid gap-5 lg:grid-cols-2">
+                      <div className={cn('rounded-3xl border p-5', adminDark ? 'border-white/10 bg-slate-950/30' : 'border-slate-200 bg-white')}>
+                        <div className="flex items-center gap-3">
+                          <ShieldCheck className={cn('h-5 w-5', adminDark ? 'text-sky-300' : 'text-sky-600')} />
+                          <div>
+                            <h3 className={cn('font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>Allowed roles</h3>
+                            <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>Comma or newline separated. Known roles: buyer, factory, buying_house, owner, admin, agent.</p>
+                          </div>
+                        </div>
+                        <textarea
+                          value={adminUiSettingsForm.allowed_roles}
+                          onChange={(e) => {
+                            setAdminUiSettingsDirty(true)
+                            setAdminUiSettingsForm((prev) => ({ ...prev, allowed_roles: e.target.value }))
+                          }}
+                          placeholder="owner, admin"
+                          rows={3}
+                          className={cn(
+                            'mt-4 w-full resize-y rounded-2xl border px-4 py-3 text-sm outline-none',
+                            adminDark
+                              ? 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40'
+                              : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                          )}
+                        />
+                      </div>
+
+                      <div className={cn('rounded-3xl border p-5', adminDark ? 'border-white/10 bg-slate-950/30' : 'border-slate-200 bg-white')}>
+                        <div className="flex items-center gap-3">
+                          <LayoutDashboard className={cn('h-5 w-5', adminDark ? 'text-sky-300' : 'text-sky-600')} />
+                          <div>
+                            <h3 className={cn('font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>Fallback inventory</h3>
+                            <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>JSON array of objects: id, label, icon_name (optional).</p>
+                          </div>
+                        </div>
+                        <textarea
+                          value={adminUiSettingsForm.fallback_inventory_json}
+                          onChange={(e) => {
+                            setAdminUiSettingsDirty(true)
+                            setAdminUiSettingsForm((prev) => ({ ...prev, fallback_inventory_json: e.target.value }))
+                          }}
+                          rows={10}
+                          className={cn(
+                            'mt-4 w-full resize-y rounded-2xl border px-4 py-3 font-mono text-xs outline-none',
+                            adminDark
+                              ? 'border-white/10 bg-white/5 text-slate-100 placeholder:text-slate-500 focus:border-sky-400/40'
+                              : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                          )}
+                        />
+                        <div className={cn('mt-3 text-xs', adminDark ? 'text-slate-400' : 'text-slate-600')}>
+                          Icon names are resolved via a safe registry (e.g. <span className={cn('font-mono', adminDark ? 'text-slate-200' : 'text-slate-800')}>ShieldCheck</span>, <span className={cn('font-mono', adminDark ? 'text-slate-200' : 'text-slate-800')}>Server</span>, <span className={cn('font-mono', adminDark ? 'text-slate-200' : 'text-slate-800')}>Network</span>, <span className={cn('font-mono', adminDark ? 'text-slate-200' : 'text-slate-800')}>Database</span>, <span className={cn('font-mono', adminDark ? 'text-slate-200' : 'text-slate-800')}>Settings</span>, <span className={cn('font-mono', adminDark ? 'text-slate-200' : 'text-slate-800')}>Lock</span>).
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 grid gap-5 lg:grid-cols-2">
+                      <div className={cn('rounded-3xl border p-5', adminDark ? 'border-white/10 bg-slate-950/30' : 'border-slate-200 bg-white')}>
+                        <div className="flex items-center gap-3">
+                          <BarChart3 className={cn('h-5 w-5', adminDark ? 'text-sky-300' : 'text-sky-600')} />
+                          <div>
+                            <h3 className={cn('font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>Chart theme</h3>
+                            <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>Pie palette + chart fallback labels.</p>
+                          </div>
+                        </div>
+
+                        <label className="mt-4 block">
+                          <div className={cn('mb-2 text-xs font-medium uppercase tracking-[0.2em]', adminDark ? 'text-slate-400' : 'text-slate-600')}>Pie palette (hex colors)</div>
+                          <textarea
+                            value={adminUiSettingsForm.pie_palette}
+                            onChange={(e) => {
+                              setAdminUiSettingsDirty(true)
+                              setAdminUiSettingsForm((prev) => ({ ...prev, pie_palette: e.target.value }))
+                            }}
+                            rows={4}
+                            placeholder="#38bdf8\n#60a5fa\n#0f172a"
+                            className={cn(
+                              'w-full resize-y rounded-2xl border px-4 py-3 font-mono text-xs outline-none',
+                              adminDark
+                                ? 'border-white/10 bg-white/5 text-slate-100 placeholder:text-slate-500 focus:border-sky-400/40'
+                                : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                            )}
+                          />
+                        </label>
+
+                        <label className="mt-4 block">
+                          <div className={cn('mb-2 text-xs font-medium uppercase tracking-[0.2em]', adminDark ? 'text-slate-400' : 'text-slate-600')}>Contract status “no data” label</div>
+                          <input
+                            value={adminUiSettingsForm.contract_no_data_label}
+                            onChange={(e) => {
+                              setAdminUiSettingsDirty(true)
+                              setAdminUiSettingsForm((prev) => ({ ...prev, contract_no_data_label: e.target.value }))
+                            }}
+                            placeholder="No Data"
+                            className={cn(
+                              'w-full rounded-2xl border px-4 py-3 text-sm outline-none',
+                              adminDark
+                                ? 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40'
+                                : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                            )}
+                          />
+                        </label>
+                      </div>
+
+                      <div className={cn('rounded-3xl border p-5', adminDark ? 'border-white/10 bg-slate-950/30' : 'border-slate-200 bg-white')}>
+                        <div className="flex items-center gap-3">
+                          <Gauge className={cn('h-5 w-5', adminDark ? 'text-sky-300' : 'text-sky-600')} />
+                          <div>
+                            <h3 className={cn('font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>CMS weekly trend fallback</h3>
+                            <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>Used when analytics trend data is unavailable.</p>
+                          </div>
+                        </div>
+                        <textarea
+                          value={adminUiSettingsForm.cms_weekly_trend_json}
+                          onChange={(e) => {
+                            setAdminUiSettingsDirty(true)
+                            setAdminUiSettingsForm((prev) => ({ ...prev, cms_weekly_trend_json: e.target.value }))
+                          }}
+                          rows={10}
+                          className={cn(
+                            'mt-4 w-full resize-y rounded-2xl border px-4 py-3 font-mono text-xs outline-none',
+                            adminDark
+                              ? 'border-white/10 bg-white/5 text-slate-100 placeholder:text-slate-500 focus:border-sky-400/40'
+                              : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-5 grid gap-5 lg:grid-cols-2">
+                      <div className={cn('rounded-3xl border p-5', adminDark ? 'border-white/10 bg-slate-950/30' : 'border-slate-200 bg-white')}>
+                        <div className="flex items-center gap-3">
+                          <ShieldAlert className={cn('h-5 w-5', adminDark ? 'text-sky-300' : 'text-sky-600')} />
+                          <div>
+                            <h3 className={cn('font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>Ultra Security demo data</h3>
+                            <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>Mini-chart points, KPI tiles, and capabilities list.</p>
+                          </div>
+                        </div>
+
+                        <label className="mt-4 block">
+                          <div className={cn('mb-2 text-xs font-medium uppercase tracking-[0.2em]', adminDark ? 'text-slate-400' : 'text-slate-600')}>Mini-chart points (JSON array)</div>
+                          <textarea
+                            value={adminUiSettingsForm.ultra_mini_points_json}
+                            onChange={(e) => {
+                              setAdminUiSettingsDirty(true)
+                              setAdminUiSettingsForm((prev) => ({ ...prev, ultra_mini_points_json: e.target.value }))
+                            }}
+                            rows={6}
+                            className={cn(
+                              'w-full resize-y rounded-2xl border px-4 py-3 font-mono text-xs outline-none',
+                              adminDark
+                                ? 'border-white/10 bg-white/5 text-slate-100 placeholder:text-slate-500 focus:border-sky-400/40'
+                                : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                            )}
+                          />
+                        </label>
+
+                        <label className="mt-4 block">
+                          <div className={cn('mb-2 text-xs font-medium uppercase tracking-[0.2em]', adminDark ? 'text-slate-400' : 'text-slate-600')}>Mini-chart KPIs (JSON array)</div>
+                          <textarea
+                            value={adminUiSettingsForm.ultra_mini_kpis_json}
+                            onChange={(e) => {
+                              setAdminUiSettingsDirty(true)
+                              setAdminUiSettingsForm((prev) => ({ ...prev, ultra_mini_kpis_json: e.target.value }))
+                            }}
+                            rows={6}
+                            className={cn(
+                              'w-full resize-y rounded-2xl border px-4 py-3 font-mono text-xs outline-none',
+                              adminDark
+                                ? 'border-white/10 bg-white/5 text-slate-100 placeholder:text-slate-500 focus:border-sky-400/40'
+                                : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                            )}
+                          />
+                        </label>
+
+                        <label className="mt-4 block">
+                          <div className={cn('mb-2 text-xs font-medium uppercase tracking-[0.2em]', adminDark ? 'text-slate-400' : 'text-slate-600')}>Capabilities (newline/comma list)</div>
+                          <textarea
+                            value={adminUiSettingsForm.ultra_capabilities}
+                            onChange={(e) => {
+                              setAdminUiSettingsDirty(true)
+                              setAdminUiSettingsForm((prev) => ({ ...prev, ultra_capabilities: e.target.value }))
+                            }}
+                            rows={6}
+                            className={cn(
+                              'w-full resize-y rounded-2xl border px-4 py-3 text-sm outline-none',
+                              adminDark
+                                ? 'border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-sky-400/40'
+                                : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                            )}
+                          />
+                        </label>
+                      </div>
+
+                      <div className={cn('rounded-3xl border p-5', adminDark ? 'border-white/10 bg-slate-950/30' : 'border-slate-200 bg-white')}>
+                        <div className="flex items-center gap-3">
+                          <FileText className={cn('h-5 w-5', adminDark ? 'text-sky-300' : 'text-sky-600')} />
+                          <div>
+                            <h3 className={cn('font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>Empty-state copy</h3>
+                            <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>JSON object keyed by id (e.g. verification.pending).</p>
+                          </div>
+                        </div>
+                        <textarea
+                          value={adminUiSettingsForm.empty_states_json}
+                          onChange={(e) => {
+                            setAdminUiSettingsDirty(true)
+                            setAdminUiSettingsForm((prev) => ({ ...prev, empty_states_json: e.target.value }))
+                          }}
+                          rows={16}
+                          className={cn(
+                            'mt-4 w-full resize-y rounded-2xl border px-4 py-3 font-mono text-xs outline-none',
+                            adminDark
+                              ? 'border-white/10 bg-white/5 text-slate-100 placeholder:text-slate-500 focus:border-sky-400/40'
+                              : 'border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-sky-400'
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </section>
+
                   <section className="mt-6 grid gap-4 lg:grid-cols-2">
                     <div className={cn('rounded-[2rem] border p-5 shadow-xl shadow-sky-900/10 backdrop-blur-xl', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/70')}>
                       <div className="flex items-center justify-between gap-3">
@@ -7110,7 +7727,9 @@ export default function AdminPanel() {
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>
-                              {verificationQueue.length ? `${verificationQueue.length} items pending review.` : 'No pending verifications in queue.'}
+                              {verificationQueue.length
+                                ? `${verificationQueue.length} items pending review.`
+                                : emptyCopy('verification.pending', 'No pending verifications in queue.')}
                             </p>
                             <p className={cn('mt-1 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>
                               All onboarding documents are currently in a clean state.
@@ -7143,7 +7762,7 @@ export default function AdminPanel() {
                     >
                       <div className={cn('rounded-3xl border p-5', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50/70')}>
                         <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>
-                          {disputes.length ? `${disputes.length} open disputes.` : 'No active disputes.'}
+                          {disputes.length ? `${disputes.length} open disputes.` : emptyCopy('disputes.none', 'No active disputes.')}
                         </p>
                         <p className={cn('mt-1 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>
                           Contract review and escalation feeds are currently idle.
@@ -7475,7 +8094,7 @@ export default function AdminPanel() {
                     </div>
 
                     <div className="space-y-5 xl:col-span-4">
-                      <UltraTinyChart dark={adminDark} />
+                      <UltraTinyChart dark={adminDark} points={ultraMiniChartPoints} kpis={ultraMiniChartKpis} />
 
                       <UltraSectionCard
                         dark={adminDark}
@@ -7502,7 +8121,11 @@ export default function AdminPanel() {
                                 <p className={cn('text-[10px]', adminDark ? 'text-slate-400' : 'text-slate-600')}>Doc: {row.doc_type || row.type || 'business'} · Status: {row.status || 'pending'}</p>
                               </div>
                             ))}
-                            {!verificationQueue.length ? <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>No pending verifications in queue.</p> : null}
+                            {!verificationQueue.length ? (
+                              <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>
+                                {emptyCopy('verification.pending', 'No pending verifications in queue.')}
+                              </p>
+                            ) : null}
                           </div>
                         </div>
                       </UltraSectionCard>
@@ -7532,7 +8155,9 @@ export default function AdminPanel() {
                                 <p className={cn('text-[10px]', adminDark ? 'text-slate-400' : 'text-slate-600')}>Status: {dispute.status || 'open'} · Priority: {dispute.priority || 'normal'}</p>
                               </div>
                             ))}
-                            {!disputes.length ? <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>No active disputes.</p> : null}
+                            {!disputes.length ? (
+                              <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>{emptyCopy('disputes.none', 'No active disputes.')}</p>
+                            ) : null}
                           </div>
                         </div>
                       </UltraSectionCard>
@@ -7719,7 +8344,7 @@ export default function AdminPanel() {
                   </div>
                 ))}
                 {!verificationQueue.length ? (
-                  <p className="text-[11px] text-slate-400">No pending verifications in queue.</p>
+                  <p className="text-[11px] text-slate-400">{emptyCopy('verification.pending', 'No pending verifications in queue.')}</p>
                 ) : null}
               </div>
             </div>
@@ -7746,7 +8371,7 @@ export default function AdminPanel() {
                   </div>
                 ))}
                 {!disputes.length ? (
-                  <p className="text-[11px] text-slate-400">No active disputes.</p>
+                  <p className="text-[11px] text-slate-400">{emptyCopy('disputes.none', 'No active disputes.')}</p>
                 ) : null}
               </div>
             </div>
@@ -7811,8 +8436,163 @@ export default function AdminPanel() {
                   </div>
                 )}
                 </>
-              ) : null}
+) : null}
             </div>
+
+            {activeCategory === 'config' ? (
+              <div className="admin-card admin-sweep rounded-3xl p-6">
+                <div className="mb-6">
+                  <h2 className="text-lg font-bold">Dynamic Configuration Editor</h2>
+                  <p className="text-sm text-slate-500">Edit admin panel configuration from the database.</p>
+                </div>
+
+                <div className="mb-4 flex gap-2">
+                  {['inventory', 'actions', 'ui'].map((tab) => (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => setConfigEditorTab(tab)}
+                      className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+                        configEditorTab === tab
+                          ? 'bg-sky-500 text-white'
+                          : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                      }`}
+                    >
+                      {tab === 'inventory' ? 'Inventory' : tab === 'actions' ? 'Actions' : 'UI Settings'}
+                    </button>
+                  ))}
+                </div>
+
+                {configEditorLoading ? (
+                  <div className="py-8 text-center text-slate-500">Loading...</div>
+                ) : configEditorError ? (
+                  <div className="py-8 text-center text-rose-500">{configEditorError}</div>
+                ) : configEditorTab === 'inventory' ? (
+                  <div className="space-y-4">
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setConfigEditorSaving(true)
+                          setConfigEditorNotice('')
+                          try {
+                            await apiRequest('/admin/config/inventory', {
+                              method: 'PUT',
+                              body: { data: { modules: configEditorData.inventory } },
+                            })
+                            setConfigEditorNotice('Inventory saved!')
+                          } catch (err) {
+                            setConfigEditorError(err.message)
+                          } finally {
+                            setConfigEditorSaving(false)
+                          }
+                        }}
+                        disabled={configEditorSaving}
+                        className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                      >
+                        {configEditorSaving ? 'Saving...' : 'Save Inventory'}
+                      </button>
+                    </div>
+                    <div className="grid gap-3">
+                      {configEditorData.inventory.map((mod, idx) => (
+                        <div key={mod.id || idx} className="rounded-xl border p-4 dark:border-white/10">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold">{mod.label}</span>
+                            <span className="text-xs text-slate-500">({mod.id})</span>
+                          </div>
+                          <div className="mt-2 text-xs text-slate-500">
+                            {mod.sections?.length || 0} sections
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : configEditorTab === 'actions' ? (
+                  <div className="space-y-4">
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setConfigEditorSaving(true)
+                          setConfigEditorNotice('')
+                          try {
+                            const flatActions = configEditorData.actions.flatMap((g) => g.actions || [])
+                            await apiRequest('/api/admin/config/actions', {
+                              method: 'PUT',
+                              body: { data: { actions: flatActions } },
+                            })
+                            setConfigEditorNotice('Actions saved!')
+                          } catch (err) {
+                            setConfigEditorError(err.message)
+                          } finally {
+                            setConfigEditorSaving(false)
+                          }
+                        }}
+                        disabled={configEditorSaving}
+                        className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                      >
+                        {configEditorSaving ? 'Saving...' : 'Save Actions'}
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      {configEditorData.actions.map((group, gIdx) => (
+                        <div key={gIdx} className="rounded-xl border p-4 dark:border-white/10">
+                          <div className="font-semibold">{group.label}</div>
+                          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                            {(group.actions || []).map((action, aIdx) => (
+                              <div key={aIdx} className="text-xs text-slate-600 dark:text-slate-300">
+                                {action.label} <span className="text-slate-400">({action.id})</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setConfigEditorSaving(true)
+                          setConfigEditorNotice('')
+                          try {
+                            await apiRequest('/api/admin/config/ui', {
+                              method: 'PUT',
+                              body: { data: configEditorData.ui },
+                            })
+                            setConfigEditorNotice('UI settings saved!')
+                          } catch (err) {
+                            setConfigEditorError(err.message)
+                          } finally {
+                            setConfigEditorSaving(false)
+                          }
+                        }}
+                        disabled={configEditorSaving}
+                        className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                      >
+                        {configEditorSaving ? 'Saving...' : 'Save UI Settings'}
+                      </button>
+                    </div>
+                    <pre className="max-h-96 overflow-auto rounded-xl bg-slate-900 p-4 text-xs text-slate-200">
+                      {JSON.stringify(configEditorData.ui, null, 2)}
+                    </pre>
+                  </div>
+                )}
+
+                {configEditorNotice ? (
+                  <div className="mt-4 rounded-lg bg-emerald-500/10 px-4 py-2 text-sm text-emerald-400">
+                    {configEditorNotice}
+                  </div>
+                ) : null}
+                {configEditorError ? (
+                  <div className="mt-4 rounded-lg bg-rose-500/10 px-4 py-2 text-sm text-rose-400">
+                    {configEditorError}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         </main>
       </div>
