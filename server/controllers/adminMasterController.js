@@ -64,7 +64,7 @@ function toCsv(rows = []) {
 function generatePdf(data, dataset, res) {
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({ margin: 50 })
+      const doc = new PDFDocument({ margin: 50, size: 'A4' })
       const chunks = []
       
       doc.on('data', chunk => chunks.push(chunk))
@@ -77,51 +77,56 @@ function generatePdf(data, dataset, res) {
       })
       doc.on('error', reject)
 
-      doc.fontSize(20).text(`GarTexHub - ${dataset.replace(/_/g, ' ').toUpperCase()}`, { align: 'center' })
+      doc.fontSize(18).text(`GarTexHub - ${dataset.replace(/_/g, ' ').toUpperCase()} REPORT`, { align: 'center' })
       doc.moveDown(0.5)
       doc.fontSize(10).text(`Generated: ${new Date().toISOString()}`, { align: 'center' })
       doc.moveDown()
 
-      if (Array.isArray(data) && data.length > 0) {
-        const rows = data.slice(0, 100)
-        doc.fontSize(12).text(`Total Records: ${data.length} (showing first 100)`, { align: 'left' })
-        doc.moveDown()
-
-        const headers = Object.keys(rows[0])
-        const colWidth = 500 / headers.length
-
-        doc.fontSize(9)
-        let y = doc.y
-        headers.forEach((header, i) => {
-          doc.text(header, 50 + (i * colWidth), y, { width: colWidth, lineBreak: false })
-        })
-        doc.moveDown()
-        y = doc.y
-
-        doc.fontSize(8)
-        rows.forEach((row, rowIndex) => {
-          if (rowIndex > 30 && doc.y > 700) {
-            doc.addPage()
-            y = 50
+      const flatten = (obj, prefix = '') => {
+        const result = []
+        for (const [key, value] of Object.entries(obj || {})) {
+          if (value && typeof value === 'object' && !Array.isArray(value)) {
+            result.push(...flatten(value, `${prefix}${key}.`))
+          } else {
+            result.push({ key: `${prefix}${key}`, value: String(value ?? '').substring(0, 80) })
           }
-          headers.forEach((header, i) => {
-            const value = String(row[header] ?? '').substring(0, 30)
-            doc.text(value, 50 + (i * colWidth), y, { width: colWidth, lineBreak: false })
-          })
-          doc.moveDown(0.3)
+        }
+        return result
+      }
+
+      if (data && typeof data === 'object') {
+        const rows = flatten(data)
+        
+        if (rows.length > 0) {
+          doc.fontSize(11).text(`Total Items: ${rows.length}`, { align: 'left' })
+          doc.moveDown()
+
+          doc.fontSize(9)
+          let y = doc.y
+          doc.text('Key', 50, y, { width: 300, lineBreak: false })
+          doc.text('Value', 350, y, { width: 200, lineBreak: false })
+          doc.moveDown()
           y = doc.y
-        })
-      } else if (data && typeof data === 'object') {
-        doc.fontSize(11).text('Configuration Data:', { underline: true })
-        doc.moveDown(0.5)
-        doc.fontSize(9)
-        Object.entries(data).forEach(([key, value]) => {
-          const val = typeof value === 'object' ? JSON.stringify(value) : String(value)
-          doc.text(`${key}: ${val.substring(0, 100)}`)
-          doc.moveDown(0.3)
-        })
+
+          doc.fontSize(8)
+          doc.strokeColor('#cccccc').lineWidth(0.5)
+          
+          rows.slice(0, 200).forEach((row, idx) => {
+            if (doc.y > 750) {
+              doc.addPage()
+              y = 50
+            }
+            y = doc.y
+            doc.stroke().moveTo(50, y).lineTo(550, y).stroke()
+            doc.text(row.key, 50, y + 5, { width: 300, lineBreak: false })
+            doc.text(row.value, 350, y + 5, { width: 200, lineBreak: false })
+            doc.moveDown(0.8)
+          })
+        } else {
+          doc.fontSize(11).text('No data available', { align: 'left' })
+        }
       } else {
-        doc.fontSize(11).text('No data available')
+        doc.fontSize(11).text('No data available', { align: 'left' })
       }
 
       doc.moveDown(2)
@@ -140,10 +145,27 @@ export async function adminDataExport(req, res) {
   if (!dataset) return res.status(400).json({ error: 'dataset is required' })
 
   let data = null
-  try {
-    data = await readJson(`${dataset}.json`)
-  } catch {
-    return res.status(404).json({ error: 'dataset not found' })
+
+  if (dataset === 'full_system') {
+    const { getAdminMasterSummary } = await import('../services/adminMasterService.js')
+    const { getAdminConfig } = await import('../services/adminConfigService.js')
+    const { listUsers } = await import('../services/userService.js')
+    const { readAuditLog } = await import('../utils/auditStore.js')
+    
+    const [summary, config, users, audit] = await Promise.all([
+      getAdminMasterSummary(req.user),
+      getAdminConfig(),
+      listUsers(),
+      readAuditLog().then(items => items.slice(-50).reverse())
+    ])
+    
+    data = { summary, config, users_count: users.length, recent_audit: audit }
+  } else {
+    try {
+      data = await readJson(`${dataset}.json`)
+    } catch {
+      return res.status(404).json({ error: 'dataset not found' })
+    }
   }
 
   if (format === 'csv') {
