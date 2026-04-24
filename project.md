@@ -19,82 +19,83 @@ Revenue Model: Instead of charging for account creation, the platform will offer
 Rating System: The system will generate ratings and collect feedback automatically to ensure transparency, as manual ratings are often overlooked.  
 Onboarding & AI Assistance: To eliminate complexity, an AI assistant and side-descriptions will explain every setting and feature.  
 Support for New Profiles: To ensure fair competition, new profiles will receive high organic reach for free to help them establish a presence without initial investment.  
-Industry Specificity & Efficiency: * Niche Focus: The app focuses strictly on the Garments and Textile industry, using simple filters (e.g., shirts, pants, gender-based clothing) to reduce complexity.  
+Industry Specificity & Efficiency: \* Niche Focus: The app focuses strictly on the Garments and Textile industry, using simple filters (e.g., shirts, pants, gender-based clothing) to reduce complexity.  
 Time Saving: AI will handle the bulk of preliminary negotiations so that factory officials only spend time on serious buyers.  
 Account Types and Management
 Account Categorization:
 Buyer Account: For international companies or direct buyers.  
 Factory Account (Seller): For single factory owners.  
 Buying House Account (Special): An organization-based entity that can manage multiple factories simultaneously.  
-Enterprise Management: Organization owners (like Buying Houses) can create one main account and grant different access levels/permissions to multiple staff members using unique IDs and passwords. This enterprise-level access can be offered as a subscription service. 
+Enterprise Management: Organization owners (like Buying Houses) can create one main account and grant different access levels/permissions to multiple staff members using unique IDs and passwords. This enterprise-level access can be offered as a subscription service.
 
 This work given by buyer here's more data:
 [2/22, 10:24AM] Shakibul hasan Shaun: Jokhon buyer kuno request post kore thon jeno onek option er
 
 Pasa pashi customaiz option thake, jekhan theke se normal text likhe bistarito bornona dite parbe
-[2/22, 11:24AM] Shakibul hasan Shaun: If someone wants to verify his profile, 
+[2/22, 11:24AM] Shakibul hasan Shaun: If someone wants to verify his profile,
 
 Then he has to update certain information, which are some licenses
 
-Once those licenses are uploaded and our back end verifies them, 
+Once those licenses are uploaded and our back end verifies them,
 
-The names of those licenses will be written and there will be a tick mark, verify will be written next to it one after another, 
+The names of those licenses will be written and there will be a tick mark, verify will be written next to it one after another,
 
-And no one will ever be able to buy the verified option here permanently, subscription will be applicable for this, 
+And no one will ever be able to buy the verified option here permanently, subscription will be applicable for this,
 
-It will be renewed every month, 
+It will be renewed every month,
 
 ✅ Factory (6)
 
 1. Company Registration – Registrar of Joint Stock Companies and Firms
-➜ Whether the company is legally registered  Confirm
+   ➜ Whether the company is legally registered Confirm
 
 2. Trade License
-➜ Confirm whether the business is active
+   ➜ Confirm whether the business is active
 
 3. TIN – National Board of Revenue
-➜ Verify whether the tax entity is legitimate
+   ➜ Verify whether the tax entity is legitimate
 
 4. Authorized Person NID
-➜ Identify the responsible person
+   ➜ Identify the responsible person
 
 5. Company Bank Proof
-➜ Confirm whether the payment will go to the right company
+   ➜ Confirm whether the payment will go to the right company
 
 6. ERC – Office of the Chief Controller of Imports and Exports
-➜ Confirm whether it can legally export
+   ➜ Confirm whether it can legally export
 
 ---
 
 ✅ Buying House (5)
 
 1. Company Registration
-➜ Legal entity
+   ➜ Legal entity
 
 2. Trade License
-➜ Active business
+   ➜ Active business
 
 3. TIN
-➜ Tax entity is legitimate
+   ➜ Tax entity is legitimate
 
 4. Authorized Person NID
-➜ Identify the responsible person
+   ➜ Identify the responsible person
 
 5. Company Bank Proof
-➜ Transparency of financial transactions
+   ➜ Transparency of financial transactions
 
 ---
+
 [2/22, 11:25AM] Shakibul hasan Shaun: If at least one security is ensured, then
 [2/22, 11:25AM] Shakibul hasan Shaun: Getting a verification batch from us will not be worthless
-[2/22,  11:26AM] Shakibul hasan Shaun: Later, I will put some more optional licenses. The more you give in this license, the more it will be accepted internationally. Please mention this.
+[2/22, 11:26AM] Shakibul hasan Shaun: Later, I will put some more optional licenses. The more you give in this license, the more it will be accepted internationally. Please mention this.
 [2/22, 11:29AM] Shakibul hasan Shaun: If someone wants to buy a verification batch, the above information is mandatory. We will also put the option to provide many optional information. I will give you these later, which they can update even without buying verification. And those are not mandatory either.
 
 But write down the more licensing proof there is, the more its credibility is. The easiest way to attract foreigners is to have the highest chance of getting a buyer. Write it in a professional way using gpt or something else.
-[2/22, 11:45AM] Shakibul hasan Shaun: If you want to verify the buyer's account, 
-This information will be needed if they want to take the batch. 
+[2/22, 11:45AM] Shakibul hasan Shaun: If you want to verify the buyer's account,
+This information will be needed if they want to take the batch.
 In this case, take a little effort to find out the list of countries included in the EU.
 EU
-Business Registration  (Registration)
+Business Registration (Registration)
 Ensures that your company is legally recognized in the EU.
 Security: Legal validity, proof of company identity and tax liability.
 VAT Number
@@ -112,7 +113,7 @@ Ensures the legal validity of the company.
 Security: Legal recognition, legal protection in contracts or transactions.
 EIN (Employer Identification Number)
 Tax ID issued by the IRS.
-Security: Taxpayer recognition;  Federal tax transaction validity.
+Security: Taxpayer recognition; Federal tax transaction validity.
 IOR (Importer of Record)
 Customs Trade/Import Identity.
 Security: Legal confirmation in import-export; Reducing risk in customs fines or transactions.
@@ -155,7 +156,6 @@ However, one common problem with current social media platforms is that once you
 
 To solve this, there will be an option in the top corner to enable or disable a “Unique” button if needed.
 
-
 Buying House dashboard: There will be a management option where free users can, for now, create up to 10 IDs each with any name, but the same name cannot be used twice.
 
 A password can be set for each ID. Using these, agents working in the Buying House will be able to log in.
@@ -169,7 +169,6 @@ There will be a connected option through which they can choose which Buying Hous
 Factory accounts can send requests using their account ID numbers, and these requests can be accepted by the factories.
 
 A list of which factories are connected will be available within each Buying House account in a specific option. (It would be good if you could decide what name to give that option.)
-
 
 Factory: There will definitely be a Product Management page, from which users can post regular items, videos, or reels. However, the Terms and Conditions will specify that no music can be used, and prohibited instruments are not allowed.
 
@@ -242,15 +241,15 @@ There will be no internal clash.(i.e. no other member of that Buying house will 
 [2/18, 12:38PM] Shakibul hasan Shaun: (Express interest) The name can be changed or given a simpler name!
 [2/18, 1:49PM] Cyber ​​Code Master: 3. Communication & Verification
 Chatbot and Calling: You mentioned that video/audio calls can be made directly from the chat interface. Will the chatbot provide the option to schedule automatic calls after collecting initial information from the buyer?
-Verified Badge: Unverified Users' messages will be as 'Message Requests'. This  Will the badges be identified by a blue tick next to the name (like LinkedIn) or some special golden symbol that is easy to spot?
+Verified Badge: Unverified Users' messages will be as 'Message Requests'. This Will the badges be identified by a blue tick next to the name (like LinkedIn) or some special golden symbol that is easy to spot?
 [2/18, 2:53PM] Shakibul hasan Shaun: 3) No
 
 They can call if they want, it will be their personal matter,
 
 If the option to create a schedule can be given, then it will look more beautiful
 
-4) Do what is best in terms of signs, here color matters a lot :
-[2/18, 2:55PM] Shakibul hasan Shaun: 3) Chat is a specific communication, it will send a notification to the agent,
+4. Do what is best in terms of signs, here color matters a lot :
+   [2/18, 2:55PM] Shakibul hasan Shaun: 3) Chat is a specific communication, it will send a notification to the agent,
 
 Another thing here is customization, some conversations and some information about themselves can be input, the factory and buying house, about themselves or about the factory under which the buying house will work, if a message is given by marking a product there, then the communication continues based on the information about that company,
 
@@ -309,23 +308,23 @@ Platform Page List:
 
 Veri fying Questions:
 
-* Do you think there will be a separate "Payment History" or "Invoice" page to keep track of transactions?
-* Will the "Analytics" or reports you mentioned for the dashboard be a part of the main dashboard, or will a separate dedicated page be needed for that?
-* Will there be a separate "Video Gallery" tab within the profile for factory videos?
+- Do you think there will be a separate "Payment History" or "Invoice" page to keep track of transactions?
+- Will the "Analytics" or reports you mentioned for the dashboard be a part of the main dashboard, or will a separate dedicated page be needed for that?
+- Will there be a separate "Video Gallery" tab within the profile for factory videos?
 
 Once you confirm this list, I will start working on the design or prototype in Figma.
 [2/19, 6:19AM] Shakibul hasan Shaun: 1) No, because there is no direct transaction on the platform,
 
-2) There should be a separate "Insights & Analytics" page for Enterprise Buying House.
-Free users → Limited data inside Dashboard
-Enterprise → Dedicated Analytics Page
-This is needed for selling subscriptions
+2. There should be a separate "Insights & Analytics" page for Enterprise Buying House.
+   Free users → Limited data inside Dashboard
+   Enterprise → Dedicated Analytics Page
+   This is needed for selling subscriptions
 
-3) Ha
-[2/19, 6:21AM] Shakibul hasan Shaun: floating temporary ai assistant, which will help three types of users understand seating will do this only,
-again can connect with and help center,
-a simple algorithm system and what else,
-didn't mention it but needed
+3. Ha
+   [2/19, 6:21AM] Shakibul hasan Shaun: floating temporary ai assistant, which will help three types of users understand seating will do this only,
+   again can connect with and help center,
+   a simple algorithm system and what else,
+   didn't mention it but needed
 
 Floating Assistant
 will be on all pages.
@@ -349,7 +348,7 @@ In this case too, there will be two options, one free and the other premium,
 
 But the advantage here is that I can show a separate list for Factory, a separate system for me, and a separate system for others.
 [2/20, 9:42PM] Shakibul hasan Shaun: Another thing: If someone buys premium, we will increase the reach of their account a little,
-Don't mention how much 
+Don't mention how much
 
 2/20/26, 6:37PM - Shakibul hasan Shaun: premium plan e
 
@@ -396,43 +395,44 @@ Renewable every month,
 ✅ Factory (6)
 
 1. Company Registration – Registrar of Joint Stock Companies and Firms
-➜ Ensure that the company is legally registered
+   ➜ Ensure that the company is legally registered
 
 2. Trade License
-➜ Ensure that the business is active
+   ➜ Ensure that the business is active
 
 3. TIN – National Board of Revenue
-➜ Verify that the tax entity is valid
+   ➜ Verify that the tax entity is valid
 
 4. Authorized Person NID
-➜ Identify the responsible person
+   ➜ Identify the responsible person
 
 5. Company Bank Proof
-➜ Ensure that the payment goes to the right company
+   ➜ Ensure that the payment goes to the right company
 
 6. ERC – Office of the Chief Controller of Imports and Exports
-➜ Ensure that it can legally export
+   ➜ Ensure that it can legally export
 
 ---
 
 ✅ Buying House (5)
 
 1. Company Registration
-➜ Legal entity
+   ➜ Legal entity
 
 2. Trade License
-➜ Active business
+   ➜ Active business
 
 3. TIN
-➜ Tax entity is valid
+   ➜ Tax entity is valid
 
 4. Authorized Person NID
-➜ Identify the responsible person
+   ➜ Identify the responsible person
 
 5. Company Bank Proof
-➜ Transparency of financial transactions
+   ➜ Transparency of financial transactions
 
 ---
+
 2/22/26, 11:25AM - Shakibul hasan Shaun: If a minimum level of security is ensured, then
 2/22/26, 11:25AM - Shakibul hasan Shaun: Getting a verification batch from us will not be worthless
 2/22/26, 11:26AM - Shakibul hasan Shaun: Later, we will put some more optional licenses. The more you give in this license, the more it will be accepted internationally. Please mention this.
@@ -475,6 +475,7 @@ USA: Business Registration + EIN + IOR + Bank proof <This message was edited>
 
 3/3/26, 12:23 PM - Cyber Code Master: disi <This message was edited>
 3/4/26, 6:13 AM - Shakibul hasan Shaun: <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -661,7 +662,6 @@ Last Updated: [Insert Date]
 
 This Privacy Policy explains how our B2B Garments and Textile Marketplace platform collects, uses, protects, and manages your information. Our platform connects international Buyers, Factories, and Buying Houses in a secure and professional environment. By creating an account or using our services, you agree to the practices described in this policy.
 
-
 ---
 
 1. Information We Collect
@@ -682,7 +682,6 @@ Business verification documents (if required)
 
 Account Type (Buyer / Factory / Buying House)
 
-
 Business Information
 
 Product details and specifications
@@ -693,7 +692,6 @@ Order-related documents
 
 Digital signature records
 
-
 Communication Data
 
 Chat messages
@@ -701,7 +699,6 @@ Chat messages
 Video and audio call logs
 
 Call recordings (for security and dispute resolution purposes)
-
 
 Technical Information
 
@@ -712,8 +709,6 @@ Device and browser type
 Usage activity
 
 Search history (used for relevant notifications and recommendations)
-
-
 
 ---
 
@@ -735,8 +730,6 @@ Prevent fraud and ensure platform security
 
 Send relevant notifications based on user activity
 
-
-
 ---
 
 3. Fraud Prevention & Security Measures
@@ -757,8 +750,6 @@ Monitoring and detection of suspicious activities
 
 Secure exchange of transaction reference information within the platform
 
-
-
 ---
 
 4. Data Sharing Policy
@@ -773,21 +764,17 @@ When legally required by authorities
 
 To prevent fraud or enforce platform policies
 
-
-
 ---
 
 5. Call Recording & Chat Storage
 
 Communications conducted within the platform may be securely stored. Call recordings are retained strictly for legal protection, fraud prevention, and dispute resolution.
 
-
 ---
 
 6. Digital Contracts & Signatures
 
 Digital signatures executed through the platform may be legally binding. A PDF copy of each contract is provided to both parties and securely stored within our system. These records may be used in case of legal disputes.
-
 
 ---
 
@@ -803,8 +790,6 @@ Multi-level authentication
 
 Role-based permission management
 
-
-
 ---
 
 8. User Rights
@@ -819,14 +804,11 @@ Request a copy of stored data
 
 Control notification preferences
 
-
-
 ---
 
 9. Cookies & Tracking
 
 Cookies are used to maintain login sessions, improve user experience, provide relevant recommendations, and operate features such as the “Unique” feed option. Users may manage cookie preferences through their browser settings.
-
 
 ---
 
@@ -834,20 +816,17 @@ Cookies are used to maintain login sessions, improve user experience, provide re
 
 Data is retained as long as the account remains active or as required by law. Upon account deletion, data will be removed within a reasonable timeframe unless legal obligations require otherwise.
 
-
 ---
 
 11. International Users
 
 As this is an international marketplace, data may be processed and stored in different countries. By using the platform, you consent to such transfers.
 
-
 ---
 
 12. Changes to This Policy
 
 We may update this Privacy Policy when necessary. Significant changes will be communicated through platform notifications.
-
 
 ---
 
@@ -860,7 +839,6 @@ Official Email: [your@email.com]
 Facebook Page: [Your Facebook Page Link]
 
 LinkedIn Page: [Your LinkedIn Page Link]
-
 
 By creating an account and using this platform, you acknowledge that you have read and understood this Privacy Policy.
 3/4/26, 6:23AM - Shakibul hasan Shaun: Terms & Conditions
@@ -1064,6 +1042,7 @@ But the subject is quite broad.
 3/10/26, 10:01PM - Cyber ​​Code Master: Assalamu Alaikum Shaun bhai, thanks for the detailed guidance. I'm on it and fully aligned with your concerns. Here's a clear update + plan + questions so we can finalize tonight In Sha Allah.
 
 **Current Status (Short)**
+
 - Frontend: UI complete and stable (as shared in screenshots).
 - Backend: Core services (auth, users, messaging, files, calls) are in progress. Using JSON for now; DB not finalized.
 - Documentation: I will deliver a full structured doc (features + logic + reasons + status + next steps) immediately after we align on backend plan.
@@ -1071,6 +1050,7 @@ But the subject is quite broad.
 ---
 
 **Backend Direction (Proposed)**
+
 - Language/Framework: Node.js + Express
 - Database: PostgreSQL (preferred) or MongoDB (if you want schema flexibility).
 - Realtime: WebSocket for chat/presence.
@@ -1083,18 +1063,20 @@ But the subject is quite broad.
 We will implement 2 strong systems:
 
 1. **Content Moderation Pipeline**
+
 - Detect + block: pornographic images, haram musical instruments, nudity.
 - Text moderation: slurs, adult content, abusive content.
 - Action: auto-block + notify + log + admin review.
-- Approach: 
-- Phase 1 (MVP): open-source + rule-based checks (fast, low cost). 
+- Approach:
+- Phase 1 (MVP): open-source + rule-based checks (fast, low cost).
 - Phase 2 (Scale): stronger ML or paid API if needed.
 
 2. **Anti-Outside-Contact Sharing**
+
 - Block phone/email/WhatsApp/Telegram/FB/IG/URL sharing.
-- Detect split formats: 
-- “gmail” split + ID in another message 
-- number in words (one two three) 
+- Detect split formats:
+- “gmail” split + ID in another message
+- number in words (one two three)
 - symbols like “dot”, “at”, “com”
 - Actions: warn + auto-delete + repeated violation = restriction/ban.
 - Admin dashboard: logs + user violation history.
@@ -1102,6 +1084,7 @@ We will implement 2 strong systems:
 ---
 
 **Analytics (Must Have in First Release)**
+
 - User funnel: signup → match → message → contract → deal.
 - Chat analytics: message count, response time, active users.
 - Business: successful deals, retention, churn indicators.
@@ -1135,14 +1118,14 @@ If desired, you can apply to reopen the account by paying a fine of a certain am
 
 (This is not an answer to the question, I am just reminding you that if someone creates a new account, he will be given 5 dollars. Do you remember this? It is important to implement it, then maybe we can sell the verification batch quickly)
 
-3) Both Bangla and English
+3. Both Bangla and English
 
-4) By flag, I understand that the warning message will reach whoever understands it, the answer is that it will go to the admin, the owner, and the person who made the mistake, to all three so that there is no problem, so that it is completely safe
+4. By flag, I understand that the warning message will reach whoever understands it, the answer is that it will go to the admin, the owner, and the person who made the mistake, to all three so that there is no problem, so that it is completely safe
 
-5) Are number two and number 5 the same type of question, please explain to me a little
+5. Are number two and number 5 the same type of question, please explain to me a little
 
-6) I need to give a little more information here.
-I am separating
+6. I need to give a little more information here.
+   I am separating
 
 3/11/26, 7:10AM - Shakibul hasan Shaun: (Buying House / Enterprise “Advanced Analytics” may have many metrics, but in reality 5 metrics are the most important.
 
@@ -1244,8 +1227,10 @@ Score Example:
 
 Trust Score =
 Completed Deals
-+ Buyer Rating
-- Disputes
+
+- Buyer Rating
+
+* Disputes
 
 Why is it important:
 Trust in the B2B market reputation = future deals
@@ -1555,10 +1540,7 @@ We need to ensure that this filter system on our website is not too complicated 
 
 So I tried to create this documentation! You make it a reality using your own tools.
 
-
-
 Below I have provided a hierarchical, usable and balanced filter design for your needs, focusing only on the search/filter engine — two main sections → two inside each → two inside each → you can have optional deeper filters later. Short and direct.
-
 
 ---
 
@@ -1570,13 +1552,11 @@ Industry: Garment / Textile (single-select)
 
 Category: Shirt, Pant, T-shirt, Knitwear, Fabric-roll etc. (multi-select chips)
 
-
 A.1.1 — Product Basic (two sub-categories per category)
 
 Fabric type (cotton, polyester, blend, denim...) — multi-select
 
 GSM / Weight — range slider
-
 
 A.1.2 — Product Commercial (two sub-categories per category)
 
@@ -1584,20 +1564,17 @@ MOQ (buckets or range slider: 1–100 / 101–1000 / 1001+)
 
 Price per unit (currency-aware range)
 
-
 A.2 — Attributes (Second level — “More filters”)
 
 Size range / Size chart (select or custom)
 
 Color / Pantone input (multi-select + free-text pantone)
 
-
 A.2.1 — Advanced (optional deeper)
 
 Customization capability (techpack accepted, pattern-making, embroidery) — toggles
 
 Sample availability & sample lead time (days) — toggle + numeric field
-
 
 A.2.2 — Logistics & Compliance (Optional)
 
@@ -1606,8 +1583,6 @@ Incoterms (FOB/CIF/EXW/DDP) — multi-select
 Certifications (GOTS, OEKO-TEX, BSCI) — multi-select
 
 Preferred shipping origin / port — dropdown / geo-filter
-
-
 
 ---
 
@@ -1621,13 +1596,11 @@ Verified status: Verified only toggle
 
 Location / Export country + distance radius (geo + country picker)
 
-
 B.1.1 — Capacity & Operations
 
 Production capacity (units/month) — range
 
 Main processes (knit, woven, dyeing, finishing) — multi-select
-
 
 B.1.2 — Response & Service
 
@@ -1635,13 +1608,11 @@ Avg response time (hours) — bucketed
 
 Language support (English, Bangla, Chinese, Spanish) — multi-select
 
-
 B.2 — Trust & Commercial (Optional)
 
 Years in business — min years selector
 
 Audit / certification details + last audit date — date picker + score
-
 
 B.2.1 — Enterprise / Buying-House specifics
 
@@ -1649,14 +1620,11 @@ Handles multiple factories (boolean)
 
 Team seats / access control (number) — numeric / role-based
 
-
 B.2.2 — Payment & Documents
 
 Accepted payment terms (LC/TT/Escrow/Bank guarantee) — multi-select
 
 Document readiness (export docs, lab reports, techpacks) — toggles
-
-
 
 ---
 
@@ -1665,7 +1633,6 @@ Primary filter by three account types (main—useful)
 Buyer (Foreign) — Industry, Category, MOQ, Price range, Lead time, Verified, Incoterm.
 Buying House — Account Type=Factory filter, Production capacity, Certifications, Response time, Languages, Team access.
 Factory (Seller) — Category, Fabric type, Machine/process, MOQ, Sample availability, Certifications.
-
 
 ---
 
@@ -1683,8 +1650,6 @@ Save search / presets (Buyer / Buying House / Factory presets).
 
 Debounced search (typing → 300–500ms) and filter change will show fast count estimate.
 
-
-
 ---
 
 Short Technical Note (in brief)
@@ -1697,8 +1662,6 @@ Price normalization and currency cache.
 
 Filter state serializable as URL query string (shareable / saved searches).
 
-
-
 ---
 
 Default view and limits (recommended)
@@ -1709,16 +1672,12 @@ Clicking “More Filters” takes you to 12–15 attribute/advanced options.
 
 Deep filters (audit date, machine list, pantone text) are optional only — they can be displayed in subscription or power-user presets.
 
-
-
 ---
 
 If necessary, I can do these now:
 
 1. Filter-state JSON schema or
 
-
 2. UI wireframe layout (concise) or
-
 
 3. Can I quote the Elasticsearch aggregation example — which one should I give first?

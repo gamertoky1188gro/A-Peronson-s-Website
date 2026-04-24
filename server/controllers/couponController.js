@@ -1,8 +1,11 @@
-import { createCouponCode, listCouponCodes } from '../services/walletService.js'
+import {
+  createCouponCode,
+  listCouponCodes,
+} from "../services/walletService.js";
 
 export async function listCoupons(req, res) {
-  const rows = await listCouponCodes()
-  return res.json({ items: rows })
+  const rows = await listCouponCodes();
+  return res.json({ items: rows });
 }
 
 export async function createCoupon(req, res) {
@@ -17,9 +20,11 @@ export async function createCoupon(req, res) {
       verification_free_months: req.body?.verification_free_months,
       requires_card: req.body?.requires_card,
       created_by: req.user?.id,
-    })
-    return res.status(201).json(row)
+    });
+    return res.status(201).json(row);
   } catch (error) {
-    return res.status(error.status || 400).json({ error: error.message || 'Unable to create coupon' })
+    return res
+      .status(error.status || 400)
+      .json({ error: error.message || "Unable to create coupon" });
   }
 }

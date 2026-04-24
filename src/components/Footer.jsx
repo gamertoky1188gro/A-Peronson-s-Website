@@ -1,6 +1,6 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { getCurrentUser } from '../lib/auth';
+import React from "react";
+import { Link } from "react-router-dom";
+import { getCurrentUser } from "../lib/auth";
 
 export default function Footer() {
   const user = getCurrentUser();
@@ -11,12 +11,20 @@ export default function Footer() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-center gap-4 text-center">
             <div className="flex items-center gap-2">
-              <span className="rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 px-2 py-0.5 text-xs font-semibold text-white">B2B</span>
-              <span className="text-lg font-bold text-slate-900 dark:text-white">GarTexHub</span>
+              <span className="rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 px-2 py-0.5 text-xs font-semibold text-white">
+                B2B
+              </span>
+              <span className="text-lg font-bold text-slate-900 dark:text-white">
+                GarTexHub
+              </span>
             </div>
             <div className="flex gap-6 text-sm text-slate-600 dark:text-slate-400">
-              <Link to="/terms" className="hover:text-gtBlue">Terms & Conditions</Link>
-              <Link to="/privacy" className="hover:text-gtBlue">Privacy Policy</Link>
+              <Link to="/terms" className="hover:text-gtBlue">
+                Terms & Conditions
+              </Link>
+              <Link to="/privacy" className="hover:text-gtBlue">
+                Privacy Policy
+              </Link>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               © 2026 GarTexHub. All Rights Reserved.
@@ -34,52 +42,131 @@ export default function Footer() {
           {/* Company Identity */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-2 mb-4">
-              <span className="rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 px-2 py-0.5 text-xs font-semibold text-white">B2B</span>
-              <span className="text-lg font-bold text-slate-900 dark:text-white">GarTexHub</span>
+              <span className="rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 px-2 py-0.5 text-xs font-semibold text-white">
+                B2B
+              </span>
+              <span className="text-lg font-bold text-slate-900 dark:text-white">
+                GarTexHub
+              </span>
             </div>
             <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-              Trusted B2B Marketplace for Garments & Textile Industry. Connecting International Buyers, Buying Houses, and Verified Factories through structured communication and professional digital workflows.
+              Trusted B2B Marketplace for Garments & Textile Industry.
+              Connecting International Buyers, Buying Houses, and Verified
+              Factories through structured communication and professional
+              digital workflows.
             </p>
             <div className="mt-6 flex gap-4">
-              <a href="#" className="text-slate-400 hover:text-gtBlue transition-colors">LinkedIn</a>
-              <a href="#" className="text-slate-400 hover:text-gtBlue transition-colors">Facebook</a>
-              <a href="#" className="text-slate-400 hover:text-gtBlue transition-colors">YouTube</a>
+              <a
+                href="#"
+                className="text-slate-400 hover:text-gtBlue transition-colors"
+              >
+                LinkedIn
+              </a>
+              <a
+                href="#"
+                className="text-slate-400 hover:text-gtBlue transition-colors"
+              >
+                Facebook
+              </a>
+              <a
+                href="#"
+                className="text-slate-400 hover:text-gtBlue transition-colors"
+              >
+                YouTube
+              </a>
             </div>
           </div>
 
           {/* Quick Links & Account Types */}
           <div>
-            <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">Quick Navigation</h3>
+            <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+              Quick Navigation
+            </h3>
             <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-              <li><Link to="/" className="hover:text-gtBlue">Home</Link></li>
-              <li><Link to="/search" className="hover:text-gtBlue">Search</Link></li>
-              <li><Link to="/buyer-requests" className="hover:text-gtBlue">Buyer Requests</Link></li>
-              <li><Link to="/product-management" className="hover:text-gtBlue">Company Products</Link></li>
-              <li><Link to="/pricing" className="hover:text-gtBlue">Subscription Plans</Link></li>
-              <li><Link to="/help" className="hover:text-gtBlue">Help Center</Link></li>
+              <li>
+                <Link to="/" className="hover:text-gtBlue">
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link to="/search" className="hover:text-gtBlue">
+                  Search
+                </Link>
+              </li>
+              <li>
+                <Link to="/buyer-requests" className="hover:text-gtBlue">
+                  Buyer Requests
+                </Link>
+              </li>
+              <li>
+                <Link to="/product-management" className="hover:text-gtBlue">
+                  Company Products
+                </Link>
+              </li>
+              <li>
+                <Link to="/pricing" className="hover:text-gtBlue">
+                  Subscription Plans
+                </Link>
+              </li>
+              <li>
+                <Link to="/help" className="hover:text-gtBlue">
+                  Help Center
+                </Link>
+              </li>
             </ul>
           </div>
 
           {/* Verification & Legal */}
           <div>
-            <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">Verification & Legal</h3>
+            <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+              Verification & Legal
+            </h3>
             <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-              <li><Link to="/verification" className="hover:text-gtBlue">Document Verification</Link></li>
-              <li><Link to="/contracts" className="hover:text-gtBlue">Digital Contract System</Link></li>
-              <li><Link to="/privacy" className="hover:text-gtBlue">Privacy Policy</Link></li>
-              <li><Link to="/terms" className="hover:text-gtBlue">Terms & Conditions</Link></li>
-              <li><Link to="/privacy" className="hover:text-gtBlue">Cookie Policy</Link></li>
+              <li>
+                <Link to="/verification" className="hover:text-gtBlue">
+                  Document Verification
+                </Link>
+              </li>
+              <li>
+                <Link to="/contracts" className="hover:text-gtBlue">
+                  Digital Contract System
+                </Link>
+              </li>
+              <li>
+                <Link to="/privacy" className="hover:text-gtBlue">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/terms" className="hover:text-gtBlue">
+                  Terms & Conditions
+                </Link>
+              </li>
+              <li>
+                <Link to="/privacy" className="hover:text-gtBlue">
+                  Cookie Policy
+                </Link>
+              </li>
             </ul>
           </div>
 
           {/* Support & Contact */}
           <div>
-            <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">Support</h3>
+            <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+              Support
+            </h3>
             <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-              <li><span className="font-semibold">Email:</span> support@gartexhub.com</li>
-              <li><span className="font-semibold">Business:</span> business@gartexhub.com</li>
+              <li>
+                <span className="font-semibold">Email:</span>{" "}
+                support@gartexhub.com
+              </li>
+              <li>
+                <span className="font-semibold">Business:</span>{" "}
+                business@gartexhub.com
+              </li>
               <li className="pt-2 text-xs italic text-slate-500">
-                The more verified documentation a company provides, the stronger its international credibility.
+                The more verified documentation a company provides, the stronger
+                its international credibility.
               </li>
             </ul>
           </div>
@@ -87,8 +174,12 @@ export default function Footer() {
 
         <div className="mt-12 shadow-dividerT dark:shadow-dividerTDark pt-8">
           <p className="text-center text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-            © 2026 GarTexHub. All Rights Reserved. GarTexHub is an independent B2B networking platform.<br />
-            The platform does not directly process financial transactions. All recorded communications are subject to consent and compliance regulations.
+            © 2026 GarTexHub. All Rights Reserved. GarTexHub is an independent
+            B2B networking platform.
+            <br />
+            The platform does not directly process financial transactions. All
+            recorded communications are subject to consent and compliance
+            regulations.
           </p>
         </div>
       </div>

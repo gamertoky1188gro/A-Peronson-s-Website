@@ -13,8 +13,9 @@ This doc is generated from source snapshots with `path:line` references.
 - **Route definition:** `server/routes/authRoutes.js:18`
 
 ```js
-router.post('/register', register)
+router.post("/register", register);
 ```
+
 - **Middleware stack (in order):**
   - _none detected_
 - **Handler:** `register`
@@ -25,8 +26,9 @@ router.post('/register', register)
 - **Route definition:** `server/routes/authRoutes.js:19`
 
 ```js
-router.post('/login', login)
+router.post("/login", login);
 ```
+
 - **Middleware stack (in order):**
   - _none detected_
 - **Handler:** `login`
@@ -37,8 +39,9 @@ router.post('/login', login)
 - **Route definition:** `server/routes/authRoutes.js:20`
 
 ```js
-router.post('/passkey/login/options', passkeyLoginOptions)
+router.post("/passkey/login/options", passkeyLoginOptions);
 ```
+
 - **Middleware stack (in order):**
   - _none detected_
 - **Handler:** `passkeyLoginOptions`
@@ -49,8 +52,9 @@ router.post('/passkey/login/options', passkeyLoginOptions)
 - **Route definition:** `server/routes/authRoutes.js:21`
 
 ```js
-router.post('/passkey/login/verify', passkeyLoginVerify)
+router.post("/passkey/login/verify", passkeyLoginVerify);
 ```
+
 - **Middleware stack (in order):**
   - _none detected_
 - **Handler:** `passkeyLoginVerify`
@@ -61,8 +65,13 @@ router.post('/passkey/login/verify', passkeyLoginVerify)
 - **Route definition:** `server/routes/authRoutes.js:22`
 
 ```js
-router.post('/passkey/registration/options', requireAuth, passkeyRegistrationOptions)
+router.post(
+  "/passkey/registration/options",
+  requireAuth,
+  passkeyRegistrationOptions,
+);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `passkeyRegistrationOptions`
@@ -73,8 +82,13 @@ router.post('/passkey/registration/options', requireAuth, passkeyRegistrationOpt
 - **Route definition:** `server/routes/authRoutes.js:23`
 
 ```js
-router.post('/passkey/registration/verify', requireAuth, passkeyRegistrationVerify)
+router.post(
+  "/passkey/registration/verify",
+  requireAuth,
+  passkeyRegistrationVerify,
+);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `passkeyRegistrationVerify`
@@ -85,8 +99,9 @@ router.post('/passkey/registration/verify', requireAuth, passkeyRegistrationVeri
 - **Route definition:** `server/routes/authRoutes.js:24`
 
 ```js
-router.get('/passkeys', requireAuth, passkeyList)
+router.get("/passkeys", requireAuth, passkeyList);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `passkeyList`
@@ -97,8 +112,9 @@ router.get('/passkeys', requireAuth, passkeyList)
 - **Route definition:** `server/routes/authRoutes.js:25`
 
 ```js
-router.delete('/passkeys/:credentialId', requireAuth, passkeyRemove)
+router.delete("/passkeys/:credentialId", requireAuth, passkeyRemove);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `passkeyRemove`
@@ -109,8 +125,9 @@ router.delete('/passkeys/:credentialId', requireAuth, passkeyRemove)
 - **Route definition:** `server/routes/authRoutes.js:26`
 
 ```js
-router.get('/me', requireAuth, me)
+router.get("/me", requireAuth, me);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `me`
@@ -121,8 +138,9 @@ router.get('/me', requireAuth, me)
 - **Route definition:** `server/routes/authRoutes.js:27`
 
 ```js
-router.post('/logout', requireAuth, logout)
+router.post("/logout", requireAuth, logout);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `logout`
@@ -133,4 +151,3 @@ router.post('/logout', requireAuth, logout)
 - JSON helpers: `server/utils/jsonStore.js` (readJson/writeJson/updateJson).
 - Data files: `server/database/*.json`.
 - Controllers/services often read from `users.json`, `messages.json`, `metrics.json`, etc.
-

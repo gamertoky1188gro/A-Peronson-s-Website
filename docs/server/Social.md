@@ -1,6 +1,7 @@
 # Social - Server Feature Documentation (Manual)
 
 ## File Structure & Overview
+
 - `server/routes/socialRoutes.js`: Social interaction endpoints.
 - `server/controllers/socialController.js`: Comment/share/report/action handlers.
 - `server/services/socialService.js`: Interaction persistence and aggregate reads.
@@ -9,6 +10,7 @@
 ## Code Explanation
 
 ### `socialRoutes.js`
+
 - Protected routes:
   - `POST /actions`
   - `GET /:entityType/:entityId`
@@ -17,7 +19,9 @@
   - `POST /:entityType/:entityId/report`
 
 ### `socialController.js`
+
 Functions:
+
 - `createComment`:
   - validates non-empty text.
   - writes comment interaction.
@@ -37,7 +41,9 @@ Functions:
   - returns `400` for missing required fields.
 
 ### `socialService.js`
+
 Functions:
+
 - `addComment(user, entityType, entityId, text)`:
   - writes interaction row with actor metadata.
 - `addAction(user, entityType, entityId, action, reason='')`:
@@ -49,18 +55,23 @@ Functions:
     - `report_count`
 
 Data types:
+
 - Interaction row:
   - `id`, `interaction_type`, `entity_type`, `entity_id`, `actor_id`, `actor_name`, `actor_verified`, `text`, `created_at`.
 
 ## API Endpoints
+
 - `POST /api/social/actions`
   - Body:
+
 ```json
 { "entityType": "buyer_request", "entityId": "abc", "action": "save" }
 ```
-  - Response: `201` row or `400`.
+
+- Response: `201` row or `400`.
 - `GET /api/social/:entityType/:entityId`
   - Response:
+
 ```json
 {
   "comments": [],
@@ -68,6 +79,7 @@ Data types:
   "report_count": 1
 }
 ```
+
 - `POST /api/social/:entityType/:entityId/comment`
   - Body: `{ "text": "Great post" }`
   - Response: `201` or `400`.
@@ -80,28 +92,35 @@ Data types:
 All routes: auth required.
 
 ## Database / Data Model
+
 - `social_interactions.json` stores both comments and action signals.
 - Query pattern by entity:
+
 ```js
-all.filter((x) => x.entity_type === entityType && x.entity_id === entityId)
+all.filter((x) => x.entity_type === entityType && x.entity_id === entityId);
 ```
+
 - Aggregates are computed on read, not pre-materialized.
 
 ## Business Logic & Workflow
+
 1. Feed UI emits social action to `/api/social/actions` or specialized endpoint.
 2. Controller validates and calls service writer.
 3. Service appends interaction row to JSON store.
 4. Interaction summary endpoint aggregates for display.
 
 ## Error Handling & Validation
+
 - Missing comment text -> `400`.
 - Missing required generic action fields -> `400`.
 - Other write operations return created row.
 
 ## Security Considerations
+
 - Auth required for all social interaction writes/reads.
 - Text values and identifiers sanitized before persistence.
 
 ## Extra Notes / Metadata
+
 - Generic `/actions` endpoint simplifies frontend integration for multiple action types.
 - Report entries are stored similarly to other actions; no escalation queue in this module.

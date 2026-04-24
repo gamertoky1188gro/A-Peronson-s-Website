@@ -63,6 +63,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         {done ? '\u2713' : '\u2022'}
       </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `bg-[#E8F3FF] text-[#0A66C2] ring-[#BBD8FF]`
@@ -99,6 +100,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
       </span>
       <span>{label}</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `bg-[#0A66C2] text-white`
@@ -126,6 +128,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `bg-indigo-50/60 text-slate-900 ring-indigo-200 shadow-sm dark:bg-white/5 dark:text-slate-100 dark:ring-[#38bdf8]/35`
@@ -169,6 +172,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div className="flex items-center gap-2">
             <div className="truncate text-sm font-semibold text-slate-900">{contract.contract_number || contract.id}</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-4`
@@ -201,6 +205,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <div className="truncate text-sm font-semibold text-slate-900">{contract.contract_number || contract.id}</div>
             <span className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1${statusClass(status)}`}>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0`
@@ -229,6 +234,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <span className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1${statusClass(status)}`}>
               {toLabel(status)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2`
@@ -255,6 +261,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               {toLabel(status)}
             </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `truncate text-sm font-semibold text-slate-900`
@@ -276,12 +283,12 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             </span>
           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - _(dynamic className; inspect the snippet above)_
 
 **Utility breakdown (grouped):**
-
 
 #### `src/pages/ContractVault.jsx:206`
 
@@ -291,6 +298,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <span className="font-semibold text-slate-700">Buyer:</span> {safeDash(contract.buyer_name)} <span className="mx-1">-</span>
             <span className="font-semibold text-slate-700">Factory:</span> {safeDash(contract.factory_name)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 truncate text-xs text-slate-600`
@@ -315,11 +323,14 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/ContractVault.jsx:207`
 
 ```jsx
-          <div className="mt-2 text-xs text-slate-600">
-            <span className="font-semibold text-slate-700">Buyer:</span> {safeDash(contract.buyer_name)} <span className="mx-1">-</span>
-            <span className="font-semibold text-slate-700">Factory:</span> {safeDash(contract.factory_name)}
-          </div>
+<div className="mt-2 text-xs text-slate-600">
+  <span className="font-semibold text-slate-700">Buyer:</span>{" "}
+  {safeDash(contract.buyer_name)} <span className="mx-1">-</span>
+  <span className="font-semibold text-slate-700">Factory:</span>{" "}
+  {safeDash(contract.factory_name)}
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-xs text-slate-600`
@@ -345,6 +356,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-slate-700`
@@ -366,6 +378,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-slate-700`
@@ -384,6 +397,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div className="mt-2 inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700">
             Next: {flow.nextAction}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `shrink-0 text-right text-xs text-slate-600`
@@ -424,6 +438,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700`
@@ -454,6 +469,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         <span className="inline-flex items-center rounded-full bg-white px-2 py-1 ring-1 ring-slate-200">Factory: {contract.factory_signature_state || 'pending'}</span>
         <span className="inline-flex items-center rounded-full bg-white px-2 py-1 ring-1 ring-slate-200">PDF: {flow.hasPdf ? 'ready' : 'pending'}</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 flex flex-wrap items-center gap-2 text-[11px] text-slate-600`
@@ -489,6 +505,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         <span className="inline-flex items-center rounded-full bg-white px-2 py-1 ring-1 ring-slate-200">PDF: {flow.hasPdf ? 'ready' : 'pending'}</span>
       </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center rounded-full bg-white px-2 py-1 ring-1 ring-slate-200`
@@ -516,6 +533,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
       </div>
     </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center rounded-full bg-white px-2 py-1 ring-1 ring-slate-200`
@@ -543,6 +561,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
     </button>
   )
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center rounded-full bg-white px-2 py-1 ring-1 ring-slate-200`
@@ -570,6 +589,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
       <div className="absolute inset-x-0 bottom-0 max-h-[86vh] overflow-auto rounded-t-3xl bg-white p-5 shadow-2xl">
         <div className="mb-4 flex items-center justify-between">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `fixed inset-0 z-50 lg:hidden`
@@ -611,6 +631,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         <div className="mb-4 flex items-center justify-between">
           <div className="text-sm font-semibold text-slate-900">Contract details</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `absolute inset-0 bg-slate-900/30`
@@ -652,6 +673,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div className="text-sm font-semibold text-slate-900">Contract details</div>
           <button type="button" onClick={onClose} className="rounded-full px-3 py-1 text-sm font-semibold text-slate-700 hover:bg-slate-100">Close</button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `absolute inset-x-0 bottom-0 max-h-[86vh] overflow-auto rounded-t-3xl bg-white p-5 shadow-2xl`
@@ -692,11 +714,18 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/ContractVault.jsx:236`
 
 ```jsx
-        <div className="mb-4 flex items-center justify-between">
-          <div className="text-sm font-semibold text-slate-900">Contract details</div>
-          <button type="button" onClick={onClose} className="rounded-full px-3 py-1 text-sm font-semibold text-slate-700 hover:bg-slate-100">Close</button>
-        </div>
+<div className="mb-4 flex items-center justify-between">
+  <div className="text-sm font-semibold text-slate-900">Contract details</div>
+  <button
+    type="button"
+    onClick={onClose}
+    className="rounded-full px-3 py-1 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+  >
+    Close
+  </button>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mb-4 flex items-center justify-between`
@@ -731,6 +760,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         </div>
         {children}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900`
@@ -759,6 +789,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         {children}
       </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full px-3 py-1 text-sm font-semibold text-slate-700 hover:bg-slate-100`
@@ -785,6 +816,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         <div className="min-w-0">
           <div className="flex items-center gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl borderless-shadow bg-white p-5`
@@ -818,6 +850,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div className="flex items-center gap-2">
             <div className="truncate text-lg font-bold text-slate-900">{selected.contract_number || selected.id}</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-4`
@@ -850,6 +883,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <div className="truncate text-lg font-bold text-slate-900">{selected.contract_number || selected.id}</div>
             <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1${statusClass(selected.lifecycle_status || 'pending_signature')}`}>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0`
@@ -881,6 +915,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1${statusClass(selected.lifecycle_status || 'pending_signature')}`}>
               {toLabel(selected.lifecycle_status || 'pending_signature')}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2`
@@ -910,6 +945,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               {toLabel(selected.lifecycle_status || 'pending_signature')}
             </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `truncate text-lg font-bold text-slate-900`
@@ -934,6 +970,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             </span>
           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `pending_signature`
@@ -951,6 +988,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <span className="font-semibold">Buyer:</span> {safeDash(selected.buyer_name)} <span className="mx-1">-</span>
             <span className="font-semibold">Factory:</span> {safeDash(selected.factory_name)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm text-slate-600`
@@ -973,11 +1011,14 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/ContractVault.jsx:661`
 
 ```jsx
-          <div className="mt-3 text-sm text-slate-700">
-            <span className="font-semibold">Buyer:</span> {safeDash(selected.buyer_name)} <span className="mx-1">-</span>
-            <span className="font-semibold">Factory:</span> {safeDash(selected.factory_name)}
-          </div>
+<div className="mt-3 text-sm text-slate-700">
+  <span className="font-semibold">Buyer:</span> {safeDash(selected.buyer_name)}{" "}
+  <span className="mx-1">-</span>
+  <span className="font-semibold">Factory:</span>{" "}
+  {safeDash(selected.factory_name)}
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-sm text-slate-700`
@@ -1002,6 +1043,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold`
@@ -1022,6 +1064,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         </div>
         <Link to="/help" className="shrink-0 rounded-full bg-[#E8F3FF] px-3 py-1 text-xs font-semibold text-[#0A66C2] hover:bg-[#D9ECFF]">Help</Link>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold`
@@ -1053,6 +1096,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 
       {actionError ? <div className="mt-4 rounded-xl borderless-shadow bg-rose-50 p-3 text-sm font-semibold text-rose-700">{actionError}</div> : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `shrink-0 rounded-full bg-[#E8F3FF] px-3 py-1 text-xs font-semibold text-[#0A66C2] hover:bg-[#D9ECFF]`
@@ -1086,11 +1130,26 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/ContractVault.jsx:669`
 
 ```jsx
-      {actionError ? <div className="mt-4 rounded-xl borderless-shadow bg-rose-50 p-3 text-sm font-semibold text-rose-700">{actionError}</div> : null}
-      <div className="mt-4">
-        <JourneyTimeline title="Journey Timeline" matchId={selected.match_id || journeyParams.get('journey_match_id') || journeyParams.get('match_id') || ''} />
-      </div>
+{
+  actionError ? (
+    <div className="mt-4 rounded-xl borderless-shadow bg-rose-50 p-3 text-sm font-semibold text-rose-700">
+      {actionError}
+    </div>
+  ) : null;
+}
+<div className="mt-4">
+  <JourneyTimeline
+    title="Journey Timeline"
+    matchId={
+      selected.match_id ||
+      journeyParams.get("journey_match_id") ||
+      journeyParams.get("match_id") ||
+      ""
+    }
+  />
+</div>;
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 rounded-xl borderless-shadow bg-rose-50 p-3 text-sm font-semibold text-rose-700`
@@ -1127,6 +1186,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
       </div>
       {selected.requirement_id ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4`
@@ -1152,6 +1212,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         </div>
       ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -1177,6 +1238,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
       ) : null}
       {!hasRecordedCall ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-[#0A66C2] hover:underline`
@@ -1199,6 +1261,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <span>Video calls are recommended before finalizing contracts. No recorded call is linked to this contract yet.</span>
             <Link to="/chat" className="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white hover:bg-amber-500">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 rounded-xl borderless-shadow bg-amber-50 p-3 text-sm font-semibold text-amber-900`
@@ -1242,6 +1305,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <Link to="/chat" className="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white hover:bg-amber-500">
               Open chat
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap items-center justify-between gap-3`
@@ -1277,6 +1341,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             </Link>
           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white hover:bg-amber-500`
@@ -1305,6 +1370,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         <StepPill done={selectedFlow.stepState.buyer_signature} label="Buyer sign" />
         <StepPill done={selectedFlow.stepState.factory_signature} label="Factory sign" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 flex flex-wrap items-center gap-2`
@@ -1335,6 +1401,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div className="text-sm font-semibold text-slate-900">Signatures</div>
           <div className="mt-2 text-sm text-slate-700">Buyer: <span className="font-semibold">{selected.buyer_signature_state || 'pending'}</span> {selected.buyer_signed_at ? <span className="text-xs text-slate-500">({selected.buyer_signed_at})</span> : null}</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2`
@@ -1377,6 +1444,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div className="mt-2 text-sm text-slate-700">Buyer: <span className="font-semibold">{selected.buyer_signature_state || 'pending'}</span> {selected.buyer_signed_at ? <span className="text-xs text-slate-500">({selected.buyer_signed_at})</span> : null}</div>
           <div className="mt-1 text-sm text-slate-700">Factory: <span className="font-semibold">{selected.factory_signature_state || 'pending'}</span> {selected.factory_signed_at ? <span className="text-xs text-slate-500">({selected.factory_signed_at})</span> : null}</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl borderless-shadow bg-white p-4`
@@ -1413,6 +1481,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div className="mt-1 text-sm text-slate-700">Factory: <span className="font-semibold">{selected.factory_signature_state || 'pending'}</span> {selected.factory_signed_at ? <span className="text-xs text-slate-500">({selected.factory_signed_at})</span> : null}</div>
           {!hasAcceptedProof ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900`
@@ -1442,6 +1511,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           {!hasAcceptedProof ? (
             <div className="mt-3 rounded-lg borderless-shadow bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-900">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm text-slate-700`
@@ -1480,6 +1550,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <div className="mt-3 rounded-lg borderless-shadow bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-900">
               Warning: No accepted payment proof yet. You may continue, but proof is strongly recommended for safety.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm text-slate-700`
@@ -1516,6 +1587,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             </div>
           ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 rounded-lg borderless-shadow bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-900`
@@ -1544,6 +1616,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 type="button"
                 disabled={Boolean(selectedActionBlockers.buyerSign) || saving}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 grid grid-cols-1 gap-2`
@@ -1568,6 +1641,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 Buyer sign
               </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-[#0A66C2] px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-200 disabled:text-slate-500`
@@ -1597,6 +1671,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <button
                 type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-amber-700`
@@ -1618,6 +1693,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 Factory sign
               </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white px-4 py-2 text-sm font-semibold text-[#0A66C2] ring-1 ring-[#BBD8FF] hover:bg-[#F6FAFF] disabled:bg-slate-50 disabled:text-slate-400 disabled:ring-slate-200`
@@ -1651,6 +1727,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               Start e-sign session
             </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50 disabled:bg-slate-50 disabled:text-slate-400`
@@ -1683,6 +1760,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-amber-700`
@@ -1701,6 +1779,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div className="mt-2 text-sm text-slate-700">Status: <span className="font-semibold">{selected.artifact?.status || 'draft'}</span></div>
           <div className="mt-1 text-xs text-slate-500">PDF generates automatically after both signatures.</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl borderless-shadow bg-white p-4`
@@ -1736,6 +1815,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div className="mt-1 text-xs text-slate-500">PDF generates automatically after both signatures.</div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900`
@@ -1764,6 +1844,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 
           <div className="mt-4 grid grid-cols-1 gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm text-slate-700`
@@ -1796,6 +1877,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div className="mt-4 grid grid-cols-1 gap-2">
               <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-xs text-slate-500`
@@ -1822,6 +1904,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 type="button"
                 disabled={Boolean(selectedActionBlockers.lock) || saving}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 grid grid-cols-1 gap-2`
@@ -1846,6 +1929,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 Lock PDF
               </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50 disabled:bg-slate-50 disabled:text-slate-400`
@@ -1878,6 +1962,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <button
               type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-amber-700`
@@ -1899,6 +1984,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               Archive
             </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-200 disabled:text-slate-500`
@@ -1928,6 +2014,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             {canDownload
               ? <a href={downloadUrl} target="_blank" rel="noreferrer" className="rounded-xl bg-[#0A66C2] px-4 py-2 text-center text-sm font-semibold text-white hover:bg-[#0959A8]">Download PDF</a>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-amber-700`
@@ -1960,6 +2047,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-[#0A66C2] px-4 py-2 text-center text-sm font-semibold text-white hover:bg-[#0959A8]`
@@ -1992,6 +2080,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         </div>
       </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-500`
@@ -2018,6 +2107,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div>
             <div className="text-sm font-semibold text-slate-900">Banking references (optional)</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 rounded-2xl borderless-shadow bg-white p-4 dark:bg-slate-900/50`
@@ -2054,6 +2144,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <div className="text-sm font-semibold text-slate-900">Banking references (optional)</div>
             <div className="mt-1 text-xs text-slate-500">For fraud prevention only. No direct payments are processed on-platform.</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-4`
@@ -2084,6 +2175,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
           <div className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900`
@@ -2118,6 +2210,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
             {canViewBankingReferences(currentUser, selected) ? 'Visible' : 'Masked'}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-xs text-slate-500`
@@ -2153,6 +2246,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700`
@@ -2185,6 +2279,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div>Beneficiary: {canViewBankingReferences(currentUser, selected) ? safeDash(selected.beneficiary_name) : maskValue(selected.beneficiary_name)}</div>
           <div>Transaction reference: {canViewBankingReferences(currentUser, selected) ? safeDash(selected.transaction_reference) : maskValue(selected.transaction_reference)}</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 grid grid-cols-1 gap-2 text-sm text-slate-700`
@@ -2209,6 +2304,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div>
             <div className="text-sm font-semibold text-slate-900">Payment proof workflow</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 rounded-2xl borderless-shadow bg-white p-4 dark:bg-slate-900/50`
@@ -2245,6 +2341,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <div className="text-sm font-semibold text-slate-900">Payment proof workflow</div>
             <div className="mt-1 text-xs text-slate-500">Submit bank transfer or LC documents. Seller review sets status, disputes trigger internal admin review.</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-4`
@@ -2275,6 +2372,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
           <button type="button" onClick={() => loadPaymentProofs(selected.id)} className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900`
@@ -2308,6 +2406,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <button type="button" onClick={() => loadPaymentProofs(selected.id)} className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700">
             Refresh
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-xs text-slate-500`
@@ -2338,6 +2437,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </button>
         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700`
@@ -2364,6 +2464,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div />
           <select
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2`
@@ -2392,6 +2493,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <select
             value={paymentForm.type}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-slate-600`
@@ -2411,6 +2513,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <option value="bank_transfer">Bank transfer</option>
             <option value="lc">Letter of credit (LC)</option>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm`
@@ -2439,6 +2542,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Sender account name" value={paymentForm.sender_account_name} onChange={(e) => setPaymentForm((p) => ({ ...p, sender_account_name: e.target.value }))} />
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Receiver/company account name" value={paymentForm.receiver_account_name} onChange={(e) => setPaymentForm((p) => ({ ...p, receiver_account_name: e.target.value }))} />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm`
@@ -2462,6 +2566,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Receiver/company account name" value={paymentForm.receiver_account_name} onChange={(e) => setPaymentForm((p) => ({ ...p, receiver_account_name: e.target.value }))} />
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" type="date" value={paymentForm.transaction_date} onChange={(e) => setPaymentForm((p) => ({ ...p, transaction_date: e.target.value }))} />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm`
@@ -2485,6 +2590,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" type="date" value={paymentForm.transaction_date} onChange={(e) => setPaymentForm((p) => ({ ...p, transaction_date: e.target.value }))} />
               <div className="flex gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm`
@@ -2512,6 +2618,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <div className="flex gap-2">
                 <input className="flex-1 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))} />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm`
@@ -2541,6 +2648,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <input className="flex-1 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))} />
                 <input className="w-24 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Currency" value={paymentForm.currency} onChange={(e) => setPaymentForm((p) => ({ ...p, currency: e.target.value }))} />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm`
@@ -2567,11 +2675,24 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/ContractVault.jsx:853`
 
 ```jsx
-              <div className="flex gap-2">
-                <input className="flex-1 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))} />
-                <input className="w-24 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Currency" value={paymentForm.currency} onChange={(e) => setPaymentForm((p) => ({ ...p, currency: e.target.value }))} />
-              </div>
+<div className="flex gap-2">
+  <input
+    className="flex-1 rounded-xl borderless-shadow px-3 py-2 text-sm"
+    placeholder="Amount"
+    value={paymentForm.amount}
+    onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))}
+  />
+  <input
+    className="w-24 rounded-xl borderless-shadow px-3 py-2 text-sm"
+    placeholder="Currency"
+    value={paymentForm.currency}
+    onChange={(e) =>
+      setPaymentForm((p) => ({ ...p, currency: e.target.value }))
+    }
+  />
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex gap-2`
@@ -2602,6 +2723,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               </div>
             </>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex-1 rounded-xl borderless-shadow px-3 py-2 text-sm`
@@ -2629,6 +2751,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             </>
           ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-24 rounded-xl borderless-shadow px-3 py-2 text-sm`
@@ -2654,6 +2777,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <select
                   value={paymentForm.lc_type}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm`
@@ -2682,6 +2806,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   value={paymentForm.lc_type}
                   onChange={(e) => setPaymentForm((p) => ({ ...p, lc_type: e.target.value }))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap gap-2`
@@ -2702,6 +2827,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   <option value="sight">Sight LC</option>
                   <option value="usance">Usance LC</option>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm`
@@ -2730,6 +2856,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                       <option value="30">30 days</option>
                       <option value="60">60 days</option>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm`
@@ -2758,6 +2885,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                         value={paymentForm.usance_custom_days}
                         onChange={(e) => setPaymentForm((p) => ({ ...p, usance_custom_days: e.target.value }))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-32 rounded-xl borderless-shadow px-3 py-2 text-sm`
@@ -2786,6 +2914,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Applicant name" value={paymentForm.applicant_name} onChange={(e) => setPaymentForm((p) => ({ ...p, applicant_name: e.target.value }))} />
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Beneficiary name" value={paymentForm.beneficiary_name} onChange={(e) => setPaymentForm((p) => ({ ...p, beneficiary_name: e.target.value }))} />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm`
@@ -2809,6 +2938,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Beneficiary name" value={paymentForm.beneficiary_name} onChange={(e) => setPaymentForm((p) => ({ ...p, beneficiary_name: e.target.value }))} />
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" type="date" value={paymentForm.issue_date} onChange={(e) => setPaymentForm((p) => ({ ...p, issue_date: e.target.value }))} />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm`
@@ -2832,6 +2962,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" type="date" value={paymentForm.issue_date} onChange={(e) => setPaymentForm((p) => ({ ...p, issue_date: e.target.value }))} />
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" type="date" value={paymentForm.expiry_date} onChange={(e) => setPaymentForm((p) => ({ ...p, expiry_date: e.target.value }))} />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm`
@@ -2855,6 +2986,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" type="date" value={paymentForm.expiry_date} onChange={(e) => setPaymentForm((p) => ({ ...p, expiry_date: e.target.value }))} />
               <div className="flex gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm`
@@ -2882,6 +3014,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <div className="flex gap-2">
                 <input className="flex-1 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))} />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm`
@@ -2911,6 +3044,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <input className="flex-1 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))} />
                 <input className="w-24 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Currency" value={paymentForm.currency} onChange={(e) => setPaymentForm((p) => ({ ...p, currency: e.target.value }))} />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm`
@@ -2937,11 +3071,24 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/ContractVault.jsx:900`
 
 ```jsx
-              <div className="flex gap-2">
-                <input className="flex-1 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))} />
-                <input className="w-24 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Currency" value={paymentForm.currency} onChange={(e) => setPaymentForm((p) => ({ ...p, currency: e.target.value }))} />
-              </div>
+<div className="flex gap-2">
+  <input
+    className="flex-1 rounded-xl borderless-shadow px-3 py-2 text-sm"
+    placeholder="Amount"
+    value={paymentForm.amount}
+    onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))}
+  />
+  <input
+    className="w-24 rounded-xl borderless-shadow px-3 py-2 text-sm"
+    placeholder="Currency"
+    value={paymentForm.currency}
+    onChange={(e) =>
+      setPaymentForm((p) => ({ ...p, currency: e.target.value }))
+    }
+  />
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex gap-2`
@@ -2972,6 +3119,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               </div>
             </>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex-1 rounded-xl borderless-shadow px-3 py-2 text-sm`
@@ -2999,6 +3147,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             </>
           )}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-24 rounded-xl borderless-shadow px-3 py-2 text-sm`
@@ -3024,6 +3173,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <input
               type="file"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `sm:col-span-2`
@@ -3049,6 +3199,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               type="file"
               className="mt-2 text-xs"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-slate-600`
@@ -3074,6 +3225,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             />
           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-xs`
@@ -3093,6 +3245,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             type="button"
             onClick={submitPaymentProof}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 flex flex-wrap items-center gap-2`
@@ -3118,6 +3271,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             Submit proof
           </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white disabled:opacity-60`
@@ -3146,6 +3300,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 
         <div className="mt-4 space-y-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500`
@@ -3168,6 +3323,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           {!paymentLoading && paymentProofs.length === 0 ? <div className="text-xs text-slate-500">No proofs submitted yet.</div> : null}
           {paymentProofs.map((proof) => {
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 space-y-2`
@@ -3190,6 +3346,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           {paymentProofs.map((proof) => {
             const proofDocUrl = resolveDownloadUrl(proof.document_url || '')
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500`
@@ -3208,6 +3365,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             const proofDocUrl = resolveDownloadUrl(proof.document_url || '')
             return (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500`
@@ -3226,6 +3384,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <div className="font-semibold">{String(proof.type || '').replace('_', ' ').toUpperCase()}</div>
                 <div className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-slate-600 ring-1 ring-slate-200">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow bg-slate-50 p-3 text-xs text-slate-700`
@@ -3269,6 +3428,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <div className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-slate-600 ring-1 ring-slate-200">
                   {proof.status || 'pending'}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap items-center justify-between gap-2`
@@ -3308,6 +3468,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   {proof.status || 'pending'}
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold`
@@ -3340,6 +3501,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 </div>
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-slate-600 ring-1 ring-slate-200`
@@ -3371,6 +3533,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 {proof.lc_number ? <div>LC: {proof.lc_number}</div> : null}
                 {proof.lc_type ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 grid grid-cols-1 gap-1`
@@ -3392,6 +3555,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                     <a href={proofDocUrl} target="_blank" rel="noreferrer" className="text-[10px] font-semibold text-[#0A66C2] hover:underline">Open proof document</a>
                   ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -3417,6 +3581,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                     <span className="text-[10px] text-slate-500">Document linked</span>
                   )}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[10px] font-semibold text-[#0A66C2] hover:underline`
@@ -3441,6 +3606,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 </div>
               ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[10px] text-slate-500`
@@ -3460,6 +3626,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                     <>
                       <button type="button" onClick={() => updatePaymentStatus(proof.id, 'received')} className="rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-semibold text-white">Mark received</button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 flex flex-wrap gap-2`
@@ -3495,6 +3662,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                       <button type="button" onClick={() => updatePaymentStatus(proof.id, 'not_received')} className="rounded-full bg-rose-600 px-3 py-1 text-[10px] font-semibold text-white">Not received</button>
                     </>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-semibold text-white`
@@ -3525,6 +3693,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                     </>
                   ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-amber-600 px-3 py-1 text-[10px] font-semibold text-white`
@@ -3553,6 +3722,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   ) : (
                     <>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-rose-600 px-3 py-1 text-[10px] font-semibold text-white`
@@ -3579,6 +3749,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                       <button type="button" onClick={() => updatePaymentStatus(proof.id, 'rejected')} className="rounded-full bg-rose-600 px-3 py-1 text-[10px] font-semibold text-white">Reject</button>
                     </>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-semibold text-white`
@@ -3609,6 +3780,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                     </>
                   )}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-amber-600 px-3 py-1 text-[10px] font-semibold text-white`
@@ -3637,6 +3809,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   )}
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-rose-600 px-3 py-1 text-[10px] font-semibold text-white`
@@ -3663,6 +3836,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div>
             <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Call recordings</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 rounded-2xl borderless-shadow bg-white p-4`
@@ -3699,6 +3873,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Call recordings</div>
             <div className="mt-1 text-xs text-slate-500 dark:text-slate-300">Recorded calls are stored for dispute resolution and security (project.md).</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-4`
@@ -3732,6 +3907,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
           <div className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 dark:bg-white/5 dark:text-slate-200">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900 dark:text-slate-100`
@@ -3771,6 +3947,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 dark:bg-white/5 dark:text-slate-200">
             {callsLoading ? 'Loading...' : `${callItems.filter((c) => c.recording_url).length} available`}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-xs text-slate-500 dark:text-slate-300`
@@ -3808,6 +3985,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 dark:bg-white/5 dark:text-slate-200`
@@ -3841,6 +4019,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             const url = resolveDownloadUrl(call.recording_url)
             const canPlay = Boolean(call.recording_status === 'available' && url)
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 space-y-3`
@@ -3862,6 +4041,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   <div className="min-w-0">
                     <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{safeDash(call.title) || 'Call session'}</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow bg-slate-50 p-3 dark:bg-black/20`
@@ -3900,6 +4080,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                     <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{safeDash(call.title) || 'Call session'}</div>
                     <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-3`
@@ -3935,6 +4116,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                     <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">
                       {safeDash(call.status)} - {call.created_at ? new Date(call.created_at).toLocaleString() : '\u2014'}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0`
@@ -3968,6 +4150,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                       {safeDash(call.status)} - {call.created_at ? new Date(call.created_at).toLocaleString() : '\u2014'}
                     </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900 dark:text-slate-100`
@@ -3998,6 +4181,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                     </div>
                   </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-xs text-slate-600 dark:text-slate-300`
@@ -4023,6 +4207,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   </div>
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `shrink-0 text-xs font-semibold text-slate-600 dark:text-slate-200`
@@ -4048,6 +4233,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                       src={url}
                       controls
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3`
@@ -4065,6 +4251,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                         try {
                           const token = getToken()
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full rounded-lg bg-black/5 dark:bg-black/30`
@@ -4088,6 +4275,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               </div>
             )
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-xs text-slate-600 dark:text-slate-300`
@@ -4110,6 +4298,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         </div>
       </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm text-slate-600 dark:text-slate-300`
@@ -4130,6 +4319,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         <div className="mt-3 grid grid-cols-1 gap-2 text-sm text-slate-700">
           <div>Status: {safeDash(selected.artifact?.status)}</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 rounded-2xl borderless-shadow bg-white p-4`
@@ -4165,6 +4355,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div>Status: {safeDash(selected.artifact?.status)}</div>
           <div>Generated at: {safeDash(selected.artifact?.generated_at)}</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900`
@@ -4192,6 +4383,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div>Generated at: {safeDash(selected.artifact?.generated_at)}</div>
           <div>Version: {selected.artifact?.version ?? 0}</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 grid grid-cols-1 gap-2 text-sm text-slate-700`
@@ -4216,6 +4408,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             Signer IDs: Buyer {safeDash(selected.artifact?.signer_ids?.buyer_id)} <span className="mx-1">-</span> Factory {safeDash(selected.artifact?.signer_ids?.factory_id)}
           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `break-all text-xs text-slate-600`
@@ -4240,6 +4433,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
           <div className="text-xs text-slate-600">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-600`
@@ -4261,6 +4455,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div className="text-xs text-slate-600">
             Signature timestamps: Buyer {safeDash(selected.artifact?.signature_timestamps?.buyer_signed_at)} <span className="mx-1">-</span> Factory {safeDash(selected.artifact?.signature_timestamps?.factory_signed_at)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mx-1`
@@ -4282,6 +4477,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-600`
@@ -4303,6 +4499,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         </div>
       </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mx-1`
@@ -4320,6 +4517,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div className="text-sm font-semibold text-slate-900">Contract Audit Trail</div>
           <div className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600">Premium</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 rounded-2xl borderless-shadow bg-white p-4`
@@ -4356,11 +4554,16 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/ContractVault.jsx:1059`
 
 ```jsx
-        <div className="flex items-center justify-between gap-4">
-          <div className="text-sm font-semibold text-slate-900">Contract Audit Trail</div>
-          <div className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600">Premium</div>
-        </div>
+<div className="flex items-center justify-between gap-4">
+  <div className="text-sm font-semibold text-slate-900">
+    Contract Audit Trail
+  </div>
+  <div className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600">
+    Premium
+  </div>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-4`
@@ -4396,6 +4599,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         </div>
         {auditLoading ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900`
@@ -4425,6 +4629,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         {auditLoading ? (
           <div className="mt-3 text-sm text-slate-600">Loading audit trail...</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600`
@@ -4454,6 +4659,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div className="mt-3 rounded-lg borderless-shadow bg-amber-50 p-3 text-xs text-amber-800">
             {auditError}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-sm text-slate-600`
@@ -4483,6 +4689,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
         ) : auditLog.length ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 rounded-lg borderless-shadow bg-amber-50 p-3 text-xs text-amber-800`
@@ -4509,6 +4716,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <div key={entry.id || `${entry.timestamp}-${entry.note}`} className="rounded-lg borderless-shadow bg-slate-50 p-3">
                 <div className="flex items-center justify-between gap-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 space-y-2 text-xs text-slate-600`
@@ -4543,6 +4751,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   <span className="font-semibold text-slate-900">{entry.action || 'update'}</span>
                   <span>{entry.timestamp ? new Date(entry.timestamp).toLocaleString() : '\u2014'}</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-lg borderless-shadow bg-slate-50 p-3`
@@ -4573,11 +4782,16 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/ContractVault.jsx:1073`
 
 ```jsx
-                <div className="flex items-center justify-between gap-3">
-                  <span className="font-semibold text-slate-900">{entry.action || 'update'}</span>
-                  <span>{entry.timestamp ? new Date(entry.timestamp).toLocaleString() : '\u2014'}</span>
-                </div>
+<div className="flex items-center justify-between gap-3">
+  <span className="font-semibold text-slate-900">
+    {entry.action || "update"}
+  </span>
+  <span>
+    {entry.timestamp ? new Date(entry.timestamp).toLocaleString() : "\u2014"}
+  </span>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-3`
@@ -4606,6 +4820,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 </div>
                 <div className="mt-1 text-slate-600">{entry.note || 'Audit entry recorded.'}</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-slate-900`
@@ -4626,11 +4841,18 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/ContractVault.jsx:1077`
 
 ```jsx
-                <div className="mt-1 text-slate-600">{entry.note || 'Audit entry recorded.'}</div>
-                {entry.actor_name || entry.actor_id ? (
-                  <div className="mt-2 text-[11px] text-slate-500">By {entry.actor_name || entry.actor_id}</div>
-                ) : null}
+<div className="mt-1 text-slate-600">
+  {entry.note || "Audit entry recorded."}
+</div>;
+{
+  entry.actor_name || entry.actor_id ? (
+    <div className="mt-2 text-[11px] text-slate-500">
+      By {entry.actor_name || entry.actor_id}
+    </div>
+  ) : null;
+}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-slate-600`
@@ -4655,6 +4877,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               </div>
             ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-[11px] text-slate-500`
@@ -4676,6 +4899,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
       </div>
     </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-sm text-slate-600`
@@ -4696,6 +4920,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
     </div>
   )
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl borderless-shadow bg-white p-10 text-center text-sm text-slate-600`
@@ -4722,6 +4947,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out`
@@ -4765,6 +4991,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div>
             <div className="text-xs font-semibold text-[var(--gt-blue)]">Vault</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mx-auto max-w-7xl p-4 sm:p-6`
@@ -4801,6 +5028,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <div className="text-xs font-semibold text-[var(--gt-blue)]">Vault</div>
             <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">Contract Vault</h1>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between`
@@ -4839,6 +5067,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Draft → Sign → PDF artifact → Lock → Archive</p>
           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-[var(--gt-blue)]`
@@ -4871,6 +5100,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
           <div className="flex flex-wrap items-center gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100`
@@ -4904,6 +5134,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div className="flex flex-wrap items-center gap-2">
             <Link to="/owner" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8">Dashboard</Link>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm text-slate-600 dark:text-slate-300`
@@ -4951,6 +5182,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <Link to="/notifications" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8">Notifications</Link>
             <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap items-center gap-2`
@@ -4994,6 +5226,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <button
               type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8`
@@ -5034,6 +5267,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               type="button"
               disabled={!canCreateDraft(currentUser)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8`
@@ -5074,6 +5308,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               New draft
             </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[var(--gt-blue)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95 disabled:bg-slate-200 disabled:text-slate-500`
@@ -5107,6 +5342,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         {!forbidden ? (
           <div className="secure-grid grid grid-cols-1 gap-6 lg:grid-cols-12">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mb-4 rounded-2xl borderless-shadow bg-rose-50 p-4 text-sm font-semibold text-rose-700`
@@ -5143,6 +5379,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `secure-grid grid grid-cols-1 gap-6 lg:grid-cols-12`
@@ -5188,6 +5425,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Contracts</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-5`
@@ -5232,6 +5470,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Contracts</div>
                   <button type="button" onClick={loadContracts} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 active:scale-95 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/8">Refresh</button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800`
@@ -5283,11 +5522,20 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/ContractVault.jsx:1125`
 
 ```jsx
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Contracts</div>
-                  <button type="button" onClick={loadContracts} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 active:scale-95 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/8">Refresh</button>
-                </div>
+<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+  <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+    Contracts
+  </div>
+  <button
+    type="button"
+    onClick={loadContracts}
+    className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 active:scale-95 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/8"
+  >
+    Refresh
+  </button>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between`
@@ -5335,6 +5583,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900 dark:text-slate-100`
@@ -5373,6 +5622,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 
                 <div className="mt-4 grid gap-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 active:scale-95 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/8`
@@ -5412,6 +5662,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                     <input
                       ref={searchRef}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 grid gap-3`
@@ -5434,6 +5685,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                       ref={searchRef}
                       value={query}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `relative`
@@ -5451,6 +5703,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                     <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-semibold tracking-widest text-slate-500 ring-1 ring-slate-200/70 dark:bg-slate-950/40 dark:text-slate-400 dark:ring-white/10">
                       {isMac ? '⌘ K' : 'Ctrl K'}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full rounded-xl bg-white px-3 py-2 pr-16 text-sm text-slate-800 shadow-inner ring-1 ring-slate-200/70 transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10`
@@ -5513,6 +5766,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                     </span>
                   </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-semibold tracking-widest text-slate-500 ring-1 ring-slate-200/70 dark:bg-slate-950/40 dark:text-slate-400 dark:ring-white/10`
@@ -5558,6 +5812,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                       { key: 'all', label: 'All' },
                       { key: 'draft', label: 'Draft' },
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap items-center gap-2`
@@ -5588,6 +5843,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                             ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
                             : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
 ```
+
 **Raw class strings detected (best effort):**
 
 - `bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35`
@@ -5622,6 +5878,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                           />
                         ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `absolute inset-0 rounded-full bg-indigo-500/10 dark:bg-white/10`
@@ -5649,6 +5906,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                     ))}
                   </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `relative`
@@ -5666,6 +5924,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   <div className="grid gap-3">
                     {Array.from({ length: 5 }).map((_, i) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 grid gap-3`
@@ -5687,6 +5946,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                       <div key={`contract-skel-${i}`} className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
                         <div className="flex items-start justify-between gap-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid gap-3`
@@ -5722,6 +5982,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                           <div className="min-w-0 flex-1 space-y-2">
                             <div className="h-3 w-1/3 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800`
@@ -5765,6 +6026,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                             <div className="h-3 w-1/3 rounded-full skeleton" />
                             <div className="h-3 w-2/3 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-3`
@@ -5799,6 +6061,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                             <div className="h-3 w-2/3 rounded-full skeleton" />
                             <div className="h-3 w-1/2 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0 flex-1 space-y-2`
@@ -5830,6 +6093,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                             <div className="h-3 w-1/2 rounded-full skeleton" />
                           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 w-1/3 rounded-full skeleton`
@@ -5856,6 +6120,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                           </div>
                           <div className="h-7 w-20 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 w-2/3 rounded-full skeleton`
@@ -5883,6 +6148,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                           <div className="h-7 w-20 rounded-full skeleton" />
                         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 w-1/2 rounded-full skeleton`
@@ -5908,6 +6174,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                         <div className="mt-3 flex flex-wrap gap-2">
                           <div className="h-6 w-24 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-7 w-20 rounded-full skeleton`
@@ -5939,6 +6206,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                           <div className="h-6 w-24 rounded-full skeleton" />
                           <div className="h-6 w-20 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 flex flex-wrap gap-2`
@@ -5969,6 +6237,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                           <div className="h-6 w-20 rounded-full skeleton" />
                         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-6 w-24 rounded-full skeleton`
@@ -5993,6 +6262,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                         </div>
                       </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-6 w-24 rounded-full skeleton`
@@ -6017,6 +6287,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                       </div>
                     ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-6 w-20 rounded-full skeleton`
@@ -6039,6 +6310,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                     <ContractRow
                       contract={c}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `hidden lg:block`
@@ -6058,6 +6330,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   </div>
                 )}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-8 text-center text-sm text-slate-600 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:text-slate-300 dark:ring-slate-800`
@@ -6090,6 +6363,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                       <ContractRow
                         key={c.id}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid gap-3 lg:hidden`
@@ -6111,6 +6385,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             </div>
           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `hidden lg:col-span-7 lg:block`
@@ -6131,6 +6406,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <div className="absolute left-1/2 top-10 w-[min(40rem,92vw)] -translate-x-1/2 rounded-3xl bg-white p-6 shadow-2xl">
               <div className="flex items-start justify-between gap-4">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `fixed inset-0 z-50`
@@ -6171,6 +6447,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <div className="flex items-start justify-between gap-4">
                 <div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `absolute inset-0 bg-slate-900/30`
@@ -6208,6 +6485,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <div>
                   <div className="text-xs font-semibold text-[#0A66C2]">New</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `absolute left-1/2 top-10 w-[min(40rem,92vw)] -translate-x-1/2 rounded-3xl bg-white p-6 shadow-2xl`
@@ -6247,6 +6525,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   <div className="text-xs font-semibold text-[#0A66C2]">New</div>
                   <div className="mt-1 text-lg font-bold text-slate-900">Create contract draft</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-4`
@@ -6279,6 +6558,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   <div className="mt-1 text-xs text-slate-600">Banking references are optional and should be used only for fraud prevention.</div>
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-[#0A66C2]`
@@ -6307,6 +6587,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 </div>
                 <button type="button" onClick={() => setDraftOpen(false)} className="rounded-full px-3 py-1 text-sm font-semibold text-slate-700 hover:bg-slate-100">Close</button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-lg font-bold text-slate-900`
@@ -6341,6 +6622,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <button type="button" onClick={() => setDraftOpen(false)} className="rounded-full px-3 py-1 text-sm font-semibold text-slate-700 hover:bg-slate-100">Close</button>
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-xs text-slate-600`
@@ -6371,6 +6653,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 
               <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full px-3 py-1 text-sm font-semibold text-slate-700 hover:bg-slate-100`
@@ -6405,6 +6688,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <input value={draftForm.buyer_name} onChange={(e) => setDraftForm((p) => ({ ...p, buyer_name: e.target.value }))} placeholder="Buyer name" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
                 <input value={draftForm.factory_name} onChange={(e) => setDraftForm((p) => ({ ...p, factory_name: e.target.value }))} placeholder="Factory name" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2`
@@ -6437,6 +6721,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <input value={draftForm.factory_name} onChange={(e) => setDraftForm((p) => ({ ...p, factory_name: e.target.value }))} placeholder="Factory name" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
                 <input value={draftForm.buyer_id} onChange={(e) => setDraftForm((p) => ({ ...p, buyer_id: e.target.value }))} placeholder="Buyer user ID" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm outline-none`
@@ -6461,6 +6746,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <input value={draftForm.buyer_id} onChange={(e) => setDraftForm((p) => ({ ...p, buyer_id: e.target.value }))} placeholder="Buyer user ID" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
                 <input value={draftForm.factory_id} onChange={(e) => setDraftForm((p) => ({ ...p, factory_id: e.target.value }))} placeholder="Factory user ID" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm outline-none`
@@ -6485,6 +6771,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <input value={draftForm.factory_id} onChange={(e) => setDraftForm((p) => ({ ...p, factory_id: e.target.value }))} placeholder="Factory user ID" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
                 <div className="hidden sm:block" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm outline-none`
@@ -6514,6 +6801,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <div className="hidden sm:block" />
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm outline-none`
@@ -6543,6 +6831,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 
                 <input value={draftForm.bank_name} onChange={(e) => setDraftForm((p) => ({ ...p, bank_name: e.target.value }))} placeholder="Bank name (optional)" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm outline-none`
@@ -6572,6 +6861,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <input value={draftForm.bank_name} onChange={(e) => setDraftForm((p) => ({ ...p, bank_name: e.target.value }))} placeholder="Bank name (optional)" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
                 <input value={draftForm.beneficiary_name} onChange={(e) => setDraftForm((p) => ({ ...p, beneficiary_name: e.target.value }))} placeholder="Beneficiary name (optional)" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `hidden sm:block`
@@ -6601,6 +6891,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <input value={draftForm.transaction_reference} onChange={(e) => setDraftForm((p) => ({ ...p, transaction_reference: e.target.value }))} placeholder="Transaction reference (optional)" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none sm:col-span-2" />
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm outline-none`
@@ -6628,6 +6919,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm outline-none`
@@ -6655,6 +6947,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 
               <div className="mt-6 flex items-center justify-end gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow px-3 py-2 text-sm outline-none sm:col-span-2`
@@ -6688,6 +6981,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <button
                   type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-6 flex items-center justify-end gap-2`
@@ -6728,6 +7022,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   type="button"
                   disabled={!canCreateDraft(currentUser) || saving}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50`
@@ -6761,6 +7056,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   Create draft
                 </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[#0A66C2] px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-200 disabled:text-slate-500`
@@ -6794,6 +7090,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
         </div>
 ```
+
 - `src/pages/ContractVault.jsx:209` — Factory:
 
 ```jsx
@@ -6802,6 +7099,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         </div>
 
 ```
+
 - `src/pages/ContractVault.jsx:222` — Buyer: {contract.buyer_signature_state \|\| 'pending'}
 
 ```jsx
@@ -6810,6 +7108,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         <span className="inline-flex items-center rounded-full bg-white px-2 py-1 ring-1 ring-slate-200">PDF: {flow.hasPdf ? 'ready' : 'pending'}</span>
       </div>
 ```
+
 - `src/pages/ContractVault.jsx:223` — Factory: {contract.factory_signature_state \|\| 'pending'}
 
 ```jsx
@@ -6818,6 +7117,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
       </div>
     </button>
 ```
+
 - `src/pages/ContractVault.jsx:224` — PDF: {flow.hasPdf ? 'ready' : 'pending'}
 
 ```jsx
@@ -6826,6 +7126,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
     </button>
   )
 ```
+
 - `src/pages/ContractVault.jsx:238` — Close
 
 ```jsx
@@ -6834,6 +7135,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         {children}
       </div>
 ```
+
 - `src/pages/ContractVault.jsx:662` — Buyer:
 
 ```jsx
@@ -6842,6 +7144,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
         </div>
 ```
+
 - `src/pages/ContractVault.jsx:663` — Factory:
 
 ```jsx
@@ -6850,6 +7153,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         </div>
         <Link to="/help" className="shrink-0 rounded-full bg-[#E8F3FF] px-3 py-1 text-xs font-semibold text-[#0A66C2] hover:bg-[#D9ECFF]">Help</Link>
 ```
+
 - `src/pages/ContractVault.jsx:666` — Help
 
 ```jsx
@@ -6858,6 +7162,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 
       {actionError ? <div className="mt-4 rounded-xl borderless-shadow bg-rose-50 p-3 text-sm font-semibold text-rose-700">{actionError}</div> : null}
 ```
+
 - `src/pages/ContractVault.jsx:675` — Open source requirement
 
 ```jsx
@@ -6866,6 +7171,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
       ) : null}
       {!hasRecordedCall ? (
 ```
+
 - `src/pages/ContractVault.jsx:681` — Video calls are recommended before finalizing contracts. No recorded call is linked to this contract yet.
 
 ```jsx
@@ -6874,6 +7180,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               Open chat
             </Link>
 ```
+
 - `src/pages/ContractVault.jsx:700` — ({selected.buyer_signed_at})
 
 ```jsx
@@ -6882,6 +7189,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           {!hasAcceptedProof ? (
             <div className="mt-3 rounded-lg borderless-shadow bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-900">
 ```
+
 - `src/pages/ContractVault.jsx:701` — ({selected.factory_signed_at})
 
 ```jsx
@@ -6890,6 +7198,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <div className="mt-3 rounded-lg borderless-shadow bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-900">
               Warning: No accepted payment proof yet. You may continue, but proof is strongly recommended for safety.
 ```
+
 - `src/pages/ContractVault.jsx:799` — Download (not ready)
 
 ```jsx
@@ -6898,6 +7207,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         </div>
       </div>
 ```
+
 - `src/pages/ContractVault.jsx:834` — Proof type
 
 ```jsx
@@ -6906,6 +7216,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <select
             value={paymentForm.type}
 ```
+
 - `src/pages/ContractVault.jsx:908` — Upload proof document
 
 ```jsx
@@ -6914,6 +7225,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               type="file"
               className="mt-2 text-xs"
 ```
+
 - `src/pages/ContractVault.jsx:958` — Document linked
 
 ```jsx
@@ -6922,6 +7234,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 </div>
               ) : null}
 ```
+
 - `src/pages/ContractVault.jsx:966` — updatePaymentStatus(proof.id, 'received')} className="rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-semibold text-white">Mark received
 
 ```jsx
@@ -6930,6 +7243,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                       <button type="button" onClick={() => updatePaymentStatus(proof.id, 'not_received')} className="rounded-full bg-rose-600 px-3 py-1 text-[10px] font-semibold text-white">Not received</button>
                     </>
 ```
+
 - `src/pages/ContractVault.jsx:967` — updatePaymentStatus(proof.id, 'pending_check')} className="rounded-full bg-amber-600 px-3 py-1 text-[10px] font-semibold text-white">Pending check
 
 ```jsx
@@ -6938,6 +7252,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                     </>
                   ) : (
 ```
+
 - `src/pages/ContractVault.jsx:968` — updatePaymentStatus(proof.id, 'not_received')} className="rounded-full bg-rose-600 px-3 py-1 text-[10px] font-semibold text-white">Not received
 
 ```jsx
@@ -6946,6 +7261,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   ) : (
                     <>
 ```
+
 - `src/pages/ContractVault.jsx:972` — updatePaymentStatus(proof.id, 'accepted')} className="rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-semibold text-white">Accept
 
 ```jsx
@@ -6954,6 +7270,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                       <button type="button" onClick={() => updatePaymentStatus(proof.id, 'rejected')} className="rounded-full bg-rose-600 px-3 py-1 text-[10px] font-semibold text-white">Reject</button>
                     </>
 ```
+
 - `src/pages/ContractVault.jsx:973` — updatePaymentStatus(proof.id, 'pending_review')} className="rounded-full bg-amber-600 px-3 py-1 text-[10px] font-semibold text-white">Pending review
 
 ```jsx
@@ -6962,6 +7279,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                     </>
                   )}
 ```
+
 - `src/pages/ContractVault.jsx:974` — updatePaymentStatus(proof.id, 'rejected')} className="rounded-full bg-rose-600 px-3 py-1 text-[10px] font-semibold text-white">Reject
 
 ```jsx
@@ -6970,6 +7288,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   )}
                 </div>
 ```
+
 - `src/pages/ContractVault.jsx:1050` — -
 
 ```jsx
@@ -6978,6 +7297,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div className="text-xs text-slate-600">
             Signature timestamps: Buyer {safeDash(selected.artifact?.signature_timestamps?.buyer_signed_at)} <span className="mx-1">-</span> Factory {safeDash(selected.artifact?.signature_timestamps?.factory_signed_at)}
 ```
+
 - `src/pages/ContractVault.jsx:1053` — -
 
 ```jsx
@@ -6986,6 +7306,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         </div>
       </div>
 ```
+
 - `src/pages/ContractVault.jsx:1101` — Contract Vault
 
 ```jsx
@@ -6994,6 +7315,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
           <div className="flex flex-wrap items-center gap-2">
 ```
+
 - `src/pages/ContractVault.jsx:1102` — Draft → Sign → PDF artifact → Lock → Archive
 
 ```jsx
@@ -7002,6 +7324,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div className="flex flex-wrap items-center gap-2">
             <Link to="/owner" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8">Dashboard</Link>
 ```
+
 - `src/pages/ContractVault.jsx:1105` — Dashboard
 
 ```jsx
@@ -7010,6 +7333,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <button
               type="button"
 ```
+
 - `src/pages/ContractVault.jsx:1106` — Notifications
 
 ```jsx
@@ -7018,6 +7342,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               type="button"
               disabled={!canCreateDraft(currentUser)}
 ```
+
 - `src/pages/ContractVault.jsx:1127` — Refresh
 
 ```jsx
@@ -7026,6 +7351,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 
                 <div className="mt-4 grid gap-3">
 ```
+
 - `src/pages/ContractVault.jsx:1253` — setDraftOpen(false)} className="rounded-full px-3 py-1 text-sm font-semibold text-slate-700 hover:bg-slate-100">Close
 
 ```jsx
@@ -7034,6 +7360,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 
               <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
 ```
+
 - `src/pages/ContractVault.jsx:1270` — setDraftOpen(false)} className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50">Cancel
 
 ```jsx
@@ -7042,6 +7369,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   type="button"
                   disabled={!canCreateDraft(currentUser) || saving}
 ```
+
 - `src/pages/ContractVault.jsx:671` — Journey Timeline
 
 ```jsx
@@ -7050,6 +7378,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
       {selected.requirement_id ? (
         <div className="mt-2">
 ```
+
 - `src/pages/ContractVault.jsx:848` — Transaction reference
 
 ```jsx
@@ -7058,6 +7387,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Sender account name" value={paymentForm.sender_account_name} onChange={(e) => setPaymentForm((p) => ({ ...p, sender_account_name: e.target.value }))} />
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Receiver/company account name" value={paymentForm.receiver_account_name} onChange={(e) => setPaymentForm((p) => ({ ...p, receiver_account_name: e.target.value }))} />
 ```
+
 - `src/pages/ContractVault.jsx:849` — Bank name
 
 ```jsx
@@ -7066,6 +7396,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Receiver/company account name" value={paymentForm.receiver_account_name} onChange={(e) => setPaymentForm((p) => ({ ...p, receiver_account_name: e.target.value }))} />
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" type="date" value={paymentForm.transaction_date} onChange={(e) => setPaymentForm((p) => ({ ...p, transaction_date: e.target.value }))} />
 ```
+
 - `src/pages/ContractVault.jsx:850` — Sender account name
 
 ```jsx
@@ -7074,6 +7405,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" type="date" value={paymentForm.transaction_date} onChange={(e) => setPaymentForm((p) => ({ ...p, transaction_date: e.target.value }))} />
               <div className="flex gap-2">
 ```
+
 - `src/pages/ContractVault.jsx:851` — Receiver/company account name
 
 ```jsx
@@ -7082,6 +7414,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <div className="flex gap-2">
                 <input className="flex-1 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))} />
 ```
+
 - `src/pages/ContractVault.jsx:854` — Amount
 
 ```jsx
@@ -7090,6 +7423,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               </div>
             </>
 ```
+
 - `src/pages/ContractVault.jsx:855` — Currency
 
 ```jsx
@@ -7098,6 +7432,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             </>
           ) : (
 ```
+
 - `src/pages/ContractVault.jsx:860` — LC number
 
 ```jsx
@@ -7106,6 +7441,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <select
                   value={paymentForm.lc_type}
 ```
+
 - `src/pages/ContractVault.jsx:886` — Days
 
 ```jsx
@@ -7114,6 +7450,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                         onChange={(e) => setPaymentForm((p) => ({ ...p, usance_custom_days: e.target.value }))}
                       />
 ```
+
 - `src/pages/ContractVault.jsx:894` — Issuing bank
 
 ```jsx
@@ -7122,6 +7459,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Applicant name" value={paymentForm.applicant_name} onChange={(e) => setPaymentForm((p) => ({ ...p, applicant_name: e.target.value }))} />
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Beneficiary name" value={paymentForm.beneficiary_name} onChange={(e) => setPaymentForm((p) => ({ ...p, beneficiary_name: e.target.value }))} />
 ```
+
 - `src/pages/ContractVault.jsx:895` — Advising bank
 
 ```jsx
@@ -7130,6 +7468,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Beneficiary name" value={paymentForm.beneficiary_name} onChange={(e) => setPaymentForm((p) => ({ ...p, beneficiary_name: e.target.value }))} />
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" type="date" value={paymentForm.issue_date} onChange={(e) => setPaymentForm((p) => ({ ...p, issue_date: e.target.value }))} />
 ```
+
 - `src/pages/ContractVault.jsx:896` — Applicant name
 
 ```jsx
@@ -7138,6 +7477,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" type="date" value={paymentForm.issue_date} onChange={(e) => setPaymentForm((p) => ({ ...p, issue_date: e.target.value }))} />
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" type="date" value={paymentForm.expiry_date} onChange={(e) => setPaymentForm((p) => ({ ...p, expiry_date: e.target.value }))} />
 ```
+
 - `src/pages/ContractVault.jsx:897` — Beneficiary name
 
 ```jsx
@@ -7146,6 +7486,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" type="date" value={paymentForm.expiry_date} onChange={(e) => setPaymentForm((p) => ({ ...p, expiry_date: e.target.value }))} />
               <div className="flex gap-2">
 ```
+
 - `src/pages/ContractVault.jsx:901` — Amount
 
 ```jsx
@@ -7154,6 +7495,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               </div>
             </>
 ```
+
 - `src/pages/ContractVault.jsx:902` — Currency
 
 ```jsx
@@ -7162,6 +7504,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             </>
           )}
 ```
+
 - `src/pages/ContractVault.jsx:1136` — Search by number, buyer, factory, title...
 
 ```jsx
@@ -7170,6 +7513,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                     />
                     <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-semibold tracking-widest text-slate-500 ring-1 ring-slate-200/70 dark:bg-slate-950/40 dark:text-slate-400 dark:ring-white/10">
 ```
+
 - `src/pages/ContractVault.jsx:1257` — Title
 
 ```jsx
@@ -7178,6 +7522,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <input value={draftForm.factory_name} onChange={(e) => setDraftForm((p) => ({ ...p, factory_name: e.target.value }))} placeholder="Factory name" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
                 <input value={draftForm.buyer_id} onChange={(e) => setDraftForm((p) => ({ ...p, buyer_id: e.target.value }))} placeholder="Buyer user ID" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
 ```
+
 - `src/pages/ContractVault.jsx:1258` — Buyer name
 
 ```jsx
@@ -7186,6 +7531,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <input value={draftForm.buyer_id} onChange={(e) => setDraftForm((p) => ({ ...p, buyer_id: e.target.value }))} placeholder="Buyer user ID" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
                 <input value={draftForm.factory_id} onChange={(e) => setDraftForm((p) => ({ ...p, factory_id: e.target.value }))} placeholder="Factory user ID" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
 ```
+
 - `src/pages/ContractVault.jsx:1259` — Factory name
 
 ```jsx
@@ -7194,6 +7540,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <input value={draftForm.factory_id} onChange={(e) => setDraftForm((p) => ({ ...p, factory_id: e.target.value }))} placeholder="Factory user ID" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
                 <div className="hidden sm:block" />
 ```
+
 - `src/pages/ContractVault.jsx:1260` — Buyer user ID
 
 ```jsx
@@ -7202,6 +7549,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <div className="hidden sm:block" />
 
 ```
+
 - `src/pages/ContractVault.jsx:1261` — Factory user ID
 
 ```jsx
@@ -7210,6 +7558,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 
                 <input value={draftForm.bank_name} onChange={(e) => setDraftForm((p) => ({ ...p, bank_name: e.target.value }))} placeholder="Bank name (optional)" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
 ```
+
 - `src/pages/ContractVault.jsx:1264` — Bank name (optional)
 
 ```jsx
@@ -7218,6 +7567,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 <input value={draftForm.transaction_reference} onChange={(e) => setDraftForm((p) => ({ ...p, transaction_reference: e.target.value }))} placeholder="Transaction reference (optional)" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none sm:col-span-2" />
               </div>
 ```
+
 - `src/pages/ContractVault.jsx:1265` — Beneficiary name (optional)
 
 ```jsx
@@ -7226,6 +7576,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               </div>
 
 ```
+
 - `src/pages/ContractVault.jsx:1266` — Transaction reference (optional)
 
 ```jsx
@@ -7234,6 +7585,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 
               <div className="mt-6 flex items-center justify-end gap-2">
 ```
+
 - `src/pages/ContractVault.jsx:193` — (element) <button>
 
 ```jsx
@@ -7242,6 +7594,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
       onClick={onSelect}
       className={`w-full rounded-2xl p-4 text-left transition ring-1${active ? 'bg-indigo-50/60 text-slate-900 ring-indigo-200 shadow-sm dark:bg-white/5 dark:text-slate-100 dark:ring-[#38bdf8]/35' : 'bg-white text-slate-900 ring-slate-200/70 hover:bg-slate-50 dark:bg-slate-900/50 dark:text-slate-100 dark:ring-slate-800 dark:hover:bg-white/5'}`}
 ```
+
 - `src/pages/ContractVault.jsx:238` — (element) <button>
 
 ```jsx
@@ -7250,6 +7603,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         {children}
       </div>
 ```
+
 - `src/pages/ContractVault.jsx:666` — (element) <Link>
 
 ```jsx
@@ -7258,6 +7612,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 
       {actionError ? <div className="mt-4 rounded-xl borderless-shadow bg-rose-50 p-3 text-sm font-semibold text-rose-700">{actionError}</div> : null}
 ```
+
 - `src/pages/ContractVault.jsx:675` — (element) <Link>
 
 ```jsx
@@ -7266,6 +7621,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
       ) : null}
       {!hasRecordedCall ? (
 ```
+
 - `src/pages/ContractVault.jsx:682` — (element) <Link>
 
 ```jsx
@@ -7274,6 +7630,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             </Link>
           </div>
 ```
+
 - `src/pages/ContractVault.jsx:708` — (element) <button>
 
 ```jsx
@@ -7282,6 +7639,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 disabled={Boolean(selectedActionBlockers.buyerSign) || saving}
                 onClick={() => runStepActionWithProofWarning(async (token) => apiRequest(`/documents/contracts/${selected.id}/signatures`, {
 ```
+
 - `src/pages/ContractVault.jsx:722` — (element) <button>
 
 ```jsx
@@ -7290,6 +7648,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 disabled={Boolean(selectedActionBlockers.factorySign) || saving}
                 onClick={() => runStepActionWithProofWarning(async (token) => apiRequest(`/documents/contracts/${selected.id}/signatures`, {
 ```
+
 - `src/pages/ContractVault.jsx:734` — (element) <button>
 
 ```jsx
@@ -7298,6 +7657,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               disabled={saving}
               onClick={async () => {
 ```
+
 - `src/pages/ContractVault.jsx:769` — (element) <button>
 
 ```jsx
@@ -7306,6 +7666,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 disabled={Boolean(selectedActionBlockers.lock) || saving}
                 onClick={() => runStepActionWithProofWarning(async (token) => apiRequest(`/documents/contracts/${selected.id}/artifact`, {
 ```
+
 - `src/pages/ContractVault.jsx:783` — (element) <button>
 
 ```jsx
@@ -7314,6 +7675,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               disabled={Boolean(selectedActionBlockers.archive) || saving}
               onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/artifact`, {
 ```
+
 - `src/pages/ContractVault.jsx:799` — (element) <button>
 
 ```jsx
@@ -7322,6 +7684,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         </div>
       </div>
 ```
+
 - `src/pages/ContractVault.jsx:828` — (element) <button>
 
 ```jsx
@@ -7330,6 +7693,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </button>
         </div>
 ```
+
 - `src/pages/ContractVault.jsx:918` — (element) <button>
 
 ```jsx
@@ -7338,6 +7702,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             onClick={submitPaymentProof}
             disabled={saving}
 ```
+
 - `src/pages/ContractVault.jsx:966` — (element) <button>
 
 ```jsx
@@ -7346,6 +7711,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                       <button type="button" onClick={() => updatePaymentStatus(proof.id, 'not_received')} className="rounded-full bg-rose-600 px-3 py-1 text-[10px] font-semibold text-white">Not received</button>
                     </>
 ```
+
 - `src/pages/ContractVault.jsx:967` — (element) <button>
 
 ```jsx
@@ -7354,6 +7720,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                     </>
                   ) : (
 ```
+
 - `src/pages/ContractVault.jsx:968` — (element) <button>
 
 ```jsx
@@ -7362,6 +7729,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   ) : (
                     <>
 ```
+
 - `src/pages/ContractVault.jsx:972` — (element) <button>
 
 ```jsx
@@ -7370,6 +7738,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                       <button type="button" onClick={() => updatePaymentStatus(proof.id, 'rejected')} className="rounded-full bg-rose-600 px-3 py-1 text-[10px] font-semibold text-white">Reject</button>
                     </>
 ```
+
 - `src/pages/ContractVault.jsx:973` — (element) <button>
 
 ```jsx
@@ -7378,6 +7747,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                     </>
                   )}
 ```
+
 - `src/pages/ContractVault.jsx:974` — (element) <button>
 
 ```jsx
@@ -7386,6 +7756,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   )}
                 </div>
 ```
+
 - `src/pages/ContractVault.jsx:1105` — (element) <Link>
 
 ```jsx
@@ -7394,6 +7765,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <button
               type="button"
 ```
+
 - `src/pages/ContractVault.jsx:1106` — (element) <Link>
 
 ```jsx
@@ -7402,6 +7774,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               type="button"
               disabled={!canCreateDraft(currentUser)}
 ```
+
 - `src/pages/ContractVault.jsx:1107` — (element) <button>
 
 ```jsx
@@ -7410,6 +7783,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               disabled={!canCreateDraft(currentUser)}
               onClick={() => setDraftOpen(true)}
 ```
+
 - `src/pages/ContractVault.jsx:1127` — (element) <button>
 
 ```jsx
@@ -7418,6 +7792,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 
                 <div className="mt-4 grid gap-3">
 ```
+
 - `src/pages/ContractVault.jsx:1253` — (element) <button>
 
 ```jsx
@@ -7426,6 +7801,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 
               <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
 ```
+
 - `src/pages/ContractVault.jsx:1270` — (element) <button>
 
 ```jsx
@@ -7434,6 +7810,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   type="button"
                   disabled={!canCreateDraft(currentUser) || saving}
 ```
+
 - `src/pages/ContractVault.jsx:1271` — (element) <button>
 
 ```jsx
@@ -7442,23 +7819,24 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                   disabled={!canCreateDraft(currentUser) || saving}
                   onClick={handleCreateDraft}
 ```
+
 ## 5) Backend Mapping (Frontend → Express → Controller → Service/DB)
 
-| Frontend call (path:line) | Express mount | Route definition | Controller file | Handler |
-|---|---|---|---|---|
-| GET /documents/contracts (src/pages/ContractVault.jsx:325) | /api/documents -> server/routes/documentRoutes.js:114 | GET /contracts (server/routes/documentRoutes.js:29) | - | getContracts |
-| GET /payment-proofs?contract_id=${encodeURIComponent(contractId)} (src/pages/ContractVault.jsx:373) | - | - | - | - |
-| GET /documents/contracts/${encodeURIComponent(contractId)}/audit (src/pages/ContractVault.jsx:391) | /api/documents -> server/routes/documentRoutes.js:114 | - | - | - |
-| POST /payment-proofs (src/pages/ContractVault.jsx:458) | /api/payment-proofs -> server/routes/paymentProofRoutes.js:145 | POST / (server/routes/paymentProofRoutes.js:8) | server/controllers/paymentProofController.js | postPaymentProof |
-| GET /payment-proofs/${encodeURIComponent(proofId)} (src/pages/ContractVault.jsx:476) | /api/payment-proofs -> server/routes/paymentProofRoutes.js:145 | - | - | - |
-| GET /calls/by-contract/${encodeURIComponent(selected.id)} (src/pages/ContractVault.jsx:551) | /api/calls -> server/routes/callSessionRoutes.js:134 | - | - | - |
-| GET /documents/contracts/draft (src/pages/ContractVault.jsx:617) | /api/documents -> server/routes/documentRoutes.js:114 | - | - | - |
-| GET /documents/contracts/${selected.id}/signatures (src/pages/ContractVault.jsx:711) | /api/documents -> server/routes/documentRoutes.js:114 | - | - | - |
-| GET /documents/contracts/${selected.id}/signatures (src/pages/ContractVault.jsx:725) | /api/documents -> server/routes/documentRoutes.js:114 | - | - | - |
-| POST /documents/contracts/${selected.id}/sign-session (src/pages/ContractVault.jsx:743) | /api/documents -> server/routes/documentRoutes.js:114 | - | - | - |
-| GET /documents/contracts/${selected.id}/artifact (src/pages/ContractVault.jsx:772) | /api/documents -> server/routes/documentRoutes.js:114 | - | - | - |
-| GET /documents/contracts/${selected.id}/artifact (src/pages/ContractVault.jsx:786) | /api/documents -> server/routes/documentRoutes.js:114 | - | - | - |
-| POST /calls/${encodeURIComponent(call.id)}/recording/viewed (src/pages/ContractVault.jsx:1023) | /api/calls -> server/routes/callSessionRoutes.js:134 | - | - | - |
+| Frontend call (path:line)                                                                           | Express mount                                                  | Route definition                                    | Controller file                              | Handler          |
+| --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | --------------------------------------------------- | -------------------------------------------- | ---------------- |
+| GET /documents/contracts (src/pages/ContractVault.jsx:325)                                          | /api/documents -> server/routes/documentRoutes.js:114          | GET /contracts (server/routes/documentRoutes.js:29) | -                                            | getContracts     |
+| GET /payment-proofs?contract_id=${encodeURIComponent(contractId)} (src/pages/ContractVault.jsx:373) | -                                                              | -                                                   | -                                            | -                |
+| GET /documents/contracts/${encodeURIComponent(contractId)}/audit (src/pages/ContractVault.jsx:391)  | /api/documents -> server/routes/documentRoutes.js:114          | -                                                   | -                                            | -                |
+| POST /payment-proofs (src/pages/ContractVault.jsx:458)                                              | /api/payment-proofs -> server/routes/paymentProofRoutes.js:145 | POST / (server/routes/paymentProofRoutes.js:8)      | server/controllers/paymentProofController.js | postPaymentProof |
+| GET /payment-proofs/${encodeURIComponent(proofId)} (src/pages/ContractVault.jsx:476)                | /api/payment-proofs -> server/routes/paymentProofRoutes.js:145 | -                                                   | -                                            | -                |
+| GET /calls/by-contract/${encodeURIComponent(selected.id)} (src/pages/ContractVault.jsx:551)         | /api/calls -> server/routes/callSessionRoutes.js:134           | -                                                   | -                                            | -                |
+| GET /documents/contracts/draft (src/pages/ContractVault.jsx:617)                                    | /api/documents -> server/routes/documentRoutes.js:114          | -                                                   | -                                            | -                |
+| GET /documents/contracts/${selected.id}/signatures (src/pages/ContractVault.jsx:711)                | /api/documents -> server/routes/documentRoutes.js:114          | -                                                   | -                                            | -                |
+| GET /documents/contracts/${selected.id}/signatures (src/pages/ContractVault.jsx:725)                | /api/documents -> server/routes/documentRoutes.js:114          | -                                                   | -                                            | -                |
+| POST /documents/contracts/${selected.id}/sign-session (src/pages/ContractVault.jsx:743)             | /api/documents -> server/routes/documentRoutes.js:114          | -                                                   | -                                            | -                |
+| GET /documents/contracts/${selected.id}/artifact (src/pages/ContractVault.jsx:772)                  | /api/documents -> server/routes/documentRoutes.js:114          | -                                                   | -                                            | -                |
+| GET /documents/contracts/${selected.id}/artifact (src/pages/ContractVault.jsx:786)                  | /api/documents -> server/routes/documentRoutes.js:114          | -                                                   | -                                            | -                |
+| POST /calls/${encodeURIComponent(call.id)}/recording/viewed (src/pages/ContractVault.jsx:1023)      | /api/calls -> server/routes/callSessionRoutes.js:134           | -                                                   | -                                            | -                |
 
 ## 6) How to Edit Safely
 
@@ -7468,4 +7846,3 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
-

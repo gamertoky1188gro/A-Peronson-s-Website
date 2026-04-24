@@ -27,78 +27,115 @@
     - POST /api/calls (start call)
 */
 /* global process */
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { flushSync } from 'react-dom'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Bell, DollarSign, FileText, LayoutDashboard, Menu, MessageSquare, Moon, NotebookPen, Search, ShieldCheck, Sun } from 'lucide-react'
-import { motion as Motion, useMotionValue, useReducedMotion, useSpring } from 'framer-motion'
-import { apiRequest, clearSession, getCurrentUser, getRoleHome, getToken } from '../lib/auth'
-import { connectNotificationsRealtime, subscribeNotificationsRealtime } from '../lib/notificationsRealtime'
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { flushSync } from "react-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  Bell,
+  DollarSign,
+  FileText,
+  LayoutDashboard,
+  Menu,
+  MessageSquare,
+  Moon,
+  NotebookPen,
+  Search,
+  ShieldCheck,
+  Sun,
+} from "lucide-react";
+import {
+  motion as Motion,
+  useMotionValue,
+  useReducedMotion,
+  useSpring,
+} from "framer-motion";
+import {
+  apiRequest,
+  clearSession,
+  getCurrentUser,
+  getRoleHome,
+  getToken,
+} from "../lib/auth";
+import {
+  connectNotificationsRealtime,
+  subscribeNotificationsRealtime,
+} from "../lib/notificationsRealtime";
 
 // Public navigation (shown for logged-out visitors).
 const publicLinks = [
-  { to: '/pricing', label: 'Pricing' },
-  { to: '/about', label: 'About' },
-  { to: '/help', label: 'Help' },
-  { to: '/support', label: 'Support' },
-]
+  { to: "/pricing", label: "Pricing" },
+  { to: "/about", label: "About" },
+  { to: "/help", label: "Help" },
+  { to: "/support", label: "Support" },
+];
 
 // Auth navigation (shown for logged-in users). Each item maps to a page route + lucide icon.
 const authenticatedLinks = [
-  { to: '/feed', label: 'Feed', icon: LayoutDashboard },
-  { to: '/feed/manage', label: 'Manage Feeds', icon: NotebookPen },
-  { to: '/search', label: 'Search', icon: Search },
-  { to: '/pricing', label: 'Pricing', icon: DollarSign },
-  { to: '/contracts', label: 'Contracts', icon: FileText },
-  { to: '/notifications', label: 'Notifications', icon: Bell },
-  { to: '/chat', label: 'Chat', icon: MessageSquare },
-  { to: '/verification', label: 'Verification', icon: ShieldCheck },
-  { to: '/admin', label: 'Admin', icon: ShieldCheck, roles: ['owner', 'admin'] },
-]
+  { to: "/feed", label: "Feed", icon: LayoutDashboard },
+  { to: "/feed/manage", label: "Manage Feeds", icon: NotebookPen },
+  { to: "/search", label: "Search", icon: Search },
+  { to: "/pricing", label: "Pricing", icon: DollarSign },
+  { to: "/contracts", label: "Contracts", icon: FileText },
+  { to: "/notifications", label: "Notifications", icon: Bell },
+  { to: "/chat", label: "Chat", icon: MessageSquare },
+  { to: "/verification", label: "Verification", icon: ShieldCheck },
+  {
+    to: "/admin",
+    label: "Admin",
+    icon: ShieldCheck,
+    roles: ["owner", "admin"],
+  },
+];
 
 // Premium-feeling easing curve used across nav animations.
-const easePremium = [0.16, 1, 0.3, 1]
+const easePremium = [0.16, 1, 0.3, 1];
 
 // Utility: keep values within a range (used for magnetic hover translation).
 function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value))
+  return Math.max(min, Math.min(max, value));
 }
 
 function MagneticNavLink({ to, label, active }) {
   // Reduced motion: when user prefers reduced motion, disable the magnetic movement.
-  const reduceMotion = useReducedMotion()
+  const reduceMotion = useReducedMotion();
   // Motion values hold the current offset; springs smooth the movement.
-  const x = useMotionValue(0)
-  const y = useMotionValue(0)
-  const springX = useSpring(x, { stiffness: 500, damping: 32, mass: 0.6 })
-  const springY = useSpring(y, { stiffness: 500, damping: 32, mass: 0.6 })
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const springX = useSpring(x, { stiffness: 500, damping: 32, mass: 0.6 });
+  const springY = useSpring(y, { stiffness: 500, damping: 32, mass: 0.6 });
 
   // Active state changes typography + color (also used by the moving `layoutId` pill below).
   const className = `relative inline-flex items-center rounded-full px-3 py-2 text-sm transition-colors ${
     active
-      ? 'font-semibold text-gtBlue'
-      : 'text-slate-600 hover:text-gtBlue dark:text-slate-300 dark:hover:text-gtBlue'
-  }`
+      ? "font-semibold text-gtBlue"
+      : "text-slate-600 hover:text-gtBlue dark:text-slate-300 dark:hover:text-gtBlue"
+  }`;
 
   return (
     <Link
       to={to}
       className={className}
       onMouseMove={(e) => {
-        if (reduceMotion) return
+        if (reduceMotion) return;
         // Compute relative mouse position so the label subtly "pulls" toward the cursor.
-        const rect = e.currentTarget.getBoundingClientRect()
-        const relX = e.clientX - rect.left - rect.width / 2
-        const relY = e.clientY - rect.top - rect.height / 2
-        const maxX = 3
-        const maxY = 2
-        x.set(clamp((relX / (rect.width / 2)) * maxX, -maxX, maxX))
-        y.set(clamp((relY / (rect.height / 2)) * maxY, -maxY, maxY))
+        const rect = e.currentTarget.getBoundingClientRect();
+        const relX = e.clientX - rect.left - rect.width / 2;
+        const relY = e.clientY - rect.top - rect.height / 2;
+        const maxX = 3;
+        const maxY = 2;
+        x.set(clamp((relX / (rect.width / 2)) * maxX, -maxX, maxX));
+        y.set(clamp((relY / (rect.height / 2)) * maxY, -maxY, maxY));
       }}
       onMouseLeave={() => {
         // Spring back to center when cursor leaves.
-        x.set(0)
-        y.set(0)
+        x.set(0);
+        y.set(0);
       }}
     >
       {active ? (
@@ -106,20 +143,23 @@ function MagneticNavLink({ to, label, active }) {
         <Motion.span
           layoutId="nav-active"
           className="absolute inset-x-1 inset-y-1 rounded-full bg-[rgba(10,102,194,0.10)] dark:bg-[rgba(10,102,194,0.16)]"
-          transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+          transition={{ type: "spring", stiffness: 420, damping: 32 }}
         />
       ) : null}
       {/* Text wrapper uses spring x/y to create magnetic feel. */}
-      <Motion.span style={{ x: springX, y: springY }} className="relative inline-block">
+      <Motion.span
+        style={{ x: springX, y: springY }}
+        className="relative inline-block"
+      >
         {label}
       </Motion.span>
     </Link>
-  )
+  );
 }
 
 function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
-  const reduceMotion = useReducedMotion()
-  const IconComponent = Icon
+  const reduceMotion = useReducedMotion();
+  const IconComponent = Icon;
   return (
     // Wrapper is `group` so the tooltip can animate on hover.
     <div className="group relative flex items-center justify-center">
@@ -127,15 +167,15 @@ function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
         // Hover bounce: subtle scale + lift to signal interactivity.
         whileHover={reduceMotion ? undefined : { scale: 1.08, y: -1 }}
         whileTap={reduceMotion ? undefined : { scale: 0.98, y: 0 }}
-        transition={{ type: 'spring', stiffness: 520, damping: 28 }}
+        transition={{ type: "spring", stiffness: 520, damping: 28 }}
       >
         <Link
           to={to}
           // Visual: rounded icon button with soft hover background (light + dark).
           className={`relative rounded-full p-2 transition-colors${
             active
-              ? 'text-gtBlue'
-              : 'text-slate-600 hover:text-gtBlue dark:text-slate-300 dark:hover:text-gtBlue'
+              ? "text-gtBlue"
+              : "text-slate-600 hover:text-gtBlue dark:text-slate-300 dark:hover:text-gtBlue"
           }hover:bg-slate-100/50 dark:hover:bg-slate-800/50`}
           aria-label={label}
         >
@@ -144,7 +184,7 @@ function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
             <Motion.span
               layoutId="nav-active"
               className="absolute inset-0 rounded-full bg-[rgba(10,102,194,0.10)] dark:bg-[rgba(10,102,194,0.16)]"
-              transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+              transition={{ type: "spring", stiffness: 420, damping: 32 }}
             />
           ) : null}
           <span className="relative inline-flex">
@@ -165,275 +205,326 @@ function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
         {label}
       </span>
     </div>
-  )
+  );
 }
 
 export default function NavBar() {
   // Theme preference: read on first render; subsequent changes sync to <html class="dark"> + localStorage.
-  const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark')
+  const [dark, setDark] = useState(
+    () => localStorage.getItem("theme") === "dark",
+  );
   // Mobile nav drawer open/close state.
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false);
   // Global user search input + dropdown state (suggestions list).
-  const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState([])
-  const [searchLoading, setSearchLoading] = useState(false)
-  const [searchOpen, setSearchOpen] = useState(false)
-  const [searchError, setSearchError] = useState('')
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchError, setSearchError] = useState("");
   // Unread badge count for notifications icon.
-  const [unreadCount, setUnreadCount] = useState(0)
+  const [unreadCount, setUnreadCount] = useState(0);
   // Small ephemeral feedback strings for inline actions (follow/connect/message/call).
-  const [actionStatus, setActionStatus] = useState('')
+  const [actionStatus, setActionStatus] = useState("");
   // Used to disable only the button that's currently running (prevents double-submits).
-  const [actionBusyKey, setActionBusyKey] = useState('')
+  const [actionBusyKey, setActionBusyKey] = useState("");
 
   // Current route used to highlight active link and to re-run unread refresh on navigation.
-  const location = useLocation()
-  const navigate = useNavigate()
+  const location = useLocation();
+  const navigate = useNavigate();
   // Session user is stored client-side; when absent we show public links.
-  const user = getCurrentUser()
-  const userId = user?.id || ''
+  const user = getCurrentUser();
+  const userId = user?.id || "";
   // Ref to focus the search input via Ctrl/Cmd+K.
-  const searchInputRef = useRef(null)
+  const searchInputRef = useRef(null);
   // Used to render the correct keyboard shortcut hint depending on platform.
-  const isMac = useMemo(() => (typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)), [])
+  const isMac = useMemo(
+    () =>
+      typeof navigator !== "undefined" &&
+      /Mac|iPhone|iPad|iPod/.test(navigator.platform),
+    [],
+  );
 
   useEffect(() => {
     // Toggle `.dark` class on <html> so Tailwind `dark:` variants activate.
-    const root = document.documentElement
+    const root = document.documentElement;
     if (dark) {
-      root.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
+      root.classList.add("dark");
+      localStorage.setItem("theme", "dark");
     } else {
-      root.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
+      root.classList.remove("dark");
+      localStorage.setItem("theme", "light");
     }
-  }, [dark])
+  }, [dark]);
 
   useEffect(() => {
     // Global shortcut to focus search (mirrors modern SaaS patterns).
     const handler = (e) => {
-      const key = String(e.key || '').toLowerCase()
-      if (key !== 'k') return
-      if (!(e.ctrlKey || e.metaKey)) return
-      e.preventDefault()
-      searchInputRef.current?.focus?.()
-      setSearchOpen(true)
-    }
+      const key = String(e.key || "").toLowerCase();
+      if (key !== "k") return;
+      if (!(e.ctrlKey || e.metaKey)) return;
+      e.preventDefault();
+      searchInputRef.current?.focus?.();
+      setSearchOpen(true);
+    };
 
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [])
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   const refreshUnreadCount = useCallback(async () => {
     if (!userId) {
-      setUnreadCount(0)
-      return
+      setUnreadCount(0);
+      return;
     }
-    const token = getToken()
+    const token = getToken();
     if (!token) {
-      setUnreadCount(0)
-      return
+      setUnreadCount(0);
+      return;
     }
     try {
-      const data = await apiRequest('/notifications', { token })
-      const rows = Array.isArray(data) ? data : []
-      flushSync(() => { setUnreadCount(rows.filter((n) => !n?.read).length) })
-    } catch {
-      flushSync(() => { setUnreadCount(0) })
-    }
-  }, [userId])
-
-  useEffect(() => {
-    if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'test') return
-    refreshUnreadCount()
-  }, [refreshUnreadCount, location.pathname])
-
-  useEffect(() => {
-    if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'test') return undefined
-    if (!userId) return undefined
-    const token = getToken()
-    if (!token) return undefined
-
-    connectNotificationsRealtime(token)
-    const unsubscribe = subscribeNotificationsRealtime((msg) => {
-      if (!msg) return
-      if (msg.type === 'notification_created' || msg.type === 'notification_read') {
-        refreshUnreadCount()
-      }
-    })
-
-    return unsubscribe
-  }, [userId, refreshUnreadCount])
-
-  const fetchUserSuggestions = useCallback(async (query) => {
-    if (!userId) return
-    try {
-      const data = await apiRequest(`/users/search?q=${encodeURIComponent(query)}`, { token: getToken() })
-      flushSync(() => { setSearchResults(Array.isArray(data?.users) ? data.users : []) })
-    } catch (err) {
+      const data = await apiRequest("/notifications", { token });
+      const rows = Array.isArray(data) ? data : [];
       flushSync(() => {
-        setSearchResults([])
-        setSearchError(err.message || 'Search failed')
-      })
-    } finally {
-      flushSync(() => { setSearchLoading(false) })
+        setUnreadCount(rows.filter((n) => !n?.read).length);
+      });
+    } catch {
+      flushSync(() => {
+        setUnreadCount(0);
+      });
     }
-  }, [userId])
+  }, [userId]);
 
   useEffect(() => {
-    if (!userId) return undefined
+    if (
+      typeof process !== "undefined" &&
+      process.env &&
+      process.env.NODE_ENV === "test"
+    )
+      return;
+    refreshUnreadCount();
+  }, [refreshUnreadCount, location.pathname]);
 
-    const query = searchQuery.trim()
+  useEffect(() => {
+    if (
+      typeof process !== "undefined" &&
+      process.env &&
+      process.env.NODE_ENV === "test"
+    )
+      return undefined;
+    if (!userId) return undefined;
+    const token = getToken();
+    if (!token) return undefined;
+
+    connectNotificationsRealtime(token);
+    const unsubscribe = subscribeNotificationsRealtime((msg) => {
+      if (!msg) return;
+      if (
+        msg.type === "notification_created" ||
+        msg.type === "notification_read"
+      ) {
+        refreshUnreadCount();
+      }
+    });
+
+    return unsubscribe;
+  }, [userId, refreshUnreadCount]);
+
+  const fetchUserSuggestions = useCallback(
+    async (query) => {
+      if (!userId) return;
+      try {
+        const data = await apiRequest(
+          `/users/search?q=${encodeURIComponent(query)}`,
+          { token: getToken() },
+        );
+        flushSync(() => {
+          setSearchResults(Array.isArray(data?.users) ? data.users : []);
+        });
+      } catch (err) {
+        flushSync(() => {
+          setSearchResults([]);
+          setSearchError(err.message || "Search failed");
+        });
+      } finally {
+        flushSync(() => {
+          setSearchLoading(false);
+        });
+      }
+    },
+    [userId],
+  );
+
+  useEffect(() => {
+    if (!userId) return undefined;
+
+    const query = searchQuery.trim();
     if (query.length < 1) {
-      setSearchResults([])
-      setSearchError('')
-      return undefined
+      setSearchResults([]);
+      setSearchError("");
+      return undefined;
     }
 
-    setSearchLoading(true)
-    setSearchError('')
-    setActionStatus('')
+    setSearchLoading(true);
+    setSearchError("");
+    setActionStatus("");
 
     const timer = window.setTimeout(() => {
-      fetchUserSuggestions(query)
-    }, 250)
+      fetchUserSuggestions(query);
+    }, 250);
 
-    return () => window.clearTimeout(timer)
-  }, [fetchUserSuggestions, searchQuery, userId])
+    return () => window.clearTimeout(timer);
+  }, [fetchUserSuggestions, searchQuery, userId]);
 
   const handleLogout = () => {
-    clearSession()
-    navigate('/login')
-  }
+    clearSession();
+    navigate("/login");
+  };
 
   const updateRelationState = (targetId, relation) => {
-    if (!targetId) return
-    setSearchResults((previous) => previous.map((item) => (item.id === targetId ? { ...item, ...(relation || {}) } : item)))
-  }
+    if (!targetId) return;
+    setSearchResults((previous) =>
+      previous.map((item) =>
+        item.id === targetId ? { ...item, ...(relation || {}) } : item,
+      ),
+    );
+  };
 
   const followUser = async (targetId) => {
-    const token = getToken()
-    if (!targetId) return
+    const token = getToken();
+    if (!targetId) return;
     if (!token) {
-      setSearchError('Please login to follow users.')
-      return
+      setSearchError("Please login to follow users.");
+      return;
     }
 
-    const key = `follow:${targetId}`
-    setActionBusyKey(key)
-    setSearchError('')
-    setActionStatus('')
+    const key = `follow:${targetId}`;
+    setActionBusyKey(key);
+    setSearchError("");
+    setActionStatus("");
     try {
-      const response = await apiRequest(`/users/${targetId}/follow`, { method: 'POST', token })
-      updateRelationState(targetId, response?.relation || { following: true })
-      setActionStatus('Followed successfully.')
-      const query = searchQuery.trim()
-      if (query) fetchUserSuggestions(query)
+      const response = await apiRequest(`/users/${targetId}/follow`, {
+        method: "POST",
+        token,
+      });
+      updateRelationState(targetId, response?.relation || { following: true });
+      setActionStatus("Followed successfully.");
+      const query = searchQuery.trim();
+      if (query) fetchUserSuggestions(query);
     } catch (err) {
-      setSearchError(err.message || 'Unable to follow user')
-      setActionStatus('Follow failed.')
+      setSearchError(err.message || "Unable to follow user");
+      setActionStatus("Follow failed.");
     } finally {
-      setActionBusyKey('')
+      setActionBusyKey("");
     }
-  }
+  };
 
   const addFriend = async (targetId) => {
-    const token = getToken()
-    if (!targetId) return
+    const token = getToken();
+    if (!targetId) return;
     if (!token) {
-      setSearchError('Please login to add friends.')
-      return
+      setSearchError("Please login to add friends.");
+      return;
     }
 
-    const key = `friend:${targetId}`
-    setActionBusyKey(key)
-    setSearchError('')
-    setActionStatus('')
+    const key = `friend:${targetId}`;
+    setActionBusyKey(key);
+    setSearchError("");
+    setActionStatus("");
     try {
-      const response = await apiRequest(`/users/${targetId}/friend-request`, { method: 'POST', token })
-      updateRelationState(targetId, response?.relation || { friend_status: 'requested' })
-      setActionStatus('Friend request sent.')
-      const query = searchQuery.trim()
-      if (query) fetchUserSuggestions(query)
+      const response = await apiRequest(`/users/${targetId}/friend-request`, {
+        method: "POST",
+        token,
+      });
+      updateRelationState(
+        targetId,
+        response?.relation || { friend_status: "requested" },
+      );
+      setActionStatus("Friend request sent.");
+      const query = searchQuery.trim();
+      if (query) fetchUserSuggestions(query);
     } catch (err) {
-      setSearchError(err.message || 'Unable to add friend')
-      setActionStatus('Friend request failed.')
+      setSearchError(err.message || "Unable to add friend");
+      setActionStatus("Friend request failed.");
     } finally {
-      setActionBusyKey('')
+      setActionBusyKey("");
     }
-  }
-
+  };
 
   const messageFriend = async (targetId) => {
-    const token = getToken()
+    const token = getToken();
     if (!token) {
-      setSearchError('Please login to message friends.')
-      return
+      setSearchError("Please login to message friends.");
+      return;
     }
 
-    const key = `message:${targetId}`
-    setActionBusyKey(key)
-    setSearchError('')
+    const key = `message:${targetId}`;
+    setActionBusyKey(key);
+    setSearchError("");
     try {
       await apiRequest(`/messages/friend/${targetId}`, {
-        method: 'POST',
+        method: "POST",
         token,
-        body: { message: 'Hi! Great to connect with you.' },
-      })
-      setSearchOpen(false)
-      navigate('/chat')
+        body: { message: "Hi! Great to connect with you." },
+      });
+      setSearchOpen(false);
+      navigate("/chat");
     } catch (err) {
-      setSearchError(err.message || 'Unable to start direct message')
+      setSearchError(err.message || "Unable to start direct message");
     } finally {
-      setActionBusyKey('')
+      setActionBusyKey("");
     }
-  }
+  };
 
   const callFriend = async (targetId) => {
-    const token = getToken()
+    const token = getToken();
     if (!token) {
-      setSearchError('Please login to call friends.')
-      return
+      setSearchError("Please login to call friends.");
+      return;
     }
 
-    const key = `call:${targetId}`
-    setActionBusyKey(key)
-    setSearchError('')
+    const key = `call:${targetId}`;
+    setActionBusyKey(key);
+    setSearchError("");
     try {
       const result = await apiRequest(`/calls/friend/${targetId}/join`, {
-        method: 'POST',
+        method: "POST",
         token,
-      })
-      const callId = result?.call?.id
-      const matchId = result?.call?.match_id
-      if (!callId) throw new Error('Unable to create call session')
-      setSearchOpen(false)
-      navigate(`/call?callId=${encodeURIComponent(callId)}${matchId ? `&matchId=${encodeURIComponent(matchId)}` : ''}`)
+      });
+      const callId = result?.call?.id;
+      const matchId = result?.call?.match_id;
+      if (!callId) throw new Error("Unable to create call session");
+      setSearchOpen(false);
+      navigate(
+        `/call?callId=${encodeURIComponent(callId)}${matchId ? `&matchId=${encodeURIComponent(matchId)}` : ""}`,
+      );
     } catch (err) {
-      setSearchError(err.message || 'Unable to start friend call')
+      setSearchError(err.message || "Unable to start friend call");
     } finally {
-      setActionBusyKey('')
+      setActionBusyKey("");
     }
-  }
+  };
 
   // Add a ref to the mobile menu container
   const mobileMenuRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target)
+      ) {
         setMobileOpen(false);
       }
     };
 
     if (mobileOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     } else {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [mobileOpen]);
 
@@ -447,41 +538,70 @@ export default function NavBar() {
           {/* Left cluster: brand + primary nav (desktop). */}
           <div className="flex items-center gap-4">
             {/* Brand: routes to role home when authenticated, otherwise routes to landing page. */}
-            <Link to={user ? getRoleHome(user.role) : '/'} className="inline-flex items-center gap-2">
-              <span className="rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 px-2 py-0.5 text-xs font-semibold text-white">B2B</span>
-              <span className="text-lg font-bold text-slate-900 dark:text-white">GarTexHub</span>
+            <Link
+              to={user ? getRoleHome(user.role) : "/"}
+              className="inline-flex items-center gap-2"
+            >
+              <span className="rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 px-2 py-0.5 text-xs font-semibold text-white">
+                B2B
+              </span>
+              <span className="text-lg font-bold text-slate-900 dark:text-white">
+                GarTexHub
+              </span>
             </Link>
 
             {/* Desktop-only nav list (hidden on mobile). */}
             <div className="hidden items-center gap-4 md:flex">
-              {!user ? (
-                // Public Links (Text)
-                publicLinks.map(({ to, label }, idx) => (
-                  <Motion.div
-                    key={to}
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35, delay: idx ? 0.05 : 0, ease: easePremium }}
-                  >
-                    <MagneticNavLink to={to} label={label} active={location.pathname === to} />
-                  </Motion.div>
-                ))
-              ) : (
-                // Authenticated Links (Icons with Tooltip)
-                authenticatedLinks
-                  .filter((link) => !link.roles || link.roles.includes(String(user?.role || '').toLowerCase()))
-                  .map(({ to, label, icon: Icon }, idx) => (
-                  <Motion.div
-                    key={to}
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35, delay: idx ? 0.05 : 0, ease: easePremium }}
-                  >
-                    {/* IconNavLink = icon button + tooltip + animated active pill + unread ping for notifications. */}
-                    <IconNavLink to={to} label={label} Icon={Icon} active={location.pathname === to} badgeCount={to === '/notifications' ? unreadCount : 0} />
-                  </Motion.div>
-                ))
-              )}
+              {!user
+                ? // Public Links (Text)
+                  publicLinks.map(({ to, label }, idx) => (
+                    <Motion.div
+                      key={to}
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        duration: 0.35,
+                        delay: idx ? 0.05 : 0,
+                        ease: easePremium,
+                      }}
+                    >
+                      <MagneticNavLink
+                        to={to}
+                        label={label}
+                        active={location.pathname === to}
+                      />
+                    </Motion.div>
+                  ))
+                : // Authenticated Links (Icons with Tooltip)
+                  authenticatedLinks
+                    .filter(
+                      (link) =>
+                        !link.roles ||
+                        link.roles.includes(
+                          String(user?.role || "").toLowerCase(),
+                        ),
+                    )
+                    .map(({ to, label, icon: Icon }, idx) => (
+                      <Motion.div
+                        key={to}
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                          duration: 0.35,
+                          delay: idx ? 0.05 : 0,
+                          ease: easePremium,
+                        }}
+                      >
+                        {/* IconNavLink = icon button + tooltip + animated active pill + unread ping for notifications. */}
+                        <IconNavLink
+                          to={to}
+                          label={label}
+                          Icon={Icon}
+                          active={location.pathname === to}
+                          badgeCount={to === "/notifications" ? unreadCount : 0}
+                        />
+                      </Motion.div>
+                    ))}
             </div>
           </div>
 
@@ -498,8 +618,8 @@ export default function NavBar() {
                 value={searchQuery}
                 onChange={(e) => {
                   // Controlled input: update query state; dropdown opens as user types.
-                  setSearchQuery(e.target.value)
-                  setSearchOpen(true)
+                  setSearchQuery(e.target.value);
+                  setSearchOpen(true);
                 }}
                 onFocus={() => setSearchOpen(true)}
                 placeholder="Search users..."
@@ -507,63 +627,125 @@ export default function NavBar() {
               />
               {/* Shortcut hint chip shown inside the input (visual only). */}
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full shadow-borderless dark:shadow-borderlessDark bg-white/70 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-slate-500 dark:bg-slate-950/50 dark:text-slate-400">
-                {isMac ? 'Cmd K' : 'Ctrl K'}
+                {isMac ? "Cmd K" : "Ctrl K"}
               </span>
 
               {user && searchOpen && searchQuery.trim().length >= 1 ? (
                 <div className="absolute right-0 top-11 z-50 w-[360px] rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white p-2 shadow-xl dark:bg-slate-900">
-                  {searchLoading ? <p className="px-2 py-3 text-xs text-slate-500">Searching...</p> : null}
-                  {!searchLoading && searchError ? <p className="px-2 py-3 text-xs text-rose-500">{searchError}</p> : null}
-                  {!searchLoading && !searchError && searchResults.length === 0 ? <p className="px-2 py-3 text-xs text-slate-500">No users found.</p> : null}
-                  {!searchLoading && !searchError && searchResults.length > 0 ? <p className="px-2 pb-2 text-[11px] text-slate-500">Suggestions</p> : null}
-                  {actionStatus ? <p className="px-2 pb-2 text-[11px] text-emerald-600">{actionStatus}</p> : null}
+                  {searchLoading ? (
+                    <p className="px-2 py-3 text-xs text-slate-500">
+                      Searching...
+                    </p>
+                  ) : null}
+                  {!searchLoading && searchError ? (
+                    <p className="px-2 py-3 text-xs text-rose-500">
+                      {searchError}
+                    </p>
+                  ) : null}
+                  {!searchLoading &&
+                  !searchError &&
+                  searchResults.length === 0 ? (
+                    <p className="px-2 py-3 text-xs text-slate-500">
+                      No users found.
+                    </p>
+                  ) : null}
+                  {!searchLoading &&
+                  !searchError &&
+                  searchResults.length > 0 ? (
+                    <p className="px-2 pb-2 text-[11px] text-slate-500">
+                      Suggestions
+                    </p>
+                  ) : null}
+                  {actionStatus ? (
+                    <p className="px-2 pb-2 text-[11px] text-emerald-600">
+                      {actionStatus}
+                    </p>
+                  ) : null}
 
-                  {!searchLoading && !searchError && searchResults.map((result) => (
-                    <div key={result.id} className="mb-1 rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-2 last:mb-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <div>
-                          <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{result.name}{result.is_self ? ' (You)' : ''}</p>
-                          <p className="text-xs text-slate-500">{result.role} - {result.email}</p>
+                  {!searchLoading &&
+                    !searchError &&
+                    searchResults.map((result) => (
+                      <div
+                        key={result.id}
+                        className="mb-1 rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-2 last:mb-0"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div>
+                            <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                              {result.name}
+                              {result.is_self ? " (You)" : ""}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {result.role} - {result.email}
+                            </p>
+                          </div>
+                          {result.verified ? (
+                            <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                              Verified
+                            </span>
+                          ) : null}
                         </div>
-                        {result.verified ? <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">Verified</span> : null}
-                      </div>
 
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        <button
-                          disabled={result.is_self || result.following || actionBusyKey === `follow:${result.id}`}
-                          onClick={() => followUser(result.id)}
-                          className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs font-semibold text-sky-700 disabled:cursor-not-allowed disabled:opacity-60 dark:text-sky-300"
-                        >
-                          {actionBusyKey === `follow:${result.id}` ? 'Following...' : (result.is_self ? 'Follow' : (result.following ? 'Following' : 'Follow (optional)'))}
-                        </button>
-                        <button
-                          disabled={result.is_self || ['friends', 'requested', 'self'].includes(result.friend_status) || actionBusyKey === `friend:${result.id}`}
-                          onClick={() => addFriend(result.id)}
-                          className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs font-semibold text-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 dark:text-indigo-300"
-                        >
-                          {actionBusyKey === `friend:${result.id}` ? 'Sending...' : (result.is_self ? 'Add Friend' : (result.friend_status === 'incoming' ? 'Accept Friend' : 'Add Friend'))}
-                        </button>
-                        {result.friend_status === 'friends' ? (
-                          <>
-                            <button
-                              disabled={actionBusyKey === `message:${result.id}`}
-                              onClick={() => messageFriend(result.id)}
-                              className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs font-semibold text-emerald-700 disabled:cursor-not-allowed disabled:opacity-60 dark:text-emerald-300"
-                            >
-                              Message
-                            </button>
-                            <button
-                              disabled={actionBusyKey === `call:${result.id}`}
-                              onClick={() => callFriend(result.id)}
-                              className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs font-semibold text-violet-700 disabled:cursor-not-allowed disabled:opacity-60 dark:text-violet-300"
-                            >
-                              Call
-                            </button>
-                          </>
-                        ) : null}
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <button
+                            disabled={
+                              result.is_self ||
+                              result.following ||
+                              actionBusyKey === `follow:${result.id}`
+                            }
+                            onClick={() => followUser(result.id)}
+                            className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs font-semibold text-sky-700 disabled:cursor-not-allowed disabled:opacity-60 dark:text-sky-300"
+                          >
+                            {actionBusyKey === `follow:${result.id}`
+                              ? "Following..."
+                              : result.is_self
+                                ? "Follow"
+                                : result.following
+                                  ? "Following"
+                                  : "Follow (optional)"}
+                          </button>
+                          <button
+                            disabled={
+                              result.is_self ||
+                              ["friends", "requested", "self"].includes(
+                                result.friend_status,
+                              ) ||
+                              actionBusyKey === `friend:${result.id}`
+                            }
+                            onClick={() => addFriend(result.id)}
+                            className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs font-semibold text-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 dark:text-indigo-300"
+                          >
+                            {actionBusyKey === `friend:${result.id}`
+                              ? "Sending..."
+                              : result.is_self
+                                ? "Add Friend"
+                                : result.friend_status === "incoming"
+                                  ? "Accept Friend"
+                                  : "Add Friend"}
+                          </button>
+                          {result.friend_status === "friends" ? (
+                            <>
+                              <button
+                                disabled={
+                                  actionBusyKey === `message:${result.id}`
+                                }
+                                onClick={() => messageFriend(result.id)}
+                                className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs font-semibold text-emerald-700 disabled:cursor-not-allowed disabled:opacity-60 dark:text-emerald-300"
+                              >
+                                Message
+                              </button>
+                              <button
+                                disabled={actionBusyKey === `call:${result.id}`}
+                                onClick={() => callFriend(result.id)}
+                                className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs font-semibold text-violet-700 disabled:cursor-not-allowed disabled:opacity-60 dark:text-violet-300"
+                              >
+                                Call
+                              </button>
+                            </>
+                          ) : null}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               ) : null}
             </div>
@@ -574,8 +756,12 @@ export default function NavBar() {
                 className="inline-flex items-center gap-2 rounded-full shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:shadow-md dark:bg-slate-900 dark:text-slate-100"
                 aria-label="Toggle dark mode"
               >
-                {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                <span>{dark ? 'Light' : 'Dark'}</span>
+                {dark ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+                <span>{dark ? "Light" : "Dark"}</span>
               </button>
 
               {user ? (
@@ -599,14 +785,13 @@ export default function NavBar() {
               <button
                 onClick={() => setMobileOpen((v) => !v)}
                 className="inline-flex items-center justify-center rounded-full shadow-borderless dark:shadow-borderlessDark bg-white/70 p-2 text-slate-700 shadow-sm md:hidden dark:bg-slate-950/60 dark:text-slate-100"
-                aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+                aria-label={mobileOpen ? "Close menu" : "Open menu"}
               >
                 <Menu className="h-5 w-5" />
               </button>
             </div>
           </div>
         </div>
-
       </div>
 
       {mobileOpen ? (
@@ -622,40 +807,44 @@ export default function NavBar() {
             className="absolute left-4 right-4 top-20 rounded-2xl bg-white/90 p-3 shadow-2xl ring-1 ring-slate-200/70 backdrop-blur-md dark:bg-slate-950/85 dark:ring-slate-800/60"
           >
             <div className="space-y-1">
-              {!user ? (
-                publicLinks.map(({ to, label }) => (
-                  <Link
-                    key={to}
-                    to={to}
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100/60 active:scale-[0.98] dark:text-slate-100 dark:hover:bg-slate-800/50"
-                  >
-                    {label}
-                  </Link>
-                ))
-              ) : (
-                authenticatedLinks
-                  .filter((link) => !link.roles || link.roles.includes(String(user?.role || '').toLowerCase()))
-                  .map(({ to, label, icon }) => {
-                    const IconComponent = icon
-                    return (
-                      <Link
-                        key={to}
-                        to={to}
-                        onClick={() => setMobileOpen(false)}
-                        className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100/60 active:scale-[0.98] dark:text-slate-100 dark:hover:bg-slate-800/50"
-                      >
-                        <IconComponent className="h-4 w-4" />
-                        <span className="flex-1">{label}</span>
-                        {to === '/notifications' && unreadCount > 0 ? (
-                          <span className="rounded-full bg-gradient-to-tr from-red-500 to-pink-500 px-2 py-0.5 text-[11px] font-semibold text-white">
-                            {unreadCount > 99 ? '99+' : unreadCount}
-                          </span>
-                        ) : null}
-                      </Link>
+              {!user
+                ? publicLinks.map(({ to, label }) => (
+                    <Link
+                      key={to}
+                      to={to}
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100/60 active:scale-[0.98] dark:text-slate-100 dark:hover:bg-slate-800/50"
+                    >
+                      {label}
+                    </Link>
+                  ))
+                : authenticatedLinks
+                    .filter(
+                      (link) =>
+                        !link.roles ||
+                        link.roles.includes(
+                          String(user?.role || "").toLowerCase(),
+                        ),
                     )
-                  })
-              )}
+                    .map(({ to, label, icon }) => {
+                      const IconComponent = icon;
+                      return (
+                        <Link
+                          key={to}
+                          to={to}
+                          onClick={() => setMobileOpen(false)}
+                          className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100/60 active:scale-[0.98] dark:text-slate-100 dark:hover:bg-slate-800/50"
+                        >
+                          <IconComponent className="h-4 w-4" />
+                          <span className="flex-1">{label}</span>
+                          {to === "/notifications" && unreadCount > 0 ? (
+                            <span className="rounded-full bg-gradient-to-tr from-red-500 to-pink-500 px-2 py-0.5 text-[11px] font-semibold text-white">
+                              {unreadCount > 99 ? "99+" : unreadCount}
+                            </span>
+                          ) : null}
+                        </Link>
+                      );
+                    })}
 
               {!user ? (
                 <Link
@@ -668,7 +857,9 @@ export default function NavBar() {
               ) : null}
 
               <div className="mt-4 shadow-dividerT dark:shadow-dividerTDark pt-3">
-                <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Legal</p>
+                <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Legal
+                </p>
                 <Link
                   to="/terms"
                   onClick={() => setMobileOpen(false)}
@@ -689,5 +880,5 @@ export default function NavBar() {
         </div>
       ) : null}
     </nav>
-  )
+  );
 }

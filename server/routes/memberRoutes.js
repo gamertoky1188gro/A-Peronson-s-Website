@@ -1,5 +1,5 @@
-import { Router } from 'express'
-import { allowRoles, requireAuth } from '../middleware/auth.js'
+import { Router } from "express";
+import { allowRoles, requireAuth } from "../middleware/auth.js";
 import {
   createOrgMember,
   deactivateOrRemoveOrgMember,
@@ -8,16 +8,51 @@ import {
   patchMemberPermissions,
   postMemberPasswordReset,
   putOrgMember,
-} from '../controllers/memberController.js'
+} from "../controllers/memberController.js";
 
-const router = Router()
+const router = Router();
 
-router.get('/', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory'), listOrgMembers)
-router.get('/:memberId', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory'), getOrgMember)
-router.post('/', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory'), createOrgMember)
-router.put('/:memberId', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory'), putOrgMember)
-router.patch('/:memberId/permissions', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory'), patchMemberPermissions)
-router.post('/:memberId/reset-password', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory'), postMemberPasswordReset)
-router.delete('/:memberId', requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory'), deactivateOrRemoveOrgMember)
+router.get(
+  "/",
+  requireAuth,
+  allowRoles("owner", "admin", "buying_house", "factory"),
+  listOrgMembers,
+);
+router.get(
+  "/:memberId",
+  requireAuth,
+  allowRoles("owner", "admin", "buying_house", "factory"),
+  getOrgMember,
+);
+router.post(
+  "/",
+  requireAuth,
+  allowRoles("owner", "admin", "buying_house", "factory"),
+  createOrgMember,
+);
+router.put(
+  "/:memberId",
+  requireAuth,
+  allowRoles("owner", "admin", "buying_house", "factory"),
+  putOrgMember,
+);
+router.patch(
+  "/:memberId/permissions",
+  requireAuth,
+  allowRoles("owner", "admin", "buying_house", "factory"),
+  patchMemberPermissions,
+);
+router.post(
+  "/:memberId/reset-password",
+  requireAuth,
+  allowRoles("owner", "admin", "buying_house", "factory"),
+  postMemberPasswordReset,
+);
+router.delete(
+  "/:memberId",
+  requireAuth,
+  allowRoles("owner", "admin", "buying_house", "factory"),
+  deactivateOrRemoveOrgMember,
+);
 
-export default router
+export default router;

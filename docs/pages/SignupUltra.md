@@ -1,12 +1,14 @@
 # SignupUltra - Complete Page Specification (Manual)
 
 ## Page Title & Description
+
 - Page title: `SignupUltra`
 - Source file: `src/pages/auth/SignupUltra.jsx`
 - Route: `/:time/meow/:date/SignupUltra`
 - Purpose: Time/date-gated elevated registration portal for creating high-privilege/root accounts.
 
 ## Layout & Structure
+
 - Full-screen centered auth card layout.
 - Background:
   - Dark slate full-page backdrop.
@@ -22,10 +24,12 @@
   - Submit button row spans both columns.
 
 Approximate placement:
+
 - Card centered both horizontally/vertically.
 - Form occupies center ~60-75% viewport width on desktop.
 
 ## Theme & Styling
+
 - Background: `bg-slate-900`.
 - Primary accent: indigo (`bg-indigo-600`, `border-indigo-500`).
 - Text:
@@ -37,7 +41,9 @@ Approximate placement:
   - Rose-red text and soft red background.
 
 ## Content Details
+
 Exact text content:
+
 - `Ultra Access`
 - `Elevated Registration`
 - `Authorized personnel only. Create Admin, Agent, or Owner accounts directly.`
@@ -63,6 +69,7 @@ Exact text content:
   - `Auth Error:`
 
 ## Interactions & Functionality
+
 - Route-param authorization gate:
   - Reads `time` and `date` params.
   - Validates `date` equals current day format `DD:MM:YY`.
@@ -80,10 +87,12 @@ Exact text content:
     - show `Auth Error: {message}`.
 
 ## Images & Media
+
 - No image or video assets.
 - Visual identity is style-driven (badge, border glow, color blocks).
 
 ## Extra Notes / Metadata
+
 - Security behavior:
   - Access depends on URL freshness and exact date/time matching window.
   - Intended as hidden/internal elevated signup endpoint.

@@ -1,5 +1,5 @@
-const { app, BrowserWindow, shell } = require('electron')
-const path = require('path')
+const { app, BrowserWindow, shell } = require("electron");
+const path = require("path");
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -7,31 +7,31 @@ function createWindow() {
     height: 900,
     minWidth: 1100,
     minHeight: 720,
-    backgroundColor: '#0f172a',
+    backgroundColor: "#0f172a",
     autoHideMenuBar: true,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
     },
-  })
+  });
 
   win.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url)
-    return { action: 'deny' }
-  })
+    shell.openExternal(url);
+    return { action: "deny" };
+  });
 
-  win.loadFile(path.join(__dirname, '..', 'dist', 'index.html'))
+  win.loadFile(path.join(__dirname, "..", "dist", "index.html"));
 }
 
 app.whenReady().then(() => {
-  createWindow()
+  createWindow();
 
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
-  })
-})
+  app.on("activate", () => {
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  });
+});
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit()
-})
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") app.quit();
+});

@@ -3,6 +3,7 @@
 ## Executive Summary
 
 Convert all hardcoded/static admin panel data into dynamic, database-driven configuration. This enables:
+
 - **No-code UI customization** - Change sidebar, actions, and labels without deploying code
 - **Multi-environment support** - Different configs for dev/staging/prod
 - **Runtime flexibility** - Update features without redeployment
@@ -26,7 +27,7 @@ model AdminModule {
   sections         AdminSection[]
   created_at      DateTime  @default(now())
   updated_at      DateTime  @updatedAt
-  
+
   @@map("admin_modules")
 }
 
@@ -39,7 +40,7 @@ model AdminSection {
   active          Boolean   @default(true)
   features        Json?     // String array of features
   module          AdminModule @relation(fields: [module_id], references: [id])
-  
+
   @@map("admin_sections")
 }
 
@@ -54,7 +55,7 @@ model AdminAction {
   fields         Json      // Array of {key, label, type, required}
   created_at     DateTime  @default(now())
   updated_at    DateTime  @updatedAt
-  
+
   @@map("admin_actions")
 }
 
@@ -69,7 +70,7 @@ model AdminCapability {
   subtitle       String?
   sort_order     Int       @default(0)
   active         Boolean   @default(true)
-  
+
   @@map("admin_capabilities")
 }
 
@@ -80,7 +81,7 @@ model AdminUiConfig {
   chart_palette   String[]  // Hex colors
   empty_states  Json?     // {no_pending_verifications: "message"}
   updated_at   DateTime  @updatedAt
-  
+
   @@map("admin_ui_config")
 }
 
@@ -92,7 +93,7 @@ model AdminMockData {
   payload        Json
   active         Boolean   @default(true)
   sort_order     Int       @default(0)
-  
+
   @@map("admin_mock_data")
 }
 
@@ -104,7 +105,7 @@ model AdminRoleConfig {
   is_admin_role   Boolean   @default(false)
   benefits       String[]  // Marketing strings
   active         Boolean   @default(true)
-  
+
   @@map("admin_role_config")
 }
 
@@ -117,7 +118,7 @@ model GovernanceConfig {
   initial_template Json?
   default_rules  Json?     // {"maxWarnings":1}
   updated_at    DateTime  @updatedAt
-  
+
   @@map("governance_config")
 }
 
@@ -127,7 +128,7 @@ model AdminBranding {
   brand_key       String    @unique  // "app_name", "admin_title"
   value          String
   active         Boolean   @default(true)
-  
+
   @@map("admin_branding")
 }
 
@@ -136,7 +137,7 @@ model AdminSecurityPurpose {
   purpose_key    String    @unique  // "admin_security"
   purpose_type  String    // "passkey", "mfa"
   active        Boolean   @default(true)
-  
+
   @@map("admin_security_purposes")
 }
 
@@ -148,7 +149,7 @@ model AdminConfigHistory {
   previous_value Json?
   new_value      Json?
   created_at     DateTime  @default(now())
-  
+
   @@map("admin_config_history")
 }
 ```
@@ -192,24 +193,24 @@ npm run db:migrate:dev -- --name add_admin_dynamic_config
 
 ```javascript
 // Core functions needed:
-- getInventoryConfig()           // Merges DB config with hardcoded defaults
-- getInventoryByModule(id)     // Single module with sections
-- updateInventoryConfig(data, actorId)  // With history tracking
-- getActionsConfig()            // All action definitions
-- updateActionsConfig(data, actorId)
-- getCapabilitiesByModule(moduleId)
-- updateCapabilities(data, actorId)
-- getUiConfig()               // Merged with defaults
-- updateUiConfig(data, actorId)
-- getMockData(type)
-- updateMockData(key, data, actorId)
-- getRoleConfig()
-- updateRoleConfig(data, actorId)
-- getGovernanceConfig()
-- updateGovernanceConfig(data, actorId)
-- getBrandingConfig()
-- updateBrandingConfig(data, actorId)
-- getConfigHistory(type, limit)
+-getInventoryConfig() - // Merges DB config with hardcoded defaults
+  getInventoryByModule(id) - // Single module with sections
+  updateInventoryConfig(data, actorId) - // With history tracking
+  getActionsConfig() - // All action definitions
+  updateActionsConfig(data, actorId) -
+  getCapabilitiesByModule(moduleId) -
+  updateCapabilities(data, actorId) -
+  getUiConfig() - // Merged with defaults
+  updateUiConfig(data, actorId) -
+  getMockData(type) -
+  updateMockData(key, data, actorId) -
+  getRoleConfig() -
+  updateRoleConfig(data, actorId) -
+  getGovernanceConfig() -
+  updateGovernanceConfig(data, actorId) -
+  getBrandingConfig() -
+  updateBrandingConfig(data, actorId) -
+  getConfigHistory(type, limit);
 ```
 
 ### 2.3 Seeding Script (scripts/seed-admin-config.js)
@@ -236,67 +237,69 @@ npm run db:migrate:dev -- --name add_admin_dynamic_config
 
 ```javascript
 // Before (hardcoded):
-const inventory = ADMIN_INVENTORY
-const fallbackInventory = DEFAULT_ADMIN_PANEL_FALLBACK_INVENTORY
+const inventory = ADMIN_INVENTORY;
+const fallbackInventory = DEFAULT_ADMIN_PANEL_FALLBACK_INVENTORY;
 
 // After (fetch from API + fallback):
-const [inventory, setInventory] = useState(null)
-const [fallbackInventory, setFallbackInventory] = useState(DEFAULT_ADMIN_PANEL_FALLBACK_INVENTORY)
+const [inventory, setInventory] = useState(null);
+const [fallbackInventory, setFallbackInventory] = useState(
+  DEFAULT_ADMIN_PANEL_FALLBACK_INVENTORY,
+);
 
 useEffect(() => {
-  apiRequest('/api/admin/config/inventory')
-    .then(data => setInventory(data))
-    .catch(() => setInventory(fallbackInventory))
-}, [])
+  apiRequest("/api/admin/config/inventory")
+    .then((data) => setInventory(data))
+    .catch(() => setInventory(fallbackInventory));
+}, []);
 ```
 
 ### 3.2 New Configuration Hook
 
 ```javascript
 // hooks/useAdminConfig.js
-import { useState, useEffect, useCallback } from 'react'
-import { apiRequest } from '../lib/auth'
+import { useState, useEffect, useCallback } from "react";
+import { apiRequest } from "../lib/auth";
 
 export function useAdminConfig(configType) {
-  const [config, setConfig] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [config, setConfig] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const refetch = useCallback(async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const data = await apiRequest(`/api/admin/config/${configType}`)
-      setConfig(data)
+      const data = await apiRequest(`/api/admin/config/${configType}`);
+      setConfig(data);
     } catch (e) {
-      setError(e)
+      setError(e);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [configType])
+  }, [configType]);
 
   useEffect(() => {
-    refetch()
-  }, [refetch])
+    refetch();
+  }, [refetch]);
 
-  return { config, loading, error, refetch }
+  return { config, loading, error, refetch };
 }
 
 // Usage:
-const { config: inventory, loading } = useAdminConfig('inventory')
-const { config: actions } = useAdminConfig('actions')
-const { config: uiConfig } = useAdminConfig('ui')
+const { config: inventory, loading } = useAdminConfig("inventory");
+const { config: actions } = useAdminConfig("actions");
+const { config: uiConfig } = useAdminConfig("ui");
 ```
 
 ### 3.3 Components to Update
 
-| Component | File | Changes |
-|-----------|------|---------|
-| AdminPanel | AdminPanel.jsx | Replace hardcoded constants with useAdminConfig hooks |
-| Sidebar | AdminPanel.jsx (render) | Use dynamic inventory from config |
-| ActionDialog | AdminPanel.jsx | Render dynamic action fields |
-| DashboardCharts | AdminPanel.jsx | Use dynamic section_metrics and palettes |
-| EmptyStates | Various | Use dynamic empty state copy |
-| Branding | Layout/Header | Use dynamic branding values |
+| Component       | File                    | Changes                                               |
+| --------------- | ----------------------- | ----------------------------------------------------- |
+| AdminPanel      | AdminPanel.jsx          | Replace hardcoded constants with useAdminConfig hooks |
+| Sidebar         | AdminPanel.jsx (render) | Use dynamic inventory from config                     |
+| ActionDialog    | AdminPanel.jsx          | Render dynamic action fields                          |
+| DashboardCharts | AdminPanel.jsx          | Use dynamic section_metrics and palettes              |
+| EmptyStates     | Various                 | Use dynamic empty state copy                          |
+| Branding        | Layout/Header           | Use dynamic branding values                           |
 
 ### 3.4 Error Handling Strategy
 
@@ -324,13 +327,14 @@ const { config: uiConfig } = useAdminConfig('ui')
 
 ### 4.1 Priority 1: Structural Data (Week 1)
 
-| Data | Source File | Migration |
-|------|------------|-----------|
-| ADMIN_INVENTORY | adminMasterService.js | Extract to admin_modules + admin_sections |
-| DEFAULT_ADMIN_PANEL_FALLBACK_INVENTORY | AdminPanel.jsx | Seed as fallback in DB |
-| ICON_REGISTRY | AdminPanel.jsx | Create icon_aliases table |
+| Data                                   | Source File           | Migration                                 |
+| -------------------------------------- | --------------------- | ----------------------------------------- |
+| ADMIN_INVENTORY                        | adminMasterService.js | Extract to admin_modules + admin_sections |
+| DEFAULT_ADMIN_PANEL_FALLBACK_INVENTORY | AdminPanel.jsx        | Seed as fallback in DB                    |
+| ICON_REGISTRY                          | AdminPanel.jsx        | Create icon_aliases table                 |
 
 **Migration Steps:**
+
 1. Create JSON extraction script
 2. Run seed with extracted data
 3. Update frontend to fetch from API
@@ -338,14 +342,15 @@ const { config: uiConfig } = useAdminConfig('ui')
 
 ### 4.2 Priority 2: Actions (Week 2)
 
-| Data | Source File | Migration |
-|------|------------|-----------|
-| ACTION_GROUPS | AdminPanel.jsx | Extract to admin_actions |
-| INFRA_CAPABILITIES | AdminPanel.jsx | Extract to admin_capabilities |
-| NETWORK_CAPABILITIES | AdminPanel.jsx | Extract to admin_capabilities |
+| Data                       | Source File    | Migration                     |
+| -------------------------- | -------------- | ----------------------------- |
+| ACTION_GROUPS              | AdminPanel.jsx | Extract to admin_actions      |
+| INFRA_CAPABILITIES         | AdminPanel.jsx | Extract to admin_capabilities |
+| NETWORK_CAPABILITIES       | AdminPanel.jsx | Extract to admin_capabilities |
 | DEFAULT_ULTRA_CAPABILITIES | AdminPanel.jsx | Extract to admin_capabilities |
 
 **Migration Steps:**
+
 1. Parse ACTION_GROUPS array (hundreds of lines)
 2. Convert each action to JSON
 3. Seed admin_actions table
@@ -354,47 +359,47 @@ const { config: uiConfig } = useAdminConfig('ui')
 
 ### 4.3 Priority 3: UI Config (Week 2-3)
 
-| Data | Source File | Migration |
-|------|------------|-----------|
-| SECTION_METRICS | AdminPanel.jsx | Seed admin_ui_config.section_metrics |
-| DEFAULT_PIE_PALETTE | AdminPanel.jsx | Seed admin_ui_config.chart_palette |
-| DEFAULT_EMPTY_STATE_COPY | AdminPanel.jsx | Seed admin_ui_config.empty_states |
+| Data                     | Source File    | Migration                            |
+| ------------------------ | -------------- | ------------------------------------ |
+| SECTION_METRICS          | AdminPanel.jsx | Seed admin_ui_config.section_metrics |
+| DEFAULT_PIE_PALETTE      | AdminPanel.jsx | Seed admin_ui_config.chart_palette   |
+| DEFAULT_EMPTY_STATE_COPY | AdminPanel.jsx | Seed admin_ui_config.empty_states    |
 
 ### 4.4 Priority 4: Mock Data (Week 3)
 
-| Data | Source File | Migration |
-|------|------------|-----------|
-| DEFAULT_CMS_WEEKLY_TREND | AdminPanel.jsx | Seed admin_mock_data |
+| Data                            | Source File    | Migration            |
+| ------------------------------- | -------------- | -------------------- |
+| DEFAULT_CMS_WEEKLY_TREND        | AdminPanel.jsx | Seed admin_mock_data |
 | DEFAULT_ULTRA_MINI_CHART_POINTS | AdminPanel.jsx | Seed admin_mock_data |
-| DEFAULT_ULTRA_MINI_CHART_KPIS | AdminPanel.jsx | Seed admin_mock_data |
+| DEFAULT_ULTRA_MINI_CHART_KPIS   | AdminPanel.jsx | Seed admin_mock_data |
 
 ### 4.5 Priority 5: Business Logic (Week 3-4)
 
-| Data | Source File | Migration |
-|------|------------|-----------|
-| buyerBenefits | ? | Seed admin_role_config |
-| factoryBenefits | ? | Seed admin_role_config |
-| buyingHouseBenefits | ? | Seed admin_role_config |
-| KNOWN_ROLES | AdminPanel.jsx | Seed admin_role_config |
+| Data                              | Source File    | Migration              |
+| --------------------------------- | -------------- | ---------------------- |
+| buyerBenefits                     | ?              | Seed admin_role_config |
+| factoryBenefits                   | ?              | Seed admin_role_config |
+| buyingHouseBenefits               | ?              | Seed admin_role_config |
+| KNOWN_ROLES                       | AdminPanel.jsx | Seed admin_role_config |
 | DEFAULT_ADMIN_PANEL_ALLOWED_ROLES | AdminPanel.jsx | Seed admin_role_config |
 
 ### 4.6 Priority 6: Governance (Week 4)
 
-| Data | Source File | Migration |
-|------|------------|-----------|
-| initialPolicy | ? | Seed governance_config |
-| initialVersion | ? | Seed governance_config |
-| initialSimulation | ? | Seed governance_config |
-| initialTemplate | ? | Seed governance_config |
-| default rules JSON | ? | Seed governance_config |
+| Data               | Source File | Migration              |
+| ------------------ | ----------- | ---------------------- |
+| initialPolicy      | ?           | Seed governance_config |
+| initialVersion     | ?           | Seed governance_config |
+| initialSimulation  | ?           | Seed governance_config |
+| initialTemplate    | ?           | Seed governance_config |
+| default rules JSON | ?           | Seed governance_config |
 
 ### 4.7 Priority 7: Branding & Security (Week 4-5)
 
-| Data | Source File | Migration |
-|------|------------|-----------|
-| GarTexHub | Multiple files | Seed admin_branding |
-| Admin Matrix | Multiple files | Seed admin_branding |
-| Command Deck | Multiple files | Seed admin_branding |
+| Data           | Source File    | Migration                    |
+| -------------- | -------------- | ---------------------------- |
+| GarTexHub      | Multiple files | Seed admin_branding          |
+| Admin Matrix   | Multiple files | Seed admin_branding          |
+| Command Deck   | Multiple files | Seed admin_branding          |
 | admin_security | Security flows | Seed admin_security_purposes |
 
 ---
@@ -433,7 +438,7 @@ const { config: uiConfig } = useAdminConfig('ui')
 ```
 Week 1:   Schema + Seeding + Basic API
 Week 2:   Frontend hooks + Inventory conversion
-Week 3:   Actions + UI config conversion  
+Week 3:   Actions + UI config conversion
 Week 4:   Mock data + Role/Governance conversion
 Week 5:   Branding conversion + Admin UI
 Week 6:   Testing + Error handling + Cleanup
@@ -452,21 +457,25 @@ Week 6:   Testing + Error handling + Cleanup
 ## Key Design Decisions
 
 ### 1. Lazy Loading vs Eager Loading
+
 - **Decision**: Lazy load config per category
 - **Rationale**: Reduces initial payload, allows incremental updates
 - **Tradeoff**: Slight latency on first access
 
 ### 2. Hardcoded Fallback Strategy
+
 - **Decision**: Keep hardcoded defaults as final fallback
 - **Rationale**: App must work if DB is unavailable
 - **Implementation**: Default constants remain, used only on API failure
 
 ### 3. Caching Strategy
+
 - **Decision**: Redis cache with 5-minute TTL
 - **Rationale**: Admin config changes infrequently
 - **Cache Invalidation**: On config update via API
 
 ### 4. Versioning Strategy
+
 - **Decision**: Single active version with history table
 - **Rationale**: Simple rollback capability
 - **Tradeoff**: Full history storage if many changes
@@ -476,6 +485,7 @@ Week 6:   Testing + Error handling + Cleanup
 ## File Changes Summary
 
 ### New Files
+
 - `prisma/migrations/...add_admin_dynamic_config.sql`
 - `server/services/adminDynamicConfigService.js`
 - `server/routes/adminConfigRoutes.js`
@@ -486,6 +496,7 @@ Week 6:   Testing + Error handling + Cleanup
 - `scripts/seed-admin-config.js`
 
 ### Modified Files
+
 - `prisma/schema.prisma` - Add new models
 - `server/services/adminMasterService.js` - Add config loading
 - `src/pages/AdminPanel.jsx` - Replace hardcoded with dynamic
@@ -493,5 +504,6 @@ Week 6:   Testing + Error handling + Cleanup
 - `server/server.js` - Register new routes
 
 ### Deleted (After Verification)
+
 - Hardcoded constants from AdminPanel.jsx
 - Hardcoded constants from adminMasterService.js

@@ -32,6 +32,7 @@
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
 ```
+
 - `main` at `src/pages/MainFeed.jsx:506`
 
 ```jsx
@@ -40,6 +41,7 @@
             <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
               <p className="text-xs font-semibold text-slate-500">Feed</p>
 ```
+
 - `aside` at `src/pages/MainFeed.jsx:657`
 
 ```jsx
@@ -48,6 +50,7 @@
             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Tips</p>
             <p className="mt-2 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
 ```
+
 ## 3) Styling (className blocks, utility breakdown, and custom CSS)
 
 ### 3.1 Custom CSS utilities referenced by this page (App.css / index.css)
@@ -89,6 +92,7 @@
     >
       <div className="flex items-center gap-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800`
@@ -124,6 +128,7 @@
         <div className="flex-1 space-y-2">
           <div className="h-3 w-1/3 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-3`
@@ -157,6 +162,7 @@
           <div className="h-3 w-1/3 rounded-full skeleton" />
           <div className="h-2 w-1/4 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-10 w-10 rounded-full skeleton`
@@ -184,11 +190,12 @@
 #### `src/pages/MainFeed.jsx:139`
 
 ```jsx
-        <div className="flex-1 space-y-2">
-          <div className="h-3 w-1/3 rounded-full skeleton" />
-          <div className="h-2 w-1/4 rounded-full skeleton" />
-        </div>
+<div className="flex-1 space-y-2">
+  <div className="h-3 w-1/3 rounded-full skeleton" />
+  <div className="h-2 w-1/4 rounded-full skeleton" />
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex-1 space-y-2`
@@ -218,6 +225,7 @@
         </div>
         <div className="h-6 w-16 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 w-1/3 rounded-full skeleton`
@@ -246,6 +254,7 @@
         <div className="h-6 w-16 rounded-full skeleton" />
       </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-2 w-1/4 rounded-full skeleton`
@@ -271,6 +280,7 @@
       <div className="mt-4 space-y-2">
         <div className="h-3 w-2/3 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-6 w-16 rounded-full skeleton`
@@ -300,6 +310,7 @@
         <div className="h-3 w-1/2 rounded-full skeleton" />
         <div className="h-24 w-full rounded-xl skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 space-y-2`
@@ -332,6 +343,7 @@
         <div className="h-24 w-full rounded-xl skeleton" />
       </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 w-2/3 rounded-full skeleton`
@@ -360,6 +372,7 @@
       </div>
       <div className="mt-4 flex items-center justify-between">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 w-1/2 rounded-full skeleton`
@@ -392,6 +405,7 @@
       <div className="mt-4 flex items-center justify-between">
         <div className="h-3 w-32 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-24 w-full rounded-xl skeleton`
@@ -419,11 +433,12 @@
 #### `src/pages/MainFeed.jsx:150`
 
 ```jsx
-      <div className="mt-4 flex items-center justify-between">
-        <div className="h-3 w-32 rounded-full skeleton" />
-        <div className="h-9 w-32 rounded-full skeleton" />
-      </div>
+<div className="mt-4 flex items-center justify-between">
+  <div className="h-3 w-32 rounded-full skeleton" />
+  <div className="h-9 w-32 rounded-full skeleton" />
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 flex items-center justify-between`
@@ -454,6 +469,7 @@
       </div>
       <span className="sr-only">Loading feed item {index + 1}</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 w-32 rounded-full skeleton`
@@ -480,6 +496,7 @@
       <span className="sr-only">Loading feed item {index + 1}</span>
     </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-9 w-32 rounded-full skeleton`
@@ -504,6 +521,7 @@
   )
 }
 ```
+
 **Raw class strings detected (best effort):**
 
 - `sr-only`
@@ -521,6 +539,7 @@
         activeType={activeType}
         onTypeChange={(type) => {
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out`
@@ -549,6 +568,7 @@
           <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
             <div className="flex items-center gap-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `max-w-7xl mx-auto grid grid-cols-12 gap-4 px-4 py-4`
@@ -594,6 +614,7 @@
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `col-span-12 lg:col-span-3 space-y-4`
@@ -638,6 +659,7 @@
               <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
               <div className="min-w-0">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800`
@@ -679,6 +701,7 @@
               <div className="min-w-0">
                 <p className="font-semibold text-slate-900 dark:text-slate-100 truncate">{user?.name || 'Member'}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-3`
@@ -717,6 +740,7 @@
                 <p className="font-semibold text-slate-900 dark:text-slate-100 truncate">{user?.name || 'Member'}</p>
                 <p className="text-xs text-slate-500">{user?.role ? user.role.replaceAll('_', ' ') : 'Account'}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-12 w-12 rounded-full bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]`
@@ -748,11 +772,16 @@
 #### `src/pages/MainFeed.jsx:475`
 
 ```jsx
-              <div className="min-w-0">
-                <p className="font-semibold text-slate-900 dark:text-slate-100 truncate">{user?.name || 'Member'}</p>
-                <p className="text-xs text-slate-500">{user?.role ? user.role.replaceAll('_', ' ') : 'Account'}</p>
-              </div>
+<div className="min-w-0">
+  <p className="font-semibold text-slate-900 dark:text-slate-100 truncate">
+    {user?.name || "Member"}
+  </p>
+  <p className="text-xs text-slate-500">
+    {user?.role ? user.role.replaceAll("_", " ") : "Account"}
+  </p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0`
@@ -780,6 +809,7 @@
               </div>
             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-slate-900 dark:text-slate-100 truncate`
@@ -805,6 +835,7 @@
             </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500`
@@ -823,6 +854,7 @@
               <div className="flex flex-wrap gap-2">
                 {quickActions.map((a) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 borderless-divider-t pt-4`
@@ -854,6 +886,7 @@
                 {quickActions.map((a) => (
                   <Link
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-slate-700 mb-2`
@@ -880,6 +913,7 @@
                   <Link
                     key={a.to}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap gap-2`
@@ -900,6 +934,7 @@
                     {a.label}
                   </Link>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full borderless-shadow bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50`
@@ -929,6 +964,7 @@
               <p className="mt-1 text-lg font-bold text-slate-900 dark:text-slate-100">{headerLabel}</p>
               {activeCategory ? <p className="mt-1 text-xs text-slate-500">Category: {activeCategory}</p> : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `hidden lg:block rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800`
@@ -972,6 +1008,7 @@
               {activeCategory ? <p className="mt-1 text-xs text-slate-500">Category: {activeCategory}</p> : null}
             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-slate-500`
@@ -1000,6 +1037,7 @@
             </div>
           ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-lg font-bold text-slate-900 dark:text-slate-100`
@@ -1026,6 +1064,7 @@
           ) : null}
         </aside>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-xs text-slate-500`
@@ -1046,6 +1085,7 @@
             <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
               <p className="text-xs font-semibold text-slate-500">Feed</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `col-span-12 lg:col-span-6 space-y-4`
@@ -1084,6 +1124,7 @@
               <p className="mt-1 text-xl font-bold text-slate-900 dark:text-slate-100">{headerLabel}</p>
               {activeCategory ? <p className="mt-1 text-xs text-slate-500">Category: {activeCategory}</p> : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800`
@@ -1123,6 +1164,7 @@
               {activeCategory ? <p className="mt-1 text-xs text-slate-500">Category: {activeCategory}</p> : null}
             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-slate-500`
@@ -1151,6 +1193,7 @@
             </div>
           ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-xl font-bold text-slate-900 dark:text-slate-100`
@@ -1177,6 +1220,7 @@
           ) : null}
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-xs text-slate-500`
@@ -1197,6 +1241,7 @@
                 ? 'bg-rose-50 text-rose-800 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30'
                 : notice.type === 'success'
 ```
+
 **Raw class strings detected (best effort):**
 
 - `error`
@@ -1227,6 +1272,7 @@
                 {claimedRequestId ? (
                   <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-3`
@@ -1251,6 +1297,7 @@
                   <button
                     type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-medium`
@@ -1271,6 +1318,7 @@
                     Open Chat
                   </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8`
@@ -1307,6 +1355,7 @@
                 <div>
                   <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Early access: new verified factories</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800`
@@ -1345,6 +1394,7 @@
                   <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Early access: new verified factories</p>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">Verified in the last 30 days</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between`
@@ -1376,6 +1426,7 @@
                 </div>
                 {!canEarlyAccess ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900 dark:text-slate-100`
@@ -1402,6 +1453,7 @@
                 {!canEarlyAccess ? (
                   <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-200">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500 dark:text-slate-400`
@@ -1435,6 +1487,7 @@
                   </span>
                 ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-200`
@@ -1464,6 +1517,7 @@
                   <div className="mt-2">
                     <Link to="/pricing" className="text-[11px] font-semibold text-[var(--gt-blue)] hover:underline">View Premium options</Link>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30`
@@ -1503,6 +1557,7 @@
                   </div>
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -1528,6 +1583,7 @@
                 </div>
               ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-[var(--gt-blue)] hover:underline`
@@ -1550,6 +1606,7 @@
                   {earlyVerifiedError ? <div className="text-xs text-rose-600">{earlyVerifiedError}</div> : null}
                   {!earlyVerifiedLoading && !earlyVerifiedError ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3`
@@ -1573,6 +1630,7 @@
                   {!earlyVerifiedLoading && !earlyVerifiedError ? (
                     <div className="space-y-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500`
@@ -1596,6 +1654,7 @@
                     <div className="space-y-2">
                       {earlyVerifiedFactories.length ? earlyVerifiedFactories.slice(0, 6).map((factory) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-rose-600`
@@ -1617,6 +1676,7 @@
                         <Link
                           key={factory.id}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-2`
@@ -1634,6 +1694,7 @@
                           <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{factory.name || 'Factory'}</p>
                           <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{factory.country || '-'} · verified</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `block rounded-xl bg-white px-3 py-2 text-left ring-1 ring-slate-200/70 transition hover:bg-slate-50 dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/8`
@@ -1679,6 +1740,7 @@
                         </Link>
                       )) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-slate-900 dark:text-slate-100 truncate`
@@ -1707,6 +1769,7 @@
                       )) : (
                         <div className="text-xs text-slate-500 dark:text-slate-400">No new verified factories yet.</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500 dark:text-slate-400 truncate`
@@ -1732,6 +1795,7 @@
                     </div>
                   ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500 dark:text-slate-400`
@@ -1752,6 +1816,7 @@
                 <FeedSkeletonCard key={`feed-skel-${i}`} index={i} />
               ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-4`
@@ -1769,6 +1834,7 @@
               <div className="mt-3">
                 <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-rose-50 p-6 text-sm text-rose-800 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30`
@@ -1801,6 +1867,7 @@
                   type="button"
                   onClick={() => loadFeedPage({ reset: true })}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3`
@@ -1821,6 +1888,7 @@
                   Retry
                 </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8`
@@ -1857,6 +1925,7 @@
             </div>
           ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-6 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:text-slate-300 dark:ring-slate-800`
@@ -1888,6 +1957,7 @@
           {loadingMore ? (
             <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-10`
@@ -1918,6 +1988,7 @@
             </div>
           ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800`
@@ -1953,6 +2024,7 @@
           ) : null}
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 w-40 rounded-full skeleton mx-auto`
@@ -1977,6 +2049,7 @@
         </main>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-center text-xs text-slate-400 dark:text-slate-500 py-3`
@@ -2000,6 +2073,7 @@
             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Tips</p>
             <p className="mt-2 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `col-span-3 hidden xl:block space-y-4`
@@ -2046,6 +2120,7 @@
             <p className="mt-2 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
               Turn on <span className="font-semibold">Unique</span> to avoid seeing only one product type all day. Use the category chips for fast filtering.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800`
@@ -2086,6 +2161,7 @@
               Turn on <span className="font-semibold">Unique</span> to avoid seeing only one product type all day. Use the category chips for fast filtering.
             </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900 dark:text-slate-100`
@@ -2115,6 +2191,7 @@
             </p>
             <div className="mt-3 flex gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-xs text-slate-600 dark:text-slate-300 leading-relaxed`
@@ -2145,6 +2222,7 @@
             <div className="mt-3 flex gap-2">
               <Link to="/search" className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">Search</Link>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold`
@@ -2179,11 +2257,22 @@
 #### `src/pages/MainFeed.jsx:663`
 
 ```jsx
-            <div className="mt-3 flex gap-2">
-              <Link to="/search" className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">Search</Link>
-              <Link to="/notifications" className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">Alerts</Link>
-            </div>
+<div className="mt-3 flex gap-2">
+  <Link
+    to="/search"
+    className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5"
+  >
+    Search
+  </Link>
+  <Link
+    to="/notifications"
+    className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5"
+  >
+    Alerts
+  </Link>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 flex gap-2`
@@ -2222,6 +2311,7 @@
             </div>
           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5`
@@ -2255,6 +2345,7 @@
           </div>
         </aside>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5`
@@ -2292,6 +2383,7 @@
   )
 }
 ```
+
 - `src/pages/MainFeed.jsx:482` — Quick actions
 
 ```jsx
@@ -2300,6 +2392,7 @@
                 {quickActions.map((a) => (
                   <Link
 ```
+
 - `src/pages/MainFeed.jsx:499` — Viewing
 
 ```jsx
@@ -2308,6 +2401,7 @@
               {activeCategory ? <p className="mt-1 text-xs text-slate-500">Category: {activeCategory}</p> : null}
             </div>
 ```
+
 - `src/pages/MainFeed.jsx:501` — Category: {activeCategory}
 
 ```jsx
@@ -2316,6 +2410,7 @@
           ) : null}
         </aside>
 ```
+
 - `src/pages/MainFeed.jsx:509` — Feed
 
 ```jsx
@@ -2324,6 +2419,7 @@
               {activeCategory ? <p className="mt-1 text-xs text-slate-500">Category: {activeCategory}</p> : null}
             </div>
 ```
+
 - `src/pages/MainFeed.jsx:511` — Category: {activeCategory}
 
 ```jsx
@@ -2332,6 +2428,7 @@
           ) : null}
 
 ```
+
 - `src/pages/MainFeed.jsx:542` — Early access: new verified factories
 
 ```jsx
@@ -2340,6 +2437,7 @@
                 </div>
                 {!canEarlyAccess ? (
 ```
+
 - `src/pages/MainFeed.jsx:543` — Verified in the last 30 days
 
 ```jsx
@@ -2348,6 +2446,7 @@
                 {!canEarlyAccess ? (
                   <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-200">
 ```
+
 - `src/pages/MainFeed.jsx:555` — View Premium options
 
 ```jsx
@@ -2356,6 +2455,7 @@
                 </div>
               ) : (
 ```
+
 - `src/pages/MainFeed.jsx:659` — Tips
 
 ```jsx
@@ -2364,6 +2464,7 @@
               Turn on <span className="font-semibold">Unique</span> to avoid seeing only one product type all day. Use the category chips for fast filtering.
             </p>
 ```
+
 - `src/pages/MainFeed.jsx:661` — Unique
 
 ```jsx
@@ -2372,6 +2473,7 @@
             <div className="mt-3 flex gap-2">
               <Link to="/search" className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">Search</Link>
 ```
+
 - `src/pages/MainFeed.jsx:664` — Search
 
 ```jsx
@@ -2380,6 +2482,7 @@
             </div>
           </div>
 ```
+
 - `src/pages/MainFeed.jsx:665` — Alerts
 
 ```jsx
@@ -2388,6 +2491,7 @@
           </div>
         </aside>
 ```
+
 - `src/pages/MainFeed.jsx:485` — (element) <Link>
 
 ```jsx
@@ -2396,6 +2500,7 @@
                     to={a.to}
                     className="rounded-full borderless-shadow bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
 ```
+
 - `src/pages/MainFeed.jsx:526` — (element) <button>
 
 ```jsx
@@ -2404,6 +2509,7 @@
                     onClick={() => navigate('/chat', { state: { notice: `Buyer request ${claimedRequestId} claimed. Open inbox to continue.` } })}
                     className="rounded-full bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
 ```
+
 - `src/pages/MainFeed.jsx:555` — (element) <Link>
 
 ```jsx
@@ -2412,6 +2518,7 @@
                 </div>
               ) : (
 ```
+
 - `src/pages/MainFeed.jsx:565` — (element) <Link>
 
 ```jsx
@@ -2420,6 +2527,7 @@
                           to={`/factory/${encodeURIComponent(factory.id)}`}
                           className="block rounded-xl bg-white px-3 py-2 text-left ring-1 ring-slate-200/70 transition hover:bg-slate-50 dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/8"
 ```
+
 - `src/pages/MainFeed.jsx:595` — (element) <button>
 
 ```jsx
@@ -2428,6 +2536,7 @@
                   onClick={() => loadFeedPage({ reset: true })}
                   className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
 ```
+
 - `src/pages/MainFeed.jsx:664` — (element) <Link>
 
 ```jsx
@@ -2436,6 +2545,7 @@
             </div>
           </div>
 ```
+
 - `src/pages/MainFeed.jsx:665` — (element) <Link>
 
 ```jsx
@@ -2444,15 +2554,16 @@
           </div>
         </aside>
 ```
+
 ## 5) Backend Mapping (Frontend → Express → Controller → Service/DB)
 
-| Frontend call (path:line) | Express mount | Route definition | Controller file | Handler |
-|---|---|---|---|---|
-| GET /feed?${query} (src/pages/MainFeed.jsx:264) | - | - | - | - |
-| GET /users/verified/early (src/pages/MainFeed.jsx:305) | /api/users -> server/routes/userRoutes.js:112 | GET /verified/early (server/routes/userRoutes.js:28) | - | listEarlyVerifiedFactoriesController |
-| POST /social/${encodeURIComponent(item.entityType)}/${encodeURIComponent(item.id)}/share (src/pages/MainFeed.jsx:357) | /api/social -> server/routes/socialRoutes.js:129 | - | - | - |
-| POST /reports/content (src/pages/MainFeed.jsx:393) | /api/reports -> server/routes/reportRoutes.js:148 | POST /content (server/routes/reportRoutes.js:13) | - | createContentReportController |
-| POST /conversations/${encodeURIComponent(item.id)}/claim (src/pages/MainFeed.jsx:414) | /api/conversations -> server/routes/conversationRoutes.js:122 | - | - | - |
+| Frontend call (path:line)                                                                                             | Express mount                                                 | Route definition                                     | Controller file | Handler                              |
+| --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------- | --------------- | ------------------------------------ |
+| GET /feed?${query} (src/pages/MainFeed.jsx:264)                                                                       | -                                                             | -                                                    | -               | -                                    |
+| GET /users/verified/early (src/pages/MainFeed.jsx:305)                                                                | /api/users -> server/routes/userRoutes.js:112                 | GET /verified/early (server/routes/userRoutes.js:28) | -               | listEarlyVerifiedFactoriesController |
+| POST /social/${encodeURIComponent(item.entityType)}/${encodeURIComponent(item.id)}/share (src/pages/MainFeed.jsx:357) | /api/social -> server/routes/socialRoutes.js:129              | -                                                    | -               | -                                    |
+| POST /reports/content (src/pages/MainFeed.jsx:393)                                                                    | /api/reports -> server/routes/reportRoutes.js:148             | POST /content (server/routes/reportRoutes.js:13)     | -               | createContentReportController        |
+| POST /conversations/${encodeURIComponent(item.id)}/claim (src/pages/MainFeed.jsx:414)                                 | /api/conversations -> server/routes/conversationRoutes.js:122 | -                                                    | -               | -                                    |
 
 ## 6) How to Edit Safely
 
@@ -2462,4 +2573,3 @@
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
-

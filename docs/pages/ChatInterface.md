@@ -31,6 +31,7 @@
             <button
               className={`mb-4 flex h-10 w-10 items-center justify-center rounded-[12px] shadow-none text-lg transition-colors${
 ```
+
 - `aside` at `src/pages/ChatInterface.jsx:1572`
 
 ```jsx
@@ -39,6 +40,7 @@
             <h2 className="text-xl font-bold tracking-tight">Messages</h2>
             <p className="text-xs font-medium" style={{ color: theme.textMuted }}>{currentUser?.email || 'No email available'}</p>
 ```
+
 - `main` at `src/pages/ChatInterface.jsx:1655`
 
 ```jsx
@@ -47,6 +49,7 @@
             <>
               <div className="flex items-center justify-between px-6 py-4 borderless-divider-b">
 ```
+
 - `aside` at `src/pages/ChatInterface.jsx:1889`
 
 ```jsx
@@ -55,6 +58,7 @@
             <>
               <div className="mb-8 text-center">
 ```
+
 ## 3) Styling (className blocks, utility breakdown, and custom CSS)
 
 ### 3.1 Custom CSS utilities referenced by this page (App.css / index.css)
@@ -96,6 +100,7 @@
           <button
             type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-1`
@@ -118,6 +123,7 @@
             type="button"
             onClick={() => openAttachmentPreview(message?.attachment, attachmentUrl)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mb-1`
@@ -133,11 +139,19 @@
 #### `src/pages/ChatInterface.jsx:1045`
 
 ```jsx
-            className="block w-full overflow-hidden rounded-xl borderless-shadow text-left transition-opacity hover:opacity-95"
-            title="View image"
-          >
-            <img src={attachmentUrl} alt={message?.attachment?.name || 'Shared image'} className="max-h-64 w-full object-cover" />
+className =
+  "block w-full overflow-hidden rounded-xl borderless-shadow text-left transition-opacity hover:opacity-95";
+title =
+  "View image" >
+  (
+    <img
+      src={attachmentUrl}
+      alt={message?.attachment?.name || "Shared image"}
+      className="max-h-64 w-full object-cover"
+    />
+  );
 ```
+
 **Raw class strings detected (best effort):**
 
 - `block w-full overflow-hidden rounded-xl borderless-shadow text-left transition-opacity hover:opacity-95`
@@ -172,6 +186,7 @@
           <a
             href={attachmentUrl}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `max-h-64 w-full object-cover`
@@ -187,11 +202,12 @@
 #### `src/pages/ChatInterface.jsx:1055`
 
 ```jsx
-            className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 underline underline-offset-2 dark:text-blue-200"
-          >
-            <Download size={12} />
-            Download
+className =
+  "inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 underline underline-offset-2 dark:text-blue-200" >
+  <Download size={12} />;
+Download;
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 underline underline-offset-2 dark:text-blue-200`
@@ -222,6 +238,7 @@
           <button
             type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-1`
@@ -244,6 +261,7 @@
             type="button"
             onClick={() => openAttachmentPreview(message?.attachment, attachmentUrl)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mb-1`
@@ -259,11 +277,21 @@
 #### `src/pages/ChatInterface.jsx:1071`
 
 ```jsx
-            className="relative block w-full overflow-hidden rounded-xl borderless-shadow text-left"
-            title="View video"
-          >
-            <video src={attachmentUrl} muted playsInline preload="metadata" className="max-h-64 w-full object-cover" />
+className =
+  "relative block w-full overflow-hidden rounded-xl borderless-shadow text-left";
+title =
+  "View video" >
+  (
+    <video
+      src={attachmentUrl}
+      muted
+      playsInline
+      preload="metadata"
+      className="max-h-64 w-full object-cover"
+    />
+  );
 ```
+
 **Raw class strings detected (best effort):**
 
 - `relative block w-full overflow-hidden rounded-xl borderless-shadow text-left`
@@ -296,6 +324,7 @@
               <div className="rounded-full bg-black/40 px-3 py-1 text-[11px] font-semibold text-white">Play</div>
             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `max-h-64 w-full object-cover`
@@ -336,6 +365,7 @@
             </div>
           </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25`
@@ -372,6 +402,7 @@
           </button>
           <a
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-black/40 px-3 py-1 text-[11px] font-semibold text-white`
@@ -393,11 +424,12 @@
 #### `src/pages/ChatInterface.jsx:1084`
 
 ```jsx
-            className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 underline underline-offset-2 dark:text-blue-200"
-          >
-            <Download size={12} />
-            Download
+className =
+  "inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 underline underline-offset-2 dark:text-blue-200" >
+  <Download size={12} />;
+Download;
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 underline underline-offset-2 dark:text-blue-200`
@@ -428,6 +460,7 @@
           <FileAttachmentCard
             attachment={message?.attachment}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-1`
@@ -447,6 +480,7 @@
             attachment={message?.attachment}
             url={attachmentUrl}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mb-1`
@@ -464,6 +498,7 @@
           <a href={firstUrl} target="_blank" rel="noreferrer" className="block rounded-xl borderless-shadow bg-slate-50 p-2 dark:bg-black/20">
             <div className="mb-2 h-24 overflow-hidden rounded-lg bg-slate-200 flex items-center justify-center text-xs text-slate-500 dark:bg-[#1f2448] dark:text-[#b8bfe8]">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-2`
@@ -506,6 +541,7 @@
               {meta.host}
             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `block rounded-xl borderless-shadow bg-slate-50 p-2 dark:bg-black/20`
@@ -546,6 +582,7 @@
             </div>
             <div className="text-sm font-semibold">{meta.title}</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mb-2 h-24 overflow-hidden rounded-lg bg-slate-200 flex items-center justify-center text-xs text-slate-500 dark:bg-[#1f2448] dark:text-[#b8bfe8]`
@@ -582,6 +619,7 @@
           </a>
         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold`
@@ -604,6 +642,7 @@
         </div>
       )
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs opacity-70`
@@ -623,6 +662,7 @@
         background: theme.pageBg,
         color: theme.textPrimary,
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-screen w-screen font-[`
@@ -643,6 +683,7 @@
           <div className="flex items-center justify-between gap-4">
             <div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mx-3 mt-2 rounded-xl px-4 py-3 text-sm font-medium shadow-sm`
@@ -684,6 +725,7 @@
               <div className="text-[13px] font-semibold">{notice.title || 'Notice'}</div>
               <div className="text-[12px] opacity-80">{notice.message || ''}</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-4`
@@ -713,6 +755,7 @@
             </div>
             <button onClick={() => setNotice(null)} className="text-xs font-semibold">Dismiss</button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[13px] font-semibold`
@@ -737,6 +780,7 @@
             <button onClick={() => setNotice(null)} className="text-xs font-semibold">Dismiss</button>
           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[12px] opacity-80`
@@ -759,6 +803,7 @@
         </div>
       ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold`
@@ -777,6 +822,7 @@
             <div className="flex items-center gap-4">
               {callPromptThread.avatar ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-4`
@@ -816,6 +862,7 @@
               {callPromptThread.avatar ? (
                 <img
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full max-w-sm rounded-2xl borderless-shadow bg-[#14122b] p-6 text-white shadow-2xl`
@@ -848,6 +895,7 @@
                 <img
                   src={avatarUrl(callPromptThread.avatar)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-4`
@@ -868,6 +916,7 @@
               ) : (
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#2a2744] text-lg font-bold">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-16 w-16 rounded-full object-cover`
@@ -899,6 +948,7 @@
                 </div>
               )}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex h-16 w-16 items-center justify-center rounded-full bg-[#2a2744] text-lg font-bold`
@@ -927,6 +977,7 @@
                 <p className="text-xs text-slate-400">{callPromptThread.direction === 'incoming' ? 'Accept to join the call.' : 'Ready to start the call*'}</p>
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm text-slate-300`
@@ -951,6 +1002,7 @@
               </div>
             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-semibold`
@@ -972,6 +1024,7 @@
             </div>
             <div className="mt-6 flex items-center justify-between gap-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-400`
@@ -998,6 +1051,7 @@
                 onClick={closeCallPrompt}
                 className="flex-1 rounded-xl borderless-shadow bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-300 hover:bg-red-500/20"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-6 flex items-center justify-between gap-3`
@@ -1035,6 +1089,7 @@
                 Decline
               </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex-1 rounded-xl borderless-shadow bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-300 hover:bg-red-500/20`
@@ -1066,6 +1121,7 @@
                 Accept
               </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex-1 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-400`
@@ -1096,6 +1152,7 @@
           <div className="space-y-2">
             <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid h-full w-full grid-cols-1 gap-2 p-2 md:grid-cols-[62px_1fr] lg:grid-cols-[62px_minmax(260px,22vw)_1fr] xl:grid-cols-[62px_minmax(260px,20vw)_1fr_minmax(280px,22vw)]`
@@ -1134,6 +1191,7 @@
             <button
               className={`mb-4 flex h-10 w-10 items-center justify-center rounded-[12px] shadow-none text-lg transition-colors${
 ```
+
 **Raw class strings detected (best effort):**
 
 - `hidden md:flex h-full rounded-[22px] p-2 flex-col items-center justify-between py-1`
@@ -1164,6 +1222,7 @@
               className={`mb-4 flex h-10 w-10 items-center justify-center rounded-[12px] shadow-none text-lg transition-colors${
                 isLight ? 'bg-white text-orange-400 shadow-sm' : 'bg-[#171031] text-[#D4FF59]'
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-2`
@@ -1191,6 +1250,7 @@
               }`}
               onClick={() => setThemeMode((value) => (value === 'light' ? 'dark' : 'light'))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `bg-white text-orange-400 shadow-sm`
@@ -1220,6 +1280,7 @@
                       ? (isLight ? 'bg-[var(--gt-blue)] text-white' : 'bg-[rgba(10,102,194,0.18)] text-[#D4FF59]')
                       : (isLight ? 'text-slate-400 hover:bg-white hover:text-[var(--gt-blue)]' : 'bg-[#171031] text-[#8f95bb] hover:text-white')
 ```
+
 **Raw class strings detected (best effort):**
 
 - `bg-[var(--gt-blue)] text-white`
@@ -1251,6 +1312,7 @@
             onClick={() => navigate('/login')}
             title="Logout"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex h-10 w-10 items-center justify-center rounded-[12px] transition-colors`
@@ -1287,6 +1349,7 @@
             <h2 className="text-xl font-bold tracking-tight">Messages</h2>
             <p className="text-xs font-medium" style={{ color: theme.textMuted }}>{currentUser?.email || 'No email available'}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `hidden lg:block rounded-[24px] p-5 overflow-hidden borderless-shadow`
@@ -1317,11 +1380,14 @@
 #### `src/pages/ChatInterface.jsx:1573`
 
 ```jsx
-          <div className="mb-6">
-            <h2 className="text-xl font-bold tracking-tight">Messages</h2>
-            <p className="text-xs font-medium" style={{ color: theme.textMuted }}>{currentUser?.email || 'No email available'}</p>
-          </div>
+<div className="mb-6">
+  <h2 className="text-xl font-bold tracking-tight">Messages</h2>
+  <p className="text-xs font-medium" style={{ color: theme.textMuted }}>
+    {currentUser?.email || "No email available"}
+  </p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mb-6`
@@ -1347,6 +1413,7 @@
           </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xl font-bold tracking-tight`
@@ -1369,6 +1436,7 @@
 
           <div className="relative mb-6">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-medium`
@@ -1392,6 +1460,7 @@
             <input
               className="h-11 w-full appearance-none rounded-[14px] borderless-shadow pl-10 pr-11 text-[13px] outline-none transition-all"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `relative mb-6`
@@ -1433,6 +1502,7 @@
               className="h-11 w-full appearance-none rounded-[14px] borderless-shadow pl-10 pr-11 text-[13px] outline-none transition-all"
               style={{ background: theme.inputBg, color: theme.textPrimary }}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `absolute left-3 top-1/2 -translate-y-1/2 text-slate-400`
@@ -1471,6 +1541,7 @@
               placeholder="Search conversations..."
               value={query}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-11 w-full appearance-none rounded-[14px] borderless-shadow pl-10 pr-11 text-[13px] outline-none transition-all`
@@ -1500,11 +1571,19 @@
 #### `src/pages/ChatInterface.jsx:1589`
 
 ```jsx
-          <div className="mb-3 flex items-center justify-between px-1">
-            <h3 className="text-xs font-bold uppercase tracking-wider" style={{ color: theme.textMuted }}>Direct Messages</h3>
-            <span className="text-[10px] font-bold text-[var(--gt-blue)]">{allVisibleThreads.length}</span>
-          </div>
+<div className="mb-3 flex items-center justify-between px-1">
+  <h3
+    className="text-xs font-bold uppercase tracking-wider"
+    style={{ color: theme.textMuted }}
+  >
+    Direct Messages
+  </h3>
+  <span className="text-[10px] font-bold text-[var(--gt-blue)]">
+    {allVisibleThreads.length}
+  </span>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mb-3 flex items-center justify-between px-1`
@@ -1537,6 +1616,7 @@
           </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-bold uppercase tracking-wider`
@@ -1561,6 +1641,7 @@
 
           <div className="h-[calc(100vh-250px)] space-y-1 overflow-auto pr-1 custom-scrollbar">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[10px] font-bold text-[var(--gt-blue)]`
@@ -1590,6 +1671,7 @@
             {!loading && visibleError ? <div className="p-4 text-center text-sm text-red-400">{visibleError}</div> : null}
             {!loading &&
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-[calc(100vh-250px)] space-y-1 overflow-auto pr-1 custom-scrollbar`
@@ -1621,6 +1703,7 @@
             {!loading &&
               !visibleError &&
 ```
+
 **Raw class strings detected (best effort):**
 
 - `p-4 text-center text-sm text-slate-400`
@@ -1644,6 +1727,7 @@
               !visibleError &&
               [...filteredPriorityInbox, ...filteredRequests].map((thread) => {
 ```
+
 **Raw class strings detected (best effort):**
 
 - `p-4 text-center text-sm text-red-400`
@@ -1665,6 +1749,7 @@
                     onClick={() => setActiveThreadId(thread.id)}
                   >
 ```
+
 **Raw class strings detected (best effort):**
 
 - `ring-1 ring-[var(--gt-blue)]/20`
@@ -1690,6 +1775,7 @@
                       <div className="relative flex-shrink-0">
                         {thread.avatar ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-3`
@@ -1726,6 +1812,7 @@
                         {thread.avatar ? (
                           <img src={avatarUrl(thread.avatar)} alt={threadName} className="h-11 w-11 rounded-full object-cover shadow-sm" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[#E8F3FF] px-3 py-1 text-[11px] font-semibold text-[#0A66C2] hover:bg-[#D9ECFF]`
@@ -1764,6 +1851,7 @@
                           <img src={avatarUrl(thread.avatar)} alt={threadName} className="h-11 w-11 rounded-full object-cover shadow-sm" />
                         ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `relative flex-shrink-0`
@@ -1790,6 +1878,7 @@
                           <div className={`flex h-11 w-11 items-center justify-center rounded-full text-xs font-bold shadow-sm${isActive ? 'bg-[var(--gt-blue)] text-white' : 'bg-slate-100 text-slate-500'}`}>{getInitials(threadName)}</div>
                         )}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-11 w-11 rounded-full object-cover shadow-sm`
@@ -1821,6 +1910,7 @@
                         <span
                           className="absolute bottom-0 right-0 h-3 w-3 rounded-full"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `bg-[var(--gt-blue)] text-white`
@@ -1852,6 +1942,7 @@
                             background: presenceStatus(thread.senderId) === 'online' ? '#22c55e' : '#94a3b8',
                             boxShadow: `0 0 0 2px ${isLight ? '#e2e8f0' : 'rgba(255,255,255,0.18)'}`,
 ```
+
 **Raw class strings detected (best effort):**
 
 - `absolute bottom-0 right-0 h-3 w-3 rounded-full`
@@ -1886,6 +1977,7 @@
                           <p className={`truncate text-[14px] font-semibold${isActive ? 'text-[var(--gt-blue)]' : ''}`}>{threadName}</p>
                           <div className="ml-2 flex flex-shrink-0 items-center gap-1">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0 flex-1`
@@ -1916,6 +2008,7 @@
                           <div className="ml-2 flex flex-shrink-0 items-center gap-1">
                             {thread.policyStatus && thread.policyStatus !== 'delivered' ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-1`
@@ -1946,6 +2039,7 @@
                             {thread.policyStatus && thread.policyStatus !== 'delivered' ? (
                               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-700">Queued</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[var(--gt-blue)]`
@@ -1985,6 +2079,7 @@
                               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-700">Queued</span>
                             ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `ml-2 flex flex-shrink-0 items-center gap-1`
@@ -2022,6 +2117,7 @@
                             {thread.policyPriority ? (
                               <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[9px] font-bold text-indigo-700">{thread.policyPriority}</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-700`
@@ -2052,6 +2148,7 @@
                             <span className="text-[10px] font-medium text-slate-400">{formatTime(thread.timestamp)}</span>
                           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-indigo-100 px-2 py-0.5 text-[9px] font-bold text-indigo-700`
@@ -2082,6 +2179,7 @@
                         </div>
                         <div className="flex items-center justify-between gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[10px] font-medium text-slate-400`
@@ -2109,6 +2207,7 @@
                           {hasUnread ? (
                             <span className="min-w-[18px] rounded-full bg-[var(--gt-blue)] px-2 py-0.5 text-[10px] font-bold text-white">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-2`
@@ -2152,6 +2251,7 @@
                             <span className="min-w-[18px] rounded-full bg-[var(--gt-blue)] px-2 py-0.5 text-[10px] font-bold text-white">
                               {thread.unread}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-slate-600`
@@ -2190,6 +2290,7 @@
                             </span>
                           ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-[18px] rounded-full bg-[var(--gt-blue)] px-2 py-0.5 text-[10px] font-bold text-white`
@@ -2218,6 +2319,7 @@
             <>
               <div className="flex items-center justify-between px-6 py-4 borderless-divider-b">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-[24px] p-0 flex flex-col h-full overflow-hidden borderless-shadow`
@@ -2249,6 +2351,7 @@
                   <div className="relative">
                     {activeAvatar ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between px-6 py-4 borderless-divider-b`
@@ -2277,6 +2380,7 @@
                     {activeAvatar ? (
                       <img src={activeAvatar} alt={activeThreadDisplayName} className="h-10 w-10 rounded-full object-cover shadow-sm" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-3`
@@ -2307,6 +2411,7 @@
                       <img src={activeAvatar} alt={activeThreadDisplayName} className="h-10 w-10 rounded-full object-cover shadow-sm" />
                     ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `relative`
@@ -2332,6 +2437,7 @@
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500">{activeThreadInitials}</div>
                     )}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-10 w-10 rounded-full object-cover shadow-sm`
@@ -2365,6 +2471,7 @@
                     <span
                       className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500`
@@ -2400,6 +2507,7 @@
                         background: presenceStatus(activeThread?.senderId) === 'online' ? '#22c55e' : '#94a3b8',
                         boxShadow: `0 0 0 2px ${isLight ? '#e2e8f0' : 'rgba(255,255,255,0.18)'}`,
 ```
+
 **Raw class strings detected (best effort):**
 
 - `absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full`
@@ -2434,6 +2542,7 @@
                       {presenceStatus(activeThread?.senderId) === 'online'
                         ? 'Online'
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-bold tracking-tight`
@@ -2463,6 +2572,7 @@
                         ? 'Online'
                         : formatPresence(presenceLastSeen(activeThread?.senderId))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-medium text-slate-400`
@@ -2488,6 +2598,7 @@
                       </span>
                     ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-300`
@@ -2521,6 +2632,7 @@
                   {isLockOwner ? (
                     <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-3`
@@ -2554,6 +2666,7 @@
                     <button
                       onClick={grantAccess}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[#E8F3FF] px-3 py-1 text-[11px] font-semibold text-[#0A66C2] hover:bg-[#D9ECFF]`
@@ -2582,6 +2695,7 @@
                     >
                       Grant access
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full borderless-shadow px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60`
@@ -2616,11 +2730,11 @@
 #### `src/pages/ChatInterface.jsx:1702`
 
 ```jsx
-                      className="rounded-full borderless-shadow px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
-                      title="Transfer this conversation to another agent"
-                    >
-                      Transfer
+className =
+  "rounded-full borderless-shadow px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60";
+title = "Transfer this conversation to another agent" > Transfer;
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full borderless-shadow px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60`
@@ -2656,11 +2770,11 @@
 #### `src/pages/ChatInterface.jsx:1710`
 
 ```jsx
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50"
-                    title="Start call"
-                  >
-                    <Phone size={16} />
+className =
+  "flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50";
+title = "Start call" > <Phone size={16} />;
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50`
@@ -2698,6 +2812,7 @@
                   </button>
                   <button className="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50`
@@ -2731,6 +2846,7 @@
                   </button>
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50`
@@ -2759,11 +2875,14 @@
 #### `src/pages/ChatInterface.jsx:1724`
 
 ```jsx
-              <div className="px-6 pb-3">
-                <JourneyTimeline title="Journey Timeline" matchId={activeThread?.matchId || ''} />
-              </div>
-
+<div className="px-6 pb-3">
+  <JourneyTimeline
+    title="Journey Timeline"
+    matchId={activeThread?.matchId || ""}
+  />
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `px-6 pb-3`
@@ -2786,6 +2905,7 @@
                     <span>
                       Video calls are recommended for trust. No recorded call exists yet for this conversation.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mx-6 mt-4 rounded-xl borderless-shadow bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900 dark:bg-amber-500/10 dark:text-amber-200`
@@ -2825,6 +2945,7 @@
                       Video calls are recommended for trust. No recorded call exists yet for this conversation.
                     </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap items-center justify-between gap-3`
@@ -2847,6 +2968,7 @@
                       Start call
                     </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white hover:bg-amber-500`
@@ -2875,6 +2997,7 @@
                   <span className="rounded-full bg-transparent borderless-shadow px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600">{todayLabel}</span>
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex-1 space-y-4 overflow-auto p-6 custom-scrollbar`
@@ -2918,6 +3041,7 @@
                 </div>
                 {activeMessages.length > 0 ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex justify-center mb-6`
@@ -2954,6 +3078,7 @@
                 {activeMessages.length > 0 ? (
                   activeMessages.map((message) => {
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-transparent borderless-shadow px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600`
@@ -2982,9 +3107,10 @@
 ```jsx
                       <div key={message.id} className={`flex${isOwn ? 'justify-end' : 'justify-start'}`}>
                         <div className={`group relative max-w-[80%] sm:max-w-[70%] rounded-[20px] px-4 py-3 text-[13.5px] shadow-sm transition-all ${
-                          isOwn 
-                            ? 'bg-[var(--gt-blue)] text-white rounded-br-none' 
+                          isOwn
+                            ? 'bg-[var(--gt-blue)] text-white rounded-br-none'
 ```
+
 **Raw class strings detected (best effort):**
 
 - `justify-end`
@@ -3007,10 +3133,11 @@
 
 ```jsx
                         <div className={`group relative max-w-[80%] sm:max-w-[70%] rounded-[20px] px-4 py-3 text-[13.5px] shadow-sm transition-all ${
-                          isOwn 
-                            ? 'bg-[var(--gt-blue)] text-white rounded-br-none' 
+                          isOwn
+                            ? 'bg-[var(--gt-blue)] text-white rounded-br-none'
                             : isBot
 ```
+
 **Raw class strings detected (best effort):**
 
 - `bg-[var(--gt-blue)] text-white rounded-br-none`
@@ -3032,6 +3159,7 @@
                             </div>
                           ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mb-1 text-[10px] font-extrabold uppercase tracking-widest text-[var(--gt-blue)]`
@@ -3056,6 +3184,7 @@
                             {message.policy_status && message.policy_status !== 'delivered' ? (
                               <span className="inline-flex items-center rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-amber-600">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-white`
@@ -3092,6 +3221,7 @@
                               </span>
                             ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center rounded-full bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-amber-600`
@@ -3129,6 +3259,7 @@
                             {showReadTick ? (
                               <span className="inline-flex items-center rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-600">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center rounded-full bg-indigo-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-600`
@@ -3161,6 +3292,7 @@
                               </span>
                             ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-600`
@@ -3190,6 +3322,7 @@
               </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex h-full items-center justify-center text-sm font-medium text-slate-400 italic`
@@ -3215,6 +3348,7 @@
                   <div className="mb-3 flex items-center justify-between gap-3 rounded-xl bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
                     <span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `p-4 borderless-divider-t`
@@ -3253,6 +3387,7 @@
                       Conversation locked by {lockMeta?.claimed_by_name || (lockMeta?.lock_type === 'verified_first' ? 'verified supplier' : 'another agent')}.
                     </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mb-3 flex items-center justify-between gap-3 rounded-xl bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-800 dark:bg-amber-500/10 dark:text-amber-200`
@@ -3297,6 +3432,7 @@
                       Request access
                     </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white`
@@ -3323,6 +3459,7 @@
                       <span>
                         AI pre-qual flagged missing info. {prequal?.missing ? `Missing: ${prequal.missing}.` : 'Request more details before negotiating.'}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mb-3 rounded-xl borderless-shadow bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-900 dark:bg-amber-500/10 dark:text-amber-200`
@@ -3368,6 +3505,7 @@
                         AI pre-qual flagged missing info. {prequal?.missing ? `Missing: ${prequal.missing}.` : 'Request more details before negotiating.'}
                       </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap items-center justify-between gap-2`
@@ -3397,6 +3535,7 @@
                           Allow send anyway
                         </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white`
@@ -3423,6 +3562,7 @@
                       </div>
                     ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-[10px] text-amber-800`
@@ -3444,6 +3584,7 @@
                   <button
                     type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mb-2 flex flex-wrap items-center justify-between gap-2 text-[11px] font-semibold text-slate-500`
@@ -3475,6 +3616,7 @@
                     {aiSuggesting ? 'Thinking...' : 'Generate'}
                   </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold text-white hover:bg-slate-700 disabled:opacity-60 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/20`
@@ -3513,6 +3655,7 @@
                   <button className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-200/50 dark:hover:bg-slate-700/50" onClick={() => fileInputRef.current?.click()} disabled={uploading || !canSendMessage}>
                     <Plus size={20} />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mb-2 text-[11px] font-semibold text-rose-600`
@@ -3556,6 +3699,7 @@
                     <Plus size={20} />
                   </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `relative flex items-center gap-2 rounded-[18px] p-1.5`
@@ -3593,6 +3737,7 @@
                   </button>
                   <textarea
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-slate-200/50 dark:hover:bg-slate-700/50`
@@ -3624,6 +3769,7 @@
                     placeholder={canSendMessage ? 'Write a message...' : 'Conversation locked. Request access to reply.'}
                     disabled={!canSendMessage}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex-1 resize-none bg-transparent px-2 py-2 text-[14px] leading-5 outline-none placeholder:text-slate-400`
@@ -3665,6 +3811,7 @@
                     <SendHorizontal size={18} />
                   </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `hidden`
@@ -3701,6 +3848,7 @@
                   </button>
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[var(--gt-blue)] text-white shadow-md transition-transform hover:scale-105 active:scale-95 disabled:opacity-60`
@@ -3735,6 +3883,7 @@
                   </p>
                 ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 px-4 text-[11px] font-medium text-rose-500`
@@ -3758,6 +3907,7 @@
               </div>
             </>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 px-4 text-[11px] font-medium text-[var(--gt-blue)]`
@@ -3781,6 +3931,7 @@
                   <MessageCircle size={32} className="opacity-20" />
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex h-full flex-col items-center justify-center text-slate-400 gap-4`
@@ -3817,6 +3968,7 @@
                 </div>
                 <p className="text-sm font-medium">Select a conversation to start chatting</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-20 w-20 rounded-full bg-slate-50 flex items-center justify-center dark:bg-slate-800/30`
@@ -3850,6 +4002,7 @@
                 <p className="text-sm font-medium">Select a conversation to start chatting</p>
               </div>}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `opacity-20`
@@ -3871,6 +4024,7 @@
         </main>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-medium`
@@ -3889,6 +4043,7 @@
             <>
               <div className="mb-8 text-center">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `hidden xl:block rounded-[24px] p-6 h-full overflow-auto borderless-shadow`
@@ -3919,6 +4074,7 @@
                   {activeAvatar ? (
                     <img src={activeAvatar} alt={activeThreadDisplayName} className="h-full w-full rounded-full object-cover" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mb-8 text-center`
@@ -3952,6 +4108,7 @@
                     <img src={activeAvatar} alt={activeThreadDisplayName} className="h-full w-full rounded-full object-cover" />
                   ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mx-auto mb-4 h-24 w-24 rounded-full shadow-md`
@@ -3981,6 +4138,7 @@
                     <div className="flex h-full w-full items-center justify-center rounded-full bg-slate-100 text-2xl font-bold text-slate-400">{activeThreadInitials}</div>
                   )}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-full w-full rounded-full object-cover`
@@ -4013,6 +4171,7 @@
                 </div>
                 <h3 className="text-lg font-bold tracking-tight">{activeThreadDisplayName}</h3>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex h-full w-full items-center justify-center rounded-full bg-slate-100 text-2xl font-bold text-slate-400`
@@ -4045,6 +4204,7 @@
               </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-bold tracking-tight`
@@ -4069,6 +4229,7 @@
 
               {leadLoading ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-medium text-slate-400 tracking-wide`
@@ -4089,6 +4250,7 @@
                 </div>
               ) : prequal ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mb-6 rounded-2xl borderless-shadow bg-slate-50 p-3 text-[11px] text-slate-500 dark:bg-slate-800/30`
@@ -4117,6 +4279,7 @@
                   <p className="mt-1">Score: <span className="font-semibold">{prequal.score ?? '--'}</span></p>
                   <p className="mt-1">Missing: {prequal.missing || 'None'}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mb-6 rounded-2xl borderless-shadow bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-slate-800/30`
@@ -4153,6 +4316,7 @@
                   <p className="mt-1">Missing: {prequal.missing || 'None'}</p>
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-slate-800 dark:text-slate-100`
@@ -4178,6 +4342,7 @@
                 </div>
               ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1`
@@ -4198,6 +4363,7 @@
               ) : null}
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1`
@@ -4215,6 +4381,7 @@
                   <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">AI Conversation Summary</p>
                   <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mb-6 rounded-2xl borderless-shadow bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-slate-800/30`
@@ -4254,6 +4421,7 @@
                   <button
                     type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-2`
@@ -4285,6 +4453,7 @@
                     type="button"
                     onClick={requestAiSummary}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-slate-800 dark:text-slate-100`
@@ -4309,6 +4478,7 @@
                     {aiSummaryLoading ? 'Summarizing...' : 'Refresh'}
                   </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold text-white hover:bg-slate-700 disabled:opacity-60 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/20`
@@ -4347,6 +4517,7 @@
                   <>
                     <p className="mt-2 whitespace-pre-wrap text-[11px] text-slate-700 dark:text-slate-200">{aiSummary.text}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-[10px] font-semibold text-rose-600`
@@ -4371,11 +4542,18 @@
 #### `src/pages/ChatInterface.jsx:1931`
 
 ```jsx
-                    <p className="mt-2 whitespace-pre-wrap text-[11px] text-slate-700 dark:text-slate-200">{aiSummary.text}</p>
-                    {aiSummary.suggestedReply ? (
-                      <p className="mt-2 text-[11px] text-slate-500">Suggested reply: {aiSummary.suggestedReply}</p>
-                    ) : null}
+<p className="mt-2 whitespace-pre-wrap text-[11px] text-slate-700 dark:text-slate-200">
+  {aiSummary.text}
+</p>;
+{
+  aiSummary.suggestedReply ? (
+    <p className="mt-2 text-[11px] text-slate-500">
+      Suggested reply: {aiSummary.suggestedReply}
+    </p>
+  ) : null;
+}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 whitespace-pre-wrap text-[11px] text-slate-700 dark:text-slate-200`
@@ -4403,6 +4581,7 @@
                   </>
                 ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-[11px] text-slate-500`
@@ -4424,6 +4603,7 @@
               </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-[10px] text-slate-400 italic`
@@ -4446,6 +4626,7 @@
                   <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">AI Negotiation Helper</p>
                   <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mb-6 rounded-2xl borderless-shadow bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-slate-800/30`
@@ -4485,6 +4666,7 @@
                   <button
                     type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-2`
@@ -4516,6 +4698,7 @@
                     type="button"
                     onClick={requestNegotiationHelper}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-slate-800 dark:text-slate-100`
@@ -4540,6 +4723,7 @@
                     {aiNegotiationLoading ? 'Thinking...' : 'Generate'}
                   </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-slate-900 px-3 py-1 text-[10px] font-semibold text-white hover:bg-slate-700 disabled:opacity-60 dark:bg-white/10 dark:text-slate-200 dark:hover:bg-white/20`
@@ -4578,6 +4762,7 @@
                   <>
                     <p className="mt-2 whitespace-pre-wrap text-[11px] text-slate-700 dark:text-slate-200">{aiNegotiation.guidance}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-[10px] font-semibold text-rose-600`
@@ -4602,11 +4787,18 @@
 #### `src/pages/ChatInterface.jsx:1956`
 
 ```jsx
-                    <p className="mt-2 whitespace-pre-wrap text-[11px] text-slate-700 dark:text-slate-200">{aiNegotiation.guidance}</p>
-                    {aiNegotiation.suggestedReply ? (
-                      <p className="mt-2 text-[11px] text-slate-500">Suggested reply: {aiNegotiation.suggestedReply}</p>
-                    ) : null}
+<p className="mt-2 whitespace-pre-wrap text-[11px] text-slate-700 dark:text-slate-200">
+  {aiNegotiation.guidance}
+</p>;
+{
+  aiNegotiation.suggestedReply ? (
+    <p className="mt-2 text-[11px] text-slate-500">
+      Suggested reply: {aiNegotiation.suggestedReply}
+    </p>
+  ) : null;
+}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 whitespace-pre-wrap text-[11px] text-slate-700 dark:text-slate-200`
@@ -4634,6 +4826,7 @@
                   </>
                 ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-[11px] text-slate-500`
@@ -4655,6 +4848,7 @@
               </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-[10px] text-slate-400 italic`
@@ -4677,6 +4871,7 @@
                   { icon: Flag, title: 'Report' },
                   { icon: Lock, title: 'Block' },
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mb-8 grid grid-cols-4 gap-3`
@@ -4703,6 +4898,7 @@
                       <action.icon size={16} strokeWidth={2} />
                     </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-col items-center gap-1.5 transition-opacity hover:opacity-70`
@@ -4739,6 +4935,7 @@
                     </div>
                   </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex h-10 w-10 items-center justify-center rounded-[14px] bg-transparent text-slate-400 dark:text-slate-500`
@@ -4768,6 +4965,7 @@
                   { id: 'sharedDocument', label: 'Documents', count: sharedLinks.length, icon: FolderOpen },
                   { id: 'sharedMedia', label: 'Media', count: sharedMedia.length, icon: Search },
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-4`
@@ -4790,10 +4988,11 @@
 
 ```jsx
                   <div key={section.id} className="overflow-hidden rounded-[18px] borderless-shadow">
-                    <button 
-                      className="flex w-full items-center justify-between p-4 text-xs font-bold uppercase tracking-wider transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50" 
+                    <button
+                      className="flex w-full items-center justify-between p-4 text-xs font-bold uppercase tracking-wider transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
                       style={{ background: isLight ? '#f8fafc' : '#101328', color: theme.textMuted }}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `overflow-hidden rounded-[18px] borderless-shadow`
@@ -4831,11 +5030,12 @@
 #### `src/pages/ChatInterface.jsx:1989`
 
 ```jsx
-                      className="flex w-full items-center justify-between p-4 text-xs font-bold uppercase tracking-wider transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50" 
+                      className="flex w-full items-center justify-between p-4 text-xs font-bold uppercase tracking-wider transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
                       style={{ background: isLight ? '#f8fafc' : '#101328', color: theme.textMuted }}
                       onClick={() => setAccordionState(prev => ({ ...prev, [section.id]: !prev[section.id] }))}
                     >
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex w-full items-center justify-between p-4 text-xs font-bold uppercase tracking-wider transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50`
@@ -4868,11 +5068,14 @@
 #### `src/pages/ChatInterface.jsx:1993`
 
 ```jsx
-                      <div className="flex items-center gap-2">
-                        <section.icon size={14} className="opacity-50" />
-                        <span>{section.label} <span className="ml-1 opacity-50">({section.count})</span></span>
-                      </div>
+<div className="flex items-center gap-2">
+  <section.icon size={14} className="opacity-50" />
+  <span>
+    {section.label} <span className="ml-1 opacity-50">({section.count})</span>
+  </span>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2`
@@ -4898,6 +5101,7 @@
                       </div>
                       {accordionState[section.id] ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `opacity-50`
@@ -4918,6 +5122,7 @@
                       {accordionState[section.id] ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                     </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `ml-1 opacity-50`
@@ -4937,6 +5142,7 @@
                           <div className="space-y-2">
                             {sharedLinks.length > 0 ? sharedLinks.map(item => {
 ```
+
 **Raw class strings detected (best effort):**
 
 - `p-3 bg-white dark:bg-transparent`
@@ -4963,6 +5169,7 @@
                               const url = toAbsoluteAssetUrl(item.attachment?.url || '')
                               return (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-2`
@@ -4975,11 +5182,17 @@
 #### `src/pages/ChatInterface.jsx:2010`
 
 ```jsx
-                                  className="flex w-full items-center gap-2 rounded-xl borderless-shadow bg-slate-50/50 p-2.5 text-left text-[11px] font-medium transition-colors dark:bg-slate-800/30"
-                                  title="Preview"
-                                >
-                                  <div className="h-6 w-6 rounded bg-white flex items-center justify-center shadow-xs dark:bg-slate-700"><Plus size={12} className="opacity-30" /></div>
+className =
+  "flex w-full items-center gap-2 rounded-xl borderless-shadow bg-slate-50/50 p-2.5 text-left text-[11px] font-medium transition-colors dark:bg-slate-800/30";
+title =
+  "Preview" >
+  (
+    <div className="h-6 w-6 rounded bg-white flex items-center justify-center shadow-xs dark:bg-slate-700">
+      <Plus size={12} className="opacity-30" />
+    </div>
+  );
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex w-full items-center gap-2 rounded-xl borderless-shadow bg-slate-50/50 p-2.5 text-left text-[11px] font-medium transition-colors dark:bg-slate-800/30`
@@ -5028,6 +5241,7 @@
                                 </button>
                               )
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-6 w-6 rounded bg-white flex items-center justify-center shadow-xs dark:bg-slate-700`
@@ -5061,6 +5275,7 @@
                               )
                             }) : <p className="text-[10px] text-slate-400 italic text-center py-2">No documents shared</p>}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `truncate flex-1`
@@ -5088,6 +5303,7 @@
                         )}
                         {section.id === 'sharedMedia' && (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[10px] text-slate-400 italic text-center py-2`
@@ -5114,6 +5330,7 @@
                               const url = toAbsoluteAssetUrl(item.attachment?.url || '')
                               const isVideo = isVideoMessage(item)
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid grid-cols-3 gap-1.5`
@@ -5134,6 +5351,7 @@
                                 >
                                   {isVideo ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `relative aspect-square overflow-hidden rounded-lg`
@@ -5158,6 +5376,7 @@
                                         <div className="rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-bold text-white">Play</div>
                                       </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-full w-full object-cover`
@@ -5198,6 +5417,7 @@
                                       </div>
                                     </>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25`
@@ -5234,6 +5454,7 @@
                                     </>
                                   ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-bold text-white`
@@ -5260,6 +5481,7 @@
                                 </button>
                               )
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-full w-full object-cover transition-transform hover:scale-110`
@@ -5283,6 +5505,7 @@
                         )}
                         {section.id === 'sharedPost' && (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `col-span-3 text-[10px] text-slate-400 italic text-center py-2`
@@ -5311,6 +5534,7 @@
                               <div key={item.id} style={{ background: isLight ? '#f1f5f9' : 'rgba(255,255,255,0.03)' }}>
                                 <p className="line-clamp-2 leading-relaxed opacity-80">{item.message}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-2`
@@ -5340,6 +5564,7 @@
                             )) : <p className="text-[10px] text-slate-400 italic text-center py-2">No posts shared</p>}
                           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `line-clamp-2 leading-relaxed opacity-80`
@@ -5368,6 +5593,7 @@
                         )}
                       </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[10px] text-slate-400 italic text-center py-2`
@@ -5391,6 +5617,7 @@
       </div>
     </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex h-full flex-col items-center justify-center text-slate-400 text-xs italic`
@@ -5420,6 +5647,7 @@
         </div>
       ) : null}
 ```
+
 - `src/pages/ChatInterface.jsx:1574` — Messages
 
 ```jsx
@@ -5428,6 +5656,7 @@
           </div>
 
 ```
+
 - `src/pages/ChatInterface.jsx:1590` — Direct Messages
 
 ```jsx
@@ -5436,6 +5665,7 @@
           </div>
 
 ```
+
 - `src/pages/ChatInterface.jsx:1611` — Contract draft
 
 ```jsx
@@ -5444,6 +5674,7 @@
                         {thread.avatar ? (
                           <img src={avatarUrl(thread.avatar)} alt={threadName} className="h-11 w-11 rounded-full object-cover shadow-sm" />
 ```
+
 - `src/pages/ChatInterface.jsx:1631` — Queued
 
 ```jsx
@@ -5452,6 +5683,7 @@
                             {thread.policyPriority ? (
                               <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[9px] font-bold text-indigo-700">{thread.policyPriority}</span>
 ```
+
 - `src/pages/ChatInterface.jsx:1689` — Contract draft
 
 ```jsx
@@ -5460,6 +5692,7 @@
                     <button
                       onClick={grantAccess}
 ```
+
 - `src/pages/ChatInterface.jsx:1836` — AI Suggested Reply
 
 ```jsx
@@ -5468,6 +5701,7 @@
                     type="button"
                     onClick={requestAiSuggestion}
 ```
+
 - `src/pages/ChatInterface.jsx:1885` — Select a conversation to start chatting
 
 ```jsx
@@ -5476,6 +5710,7 @@
         </main>
 
 ```
+
 - `src/pages/ChatInterface.jsx:1901` — @{truncateId(activeThread.senderId \|\| activeThread.matchId, 16)}
 
 ```jsx
@@ -5484,6 +5719,7 @@
 
               {leadLoading ? (
 ```
+
 - `src/pages/ChatInterface.jsx:1910` — AI Pre-Qual Summary
 
 ```jsx
@@ -5492,6 +5728,7 @@
                   <p className="mt-1">Missing: {prequal.missing || 'None'}</p>
                 </div>
 ```
+
 - `src/pages/ChatInterface.jsx:1912` — Missing: {prequal.missing \|\| 'None'}
 
 ```jsx
@@ -5500,6 +5737,7 @@
               ) : null}
 
 ```
+
 - `src/pages/ChatInterface.jsx:1918` — AI Conversation Summary
 
 ```jsx
@@ -5508,6 +5746,7 @@
                     type="button"
                     onClick={requestAiSummary}
 ```
+
 - `src/pages/ChatInterface.jsx:1933` — Suggested reply: {aiSummary.suggestedReply}
 
 ```jsx
@@ -5516,6 +5755,7 @@
                   </>
                 ) : (
 ```
+
 - `src/pages/ChatInterface.jsx:1937` — No summary yet.
 
 ```jsx
@@ -5524,6 +5764,7 @@
               </div>
 
 ```
+
 - `src/pages/ChatInterface.jsx:1943` — AI Negotiation Helper
 
 ```jsx
@@ -5532,6 +5773,7 @@
                     type="button"
                     onClick={requestNegotiationHelper}
 ```
+
 - `src/pages/ChatInterface.jsx:1958` — Suggested reply: {aiNegotiation.suggestedReply}
 
 ```jsx
@@ -5540,6 +5782,7 @@
                   </>
                 ) : (
 ```
+
 - `src/pages/ChatInterface.jsx:1962` — Generate guidance for this thread.
 
 ```jsx
@@ -5548,6 +5791,7 @@
               </div>
 
 ```
+
 - `src/pages/ChatInterface.jsx:1995` — ({section.count})
 
 ```jsx
@@ -5556,6 +5800,7 @@
                       {accordionState[section.id] ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                     </button>
 ```
+
 - `src/pages/ChatInterface.jsx:2017` — No documents shared
 
 ```jsx
@@ -5564,6 +5809,7 @@
                         )}
                         {section.id === 'sharedMedia' && (
 ```
+
 - `src/pages/ChatInterface.jsx:2045` — No media shared
 
 ```jsx
@@ -5572,6 +5818,7 @@
                         )}
                         {section.id === 'sharedPost' && (
 ```
+
 - `src/pages/ChatInterface.jsx:2054` — No posts shared
 
 ```jsx
@@ -5580,6 +5827,7 @@
                         )}
                       </div>
 ```
+
 - `src/pages/ChatInterface.jsx:1046` — View image
 
 ```jsx
@@ -5588,6 +5836,7 @@
             <img src={attachmentUrl} alt={message?.attachment?.name || 'Shared image'} className="max-h-64 w-full object-cover" />
           </button>
 ```
+
 - `src/pages/ChatInterface.jsx:1072` — View video
 
 ```jsx
@@ -5596,6 +5845,7 @@
             <video src={attachmentUrl} muted playsInline preload="metadata" className="max-h-64 w-full object-cover" />
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/25">
 ```
+
 - `src/pages/ChatInterface.jsx:1566` — Logout
 
 ```jsx
@@ -5604,6 +5854,7 @@
             <LogOut size={18} strokeWidth={1.5} />
           </button>
 ```
+
 - `src/pages/ChatInterface.jsx:1583` — Search conversations...
 
 ```jsx
@@ -5612,6 +5863,7 @@
               onChange={(event) => setQuery(event.target.value)}
             />
 ```
+
 - `src/pages/ChatInterface.jsx:1694` — Grant access to another member
 
 ```jsx
@@ -5620,6 +5872,7 @@
                       Grant access
                     </button>
 ```
+
 - `src/pages/ChatInterface.jsx:1703` — Transfer this conversation to another agent
 
 ```jsx
@@ -5628,6 +5881,7 @@
                       Transfer
                     </button>
 ```
+
 - `src/pages/ChatInterface.jsx:1711` — Start call
 
 ```jsx
@@ -5636,6 +5890,7 @@
                     <Phone size={16} />
                   </button>
 ```
+
 - `src/pages/ChatInterface.jsx:1725` — Journey Timeline
 
 ```jsx
@@ -5644,6 +5899,7 @@
 
               {!hasRecordedCall ? (
 ```
+
 - `src/pages/ChatInterface.jsx:2011` — Preview
 
 ```jsx
@@ -5652,6 +5908,7 @@
                                   <div className="h-6 w-6 rounded bg-white flex items-center justify-center shadow-xs dark:bg-slate-700"><Plus size={12} className="opacity-30" /></div>
                                   <span className="truncate flex-1">{item.attachment?.name || 'File'}</span>
 ```
+
 - `src/pages/ChatInterface.jsx:2031` — View
 
 ```jsx
@@ -5660,6 +5917,7 @@
                                   {isVideo ? (
                                     <>
 ```
+
 - `src/pages/ChatInterface.jsx:1042` — (element) <button>
 
 ```jsx
@@ -5668,6 +5926,7 @@
             onClick={() => openAttachmentPreview(message?.attachment, attachmentUrl)}
             className="block w-full overflow-hidden rounded-xl borderless-shadow text-left transition-opacity hover:opacity-95"
 ```
+
 - `src/pages/ChatInterface.jsx:1068` — (element) <button>
 
 ```jsx
@@ -5676,6 +5935,7 @@
             onClick={() => openAttachmentPreview(message?.attachment, attachmentUrl)}
             className="relative block w-full overflow-hidden rounded-xl borderless-shadow text-left"
 ```
+
 - `src/pages/ChatInterface.jsx:1484` — (element) <button>
 
 ```jsx
@@ -5684,6 +5944,7 @@
         </div>
       ) : null}
 ```
+
 - `src/pages/ChatInterface.jsx:1515` — (element) <button>
 
 ```jsx
@@ -5692,6 +5953,7 @@
                 className="flex-1 rounded-xl borderless-shadow bg-red-500/10 px-4 py-2 text-sm font-semibold text-red-300 hover:bg-red-500/20"
               >
 ```
+
 - `src/pages/ChatInterface.jsx:1521` — (element) <button>
 
 ```jsx
@@ -5700,6 +5962,7 @@
                 className="flex-1 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-400"
               >
 ```
+
 - `src/pages/ChatInterface.jsx:1534` — (element) <button>
 
 ```jsx
@@ -5708,6 +5971,7 @@
                 isLight ? 'bg-white text-orange-400 shadow-sm' : 'bg-[#171031] text-[#D4FF59]'
               }`}
 ```
+
 - `src/pages/ChatInterface.jsx:1547` — (element) <Link>
 
 ```jsx
@@ -5716,6 +5980,7 @@
                   to={item.to}
                   className={`relative flex h-10 w-10 items-center justify-center rounded-[12px] transition-all${
 ```
+
 - `src/pages/ChatInterface.jsx:1562` — (element) <button>
 
 ```jsx
@@ -5724,6 +5989,7 @@
             style={{ background: isLight ? '#ffffff' : theme.tileBg, color: isLight ? '#ef4444' : '#8f95bb' }}
             onClick={() => navigate('/login')}
 ```
+
 - `src/pages/ChatInterface.jsx:1604` — (element) <button>
 
 ```jsx
@@ -5732,6 +5998,7 @@
                     className={`group w-full rounded-[16px] px-3 py-3 text-left transition-all${hasUnread && !isActive ? 'ring-1 ring-[var(--gt-blue)]/20' : ''}`}
                     style={{ background: isActive ? theme.threadActiveBg : (hasUnread ? (isLight ? '#eef6ff' : '#1b1f3b') : 'transparent') }}
 ```
+
 - `src/pages/ChatInterface.jsx:1611` — (element) <Link>
 
 ```jsx
@@ -5740,6 +6007,7 @@
                         {thread.avatar ? (
                           <img src={avatarUrl(thread.avatar)} alt={threadName} className="h-11 w-11 rounded-full object-cover shadow-sm" />
 ```
+
 - `src/pages/ChatInterface.jsx:1689` — (element) <Link>
 
 ```jsx
@@ -5748,6 +6016,7 @@
                     <button
                       onClick={grantAccess}
 ```
+
 - `src/pages/ChatInterface.jsx:1691` — (element) <button>
 
 ```jsx
@@ -5756,6 +6025,7 @@
                       className="rounded-full borderless-shadow px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
                       title="Grant access to another member"
 ```
+
 - `src/pages/ChatInterface.jsx:1700` — (element) <button>
 
 ```jsx
@@ -5764,6 +6034,7 @@
                       className="rounded-full borderless-shadow px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/60"
                       title="Transfer this conversation to another agent"
 ```
+
 - `src/pages/ChatInterface.jsx:1708` — (element) <button>
 
 ```jsx
@@ -5772,6 +6043,7 @@
                     className="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50"
                     title="Start call"
 ```
+
 - `src/pages/ChatInterface.jsx:1715` — (element) <button>
 
 ```jsx
@@ -5780,6 +6052,7 @@
                   </button>
                   <button className="flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-slate-400 transition-colors hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800/50">
 ```
+
 - `src/pages/ChatInterface.jsx:1718` — (element) <button>
 
 ```jsx
@@ -5788,6 +6061,7 @@
                   </button>
                 </div>
 ```
+
 - `src/pages/ChatInterface.jsx:1734` — (element) <button>
 
 ```jsx
@@ -5796,6 +6070,7 @@
                       onClick={() => startInstantCall(activeThread)}
                       className="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white hover:bg-amber-500"
 ```
+
 - `src/pages/ChatInterface.jsx:1803` — (element) <button>
 
 ```jsx
@@ -5804,6 +6079,7 @@
                       onClick={requestAccess}
                       className="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white"
 ```
+
 - `src/pages/ChatInterface.jsx:1819` — (element) <button>
 
 ```jsx
@@ -5812,6 +6088,7 @@
                           onClick={() => setPrequalOverride(true)}
                           className="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white"
 ```
+
 - `src/pages/ChatInterface.jsx:1837` — (element) <button>
 
 ```jsx
@@ -5820,6 +6097,7 @@
                     onClick={requestAiSuggestion}
                     disabled={aiSuggesting || !activeThread?.matchId}
 ```
+
 - `src/pages/ChatInterface.jsx:1848` — (element) <button>
 
 ```jsx
@@ -5828,6 +6106,7 @@
                   </button>
                   <textarea
 ```
+
 - `src/pages/ChatInterface.jsx:1867` — (element) <button>
 
 ```jsx
@@ -5836,6 +6115,7 @@
                   </button>
                 </div>
 ```
+
 - `src/pages/ChatInterface.jsx:1919` — (element) <button>
 
 ```jsx
@@ -5844,6 +6124,7 @@
                     onClick={requestAiSummary}
                     disabled={aiSummaryLoading || !activeThread?.matchId}
 ```
+
 - `src/pages/ChatInterface.jsx:1944` — (element) <button>
 
 ```jsx
@@ -5852,6 +6133,7 @@
                     onClick={requestNegotiationHelper}
                     disabled={aiNegotiationLoading || !activeThread?.matchId}
 ```
+
 - `src/pages/ChatInterface.jsx:1973` — (element) <button>
 
 ```jsx
@@ -5860,14 +6142,16 @@
                       <action.icon size={16} strokeWidth={2} />
                     </div>
 ```
+
 - `src/pages/ChatInterface.jsx:1988` — (element) <button>
 
 ```jsx
-                    <button 
-                      className="flex w-full items-center justify-between p-4 text-xs font-bold uppercase tracking-wider transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50" 
+                    <button
+                      className="flex w-full items-center justify-between p-4 text-xs font-bold uppercase tracking-wider transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
                       style={{ background: isLight ? '#f8fafc' : '#101328', color: theme.textMuted }}
                       onClick={() => setAccordionState(prev => ({ ...prev, [section.id]: !prev[section.id] }))}
 ```
+
 - `src/pages/ChatInterface.jsx:2006` — (element) <button>
 
 ```jsx
@@ -5876,6 +6160,7 @@
                                   type="button"
                                   onClick={() => openAttachmentPreview(item.attachment, url)}
 ```
+
 - `src/pages/ChatInterface.jsx:2026` — (element) <button>
 
 ```jsx
@@ -5884,28 +6169,29 @@
                                   type="button"
                                   onClick={() => openAttachmentPreview(item.attachment, url)}
 ```
+
 ## 5) Backend Mapping (Frontend → Express → Controller → Service/DB)
 
-| Frontend call (path:line) | Express mount | Route definition | Controller file | Handler |
-|---|---|---|---|---|
-| GET /users/me (src/pages/ChatInterface.jsx:439) | /api/users -> server/routes/userRoutes.js:112 | GET /me (server/routes/userRoutes.js:24) | - | me |
-| GET /messages/inbox (src/pages/ChatInterface.jsx:453) | /api/messages -> server/routes/messageRoutes.js:123 | GET /inbox (server/routes/messageRoutes.js:39) | - | inbox |
-| POST /users/lookup (src/pages/ChatInterface.jsx:467) | /api/users -> server/routes/userRoutes.js:112 | POST /lookup (server/routes/userRoutes.js:29) | - | lookupUsers |
-| GET /calls/history?match_ids=${allMatchIds.join( (src/pages/ChatInterface.jsx:505) | /api/calls -> server/routes/callSessionRoutes.js:134 | - | - | - |
-| GET /messages/${matchId} (src/pages/ChatInterface.jsx:531) | /api/messages -> server/routes/messageRoutes.js:123 | - | - | - |
-| GET /leads/by-match/${encodeURIComponent(activeThread.matchId)} (src/pages/ChatInterface.jsx:575) | /api/leads -> server/routes/leadRoutes.js:126 | - | - | - |
-| POST /messages/${encodeURIComponent(activeThread.matchId)}/read (src/pages/ChatInterface.jsx:701) | /api/messages -> server/routes/messageRoutes.js:123 | - | - | - |
-| POST /presence (src/pages/ChatInterface.jsx:720) | /api/presence -> server/routes/presenceRoutes.js:138 | POST / (server/routes/presenceRoutes.js:7) | server/controllers/presenceController.js | getPresence |
-| GET /calls/pending (src/pages/ChatInterface.jsx:878) | /api/calls -> server/routes/callSessionRoutes.js:134 | GET /pending (server/routes/callSessionRoutes.js:46) | - | getPendingInvites |
-| POST /calls/join (src/pages/ChatInterface.jsx:925) | /api/calls -> server/routes/callSessionRoutes.js:134 | POST /join (server/routes/callSessionRoutes.js:42) | - | joinOrCreateCall |
-| POST /assistant/ask (src/pages/ChatInterface.jsx:1152) | /api/assistant -> server/routes/assistantRoutes.js:121 | POST /ask (server/routes/assistantRoutes.js:19) | - | askAssistant |
-| POST /assistant/conversation-summary (src/pages/ChatInterface.jsx:1172) | /api/assistant -> server/routes/assistantRoutes.js:121 | POST /conversation-summary (server/routes/assistantRoutes.js:24) | - | getConversationSummary |
-| POST /assistant/negotiation (src/pages/ChatInterface.jsx:1201) | /api/assistant -> server/routes/assistantRoutes.js:121 | POST /negotiation (server/routes/assistantRoutes.js:25) | - | getNegotiationHelper |
-| POST /messages/${activeThread.matchId} (src/pages/ChatInterface.jsx:1269) | /api/messages -> server/routes/messageRoutes.js:123 | - | - | - |
-| POST /chatbot/reply (src/pages/ChatInterface.jsx:1296) | /api/chatbot -> server/routes/chatbotRoutes.js:140 | POST /reply (server/routes/chatbotRoutes.js:11) | server/controllers/chatbotController.js | replyWithChatbot |
-| POST /conversations/${encodeURIComponent(activeThread.requestId)}/request-access (src/pages/ChatInterface.jsx:1335) | /api/conversations -> server/routes/conversationRoutes.js:122 | - | - | - |
-| GET /conversations/${encodeURIComponent(activeThread.requestId)}/grant (src/pages/ChatInterface.jsx:1349) | /api/conversations -> server/routes/conversationRoutes.js:122 | - | - | - |
-| GET /conversations/${encodeURIComponent(activeThread.requestId)}/transfer (src/pages/ChatInterface.jsx:1367) | /api/conversations -> server/routes/conversationRoutes.js:122 | - | - | - |
+| Frontend call (path:line)                                                                                           | Express mount                                                 | Route definition                                                 | Controller file                          | Handler                |
+| ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------- | ---------------------------------------- | ---------------------- |
+| GET /users/me (src/pages/ChatInterface.jsx:439)                                                                     | /api/users -> server/routes/userRoutes.js:112                 | GET /me (server/routes/userRoutes.js:24)                         | -                                        | me                     |
+| GET /messages/inbox (src/pages/ChatInterface.jsx:453)                                                               | /api/messages -> server/routes/messageRoutes.js:123           | GET /inbox (server/routes/messageRoutes.js:39)                   | -                                        | inbox                  |
+| POST /users/lookup (src/pages/ChatInterface.jsx:467)                                                                | /api/users -> server/routes/userRoutes.js:112                 | POST /lookup (server/routes/userRoutes.js:29)                    | -                                        | lookupUsers            |
+| GET /calls/history?match_ids=${allMatchIds.join( (src/pages/ChatInterface.jsx:505)                                  | /api/calls -> server/routes/callSessionRoutes.js:134          | -                                                                | -                                        | -                      |
+| GET /messages/${matchId} (src/pages/ChatInterface.jsx:531)                                                          | /api/messages -> server/routes/messageRoutes.js:123           | -                                                                | -                                        | -                      |
+| GET /leads/by-match/${encodeURIComponent(activeThread.matchId)} (src/pages/ChatInterface.jsx:575)                   | /api/leads -> server/routes/leadRoutes.js:126                 | -                                                                | -                                        | -                      |
+| POST /messages/${encodeURIComponent(activeThread.matchId)}/read (src/pages/ChatInterface.jsx:701)                   | /api/messages -> server/routes/messageRoutes.js:123           | -                                                                | -                                        | -                      |
+| POST /presence (src/pages/ChatInterface.jsx:720)                                                                    | /api/presence -> server/routes/presenceRoutes.js:138          | POST / (server/routes/presenceRoutes.js:7)                       | server/controllers/presenceController.js | getPresence            |
+| GET /calls/pending (src/pages/ChatInterface.jsx:878)                                                                | /api/calls -> server/routes/callSessionRoutes.js:134          | GET /pending (server/routes/callSessionRoutes.js:46)             | -                                        | getPendingInvites      |
+| POST /calls/join (src/pages/ChatInterface.jsx:925)                                                                  | /api/calls -> server/routes/callSessionRoutes.js:134          | POST /join (server/routes/callSessionRoutes.js:42)               | -                                        | joinOrCreateCall       |
+| POST /assistant/ask (src/pages/ChatInterface.jsx:1152)                                                              | /api/assistant -> server/routes/assistantRoutes.js:121        | POST /ask (server/routes/assistantRoutes.js:19)                  | -                                        | askAssistant           |
+| POST /assistant/conversation-summary (src/pages/ChatInterface.jsx:1172)                                             | /api/assistant -> server/routes/assistantRoutes.js:121        | POST /conversation-summary (server/routes/assistantRoutes.js:24) | -                                        | getConversationSummary |
+| POST /assistant/negotiation (src/pages/ChatInterface.jsx:1201)                                                      | /api/assistant -> server/routes/assistantRoutes.js:121        | POST /negotiation (server/routes/assistantRoutes.js:25)          | -                                        | getNegotiationHelper   |
+| POST /messages/${activeThread.matchId} (src/pages/ChatInterface.jsx:1269)                                           | /api/messages -> server/routes/messageRoutes.js:123           | -                                                                | -                                        | -                      |
+| POST /chatbot/reply (src/pages/ChatInterface.jsx:1296)                                                              | /api/chatbot -> server/routes/chatbotRoutes.js:140            | POST /reply (server/routes/chatbotRoutes.js:11)                  | server/controllers/chatbotController.js  | replyWithChatbot       |
+| POST /conversations/${encodeURIComponent(activeThread.requestId)}/request-access (src/pages/ChatInterface.jsx:1335) | /api/conversations -> server/routes/conversationRoutes.js:122 | -                                                                | -                                        | -                      |
+| GET /conversations/${encodeURIComponent(activeThread.requestId)}/grant (src/pages/ChatInterface.jsx:1349)           | /api/conversations -> server/routes/conversationRoutes.js:122 | -                                                                | -                                        | -                      |
+| GET /conversations/${encodeURIComponent(activeThread.requestId)}/transfer (src/pages/ChatInterface.jsx:1367)        | /api/conversations -> server/routes/conversationRoutes.js:122 | -                                                                | -                                        | -                      |
 
 ## 6) How to Edit Safely
 
@@ -5915,4 +6201,3 @@
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
-

@@ -13,8 +13,9 @@ This doc is generated from source snapshots with `path:line` references.
 - **Route definition:** `server/routes/assistantRoutes.js:19`
 
 ```js
-router.post('/ask', requireAuth, askAssistant)
+router.post("/ask", requireAuth, askAssistant);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `askAssistant`
@@ -25,8 +26,9 @@ router.post('/ask', requireAuth, askAssistant)
 - **Route definition:** `server/routes/assistantRoutes.js:20`
 
 ```js
-router.post('/ask-public', askAssistantPublic)
+router.post("/ask-public", askAssistantPublic);
 ```
+
 - **Middleware stack (in order):**
   - _none detected_
 - **Handler:** `askAssistantPublic`
@@ -37,8 +39,9 @@ router.post('/ask-public', askAssistantPublic)
 - **Route definition:** `server/routes/assistantRoutes.js:21`
 
 ```js
-router.post('/extract-requirement', requireAuth, postExtractRequirement)
+router.post("/extract-requirement", requireAuth, postExtractRequirement);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `postExtractRequirement`
@@ -49,8 +52,9 @@ router.post('/extract-requirement', requireAuth, postExtractRequirement)
 - **Route definition:** `server/routes/assistantRoutes.js:22`
 
 ```js
-router.post('/generate-first-response', requireAuth, postGenerateFirstResponse)
+router.post("/generate-first-response", requireAuth, postGenerateFirstResponse);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `postGenerateFirstResponse`
@@ -61,8 +65,9 @@ router.post('/generate-first-response', requireAuth, postGenerateFirstResponse)
 - **Route definition:** `server/routes/assistantRoutes.js:23`
 
 ```js
-router.post('/validate-response', requireAuth, postValidateResponse)
+router.post("/validate-response", requireAuth, postValidateResponse);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `postValidateResponse`
@@ -73,8 +78,9 @@ router.post('/validate-response', requireAuth, postValidateResponse)
 - **Route definition:** `server/routes/assistantRoutes.js:24`
 
 ```js
-router.post('/conversation-summary', requireAuth, getConversationSummary)
+router.post("/conversation-summary", requireAuth, getConversationSummary);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `getConversationSummary`
@@ -85,8 +91,9 @@ router.post('/conversation-summary', requireAuth, getConversationSummary)
 - **Route definition:** `server/routes/assistantRoutes.js:25`
 
 ```js
-router.post('/negotiation', requireAuth, getNegotiationHelper)
+router.post("/negotiation", requireAuth, getNegotiationHelper);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `getNegotiationHelper`
@@ -97,8 +104,9 @@ router.post('/negotiation', requireAuth, getNegotiationHelper)
 - **Route definition:** `server/routes/assistantRoutes.js:26`
 
 ```js
-router.get('/knowledge', requireAuth, getAssistantKnowledge)
+router.get("/knowledge", requireAuth, getAssistantKnowledge);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `getAssistantKnowledge`
@@ -109,8 +117,14 @@ router.get('/knowledge', requireAuth, getAssistantKnowledge)
 - **Route definition:** `server/routes/assistantRoutes.js:27`
 
 ```js
-router.post('/knowledge', requireAuth, allowRoles('owner', 'admin'), createAssistantKnowledge)
+router.post(
+  "/knowledge",
+  requireAuth,
+  allowRoles("owner", "admin"),
+  createAssistantKnowledge,
+);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
   - `allowRoles('owner', 'admin')`
@@ -122,8 +136,14 @@ router.post('/knowledge', requireAuth, allowRoles('owner', 'admin'), createAssis
 - **Route definition:** `server/routes/assistantRoutes.js:29`
 
 ```js
-router.delete('/knowledge/:entryId', requireAuth, allowRoles('owner', 'admin'), removeAssistantKnowledge)
+router.delete(
+  "/knowledge/:entryId",
+  requireAuth,
+  allowRoles("owner", "admin"),
+  removeAssistantKnowledge,
+);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
   - `allowRoles('owner', 'admin')`
@@ -135,4 +155,3 @@ router.delete('/knowledge/:entryId', requireAuth, allowRoles('owner', 'admin'), 
 - JSON helpers: `server/utils/jsonStore.js` (readJson/writeJson/updateJson).
 - Data files: `server/database/*.json`.
 - Controllers/services often read from `users.json`, `messages.json`, `metrics.json`, etc.
-

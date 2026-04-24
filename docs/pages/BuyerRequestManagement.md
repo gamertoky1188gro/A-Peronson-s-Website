@@ -1,11 +1,13 @@
 # BuyerRequestManagement - Complete Page Specification (Manual)
 
 ## Page Title & Description
+
 - Title: `Post New Buyer Request`
 - Route: `/buyer-requests`
 - Purpose: Multi-step buyer request creation plus inline management (view/edit/delete) of the user’s existing requests.
 
 ## Layout & Structure
+
 - Top header:
   - main title
   - step indicator `Step X of 3`
@@ -21,10 +23,12 @@
   - inline edit form appears beneath selected request.
 
 Approximate placement:
+
 - Step form in upper half.
 - Request management list below.
 
 ## Theme & Styling
+
 - White panel surfaces with blue action buttons.
 - Primary accent: `#0A66C2`.
 - Error text: red.
@@ -32,7 +36,9 @@ Approximate placement:
 - Inputs: bordered rounded utility styling.
 
 ## Content Details
+
 Exact notable text:
+
 - Header: `Post New Buyer Request`
 - Step indicator: `Step {step} of 3`
 - Step 1 labels:
@@ -69,10 +75,12 @@ Exact notable text:
   - action buttons: `Save` / `Saving...`, `Cancel`
 
 ## Interactions & Functionality
+
 - Initial load:
   - calls `GET /requirements` with auth token.
 - Create flow:
   - builds payload via `formToRequirementPayload`:
+
 ```json
 {
   "category": "...",
@@ -85,8 +93,9 @@ Exact notable text:
   "custom_description": "Subcategory: ...\nGSM: ...\n..."
 }
 ```
-  - submits `POST /requirements`.
-  - on success resets form and reloads list.
+
+- submits `POST /requirements`.
+- on success resets form and reloads list.
 - Edit flow:
   - `startEditing` maps existing requirement to edit form.
   - `PATCH /requirements/:id` with transformed payload.
@@ -100,9 +109,11 @@ Exact notable text:
   - surfaces `You are not authenticated. Please sign in again.`
 
 ## Images & Media
+
 - No images/videos/media embeds in this page.
 
 ## Extra Notes / Metadata
+
 - SEO:
   - no page-specific metadata.
 - Accessibility:

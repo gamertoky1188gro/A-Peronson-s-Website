@@ -60,12 +60,12 @@ function LegalCard({ children, className='', index = 0, id }) {
 
   return (
 ```
+
 **Raw class strings detected (best effort):**
 
 - _(dynamic className; inspect the snippet above)_
 
 **Utility breakdown (grouped):**
-
 
 #### `src/pages/Privacy.jsx:39`
 
@@ -75,6 +75,7 @@ function LegalCard({ children, className='', index = 0, id }) {
         'bg-[#ffffff] borderless-shadow shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
         'dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl p-6 lg:p-8 transition-colors duration-500 ease-in-out`
@@ -111,6 +112,7 @@ function LegalCard({ children, className='', index = 0, id }) {
       {label}
     </a>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide text-slate-700 hover:text-indigo-700 bg-black/[0.03] hover:bg-black/[0.05] dark:text-slate-200 dark:hover:text-white dark:bg-white/5 dark:hover:bg-white/10 transition`
@@ -147,6 +149,7 @@ function LegalCard({ children, className='', index = 0, id }) {
         <motion.header
           initial={reduceMotion ? false : { opacity: 0, y: -10 }}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-h-screen legal-weave bg-[#f8fafc] text-[#0f172a] dark:bg-[#020617] dark:text-[#f8fafc] transition-colors duration-500 ease-in-out px-4 py-8 lg:px-12 lg:py-12`
@@ -185,6 +188,7 @@ function LegalCard({ children, className='', index = 0, id }) {
           initial={reduceMotion ? false : { opacity: 0, y: -10 }}
           animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mx-auto max-w-6xl`
@@ -204,6 +208,7 @@ function LegalCard({ children, className='', index = 0, id }) {
           <div className="rounded-3xl bg-[#ffffff]/80 backdrop-blur-md borderless-shadow shadow-[0_10px_40px_rgba(2,6,23,0.06)] p-6 lg:p-8 dark:bg-[#0f172a]/70 dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out">
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mb-5`
@@ -249,6 +254,7 @@ function LegalCard({ children, className='', index = 0, id }) {
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase bg-sky-50 text-sky-700 borderless-shadow dark:bg-white/5 dark:text-sky-200 dark:ring-1 dark:ring-white/10">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-3xl bg-[#ffffff]/80 backdrop-blur-md borderless-shadow shadow-[0_10px_40px_rgba(2,6,23,0.06)] p-6 lg:p-8 dark:bg-[#0f172a]/70 dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out`
@@ -308,6 +314,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                 <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase bg-sky-50 text-sky-700 borderless-shadow dark:bg-white/5 dark:text-sky-200 dark:ring-1 dark:ring-white/10">
                   Legal Documentation
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-col gap-4 md:flex-row md:items-end md:justify-between`
@@ -354,6 +361,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                 </div>
                 <h1 className="mt-4 text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#0f172a] dark:text-white">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase bg-sky-50 text-sky-700 borderless-shadow dark:bg-white/5 dark:text-sky-200 dark:ring-1 dark:ring-white/10`
@@ -402,6 +410,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                 </h1>
                 <p className="mt-2 text-sm font-medium text-slate-600 dark:text-slate-300">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#0f172a] dark:text-white`
@@ -431,11 +440,12 @@ function LegalCard({ children, className='', index = 0, id }) {
 #### `src/pages/Privacy.jsx:84`
 
 ```jsx
-                <p className="mt-2 text-sm font-medium text-slate-600 dark:text-slate-300">
-                  Last Updated:{' '}
-                  <span className="text-[#0f172a] dark:text-slate-100">{lastUpdated}</span>
-                </p>
+<p className="mt-2 text-sm font-medium text-slate-600 dark:text-slate-300">
+  Last Updated:{" "}
+  <span className="text-[#0f172a] dark:text-slate-100">{lastUpdated}</span>
+</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm font-medium text-slate-600 dark:text-slate-300`
@@ -464,6 +474,7 @@ function LegalCard({ children, className='', index = 0, id }) {
               </div>
               <div className="max-w-xl text-sm md:text-base leading-relaxed text-slate-600 dark:text-slate-300">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[#0f172a] dark:text-slate-100`
@@ -493,6 +504,7 @@ function LegalCard({ children, className='', index = 0, id }) {
               </div>
             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `max-w-xl text-sm md:text-base leading-relaxed text-slate-600 dark:text-slate-300`
@@ -526,6 +538,7 @@ function LegalCard({ children, className='', index = 0, id }) {
             </div>
           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-bold text-indigo-700 dark:text-indigo-300`
@@ -550,6 +563,7 @@ function LegalCard({ children, className='', index = 0, id }) {
             <div className="flex flex-wrap items-center gap-2">
               <TocLink href="#collect" label="1. Collect" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `sticky top-[72px] z-40 mb-6`
@@ -601,6 +615,7 @@ function LegalCard({ children, className='', index = 0, id }) {
               <TocLink href="#collect" label="1. Collect" />
               <TocLink href="#use" label="2. Use" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl borderless-shadow bg-[#ffffff]/70 backdrop-blur-md shadow-[0_10px_34px_rgba(2,6,23,0.05)] px-4 py-3 dark:bg-[#020617]/60 dark:shadow-none dark:ring-1 dark:ring-white/10 transition-colors duration-500 ease-in-out`
@@ -652,6 +667,7 @@ function LegalCard({ children, className='', index = 0, id }) {
               <TocLink href="#use" label="2. Use" />
               <TocLink href="#fraud" label="3. Fraud" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap items-center gap-2`
@@ -689,6 +705,7 @@ function LegalCard({ children, className='', index = 0, id }) {
             <h2 className="text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3">
               <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid grid-cols-12 gap-6`
@@ -740,6 +757,7 @@ function LegalCard({ children, className='', index = 0, id }) {
               <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
                 1
 ```
+
 **Raw class strings detected (best effort):**
 
 - `col-span-12`
@@ -787,6 +805,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                 1
               </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3`
@@ -832,6 +851,7 @@ function LegalCard({ children, className='', index = 0, id }) {
               </span>
               Information We Collect
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm`
@@ -866,6 +886,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                 <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Account Data</h3>
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid grid-cols-12 gap-4`
@@ -917,6 +938,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
                   {['Full Name', 'Organization Name', 'Email Address', 'Phone Number', 'Country', 'Verification Docs', 'Account Type'].map((item) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10`
@@ -983,6 +1005,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                   {['Full Name', 'Organization Name', 'Email Address', 'Phone Number', 'Country', 'Verification Docs', 'Account Type'].map((item) => (
                     <li key={item} className="flex items-center gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-bold text-[#0f172a] dark:text-white mb-3`
@@ -1042,6 +1065,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                     <li key={item} className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300`
@@ -1097,11 +1121,12 @@ function LegalCard({ children, className='', index = 0, id }) {
 #### `src/pages/Privacy.jsx:126`
 
 ```jsx
-                    <li key={item} className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
-                      {item}
-                    </li>
+<li key={item} className="flex items-center gap-2">
+  <span className="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
+  {item}
+</li>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2`
@@ -1129,6 +1154,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                     </li>
                   ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-1.5 h-1.5 rounded-full bg-sky-500`
@@ -1151,6 +1177,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
                   {['Product Specifications', 'Design Requirements', 'Order Documents', 'Digital Signature Records'].map((item) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10`
@@ -1211,6 +1238,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                   {['Product Specifications', 'Design Requirements', 'Order Documents', 'Digital Signature Records'].map((item) => (
                     <li key={item} className="flex items-center gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-bold text-[#0f172a] dark:text-white mb-3`
@@ -1264,6 +1292,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                     <li key={item} className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300`
@@ -1313,11 +1342,12 @@ function LegalCard({ children, className='', index = 0, id }) {
 #### `src/pages/Privacy.jsx:138`
 
 ```jsx
-                    <li key={item} className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-                      {item}
-                    </li>
+<li key={item} className="flex items-center gap-2">
+  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+  {item}
+</li>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2`
@@ -1345,6 +1375,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                     </li>
                   ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-1.5 h-1.5 rounded-full bg-indigo-500`
@@ -1367,6 +1398,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
                   {['Chat messages', 'Video/Audio logs', 'Call recordings'].map((item) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10`
@@ -1423,6 +1455,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                   {['Chat messages', 'Video/Audio logs', 'Call recordings'].map((item) => (
                     <li key={item} className="flex items-center gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-bold text-[#0f172a] dark:text-white mb-3`
@@ -1472,6 +1505,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                     <li key={item} className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300`
@@ -1517,11 +1551,12 @@ function LegalCard({ children, className='', index = 0, id }) {
 #### `src/pages/Privacy.jsx:150`
 
 ```jsx
-                    <li key={item} className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                      {item}
-                    </li>
+<li key={item} className="flex items-center gap-2">
+  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+  {item}
+</li>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2`
@@ -1549,6 +1584,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                     </li>
                   ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-1.5 h-1.5 rounded-full bg-emerald-500`
@@ -1571,6 +1607,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
                   {['IP address', 'Device/Browser type', 'Usage activity', 'Search history'].map((item) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10`
@@ -1630,6 +1667,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                   {['IP address', 'Device/Browser type', 'Usage activity', 'Search history'].map((item) => (
                     <li key={item} className="flex items-center gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-bold text-[#0f172a] dark:text-white mb-3`
@@ -1682,6 +1720,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                     <li key={item} className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300`
@@ -1730,11 +1769,12 @@ function LegalCard({ children, className='', index = 0, id }) {
 #### `src/pages/Privacy.jsx:162`
 
 ```jsx
-                    <li key={item} className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                      {item}
-                    </li>
+<li key={item} className="flex items-center gap-2">
+  <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+  {item}
+</li>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2`
@@ -1762,6 +1802,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                     </li>
                   ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-1.5 h-1.5 rounded-full bg-amber-500`
@@ -1784,6 +1825,7 @@ function LegalCard({ children, className='', index = 0, id }) {
               <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm">
                 2
 ```
+
 **Raw class strings detected (best effort):**
 
 - `col-span-12`
@@ -1831,6 +1873,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                 2
               </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xl md:text-2xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-4 flex items-center gap-3`
@@ -1876,6 +1919,7 @@ function LegalCard({ children, className='', index = 0, id }) {
               </span>
               How We Use Your Information
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 text-slate-700 borderless-shadow dark:bg-white/5 dark:text-slate-200 dark:ring-1 dark:ring-white/10 text-sm`
@@ -1910,6 +1954,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                 {[
                   'Account Management',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl p-5 bg-black/[0.02] borderless-shadow dark:bg-white/5 dark:ring-1 dark:ring-white/10`
@@ -1949,6 +1994,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                   'Account Management',
                   'Order Matching',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid md:grid-cols-2 gap-4 list-none p-0 m-0`
@@ -1975,11 +2021,15 @@ function LegalCard({ children, className='', index = 0, id }) {
 #### `src/pages/Privacy.jsx:191`
 
 ```jsx
-                  <li key={item} className="flex items-center gap-3 text-sm md:text-base font-medium rounded-xl px-3 py-2">
-                    <span className="text-sky-600 dark:text-sky-300">✓</span>
-                    {item}
-                  </li>
+<li
+  key={item}
+  className="flex items-center gap-3 text-sm md:text-base font-medium rounded-xl px-3 py-2"
+>
+  <span className="text-sky-600 dark:text-sky-300">✓</span>
+  {item}
+</li>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-3 text-sm md:text-base font-medium rounded-xl px-3 py-2`
@@ -2013,6 +2063,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                   </li>
                 ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sky-600 dark:text-sky-300`
@@ -2027,11 +2078,17 @@ function LegalCard({ children, className='', index = 0, id }) {
 #### `src/pages/Privacy.jsx:202`
 
 ```jsx
-            className="col-span-12 dark:bg-[#0b1220] dark:text-white dark:ring-1 dark:ring-white/10"
-            id="fraud"
-          >
-            <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-4 text-[#0f172a] dark:text-white">3. Fraud Prevention Measures</h2>
+className =
+  "col-span-12 dark:bg-[#0b1220] dark:text-white dark:ring-1 dark:ring-white/10";
+id =
+  "fraud" >
+  (
+    <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-4 text-[#0f172a] dark:text-white">
+      3. Fraud Prevention Measures
+    </h2>
+  );
 ```
+
 **Raw class strings detected (best effort):**
 
 - `col-span-12 dark:bg-[#0b1220] dark:text-white dark:ring-1 dark:ring-white/10`
@@ -2068,6 +2125,7 @@ function LegalCard({ children, className='', index = 0, id }) {
               <span className="font-bold text-rose-700 dark:text-rose-300">We take fraud prevention seriously.</span> <span className="text-indigo-700 dark:text-indigo-300 font-semibold">All calls are recorded</span> and <span className="text-indigo-700 dark:text-indigo-300 font-semibold">contracts are digitally signed</span> for your security.
             </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xl md:text-2xl font-bold tracking-tight mb-4 text-[#0f172a] dark:text-white`
@@ -2108,6 +2166,7 @@ function LegalCard({ children, className='', index = 0, id }) {
             </p>
             <ul className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-white/85 text-sm md:text-base leading-relaxed list-none p-0 m-0">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm md:text-base leading-relaxed text-slate-700 dark:text-white/85 mb-4`
@@ -2151,6 +2210,7 @@ function LegalCard({ children, className='', index = 0, id }) {
             <ul className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-white/85 text-sm md:text-base leading-relaxed list-none p-0 m-0">
               {[
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-bold text-rose-700 dark:text-rose-300`
@@ -2192,6 +2252,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                 'Identity verification process',
                 'Secure digital contracts',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid md:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-white/85 text-sm md:text-base leading-relaxed list-none p-0 m-0`
@@ -2233,6 +2294,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                     <svg className="w-3 h-3 text-indigo-700 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start gap-3`
@@ -2278,6 +2340,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
                     </svg>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 bg-black/5 dark:bg-white/10 p-1 rounded-full`
@@ -2319,6 +2382,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                     </svg>
                   </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-3 h-3 text-indigo-700 dark:text-white`
@@ -2351,6 +2415,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                 {item.id}. {item.title}
               </h2>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `col-span-12 md:col-span-6`
@@ -2382,6 +2447,7 @@ function LegalCard({ children, className='', index = 0, id }) {
               </h2>
               <p className="text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">{item.text}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg md:text-xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-3`
@@ -2415,6 +2481,7 @@ function LegalCard({ children, className='', index = 0, id }) {
           ))}
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300`
@@ -2438,6 +2505,7 @@ function LegalCard({ children, className='', index = 0, id }) {
             <div className="space-y-1">
               <p className="text-slate-500 dark:text-white/60 text-sm">Direct Support</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `col-span-12 dark:bg-[#0b1220] dark:text-white`
@@ -2472,6 +2540,7 @@ function LegalCard({ children, className='', index = 0, id }) {
               <p className="text-slate-500 dark:text-white/60 text-sm">Direct Support</p>
               <p className="font-bold underline decoration-sky-500 underline-offset-4">gartexhub@gmail.com</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xl font-bold mb-4 text-[#0f172a] dark:text-white`
@@ -2502,11 +2571,14 @@ function LegalCard({ children, className='', index = 0, id }) {
 #### `src/pages/Privacy.jsx:273`
 
 ```jsx
-            <div className="space-y-1">
-              <p className="text-slate-500 dark:text-white/60 text-sm">Direct Support</p>
-              <p className="font-bold underline decoration-sky-500 underline-offset-4">gartexhub@gmail.com</p>
-            </div>
+<div className="space-y-1">
+  <p className="text-slate-500 dark:text-white/60 text-sm">Direct Support</p>
+  <p className="font-bold underline decoration-sky-500 underline-offset-4">
+    gartexhub@gmail.com
+  </p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-1`
@@ -2536,6 +2608,7 @@ function LegalCard({ children, className='', index = 0, id }) {
             </div>
           </LegalCard>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-slate-500 dark:text-white/60 text-sm`
@@ -2562,6 +2635,7 @@ function LegalCard({ children, className='', index = 0, id }) {
           </LegalCard>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-bold underline decoration-sky-500 underline-offset-4`
@@ -2583,6 +2657,7 @@ function LegalCard({ children, className='', index = 0, id }) {
             <div className="rounded-2xl p-6 bg-[#ffffff] borderless-shadow shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5 transition-colors duration-500 ease-in-out">
               <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `col-span-12 text-center`
@@ -2627,6 +2702,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                 © 2026 GARTEXHUB PROFESSIONAL NETWORK. ALL RIGHTS RESERVE
               </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl p-6 bg-[#ffffff] borderless-shadow shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5 transition-colors duration-500 ease-in-out`
@@ -2667,6 +2743,7 @@ function LegalCard({ children, className='', index = 0, id }) {
               </p>
             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest`
@@ -2694,6 +2771,7 @@ function LegalCard({ children, className='', index = 0, id }) {
             </div>
           </div>
 ```
+
 - `src/pages/Privacy.jsx:123` — Account Data
 
 ```jsx
@@ -2702,6 +2780,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                   {['Full Name', 'Organization Name', 'Email Address', 'Phone Number', 'Country', 'Verification Docs', 'Account Type'].map((item) => (
                     <li key={item} className="flex items-center gap-2">
 ```
+
 - `src/pages/Privacy.jsx:135` — Business Data
 
 ```jsx
@@ -2710,6 +2789,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                   {['Product Specifications', 'Design Requirements', 'Order Documents', 'Digital Signature Records'].map((item) => (
                     <li key={item} className="flex items-center gap-2">
 ```
+
 - `src/pages/Privacy.jsx:147` — Communications
 
 ```jsx
@@ -2718,6 +2798,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                   {['Chat messages', 'Video/Audio logs', 'Call recordings'].map((item) => (
                     <li key={item} className="flex items-center gap-2">
 ```
+
 - `src/pages/Privacy.jsx:159` — Technical Information
 
 ```jsx
@@ -2726,6 +2807,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                   {['IP address', 'Device/Browser type', 'Usage activity', 'Search history'].map((item) => (
                     <li key={item} className="flex items-center gap-2">
 ```
+
 - `src/pages/Privacy.jsx:192` — ✓
 
 ```jsx
@@ -2734,6 +2816,7 @@ function LegalCard({ children, className='', index = 0, id }) {
                   </li>
                 ))}
 ```
+
 - `src/pages/Privacy.jsx:205` — 3. Fraud Prevention Measures
 
 ```jsx
@@ -2742,6 +2825,7 @@ function LegalCard({ children, className='', index = 0, id }) {
               <span className="font-bold text-rose-700 dark:text-rose-300">We take fraud prevention seriously.</span> <span className="text-indigo-700 dark:text-indigo-300 font-semibold">All calls are recorded</span> and <span className="text-indigo-700 dark:text-indigo-300 font-semibold">contracts are digitally signed</span> for your security.
             </p>
 ```
+
 - `src/pages/Privacy.jsx:207` — We take fraud prevention seriously.
 
 ```jsx
@@ -2750,6 +2834,7 @@ function LegalCard({ children, className='', index = 0, id }) {
             <ul className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-white/85 text-sm md:text-base leading-relaxed list-none p-0 m-0">
               {[
 ```
+
 - `src/pages/Privacy.jsx:272` — 13. Contact Information
 
 ```jsx
@@ -2758,6 +2843,7 @@ function LegalCard({ children, className='', index = 0, id }) {
               <p className="text-slate-500 dark:text-white/60 text-sm">Direct Support</p>
               <p className="font-bold underline decoration-sky-500 underline-offset-4">gartexhub@gmail.com</p>
 ```
+
 - `src/pages/Privacy.jsx:274` — Direct Support
 
 ```jsx
@@ -2766,6 +2852,7 @@ function LegalCard({ children, className='', index = 0, id }) {
             </div>
           </LegalCard>
 ```
+
 - `src/pages/Privacy.jsx:275` — gartexhub@gmail.com
 
 ```jsx
@@ -2774,6 +2861,7 @@ function LegalCard({ children, className='', index = 0, id }) {
           </LegalCard>
 
 ```
+
 ## 5) Backend Mapping (Frontend → Express → Controller → Service/DB)
 
 _No API calls detected in this page._
@@ -2786,4 +2874,3 @@ _No API calls detected in this page._
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
-

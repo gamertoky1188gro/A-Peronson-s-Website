@@ -4,22 +4,22 @@ This audit maps only the buyer-requested items from the shared chat messages and
 
 ## Feature Status Chart
 
-| # | Buyer request | Status | Notes / Evidence |
-|---|---|---|---|
-| 1 | Dark mode selected color should be blue | **Implemented** | Account type selected state is blue in light/dark (`text-[var(--gt-blue)]`, blue-tinted dark bg). |
-| 2 | Bot logo should be better | **Implemented** | Floating assistant uses dedicated `BotLogo` component for launcher and header icon. |
-| 3 | Password should be visible + confirm password field | **Implemented** | Signup has `Show/Hide` for password and confirm password with mismatch validation. |
-| 4 | Account type should open as clean dropdown (not always show 3 options) | **Implemented** | Signup uses custom `RoleSelect` dropdown toggle with arrow + listbox behavior. |
-| 5 | Country should support typed suggestion/autocomplete | **Implemented** | Signup uses `CountryAutocomplete` filtered suggestion list. |
-| 6 | In dark mode, “Already have an account” should be visible/highlighted | **Implemented** | Login link has dark text/background classes for contrast. |
-| 7 | “View Plan” button should jump to subscription plans section | **Implemented** | Hash navigation support (`#plans`) + pricing page auto-scroll by hash. |
-| 8 | Form labels (Full name, Email, Password, Confirm Password, Account Type) should stay visible in dark mode | **Implemented** | Labels use `dark:text-slate-200`; inputs use dark backgrounds with readable text. |
-| 9 | Account type clicked option text in dark mode should be blue | **Implemented** | Selected role option text explicitly uses brand blue variable. |
-| 10 | Back button should have arrow icon | **Implemented** | Shared `BackButton` includes left arrow SVG icon + text. |
-| 11 | Account type default should show Buyer + dropdown arrow | **Implemented** | Signup form defaults `primaryRole: 'buyer'`; RoleSelect renders arrow and current label. |
-| 12 | Country list can include all countries but not Israel | **Implemented** | `BUYER_COUNTRY_OPTIONS` list excludes Israel. |
-| 13 | Step validation should block illogical/too-short input before moving next step | **Partial** | Onboarding validates image URL and min organization length, but buyer’s deeper “logical content/quantity format” rules are not fully enforced everywhere. |
-| 14 | Bot actually works / cross icon works and should not appear broken | **Partial** | Cross icon exists and assistant UI is wired to WebSocket. Runtime uptime depends on backend WS availability; code-level UI is present. |
+| #   | Buyer request                                                                                             | Status          | Notes / Evidence                                                                                                                                          |
+| --- | --------------------------------------------------------------------------------------------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Dark mode selected color should be blue                                                                   | **Implemented** | Account type selected state is blue in light/dark (`text-[var(--gt-blue)]`, blue-tinted dark bg).                                                         |
+| 2   | Bot logo should be better                                                                                 | **Implemented** | Floating assistant uses dedicated `BotLogo` component for launcher and header icon.                                                                       |
+| 3   | Password should be visible + confirm password field                                                       | **Implemented** | Signup has `Show/Hide` for password and confirm password with mismatch validation.                                                                        |
+| 4   | Account type should open as clean dropdown (not always show 3 options)                                    | **Implemented** | Signup uses custom `RoleSelect` dropdown toggle with arrow + listbox behavior.                                                                            |
+| 5   | Country should support typed suggestion/autocomplete                                                      | **Implemented** | Signup uses `CountryAutocomplete` filtered suggestion list.                                                                                               |
+| 6   | In dark mode, “Already have an account” should be visible/highlighted                                     | **Implemented** | Login link has dark text/background classes for contrast.                                                                                                 |
+| 7   | “View Plan” button should jump to subscription plans section                                              | **Implemented** | Hash navigation support (`#plans`) + pricing page auto-scroll by hash.                                                                                    |
+| 8   | Form labels (Full name, Email, Password, Confirm Password, Account Type) should stay visible in dark mode | **Implemented** | Labels use `dark:text-slate-200`; inputs use dark backgrounds with readable text.                                                                         |
+| 9   | Account type clicked option text in dark mode should be blue                                              | **Implemented** | Selected role option text explicitly uses brand blue variable.                                                                                            |
+| 10  | Back button should have arrow icon                                                                        | **Implemented** | Shared `BackButton` includes left arrow SVG icon + text.                                                                                                  |
+| 11  | Account type default should show Buyer + dropdown arrow                                                   | **Implemented** | Signup form defaults `primaryRole: 'buyer'`; RoleSelect renders arrow and current label.                                                                  |
+| 12  | Country list can include all countries but not Israel                                                     | **Implemented** | `BUYER_COUNTRY_OPTIONS` list excludes Israel.                                                                                                             |
+| 13  | Step validation should block illogical/too-short input before moving next step                            | **Partial**     | Onboarding validates image URL and min organization length, but buyer’s deeper “logical content/quantity format” rules are not fully enforced everywhere. |
+| 14  | Bot actually works / cross icon works and should not appear broken                                        | **Partial**     | Cross icon exists and assistant UI is wired to WebSocket. Runtime uptime depends on backend WS availability; code-level UI is present.                    |
 
 ## Backend Completion Status (now fully added)
 

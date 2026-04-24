@@ -64,6 +64,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         <div className="flex items-center justify-between">
           <div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-h-screen bg-slate-50 flex items-center justify-center p-4`
@@ -100,6 +101,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div>
             <h1 className="text-3xl font-bold text-slate-900">Create your account</h1>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full max-w-2xl rounded-2xl bg-white p-8 shadow-[0_18px_60px_rgba(15,23,42,0.08)] ring-1 ring-slate-200/60`
@@ -136,6 +138,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <h1 className="text-3xl font-bold text-slate-900">Create your account</h1>
             <p className="mt-2 text-sm text-slate-500">A clean, professional start for Garments and Textile sourcing teams.</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between`
@@ -165,6 +168,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
           <div className="hidden sm:flex items-center gap-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-3xl font-bold text-slate-900`
@@ -196,6 +200,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div className="hidden sm:flex items-center gap-3">
             <div className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-semibold text-[#0A66C2]">GarTexHub</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm text-slate-500`
@@ -228,11 +233,17 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/auth/Signup.jsx:110`
 
 ```jsx
-          <div className="hidden sm:flex items-center gap-3">
-            <div className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-semibold text-[#0A66C2]">GarTexHub</div>
-            <BackButton onClick={handleBack} className="text-sm text-slate-600 hover:text-slate-900 bg-transparent px-2 py-1 rounded-none" />
-          </div>
+<div className="hidden sm:flex items-center gap-3">
+  <div className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-semibold text-[#0A66C2]">
+    GarTexHub
+  </div>
+  <BackButton
+    onClick={handleBack}
+    className="text-sm text-slate-600 hover:text-slate-900 bg-transparent px-2 py-1 rounded-none"
+  />
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `hidden sm:flex items-center gap-3`
@@ -274,6 +285,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-blue-50 px-3 py-1 text-[11px] font-semibold text-[#0A66C2]`
@@ -308,6 +320,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         </div>
         <div className="mt-3 sm:hidden">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm text-slate-600 hover:text-slate-900 bg-transparent px-2 py-1 rounded-none`
@@ -334,11 +347,14 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/auth/Signup.jsx:115`
 
 ```jsx
-        <div className="mt-3 sm:hidden">
-          <BackButton onClick={handleBack} className="text-sm text-slate-600 hover:text-slate-900 bg-transparent px-2 py-1 rounded-none" />
-        </div>
-
+<div className="mt-3 sm:hidden">
+  <BackButton
+    onClick={handleBack}
+    className="text-sm text-slate-600 hover:text-slate-900 bg-transparent px-2 py-1 rounded-none"
+  />
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 sm:hidden`
@@ -370,6 +386,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 
         <form className="mt-8 grid md:grid-cols-2 gap-4" onSubmit={handleSubmit}>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm text-slate-600 hover:text-slate-900 bg-transparent px-2 py-1 rounded-none`
@@ -404,6 +421,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <label className="block text-sm font-medium mb-1 text-slate-700">Full Name</label>
             <input className="w-full px-4 py-3 borderless-shadow rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20" value={form.name} onChange={(e) => onChange('name', e.target.value)} required />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-8 grid md:grid-cols-2 gap-4`
@@ -444,6 +462,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
           <div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `block text-sm font-medium mb-1 text-slate-700`
@@ -478,6 +497,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div>
             <label className="block text-sm font-medium mb-1 text-slate-700">Email</label>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full px-4 py-3 borderless-shadow rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20`
@@ -512,6 +532,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
           <div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `block text-sm font-medium mb-1 text-slate-700`
@@ -546,6 +567,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div>
             <label className="block text-sm font-medium mb-1 text-slate-700">Password</label>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full px-4 py-3 borderless-shadow rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20`
@@ -580,6 +602,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <input
                 type={passwordVisible ? 'text' : 'password'}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `block text-sm font-medium mb-1 text-slate-700`
@@ -620,6 +643,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 type={passwordVisible ? 'text' : 'password'}
                 className="w-full bg-transparent outline-none"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2 rounded-lg borderless-shadow px-3 py-2 focus-within:ring-2 focus-within:ring-[#0A66C2]/20`
@@ -658,6 +682,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 onChange={(e) => onChange('password', e.target.value)}
                 required
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full bg-transparent outline-none`
@@ -682,6 +707,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 {passwordVisible ? 'Hide' : 'Show'}
               </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-slate-500`
@@ -706,6 +732,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <input
                 type={confirmVisible ? 'text' : 'password'}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `block text-sm font-medium mb-1 text-slate-700`
@@ -746,6 +773,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 type={confirmVisible ? 'text' : 'password'}
                 className="w-full bg-transparent outline-none"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2 rounded-lg borderless-shadow px-3 py-2 focus-within:ring-2 focus-within:ring-[#0A66C2]/20`
@@ -784,6 +812,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 onChange={(e) => onChange('confirmPassword', e.target.value)}
                 required
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full bg-transparent outline-none`
@@ -808,6 +837,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 {confirmVisible ? 'Hide' : 'Show'}
               </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-slate-500`
@@ -832,6 +862,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <RoleSelect
               value={form.primaryRole}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `md:col-span-2`
@@ -858,6 +889,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               value={form.primaryRole}
               onChange={(v) => onChange('primaryRole', v)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `block text-sm font-medium mb-2 text-slate-700`
@@ -884,6 +916,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               value={form.country}
               onChange={(v) => onChange('country', v)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `block text-sm font-medium mb-1 text-slate-700`
@@ -910,6 +943,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
           {/* API error state (e.g. email already used). */}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `block text-sm font-medium mb-1 text-slate-700`
@@ -944,6 +978,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           {/* API error state (e.g. email already used). */}
           {error ? <p className="md:col-span-2 text-sm text-red-500">{error}</p> : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full px-4 py-3 borderless-shadow rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]/20`
@@ -977,6 +1012,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           {/* Footer actions: primary submit + link to login. */}
           <div className="md:col-span-2 flex flex-col gap-3 sm:flex-row sm:items-center">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `md:col-span-2 text-sm text-red-500`
@@ -1005,6 +1041,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               {loading ? 'Creating account...' : 'Create account'}
             </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `md:col-span-2 flex flex-col gap-3 sm:flex-row sm:items-center`
@@ -1048,6 +1085,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             </button>
             <Link
 ```
+
 **Raw class strings detected (best effort):**
 
 - `px-5 py-3 rounded-lg bg-[#0A66C2] hover:bg-[#004182] text-white disabled:opacity-70`
@@ -1082,6 +1120,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               Already have an account? Login
             </Link>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `px-5 py-3 rounded-lg borderless-shadow text-slate-700 font-semibold hover:bg-slate-50 dark:text-white dark:bg-slate-800/60 dark:hover:bg-slate-700/50 dark:ring-1 dark:ring-white/10`
@@ -1118,6 +1157,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
           <div className="hidden sm:flex items-center gap-3">
 ```
+
 - `src/pages/auth/Signup.jsx:108` — A clean, professional start for Garments and Textile sourcing teams.
 
 ```jsx
@@ -1126,6 +1166,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div className="hidden sm:flex items-center gap-3">
             <div className="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-semibold text-[#0A66C2]">GarTexHub</div>
 ```
+
 - `src/pages/auth/Signup.jsx:121` — Full Name
 
 ```jsx
@@ -1134,6 +1175,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
           <div>
 ```
+
 - `src/pages/auth/Signup.jsx:125` — Email
 
 ```jsx
@@ -1142,6 +1184,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
           <div>
 ```
+
 - `src/pages/auth/Signup.jsx:129` — Password
 
 ```jsx
@@ -1150,6 +1193,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <input
                 type={passwordVisible ? 'text' : 'password'}
 ```
+
 - `src/pages/auth/Signup.jsx:148` — Confirm Password
 
 ```jsx
@@ -1158,6 +1202,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <input
                 type={confirmVisible ? 'text' : 'password'}
 ```
+
 - `src/pages/auth/Signup.jsx:167` — Account Type
 
 ```jsx
@@ -1166,6 +1211,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               value={form.primaryRole}
               onChange={(v) => onChange('primaryRole', v)}
 ```
+
 - `src/pages/auth/Signup.jsx:179` — Country
 
 ```jsx
@@ -1174,6 +1220,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               value={form.country}
               onChange={(v) => onChange('country', v)}
 ```
+
 - `src/pages/auth/Signup.jsx:189` — Organization Name
 
 ```jsx
@@ -1182,6 +1229,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </div>
           {/* API error state (e.g. email already used). */}
 ```
+
 - `src/pages/auth/Signup.jsx:184` — Type to search countries
 
 ```jsx
@@ -1190,6 +1238,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             />
           </div>
 ```
+
 - `src/pages/auth/Signup.jsx:138` — (element) <button>
 
 ```jsx
@@ -1198,6 +1247,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 onClick={() => setPasswordVisible((prev) => !prev)}
                 className="text-xs font-semibold text-slate-500"
 ```
+
 - `src/pages/auth/Signup.jsx:157` — (element) <button>
 
 ```jsx
@@ -1206,6 +1256,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 onClick={() => setConfirmVisible((prev) => !prev)}
                 className="text-xs font-semibold text-slate-500"
 ```
+
 - `src/pages/auth/Signup.jsx:197` — (element) <button>
 
 ```jsx
@@ -1214,6 +1265,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             </button>
             <Link
 ```
+
 - `src/pages/auth/Signup.jsx:200` — (element) <Link>
 
 ```jsx
@@ -1222,12 +1274,13 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               className="px-5 py-3 rounded-lg borderless-shadow text-slate-700 font-semibold hover:bg-slate-50 dark:text-white dark:bg-slate-800/60 dark:hover:bg-slate-700/50 dark:ring-1 dark:ring-white/10"
             >
 ```
+
 ## 5) Backend Mapping (Frontend → Express → Controller → Service/DB)
 
-| Frontend call (path:line) | Express mount | Route definition | Controller file | Handler |
-|---|---|---|---|---|
-| GET /auth/register (src/pages/auth/Signup.jsx:16) | /api/auth -> server/routes/authRoutes.js:111 | - | - | - |
-| POST /auth/register (src/pages/auth/Signup.jsx:89) | /api/auth -> server/routes/authRoutes.js:111 | POST /register (server/routes/authRoutes.js:18) | - | register |
+| Frontend call (path:line)                          | Express mount                                | Route definition                                | Controller file | Handler  |
+| -------------------------------------------------- | -------------------------------------------- | ----------------------------------------------- | --------------- | -------- |
+| GET /auth/register (src/pages/auth/Signup.jsx:16)  | /api/auth -> server/routes/authRoutes.js:111 | -                                               | -               | -        |
+| POST /auth/register (src/pages/auth/Signup.jsx:89) | /api/auth -> server/routes/authRoutes.js:111 | POST /register (server/routes/authRoutes.js:18) | -               | register |
 
 ## 6) How to Edit Safely
 
@@ -1237,4 +1290,3 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
-

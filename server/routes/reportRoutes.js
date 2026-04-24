@@ -1,15 +1,19 @@
-import { Router } from 'express'
-import { requireAuth } from '../middleware/auth.js'
+import { Router } from "express";
+import { requireAuth } from "../middleware/auth.js";
 import {
   createContentReportController,
   createProductAppealReportController,
   createSystemReportController,
-} from '../controllers/reportController.js'
+} from "../controllers/reportController.js";
 
-const router = Router()
+const router = Router();
 
-router.post('/system', requireAuth, createSystemReportController)
-router.post('/product-appeal', requireAuth, createProductAppealReportController)
-router.post('/content', requireAuth, createContentReportController)
+router.post("/system", requireAuth, createSystemReportController);
+router.post(
+  "/product-appeal",
+  requireAuth,
+  createProductAppealReportController,
+);
+router.post("/content", requireAuth, createContentReportController);
 
-export default router
+export default router;

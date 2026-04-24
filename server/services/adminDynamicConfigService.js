@@ -1,47 +1,86 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 const DEFAULT_ADMIN_PANEL_FALLBACK_INVENTORY = [
-  { id: 'platform', label: 'Core Platform & Business Control', icon_name: 'ShieldCheck', sections: [] },
-  { id: 'infra', label: 'Server / System / Infrastructure Management', icon_name: 'Server', sections: [] },
-  { id: 'network', label: 'Network Monitoring & Management', icon_name: 'Network', sections: [] },
-  { id: 'server-admin', label: 'Server Admin + App Management', icon_name: 'Database', sections: [] },
-  { id: 'cms', label: 'CMS + Content Management', icon_name: 'Settings', sections: [] },
-  { id: 'ultra-security', label: 'Ultra Security Layer', icon_name: 'Lock', sections: [] },
-]
+  {
+    id: "platform",
+    label: "Core Platform & Business Control",
+    icon_name: "ShieldCheck",
+    sections: [],
+  },
+  {
+    id: "infra",
+    label: "Server / System / Infrastructure Management",
+    icon_name: "Server",
+    sections: [],
+  },
+  {
+    id: "network",
+    label: "Network Monitoring & Management",
+    icon_name: "Network",
+    sections: [],
+  },
+  {
+    id: "server-admin",
+    label: "Server Admin + App Management",
+    icon_name: "Database",
+    sections: [],
+  },
+  {
+    id: "cms",
+    label: "CMS + Content Management",
+    icon_name: "Settings",
+    sections: [],
+  },
+  {
+    id: "ultra-security",
+    label: "Ultra Security Layer",
+    icon_name: "Lock",
+    sections: [],
+  },
+];
 
-const DEFAULT_PIE_PALETTE = ['#38bdf8', '#60a5fa', '#0f172a']
+const DEFAULT_PIE_PALETTE = ["#38bdf8", "#60a5fa", "#0f172a"];
 
 const DEFAULT_CMS_WEEKLY_TREND = [
-  { name: 'Mon', value: 24 },
-  { name: 'Tue', value: 38 },
-  { name: 'Wed', value: 29 },
-  { name: 'Thu', value: 57 },
-  { name: 'Fri', value: 44 },
-  { name: 'Sat', value: 66 },
-  { name: 'Sun', value: 52 },
-]
+  { name: "Mon", value: 24 },
+  { name: "Tue", value: 38 },
+  { name: "Wed", value: 29 },
+  { name: "Thu", value: 57 },
+  { name: "Fri", value: 44 },
+  { name: "Sat", value: 66 },
+  { name: "Sun", value: 52 },
+];
 
-const DEFAULT_ULTRA_MINI_CHART_POINTS = [22, 28, 24, 34, 30, 46, 40, 54, 50, 66, 58, 72]
+const DEFAULT_ULTRA_MINI_CHART_POINTS = [
+  22, 28, 24, 34, 30, 46, 40, 54, 50, 66, 58, 72,
+];
 
 const DEFAULT_ULTRA_MINI_CHART_KPIS = [
-  { label: 'Requests', value: '12.8k' },
-  { label: 'Integrity', value: '99.98%' },
-  { label: 'Latency', value: '148ms' },
-]
+  { label: "Requests", value: "12.8k" },
+  { label: "Integrity", value: "99.98%" },
+  { label: "Latency", value: "148ms" },
+];
 
 const DEFAULT_EMPTY_STATE_COPY = {
-  'verification.pending.short': 'No pending verifications.',
-  'verification.pending': 'No pending verifications in queue.',
-  'disputes.none': 'No active disputes.',
-  'firewall.rules.none': 'No rules yet.',
-  'cron.jobs.none': 'No cron jobs yet.',
-}
+  "verification.pending.short": "No pending verifications.",
+  "verification.pending": "No pending verifications in queue.",
+  "disputes.none": "No active disputes.",
+  "firewall.rules.none": "No rules yet.",
+  "cron.jobs.none": "No cron jobs yet.",
+};
 
-const DEFAULT_ADMIN_PANEL_ALLOWED_ROLES = ['owner', 'admin']
+const DEFAULT_ADMIN_PANEL_ALLOWED_ROLES = ["owner", "admin"];
 
-const KNOWN_ROLES = ['buyer', 'factory', 'buying_house', 'owner', 'admin', 'agent']
+const KNOWN_ROLES = [
+  "buyer",
+  "factory",
+  "buying_house",
+  "owner",
+  "admin",
+  "agent",
+];
 
 const DEFAULT_GOVERNANCE_CONFIG = {
   initialPolicy: null,
@@ -49,105 +88,101 @@ const DEFAULT_GOVERNANCE_CONFIG = {
   initialSimulation: null,
   initialTemplate: null,
   defaultRules: { maxWarnings: 1 },
-}
+};
 
 const DEFAULT_SECTION_METRICS = {
   users: [
-    { label: 'Total', path: 'users.total' },
-    { label: 'Premium', path: 'users.premium' },
-    { label: 'Suspended', path: 'users.suspended' },
+    { label: "Total", path: "users.total" },
+    { label: "Premium", path: "users.premium" },
+    { label: "Suspended", path: "users.suspended" },
   ],
   orgs: [
-    { label: 'Orgs', path: 'orgs.total' },
-    { label: 'Staff', path: 'orgs.staff' },
-    { label: 'Agents', path: 'orgs.agents' },
+    { label: "Orgs", path: "orgs.total" },
+    { label: "Staff", path: "orgs.staff" },
+    { label: "Agents", path: "orgs.agents" },
   ],
   verification: [
-    { label: 'Pending', path: 'verification.pending' },
-    { label: 'Expiring', path: 'verification.expiring' },
+    { label: "Pending", path: "verification.pending" },
+    { label: "Expiring", path: "verification.expiring" },
   ],
   finance: [
-    { label: 'Subscriptions', path: 'finance.subscriptions' },
-    { label: 'Failed renewals', path: 'finance.failed_renewals' },
-    { label: 'Revenue est.', path: 'finance.revenue_estimate_usd', format: 'currency' },
+    { label: "Subscriptions", path: "finance.subscriptions" },
+    { label: "Failed renewals", path: "finance.failed_renewals" },
+    {
+      label: "Revenue est.",
+      path: "finance.revenue_estimate_usd",
+      format: "currency",
+    },
   ],
   wallet: [
-    { label: 'Balance', path: 'wallet.total_balance_usd', format: 'currency' },
-    { label: 'Restricted', path: 'wallet.restricted_usd', format: 'currency' },
-    { label: 'Redemptions', path: 'wallet.redemptions' },
+    { label: "Balance", path: "wallet.total_balance_usd", format: "currency" },
+    { label: "Restricted", path: "wallet.restricted_usd", format: "currency" },
+    { label: "Redemptions", path: "wallet.redemptions" },
   ],
   coupons: [
-    { label: 'Total', path: 'coupons.total' },
-    { label: 'Active', path: 'coupons.active' },
-    { label: 'Redemptions', path: 'coupons.redemptions' },
+    { label: "Total", path: "coupons.total" },
+    { label: "Active", path: "coupons.active" },
+    { label: "Redemptions", path: "coupons.redemptions" },
   ],
   partners: [
-    { label: 'Requests', path: 'partners.requests' },
-    { label: 'Active', path: 'partners.active' },
+    { label: "Requests", path: "partners.requests" },
+    { label: "Active", path: "partners.active" },
   ],
   requests: [
-    { label: 'Total', path: 'requests.total' },
-    { label: 'Verified-only', path: 'requests.verified_only' },
-    { label: 'Matches', path: 'requests.matches' },
+    { label: "Total", path: "requests.total" },
+    { label: "Verified-only", path: "requests.verified_only" },
+    { label: "Matches", path: "requests.matches" },
   ],
   contracts: [
-    { label: 'Contracts', path: 'contracts.total' },
-    { label: 'Pending signatures', path: 'contracts.pending_signatures' },
-    { label: 'Payment proofs', path: 'contracts.payment_proofs' },
+    { label: "Contracts", path: "contracts.total" },
+    { label: "Pending signatures", path: "contracts.pending_signatures" },
+    { label: "Payment proofs", path: "contracts.payment_proofs" },
   ],
   calls: [
-    { label: 'Calls', path: 'calls.total' },
-    { label: 'Recordings', path: 'calls.recordings' },
+    { label: "Calls", path: "calls.total" },
+    { label: "Recordings", path: "calls.recordings" },
   ],
   messages: [
-    { label: 'Messages', path: 'messages.total' },
-    { label: 'Violations', path: 'messages.violations' },
-    { label: 'Strikes', path: 'messages.strikes' },
+    { label: "Messages", path: "messages.total" },
+    { label: "Violations", path: "messages.violations" },
+    { label: "Strikes", path: "messages.strikes" },
   ],
   media: [
-    { label: 'Video pending', path: 'media.videos_pending' },
-    { label: 'Docs pending', path: 'media.docs_pending' },
+    { label: "Video pending", path: "media.videos_pending" },
+    { label: "Docs pending", path: "media.docs_pending" },
   ],
   support: [
-    { label: 'Tickets', path: 'support.tickets' },
-    { label: 'Open', path: 'support.open' },
+    { label: "Tickets", path: "support.tickets" },
+    { label: "Open", path: "support.open" },
   ],
-  notifications: [
-    { label: 'Total', path: 'notifications.total' },
-  ],
-  analytics: [
-    { label: 'Events', path: 'analytics.total_events' },
-  ],
+  notifications: [{ label: "Total", path: "notifications.total" }],
+  analytics: [{ label: "Events", path: "analytics.total_events" }],
   search: [
-    { label: 'Alerts', path: 'search.alerts' },
-    { label: 'Abuse flags', path: 'search.abuse_flags' },
+    { label: "Alerts", path: "search.alerts" },
+    { label: "Abuse flags", path: "search.abuse_flags" },
   ],
   ai: [
-    { label: 'Knowledge', path: 'ai.knowledge_entries' },
-    { label: 'Chatbot on', path: 'ai.chatbot_enabled' },
+    { label: "Knowledge", path: "ai.knowledge_entries" },
+    { label: "Chatbot on", path: "ai.chatbot_enabled" },
   ],
   system: [
-    { label: 'Flags', path: 'system.feature_flags' },
-    { label: 'Plans', path: 'system.plan_limits' },
+    { label: "Flags", path: "system.feature_flags" },
+    { label: "Plans", path: "system.plan_limits" },
   ],
-  security: [
-    { label: 'Audit entries', path: 'security.audit_entries' },
-  ],
+  security: [{ label: "Audit entries", path: "security.audit_entries" }],
   integrations: [
-    { label: 'Gateways', path: 'integrations.payment_gateways' },
-    { label: 'Webhooks', path: 'integrations.webhooks' },
-    { label: 'API keys', path: 'integrations.api_keys' },
+    { label: "Gateways", path: "integrations.payment_gateways" },
+    { label: "Webhooks", path: "integrations.webhooks" },
+    { label: "API keys", path: "integrations.api_keys" },
   ],
   traffic: [
-    { label: 'Clicks', path: 'traffic.clicks' },
-    { label: 'Visits', path: 'traffic.visits' },
-    { label: 'Spend', path: 'traffic.spend', format: 'currency' },
-    { label: 'CPC', path: 'traffic.cpc', format: 'currency' },
+    { label: "Clicks", path: "traffic.clicks" },
+    { label: "Visits", path: "traffic.visits" },
+    { label: "Spend", path: "traffic.spend", format: "currency" },
+    { label: "CPC", path: "traffic.cpc", format: "currency" },
   ],
-  emails: [
-    { label: 'Emails', path: 'emails.total' },
-  ],
-}
+  emails: [{ label: "Emails", path: "emails.total" }],
+};
 
 async function getInventoryWithFallback() {
   try {
@@ -156,14 +191,14 @@ async function getInventoryWithFallback() {
       include: {
         sections: {
           where: { active: true },
-          orderBy: { sort_order: 'asc' },
+          orderBy: { sort_order: "asc" },
         },
       },
-      orderBy: { sort_order: 'asc' },
-    })
+      orderBy: { sort_order: "asc" },
+    });
 
     if (!modules || modules.length === 0) {
-      return DEFAULT_ADMIN_PANEL_FALLBACK_INVENTORY
+      return DEFAULT_ADMIN_PANEL_FALLBACK_INVENTORY;
     }
 
     return modules.map((m) => ({
@@ -175,10 +210,13 @@ async function getInventoryWithFallback() {
         title: s.title,
         features: s.features || [],
       })),
-    }))
+    }));
   } catch (error) {
-    console.error('[AdminDynamicConfig] getInventoryWithFallback error:', error.message)
-    return DEFAULT_ADMIN_PANEL_FALLBACK_INVENTORY
+    console.error(
+      "[AdminDynamicConfig] getInventoryWithFallback error:",
+      error.message,
+    );
+    return DEFAULT_ADMIN_PANEL_FALLBACK_INVENTORY;
   }
 }
 
@@ -189,12 +227,12 @@ async function getInventoryByModule(moduleId) {
       include: {
         sections: {
           where: { active: true },
-          orderBy: { sort_order: 'asc' },
+          orderBy: { sort_order: "asc" },
         },
       },
-    })
+    });
 
-    if (!module) return null
+    if (!module) return null;
 
     return {
       id: module.module_id,
@@ -205,16 +243,19 @@ async function getInventoryByModule(moduleId) {
         title: s.title,
         features: s.features || [],
       })),
-    }
+    };
   } catch (error) {
-    console.error('[AdminDynamicConfig] getInventoryByModule error:', error.message)
-    return null
+    console.error(
+      "[AdminDynamicConfig] getInventoryByModule error:",
+      error.message,
+    );
+    return null;
   }
 }
 
 async function updateInventoryConfig(data, actorId) {
   try {
-    const results = []
+    const results = [];
 
     for (const module of data.modules || []) {
       const savedModule = await prisma.adminModule.upsert({
@@ -233,7 +274,7 @@ async function updateInventoryConfig(data, actorId) {
           sort_order: module.sort_order || 0,
           active: module.active !== false,
         },
-      })
+      });
 
       for (const section of module.sections || []) {
         const savedSection = await prisma.adminSection.upsert({
@@ -253,25 +294,28 @@ async function updateInventoryConfig(data, actorId) {
             sort_order: section.sort_order || 0,
             active: section.active !== false,
           },
-        })
-        results.push(savedSection)
+        });
+        results.push(savedSection);
       }
 
-      results.push(savedModule)
+      results.push(savedModule);
     }
 
     await prisma.adminConfigHistory.create({
       data: {
-        config_type: 'inventory',
-        changed_by: actorId || 'system',
+        config_type: "inventory",
+        changed_by: actorId || "system",
         new_value: JSON.stringify(data),
       },
-    })
+    });
 
-    return { success: true, count: results.length }
+    return { success: true, count: results.length };
   } catch (error) {
-    console.error('[AdminDynamicConfig] updateInventoryConfig error:', error.message)
-    throw error
+    console.error(
+      "[AdminDynamicConfig] updateInventoryConfig error:",
+      error.message,
+    );
+    throw error;
   }
 }
 
@@ -279,23 +323,26 @@ async function getActionsWithFallback() {
   try {
     const actions = await prisma.adminAction.findMany({
       where: { active: true },
-      orderBy: { sort_order: 'asc' },
-    })
+      orderBy: { sort_order: "asc" },
+    });
 
     if (!actions || actions.length === 0) {
-      return null
+      return null;
     }
 
     return actions.map((a) => ({
       id: a.action_id,
       label: a.label,
       category: a.category,
-      route: '/admin/actions',
+      route: "/admin/actions",
       fields: a.fields || [],
-    }))
+    }));
   } catch (error) {
-    console.error('[AdminDynamicConfig] getActionsWithFallback error:', error.message)
-    return null
+    console.error(
+      "[AdminDynamicConfig] getActionsWithFallback error:",
+      error.message,
+    );
+    return null;
   }
 }
 
@@ -303,38 +350,41 @@ async function getActionsAsGroups() {
   try {
     const actions = await prisma.adminAction.findMany({
       where: { active: true },
-      orderBy: { sort_order: 'asc' },
-    })
+      orderBy: { sort_order: "asc" },
+    });
 
     if (!actions || actions.length === 0) {
-      return null
+      return null;
     }
 
-    const groupsMap = new Map()
+    const groupsMap = new Map();
     for (const a of actions) {
-      const groupLabel = a.group_label || 'Other Actions'
+      const groupLabel = a.group_label || "Other Actions";
       if (!groupsMap.has(groupLabel)) {
-        groupsMap.set(groupLabel, { label: groupLabel, actions: [] })
+        groupsMap.set(groupLabel, { label: groupLabel, actions: [] });
       }
       groupsMap.get(groupLabel).actions.push({
         id: a.action_id,
         label: a.label,
         category: a.category,
-        route: '/admin/actions',
+        route: "/admin/actions",
         fields: a.fields || [],
-      })
+      });
     }
 
-    return Array.from(groupsMap.values())
+    return Array.from(groupsMap.values());
   } catch (error) {
-    console.error('[AdminDynamicConfig] getActionsAsGroups error:', error.message)
-    return null
+    console.error(
+      "[AdminDynamicConfig] getActionsAsGroups error:",
+      error.message,
+    );
+    return null;
   }
 }
 
 async function updateActionsConfig(data, actorId) {
   try {
-    const results = []
+    const results = [];
 
     for (const action of data.actions || []) {
       const saved = await prisma.adminAction.upsert({
@@ -355,35 +405,38 @@ async function updateActionsConfig(data, actorId) {
           sort_order: action.sort_order || 0,
           active: action.active !== false,
         },
-      })
-      results.push(saved)
+      });
+      results.push(saved);
     }
 
     await prisma.adminConfigHistory.create({
       data: {
-        config_type: 'actions',
-        changed_by: actorId || 'system',
+        config_type: "actions",
+        changed_by: actorId || "system",
         new_value: JSON.stringify(data),
       },
-    })
+    });
 
-    return { success: true, count: results.length }
+    return { success: true, count: results.length };
   } catch (error) {
-    console.error('[AdminDynamicConfig] updateActionsConfig error:', error.message)
-    throw error
+    console.error(
+      "[AdminDynamicConfig] updateActionsConfig error:",
+      error.message,
+    );
+    throw error;
   }
 }
 
 async function getCapabilitiesWithFallback(moduleId) {
   try {
-    const where = moduleId ? { module_id: moduleId } : { active: true }
+    const where = moduleId ? { module_id: moduleId } : { active: true };
     const capabilities = await prisma.adminCapability.findMany({
       where,
-      orderBy: { sort_order: 'asc' },
-    })
+      orderBy: { sort_order: "asc" },
+    });
 
     if (!capabilities || capabilities.length === 0) {
-      return null
+      return null;
     }
 
     return capabilities.map((c) => ({
@@ -393,16 +446,19 @@ async function getCapabilitiesWithFallback(moduleId) {
       count: c.count,
       icon_name: c.icon_name,
       subtitle: c.subtitle,
-    }))
+    }));
   } catch (error) {
-    console.error('[AdminDynamicConfig] getCapabilitiesWithFallback error:', error.message)
-    return null
+    console.error(
+      "[AdminDynamicConfig] getCapabilitiesWithFallback error:",
+      error.message,
+    );
+    return null;
   }
 }
 
 async function updateCapabilities(data, actorId) {
   try {
-    const results = []
+    const results = [];
 
     for (const cap of data.capabilities || []) {
       const saved = await prisma.adminCapability.upsert({
@@ -426,58 +482,67 @@ async function updateCapabilities(data, actorId) {
           sort_order: cap.sort_order || 0,
           active: cap.active !== false,
         },
-      })
-      results.push(saved)
+      });
+      results.push(saved);
     }
 
     await prisma.adminConfigHistory.create({
       data: {
-        config_type: 'capabilities',
-        changed_by: actorId || 'system',
+        config_type: "capabilities",
+        changed_by: actorId || "system",
         new_value: JSON.stringify(data),
       },
-    })
+    });
 
-    return { success: true, count: results.length }
+    return { success: true, count: results.length };
   } catch (error) {
-    console.error('[AdminDynamicConfig] updateCapabilities error:', error.message)
-    throw error
+    console.error(
+      "[AdminDynamicConfig] updateCapabilities error:",
+      error.message,
+    );
+    throw error;
   }
 }
 
 async function getUiConfigWithFallback() {
   try {
     const config = await prisma.adminUiConfig.findUnique({
-      where: { id: 'default' },
-    })
+      where: { id: "default" },
+    });
 
     if (!config) {
       return {
         section_metrics: DEFAULT_SECTION_METRICS,
         chart_palette: DEFAULT_PIE_PALETTE,
         empty_states: DEFAULT_EMPTY_STATE_COPY,
-      }
+      };
     }
 
     return {
       section_metrics: config.section_metrics || DEFAULT_SECTION_METRICS,
-      chart_palette: config.chart_palette?.length >= 2 ? config.chart_palette : DEFAULT_PIE_PALETTE,
+      chart_palette:
+        config.chart_palette?.length >= 2
+          ? config.chart_palette
+          : DEFAULT_PIE_PALETTE,
       empty_states: config.empty_states || DEFAULT_EMPTY_STATE_COPY,
-    }
+    };
   } catch (error) {
-    console.error('[AdminDynamicConfig] getUiConfigWithFallback error:', error.message)
+    console.error(
+      "[AdminDynamicConfig] getUiConfigWithFallback error:",
+      error.message,
+    );
     return {
       section_metrics: DEFAULT_SECTION_METRICS,
       chart_palette: DEFAULT_PIE_PALETTE,
       empty_states: DEFAULT_EMPTY_STATE_COPY,
-    }
+    };
   }
 }
 
 async function updateUiConfig(data, actorId) {
   try {
     const config = await prisma.adminUiConfig.upsert({
-      where: { id: 'default' },
+      where: { id: "default" },
       update: {
         section_metrics: data.section_metrics,
         chart_palette: data.chart_palette,
@@ -485,47 +550,52 @@ async function updateUiConfig(data, actorId) {
         updated_at: new Date(),
       },
       create: {
-        id: 'default',
+        id: "default",
         section_metrics: data.section_metrics,
         chart_palette: data.chart_palette,
         empty_states: data.empty_states,
       },
-    })
+    });
 
     await prisma.adminConfigHistory.create({
       data: {
-        config_type: 'ui',
-        changed_by: actorId || 'system',
+        config_type: "ui",
+        changed_by: actorId || "system",
         new_value: JSON.stringify(data),
       },
-    })
+    });
 
-    return { success: true, config }
+    return { success: true, config };
   } catch (error) {
-    console.error('[AdminDynamicConfig] updateUiConfig error:', error.message)
-    throw error
+    console.error("[AdminDynamicConfig] updateUiConfig error:", error.message);
+    throw error;
   }
 }
 
 async function getMockDataWithFallback(dataType) {
   try {
-    const where = dataType ? { data_type: dataType } : { active: true }
+    const where = dataType ? { data_type: dataType } : { active: true };
     const mockData = await prisma.adminMockData.findMany({
       where,
-      orderBy: { sort_order: 'asc' },
-    })
+      orderBy: { sort_order: "asc" },
+    });
 
     if (!mockData || mockData.length === 0) {
-      if (dataType === 'cms_weekly_trend') return DEFAULT_CMS_WEEKLY_TREND
-      if (dataType === 'ultra_mini_chart_points') return DEFAULT_ULTRA_MINI_CHART_POINTS
-      if (dataType === 'ultra_mini_chart_kpis') return DEFAULT_ULTRA_MINI_CHART_KPIS
-      return null
+      if (dataType === "cms_weekly_trend") return DEFAULT_CMS_WEEKLY_TREND;
+      if (dataType === "ultra_mini_chart_points")
+        return DEFAULT_ULTRA_MINI_CHART_POINTS;
+      if (dataType === "ultra_mini_chart_kpis")
+        return DEFAULT_ULTRA_MINI_CHART_KPIS;
+      return null;
     }
 
-    return mockData.map((m) => m.payload)
+    return mockData.map((m) => m.payload);
   } catch (error) {
-    console.error('[AdminDynamicConfig] getMockDataWithFallback error:', error.message)
-    return null
+    console.error(
+      "[AdminDynamicConfig] getMockDataWithFallback error:",
+      error.message,
+    );
+    return null;
   }
 }
 
@@ -539,24 +609,24 @@ async function updateMockData(dataKey, payload, actorId) {
       },
       create: {
         data_key: dataKey,
-        data_type: payload.data_type || 'default',
+        data_type: payload.data_type || "default",
         payload,
         active: true,
       },
-    })
+    });
 
     await prisma.adminConfigHistory.create({
       data: {
-        config_type: 'mock',
-        changed_by: actorId || 'system',
+        config_type: "mock",
+        changed_by: actorId || "system",
         new_value: JSON.stringify({ [dataKey]: payload }),
       },
-    })
+    });
 
-    return { success: true, saved }
+    return { success: true, saved };
   } catch (error) {
-    console.error('[AdminDynamicConfig] updateMockData error:', error.message)
-    throw error
+    console.error("[AdminDynamicConfig] updateMockData error:", error.message);
+    throw error;
   }
 }
 
@@ -564,36 +634,41 @@ async function getRoleConfigWithFallback() {
   try {
     const roles = await prisma.adminRoleConfig.findMany({
       where: { active: true },
-    })
+    });
 
     if (!roles || roles.length === 0) {
       return {
         known_roles: KNOWN_ROLES,
         allowed_roles: DEFAULT_ADMIN_PANEL_ALLOWED_ROLES,
-      }
+      };
     }
 
     return {
       known_roles: roles.map((r) => r.role_key),
-      allowed_roles: roles.filter((r) => r.is_admin_role).map((r) => r.role_key),
+      allowed_roles: roles
+        .filter((r) => r.is_admin_role)
+        .map((r) => r.role_key),
       roles: roles.map((r) => ({
         role_key: r.role_key,
         label: r.label,
         benefits: r.benefits || [],
       })),
-    }
+    };
   } catch (error) {
-    console.error('[AdminDynamicConfig] getRoleConfigWithFallback error:', error.message)
+    console.error(
+      "[AdminDynamicConfig] getRoleConfigWithFallback error:",
+      error.message,
+    );
     return {
       known_roles: KNOWN_ROLES,
       allowed_roles: DEFAULT_ADMIN_PANEL_ALLOWED_ROLES,
-    }
+    };
   }
 }
 
 async function updateRoleConfig(data, actorId) {
   try {
-    const results = []
+    const results = [];
 
     for (const role of data.roles || []) {
       const saved = await prisma.adminRoleConfig.upsert({
@@ -611,33 +686,36 @@ async function updateRoleConfig(data, actorId) {
           benefits: role.benefits || [],
           active: role.active !== false,
         },
-      })
-      results.push(saved)
+      });
+      results.push(saved);
     }
 
     await prisma.adminConfigHistory.create({
       data: {
-        config_type: 'roles',
-        changed_by: actorId || 'system',
+        config_type: "roles",
+        changed_by: actorId || "system",
         new_value: JSON.stringify(data),
       },
-    })
+    });
 
-    return { success: true, count: results.length }
+    return { success: true, count: results.length };
   } catch (error) {
-    console.error('[AdminDynamicConfig] updateRoleConfig error:', error.message)
-    throw error
+    console.error(
+      "[AdminDynamicConfig] updateRoleConfig error:",
+      error.message,
+    );
+    throw error;
   }
 }
 
 async function getGovernanceConfigWithFallback() {
   try {
     const config = await prisma.governanceConfig.findUnique({
-      where: { id: 'default' },
-    })
+      where: { id: "default" },
+    });
 
     if (!config) {
-      return DEFAULT_GOVERNANCE_CONFIG
+      return DEFAULT_GOVERNANCE_CONFIG;
     }
 
     return {
@@ -646,17 +724,20 @@ async function getGovernanceConfigWithFallback() {
       initial_simulation: config.initial_simulation,
       initial_template: config.initial_template,
       default_rules: config.default_rules || { maxWarnings: 1 },
-    }
+    };
   } catch (error) {
-    console.error('[AdminDynamicConfig] getGovernanceConfigWithFallback error:', error.message)
-    return DEFAULT_GOVERNANCE_CONFIG
+    console.error(
+      "[AdminDynamicConfig] getGovernanceConfigWithFallback error:",
+      error.message,
+    );
+    return DEFAULT_GOVERNANCE_CONFIG;
   }
 }
 
 async function updateGovernanceConfig(data, actorId) {
   try {
     const config = await prisma.governanceConfig.upsert({
-      where: { id: 'default' },
+      where: { id: "default" },
       update: {
         initial_policy: data.initial_policy,
         initial_version: data.initial_version,
@@ -666,27 +747,30 @@ async function updateGovernanceConfig(data, actorId) {
         updated_at: new Date(),
       },
       create: {
-        id: 'default',
+        id: "default",
         initial_policy: data.initial_policy,
         initial_version: data.initial_version,
         initial_simulation: data.initial_simulation,
         initial_template: data.initial_template,
         default_rules: data.default_rules,
       },
-    })
+    });
 
     await prisma.adminConfigHistory.create({
       data: {
-        config_type: 'governance',
-        changed_by: actorId || 'system',
+        config_type: "governance",
+        changed_by: actorId || "system",
         new_value: JSON.stringify(data),
       },
-    })
+    });
 
-    return { success: true, config }
+    return { success: true, config };
   } catch (error) {
-    console.error('[AdminDynamicConfig] updateGovernanceConfig error:', error.message)
-    throw error
+    console.error(
+      "[AdminDynamicConfig] updateGovernanceConfig error:",
+      error.message,
+    );
+    throw error;
   }
 }
 
@@ -694,35 +778,38 @@ async function getBrandingConfigWithFallback() {
   try {
     const branding = await prisma.adminBranding.findMany({
       where: { active: true },
-    })
+    });
 
     if (!branding || branding.length === 0) {
       return {
-        app_name: 'GarTexHub',
-        admin_title: 'Admin Matrix',
-        command_deck: 'Command Deck',
-      }
+        app_name: "GarTexHub",
+        admin_title: "Admin Matrix",
+        command_deck: "Command Deck",
+      };
     }
 
-    const map = {}
+    const map = {};
     for (const b of branding) {
-      map[b.brand_key] = b.value
+      map[b.brand_key] = b.value;
     }
 
-    return map
+    return map;
   } catch (error) {
-    console.error('[AdminDynamicConfig] getBrandingConfigWithFallback error:', error.message)
+    console.error(
+      "[AdminDynamicConfig] getBrandingConfigWithFallback error:",
+      error.message,
+    );
     return {
-      app_name: 'GarTexHub',
-      admin_title: 'Admin Matrix',
-      command_deck: 'Command Deck',
-    }
+      app_name: "GarTexHub",
+      admin_title: "Admin Matrix",
+      command_deck: "Command Deck",
+    };
   }
 }
 
 async function updateBrandingConfig(data, actorId) {
   try {
-    const results = []
+    const results = [];
 
     for (const [key, value] of Object.entries(data)) {
       const saved = await prisma.adminBranding.upsert({
@@ -736,22 +823,25 @@ async function updateBrandingConfig(data, actorId) {
           value,
           active: true,
         },
-      })
-      results.push(saved)
+      });
+      results.push(saved);
     }
 
     await prisma.adminConfigHistory.create({
       data: {
-        config_type: 'branding',
-        changed_by: actorId || 'system',
+        config_type: "branding",
+        changed_by: actorId || "system",
         new_value: JSON.stringify(data),
       },
-    })
+    });
 
-    return { success: true, count: results.length }
+    return { success: true, count: results.length };
   } catch (error) {
-    console.error('[AdminDynamicConfig] updateBrandingConfig error:', error.message)
-    throw error
+    console.error(
+      "[AdminDynamicConfig] updateBrandingConfig error:",
+      error.message,
+    );
+    throw error;
   }
 }
 
@@ -759,27 +849,30 @@ async function getSecurityPurposesWithFallback() {
   try {
     const purposes = await prisma.adminSecurityPurpose.findMany({
       where: { active: true },
-    })
+    });
 
     if (!purposes || purposes.length === 0) {
-      return { admin_security: 'passkey' }
+      return { admin_security: "passkey" };
     }
 
-    const map = {}
+    const map = {};
     for (const p of purposes) {
-      map[p.purpose_key] = p.purpose_type
+      map[p.purpose_key] = p.purpose_type;
     }
 
-    return map
+    return map;
   } catch (error) {
-    console.error('[AdminDynamicConfig] getSecurityPurposesWithFallback error:', error.message)
-    return { admin_security: 'passkey' }
+    console.error(
+      "[AdminDynamicConfig] getSecurityPurposesWithFallback error:",
+      error.message,
+    );
+    return { admin_security: "passkey" };
   }
 }
 
 async function updateSecurityPurposes(data, actorId) {
   try {
-    const results = []
+    const results = [];
 
     for (const [key, type] of Object.entries(data)) {
       const saved = await prisma.adminSecurityPurpose.upsert({
@@ -793,27 +886,38 @@ async function updateSecurityPurposes(data, actorId) {
           purpose_type: type,
           active: true,
         },
-      })
-      results.push(saved)
+      });
+      results.push(saved);
     }
 
     await prisma.adminConfigHistory.create({
       data: {
-        config_type: 'security',
-        changed_by: actorId || 'system',
+        config_type: "security",
+        changed_by: actorId || "system",
         new_value: JSON.stringify(data),
       },
-    })
+    });
 
-    return { success: true, count: results.length }
+    return { success: true, count: results.length };
   } catch (error) {
-    console.error('[AdminDynamicConfig] updateSecurityPurposes error:', error.message)
-    throw error
+    console.error(
+      "[AdminDynamicConfig] updateSecurityPurposes error:",
+      error.message,
+    );
+    throw error;
   }
 }
 
 async function getAllConfig() {
-  const [inventory, uiConfig, mockData, roleConfig, governanceConfig, branding, security] = await Promise.all([
+  const [
+    inventory,
+    uiConfig,
+    mockData,
+    roleConfig,
+    governanceConfig,
+    branding,
+    security,
+  ] = await Promise.all([
     getInventoryWithFallback(),
     getUiConfigWithFallback(),
     getMockDataWithFallback(),
@@ -821,7 +925,7 @@ async function getAllConfig() {
     getGovernanceConfigWithFallback(),
     getBrandingConfigWithFallback(),
     getSecurityPurposesWithFallback(),
-  ])
+  ]);
 
   return {
     inventory,
@@ -831,20 +935,23 @@ async function getAllConfig() {
     governance: governanceConfig,
     branding,
     security,
-  }
+  };
 }
 
 async function getConfigHistory(configType, limit = 20) {
   try {
-    const where = configType ? { config_type: configType } : {}
+    const where = configType ? { config_type: configType } : {};
     return await prisma.adminConfigHistory.findMany({
       where,
-      orderBy: { created_at: 'desc' },
+      orderBy: { created_at: "desc" },
       take: limit,
-    })
+    });
   } catch (error) {
-    console.error('[AdminDynamicConfig] getConfigHistory error:', error.message)
-    return []
+    console.error(
+      "[AdminDynamicConfig] getConfigHistory error:",
+      error.message,
+    );
+    return [];
   }
 }
 
@@ -881,4 +988,4 @@ export {
   KNOWN_ROLES,
   DEFAULT_ADMIN_PANEL_ALLOWED_ROLES,
   DEFAULT_GOVERNANCE_CONFIG,
-}
+};

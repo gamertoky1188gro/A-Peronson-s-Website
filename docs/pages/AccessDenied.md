@@ -60,6 +60,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
       <div className="max-w-3xl mx-auto mt-16 bg-white neo-panel cyberpunk-card rounded-xl p-8">
         <div className="flex items-center justify-between">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card p-6`
@@ -97,6 +98,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <h1 className="text-3xl font-bold">Access denied</h1>
           <button type="button" onClick={handleBack} className="text-sm text-slate-600 hover:text-slate-900">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `max-w-3xl mx-auto mt-16 bg-white neo-panel cyberpunk-card rounded-xl p-8`
@@ -138,6 +140,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <button type="button" onClick={handleBack} className="text-sm text-slate-600 hover:text-slate-900">
             Back
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between`
@@ -166,6 +169,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             Back
           </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-3xl font-bold`
@@ -189,6 +193,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </button>
         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm text-slate-600 hover:text-slate-900`
@@ -204,11 +209,13 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/AccessDenied.jsx:46`
 
 ```jsx
-        <p className="mt-3 text-gray-600">
-          {/* Show the blocked route (fallback to generic wording if missing). */}
-          You do not have permission to access <strong>{location.state?.from || 'this page'}</strong>.
-        </p>
+<p className="mt-3 text-gray-600">
+  {/* Show the blocked route (fallback to generic wording if missing). */}
+  You do not have permission to access{" "}
+  <strong>{location.state?.from || "this page"}</strong>.
+</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-gray-600`
@@ -227,11 +234,19 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/AccessDenied.jsx:51`
 
 ```jsx
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Link to="/login" className="px-4 py-2 rounded-lg bg-[var(--gt-blue)] hover:bg-[var(--gt-blue-hover)] text-white">Login with another account</Link>
-          <Link to="/feed" className="px-4 py-2 rounded-lg borderless-shadow">Go to Feed</Link>
-        </div>
+<div className="mt-6 flex flex-wrap gap-3">
+  <Link
+    to="/login"
+    className="px-4 py-2 rounded-lg bg-[var(--gt-blue)] hover:bg-[var(--gt-blue-hover)] text-white"
+  >
+    Login with another account
+  </Link>
+  <Link to="/feed" className="px-4 py-2 rounded-lg borderless-shadow">
+    Go to Feed
+  </Link>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-6 flex flex-wrap gap-3`
@@ -266,6 +281,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         </div>
       </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `px-4 py-2 rounded-lg bg-[var(--gt-blue)] hover:bg-[var(--gt-blue-hover)] text-white`
@@ -294,6 +310,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
       </div>
     </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `px-4 py-2 rounded-lg borderless-shadow`
@@ -319,6 +336,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             Back
           </button>
 ```
+
 - `src/pages/AccessDenied.jsx:52` — Login with another account
 
 ```jsx
@@ -327,6 +345,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         </div>
       </div>
 ```
+
 - `src/pages/AccessDenied.jsx:53` — Go to Feed
 
 ```jsx
@@ -335,6 +354,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
       </div>
     </div>
 ```
+
 - `src/pages/AccessDenied.jsx:42` — (element) <button>
 
 ```jsx
@@ -343,6 +363,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </button>
         </div>
 ```
+
 - `src/pages/AccessDenied.jsx:52` — (element) <Link>
 
 ```jsx
@@ -351,6 +372,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         </div>
       </div>
 ```
+
 - `src/pages/AccessDenied.jsx:53` — (element) <Link>
 
 ```jsx
@@ -359,6 +381,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
       </div>
     </div>
 ```
+
 ## 5) Backend Mapping (Frontend → Express → Controller → Service/DB)
 
 _No API calls detected in this page._
@@ -371,4 +394,3 @@ _No API calls detected in this page._
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
-

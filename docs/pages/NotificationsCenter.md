@@ -26,6 +26,7 @@
             <div className="flex items-center justify-between gap-3">
               <div>
 ```
+
 - `aside` at `src/pages/NotificationsCenter.jsx:371`
 
 ```jsx
@@ -34,6 +35,7 @@
             <p className="text-sm font-bold text-slate-900">Saved Search Alerts</p>
             <p className="mt-1 text-[11px] text-slate-500">These power smart notifications for new matching posts.</p>
 ```
+
 ## 3) Styling (className blocks, utility breakdown, and custom CSS)
 
 ### 3.1 Custom CSS utilities referenced by this page (App.css / index.css)
@@ -75,6 +77,7 @@
         <main className="col-span-12 lg:col-span-8 space-y-4">
           <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out`
@@ -127,6 +130,7 @@
           <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
             <div className="flex items-center justify-between gap-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `max-w-7xl mx-auto px-4 py-6 grid grid-cols-12 gap-4`
@@ -173,6 +177,7 @@
             <div className="flex items-center justify-between gap-3">
               <div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `col-span-12 lg:col-span-8 space-y-4`
@@ -211,6 +216,7 @@
               <div>
                 <p className="text-lg font-bold text-slate-900">Notifications</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800`
@@ -249,6 +255,7 @@
                 <p className="text-lg font-bold text-slate-900">Notifications</p>
                 <p className="text-[11px] text-slate-500">Smart search matches, system alerts, and your viewed history.</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-3`
@@ -279,6 +286,7 @@
               </div>
               <label className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-bold text-slate-900`
@@ -311,6 +319,7 @@
               <label className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700">
                 <input type="checkbox" checked={unreadOnly} onChange={(e) => setUnreadOnly(e.target.checked)} className="h-4 w-4" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500`
@@ -337,11 +346,17 @@
 #### `src/pages/NotificationsCenter.jsx:182`
 
 ```jsx
-              <label className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700">
-                <input type="checkbox" checked={unreadOnly} onChange={(e) => setUnreadOnly(e.target.checked)} className="h-4 w-4" />
-                Unread only
-              </label>
+<label className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700">
+  <input
+    type="checkbox"
+    checked={unreadOnly}
+    onChange={(e) => setUnreadOnly(e.target.checked)}
+    className="h-4 w-4"
+  />
+  Unread only
+</label>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center gap-2 text-xs font-semibold text-slate-700`
@@ -369,6 +384,7 @@
               </label>
             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-4 w-4`
@@ -387,6 +403,7 @@
                 const Icon = t.icon
                 const active = tab === t.id
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 flex flex-wrap gap-2`
@@ -408,6 +425,7 @@
                         ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
                         : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
 ```
+
 **Raw class strings detected (best effort):**
 
 - `bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35`
@@ -442,6 +460,7 @@
                       />
                     ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `absolute inset-0 rounded-full bg-indigo-500/10 dark:bg-white/10`
@@ -464,11 +483,12 @@
 #### `src/pages/NotificationsCenter.jsx:211`
 
 ```jsx
-                    <span className="relative inline-flex items-center gap-2">
-                      <Icon size={16} />
-                      {t.label}
-                    </span>
+<span className="relative inline-flex items-center gap-2">
+  <Icon size={16} />
+  {t.label}
+</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `relative inline-flex items-center gap-2`
@@ -490,6 +510,7 @@
                 <div className="space-y-3">
                   {Array.from({ length: 6 }).map((_, i) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800`
@@ -519,6 +540,7 @@
                     <div key={`notif-skel-${i}`} className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-950/30 dark:ring-white/10">
                       <div className="flex items-start justify-between gap-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-3`
@@ -554,6 +576,7 @@
                         <div className="min-w-0 flex-1 space-y-2">
                           <div className="h-3 w-1/3 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-950/30 dark:ring-white/10`
@@ -597,6 +620,7 @@
                           <div className="h-3 w-1/3 rounded-full skeleton" />
                           <div className="h-3 w-2/3 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-3`
@@ -631,6 +655,7 @@
                           <div className="h-3 w-2/3 rounded-full skeleton" />
                           <div className="h-3 w-1/2 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0 flex-1 space-y-2`
@@ -662,6 +687,7 @@
                           <div className="h-3 w-1/2 rounded-full skeleton" />
                         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 w-1/3 rounded-full skeleton`
@@ -688,6 +714,7 @@
                         </div>
                         <div className="h-8 w-20 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 w-2/3 rounded-full skeleton`
@@ -715,6 +742,7 @@
                         <div className="h-8 w-20 rounded-full skeleton" />
                       </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 w-1/2 rounded-full skeleton`
@@ -740,6 +768,7 @@
                     </div>
                   ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-8 w-20 rounded-full skeleton`
@@ -757,11 +786,18 @@
 #### `src/pages/NotificationsCenter.jsx:239`
 
 ```jsx
-              {!loading && error ? <div className="text-sm text-rose-700 dark:text-rose-200">{error}</div> : null}
-              {!loading && !error && !filteredItems.length ? (
-                <div className="text-sm text-slate-600">No notifications for this tab.</div>
-              ) : null}
+{
+  !loading && error ? (
+    <div className="text-sm text-rose-700 dark:text-rose-200">{error}</div>
+  ) : null;
+}
+{
+  !loading && !error && !filteredItems.length ? (
+    <div className="text-sm text-slate-600">No notifications for this tab.</div>
+  ) : null;
+}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm text-rose-700 dark:text-rose-200`
@@ -784,6 +820,7 @@
 
               <div className="space-y-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm text-slate-600`
@@ -805,6 +842,7 @@
                   <div key={i.id} className="relative overflow-hidden rounded-2xl bg-[#ffffff] p-4 ring-1 ring-slate-200/60 shadow-sm transition hover:bg-slate-50/70 dark:bg-slate-950/30 dark:ring-white/10 dark:hover:bg-white/5">
                     <div className={`absolute left-0 top-0 h-full w-1${typeAccent(i.type)}`} />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-3`
@@ -841,6 +879,7 @@
                     <div className="flex items-start justify-between gap-4 pl-3">
                       <div className="min-w-0">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `relative overflow-hidden rounded-2xl bg-[#ffffff] p-4 ring-1 ring-slate-200/60 shadow-sm transition hover:bg-slate-50/70 dark:bg-slate-950/30 dark:ring-white/10 dark:hover:bg-white/5`
@@ -883,6 +922,7 @@
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-4 pl-3`
@@ -911,6 +951,7 @@
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-4 pl-3`
@@ -950,6 +991,7 @@
                           <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">
                             {TYPE_LABELS[i.type] || 'Update'}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0`
@@ -987,6 +1029,7 @@
                             {TYPE_LABELS[i.type] || 'Update'}
                           </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap items-center gap-2`
@@ -1017,11 +1060,16 @@
 #### `src/pages/NotificationsCenter.jsx:251`
 
 ```jsx
-                          <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">
-                            {TYPE_LABELS[i.type] || 'Update'}
-                          </span>
-                          {!i.read ? <span className="text-[10px] font-semibold text-emerald-600">New</span> : null}
+<span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">
+  {TYPE_LABELS[i.type] || "Update"}
+</span>;
+{
+  !i.read ? (
+    <span className="text-[10px] font-semibold text-emerald-600">New</span>
+  ) : null;
+}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600`
@@ -1053,6 +1101,7 @@
                         <p className="mt-2 text-sm font-semibold text-slate-900">{i.message || i.title || 'Notification'}</p>
                         <p className="mt-1 text-[11px] text-slate-500">{new Date(i.created_at).toLocaleString()}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[10px] font-semibold text-emerald-600`
@@ -1082,6 +1131,7 @@
                         {i.type === 'partner_request' ? (
                           <p className="mt-1 text-[11px] text-slate-500">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm font-semibold text-slate-900`
@@ -1111,6 +1161,7 @@
                           <p className="mt-1 text-[11px] text-slate-500">
                             Request ID: {i?.meta?.request_id || i.entity_id}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-[11px] text-slate-500`
@@ -1135,6 +1186,7 @@
                           </p>
                         ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-[11px] text-slate-500`
@@ -1156,6 +1208,7 @@
                           <div className="flex flex-col gap-2">
                             <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-col gap-2 shrink-0`
@@ -1187,6 +1240,7 @@
                               type="button"
                               onClick={() => respondPartnerRequest(i?.meta?.request_id || i.entity_id, 'accept', i.id)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-col gap-2`
@@ -1212,6 +1266,7 @@
                               Accept
                             </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center`
@@ -1241,6 +1296,7 @@
                               Reject
                             </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 text-center`
@@ -1269,6 +1325,7 @@
                             Rate now
                           </Link>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center`
@@ -1298,6 +1355,7 @@
                             View
                           </Link>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center`
@@ -1327,6 +1385,7 @@
                           </button>
                         ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50`
@@ -1354,6 +1413,7 @@
                 <div>
                   <p className="text-sm font-bold text-slate-900">Viewed Products</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800`
@@ -1393,6 +1453,7 @@
                   <p className="text-sm font-bold text-slate-900">Viewed Products</p>
                   <p className="text-[11px] text-slate-500">Private to you - Recorded on Quick View</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-3 mb-3`
@@ -1424,6 +1485,7 @@
                 </div>
                 <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-bold text-slate-900`
@@ -1447,6 +1509,7 @@
                 <button
                   type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500`
@@ -1469,6 +1532,7 @@
                   Refresh
                 </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50`
@@ -1496,6 +1560,7 @@
                   <div key={row.id} className="rounded-2xl bg-[#ffffff] p-4 ring-1 ring-slate-200/60 shadow-sm transition hover:bg-slate-50/70 dark:bg-slate-950/30 dark:ring-white/10 dark:hover:bg-white/5 flex items-start justify-between gap-3">
                     <div className="min-w-0">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-3`
@@ -1536,6 +1601,7 @@
                       <p className="text-sm font-semibold text-slate-900 truncate">{row.product?.title || 'Product'}</p>
                       <p className="mt-1 text-[11px] text-slate-500 truncate">{row.author?.name || 'Company'} - {new Date(row.viewed_at).toLocaleString()}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 ring-1 ring-slate-200/60 shadow-sm transition hover:bg-slate-50/70 dark:bg-slate-950/30 dark:ring-white/10 dark:hover:bg-white/5 flex items-start justify-between gap-3`
@@ -1584,6 +1650,7 @@
                       <p className="mt-1 text-[11px] text-slate-500 truncate">{row.author?.name || 'Company'} - {new Date(row.viewed_at).toLocaleString()}</p>
                       <p className="mt-2 text-xs text-slate-600">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0`
@@ -1617,6 +1684,7 @@
                       <p className="mt-2 text-xs text-slate-600">
                         {row.product?.category || '--'} - MOQ {row.product?.moq || '--'} - Lead time {row.product?.lead_time_days || '--'}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900 truncate`
@@ -1651,6 +1719,7 @@
                         {row.product?.category || '--'} - MOQ {row.product?.moq || '--'} - Lead time {row.product?.lead_time_days || '--'}
                       </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-[11px] text-slate-500 truncate`
@@ -1681,6 +1750,7 @@
                       </p>
                     </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-xs text-slate-600`
@@ -1704,6 +1774,7 @@
                         type="button"
                         onClick={() => setQuickViewItem({ ...row.product, author: row.author })}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-col gap-2 shrink-0`
@@ -1728,6 +1799,7 @@
                         Quick view
                       </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50`
@@ -1755,6 +1827,7 @@
                           Company
                         </Link>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center`
@@ -1784,6 +1857,7 @@
               </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm text-slate-600`
@@ -1802,6 +1876,7 @@
 
               {viewsNext !== null && !loadingViews ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm text-slate-600`
@@ -1820,6 +1895,7 @@
                   Load more
                 </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8`
@@ -1858,6 +1934,7 @@
             <p className="text-sm font-bold text-slate-900">Saved Search Alerts</p>
             <p className="mt-1 text-[11px] text-slate-500">These power smart notifications for new matching posts.</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `col-span-12 lg:col-span-4 space-y-4`
@@ -1900,6 +1977,7 @@
             <p className="mt-1 text-[11px] text-slate-500">These power smart notifications for new matching posts.</p>
             <div className="mt-3 space-y-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800`
@@ -1939,6 +2017,7 @@
             <div className="mt-3 space-y-2">
               {alerts.length ? alerts.map((a) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-bold text-slate-900`
@@ -1967,6 +2046,7 @@
               {alerts.length ? alerts.map((a) => (
                 <div key={a.id} className="rounded-xl bg-white p-3 ring-1 ring-slate-200/70 shadow-sm dark:bg-white/5 dark:ring-white/10 flex items-start justify-between gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-[11px] text-slate-500`
@@ -2007,6 +2087,7 @@
                 <div key={a.id} className="rounded-xl bg-white p-3 ring-1 ring-slate-200/70 shadow-sm dark:bg-white/5 dark:ring-white/10 flex items-start justify-between gap-2">
                   <div className="min-w-0">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 space-y-2`
@@ -2044,6 +2125,7 @@
                     <p className="text-xs font-semibold text-slate-900 truncate">{a.query}</p>
                     <p className="text-[11px] text-slate-500">Updated: {new Date(a.updated_at || a.created_at).toLocaleString()}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 ring-1 ring-slate-200/70 shadow-sm dark:bg-white/5 dark:ring-white/10 flex items-start justify-between gap-2`
@@ -2082,11 +2164,14 @@
 #### `src/pages/NotificationsCenter.jsx:378`
 
 ```jsx
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold text-slate-900 truncate">{a.query}</p>
-                    <p className="text-[11px] text-slate-500">Updated: {new Date(a.updated_at || a.created_at).toLocaleString()}</p>
-                  </div>
+<div className="min-w-0">
+  <p className="text-xs font-semibold text-slate-900 truncate">{a.query}</p>
+  <p className="text-[11px] text-slate-500">
+    Updated: {new Date(a.updated_at || a.created_at).toLocaleString()}
+  </p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0`
@@ -2114,6 +2199,7 @@
                   </div>
                   <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-slate-900 truncate`
@@ -2139,6 +2225,7 @@
                   <button
                     type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500`
@@ -2161,6 +2248,7 @@
                     title="Delete alert"
                   >
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full borderless-shadow p-2 hover:bg-rose-50`
@@ -2187,6 +2275,7 @@
                 </div>
               )) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-rose-600`
@@ -2204,6 +2293,7 @@
             </div>
           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500`
@@ -2222,6 +2312,7 @@
             <ul className="mt-2 text-xs text-slate-600 space-y-1">
               <li>- Smart matches trigger when new buyer requests or products match your saved alert keywords.</li>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800`
@@ -2259,6 +2350,7 @@
               <li>- Smart matches trigger when new buyer requests or products match your saved alert keywords.</li>
               <li>- Use verification and credibility to reduce fraud risk.</li>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-bold text-slate-900`
@@ -2284,6 +2376,7 @@
               <li>- Use verification and credibility to reduce fraud risk.</li>
               <li>- Viewed history is private and helps you revisit products quickly.</li>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-xs text-slate-600 space-y-1`
@@ -2309,6 +2402,7 @@
               </div>
               <label className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700">
 ```
+
 - `src/pages/NotificationsCenter.jsx:180` — Smart search matches, system alerts, and your viewed history.
 
 ```jsx
@@ -2317,6 +2411,7 @@
               <label className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700">
                 <input type="checkbox" checked={unreadOnly} onChange={(e) => setUnreadOnly(e.target.checked)} className="h-4 w-4" />
 ```
+
 - `src/pages/NotificationsCenter.jsx:254` — New
 
 ```jsx
@@ -2325,6 +2420,7 @@
                         <p className="mt-2 text-sm font-semibold text-slate-900">{i.message || i.title || 'Notification'}</p>
                         <p className="mt-1 text-[11px] text-slate-500">{new Date(i.created_at).toLocaleString()}</p>
 ```
+
 - `src/pages/NotificationsCenter.jsx:312` — Viewed Products
 
 ```jsx
@@ -2333,6 +2429,7 @@
                 </div>
                 <button
 ```
+
 - `src/pages/NotificationsCenter.jsx:313` — Private to you - Recorded on Quick View
 
 ```jsx
@@ -2341,6 +2438,7 @@
                 <button
                   type="button"
 ```
+
 - `src/pages/NotificationsCenter.jsx:373` — Saved Search Alerts
 
 ```jsx
@@ -2349,6 +2447,7 @@
             <div className="mt-3 space-y-2">
               {alerts.length ? alerts.map((a) => (
 ```
+
 - `src/pages/NotificationsCenter.jsx:374` — These power smart notifications for new matching posts.
 
 ```jsx
@@ -2357,6 +2456,7 @@
               {alerts.length ? alerts.map((a) => (
                 <div key={a.id} className="rounded-xl bg-white p-3 ring-1 ring-slate-200/70 shadow-sm dark:bg-white/5 dark:ring-white/10 flex items-start justify-between gap-2">
 ```
+
 - `src/pages/NotificationsCenter.jsx:380` — Updated: {new Date(a.updated_at \|\| a.created_at).toLocaleString()}
 
 ```jsx
@@ -2365,6 +2465,7 @@
                   <button
                     type="button"
 ```
+
 - `src/pages/NotificationsCenter.jsx:399` — Tips
 
 ```jsx
@@ -2373,6 +2474,7 @@
               <li>- Smart matches trigger when new buyer requests or products match your saved alert keywords.</li>
               <li>- Use verification and credibility to reduce fraud risk.</li>
 ```
+
 - `src/pages/NotificationsCenter.jsx:401` — - Smart matches trigger when new buyer requests or products match your saved alert keywords.
 
 ```jsx
@@ -2381,6 +2483,7 @@
               <li>- Viewed history is private and helps you revisit products quickly.</li>
             </ul>
 ```
+
 - `src/pages/NotificationsCenter.jsx:402` — - Use verification and credibility to reduce fraud risk.
 
 ```jsx
@@ -2389,6 +2492,7 @@
             </ul>
           </div>
 ```
+
 - `src/pages/NotificationsCenter.jsx:403` — - Viewed history is private and helps you revisit products quickly.
 
 ```jsx
@@ -2397,6 +2501,7 @@
           </div>
         </aside>
 ```
+
 - `src/pages/NotificationsCenter.jsx:386` — Delete alert
 
 ```jsx
@@ -2405,6 +2510,7 @@
                   >
                     <Trash2 size={16} className="text-rose-600" />
 ```
+
 - `src/pages/NotificationsCenter.jsx:387` — Delete alert
 
 ```jsx
@@ -2413,6 +2519,7 @@
                     <Trash2 size={16} className="text-rose-600" />
                   </button>
 ```
+
 - `src/pages/NotificationsCenter.jsx:267` — (element) <button>
 
 ```jsx
@@ -2421,6 +2528,7 @@
                               onClick={() => respondPartnerRequest(i?.meta?.request_id || i.entity_id, 'accept', i.id)}
                               className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center"
 ```
+
 - `src/pages/NotificationsCenter.jsx:274` — (element) <button>
 
 ```jsx
@@ -2429,6 +2537,7 @@
                               onClick={() => respondPartnerRequest(i?.meta?.request_id || i.entity_id, 'reject', i.id)}
                               className="rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 text-center"
 ```
+
 - `src/pages/NotificationsCenter.jsx:283` — (element) <Link>
 
 ```jsx
@@ -2437,6 +2546,7 @@
                             className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center"
                           >
 ```
+
 - `src/pages/NotificationsCenter.jsx:290` — (element) <Link>
 
 ```jsx
@@ -2445,6 +2555,7 @@
                             className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center"
                           >
 ```
+
 - `src/pages/NotificationsCenter.jsx:298` — (element) <button>
 
 ```jsx
@@ -2453,6 +2564,7 @@
                           </button>
                         ) : null}
 ```
+
 - `src/pages/NotificationsCenter.jsx:315` — (element) <button>
 
 ```jsx
@@ -2461,6 +2573,7 @@
                   onClick={() => loadViews({ reset: true })}
                   className="rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
 ```
+
 - `src/pages/NotificationsCenter.jsx:335` — (element) <button>
 
 ```jsx
@@ -2469,6 +2582,7 @@
                         onClick={() => setQuickViewItem({ ...row.product, author: row.author })}
                         className="rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
 ```
+
 - `src/pages/NotificationsCenter.jsx:343` — (element) <Link>
 
 ```jsx
@@ -2477,6 +2591,7 @@
                           className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center"
                         >
 ```
+
 - `src/pages/NotificationsCenter.jsx:359` — (element) <button>
 
 ```jsx
@@ -2485,6 +2600,7 @@
                   onClick={() => loadViews({ reset: false })}
                   className="mt-4 rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
 ```
+
 - `src/pages/NotificationsCenter.jsx:382` — (element) <button>
 
 ```jsx
@@ -2493,17 +2609,18 @@
                     onClick={() => deleteAlert(a.id)}
                     className="rounded-full borderless-shadow p-2 hover:bg-rose-50"
 ```
+
 ## 5) Backend Mapping (Frontend → Express → Controller → Service/DB)
 
-| Frontend call (path:line) | Express mount | Route definition | Controller file | Handler |
-|---|---|---|---|---|
-| GET /notifications (src/pages/NotificationsCenter.jsx:92) | /api/notifications -> server/routes/notificationRoutes.js:128 | GET / (server/routes/notificationRoutes.js:7) | server/controllers/notificationController.js | getNotifications |
-| GET /notifications/search-alerts (src/pages/NotificationsCenter.jsx:105) | /api/notifications -> server/routes/notificationRoutes.js:128 | GET /search-alerts (server/routes/notificationRoutes.js:9) | server/controllers/notificationController.js | getSearchAlerts |
-| GET /products/views/me?cursor=${cursor}&limit=10 (src/pages/NotificationsCenter.jsx:117) | /api/products -> server/routes/productRoutes.js:119 | - | - | - |
-| PATCH /notifications/${encodeURIComponent(id)}/read (src/pages/NotificationsCenter.jsx:143) | /api/notifications -> server/routes/notificationRoutes.js:128 | - | - | - |
-| POST /partners/requests/${encodeURIComponent(requestId)}/${action} (src/pages/NotificationsCenter.jsx:149) | /api/partners -> server/routes/partnerNetworkRoutes.js:132 | - | - | - |
-| PATCH /notifications/${encodeURIComponent(notificationId)}/read (src/pages/NotificationsCenter.jsx:151) | /api/notifications -> server/routes/notificationRoutes.js:128 | - | - | - |
-| DELETE /notifications/search-alerts/${encodeURIComponent(id)} (src/pages/NotificationsCenter.jsx:158) | /api/notifications -> server/routes/notificationRoutes.js:128 | - | - | - |
+| Frontend call (path:line)                                                                                  | Express mount                                                 | Route definition                                           | Controller file                              | Handler          |
+| ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------- | ---------------- |
+| GET /notifications (src/pages/NotificationsCenter.jsx:92)                                                  | /api/notifications -> server/routes/notificationRoutes.js:128 | GET / (server/routes/notificationRoutes.js:7)              | server/controllers/notificationController.js | getNotifications |
+| GET /notifications/search-alerts (src/pages/NotificationsCenter.jsx:105)                                   | /api/notifications -> server/routes/notificationRoutes.js:128 | GET /search-alerts (server/routes/notificationRoutes.js:9) | server/controllers/notificationController.js | getSearchAlerts  |
+| GET /products/views/me?cursor=${cursor}&limit=10 (src/pages/NotificationsCenter.jsx:117)                   | /api/products -> server/routes/productRoutes.js:119           | -                                                          | -                                            | -                |
+| PATCH /notifications/${encodeURIComponent(id)}/read (src/pages/NotificationsCenter.jsx:143)                | /api/notifications -> server/routes/notificationRoutes.js:128 | -                                                          | -                                            | -                |
+| POST /partners/requests/${encodeURIComponent(requestId)}/${action} (src/pages/NotificationsCenter.jsx:149) | /api/partners -> server/routes/partnerNetworkRoutes.js:132    | -                                                          | -                                            | -                |
+| PATCH /notifications/${encodeURIComponent(notificationId)}/read (src/pages/NotificationsCenter.jsx:151)    | /api/notifications -> server/routes/notificationRoutes.js:128 | -                                                          | -                                            | -                |
+| DELETE /notifications/search-alerts/${encodeURIComponent(id)} (src/pages/NotificationsCenter.jsx:158)      | /api/notifications -> server/routes/notificationRoutes.js:128 | -                                                          | -                                            | -                |
 
 ## 6) How to Edit Safely
 
@@ -2513,4 +2630,3 @@
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
-

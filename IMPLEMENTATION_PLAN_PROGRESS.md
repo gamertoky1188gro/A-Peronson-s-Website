@@ -1,4 +1,5 @@
 # GarTexHub Implementation Plan Progress
+
 ## Updated: March 18, 2026
 
 This document tracks the implementation progress of the comprehensive plan for GarTexHub platform improvements.
@@ -8,9 +9,11 @@ This document tracks the implementation progress of the comprehensive plan for G
 ## ✅ COMPLETED: Phase 1 - Critical Infrastructure
 
 ### 1.1 Route & Role Stabilization ✅
+
 **Status:** COMPLETED
 
 #### Changes Made:
+
 1. **Updated Role Constants** (`src/App.jsx`)
    - Changed `OWNER_ONLY_ROLES` → `OWNER_ROLES` to include `['owner', 'admin', 'buying_house', 'factory']`
    - This allows main account owners (buying house and factory) to access owner-level features
@@ -30,6 +33,7 @@ This document tracks the implementation progress of the comprehensive plan for G
    - Buyers redirect to `/buyer-requests`
 
 #### Result:
+
 - ✅ No more AccessDenied loops for main account owners
 - ✅ Each role lands on appropriate home page after login
 - ✅ Partner Network correctly restricted to buying houses only
@@ -37,9 +41,11 @@ This document tracks the implementation progress of the comprehensive plan for G
 ---
 
 ### 1.2 Navigation Improvements ✅
+
 **Status:** COMPLETED
 
 #### Changes Made:
+
 1. **Pricing Link for Authenticated Users** (`src/components/NavBar.jsx`)
    - Added `/pricing` with `DollarSign` icon to `authenticatedLinks` array
    - Now visible in both desktop icon nav and mobile menu
@@ -52,6 +58,7 @@ This document tracks the implementation progress of the comprehensive plan for G
    - Uses subtle styling with border-top separator
 
 #### Result:
+
 - ✅ Pricing accessible from navbar when logged in
 - ✅ Terms and Privacy easily discoverable on mobile
 - ✅ Professional navigation structure maintained
@@ -59,9 +66,11 @@ This document tracks the implementation progress of the comprehensive plan for G
 ---
 
 ### 1.3 Agent ID Login System ✅
+
 **Status** COMPLETED (Frontend ready, backend pending)
 
 #### Changes Made:
+
 1. **Updated Login Form** (`src/pages/auth/Login.jsx`)
    - Changed input field from "Email" to "Email or Agent ID"
    - Changed input type from `email` to `text` (allows non-email format)
@@ -74,6 +83,7 @@ This document tracks the implementation progress of the comprehensive plan for G
    - Link colors updated to use brand blue
 
 #### Backend Requirements:
+
 ```javascript
 // POST /api/auth/login
 // Request body:
@@ -93,6 +103,7 @@ This document tracks the implementation progress of the comprehensive plan for G
 ```
 
 #### Result:
+
 - ✅ Frontend ready for Agent ID login
 - ⏳ Backend needs to implement identifier-based lookup
 - ✅ Visual consistency with brand colors
@@ -100,9 +111,11 @@ This document tracks the implementation progress of the comprehensive plan for G
 ---
 
 ### 1.4 Color Standardization ✅
+
 **Status:** COMPLETED
 
 #### Verified:
+
 1. **CSS Variables** (`src/App.css`)
    - `--gt-blue: #0A66C2` (LinkedIn-style professional blue)
    - `--gt-blue-hover: #004182` (darker hover state)
@@ -115,6 +128,7 @@ This document tracks the implementation progress of the comprehensive plan for G
    - Profile verified badges use emerald/mint (separate from primary blue)
 
 #### Result:
+
 - ✅ Brand color locked and consistently applied
 - ✅ No color drift between components
 - ✅ Professional appearance maintained
@@ -124,11 +138,13 @@ This document tracks the implementation progress of the comprehensive plan for G
 ## 🔄 IN PROGRESS: Phase 2 - Backend Integration Requirements
 
 ### 2.1 Agent ID System (Backend Implementation)
+
 **Status:** Backend specification ready
 
 #### Data Model Requirements:
 
 **users.json structure for agents:**
+
 ```json
 {
   "id": "usr_agent_001",
@@ -154,12 +170,14 @@ This document tracks the implementation progress of the comprehensive plan for G
 #### API Endpoints Needed:
 
 1. **POST /api/auth/login** - Update existing
+
    ```javascript
    // Accept identifier (email or Agent ID)
    // Return session with org_owner_id for agents
    ```
 
 2. **POST /api/members** - Create agent account
+
    ```javascript
    Request: {
      "name": "string",
@@ -174,12 +192,14 @@ This document tracks the implementation progress of the comprehensive plan for G
    ```
 
 3. **GET /api/members** - List organization's agents
+
    ```javascript
    // Returns agents for current user's organization
    // Filtered by org_owner_id
    ```
 
 4. **PATCH /api/members/:id** - Update agent permissions
+
    ```javascript
    Request: {
      "status": "active" | "suspended",
@@ -193,6 +213,7 @@ This document tracks the implementation progress of the comprehensive plan for G
    ```
 
 #### Validation Rules:
+
 - **Free plan:** Max 10 active agents per org_owner_id
 - **Premium plan:** Unlimited agents
 - **Agent ID (member_id):** Globally unique across all organizations
@@ -202,11 +223,13 @@ This document tracks the implementation progress of the comprehensive plan for G
 ---
 
 ### 2.2 Partner Network (Backend)
+
 **Status:** Specification ready
 
 #### API Endpoints Needed:
 
 1. **POST /api/partner-network/requests** - Send partner request
+
    ```javascript
    Request: {
      "factory_id": "usr_factory_123",
@@ -219,6 +242,7 @@ This document tracks the implementation progress of the comprehensive plan for G
    ```
 
 2. **GET /api/partner-network** - List connected factories
+
    ```javascript
    // For buying houses: returns accepted connections
    // For factories: returns buying houses they're connected to
@@ -236,18 +260,21 @@ This document tracks the implementation progress of the comprehensive plan for G
    ```
 
 3. **GET /api/partner-network/requests/incoming** - For factories
+
    ```javascript
    // Returns pending partner requests
    // Factory can accept/reject from notifications
    ```
 
 4. **POST /api/partner-network/accept/:request_id** - Accept request
+
    ```javascript
    // Factory only
    // Creates bidirectional connection
    ```
 
 5. **POST /api/partner-network/reject/:request_id** - Reject request
+
    ```javascript
    // Factory only
    ```
@@ -258,6 +285,7 @@ This document tracks the implementation progress of the comprehensive plan for G
    ```
 
 #### Notifications Integration:
+
 - When buying house sends request → Factory gets notification
 - When factory accepts → Buying house gets notification
 - Notification type: `partner_request` and `partner_accepted`
@@ -265,9 +293,11 @@ This document tracks the implementation progress of the comprehensive plan for G
 ---
 
 ### 2.3 Buyer Requests Enhancement
+
 **Status:** Frontend structure ready, backend schema needs extension
 
 #### Extended Schema (`requirements.json`):
+
 ```json
 {
   "id": "req_001",
@@ -301,12 +331,14 @@ This document tracks the implementation progress of the comprehensive plan for G
 #### API Endpoints Needed:
 
 1. **POST /api/buyer-requests** - Create request (Buyer)
+
    ```javascript
    // Full structured form data
    // Auto-generates title if not provided
    ```
 
 2. **GET /api/buyer-requests** - List requests
+
    ```javascript
    // Buyer: Only their own requests
    // Buying House/Factory: All open requests (role_filter=true)
@@ -327,10 +359,12 @@ This document tracks the implementation progress of the comprehensive plan for G
 ## 📋 PENDING: Phase 3 - Page Implementations
 
 ### 3.1 Member Management Page
+
 **Route:** `/member-management`
 **Roles:** `owner, admin, buying_house, factory`
 
 **Requirements:**
+
 - Create agent accounts (default role: "agent")
 - Display Agent ID prominently with "Use this ID to login" helper
 - Permission matrix UI (checkboxes for: requests, products, analytics, documents)
@@ -339,6 +373,7 @@ This document tracks the implementation progress of the comprehensive plan for G
 - Premium plan: Show "Unlimited" badge
 
 **UI Components Needed:**
+
 - Agent list table with search/filter
 - Create agent modal/form
 - Edit permissions modal
@@ -347,10 +382,12 @@ This document tracks the implementation progress of the comprehensive plan for G
 ---
 
 ### 3.2 Partner Network Page
+
 **Route:** `/partner-network`
 **Roles:** `buying_house, admin, owner, agent` (agent view-only)
 
 **Requirements:**
+
 - Send partner request by Factory ID input
 - List connected factories with:
   - Name, logo, verified badge
@@ -360,6 +397,7 @@ This document tracks the implementation progress of the comprehensive plan for G
 - Agent permissions: View-only (no send/cancel)
 
 **UI Components Needed:**
+
 - "Add Factory" section with ID input
 - Connected factories grid/list
 - Pending requests section
@@ -368,10 +406,12 @@ This document tracks the implementation progress of the comprehensive plan for G
 ---
 
 ### 3.3 Buyer Requests Page Enhancement
+
 **Route:** `/buyer-requests`
 **Roles:** `buyer, buying_house, admin`
 
 **Requirements for Buyer View:**
+
 - Structured multi-step form:
   - Step 1: Basic (Title, Category, Quantity, MOQ)
   - Step 2: Materials (Fabric, GSM, Certifications)
@@ -382,6 +422,7 @@ This document tracks the implementation progress of the comprehensive plan for G
 - Edit/delete own requests
 
 **Requirements for Buying House View:**
+
 - Table view of all open buyer requests
 - Columns: Title, Buyer (redacted), Qty, Timeline, Verified badge, Actions
 - "Assign" dropdown to select agent
@@ -390,6 +431,7 @@ This document tracks the implementation progress of the comprehensive plan for G
 - Search by keywords
 
 **UI Components Needed:**
+
 - Multi-step form wizard (buyer)
 - Data table with filters (buying house)
 - Assignment dropdown
@@ -398,10 +440,12 @@ This document tracks the implementation progress of the comprehensive plan for G
 ---
 
 ### 3.4 Product Management Page
+
 **Route:** `/product-management`
 **Roles:** `factory, buying_house, admin`
 
 **Requirements:**
+
 - CRUD for products
 - Image/video upload section
 - Video review status display (pending/approved/rejected)
@@ -411,6 +455,7 @@ This document tracks the implementation progress of the comprehensive plan for G
 - Draft/published status toggle
 
 **UI Components Needed:**
+
 - Product form (create/edit)
 - Media upload with preview
 - Product grid/list view
@@ -420,10 +465,12 @@ This document tracks the implementation progress of the comprehensive plan for G
 ---
 
 ### 3.5 Org Settings Page
+
 **Route:** `/org-settings`
 **Roles:** `owner, admin, buying_house, factory`
 
 **Requirements:**
+
 - Verification checklist UI:
   - Factory: 6 required docs (Company Reg, Trade License, TIN, NID, Bank Proof, ERC)
   - Buying House: 5 required docs (Company Reg, Trade License, TIN, NID, Bank Proof)
@@ -438,6 +485,7 @@ This document tracks the implementation progress of the comprehensive plan for G
 - Assistant knowledge editor (owner/admin only)
 
 **UI Components Needed:**
+
 - Document checklist with upload
 - Subscription status card
 - Profile edit form
@@ -446,10 +494,12 @@ This document tracks the implementation progress of the comprehensive plan for G
 ---
 
 ### 3.6 Insights Dashboard
+
 **Route:** `/insights`
 **Roles:** `owner, admin, buying_house, factory` + agents with `permissions.analytics.view = true`
 
 **Requirements:**
+
 - Free plan: Limited metrics (total requests, total products, basic stats)
 - Premium plan: Full analytics
   - Buyer request breakdown by category
@@ -463,6 +513,7 @@ This document tracks the implementation progress of the comprehensive plan for G
   - Factory: Product views, inquiry rates, response time
 
 **UI Components Needed:**
+
 - Stat cards (total, averages, trends)
 - Charts (line, bar, pie)
 - Agent performance table
@@ -472,10 +523,12 @@ This document tracks the implementation progress of the comprehensive plan for G
 ---
 
 ### 3.7 Owner Dashboard
+
 **Route:** `/owner`
 **Roles:** `owner, admin, buying_house, factory`
 
 **Requirements for Buying House:**
+
 - Quick stats: Active requests, Agents, Connected factories, Open chats
 - Buyer requests overview section
 - Agents list (quick view)
@@ -484,6 +537,7 @@ This document tracks the implementation progress of the comprehensive plan for G
 - Quick links: Member Mgmt, Org Settings, Insights, Subscription
 
 **Requirements for Factory:**
+
 - Quick stats: Total products, Incoming requests, Partner connections
 - Products overview
 - Incoming partner requests (accept/reject)
@@ -491,6 +545,7 @@ This document tracks the implementation progress of the comprehensive plan for G
 - Quick links: Product Mgmt, Member Mgmt, Org Settings
 
 **UI Components Needed:**
+
 - Role-specific dashboard cards
 - Mini tables with "View all" links
 - Action buttons (inline accept/reject)
@@ -499,10 +554,12 @@ This document tracks the implementation progress of the comprehensive plan for G
 ---
 
 ### 3.8 Agent Dashboard
+
 **Route:** `/agent`
 **Roles:** `buying_house, owner, admin, agent`
 
 **Requirements:**
+
 - Assigned buyer requests (only those assigned to this agent)
 - Claimed conversations
 - Connected factories (view-only list)
@@ -514,6 +571,7 @@ This document tracks the implementation progress of the comprehensive plan for G
 - No access to: Member management, Organization settings
 
 **UI Components Needed:**
+
 - Assigned requests table
 - Conversations list
 - Performance stat cards
@@ -571,6 +629,7 @@ This document tracks the implementation progress of the comprehensive plan for G
 ## 🎨 UI/UX Consistency Checklist
 
 ### Completed:
+
 - ✅ Brand blue (`#0A66C2`) for all primary CTAs
 - ✅ Emerald/mint for verified badges
 - ✅ Consistent focus rings (blue)
@@ -578,6 +637,7 @@ This document tracks the implementation progress of the comprehensive plan for G
 - ✅ NavBar uses brand colors
 
 ### Pending:
+
 - ⏳ Dark mode count surfaces (ensure black/blue consistency)
 - ⏳ All profile pages review to ensure emerald verified badges
 - ⏳ All forms review to ensure blue primary buttons
@@ -587,6 +647,7 @@ This document tracks the implementation progress of the comprehensive plan for G
 ## 📊 Testing Checklist
 
 ### Auth & Routing Tests:
+
 - [ ] Login as buyer → redirects to `/buyer-requests`
 - [ ] Login as factory → redirects to `/product-management`
 - [ ] Login as buying_house → redirects to `/owner`
@@ -597,6 +658,7 @@ This document tracks the implementation progress of the comprehensive plan for G
 - [ ] Buying house can access `/owner`, `/org-settings`, `/insights`
 
 ### Agent System Tests:
+
 - [ ] Create agent account in Member Management
 - [ ] Agent ID displayed clearly with helper text
 - [ ] Login with Agent ID works (after backend implementation)
@@ -605,6 +667,7 @@ This document tracks the implementation progress of the comprehensive plan for G
 - [ ] Permissions enforced (e.g., products.edit = false hides edit button)
 
 ### Partner Network Tests:
+
 - [ ] Buying house sends request by factory ID
 - [ ] Factory receives notification
 - [ ] Factory can accept/reject from notifications
@@ -613,6 +676,7 @@ This document tracks the implementation progress of the comprehensive plan for G
 - [ ] Agent can view but not edit
 
 ### UI Consistency Tests:
+
 - [ ] Light mode: all CTAs are blue
 - [ ] Dark mode: all CTAs are blue, surfaces are black/navy
 - [ ] Verified badges are emerald/mint everywhere
@@ -631,24 +695,28 @@ This document tracks the implementation progress of the comprehensive plan for G
 ## 🚀 Next Steps (Priority Order)
 
 ### Week 1:
+
 1. Backend: Implement Agent ID login system
 2. Backend: Create Member Management APIs
 3. Frontend: Build Member Management page
 4. Frontend: Update Agent Dashboard with assignments
 
 ### Week 2:
+
 5. Backend: Implement Partner Network APIs
 6. Frontend: Build Partner Network page
 7. Backend: Extend Buyer Requests schema and assignment
 8. Frontend: Enhance Buyer Requests page with structured form
 
 ### Week 3:
+
 9. Backend: Implement Subscription & Verification APIs
 10. Frontend: Build Org Settings page with verification checklist
 11. Backend: Implement Analytics endpoints
 12. Frontend: Build Insights dashboard
 
 ### Week 4:
+
 13. Frontend: Build/enhance Owner Dashboard (role-specific)
 14. Frontend: Complete Agent Dashboard
 15. Backend: Review ownership enforcement
@@ -660,6 +728,7 @@ This document tracks the implementation progress of the comprehensive plan for G
 ## ✨ Summary
 
 **Completed:**
+
 - ✅ Fixed all routing and role mismatches
 - ✅ Enhanced navigation with Pricing and Legal links
 - ✅ Implemented Agent ID login (frontend)
@@ -667,10 +736,12 @@ This document tracks the implementation progress of the comprehensive plan for G
 - ✅ Updated all core authentication flows
 
 **In Progress:**
+
 - 🔄 Documenting all backend requirements
 - 🔄 Preparing page specifications for implementing
 
 **Pending:**
+
 - ⏳ Backend API implementations (Agent system, Partner Network, etc.)
 - ⏳ Page implementations (Member Mgmt, Partner Network, Buyer Requests, etc.)
 - ⏳ Full integration testing

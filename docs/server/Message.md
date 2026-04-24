@@ -13,8 +13,9 @@ This doc is generated from source snapshots with `path:line` references.
 - **Route definition:** `server/routes/messageRoutes.js:39`
 
 ```js
-router.get('/inbox', requireAuth, inbox)
+router.get("/inbox", requireAuth, inbox);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `inbox`
@@ -25,8 +26,9 @@ router.get('/inbox', requireAuth, inbox)
 - **Route definition:** `server/routes/messageRoutes.js:40`
 
 ```js
-router.post('/requests/:threadId/accept', requireAuth, acceptRequest)
+router.post("/requests/:threadId/accept", requireAuth, acceptRequest);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `acceptRequest`
@@ -37,8 +39,9 @@ router.post('/requests/:threadId/accept', requireAuth, acceptRequest)
 - **Route definition:** `server/routes/messageRoutes.js:41`
 
 ```js
-router.post('/requests/:threadId/reject', requireAuth, rejectRequest)
+router.post("/requests/:threadId/reject", requireAuth, rejectRequest);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `rejectRequest`
@@ -49,8 +52,9 @@ router.post('/requests/:threadId/reject', requireAuth, rejectRequest)
 - **Route definition:** `server/routes/messageRoutes.js:42`
 
 ```js
-router.post('/friend/:userId', requireAuth, sendFriendDirectMessage)
+router.post("/friend/:userId", requireAuth, sendFriendDirectMessage);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `sendFriendDirectMessage`
@@ -61,8 +65,9 @@ router.post('/friend/:userId', requireAuth, sendFriendDirectMessage)
 - **Route definition:** `server/routes/messageRoutes.js:44`
 
 ```js
-router.get('/policy/config', requireAuth, getPolicyConfig)
+router.get("/policy/config", requireAuth, getPolicyConfig);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `getPolicyConfig`
@@ -73,8 +78,9 @@ router.get('/policy/config', requireAuth, getPolicyConfig)
 - **Route definition:** `server/routes/messageRoutes.js:45`
 
 ```js
-router.get('/policy/review-queue', requireAuth, listPolicyReviewQueue)
+router.get("/policy/review-queue", requireAuth, listPolicyReviewQueue);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `listPolicyReviewQueue`
@@ -85,8 +91,13 @@ router.get('/policy/review-queue', requireAuth, listPolicyReviewQueue)
 - **Route definition:** `server/routes/messageRoutes.js:46`
 
 ```js
-router.get('/policy/queue-inspector', requireAuth, listMessagePolicyQueueInspector)
+router.get(
+  "/policy/queue-inspector",
+  requireAuth,
+  listMessagePolicyQueueInspector,
+);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `listMessagePolicyQueueInspector`
@@ -97,8 +108,13 @@ router.get('/policy/queue-inspector', requireAuth, listMessagePolicyQueueInspect
 - **Route definition:** `server/routes/messageRoutes.js:47`
 
 ```js
-router.post('/policy/review-queue/:decisionId/false-positive', requireAuth, markPolicyFalsePositive)
+router.post(
+  "/policy/review-queue/:decisionId/false-positive",
+  requireAuth,
+  markPolicyFalsePositive,
+);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `markPolicyFalsePositive`
@@ -109,8 +125,13 @@ router.post('/policy/review-queue/:decisionId/false-positive', requireAuth, mark
 - **Route definition:** `server/routes/messageRoutes.js:48`
 
 ```js
-router.post('/policy/reputation/:senderId/adjust', requireAuth, updateSenderReputation)
+router.post(
+  "/policy/reputation/:senderId/adjust",
+  requireAuth,
+  updateSenderReputation,
+);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `updateSenderReputation`
@@ -121,8 +142,13 @@ router.post('/policy/reputation/:senderId/adjust', requireAuth, updateSenderRepu
 - **Route definition:** `server/routes/messageRoutes.js:49`
 
 ```js
-router.get('/policy/reports/weekly-decision-quality', requireAuth, weeklyPolicyDecisionQualityReport)
+router.get(
+  "/policy/reports/weekly-decision-quality",
+  requireAuth,
+  weeklyPolicyDecisionQualityReport,
+);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `weeklyPolicyDecisionQualityReport`
@@ -133,8 +159,9 @@ router.get('/policy/reports/weekly-decision-quality', requireAuth, weeklyPolicyD
 - **Route definition:** `server/routes/messageRoutes.js:51`
 
 ```js
-router.post('/:matchId/read', requireAuth, markRead)
+router.post("/:matchId/read", requireAuth, markRead);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `markRead`
@@ -145,8 +172,14 @@ router.post('/:matchId/read', requireAuth, markRead)
 - **Route definition:** `server/routes/messageRoutes.js:52`
 
 ```js
-router.post('/:matchId/upload', requireAuth, upload.single('file'), uploadMessageAttachment)
+router.post(
+  "/:matchId/upload",
+  requireAuth,
+  upload.single("file"),
+  uploadMessageAttachment,
+);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
   - `upload.single('file')`
@@ -158,8 +191,9 @@ router.post('/:matchId/upload', requireAuth, upload.single('file'), uploadMessag
 - **Route definition:** `server/routes/messageRoutes.js:53`
 
 ```js
-router.post('/:matchId', requireAuth, sendMessage)
+router.post("/:matchId", requireAuth, sendMessage);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `sendMessage`
@@ -170,8 +204,9 @@ router.post('/:matchId', requireAuth, sendMessage)
 - **Route definition:** `server/routes/messageRoutes.js:54`
 
 ```js
-router.get('/:matchId', requireAuth, getMessages)
+router.get("/:matchId", requireAuth, getMessages);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `getMessages`
@@ -182,4 +217,3 @@ router.get('/:matchId', requireAuth, getMessages)
 - JSON helpers: `server/utils/jsonStore.js` (readJson/writeJson/updateJson).
 - Data files: `server/database/*.json`.
 - Controllers/services often read from `users.json`, `messages.json`, `metrics.json`, etc.
-

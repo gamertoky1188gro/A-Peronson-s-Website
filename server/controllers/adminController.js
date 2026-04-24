@@ -1,301 +1,398 @@
-import { readJson, writeJson } from '../utils/jsonStore.js'
-import { sanitizeString } from '../utils/validators.js'
-import { createNotification } from '../services/notificationService.js'
-import { listReports, resolveReport } from '../services/reportService.js'
-import { adminAssignSupportTicket, adminUpdateSupportTicket, buildSupportTicketSummary, listSupportTicketsAdmin } from '../services/supportTicketService.js'
-import { readLocalJson, updateLocalJson } from '../utils/localStore.js'
-import { handleSignCallback } from '../services/eSignService.js'
-import { logInfo, logError } from '../utils/logger.js'
+import { readJson, writeJson } from "../utils/jsonStore.js";
+import { sanitizeString } from "../utils/validators.js";
+import { createNotification } from "../services/notificationService.js";
+import { listReports, resolveReport } from "../services/reportService.js";
+import {
+  adminAssignSupportTicket,
+  adminUpdateSupportTicket,
+  buildSupportTicketSummary,
+  listSupportTicketsAdmin,
+} from "../services/supportTicketService.js";
+import { readLocalJson, updateLocalJson } from "../utils/localStore.js";
+import { handleSignCallback } from "../services/eSignService.js";
+import { logInfo, logError } from "../utils/logger.js";
 
-function toPublicFileUrl(filePath = '') {
-  if (!filePath) return ''
-  const normalized = String(filePath).replace(/\\/g, '/')
-  if (normalized.startsWith('/uploads/')) return normalized
-  const idx = normalized.indexOf('server/uploads/')
-  if (idx >= 0) return `/uploads/${normalized.slice(idx + 'server/uploads/'.length)}`
-  return normalized.startsWith('uploads/') ? `/${normalized}` : normalized
+function toPublicFileUrl(filePath = "") {
+  if (!filePath) return "";
+  const normalized = String(filePath).replace(/\\/g, "/");
+  if (normalized.startsWith("/uploads/")) return normalized;
+  const idx = normalized.indexOf("server/uploads/");
+  if (idx >= 0)
+    return `/uploads/${normalized.slice(idx + "server/uploads/".length)}`;
+  return normalized.startsWith("uploads/") ? `/${normalized}` : normalized;
 }
 
 export async function verificationAudit(req, res) {
-  const verification = await readJson('verification.json')
-  return res.json(verification)
+  const verification = await readJson("verification.json");
+  return res.json(verification);
 }
 
 export async function subscriptionsAudit(req, res) {
-  const subscriptions = await readJson('subscriptions.json')
-  return res.json(subscriptions)
+  const subscriptions = await readJson("subscriptions.json");
+  return res.json(subscriptions);
 }
 
 export async function usersAudit(req, res) {
-  const users = await readJson('users.json')
-  return res.json(users.map((user) => {
-    const safe = { ...user }
-    delete safe.password_hash
-    return safe
-  }))
+  const users = await readJson("users.json");
+  return res.json(
+    users.map((user) => {
+      const safe = { ...user };
+      delete safe.password_hash;
+      return safe;
+    }),
+  );
 }
 
 export async function violationsAudit(req, res) {
-  const violations = await readJson('violations.json')
+  const violations = await readJson("violations.json");
   const sorted = Array.isArray(violations)
-    ? violations.sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')))
-    : []
-  return res.json(sorted)
+    ? violations.sort((a, b) =>
+        String(b.created_at || "").localeCompare(String(a.created_at || "")),
+      )
+    : [];
+  return res.json(sorted);
 }
 
 export async function pendingVideos(req, res) {
-  const products = await readJson('company_products.json')
-  const items = Array.isArray(products) ? products : []
-  const pending = items.filter((p) => {
-    const status = String(p.video_review_status || '').toLowerCase()
-    return Boolean(p.video_url) && status !== 'approved'
-  }).sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')))
+  const products = await readJson("company_products.json");
+  const items = Array.isArray(products) ? products : [];
+  const pending = items
+    .filter((p) => {
+      const status = String(p.video_review_status || "").toLowerCase();
+      return Boolean(p.video_url) && status !== "approved";
+    })
+    .sort((a, b) =>
+      String(b.created_at || "").localeCompare(String(a.created_at || "")),
+    );
 
-  return res.json({ items: pending })
+  return res.json({ items: pending });
 }
 
 export async function approveVideo(req, res) {
-  const productId = sanitizeString(String(req.params.productId || ''), 120)
-  const products = await readJson('company_products.json')
-  const items = Array.isArray(products) ? products : []
-  const idx = items.findIndex((p) => String(p.id) === productId)
-  if (idx < 0) return res.status(404).json({ error: 'Product not found' })
+  const productId = sanitizeString(String(req.params.productId || ""), 120);
+  const products = await readJson("company_products.json");
+  const items = Array.isArray(products) ? products : [];
+  const idx = items.findIndex((p) => String(p.id) === productId);
+  if (idx < 0) return res.status(404).json({ error: "Product not found" });
 
   items[idx] = {
     ...items[idx],
-    video_review_status: 'approved',
+    video_review_status: "approved",
     video_restricted: false,
     video_reviewed_at: new Date().toISOString(),
-    video_review_reason: '',
-  }
-  await writeJson('company_products.json', items)
+    video_review_reason: "",
+  };
+  await writeJson("company_products.json", items);
 
-  const companyId = String(items[idx].company_id || '').trim()
+  const companyId = String(items[idx].company_id || "").trim();
   if (companyId) {
     await createNotification(companyId, {
-      type: 'video_review_approved',
-      entity_type: 'company_product',
+      type: "video_review_approved",
+      entity_type: "company_product",
       entity_id: items[idx].id,
-      message: `Your video was approved: "${items[idx].title || 'Product'}"`,
+      message: `Your video was approved: "${items[idx].title || "Product"}"`,
       meta: { product_id: items[idx].id },
-    })
+    });
   }
 
-  return res.json({ ok: true, item: items[idx] })
+  return res.json({ ok: true, item: items[idx] });
 }
 
 export async function rejectVideo(req, res) {
-  const productId = sanitizeString(String(req.params.productId || ''), 120)
-  const reason = sanitizeString(String(req.body?.reason || 'Rejected by moderator'), 240)
-  const products = await readJson('company_products.json')
-  const items = Array.isArray(products) ? products : []
-  const idx = items.findIndex((p) => String(p.id) === productId)
-  if (idx < 0) return res.status(404).json({ error: 'Product not found' })
+  const productId = sanitizeString(String(req.params.productId || ""), 120);
+  const reason = sanitizeString(
+    String(req.body?.reason || "Rejected by moderator"),
+    240,
+  );
+  const products = await readJson("company_products.json");
+  const items = Array.isArray(products) ? products : [];
+  const idx = items.findIndex((p) => String(p.id) === productId);
+  if (idx < 0) return res.status(404).json({ error: "Product not found" });
 
   items[idx] = {
     ...items[idx],
-    video_review_status: 'rejected',
+    video_review_status: "rejected",
     video_restricted: true,
     video_reviewed_at: new Date().toISOString(),
     video_review_reason: reason,
-  }
-  await writeJson('company_products.json', items)
+  };
+  await writeJson("company_products.json", items);
 
-  const companyId = String(items[idx].company_id || '').trim()
+  const companyId = String(items[idx].company_id || "").trim();
   if (companyId) {
     await createNotification(companyId, {
-      type: 'video_review_rejected',
-      entity_type: 'company_product',
+      type: "video_review_rejected",
+      entity_type: "company_product",
       entity_id: items[idx].id,
-      message: `Your video was rejected: "${items[idx].title || 'Product'}". Reason: ${reason}`,
+      message: `Your video was rejected: "${items[idx].title || "Product"}". Reason: ${reason}`,
       meta: { product_id: items[idx].id, reason },
-    })
+    });
   }
 
-  return res.json({ ok: true, item: items[idx] })
+  return res.json({ ok: true, item: items[idx] });
 }
 
 export async function pendingDocuments(req, res) {
-  const docs = await readJson('documents.json')
-  const items = Array.isArray(docs) ? docs : []
-  const pending = items.filter((d) => String(d.moderation_status || '').toLowerCase() === 'pending_review')
+  const docs = await readJson("documents.json");
+  const items = Array.isArray(docs) ? docs : [];
+  const pending = items
+    .filter(
+      (d) =>
+        String(d.moderation_status || "").toLowerCase() === "pending_review",
+    )
     .map((d) => ({
       ...d,
-      public_url: toPublicFileUrl(d.file_path || d.url || ''),
+      public_url: toPublicFileUrl(d.file_path || d.url || ""),
     }))
-    .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')))
-  return res.json({ items: pending })
+    .sort((a, b) =>
+      String(b.created_at || "").localeCompare(String(a.created_at || "")),
+    );
+  return res.json({ items: pending });
 }
 
 export async function approveDocument(req, res) {
-  const docId = sanitizeString(String(req.params.documentId || ''), 120)
-  const docs = await readJson('documents.json')
-  const items = Array.isArray(docs) ? docs : []
-  const idx = items.findIndex((d) => String(d.id) === docId)
-  if (idx < 0) return res.status(404).json({ error: 'Document not found' })
+  const docId = sanitizeString(String(req.params.documentId || ""), 120);
+  const docs = await readJson("documents.json");
+  const items = Array.isArray(docs) ? docs : [];
+  const idx = items.findIndex((d) => String(d.id) === docId);
+  if (idx < 0) return res.status(404).json({ error: "Document not found" });
 
   items[idx] = {
     ...items[idx],
-    moderation_status: 'approved',
-  }
-  await writeJson('documents.json', items)
+    moderation_status: "approved",
+  };
+  await writeJson("documents.json", items);
 
-  const ownerId = String(items[idx].uploaded_by || items[idx].entity_id || '').trim()
+  const ownerId = String(
+    items[idx].uploaded_by || items[idx].entity_id || "",
+  ).trim();
   if (ownerId) {
     await createNotification(ownerId, {
-      type: 'media_review_approved',
-      entity_type: items[idx].entity_type || 'document',
+      type: "media_review_approved",
+      entity_type: items[idx].entity_type || "document",
       entity_id: items[idx].entity_id || items[idx].id,
-      message: 'Your uploaded document was approved by moderation.',
+      message: "Your uploaded document was approved by moderation.",
       meta: { document_id: items[idx].id },
-    })
+    });
   }
 
-  return res.json({ ok: true, item: items[idx] })
+  return res.json({ ok: true, item: items[idx] });
 }
 
 export async function rejectDocument(req, res) {
-  const docId = sanitizeString(String(req.params.documentId || ''), 120)
-  const reason = sanitizeString(String(req.body?.reason || 'Rejected by moderator'), 240)
-  const docs = await readJson('documents.json')
-  const items = Array.isArray(docs) ? docs : []
-  const idx = items.findIndex((d) => String(d.id) === docId)
-  if (idx < 0) return res.status(404).json({ error: 'Document not found' })
+  const docId = sanitizeString(String(req.params.documentId || ""), 120);
+  const reason = sanitizeString(
+    String(req.body?.reason || "Rejected by moderator"),
+    240,
+  );
+  const docs = await readJson("documents.json");
+  const items = Array.isArray(docs) ? docs : [];
+  const idx = items.findIndex((d) => String(d.id) === docId);
+  if (idx < 0) return res.status(404).json({ error: "Document not found" });
 
-  const flags = Array.isArray(items[idx].moderation_flags) ? items[idx].moderation_flags : []
+  const flags = Array.isArray(items[idx].moderation_flags)
+    ? items[idx].moderation_flags
+    : [];
   items[idx] = {
     ...items[idx],
-    moderation_status: 'rejected',
+    moderation_status: "rejected",
     moderation_flags: [...flags, `rejected:${reason}`],
-  }
-  await writeJson('documents.json', items)
+  };
+  await writeJson("documents.json", items);
 
-  const ownerId = String(items[idx].uploaded_by || items[idx].entity_id || '').trim()
+  const ownerId = String(
+    items[idx].uploaded_by || items[idx].entity_id || "",
+  ).trim();
   if (ownerId) {
     await createNotification(ownerId, {
-      type: 'media_review_rejected',
-      entity_type: items[idx].entity_type || 'document',
+      type: "media_review_rejected",
+      entity_type: items[idx].entity_type || "document",
       entity_id: items[idx].entity_id || items[idx].id,
       message: `Your uploaded document was rejected by moderation. Reason: ${reason}`,
       meta: { document_id: items[idx].id, reason },
-    })
+    });
   }
 
-  return res.json({ ok: true, item: items[idx] })
+  return res.json({ ok: true, item: items[idx] });
 }
 
 export async function listReportsAudit(req, res) {
-  const items = await listReports()
-  return res.json({ items })
+  const items = await listReports();
+  return res.json({ items });
 }
 
 export async function listSystemReportsAudit(req, res) {
-  const items = await listReports()
-  const filtered = items.filter((r) => ['system_report', 'support'].includes(String(r.entity_type || '').toLowerCase()))
-  return res.json({ items: filtered })
+  const items = await listReports();
+  const filtered = items.filter((r) =>
+    ["system_report", "support"].includes(
+      String(r.entity_type || "").toLowerCase(),
+    ),
+  );
+  return res.json({ items: filtered });
 }
 
 export async function listProductAppealReportsAudit(req, res) {
-  const items = await listReports()
-  const filtered = items.filter((r) => String(r.entity_type || '').toLowerCase() === 'product_appeal')
-  return res.json({ items: filtered })
+  const items = await listReports();
+  const filtered = items.filter(
+    (r) => String(r.entity_type || "").toLowerCase() === "product_appeal",
+  );
+  return res.json({ items: filtered });
 }
 
 export async function listContentReportsAudit(req, res) {
-  const items = await listReports()
-  const filtered = items.filter((r) => String(r.entity_type || '').toLowerCase() === 'content_report')
-  return res.json({ items: filtered })
+  const items = await listReports();
+  const filtered = items.filter(
+    (r) => String(r.entity_type || "").toLowerCase() === "content_report",
+  );
+  return res.json({ items: filtered });
 }
 
 export async function resolveReportAudit(req, res) {
-  const updated = await resolveReport(req.params.reportId, req.user, req.body || {})
-  if (!updated) return res.status(404).json({ error: 'Report not found' })
-  return res.json({ ok: true, item: updated })
+  const updated = await resolveReport(
+    req.params.reportId,
+    req.user,
+    req.body || {},
+  );
+  if (!updated) return res.status(404).json({ error: "Report not found" });
+  return res.json({ ok: true, item: updated });
 }
 
 export async function assignSupportTicket(req, res) {
-  const ticketId = sanitizeString(String(req.body?.ticket_id || ''), 120)
-  if (!ticketId) return res.status(400).json({ error: 'ticket_id is required' })
-  const assigneeId = sanitizeString(String(req.body?.assignee_id || ''), 120)
-  const updated = await adminAssignSupportTicket(ticketId, assigneeId, req.user.id)
-  if (!updated) return res.status(404).json({ error: 'Ticket not found' })
-  return res.json({ ok: true, ticket: await buildSupportTicketSummary(updated) })
+  const ticketId = sanitizeString(String(req.body?.ticket_id || ""), 120);
+  if (!ticketId)
+    return res.status(400).json({ error: "ticket_id is required" });
+  const assigneeId = sanitizeString(String(req.body?.assignee_id || ""), 120);
+  const updated = await adminAssignSupportTicket(
+    ticketId,
+    assigneeId,
+    req.user.id,
+  );
+  if (!updated) return res.status(404).json({ error: "Ticket not found" });
+  return res.json({
+    ok: true,
+    ticket: await buildSupportTicketSummary(updated),
+  });
 }
 
 export async function updateSupportTicket(req, res) {
-  const ticketId = sanitizeString(String(req.params.ticketId || ''), 120)
-  if (!ticketId) return res.status(400).json({ error: 'ticketId is required' })
-  const updated = await adminUpdateSupportTicket(ticketId, req.body || {}, req.user.id)
-  if (!updated) return res.status(404).json({ error: 'Ticket not found' })
-  return res.json({ ok: true, ticket: await buildSupportTicketSummary(updated) })
+  const ticketId = sanitizeString(String(req.params.ticketId || ""), 120);
+  if (!ticketId) return res.status(400).json({ error: "ticketId is required" });
+  const updated = await adminUpdateSupportTicket(
+    ticketId,
+    req.body || {},
+    req.user.id,
+  );
+  if (!updated) return res.status(404).json({ error: "Ticket not found" });
+  return res.json({
+    ok: true,
+    ticket: await buildSupportTicketSummary(updated),
+  });
 }
 
 export async function listSupportTicketsAdminController(req, res) {
-  const status = sanitizeString(String(req.query?.status || ''), 40)
-  const priority = sanitizeString(String(req.query?.priority || ''), 40)
-  const assignedTo = sanitizeString(String(req.query?.assigned_to || ''), 120)
-  const premiumOnly = req.query?.premium_only !== undefined ? ['true', '1', 'yes'].includes(String(req.query?.premium_only).toLowerCase()) : undefined
-  const limit = Math.max(1, Math.min(200, Number(req.query?.limit || 50)))
-  const offset = Math.max(0, Number(req.query?.offset || 0))
-  const tickets = await listSupportTicketsAdmin({ status, priority, assignedTo, premiumOnly, limit, offset })
-  const summaries = await Promise.all(tickets.map((ticket) => buildSupportTicketSummary(ticket)))
-  return res.json({ items: summaries })
+  const status = sanitizeString(String(req.query?.status || ""), 40);
+  const priority = sanitizeString(String(req.query?.priority || ""), 40);
+  const assignedTo = sanitizeString(String(req.query?.assigned_to || ""), 120);
+  const premiumOnly =
+    req.query?.premium_only !== undefined
+      ? ["true", "1", "yes"].includes(
+          String(req.query?.premium_only).toLowerCase(),
+        )
+      : undefined;
+  const limit = Math.max(1, Math.min(200, Number(req.query?.limit || 50)));
+  const offset = Math.max(0, Number(req.query?.offset || 0));
+  const tickets = await listSupportTicketsAdmin({
+    status,
+    priority,
+    assignedTo,
+    premiumOnly,
+    limit,
+    offset,
+  });
+  const summaries = await Promise.all(
+    tickets.map((ticket) => buildSupportTicketSummary(ticket)),
+  );
+  return res.json({ items: summaries });
 }
 
 export async function assignAccountManager(req, res) {
-  const userId = sanitizeString(String(req.body?.user_id || ''), 120)
-  if (!userId) return res.status(400).json({ error: 'user_id is required' })
-  const users = await readJson('users.json')
-  const rows = Array.isArray(users) ? users : []
-  const idx = rows.findIndex((u) => String(u.id) === userId)
-  if (idx < 0) return res.status(404).json({ error: 'User not found' })
+  const userId = sanitizeString(String(req.body?.user_id || ""), 120);
+  if (!userId) return res.status(400).json({ error: "user_id is required" });
+  const users = await readJson("users.json");
+  const rows = Array.isArray(users) ? users : [];
+  const idx = rows.findIndex((u) => String(u.id) === userId);
+  if (idx < 0) return res.status(404).json({ error: "User not found" });
 
-  const profile = { ...(rows[idx].profile || {}) }
-  profile.account_manager_id = sanitizeString(String(req.body?.account_manager_id || ''), 120) || null
-  profile.account_manager_name = sanitizeString(String(req.body?.account_manager_name || ''), 120)
-  profile.account_manager_email = sanitizeString(String(req.body?.account_manager_email || ''), 160)
-  profile.account_manager_phone = sanitizeString(String(req.body?.account_manager_phone || ''), 60)
+  const profile = { ...(rows[idx].profile || {}) };
+  profile.account_manager_id =
+    sanitizeString(String(req.body?.account_manager_id || ""), 120) || null;
+  profile.account_manager_name = sanitizeString(
+    String(req.body?.account_manager_name || ""),
+    120,
+  );
+  profile.account_manager_email = sanitizeString(
+    String(req.body?.account_manager_email || ""),
+    160,
+  );
+  profile.account_manager_phone = sanitizeString(
+    String(req.body?.account_manager_phone || ""),
+    60,
+  );
 
-  rows[idx] = { ...rows[idx], profile }
-  await writeJson('users.json', rows)
-  return res.json({ ok: true, user_id: rows[idx].id, profile })
+  rows[idx] = { ...rows[idx], profile };
+  await writeJson("users.json", rows);
+  return res.json({ ok: true, user_id: rows[idx].id, profile });
 }
 
 // E-sign webhook failure admin helpers
 export async function listEsignFailures(req, res) {
-  const items = await readLocalJson('esign_webhook_failures', [])
-  return res.json({ items: Array.isArray(items) ? items : [] })
+  const items = await readLocalJson("esign_webhook_failures", []);
+  return res.json({ items: Array.isArray(items) ? items : [] });
 }
 
 export async function retryEsignFailure(req, res) {
-  const id = String(req.params.id || '').trim()
-  const list = await readLocalJson('esign_webhook_failures', [])
-  const idx = Array.isArray(list) ? list.findIndex((it) => String(it.id) === id) : -1
-  if (idx < 0) return res.status(404).json({ error: 'not_found' })
-  const item = list[idx]
+  const id = String(req.params.id || "").trim();
+  const list = await readLocalJson("esign_webhook_failures", []);
+  const idx = Array.isArray(list)
+    ? list.findIndex((it) => String(it.id) === id)
+    : -1;
+  if (idx < 0) return res.status(404).json({ error: "not_found" });
+  const item = list[idx];
   try {
-    await handleSignCallback(item.contractId, item.payload)
-    const next = list.filter((it) => String(it.id) !== id)
-    await updateLocalJson('esign_webhook_failures', () => next, [])
-    logInfo('admin_esign_retry_success', { id: item.id, contractId: item.contractId })
-    return res.json({ ok: true })
+    await handleSignCallback(item.contractId, item.payload);
+    const next = list.filter((it) => String(it.id) !== id);
+    await updateLocalJson("esign_webhook_failures", () => next, []);
+    logInfo("admin_esign_retry_success", {
+      id: item.id,
+      contractId: item.contractId,
+    });
+    return res.json({ ok: true });
   } catch (err) {
-    item.attempts = Number(item.attempts || 0) + 1
-    item.lastAttemptAt = Date.now()
-    item.lastError = String(err?.message || err)
-    const next = list.map((it) => (String(it.id) === id ? item : it))
-    await updateLocalJson('esign_webhook_failures', () => next, [])
-    logError('admin_esign_retry_failed', { id: item.id, contractId: item.contractId, error: item.lastError })
-    return res.status(500).json({ ok: false, error: 'retry_failed', message: item.lastError })
+    item.attempts = Number(item.attempts || 0) + 1;
+    item.lastAttemptAt = Date.now();
+    item.lastError = String(err?.message || err);
+    const next = list.map((it) => (String(it.id) === id ? item : it));
+    await updateLocalJson("esign_webhook_failures", () => next, []);
+    logError("admin_esign_retry_failed", {
+      id: item.id,
+      contractId: item.contractId,
+      error: item.lastError,
+    });
+    return res
+      .status(500)
+      .json({ ok: false, error: "retry_failed", message: item.lastError });
   }
 }
 
 export async function deleteEsignFailure(req, res) {
-  const id = String(req.params.id || '').trim()
-  const list = await readLocalJson('esign_webhook_failures', [])
-  const next = Array.isArray(list) ? list.filter((it) => String(it.id) !== id) : []
-  if (next.length === (Array.isArray(list) ? list.length : 0)) return res.status(404).json({ error: 'not_found' })
-  await updateLocalJson('esign_webhook_failures', () => next, [])
-  logInfo('admin_esign_failure_deleted', { id })
-  return res.json({ ok: true })
+  const id = String(req.params.id || "").trim();
+  const list = await readLocalJson("esign_webhook_failures", []);
+  const next = Array.isArray(list)
+    ? list.filter((it) => String(it.id) !== id)
+    : [];
+  if (next.length === (Array.isArray(list) ? list.length : 0))
+    return res.status(404).json({ error: "not_found" });
+  await updateLocalJson("esign_webhook_failures", () => next, []);
+  logInfo("admin_esign_failure_deleted", { id });
+  return res.json({ ok: true });
 }

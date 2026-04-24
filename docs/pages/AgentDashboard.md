@@ -1,12 +1,14 @@
 # AgentDashboard - Complete Page Specification (Manual)
 
 ## Page Title & Description
+
 - Page title: `AgentDashboard`
 - Source file: `src/pages/AgentDashboard.jsx`
 - Route: `/agent` (protected roles: `buying_house`, `owner`, `admin`, `agent`)
 - Purpose: Gives agent users a compact operational dashboard for assigned requests, chat activity, connected factories, plan status, and summary metrics.
 
 ## Layout & Structure
+
 - Global shell:
   - `NavBar` at top (from app layout).
   - `Footer` at bottom.
@@ -33,6 +35,7 @@
     - Agent Activity card with tab toggle and conditional content.
 
 ## Theme & Styling
+
 - Primary background: white.
 - Accent color: `#0A66C2` (links, active tabs, highlighted states).
 - Text colors:
@@ -52,7 +55,9 @@
   - KPI values use larger size (`text-xl`).
 
 ## Content Details
+
 Exact visible text:
+
 - `📋 My Requests`
 - `Assigned:`
 - `💬 My Chats`
@@ -76,6 +81,7 @@ Exact visible text:
 - `Partner factories connected:`
 
 Dynamic text regions:
+
 - `Assigned: {totals.open_buyer_requests ?? 0}`
 - `Active conversations: {totals.chats ?? 0}`
 - `{totals.partner_network ?? 0} connected`
@@ -84,6 +90,7 @@ Dynamic text regions:
 - Chat tab KPI values: chats, messages, partner network count.
 
 ## Interactions & Functionality
+
 - State:
   - `activeTab` with default `requests`.
 - Data source:
@@ -104,10 +111,12 @@ Dynamic text regions:
   - Chat metric list shown in Chats tab.
 
 ## Images & Media
+
 - No `<img>`, `<video>`, or external media files are used.
 - Visual cues are text/emoji/icon characters inside links and labels.
 
 ## Extra Notes / Metadata
+
 - Responsive behavior:
   - Sidebar and main content stack on small screens (`grid-cols-1`).
   - Desktop uses 4-column split (`lg:grid-cols-4`).

@@ -1,12 +1,14 @@
 # MvpDashboard - Complete Page Specification (Manual)
 
 ## Page Title & Description
+
 - Page title: `MvpDashboard`
 - Source file: `src/pages/MvpDashboard.jsx`
 - Route: `/mvp` (public route, acts as integrated demo/operations console)
 - Purpose: End-to-end MVP control panel for auth, onboarding, verification, request/product posting, feed loading, conversation lock actions, and assistant ask flow.
 
 ## Layout & Structure
+
 - Root layout:
   - Header bar with page title, subtitle, optional logout button.
   - Feedback message line under header.
@@ -23,17 +25,21 @@
   5. `Rule-Based AI Guidance` card.
 
 Approximate placement:
+
 - Header top 10%.
 - Form/grid body 10-100%.
 - Full-width feed card spans both columns.
 
 ## Theme & Styling
+
 - Uses generic class names (`page`, `topbar`, `grid`, `card`, `stack`) plus neo/cyberpunk root classes.
 - Visual style is functional/utilitarian (form-heavy) rather than decorative.
 - Feedback text appears as plain paragraph.
 
 ## Content Details
+
 Exact text appearing on page:
+
 - `GarTexHub Enterprise UX MVP`
 - `Behavioral architecture for trust-first B2B textile commerce.`
 - `Logout`
@@ -71,6 +77,7 @@ Exact text appearing on page:
 - `Ask Assistant`
 
 Input placeholders:
+
 - Auth: `Name`, `Email`, `Password`.
 - Onboarding:
   - `1) Profile Image URL`
@@ -82,6 +89,7 @@ Input placeholders:
   - `Title`, `Material`, `MOQ`, `Lead Time Days`, `Description`, `Video URL (for gallery/reels)`.
 
 ## Interactions & Functionality
+
 - Session persistence:
   - JWT and user saved in localStorage.
 - Auth actions:
@@ -113,11 +121,13 @@ Input placeholders:
   - Multiple controlled form states and feedback message string.
 
 ## Images & Media
+
 - No image tags.
 - Product video accepted as URL text input only.
 - Feed items render emoji/icon text if provided by backend.
 
 ## Extra Notes / Metadata
+
 - This page functions as an operational test harness touching many backend modules.
 - Role-sensitive areas:
   - Buyer sees request form.

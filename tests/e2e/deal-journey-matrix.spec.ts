@@ -2,33 +2,60 @@
  * Deal journey E2E matrix (Playwright/Cypress-aligned).
  * This file is intentionally matrix-first and can be ported to Cypress by mirroring each row as a describe block.
  */
-import { test, expect } from '@playwright/test'
-const E2E_RUN = String(process.env.E2E_RUN || '').toLowerCase() === 'true'
+import { test, expect } from "@playwright/test";
+const E2E_RUN = String(process.env.E2E_RUN || "").toLowerCase() === "true";
 
 const MATRIX = [
   {
-    name: 'buyer-first flow',
-    actor: 'buyer',
-    steps: ['search_open', 'match_confirmed', 'message_start', 'call_scheduled', 'call_completed', 'contract_draft', 'contract_signed', 'deal_closed'],
+    name: "buyer-first flow",
+    actor: "buyer",
+    steps: [
+      "search_open",
+      "match_confirmed",
+      "message_start",
+      "call_scheduled",
+      "call_completed",
+      "contract_draft",
+      "contract_signed",
+      "deal_closed",
+    ],
   },
   {
-    name: 'factory-first flow',
-    actor: 'factory',
-    steps: ['search_open', 'match_confirmed', 'message_start', 'call_scheduled', 'call_completed', 'contract_draft', 'contract_signed', 'deal_closed'],
+    name: "factory-first flow",
+    actor: "factory",
+    steps: [
+      "search_open",
+      "match_confirmed",
+      "message_start",
+      "call_scheduled",
+      "call_completed",
+      "contract_draft",
+      "contract_signed",
+      "deal_closed",
+    ],
   },
   {
-    name: 'buying-house coordination flow',
-    actor: 'buying_house',
-    steps: ['search_open', 'match_confirmed', 'message_start', 'call_scheduled', 'call_completed', 'contract_draft', 'contract_signed', 'deal_closed'],
+    name: "buying-house coordination flow",
+    actor: "buying_house",
+    steps: [
+      "search_open",
+      "match_confirmed",
+      "message_start",
+      "call_scheduled",
+      "call_completed",
+      "contract_draft",
+      "contract_signed",
+      "deal_closed",
+    ],
   },
-]
+];
 
-test.describe('deal journey matrix', () => {
+test.describe("deal journey matrix", () => {
   for (const row of MATRIX) {
     test(row.name, async ({ request }) => {
-      test.skip(!E2E_RUN, 'Set E2E_RUN=true to execute API-backed e2e tests.')
+      test.skip(!E2E_RUN, "Set E2E_RUN=true to execute API-backed e2e tests.");
       // NOTE: Setup auth and ids in your test environment fixtures.
-      const response = await request.post('/api/deal-journeys/events', {
+      const response = await request.post("/api/deal-journeys/events", {
         data: {
           event_type: row.steps[0],
           context: {
@@ -37,12 +64,12 @@ test.describe('deal journey matrix', () => {
           },
           metadata: { matrix: row.name },
         },
-      })
+      });
 
-      expect(response.ok()).toBeTruthy()
-      const journey = await response.json()
-      expect(journey.current_state).toBeTruthy()
-      expect(Array.isArray(journey.transitions)).toBeTruthy()
-    })
+      expect(response.ok()).toBeTruthy();
+      const journey = await response.json();
+      expect(journey.current_state).toBeTruthy();
+      expect(Array.isArray(journey.transitions)).toBeTruthy();
+    });
   }
-})
+});

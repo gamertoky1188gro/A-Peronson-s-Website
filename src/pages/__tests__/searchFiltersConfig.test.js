@@ -1,39 +1,42 @@
-import test from 'node:test'
-import assert from 'node:assert/strict'
+import test from "node:test";
+import assert from "node:assert/strict";
 import {
   DEFAULT_CORE_FILTER_KEYS,
   validateCoreFilterRenderKeys,
-} from '../searchFiltersConfig.js'
+} from "../searchFiltersConfig.js";
 
-test('default core filters stay capped at 8 keys', () => {
-  assert.ok(DEFAULT_CORE_FILTER_KEYS.length <= 9)
-})
+test("default core filters stay capped at 8 keys", () => {
+  assert.ok(DEFAULT_CORE_FILTER_KEYS.length <= 9);
+});
 
-test('default core filters match expected initial UI controls', () => {
+test("default core filters match expected initial UI controls", () => {
   assert.deepEqual(DEFAULT_CORE_FILTER_KEYS, [
-    'industry',
-    'category',
-    'verifiedOnly',
-    'incoterms',
-    'moqRange',
-    'priceRange',
-    'orgType',
-    'leadTimeMax',
-  ])
-})
+    "industry",
+    "category",
+    "verifiedOnly",
+    "incoterms",
+    "moqRange",
+    "priceRange",
+    "orgType",
+    "leadTimeMax",
+  ]);
+});
 
-test('guard utility flags leaked non-core keys', () => {
-  const result = validateCoreFilterRenderKeys([...DEFAULT_CORE_FILTER_KEYS, 'priorityOnly'])
-  assert.equal(result.isValid, false)
-  assert.deepEqual(result.unknownKeys, ['priorityOnly'])
-})
+test("guard utility flags leaked non-core keys", () => {
+  const result = validateCoreFilterRenderKeys([
+    ...DEFAULT_CORE_FILTER_KEYS,
+    "priorityOnly",
+  ]);
+  assert.equal(result.isValid, false);
+  assert.deepEqual(result.unknownKeys, ["priorityOnly"]);
+});
 
-test('guard utility passes for mobile and desktop initial core set', () => {
-  const mobileResult = validateCoreFilterRenderKeys(DEFAULT_CORE_FILTER_KEYS)
-  const desktopResult = validateCoreFilterRenderKeys(DEFAULT_CORE_FILTER_KEYS)
+test("guard utility passes for mobile and desktop initial core set", () => {
+  const mobileResult = validateCoreFilterRenderKeys(DEFAULT_CORE_FILTER_KEYS);
+  const desktopResult = validateCoreFilterRenderKeys(DEFAULT_CORE_FILTER_KEYS);
 
-  assert.equal(mobileResult.isValid, true)
-  assert.equal(desktopResult.isValid, true)
-  assert.ok(mobileResult.rendered.length <= 9)
-  assert.ok(desktopResult.rendered.length <= 9)
-})
+  assert.equal(mobileResult.isValid, true);
+  assert.equal(desktopResult.isValid, true);
+  assert.ok(mobileResult.rendered.length <= 9);
+  assert.ok(desktopResult.rendered.length <= 9);
+});

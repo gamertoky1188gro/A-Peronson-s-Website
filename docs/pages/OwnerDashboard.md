@@ -1,12 +1,14 @@
 # OwnerDashboard - Complete Page Specification (Manual)
 
 ## Page Title & Description
+
 - Page title: `OwnerDashboard`
 - Source file: `src/pages/OwnerDashboard.jsx`
 - Route: `/owner` (owner/admin only)
 - Purpose: Owner/admin control dashboard with sidebar navigation and section-specific summary/analytics views.
 
 ## Layout & Structure
+
 - Root: full-height dashboard with `max-w-full` and 6-column desktop grid.
 - Sidebar (`aside`, 1 column on desktop):
   - Sticky vertical nav cards:
@@ -30,11 +32,13 @@
   - Insights: optional upgrade warning + three monthly series panels.
 
 Approximate placement:
+
 - Sidebar x=0-16% desktop.
 - Main content x=16-100%.
 - Mobile stacks one-column.
 
 ## Theme & Styling
+
 - Accent: `#0A66C2`.
 - Page background tone includes `#F9FBFD` in `SeriesList` cards.
 - Text:
@@ -48,7 +52,9 @@ Approximate placement:
   - Red tinted banner.
 
 ## Content Details
+
 Exact text labels:
+
 - `📊 Dashboard Home`
 - `📋 Buyer Requests`
 - `💬 Chats`
@@ -82,6 +88,7 @@ Exact text labels:
 - `No data yet.`
 
 ## Interactions & Functionality
+
 - State:
   - `active` section default `home`.
 - Data:
@@ -96,10 +103,12 @@ Exact text labels:
   - Displays month and count.
 
 ## Images & Media
+
 - No media files.
 - Charts are CSS bars, not image/chart libraries.
 
 ## Extra Notes / Metadata
+
 - Responsive:
   - Sidebar and main area stack on small screens.
 - Accessibility:

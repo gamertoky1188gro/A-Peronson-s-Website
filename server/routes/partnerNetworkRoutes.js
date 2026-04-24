@@ -1,5 +1,5 @@
-import { Router } from 'express'
-import { requireAuth } from '../middleware/auth.js'
+import { Router } from "express";
+import { requireAuth } from "../middleware/auth.js";
 import {
   acceptPartnerRequest,
   cancelPartnerRequest,
@@ -8,16 +8,16 @@ import {
   listIncomingPartnerRequests,
   listPartnerNetwork,
   rejectPartnerRequest,
-} from '../controllers/partnerNetworkController.js'
+} from "../controllers/partnerNetworkController.js";
 
-const router = Router()
+const router = Router();
 
-router.get('/', requireAuth, listPartnerNetwork)
-router.get('/requests/incoming', requireAuth, listIncomingPartnerRequests)
-router.post('/requests', requireAuth, createPartnerRequest)
-router.post('/requests/:requestId/accept', requireAuth, acceptPartnerRequest)
-router.post('/requests/:requestId/reject', requireAuth, rejectPartnerRequest)
-router.post('/requests/:requestId/cancel', requireAuth, cancelPartnerRequest)
-router.delete('/:connectionId', requireAuth, deletePartnerConnection)
+router.get("/", requireAuth, listPartnerNetwork);
+router.get("/requests/incoming", requireAuth, listIncomingPartnerRequests);
+router.post("/requests", requireAuth, createPartnerRequest);
+router.post("/requests/:requestId/accept", requireAuth, acceptPartnerRequest);
+router.post("/requests/:requestId/reject", requireAuth, rejectPartnerRequest);
+router.post("/requests/:requestId/cancel", requireAuth, cancelPartnerRequest);
+router.delete("/:connectionId", requireAuth, deletePartnerConnection);
 
-export default router
+export default router;

@@ -1,11 +1,13 @@
 # ProductManagement - Complete Page Specification (Manual)
 
 ## Page Title & Description
+
 - Title: `Product Management`
 - Route: `/product-management`
 - Purpose: Factory/buying-house product list and action dashboard for product CRUD/media workflow entry.
 
 ## Layout & Structure
+
 - Header row:
   - page title + subtitle on left
   - action buttons on right (`+ Create Product`, `+ Upload Video`)
@@ -16,10 +18,12 @@
   - right: action buttons (`Edit`, `Delete`, `Analytics`).
 
 Approximate placement:
+
 - Header top 10-20% of content area.
 - List occupies remainder.
 
 ## Theme & Styling
+
 - White background with blue CTA accents.
 - Primary blue: `#0A66C2`.
 - Secondary muted text: `#5A5A5A`.
@@ -27,7 +31,9 @@ Approximate placement:
   - white, bordered, rounded, shadow.
 
 ## Content Details
+
 Exact text:
+
 - Heading: `Product Management`
 - Subtitle: `Manage factory products and media`
 - Top buttons:
@@ -42,6 +48,7 @@ Exact text:
   - `Analytics`
 
 ## Interactions & Functionality
+
 - Current component behavior:
   - products come from local `useState` static array.
   - no API calls in this file.
@@ -53,10 +60,12 @@ Exact text:
   - per-product analytics view
 
 ## Images & Media
+
 - Uses gray rectangle placeholder (`w-20 h-16`) as product thumbnail.
 - No actual image/video source URLs in current component.
 
 ## Extra Notes / Metadata
+
 - SEO:
   - no explicit page metadata.
 - Accessibility:

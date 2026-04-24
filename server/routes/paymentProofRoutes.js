@@ -1,11 +1,30 @@
-import { Router } from 'express'
-import { allowRoles, requireAuth } from '../middleware/auth.js'
-import { getPaymentProofs, patchPaymentProof, postPaymentProof } from '../controllers/paymentProofController.js'
+import { Router } from "express";
+import { allowRoles, requireAuth } from "../middleware/auth.js";
+import {
+  getPaymentProofs,
+  patchPaymentProof,
+  postPaymentProof,
+} from "../controllers/paymentProofController.js";
 
-const router = Router()
+const router = Router();
 
-router.get('/', requireAuth, allowRoles('buyer', 'factory', 'buying_house', 'admin', 'owner', 'agent'), getPaymentProofs)
-router.post('/', requireAuth, allowRoles('buyer', 'factory', 'buying_house', 'admin', 'owner', 'agent'), postPaymentProof)
-router.patch('/:proofId', requireAuth, allowRoles('factory', 'buying_house', 'admin', 'owner'), patchPaymentProof)
+router.get(
+  "/",
+  requireAuth,
+  allowRoles("buyer", "factory", "buying_house", "admin", "owner", "agent"),
+  getPaymentProofs,
+);
+router.post(
+  "/",
+  requireAuth,
+  allowRoles("buyer", "factory", "buying_house", "admin", "owner", "agent"),
+  postPaymentProof,
+);
+router.patch(
+  "/:proofId",
+  requireAuth,
+  allowRoles("factory", "buying_house", "admin", "owner"),
+  patchPaymentProof,
+);
 
-export default router
+export default router;

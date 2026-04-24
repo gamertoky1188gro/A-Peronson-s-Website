@@ -1,44 +1,44 @@
 export const FILTER_TIERS = {
   // Core filters (project.md): always free.
   basic: [
-    'q',
-    'industry',
-    'category',
-    'moqRange',
-    'priceRange',
-    'verifiedOnly',
-    'country',
-    'leadTimeMax',
-    'orgType',
+    "q",
+    "industry",
+    "category",
+    "moqRange",
+    "priceRange",
+    "verifiedOnly",
+    "country",
+    "leadTimeMax",
+    "orgType",
   ],
   // Advanced filters (project.md): premium gating applies here.
   advanced: [
-    'fabricType',
-    'gsmMin',
-    'gsmMax',
-    'sizeRange',
-    'colorPantone',
-    'customization',
-    'sampleAvailable',
-    'sampleLeadTime',
-    'certifications',
-    'incoterms',
-    'paymentTerms',
-    'documentReady',
-    'auditDate',
-    'languageSupport',
-    'capacityMin',
-    'processes',
-    'yearsInBusinessMin',
-    'responseTimeMax',
-    'teamSeatsMin',
-    'handlesMultipleFactories',
-    'exportPort',
-    'distanceKm',
-    'locationLat',
-    'locationLng',
+    "fabricType",
+    "gsmMin",
+    "gsmMax",
+    "sizeRange",
+    "colorPantone",
+    "customization",
+    "sampleAvailable",
+    "sampleLeadTime",
+    "certifications",
+    "incoterms",
+    "paymentTerms",
+    "documentReady",
+    "auditDate",
+    "languageSupport",
+    "capacityMin",
+    "processes",
+    "yearsInBusinessMin",
+    "responseTimeMax",
+    "teamSeatsMin",
+    "handlesMultipleFactories",
+    "exportPort",
+    "distanceKm",
+    "locationLat",
+    "locationLng",
   ],
-}
+};
 
 export const PLAN_DAILY_LIMITS = {
   free: {
@@ -51,16 +51,16 @@ export const PLAN_DAILY_LIMITS = {
     products_search: 400,
     search_alerts_create: 100,
   },
-}
+};
 
 export const PLAN_FILTER_ACCESS = {
   free: {
-    allowedTiers: ['basic'],
+    allowedTiers: ["basic"],
   },
   premium: {
-    allowedTiers: ['basic', 'advanced'],
+    allowedTiers: ["basic", "advanced"],
   },
-}
+};
 
 export const SEARCH_CAPABILITIES = {
   free: {
@@ -75,4 +75,4 @@ export const SEARCH_CAPABILITIES = {
     },
     daily_limits: PLAN_DAILY_LIMITS.premium,
   },
-}
+};

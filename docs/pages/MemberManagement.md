@@ -1,12 +1,14 @@
 # MemberManagement - Complete Page Specification (Manual)
 
 ## Page Title & Description
+
 - Page title: `MemberManagement`
 - Source file: `src/pages/MemberManagement.jsx`
 - Route: `/member-management` (roles: `owner`, `admin`, `buying_house`, `factory`)
 - Purpose: Full sub-account management UI for creating, editing, searching, resetting passwords, deactivating/removing members, and editing permission matrix.
 
 ## Layout & Structure
+
 - Global shell: NavBar, Footer, FloatingAssistant.
 - Main container: `max-w-7xl` with page title/header row.
 - Header row:
@@ -29,11 +31,13 @@
   - Edit member modal (`MemberEditor`) with profile/status/permissions.
 
 Approximate placement:
+
 - Header at top 10-15% vertical.
 - Table card central.
 - Modals centered overlay with dim background.
 
 ## Theme & Styling
+
 - Base white card interface with blue accent (`#0A66C2`).
 - Banners:
   - Error: red text on red-tinted background.
@@ -45,7 +49,9 @@ Approximate placement:
   - White rounded content panel, scrollable max height.
 
 ## Content Details
+
 Exact text strings:
+
 - `Member Management`
 - `Manage sub-accounts and permissions`
 - `+ Add New Member`
@@ -81,6 +87,7 @@ Exact text strings:
 - `Edit`
 
 Dynamic feedback text:
+
 - `Member created.`
 - `Member updated.`
 - `Member removed.`
@@ -89,6 +96,7 @@ Dynamic feedback text:
 - Permission conflict messages built from server constraints.
 
 ## Interactions & Functionality
+
 - Data dependencies:
   - API base: `/org/members`.
   - Token from `getToken()`.
@@ -116,10 +124,12 @@ Dynamic feedback text:
   - `PermissionMatrixEditor` section-level `view/edit` toggles.
 
 ## Images & Media
+
 - No media assets used.
 - Entire page is form/table/modal based.
 
 ## Extra Notes / Metadata
+
 - Accessibility:
   - Modal has explicit close button.
   - Form controls all have visible text placeholders/labels.

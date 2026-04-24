@@ -1,1 +1,1 @@
-export { default } from '../JourneyTimeline'
+export { default } from "../JourneyTimeline";

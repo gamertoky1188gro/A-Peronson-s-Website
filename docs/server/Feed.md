@@ -13,8 +13,9 @@ This doc is generated from source snapshots with `path:line` references.
 - **Route definition:** `server/routes/feedRoutes.js:6`
 
 ```js
-router.get('/', requireAuth, combinedFeed)
+router.get("/", requireAuth, combinedFeed);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `combinedFeed`
@@ -24,20 +25,30 @@ router.get('/', requireAuth, combinedFeed)
 
 ```js
 export async function combinedFeed(req, res) {
-  const unique = req.query.unique === 'true'
-  const type = req.query.type || 'all'
-  const category = req.query.category || ''
-  const cursor = Number.isFinite(Number(req.query.cursor)) ? Math.max(0, Math.floor(Number(req.query.cursor))) : 0
-  const limitRaw = Number.isFinite(Number(req.query.limit)) ? Math.floor(Number(req.query.limit)) : 12
-  const limit = Math.min(50, Math.max(1, limitRaw))
-  const data = await getCombinedFeed({ unique, type, category, cursor, limit, viewer: req.user })
-  return res.json(data)
+  const unique = req.query.unique === "true";
+  const type = req.query.type || "all";
+  const category = req.query.category || "";
+  const cursor = Number.isFinite(Number(req.query.cursor))
+    ? Math.max(0, Math.floor(Number(req.query.cursor)))
+    : 0;
+  const limitRaw = Number.isFinite(Number(req.query.limit))
+    ? Math.floor(Number(req.query.limit))
+    : 12;
+  const limit = Math.min(50, Math.max(1, limitRaw));
+  const data = await getCombinedFeed({
+    unique,
+    type,
+    category,
+    cursor,
+    limit,
+    viewer: req.user,
+  });
+  return res.json(data);
 }
-
 ```
+
 ## Persistence model (JSON-backed "DB")
 
 - JSON helpers: `server/utils/jsonStore.js` (readJson/writeJson/updateJson).
 - Data files: `server/database/*.json`.
 - Controllers/services often read from `users.json`, `messages.json`, `metrics.json`, etc.
-

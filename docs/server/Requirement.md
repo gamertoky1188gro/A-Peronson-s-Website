@@ -13,8 +13,9 @@ This doc is generated from source snapshots with `path:line` references.
 - **Route definition:** `server/routes/requirementRoutes.js:8`
 
 ```js
-router.post('/', requireAuth, allowRoles('buyer'), createBuyerRequirement)
+router.post("/", requireAuth, allowRoles("buyer"), createBuyerRequirement);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
   - `allowRoles('buyer')`
@@ -26,21 +27,22 @@ router.post('/', requireAuth, allowRoles('buyer'), createBuyerRequirement)
 ```js
 export async function createBuyerRequirement(req, res) {
   try {
-    const requirement = await createRequirement(req.user.id, req.body)
-    return res.status(201).json(requirement)
+    const requirement = await createRequirement(req.user.id, req.body);
+    return res.status(201).json(requirement);
   } catch (error) {
-    return handleControllerError(res, error)
+    return handleControllerError(res, error);
   }
 }
-
 ```
+
 ### GET `/api/requirements/`
 
 - **Route definition:** `server/routes/requirementRoutes.js:9`
 
 ```js
-router.get('/', requireAuth, getRequirements)
+router.get("/", requireAuth, getRequirements);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `getRequirements`
@@ -50,19 +52,20 @@ router.get('/', requireAuth, getRequirements)
 
 ```js
 export async function getRequirements(req, res) {
-  const filters = {}
-  if (req.user.role === 'buyer') filters.buyerId = req.user.id
-  return res.json(await listRequirements(filters))
+  const filters = {};
+  if (req.user.role === "buyer") filters.buyerId = req.user.id;
+  return res.json(await listRequirements(filters));
 }
-
 ```
+
 ### GET `/api/requirements/browse`
 
 - **Route definition:** `server/routes/requirementRoutes.js:11`
 
 ```js
-router.get('/browse', requireAuth, allowRoles('buyer'), browseRequirements)
+router.get("/browse", requireAuth, allowRoles("buyer"), browseRequirements);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
   - `allowRoles('buyer')`
@@ -73,56 +76,73 @@ router.get('/browse', requireAuth, allowRoles('buyer'), browseRequirements)
 
 ```js
 export async function browseRequirements(req, res) {
-  await recordWorkflowEvent('search_open', {
-    search_source: 'requirements_search',
-    requirement_id: req.query.requirement_id || req.query.id || '',
-  }, { actor_id: req.user.id }).catch(() => null)
+  await recordWorkflowEvent(
+    "search_open",
+    {
+      search_source: "requirements_search",
+      requirement_id: req.query.requirement_id || req.query.id || "",
+    },
+    { actor_id: req.user.id },
+  ).catch(() => null);
   const [all, users] = await Promise.all([
     listRequirements({}),
-    readJson('users.json'),
-  ])
-  const usersById = new Map(users.map((u) => [u.id, u]))
-  const viewerPlan = await getUserPlan(req.user.id)
-  const viewerPremium = viewerPlan === 'premium'
-  const viewerRole = String(req.user?.role || '').toLowerCase()
-  const enforcePriorityAccess = !viewerPremium && ['factory', 'buying_house', 'agent'].includes(viewerRole)
-  const nowMs = Date.now()
+    readJson("users.json"),
+  ]);
+  const usersById = new Map(users.map((u) => [u.id, u]));
+  const viewerPlan = await getUserPlan(req.user.id);
+  const viewerPremium = viewerPlan === "premium";
+  const viewerRole = String(req.user?.role || "").toLowerCase();
+  const enforcePriorityAccess =
+    !viewerPremium && ["factory", "buying_house", "agent"].includes(viewerRole);
+  const nowMs = Date.now();
 
   const out = all
     .map((r) => {
-      const buyer = usersById.get(r.buyer_id) || null
-      const buyerPlan = String(buyer?.subscription_status || '').toLowerCase()
-      const buyerPremium = buyerPlan === 'premium'
-      const priorityUntil = r.priority_until ? new Date(r.priority_until).getTime() : 0
-      const priorityActive = String(r.priority_tier || '').toLowerCase() === 'priority'
-        && (!priorityUntil || priorityUntil > nowMs)
+      const buyer = usersById.get(r.buyer_id) || null;
+      const buyerPlan = String(buyer?.subscription_status || "").toLowerCase();
+      const buyerPremium = buyerPlan === "premium";
+      const priorityUntil = r.priority_until
+        ? new Date(r.priority_until).getTime()
+        : 0;
+      const priorityActive =
+        String(r.priority_tier || "").toLowerCase() === "priority" &&
+        (!priorityUntil || priorityUntil > nowMs);
 
       return {
         ...r,
         priority_score: (buyerPremium ? 2 : 0) + (buyer?.verified ? 0.5 : 0),
         priority_active: priorityActive,
-      }
+      };
     })
     .filter((r) => (enforcePriorityAccess ? !r.priority_active : true))
     .sort((a, b) => {
-      if (a.priority_score !== b.priority_score) return b.priority_score - a.priority_score
-      const aCreated = new Date(a.created_at || '').getTime()
-      const bCreated = new Date(b.created_at || '').getTime()
-      return bCreated - aCreated
+      if (a.priority_score !== b.priority_score)
+        return b.priority_score - a.priority_score;
+      const aCreated = new Date(a.created_at || "").getTime();
+      const bCreated = new Date(b.created_at || "").getTime();
+      return bCreated - aCreated;
     })
-    .map((r) => (r.buyer_id === req.user.id ? r : redactRequirementForBuyer(r)))
+    .map((r) =>
+      r.buyer_id === req.user.id ? r : redactRequirementForBuyer(r),
+    );
 
-  return res.json(out)
+  return res.json(out);
 }
-
 ```
+
 ### GET `/api/requirements/search`
 
 - **Route definition:** `server/routes/requirementRoutes.js:12`
 
 ```js
-router.get('/search', requireAuth, validateFiltersMiddleware, searchRequirements)
+router.get(
+  "/search",
+  requireAuth,
+  validateFiltersMiddleware,
+  searchRequirements,
+);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
   - `validateFiltersMiddleware`
@@ -253,13 +273,15 @@ export async function searchRequirements(req, res) {
     priceRangeBase = [minText, maxText].filter((v, idx) => v || idx === 0).join('-')
   }
 ```
+
 ### GET `/api/requirements/:requirementId/matches`
 
 - **Route definition:** `server/routes/requirementRoutes.js:13`
 
 ```js
-router.get('/:requirementId/matches', requireAuth, getSmartMatches)
+router.get("/:requirementId/matches", requireAuth, getSmartMatches);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `getSmartMatches`
@@ -270,29 +292,38 @@ router.get('/:requirementId/matches', requireAuth, getSmartMatches)
 ```js
 export async function getSmartMatches(req, res) {
   try {
-    await ensureEntitlement(req.user, 'smart_supplier_matching', 'Premium plan required for smart supplier matching.')
-    const requirement = await getRequirementById(req.params.requirementId)
-    if (!requirement) return res.status(404).json({ error: 'Requirement not found' })
-    if (req.user.role === 'buyer' && requirement.buyer_id !== req.user.id) {
-      return res.status(403).json({ error: 'Forbidden' })
+    await ensureEntitlement(
+      req.user,
+      "smart_supplier_matching",
+      "Premium plan required for smart supplier matching.",
+    );
+    const requirement = await getRequirementById(req.params.requirementId);
+    if (!requirement)
+      return res.status(404).json({ error: "Requirement not found" });
+    if (req.user.role === "buyer" && requirement.buyer_id !== req.user.id) {
+      return res.status(403).json({ error: "Forbidden" });
     }
 
-    const matches = await generateMatchesForRequirement(requirement)
-    const ranked = Array.isArray(matches) && matches.length ? matches : await listMatchesForRequirement(requirement.id)
-    return res.json({ matches: ranked })
+    const matches = await generateMatchesForRequirement(requirement);
+    const ranked =
+      Array.isArray(matches) && matches.length
+        ? matches
+        : await listMatchesForRequirement(requirement.id);
+    return res.json({ matches: ranked });
   } catch (error) {
-    return handleControllerError(res, error)
+    return handleControllerError(res, error);
   }
 }
-
 ```
+
 ### GET `/api/requirements/:requirementId`
 
 - **Route definition:** `server/routes/requirementRoutes.js:14`
 
 ```js
-router.get('/:requirementId', requireAuth, getRequirement)
+router.get("/:requirementId", requireAuth, getRequirement);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `getRequirement`
@@ -302,22 +333,29 @@ router.get('/:requirementId', requireAuth, getRequirement)
 
 ```js
 export async function getRequirement(req, res) {
-  const requirement = await getRequirementById(req.params.requirementId)
-  if (!requirement) return res.status(404).json({ error: 'Requirement not found' })
-  if (req.user.role === 'buyer' && requirement.buyer_id !== req.user.id) {
-    return res.status(403).json({ error: 'Forbidden' })
+  const requirement = await getRequirementById(req.params.requirementId);
+  if (!requirement)
+    return res.status(404).json({ error: "Requirement not found" });
+  if (req.user.role === "buyer" && requirement.buyer_id !== req.user.id) {
+    return res.status(403).json({ error: "Forbidden" });
   }
-  return res.json(requirement)
+  return res.json(requirement);
 }
-
 ```
+
 ### PATCH `/api/requirements/:requirementId`
 
 - **Route definition:** `server/routes/requirementRoutes.js:15`
 
 ```js
-router.patch('/:requirementId', requireAuth, allowRoles('buyer', 'admin', 'owner', 'buying_house'), patchRequirement)
+router.patch(
+  "/:requirementId",
+  requireAuth,
+  allowRoles("buyer", "admin", "owner", "buying_house"),
+  patchRequirement,
+);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
   - `allowRoles('buyer', 'admin', 'owner', 'buying_house')`
@@ -329,23 +367,35 @@ router.patch('/:requirementId', requireAuth, allowRoles('buyer', 'admin', 'owner
 ```js
 export async function patchRequirement(req, res) {
   try {
-    const updated = await updateRequirement(req.params.requirementId, req.body || {}, req.user)
-    if (updated === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
-    if (!updated) return res.status(404).json({ error: 'Requirement not found' })
-    return res.json(updated)
+    const updated = await updateRequirement(
+      req.params.requirementId,
+      req.body || {},
+      req.user,
+    );
+    if (updated === "forbidden")
+      return res.status(403).json({ error: "Forbidden" });
+    if (!updated)
+      return res.status(404).json({ error: "Requirement not found" });
+    return res.json(updated);
   } catch (error) {
-    return handleControllerError(res, error)
+    return handleControllerError(res, error);
   }
 }
-
 ```
+
 ### DELETE `/api/requirements/:requirementId`
 
 - **Route definition:** `server/routes/requirementRoutes.js:16`
 
 ```js
-router.delete('/:requirementId', requireAuth, allowRoles('buyer', 'admin'), deleteRequirement)
+router.delete(
+  "/:requirementId",
+  requireAuth,
+  allowRoles("buyer", "admin"),
+  deleteRequirement,
+);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
   - `allowRoles('buyer', 'admin')`
@@ -356,16 +406,15 @@ router.delete('/:requirementId', requireAuth, allowRoles('buyer', 'admin'), dele
 
 ```js
 export async function deleteRequirement(req, res) {
-  const ok = await removeRequirement(req.params.requirementId, req.user)
-  if (ok === 'forbidden') return res.status(403).json({ error: 'Forbidden' })
-  if (!ok) return res.status(404).json({ error: 'Requirement not found' })
-  return res.json({ ok: true })
+  const ok = await removeRequirement(req.params.requirementId, req.user);
+  if (ok === "forbidden") return res.status(403).json({ error: "Forbidden" });
+  if (!ok) return res.status(404).json({ error: "Requirement not found" });
+  return res.json({ ok: true });
 }
-
 ```
+
 ## Persistence model (JSON-backed "DB")
 
 - JSON helpers: `server/utils/jsonStore.js` (readJson/writeJson/updateJson).
 - Data files: `server/database/*.json`.
 - Controllers/services often read from `users.json`, `messages.json`, `metrics.json`, etc.
-

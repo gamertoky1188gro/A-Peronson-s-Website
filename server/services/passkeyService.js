@@ -1,116 +1,131 @@
-import { generateAuthenticationOptions, generateRegistrationOptions, verifyAuthenticationResponse, verifyRegistrationResponse } from '@simplewebauthn/server'
-import { isoCBOR } from '@simplewebauthn/server/helpers'
-import prisma from '../utils/prisma.js'
-import { findUserByEmail, findUserById, findUserByMemberId } from './userService.js'
+import {
+  generateAuthenticationOptions,
+  generateRegistrationOptions,
+  verifyAuthenticationResponse,
+  verifyRegistrationResponse,
+} from "@simplewebauthn/server";
+import { isoCBOR } from "@simplewebauthn/server/helpers";
+import prisma from "../utils/prisma.js";
+import {
+  findUserByEmail,
+  findUserById,
+  findUserByMemberId,
+} from "./userService.js";
 
-const PASSKEY_STATE_KEY = 'passkeys'
-const CHALLENGE_TTL_MS = 5 * 60 * 1000
-const registrationChallenges = new Map()
-const authenticationChallenges = new Map()
-const DISCOVERABLE_KEY = 'discoverable'
+const PASSKEY_STATE_KEY = "passkeys";
+const CHALLENGE_TTL_MS = 5 * 60 * 1000;
+const registrationChallenges = new Map();
+const authenticationChallenges = new Map();
+const DISCOVERABLE_KEY = "discoverable";
 
 function pruneExpired(map) {
-  const now = Date.now()
+  const now = Date.now();
   for (const [key, value] of map.entries()) {
     if (!value || now > value.expiresAt) {
-      map.delete(key)
+      map.delete(key);
     }
   }
 }
 
 function storeChallenge(map, key, challenge) {
-  pruneExpired(map)
-  map.set(String(key), { challenge, expiresAt: Date.now() + CHALLENGE_TTL_MS })
+  pruneExpired(map);
+  map.set(String(key), { challenge, expiresAt: Date.now() + CHALLENGE_TTL_MS });
 }
 
 function readChallenge(map, key) {
-  pruneExpired(map)
-  const entry = map.get(String(key))
-  return entry?.challenge || ''
+  pruneExpired(map);
+  const entry = map.get(String(key));
+  return entry?.challenge || "";
 }
 
 function normalizeOrigin(req) {
-  const origin = String(req.headers.origin || '').trim()
-  if (origin) return origin
-  const proto = String(req.headers['x-forwarded-proto'] || req.protocol || 'http')
-  const host = String(req.headers['x-forwarded-host'] || req.headers.host || '')
-  if (!host) return ''
-  return `${proto}://${host}`
+  const origin = String(req.headers.origin || "").trim();
+  if (origin) return origin;
+  const proto = String(
+    req.headers["x-forwarded-proto"] || req.protocol || "http",
+  );
+  const host = String(
+    req.headers["x-forwarded-host"] || req.headers.host || "",
+  );
+  if (!host) return "";
+  return `${proto}://${host}`;
 }
 
 function resolveRpId(req, origin) {
   try {
-    const target = origin || normalizeOrigin(req)
-    if (target) return new URL(target).hostname
+    const target = origin || normalizeOrigin(req);
+    if (target) return new URL(target).hostname;
   } catch {
     // fallthrough
   }
-  const host = String(req.hostname || '').trim()
-  return host.includes(':') ? host.split(':')[0] : host
+  const host = String(req.hostname || "").trim();
+  return host.includes(":") ? host.split(":")[0] : host;
 }
 
-function toBuffer(value = '') {
-  if (!value) return Buffer.alloc(0)
-  return Buffer.from(value, 'base64url')
+function toBuffer(value = "") {
+  if (!value) return Buffer.alloc(0);
+  return Buffer.from(value, "base64url");
 }
 
 function encodeBase64Url(buffer) {
-  if (!buffer) return ''
-  return Buffer.from(buffer).toString('base64url')
+  if (!buffer) return "";
+  return Buffer.from(buffer).toString("base64url");
 }
 
 function normalizeBase64Url(value) {
-  if (!value || typeof value !== 'string') return ''
-  const trimmed = value.trim()
-  if (!trimmed) return ''
-  if (/^[A-Za-z0-9_-]+$/.test(trimmed)) return trimmed
+  if (!value || typeof value !== "string") return "";
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (/^[A-Za-z0-9_-]+$/.test(trimmed)) return trimmed;
   try {
-    return Buffer.from(trimmed, 'base64').toString('base64url')
+    return Buffer.from(trimmed, "base64").toString("base64url");
   } catch {
-    return ''
+    return "";
   }
 }
 
 function normalizeCredentialId(credentialID, credential) {
-  if (typeof credentialID === 'string') {
-    const normalized = normalizeBase64Url(credentialID)
-    if (normalized) return normalized
+  if (typeof credentialID === "string") {
+    const normalized = normalizeBase64Url(credentialID);
+    if (normalized) return normalized;
   }
   if (credentialID) {
-    const encoded = encodeBase64Url(credentialID)
-    if (encoded) return encoded
+    const encoded = encodeBase64Url(credentialID);
+    if (encoded) return encoded;
   }
-  const rawId = credential?.rawId
-  if (rawId && typeof rawId !== 'string') {
-    const rawEncoded = encodeBase64Url(rawId)
-    if (rawEncoded) return rawEncoded
+  const rawId = credential?.rawId;
+  if (rawId && typeof rawId !== "string") {
+    const rawEncoded = encodeBase64Url(rawId);
+    if (rawEncoded) return rawEncoded;
   }
-  return normalizeBase64Url(credential?.id)
-    || normalizeBase64Url(typeof rawId === 'string' ? rawId : '')
+  return (
+    normalizeBase64Url(credential?.id) ||
+    normalizeBase64Url(typeof rawId === "string" ? rawId : "")
+  );
 }
 
 function isCosePublicKey(value) {
-  if (!value || typeof value !== 'string') return false
+  if (!value || typeof value !== "string") return false;
   try {
-    const decoded = isoCBOR.decodeFirst(toBuffer(value))
-    return Boolean(decoded && typeof decoded.get === 'function')
+    const decoded = isoCBOR.decodeFirst(toBuffer(value));
+    return Boolean(decoded && typeof decoded.get === "function");
   } catch {
-    return false
+    return false;
   }
 }
 
 function toUserIdBuffer(value) {
-  return Buffer.from(String(value || ''), 'utf8')
+  return Buffer.from(String(value || ""), "utf8");
 }
 
 function sanitizePasskeys(passkeys = []) {
   return (Array.isArray(passkeys) ? passkeys : []).map((key) => ({
     id: key.id,
-    name: key.name || '',
-    created_at: key.created_at || '',
-    last_used_at: key.last_used_at || '',
+    name: key.name || "",
+    created_at: key.created_at || "",
+    last_used_at: key.last_used_at || "",
     transports: Array.isArray(key.transports) ? key.transports : [],
-  }))
+  }));
 }
 
 function sanitizeStoredPasskeys(passkeys = []) {
@@ -118,170 +133,211 @@ function sanitizeStoredPasskeys(passkeys = []) {
     id: key.id,
     publicKey: key.publicKey,
     counter: Number(key.counter || 0),
-    name: key.name || '',
+    name: key.name || "",
     transports: Array.isArray(key.transports) ? key.transports : [],
-    created_at: key.created_at || '',
-    last_used_at: key.last_used_at || '',
-  }))
+    created_at: key.created_at || "",
+    last_used_at: key.last_used_at || "",
+  }));
 }
 
 function isStoredPasskeyValid(key) {
   return Boolean(
-    key
-    && typeof key.id === 'string'
-    && key.id.trim()
-    && typeof key.publicKey === 'string'
-    && key.publicKey.trim()
-    && isCosePublicKey(key.publicKey),
-  )
+    key &&
+    typeof key.id === "string" &&
+    key.id.trim() &&
+    typeof key.publicKey === "string" &&
+    key.publicKey.trim() &&
+    isCosePublicKey(key.publicKey),
+  );
 }
 
 async function readPasskeyState() {
-  const record = await prisma.appState.findUnique({ where: { key: PASSKEY_STATE_KEY } })
-  const data = record?.data
-  const passkeys = (data && typeof data === 'object' && Array.isArray(data.passkeys)) ? data.passkeys : []
-  const cleaned = passkeys.filter(isStoredPasskeyValid)
+  const record = await prisma.appState.findUnique({
+    where: { key: PASSKEY_STATE_KEY },
+  });
+  const data = record?.data;
+  const passkeys =
+    data && typeof data === "object" && Array.isArray(data.passkeys)
+      ? data.passkeys
+      : [];
+  const cleaned = passkeys.filter(isStoredPasskeyValid);
   if (cleaned.length !== passkeys.length) {
-    await writePasskeyState(cleaned)
+    await writePasskeyState(cleaned);
   }
-  return cleaned
+  return cleaned;
 }
 
 async function writePasskeyState(passkeys) {
-  const data = { passkeys }
+  const data = { passkeys };
   await prisma.appState.upsert({
     where: { key: PASSKEY_STATE_KEY },
     update: { data },
     create: { key: PASSKEY_STATE_KEY, data },
-  })
+  });
 }
 
 async function syncUserProfilePasskeys(userId, passkeys) {
-  const user = await findUserById(userId)
-  if (!user) return
-  const profile = user.profile && typeof user.profile === 'object' ? user.profile : {}
-  const nextProfile = { ...profile, passkeys: sanitizeStoredPasskeys(passkeys) }
+  const user = await findUserById(userId);
+  if (!user) return;
+  const profile =
+    user.profile && typeof user.profile === "object" ? user.profile : {};
+  const nextProfile = {
+    ...profile,
+    passkeys: sanitizeStoredPasskeys(passkeys),
+  };
   try {
-    await prisma.user.update({ where: { id: userId }, data: { profile: nextProfile } })
+    await prisma.user.update({
+      where: { id: userId },
+      data: { profile: nextProfile },
+    });
   } catch (error) {
     // Non-blocking: profile sync failures should not block passkey flow
     // but log to help debug missing passkey lists.
-    console.error('[passkeys] Failed to sync user profile passkeys', error)
+    console.error("[passkeys] Failed to sync user profile passkeys", error);
   }
 }
 
 async function listPasskeysByUser(userId) {
-  const user = await findUserById(userId)
-  if (!user) return []
-  const profileRaw = Array.isArray(user.profile?.passkeys) ? user.profile.passkeys : []
-  const profileKeys = profileRaw.filter(isStoredPasskeyValid)
+  const user = await findUserById(userId);
+  if (!user) return [];
+  const profileRaw = Array.isArray(user.profile?.passkeys)
+    ? user.profile.passkeys
+    : [];
+  const profileKeys = profileRaw.filter(isStoredPasskeyValid);
   if (profileRaw.length && profileKeys.length !== profileRaw.length) {
-    await syncUserProfilePasskeys(userId, profileKeys)
+    await syncUserProfilePasskeys(userId, profileKeys);
   }
-  const profileWithUser = profileKeys.map((key) => ({ ...key, user_id: userId }))
-  const passkeys = await readPasskeyState()
-  const stateKeys = passkeys.filter((key) => String(key.user_id) === String(userId))
-  const merged = [...profileWithUser]
+  const profileWithUser = profileKeys.map((key) => ({
+    ...key,
+    user_id: userId,
+  }));
+  const passkeys = await readPasskeyState();
+  const stateKeys = passkeys.filter(
+    (key) => String(key.user_id) === String(userId),
+  );
+  const merged = [...profileWithUser];
   stateKeys.forEach((key) => {
     if (!merged.some((existing) => existing.id === key.id)) {
-      merged.push(key)
+      merged.push(key);
     }
-  })
+  });
   if (merged.length && profileKeys.length !== merged.length) {
-    await syncUserProfilePasskeys(userId, merged)
+    await syncUserProfilePasskeys(userId, merged);
   }
-  return merged
+  return merged;
 }
 
 async function findPasskeyByCredentialId(credentialId) {
-  if (!credentialId) return null
-  const passkeys = await readPasskeyState()
-  return passkeys.find((key) => key.id === credentialId) || null
+  if (!credentialId) return null;
+  const passkeys = await readPasskeyState();
+  return passkeys.find((key) => key.id === credentialId) || null;
 }
 
 export async function listUserPasskeys(userId) {
-  const user = await findUserById(userId)
-  if (!user) return []
-  let passkeys = await listPasskeysByUser(userId)
+  const user = await findUserById(userId);
+  if (!user) return [];
+  let passkeys = await listPasskeysByUser(userId);
   if (!passkeys.length) {
-    const fallback = Array.isArray(user.profile?.passkeys) ? user.profile.passkeys : []
-    passkeys = fallback.filter(isStoredPasskeyValid).map((key) => ({ ...key, user_id: userId }))
+    const fallback = Array.isArray(user.profile?.passkeys)
+      ? user.profile.passkeys
+      : [];
+    passkeys = fallback
+      .filter(isStoredPasskeyValid)
+      .map((key) => ({ ...key, user_id: userId }));
     if (passkeys.length) {
-      const all = await readPasskeyState()
-      const merged = [...all, ...passkeys.filter((key) => !all.some((p) => p.id === key.id))]
-      await writePasskeyState(merged)
+      const all = await readPasskeyState();
+      const merged = [
+        ...all,
+        ...passkeys.filter((key) => !all.some((p) => p.id === key.id)),
+      ];
+      await writePasskeyState(merged);
     }
   }
-  return sanitizePasskeys(passkeys)
+  return sanitizePasskeys(passkeys);
 }
 
 export async function removeUserPasskey(userId, credentialId) {
-  const user = await findUserById(userId)
-  if (!user) return null
-  const passkeys = await readPasskeyState()
-  const next = passkeys.filter((key) => !(String(key.user_id) === String(userId) && key.id === credentialId))
-  await writePasskeyState(next)
-  const remaining = next.filter((key) => String(key.user_id) === String(userId))
-  await syncUserProfilePasskeys(userId, remaining)
-  return sanitizePasskeys(remaining)
+  const user = await findUserById(userId);
+  if (!user) return null;
+  const passkeys = await readPasskeyState();
+  const next = passkeys.filter(
+    (key) =>
+      !(String(key.user_id) === String(userId) && key.id === credentialId),
+  );
+  await writePasskeyState(next);
+  const remaining = next.filter(
+    (key) => String(key.user_id) === String(userId),
+  );
+  await syncUserProfilePasskeys(userId, remaining);
+  return sanitizePasskeys(remaining);
 }
 
-export async function createRegistrationOptions({ userId, req, rpName = 'GartexHub' }) {
-  const user = await findUserById(userId)
+export async function createRegistrationOptions({
+  userId,
+  req,
+  rpName = "GartexHub",
+}) {
+  const user = await findUserById(userId);
   if (!user) {
-    const err = new Error('User not found')
-    err.status = 404
-    throw err
+    const err = new Error("User not found");
+    err.status = 404;
+    throw err;
   }
-  const origin = normalizeOrigin(req)
-  const rpID = resolveRpId(req, origin) || String(process.env.PASSKEY_RP_ID || '')
+  const origin = normalizeOrigin(req);
+  const rpID =
+    resolveRpId(req, origin) || String(process.env.PASSKEY_RP_ID || "");
   if (!rpID) {
-    const err = new Error('Passkey RP ID is missing')
-    err.status = 500
-    throw err
+    const err = new Error("Passkey RP ID is missing");
+    err.status = 500;
+    throw err;
   }
-  const passkeys = await listPasskeysByUser(user.id)
+  const passkeys = await listPasskeysByUser(user.id);
   const options = await generateRegistrationOptions({
     rpName,
     rpID,
     userID: toUserIdBuffer(user.id),
     userName: user.email || user.name || user.id,
-    userDisplayName: user.name || user.email || 'User',
-    attestationType: 'none',
+    userDisplayName: user.name || user.email || "User",
+    attestationType: "none",
     authenticatorSelection: {
-      residentKey: 'preferred',
-      userVerification: 'preferred',
+      residentKey: "preferred",
+      userVerification: "preferred",
     },
     excludeCredentials: passkeys.map((key) => ({
       id: key.id,
-      type: 'public-key',
+      type: "public-key",
       transports: Array.isArray(key.transports) ? key.transports : undefined,
     })),
-  })
+  });
   if (!options?.challenge) {
-    const err = new Error('Passkey registration options missing challenge')
-    err.status = 500
-    throw err
+    const err = new Error("Passkey registration options missing challenge");
+    err.status = 500;
+    throw err;
   }
 
-  storeChallenge(registrationChallenges, user.id, options.challenge)
-  return { options, origin, rpID }
+  storeChallenge(registrationChallenges, user.id, options.challenge);
+  return { options, origin, rpID };
 }
 
-export async function verifyRegistration({ userId, req, credential, nickname }) {
-  const user = await findUserById(userId)
+export async function verifyRegistration({
+  userId,
+  req,
+  credential,
+  nickname,
+}) {
+  const user = await findUserById(userId);
   if (!user) {
-    const err = new Error('User not found')
-    err.status = 404
-    throw err
+    const err = new Error("User not found");
+    err.status = 404;
+    throw err;
   }
-  const origin = normalizeOrigin(req)
-  const rpID = resolveRpId(req, origin)
-  const expectedChallenge = readChallenge(registrationChallenges, user.id)
+  const origin = normalizeOrigin(req);
+  const rpID = resolveRpId(req, origin);
+  const expectedChallenge = readChallenge(registrationChallenges, user.id);
   if (!expectedChallenge) {
-    const err = new Error('Registration challenge expired')
-    err.status = 400
-    throw err
+    const err = new Error("Registration challenge expired");
+    err.status = 400;
+    throw err;
   }
 
   const verification = await verifyRegistrationResponse({
@@ -290,159 +346,179 @@ export async function verifyRegistration({ userId, req, credential, nickname }) 
     expectedOrigin: origin,
     expectedRPID: rpID,
     requireUserVerification: false,
-  })
+  });
 
   if (!verification?.verified || !verification.registrationInfo) {
-    const err = new Error('Passkey registration failed')
-    err.status = 400
-    throw err
+    const err = new Error("Passkey registration failed");
+    err.status = 400;
+    throw err;
   }
 
-  const registrationInfo = verification.registrationInfo
-  const credentialInfo = registrationInfo?.credential || {}
-  const credentialID = credentialInfo?.id ?? registrationInfo?.credentialID
-  const credentialPublicKey = credentialInfo?.publicKey ?? registrationInfo?.credentialPublicKey
-  const counter = credentialInfo?.counter ?? registrationInfo?.counter
-  const normalizedPublicKey = typeof credentialPublicKey === 'string'
-    ? normalizeBase64Url(credentialPublicKey)
-    : encodeBase64Url(credentialPublicKey)
+  const registrationInfo = verification.registrationInfo;
+  const credentialInfo = registrationInfo?.credential || {};
+  const credentialID = credentialInfo?.id ?? registrationInfo?.credentialID;
+  const credentialPublicKey =
+    credentialInfo?.publicKey ?? registrationInfo?.credentialPublicKey;
+  const counter = credentialInfo?.counter ?? registrationInfo?.counter;
+  const normalizedPublicKey =
+    typeof credentialPublicKey === "string"
+      ? normalizeBase64Url(credentialPublicKey)
+      : encodeBase64Url(credentialPublicKey);
   if (!normalizedPublicKey) {
-    const err = new Error('Passkey public key missing')
-    err.status = 400
-    throw err
+    const err = new Error("Passkey public key missing");
+    err.status = 400;
+    throw err;
   }
-  const normalizedCredentialId = normalizeCredentialId(credentialID, credential)
+  const normalizedCredentialId = normalizeCredentialId(
+    credentialID,
+    credential,
+  );
   if (!normalizedCredentialId) {
-    const err = new Error('Passkey credential id missing')
-    err.status = 400
-    throw err
+    const err = new Error("Passkey credential id missing");
+    err.status = 400;
+    throw err;
   }
   const passkey = {
     id: normalizedCredentialId,
     publicKey: normalizedPublicKey,
     counter: Number(counter || 0),
-    name: String(nickname || '').trim(),
+    name: String(nickname || "").trim(),
     transports: Array.isArray(credentialInfo?.transports)
       ? credentialInfo.transports
-      : (Array.isArray(credential.response?.transports) ? credential.response.transports : []),
+      : Array.isArray(credential.response?.transports)
+        ? credential.response.transports
+        : [],
     created_at: new Date().toISOString(),
     last_used_at: null,
-  }
+  };
 
-  const existing = await listPasskeysByUser(user.id)
+  const existing = await listPasskeysByUser(user.id);
   if (existing.some((key) => key.id === passkey.id)) {
-    return sanitizePasskeys(existing)
+    return sanitizePasskeys(existing);
   }
-  const allPasskeys = await readPasskeyState()
-  const next = [...allPasskeys, { ...passkey, user_id: user.id }]
-  await writePasskeyState(next)
-  await syncUserProfilePasskeys(user.id, next.filter((key) => String(key.user_id) === String(user.id)))
+  const allPasskeys = await readPasskeyState();
+  const next = [...allPasskeys, { ...passkey, user_id: user.id }];
+  await writePasskeyState(next);
+  await syncUserProfilePasskeys(
+    user.id,
+    next.filter((key) => String(key.user_id) === String(user.id)),
+  );
 
-  return sanitizePasskeys(next.filter((key) => String(key.user_id) === String(user.id)))
+  return sanitizePasskeys(
+    next.filter((key) => String(key.user_id) === String(user.id)),
+  );
 }
 
 export async function createAuthenticationOptions({ identifier, req }) {
-  const identifierRaw = String(identifier || '').trim()
-  let allowCredentials
-  let user = null
-  let useDiscoverable = false
+  const identifierRaw = String(identifier || "").trim();
+  let allowCredentials;
+  let user = null;
+  let useDiscoverable = false;
 
   if (identifierRaw) {
-    user = identifierRaw.includes('@')
+    user = identifierRaw.includes("@")
       ? await findUserByEmail(identifierRaw)
-      : await findUserByMemberId(identifierRaw)
+      : await findUserByMemberId(identifierRaw);
     if (!user) {
-      const err = new Error('User not found')
-      err.status = 404
-      throw err
+      const err = new Error("User not found");
+      err.status = 404;
+      throw err;
     }
-    let passkeys = await listPasskeysByUser(user.id)
+    let passkeys = await listPasskeysByUser(user.id);
     if (!passkeys.length) {
-      passkeys = (Array.isArray(user.profile?.passkeys) ? user.profile.passkeys : [])
-        .filter(isStoredPasskeyValid)
+      passkeys = (
+        Array.isArray(user.profile?.passkeys) ? user.profile.passkeys : []
+      ).filter(isStoredPasskeyValid);
     }
     if (passkeys.length) {
       allowCredentials = passkeys.map((key) => ({
         id: key.id,
-        type: 'public-key',
+        type: "public-key",
         transports: Array.isArray(key.transports) ? key.transports : undefined,
-      }))
+      }));
     } else {
       // Fallback to discoverable credentials so users can still pick a passkey
       // even if server-side passkey list is out of sync.
-      user = null
-      useDiscoverable = true
+      user = null;
+      useDiscoverable = true;
     }
   }
 
-  const rpID = resolveRpId(req, normalizeOrigin(req)) || String(process.env.PASSKEY_RP_ID || '')
+  const rpID =
+    resolveRpId(req, normalizeOrigin(req)) ||
+    String(process.env.PASSKEY_RP_ID || "");
   if (!rpID) {
-    const err = new Error('Passkey RP ID is missing')
-    err.status = 500
-    throw err
+    const err = new Error("Passkey RP ID is missing");
+    err.status = 500;
+    throw err;
   }
   const options = await generateAuthenticationOptions({
     rpID,
-    userVerification: 'preferred',
+    userVerification: "preferred",
     allowCredentials,
-  })
+  });
   if (!options?.challenge) {
-    const err = new Error('Passkey authentication options missing challenge')
-    err.status = 500
-    throw err
+    const err = new Error("Passkey authentication options missing challenge");
+    err.status = 500;
+    throw err;
   }
 
-  const challengeKey = user?.id || DISCOVERABLE_KEY
-  storeChallenge(authenticationChallenges, challengeKey, options.challenge)
-  return { options, user, discoverable: useDiscoverable }
+  const challengeKey = user?.id || DISCOVERABLE_KEY;
+  storeChallenge(authenticationChallenges, challengeKey, options.challenge);
+  return { options, user, discoverable: useDiscoverable };
 }
 
 export async function verifyAuthentication({ identifier, req, credential }) {
-  const identifierRaw = String(identifier || '').trim()
-  const credentialId = normalizeCredentialId(null, credential)
-  let user = null
+  const identifierRaw = String(identifier || "").trim();
+  const credentialId = normalizeCredentialId(null, credential);
+  let user = null;
   if (identifierRaw) {
-    user = identifierRaw.includes('@')
+    user = identifierRaw.includes("@")
       ? await findUserByEmail(identifierRaw)
-      : await findUserByMemberId(identifierRaw)
+      : await findUserByMemberId(identifierRaw);
   } else {
-    user = await findUserByPasskeyId(credentialId)
+    user = await findUserByPasskeyId(credentialId);
   }
-  let passkey = await findPasskeyByCredentialId(credentialId)
+  let passkey = await findPasskeyByCredentialId(credentialId);
   if (!passkey && user) {
-    const fallback = Array.isArray(user.profile?.passkeys) ? user.profile.passkeys : []
-    const match = fallback.find((key) => key?.id === credentialId)
+    const fallback = Array.isArray(user.profile?.passkeys)
+      ? user.profile.passkeys
+      : [];
+    const match = fallback.find((key) => key?.id === credentialId);
     if (match && isStoredPasskeyValid(match)) {
-      passkey = { ...match, user_id: user.id }
-      const all = await readPasskeyState()
+      passkey = { ...match, user_id: user.id };
+      const all = await readPasskeyState();
       if (!all.some((p) => p.id === passkey.id)) {
-        await writePasskeyState([...all, passkey])
+        await writePasskeyState([...all, passkey]);
       }
     }
   }
   if (!passkey) {
-    const err = new Error('Passkey not registered')
-    err.status = 400
-    throw err
+    const err = new Error("Passkey not registered");
+    err.status = 400;
+    throw err;
   }
   if (!user) {
-    user = await findUserById(passkey.user_id)
+    user = await findUserById(passkey.user_id);
   }
   if (!user) {
-    const err = new Error('User not found')
-    err.status = 404
-    throw err
+    const err = new Error("User not found");
+    err.status = 404;
+    throw err;
   }
-  const expectedChallenge = readChallenge(authenticationChallenges, identifierRaw ? user.id : DISCOVERABLE_KEY)
-    || readChallenge(authenticationChallenges, DISCOVERABLE_KEY)
+  const expectedChallenge =
+    readChallenge(
+      authenticationChallenges,
+      identifierRaw ? user.id : DISCOVERABLE_KEY,
+    ) || readChallenge(authenticationChallenges, DISCOVERABLE_KEY);
   if (!expectedChallenge) {
-    const err = new Error('Authentication challenge expired')
-    err.status = 400
-    throw err
+    const err = new Error("Authentication challenge expired");
+    err.status = 400;
+    throw err;
   }
 
-  const origin = normalizeOrigin(req)
-  const rpID = resolveRpId(req, origin)
+  const origin = normalizeOrigin(req);
+  const rpID = resolveRpId(req, origin);
 
   const verification = await verifyAuthenticationResponse({
     response: credential,
@@ -455,33 +531,36 @@ export async function verifyAuthentication({ identifier, req, credential }) {
       publicKey: toBuffer(passkey.publicKey),
       counter: Number(passkey.counter || 0),
     },
-  })
+  });
 
   if (!verification?.verified || !verification.authenticationInfo) {
-    const err = new Error('Passkey authentication failed')
-    err.status = 400
-    throw err
+    const err = new Error("Passkey authentication failed");
+    err.status = 400;
+    throw err;
   }
 
-  const { newCounter } = verification.authenticationInfo
-  const allPasskeys = await readPasskeyState()
-  const updated = allPasskeys.map((key) => (
+  const { newCounter } = verification.authenticationInfo;
+  const allPasskeys = await readPasskeyState();
+  const updated = allPasskeys.map((key) =>
     key.id === passkey.id
       ? {
-        ...key,
-        counter: Number(newCounter || key.counter || 0),
-        last_used_at: new Date().toISOString(),
-      }
-      : key
-  ))
-  await writePasskeyState(updated)
-  await syncUserProfilePasskeys(user.id, updated.filter((key) => String(key.user_id) === String(user.id)))
+          ...key,
+          counter: Number(newCounter || key.counter || 0),
+          last_used_at: new Date().toISOString(),
+        }
+      : key,
+  );
+  await writePasskeyState(updated);
+  await syncUserProfilePasskeys(
+    user.id,
+    updated.filter((key) => String(key.user_id) === String(user.id)),
+  );
 
-  return { user, passkey: { id: passkey.id, name: passkey.name || '' } }
+  return { user, passkey: { id: passkey.id, name: passkey.name || "" } };
 }
 
 export async function findUserByPasskeyId(credentialId) {
-  const passkey = await findPasskeyByCredentialId(credentialId)
-  if (!passkey) return null
-  return findUserById(passkey.user_id)
+  const passkey = await findPasskeyByCredentialId(credentialId);
+  if (!passkey) return null;
+  return findUserById(passkey.user_id);
 }

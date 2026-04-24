@@ -55,11 +55,15 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/TexHub.jsx:40`
 
 ```jsx
-      className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_10px_24px_rgba(16,185,129,0.12)] dark:bg-emerald-400/8 dark:text-emerald-200 dark:shadow-[0_0_0_1px_rgba(16,185,129,0.14),0_0_32px_rgba(16,185,129,0.16)]"
-      title="Verified"
-    >
-      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_16px_rgba(16,185,129,0.65)] dark:bg-emerald-300 dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]" />
+className =
+  "inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_10px_24px_rgba(16,185,129,0.12)] dark:bg-emerald-400/8 dark:text-emerald-200 dark:shadow-[0_0_0_1px_rgba(16,185,129,0.14),0_0_32px_rgba(16,185,129,0.16)]";
+title =
+  "Verified" >
+  (
+    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_16px_rgba(16,185,129,0.65)] dark:bg-emerald-300 dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]" />
+  );
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_10px_24px_rgba(16,185,129,0.12)] dark:bg-emerald-400/8 dark:text-emerald-200 dark:shadow-[0_0_0_1px_rgba(16,185,129,0.14),0_0_32px_rgba(16,185,129,0.16)]`
@@ -105,6 +109,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
     </span>
   )
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_16px_rgba(16,185,129,0.65)] dark:bg-emerald-300 dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]`
@@ -131,12 +136,12 @@ function Surface({ className='', children }) {
     // Mouse-follow spotlight:
     // - store cursor position inside the card as CSS variables
 ```
+
 **Raw class strings detected (best effort):**
 
 - _(dynamic className; inspect the snippet above)_
 
 **Utility breakdown (grouped):**
-
 
 #### `src/pages/TexHub.jsx:61`
 
@@ -146,6 +151,7 @@ function Surface({ className='', children }) {
         'spotlight-card rounded-3xl bg-white/75 backdrop-blur-sm',
         'shadow-[0_18px_46px_rgba(15,23,42,0.08)]',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `spotlight-card rounded-3xl bg-white/75 backdrop-blur-sm`
@@ -170,6 +176,7 @@ function GlassSurface({ className='', children }) {
     // Same spotlight behavior as `Surface`, but on a darker "secure room" glass surface.
     const rect = event.currentTarget.getBoundingClientRect()
 ```
+
 **Raw class strings detected (best effort):**
 
 - `secure room`
@@ -188,6 +195,7 @@ function GlassSurface({ className='', children }) {
         // Avoid multiple `bg-*` utilities here (Tailwind utility ordering can make overrides unreliable).
         // `ring-1 ring-white/12` gives the "glass edge" without using borders (which are globally overridden in dark mode).
 ```
+
 **Raw class strings detected (best effort):**
 
 - `secure room`
@@ -209,12 +217,12 @@ function BentoMotion({ index, className='', children }) {
   // Accessibility: if user prefers reduced motion, render without animation.
   if (reduceMotion) return <div className={className}>{children}</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - _(dynamic className; inspect the snippet above)_
 
 **Utility breakdown (grouped):**
-
 
 #### `src/pages/TexHub.jsx:109`
 
@@ -224,12 +232,12 @@ function BentoMotion({ index, className='', children }) {
   return (
     <motion.div
 ```
+
 **Raw class strings detected (best effort):**
 
 - _(dynamic className; inspect the snippet above)_
 
 **Utility breakdown (grouped):**
-
 
 #### `src/pages/TexHub.jsx:113`
 
@@ -239,6 +247,7 @@ function BentoMotion({ index, className='', children }) {
       initial={{ opacity: 0, y: 20, scale: 0.985 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `bento`
@@ -256,27 +265,27 @@ function AnimatedHeroHeading({ text, className='' }) {
   // Reduced-motion users get static text (no per-character animation).
   if (reduceMotion) return <span className={className}>{text}</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - _(dynamic className; inspect the snippet above)_
 
 **Utility breakdown (grouped):**
 
-
 #### `src/pages/TexHub.jsx:132`
 
 ```jsx
-  if (reduceMotion) return <span className={className}>{text}</span>
+if (reduceMotion) return <span className={className}>{text}</span>;
 
-  // Split into words, then characters, so we can stagger a micro animation per character.
-  const words = String(text).split(' ')
+// Split into words, then characters, so we can stagger a micro animation per character.
+const words = String(text).split(" ");
 ```
+
 **Raw class strings detected (best effort):**
 
 - ` `
 
 **Utility breakdown (grouped):**
-
 
 #### `src/pages/TexHub.jsx:138`
 
@@ -286,6 +295,7 @@ function AnimatedHeroHeading({ text, className='' }) {
       <span aria-hidden="true">
         {words.map((word, wordIndex) => {
 ```
+
 **Raw class strings detected (best effort):**
 
 - `sr-only`
@@ -305,6 +315,7 @@ function AnimatedHeroHeading({ text, className='' }) {
         {words.map((word, wordIndex) => {
           const chars = Array.from(word)
 ```
+
 **Raw class strings detected (best effort):**
 
 - `sr-only`
@@ -324,6 +335,7 @@ function AnimatedHeroHeading({ text, className='' }) {
                   const charIndex = globalIndex++
                   return (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-block whitespace-nowrap`
@@ -342,6 +354,7 @@ function AnimatedHeroHeading({ text, className='' }) {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.8, ease: 'easeOut', delay: charIndex * 0.012 }}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-block`
@@ -362,12 +375,12 @@ function MagneticLinkButton({ to, className='', children }) {
   // Motion values track the current offset; springs return to center smoothly.
   const x = useMotionValue(0)
 ```
+
 **Raw class strings detected (best effort):**
 
 - _(dynamic className; inspect the snippet above)_
 
 **Utility breakdown (grouped):**
-
 
 #### `src/pages/TexHub.jsx:199`
 
@@ -377,6 +390,7 @@ function MagneticLinkButton({ to, className='', children }) {
         className={className}
         style={{ x: springX, y: springY }}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex`
@@ -394,21 +408,22 @@ function MagneticLinkButton({ to, className='', children }) {
         onMouseMove={handleMove}
         onMouseLeave={handleLeave}
 ```
+
 **Raw class strings detected (best effort):**
 
 - _(dynamic className; inspect the snippet above)_
 
 **Utility breakdown (grouped):**
 
-
 #### `src/pages/TexHub.jsx:214`
 
 ```jsx
-function SkeletonLine({ className='' }) {
+function SkeletonLine({ className = "" }) {
   // Skeleton shimmer utility (App.css): used during loading to avoid layout shifts.
-  return <div className={['skeleton rounded-xl', className].join(' ')} />
+  return <div className={["skeleton rounded-xl", className].join(" ")} />;
 }
 ```
+
 **Raw class strings detected (best effort):**
 
 - `skeleton rounded-xl`
@@ -429,6 +444,7 @@ function SkeletonLine({ className='' }) {
 
 export default function TexHub() {
 ```
+
 **Raw class strings detected (best effort):**
 
 - `skeleton rounded-xl`
@@ -449,6 +465,7 @@ export default function TexHub() {
         <div
           className={[
 ```
+
 **Raw class strings detected (best effort):**
 
 - `neo-page relative min-h-screen overflow-x-hidden bg-[#F8FAFC] dark:bg-[#05050A]`
@@ -481,6 +498,7 @@ export default function TexHub() {
           className={[
             'absolute -top-40 left-1/2 h-[520px] w-[720px] -translate-x-1/2 rounded-full blur-3xl',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `pointer-events-none absolute inset-0 -z-10 hidden dark:block`
@@ -514,6 +532,7 @@ export default function TexHub() {
             mode === 'professional' ? 'bg-emerald-500/10' : 'bg-fuchsia-500/10',
           ].join(' ')}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `absolute -top-40 left-1/2 h-[520px] w-[720px] -translate-x-1/2 rounded-full blur-3xl`
@@ -548,6 +567,7 @@ export default function TexHub() {
             mode === 'professional' ? 'bg-sky-500/10' : 'bg-violet-500/10',
           ].join(' ')}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `absolute top-24 right-[-140px] h-[520px] w-[520px] rounded-full blur-3xl`
@@ -581,6 +601,7 @@ export default function TexHub() {
             mode === 'professional' ? 'bg-indigo-500/10' : 'bg-emerald-500/10',
           ].join(' ')}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `absolute bottom-[-220px] left-[-160px] h-[600px] w-[600px] rounded-full blur-3xl`
@@ -614,6 +635,7 @@ export default function TexHub() {
           <div className="lg:col-span-6">
             <div className="inline-flex items-center gap-2 rounded-full bg-[#1E293B]/5 px-3 py-1 text-xs font-semibold text-[#1E293B]/80 shadow-[0_12px_30px_rgba(15,23,42,0.07)] dark:bg-white/[0.03] dark:text-slate-300 dark:shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16`
@@ -665,6 +687,7 @@ export default function TexHub() {
             <div className="inline-flex items-center gap-2 rounded-full bg-[#1E293B]/5 px-3 py-1 text-xs font-semibold text-[#1E293B]/80 shadow-[0_12px_30px_rgba(15,23,42,0.07)] dark:bg-white/[0.03] dark:text-slate-300 dark:shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
               <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_18px_rgba(16,185,129,0.6)]" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center`
@@ -714,6 +737,7 @@ export default function TexHub() {
               <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_18px_rgba(16,185,129,0.6)]" />
               Clean Tech sourcing for garments & textiles
 ```
+
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-6`
@@ -752,11 +776,12 @@ export default function TexHub() {
 #### `src/pages/TexHub.jsx:391`
 
 ```jsx
-            <div className="inline-flex items-center gap-2 rounded-full bg-[#1E293B]/5 px-3 py-1 text-xs font-semibold text-[#1E293B]/80 shadow-[0_12px_30px_rgba(15,23,42,0.07)] dark:bg-white/[0.03] dark:text-slate-300 dark:shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_18px_rgba(16,185,129,0.6)]" />
-              Clean Tech sourcing for garments & textiles
-            </div>
+<div className="inline-flex items-center gap-2 rounded-full bg-[#1E293B]/5 px-3 py-1 text-xs font-semibold text-[#1E293B]/80 shadow-[0_12px_30px_rgba(15,23,42,0.07)] dark:bg-white/[0.03] dark:text-slate-300 dark:shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
+  <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_18px_rgba(16,185,129,0.6)]" />
+  Clean Tech sourcing for garments & textiles
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center gap-2 rounded-full bg-[#1E293B]/5 px-3 py-1 text-xs font-semibold text-[#1E293B]/80 shadow-[0_12px_30px_rgba(15,23,42,0.07)] dark:bg-white/[0.03] dark:text-slate-300 dark:shadow-[0_24px_70px_rgba(0,0,0,0.55)]`
@@ -797,6 +822,7 @@ export default function TexHub() {
             </div>
               <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-[#1E293B] sm:text-5xl dark:text-white">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_18px_rgba(16,185,129,0.6)]`
@@ -832,6 +858,7 @@ export default function TexHub() {
               </h1>
               <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#475569] dark:text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 text-4xl font-extrabold tracking-tight text-[#1E293B] sm:text-5xl dark:text-white`
@@ -866,6 +893,7 @@ export default function TexHub() {
               </p>
               <p className="mt-3 max-w-xl text-sm font-medium text-[#334155] dark:text-slate-300">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 max-w-xl text-[15px] leading-relaxed text-[#475569] dark:text-slate-400`
@@ -898,6 +926,7 @@ export default function TexHub() {
               </p>
               {heroPresentation ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 max-w-xl text-sm font-medium text-[#334155] dark:text-slate-300`
@@ -924,6 +953,7 @@ export default function TexHub() {
                 </p>
               ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 max-w-xl text-xs italic text-[#64748B] dark:text-slate-400`
@@ -950,6 +980,7 @@ export default function TexHub() {
                 to="/signup"
                 className="shimmer-btn px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-8 flex flex-wrap items-center gap-3`
@@ -999,6 +1030,7 @@ export default function TexHub() {
                 Create Buyer Account
               </MagneticLinkButton>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `shimmer-btn px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]`
@@ -1041,6 +1073,7 @@ export default function TexHub() {
                 Register Factory
               </MagneticLinkButton>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-white/70 text-[#1E293B] font-semibold tracking-tight backdrop-blur-sm transition duration-300 ease-out hover:bg-white hover:shadow-[0_22px_50px_rgba(15,23,42,0.10)] dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06] dark:hover:shadow-[0_26px_70px_rgba(0,0,0,0.55)]`
@@ -1081,9 +1114,10 @@ export default function TexHub() {
 ```jsx
                 className="px-4 py-2 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B]/5 text-[#1E293B]/80 font-semibold transition duration-300 ease-out hover:bg-[#1E293B]/8 dark:bg-white/[0.03] dark:text-slate-200 dark:hover:bg-white/[0.06]"
               >
-                
+
               </MagneticLinkButton>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `px-4 py-2 shadow-none inline-flex items-center justify-center rounded-2xl bg-[#1E293B]/5 text-[#1E293B]/80 font-semibold transition duration-300 ease-out hover:bg-[#1E293B]/8 dark:bg-white/[0.03] dark:text-slate-200 dark:hover:bg-white/[0.06]`
@@ -1123,6 +1157,7 @@ export default function TexHub() {
                 <span className="h-2 w-2 rounded-full bg-emerald-500/90" />
                 Structured Buyer Requests
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-8 grid grid-cols-2 gap-3 text-sm text-[#475569] sm:grid-cols-4 dark:text-slate-400`
@@ -1157,11 +1192,12 @@ export default function TexHub() {
 #### `src/pages/TexHub.jsx:432`
 
 ```jsx
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-500/90" />
-                Structured Buyer Requests
-              </div>
+<div className="flex items-center gap-2">
+  <span className="h-2 w-2 rounded-full bg-emerald-500/90" />
+  Structured Buyer Requests
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2`
@@ -1189,6 +1225,7 @@ export default function TexHub() {
               </div>
               <div className="flex items-center gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-2 w-2 rounded-full bg-emerald-500/90`
@@ -1211,11 +1248,12 @@ export default function TexHub() {
 #### `src/pages/TexHub.jsx:436`
 
 ```jsx
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-500/90" />
-                Verified Factories
-              </div>
+<div className="flex items-center gap-2">
+  <span className="h-2 w-2 rounded-full bg-emerald-500/90" />
+  Verified Factories
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2`
@@ -1243,6 +1281,7 @@ export default function TexHub() {
               </div>
               <div className="flex items-center gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-2 w-2 rounded-full bg-emerald-500/90`
@@ -1265,11 +1304,12 @@ export default function TexHub() {
 #### `src/pages/TexHub.jsx:440`
 
 ```jsx
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-500/90" />
-                Digital Contract Vault
-              </div>
+<div className="flex items-center gap-2">
+  <span className="h-2 w-2 rounded-full bg-emerald-500/90" />
+  Digital Contract Vault
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2`
@@ -1297,6 +1337,7 @@ export default function TexHub() {
               </div>
               <div className="flex items-center gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-2 w-2 rounded-full bg-emerald-500/90`
@@ -1319,11 +1360,12 @@ export default function TexHub() {
 #### `src/pages/TexHub.jsx:444`
 
 ```jsx
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-500/90" />
-                AI Guided Workflow
-              </div>
+<div className="flex items-center gap-2">
+  <span className="h-2 w-2 rounded-full bg-emerald-500/90" />
+  AI Guided Workflow
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2`
@@ -1351,6 +1393,7 @@ export default function TexHub() {
               </div>
             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-2 w-2 rounded-full bg-emerald-500/90`
@@ -1373,6 +1416,7 @@ export default function TexHub() {
               <div className="flex items-center justify-between">
                 {loading ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-6`
@@ -1398,6 +1442,7 @@ export default function TexHub() {
                 {loading ? (
                   <>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `p-6`
@@ -1420,6 +1465,7 @@ export default function TexHub() {
                   <>
                     <SkeletonLine className="h-7 w-40 rounded-full" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between`
@@ -1444,6 +1490,7 @@ export default function TexHub() {
                   </>
                 ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-7 w-40 rounded-full`
@@ -1466,6 +1513,7 @@ export default function TexHub() {
                 ) : (
                   <>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-7 w-24 rounded-full`
@@ -1486,6 +1534,7 @@ export default function TexHub() {
                   </>
                 )}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-7 w-40 rounded-full bg-[#1E293B]/5 dark:bg-white/[0.06]`
@@ -1512,6 +1561,7 @@ export default function TexHub() {
                 )}
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-7 w-24 rounded-full bg-[#1E293B]/5 dark:bg-white/[0.06]`
@@ -1536,6 +1586,7 @@ export default function TexHub() {
                   <>
                     <div className="rounded-2xl bg-white/80 p-4 shadow-[0_14px_35px_rgba(15,23,42,0.06)] dark:bg-white/[0.03] dark:shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 grid gap-3`
@@ -1566,6 +1617,7 @@ export default function TexHub() {
                       <SkeletonLine className="mt-3 h-4 w-64" />
                       <div className="mt-4 grid grid-cols-2 gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-white/80 p-4 shadow-[0_14px_35px_rgba(15,23,42,0.06)] dark:bg-white/[0.03] dark:shadow-[0_20px_50px_rgba(0,0,0,0.45)]`
@@ -1604,6 +1656,7 @@ export default function TexHub() {
                       <div className="mt-4 grid grid-cols-2 gap-2">
                         <SkeletonLine className="h-8" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 w-24`
@@ -1634,6 +1687,7 @@ export default function TexHub() {
                         <SkeletonLine className="h-8" />
                         <SkeletonLine className="h-8" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 h-4 w-64`
@@ -1656,11 +1710,12 @@ export default function TexHub() {
 #### `src/pages/TexHub.jsx:472`
 
 ```jsx
-                      <div className="mt-4 grid grid-cols-2 gap-2">
-                        <SkeletonLine className="h-8" />
-                        <SkeletonLine className="h-8" />
-                      </div>
+<div className="mt-4 grid grid-cols-2 gap-2">
+  <SkeletonLine className="h-8" />
+  <SkeletonLine className="h-8" />
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 grid grid-cols-2 gap-2`
@@ -1684,6 +1739,7 @@ export default function TexHub() {
                       </div>
                     </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-8`
@@ -1701,6 +1757,7 @@ export default function TexHub() {
                     </div>
                     <div className="rounded-2xl bg-[#1E293B]/4 p-4 dark:bg-white/[0.03]">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-8`
@@ -1727,6 +1784,7 @@ export default function TexHub() {
                         <SkeletonLine className="h-4 w-36" />
                         <SkeletonLine className="h-3 w-28" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#1E293B]/4 p-4 dark:bg-white/[0.03]`
@@ -1757,11 +1815,12 @@ export default function TexHub() {
 #### `src/pages/TexHub.jsx:478`
 
 ```jsx
-                      <div className="flex items-center justify-between gap-3">
-                        <SkeletonLine className="h-4 w-36" />
-                        <SkeletonLine className="h-3 w-28" />
-                      </div>
+<div className="flex items-center justify-between gap-3">
+  <SkeletonLine className="h-4 w-36" />
+  <SkeletonLine className="h-3 w-28" />
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-3`
@@ -1789,6 +1848,7 @@ export default function TexHub() {
                       </div>
                       <div className="mt-3 grid gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-4 w-36`
@@ -1815,6 +1875,7 @@ export default function TexHub() {
                       <div className="mt-3 grid gap-2">
                         <SkeletonLine className="h-10" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 w-28`
@@ -1840,6 +1901,7 @@ export default function TexHub() {
                         <SkeletonLine className="h-10" />
                         <SkeletonLine className="h-10" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 grid gap-2`
@@ -1862,6 +1924,7 @@ export default function TexHub() {
                         <SkeletonLine className="h-10" />
                       </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-10`
@@ -1879,6 +1942,7 @@ export default function TexHub() {
                       </div>
                     </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-10`
@@ -1896,6 +1960,7 @@ export default function TexHub() {
                     </div>
                   </>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-10`
@@ -1913,6 +1978,7 @@ export default function TexHub() {
                         <div className="min-w-0">
                           <p className="text-xs font-semibold text-emerald-700">{heroBuyerRequest.label}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-white/80 p-4 shadow-[0_14px_35px_rgba(15,23,42,0.06)] dark:bg-white/[0.03] dark:shadow-[0_20px_50px_rgba(0,0,0,0.45)]`
@@ -1951,6 +2017,7 @@ export default function TexHub() {
                           <p className="text-xs font-semibold text-emerald-700">{heroBuyerRequest.label}</p>
                           <p className="mt-1 truncate text-sm font-semibold text-[#1E293B] dark:text-white">{heroBuyerRequest.title}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-4`
@@ -1982,11 +2049,16 @@ export default function TexHub() {
 #### `src/pages/TexHub.jsx:493`
 
 ```jsx
-                        <div className="min-w-0">
-                          <p className="text-xs font-semibold text-emerald-700">{heroBuyerRequest.label}</p>
-                          <p className="mt-1 truncate text-sm font-semibold text-[#1E293B] dark:text-white">{heroBuyerRequest.title}</p>
-                        </div>
+<div className="min-w-0">
+  <p className="text-xs font-semibold text-emerald-700">
+    {heroBuyerRequest.label}
+  </p>
+  <p className="mt-1 truncate text-sm font-semibold text-[#1E293B] dark:text-white">
+    {heroBuyerRequest.title}
+  </p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0`
@@ -2018,6 +2090,7 @@ export default function TexHub() {
                         </div>
                         <VerifiedBadge label={heroBuyerRequest.badge} />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-emerald-700`
@@ -2047,6 +2120,7 @@ export default function TexHub() {
                         <VerifiedBadge label={heroBuyerRequest.badge} />
                       </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 truncate text-sm font-semibold text-[#1E293B] dark:text-white`
@@ -2073,6 +2147,7 @@ export default function TexHub() {
                           <div
                             key={field.label}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 grid grid-cols-2 gap-2 text-[11px] text-[#475569] dark:text-slate-400`
@@ -2099,6 +2174,7 @@ export default function TexHub() {
                             <span>{field.label}</span>
                             <span className="font-semibold text-[#1E293B] dark:text-white">{field.value}</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between rounded-xl bg-[#1E293B]/4 px-3 py-2 dark:bg-white/[0.03]`
@@ -2132,6 +2208,7 @@ export default function TexHub() {
                         ))}
                       </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-[#1E293B] dark:text-white`
@@ -2153,6 +2230,7 @@ export default function TexHub() {
                         <p className="text-sm font-semibold text-[#1E293B] dark:text-white">{heroFactories.title}</p>
                         <p className="text-xs text-[#475569] dark:text-slate-400">{heroFactories.subtitle}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#1E293B]/4 p-4 dark:bg-white/[0.03]`
@@ -2187,11 +2265,16 @@ export default function TexHub() {
 #### `src/pages/TexHub.jsx:512`
 
 ```jsx
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="text-sm font-semibold text-[#1E293B] dark:text-white">{heroFactories.title}</p>
-                        <p className="text-xs text-[#475569] dark:text-slate-400">{heroFactories.subtitle}</p>
-                      </div>
+<div className="flex items-center justify-between gap-3">
+  <p className="text-sm font-semibold text-[#1E293B] dark:text-white">
+    {heroFactories.title}
+  </p>
+  <p className="text-xs text-[#475569] dark:text-slate-400">
+    {heroFactories.subtitle}
+  </p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-3`
@@ -2225,6 +2308,7 @@ export default function TexHub() {
                       </div>
                       <div className="mt-3 grid gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-[#1E293B] dark:text-white`
@@ -2257,6 +2341,7 @@ export default function TexHub() {
                       <div className="mt-3 grid gap-2">
                         {(heroFactories.factories || []).slice(0, 3).map((factory) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-[#475569] dark:text-slate-400`
@@ -2284,6 +2369,7 @@ export default function TexHub() {
                           <div
                             key={factory.id || factory.name}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 grid gap-2`
@@ -2299,11 +2385,18 @@ export default function TexHub() {
 #### `src/pages/TexHub.jsx:520`
 
 ```jsx
-                            className="flex items-center justify-between rounded-2xl bg-white/80 px-4 py-3 dark:bg-[#05050A]"
-                          >
-                            <p className="text-sm font-semibold text-[#1E293B] dark:text-white">{factory.name}</p>
-                            {factory.verified ? <VerifiedBadge /> : <VerifiedBadge label="Review" />}
+className =
+  "flex items-center justify-between rounded-2xl bg-white/80 px-4 py-3 dark:bg-[#05050A]" >
+  (
+    <p className="text-sm font-semibold text-[#1E293B] dark:text-white">
+      {factory.name}
+    </p>
+  );
+{
+  factory.verified ? <VerifiedBadge /> : <VerifiedBadge label="Review" />;
+}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between rounded-2xl bg-white/80 px-4 py-3 dark:bg-[#05050A]`
@@ -2341,6 +2434,7 @@ export default function TexHub() {
                           </div>
                         ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-[#1E293B] dark:text-white`
@@ -2366,6 +2460,7 @@ export default function TexHub() {
             </Surface>
           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-amber-700 dark:text-amber-300`
@@ -2386,6 +2481,7 @@ export default function TexHub() {
             <Surface className="relative p-8">
               <div className="pointer-events-none absolute -inset-28 hidden dark:block bg-[radial-gradient(closest-side,rgba(59,130,246,0.10),transparent_70%)]" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-16`
@@ -2422,6 +2518,7 @@ export default function TexHub() {
               <div className="pointer-events-none absolute -inset-28 hidden dark:block bg-[radial-gradient(closest-side,rgba(59,130,246,0.10),transparent_70%)]" />
               <div className="relative z-10">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid gap-6 lg:grid-cols-2`
@@ -2458,6 +2555,7 @@ export default function TexHub() {
               <div className="relative z-10">
                 <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Why GarTexHub</h3>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `relative p-8`
@@ -2496,6 +2594,7 @@ export default function TexHub() {
                 <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Why GarTexHub</h3>
                 <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `pointer-events-none absolute -inset-28 hidden dark:block bg-[radial-gradient(closest-side,rgba(59,130,246,0.10),transparent_70%)]`
@@ -2538,6 +2637,7 @@ export default function TexHub() {
                 <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
                   A sourcing workflow network built only for garments and textiles: low noise, structured requests, and trust by design.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `relative z-10`
@@ -2572,6 +2672,7 @@ export default function TexHub() {
                   A sourcing workflow network built only for garments and textiles: low noise, structured requests, and trust by design.
                 </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white`
@@ -2602,6 +2703,7 @@ export default function TexHub() {
                 </p>
                 <ul className="mt-5 space-y-2 text-sm text-[#334155] dark:text-slate-300">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
@@ -2631,6 +2733,7 @@ export default function TexHub() {
                     <li key={item}>{item}</li>
                   ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 space-y-2 text-sm text-[#334155] dark:text-slate-300`
@@ -2655,6 +2758,7 @@ export default function TexHub() {
               <div className="relative z-10">
               <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Solution</h3>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `relative p-8`
@@ -2693,6 +2797,7 @@ export default function TexHub() {
               <h3 className="text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white">Solution</h3>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `pointer-events-none absolute -inset-28 hidden dark:block bg-[radial-gradient(closest-side,rgba(16,185,129,0.10),transparent_70%)]`
@@ -2735,6 +2840,7 @@ export default function TexHub() {
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
                 Clear surfaces, verified signals, and structured workflows -- designed to stay calm at scale.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `relative z-10`
@@ -2769,6 +2875,7 @@ export default function TexHub() {
                 Clear surfaces, verified signals, and structured workflows -- designed to stay calm at scale.
               </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-bold tracking-[-0.02em] text-[#1E293B] dark:text-white`
@@ -2799,6 +2906,7 @@ export default function TexHub() {
               </p>
               <ul className="mt-5 space-y-2 text-sm text-[#334155] dark:text-slate-300">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
@@ -2828,6 +2936,7 @@ export default function TexHub() {
                 <li>Verified supplier priority</li>
                 <li>Internal Agent Lock System</li>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 space-y-2 text-sm text-[#334155] dark:text-slate-300`
@@ -2852,6 +2961,7 @@ export default function TexHub() {
             <h2 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">How GarTexHub works</h2>
             <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">A simple flow that stays structured end-to-end.</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-16`
@@ -2884,6 +2994,7 @@ export default function TexHub() {
           </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white`
@@ -2914,6 +3025,7 @@ export default function TexHub() {
 
           <div className="mt-6 grid gap-6 md:grid-cols-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
@@ -2945,6 +3057,7 @@ export default function TexHub() {
               <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">Step 1</p>
               <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Post or search</h4>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-6 grid gap-6 md:grid-cols-3`
@@ -2984,6 +3097,7 @@ export default function TexHub() {
               <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Post or search</h4>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `p-6`
@@ -3020,6 +3134,7 @@ export default function TexHub() {
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
                 Buyers post structured requirements. Factories publish products and capacity.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-[#64748B] dark:text-slate-400`
@@ -3054,6 +3169,7 @@ export default function TexHub() {
                 Buyers post structured requirements. Factories publish products and capacity.
               </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -3084,6 +3200,7 @@ export default function TexHub() {
               </p>
             </Surface>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
@@ -3108,6 +3225,7 @@ export default function TexHub() {
               <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Smart matching + claim lead</h4>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `p-6`
@@ -3144,6 +3262,7 @@ export default function TexHub() {
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
                 Agents claim requests. AI summarizes context so the team moves fast without noise.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-[#64748B] dark:text-slate-400`
@@ -3178,6 +3297,7 @@ export default function TexHub() {
                 Agents claim requests. AI summarizes context so the team moves fast without noise.
               </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -3208,6 +3328,7 @@ export default function TexHub() {
               </p>
             </Surface>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
@@ -3232,6 +3353,7 @@ export default function TexHub() {
               <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Chat, call, contract</h4>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `p-6`
@@ -3268,6 +3390,7 @@ export default function TexHub() {
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
                 Communicate, schedule meetings, and store agreements inside the Contract Vault.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-[#64748B] dark:text-slate-400`
@@ -3302,6 +3425,7 @@ export default function TexHub() {
                 Communicate, schedule meetings, and store agreements inside the Contract Vault.
               </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -3332,6 +3456,7 @@ export default function TexHub() {
               </p>
             </Surface>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
@@ -3356,6 +3481,7 @@ export default function TexHub() {
               <h3 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Why GarTexHub</h3>
               <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#475569] dark:text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-16`
@@ -3395,6 +3521,7 @@ export default function TexHub() {
               <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#475569] dark:text-slate-400">
                 Clear positioning and a structured sourcing workflow -- built only for garments & textile.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-col items-center text-center`
@@ -3432,6 +3559,7 @@ export default function TexHub() {
                 Clear positioning and a structured sourcing workflow -- built only for garments & textile.
               </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white`
@@ -3464,6 +3592,7 @@ export default function TexHub() {
               </p>
             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 max-w-2xl text-sm leading-relaxed text-[#475569] dark:text-slate-400`
@@ -3490,6 +3619,7 @@ export default function TexHub() {
                 <BentoMotion key={section.id || section.title || String(idx)} index={idx} className="md:col-span-1">
                   <Surface className="p-7">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 dark:gap-px`
@@ -3519,6 +3649,7 @@ export default function TexHub() {
                     {section.eyebrow ? (
                       <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">{section.eyebrow}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `md:col-span-1`
@@ -3547,6 +3678,7 @@ export default function TexHub() {
                       <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">{section.eyebrow}</p>
                     ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `p-7`
@@ -3572,6 +3704,7 @@ export default function TexHub() {
                     <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{section.title}</h4>
                     {section.description ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-[#64748B] dark:text-slate-400`
@@ -3597,11 +3730,18 @@ export default function TexHub() {
 #### `src/pages/TexHub.jsx:617`
 
 ```jsx
-                    <h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{section.title}</h4>
-                    {section.description ? (
-                      <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">{section.description}</p>
-                    ) : null}
+<h4 className="mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white">
+  {section.title}
+</h4>;
+{
+  section.description ? (
+    <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+      {section.description}
+    </p>
+  ) : null;
+}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -3632,6 +3772,7 @@ export default function TexHub() {
                     {Array.isArray(section.bullets) && section.bullets.length ? (
                       <ul className="mt-4 space-y-2 text-sm text-[#334155] dark:text-slate-300">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
@@ -3661,6 +3802,7 @@ export default function TexHub() {
                           <li key={bullet} className="flex items-start gap-2">
                             <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500/90" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 space-y-2 text-sm text-[#334155] dark:text-slate-300`
@@ -3694,11 +3836,12 @@ export default function TexHub() {
 #### `src/pages/TexHub.jsx:624`
 
 ```jsx
-                          <li key={bullet} className="flex items-start gap-2">
-                            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500/90" />
-                            <span className="leading-relaxed">{bullet}</span>
-                          </li>
+<li key={bullet} className="flex items-start gap-2">
+  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500/90" />
+  <span className="leading-relaxed">{bullet}</span>
+</li>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start gap-2`
@@ -3732,6 +3875,7 @@ export default function TexHub() {
                           </li>
                         ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500/90`
@@ -3761,6 +3905,7 @@ export default function TexHub() {
                         ))}
                       </ul>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `leading-relaxed`
@@ -3778,6 +3923,7 @@ export default function TexHub() {
             <h3 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Platform features</h3>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#475569] dark:text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-16`
@@ -3817,6 +3963,7 @@ export default function TexHub() {
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#475569] dark:text-slate-400">
               Borderless surfaces, clean hierarchy, and strong trust indicators.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-col items-center text-center`
@@ -3854,6 +4001,7 @@ export default function TexHub() {
               Borderless surfaces, clean hierarchy, and strong trust indicators.
             </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white`
@@ -3886,6 +4034,7 @@ export default function TexHub() {
             </p>
           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 max-w-2xl text-sm leading-relaxed text-[#475569] dark:text-slate-400`
@@ -3912,6 +4061,7 @@ export default function TexHub() {
               mode === 'professional' ? 'dark:bg-[#05050A]' : 'dark:bg-[#0B0A18]',
             ].join(' ')}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-8 rounded-3xl bg-transparent p-0 dark:p-[2px] transition-colors duration-[400ms]`
@@ -3947,6 +4097,7 @@ export default function TexHub() {
             <Surface className="p-7">
               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.professionalFeed.title}</h4>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid grid-cols-1 gap-6 md:grid-cols-6 dark:gap-px`
@@ -3983,6 +4134,7 @@ export default function TexHub() {
               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.professionalFeed.title}</h4>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `md:col-span-3`
@@ -4018,6 +4170,7 @@ export default function TexHub() {
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
                 {bentoView.professionalFeed.description}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `p-7`
@@ -4050,6 +4203,7 @@ export default function TexHub() {
                 {bentoView.professionalFeed.description}
               </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -4080,6 +4234,7 @@ export default function TexHub() {
               </p>
               <div className="mt-5 grid gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
@@ -4109,6 +4264,7 @@ export default function TexHub() {
                   <>
                     <SkeletonLine className="h-10" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 grid gap-2`
@@ -4131,6 +4287,7 @@ export default function TexHub() {
                     <SkeletonLine className="h-10" />
                   </>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-10`
@@ -4148,6 +4305,7 @@ export default function TexHub() {
                   </>
                 ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-10`
@@ -4165,6 +4323,7 @@ export default function TexHub() {
                 ) : (
                   <AnimatePresence mode="popLayout" initial={false}>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-10`
@@ -4185,6 +4344,7 @@ export default function TexHub() {
                       {(bentoView.professionalFeed.lanes || []).map((lane) => (
                         <div
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid gap-2`
@@ -4204,6 +4364,7 @@ export default function TexHub() {
                           <p className="text-sm font-semibold text-[#1E293B] dark:text-white">{lane.label}</p>
                           <span className="rounded-full bg-[#1E293B]/5 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#64748B] dark:bg-white/[0.06] dark:text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between rounded-2xl bg-slate-900/4 px-4 py-3 dark:bg-white/[0.03]`
@@ -4249,6 +4410,7 @@ export default function TexHub() {
                             {lane.meta}
                           </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-[#1E293B] dark:text-white`
@@ -4284,6 +4446,7 @@ export default function TexHub() {
                           </span>
                         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[#1E293B]/5 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#64748B] dark:bg-white/[0.06] dark:text-slate-400`
@@ -4315,6 +4478,7 @@ export default function TexHub() {
               <div className="flex items-center justify-between gap-4">
                 <div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `md:col-span-3`
@@ -4341,6 +4505,7 @@ export default function TexHub() {
                 <div>
                   <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.structuredBuyerRequests.title}</h4>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `p-7`
@@ -4373,6 +4538,7 @@ export default function TexHub() {
                   <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.structuredBuyerRequests.title}</h4>
                   <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-4`
@@ -4409,6 +4575,7 @@ export default function TexHub() {
                     {bentoView.structuredBuyerRequests.description}
                   </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -4439,6 +4606,7 @@ export default function TexHub() {
                   </p>
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
@@ -4463,6 +4631,7 @@ export default function TexHub() {
                   <>
                     <SkeletonLine className="h-10" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 grid gap-3 sm:grid-cols-2`
@@ -4487,6 +4656,7 @@ export default function TexHub() {
                     <SkeletonLine className="h-10" />
                     <SkeletonLine className="h-10" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-10`
@@ -4504,6 +4674,7 @@ export default function TexHub() {
                     <SkeletonLine className="h-10" />
                   </>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-10`
@@ -4521,6 +4692,7 @@ export default function TexHub() {
                   </>
                 ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-10`
@@ -4538,6 +4710,7 @@ export default function TexHub() {
                 ) : (
                   <AnimatePresence mode="popLayout" initial={false}>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-10`
@@ -4558,6 +4731,7 @@ export default function TexHub() {
                       {(bentoView.structuredBuyerRequests.fields || []).map((field) => (
                         <div
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid gap-3 sm:grid-cols-2`
@@ -4579,6 +4753,7 @@ export default function TexHub() {
                           <span className="text-[#64748B] dark:text-slate-400">{field.label}</span>
                           <span className="font-semibold text-[#1E293B] dark:text-white">{field.value}</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between rounded-2xl bg-slate-900/4 px-4 py-3 text-sm dark:bg-white/[0.03]`
@@ -4616,6 +4791,7 @@ export default function TexHub() {
                         </div>
                       ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[#64748B] dark:text-slate-400`
@@ -4640,6 +4816,7 @@ export default function TexHub() {
                       ))}
                     </motion.div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-[#1E293B] dark:text-white`
@@ -4661,6 +4838,7 @@ export default function TexHub() {
               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.contractVault.title}</h4>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-white/80">{bentoView.contractVault.description}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `md:col-span-2`
@@ -4696,6 +4874,7 @@ export default function TexHub() {
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-white/80">{bentoView.contractVault.description}</p>
               <div className="mt-5 space-y-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `p-7`
@@ -4731,6 +4910,7 @@ export default function TexHub() {
               <div className="mt-5 space-y-2">
                 {(bentoView.contractVault.items || []).map((item) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -4764,6 +4944,7 @@ export default function TexHub() {
                 {(bentoView.contractVault.items || []).map((item) => (
                   <div key={item} className="rounded-2xl bg-[#1E293B]/5 px-4 py-3 text-sm text-[#1E293B] dark:bg-white/12 dark:text-white">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm leading-relaxed text-[#475569] dark:text-white/80`
@@ -4800,6 +4981,7 @@ export default function TexHub() {
                   <div key={item} className="rounded-2xl bg-[#1E293B]/5 px-4 py-3 text-sm text-[#1E293B] dark:bg-white/12 dark:text-white">
                     {item}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 space-y-2`
@@ -4831,6 +5013,7 @@ export default function TexHub() {
                   </div>
                 ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#1E293B]/5 px-4 py-3 text-sm text-[#1E293B] dark:bg-white/12 dark:text-white`
@@ -4859,6 +5042,7 @@ export default function TexHub() {
                   {bentoView.contractVault.badge}
                 </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 inline-flex`
@@ -4894,6 +5078,7 @@ export default function TexHub() {
                 </span>
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_16px_40px_rgba(16,185,129,0.12)] dark:bg-emerald-400/18 dark:text-emerald-200 dark:shadow-[0_0_26px_rgba(16,185,129,0.24)]`
@@ -4925,6 +5110,7 @@ export default function TexHub() {
               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.enterpriseAnalytics.title}</h4>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `md:col-span-4`
@@ -4960,6 +5146,7 @@ export default function TexHub() {
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
                 {bentoView.enterpriseAnalytics.description}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `p-7`
@@ -4992,6 +5179,7 @@ export default function TexHub() {
                 {bentoView.enterpriseAnalytics.description}
               </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -5022,6 +5210,7 @@ export default function TexHub() {
               </p>
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
@@ -5053,6 +5242,7 @@ export default function TexHub() {
                   <div key={stat.label} className="rounded-2xl bg-slate-900/4 p-4 dark:bg-white/[0.03]">
                     <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">{stat.label}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 grid gap-3 sm:grid-cols-3`
@@ -5084,11 +5274,19 @@ export default function TexHub() {
 #### `src/pages/TexHub.jsx:767`
 
 ```jsx
-                  <div key={stat.label} className="rounded-2xl bg-slate-900/4 p-4 dark:bg-white/[0.03]">
-                    <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">{stat.label}</p>
-                    <p className="mt-2 text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">{stat.value}</p>
-                  </div>
+<div
+  key={stat.label}
+  className="rounded-2xl bg-slate-900/4 p-4 dark:bg-white/[0.03]"
+>
+  <p className="text-xs font-semibold text-[#64748B] dark:text-slate-400">
+    {stat.label}
+  </p>
+  <p className="mt-2 text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">
+    {stat.value}
+  </p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-slate-900/4 p-4 dark:bg-white/[0.03]`
@@ -5125,6 +5323,7 @@ export default function TexHub() {
                   </div>
                 ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-[#64748B] dark:text-slate-400`
@@ -5155,6 +5354,7 @@ export default function TexHub() {
                 ))}
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white`
@@ -5180,6 +5380,7 @@ export default function TexHub() {
               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">{bentoView.agentLock.title}</h4>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `md:col-span-4`
@@ -5216,6 +5417,7 @@ export default function TexHub() {
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
                 {bentoView.agentLock.description}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `p-7 bg-slate-900/3`
@@ -5249,6 +5451,7 @@ export default function TexHub() {
                 {bentoView.agentLock.description}
               </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -5279,6 +5482,7 @@ export default function TexHub() {
               </p>
               <div className="mt-5 rounded-2xl bg-white/70 p-4 dark:bg-white/[0.03]">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
@@ -5310,6 +5514,7 @@ export default function TexHub() {
                   <p className="text-sm font-semibold text-[#1E293B] dark:text-white">{bentoView.agentLock.requestLabel}</p>
                   <span className="rounded-full bg-slate-900/6 px-3 py-1 text-xs font-semibold text-[#334155] dark:bg-white/[0.06] dark:text-slate-300">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 rounded-2xl bg-white/70 p-4 dark:bg-white/[0.03]`
@@ -5355,6 +5560,7 @@ export default function TexHub() {
                   <span className="rounded-full bg-slate-900/6 px-3 py-1 text-xs font-semibold text-[#334155] dark:bg-white/[0.06] dark:text-slate-300">
                     {bentoView.agentLock.status}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-3`
@@ -5394,6 +5600,7 @@ export default function TexHub() {
                     {bentoView.agentLock.status}
                   </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-[#1E293B] dark:text-white`
@@ -5427,6 +5634,7 @@ export default function TexHub() {
                   </span>
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-slate-900/6 px-3 py-1 text-xs font-semibold text-[#334155] dark:bg-white/[0.06] dark:text-slate-300`
@@ -5456,6 +5664,7 @@ export default function TexHub() {
                 </p>
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-xs leading-relaxed text-[#475569] dark:text-slate-400`
@@ -5480,6 +5689,7 @@ export default function TexHub() {
               className={[
                 'p-7 transition-colors duration-[400ms]',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `md:col-span-2`
@@ -5503,11 +5713,12 @@ export default function TexHub() {
                 mode === 'professional' ? '' : 'dark:bg-[#0E0D1A]',
               ].join(' ')}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `p-7 transition-colors duration-[400ms]`
 - `professional`
-- ` : `
+- `:`
 - ` `
 
 **Utility breakdown (grouped):**
@@ -5529,6 +5740,7 @@ export default function TexHub() {
                 A tactile switch for diverse content modes -- recessed track, raised handle.
               </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -5559,6 +5771,7 @@ export default function TexHub() {
               </p>
               <div className="mt-5 inline-flex items-center gap-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
@@ -5589,6 +5802,7 @@ export default function TexHub() {
                   type="button"
                   onClick={() => setMode((current) => (current === 'professional' ? 'diverse' : 'professional'))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 inline-flex items-center gap-3`
@@ -5617,6 +5831,7 @@ export default function TexHub() {
                     mode === 'professional' ? 'justify-start bg-[#1E293B]/10' : 'justify-end bg-[#312E81]/12',
                     'shadow-[inset_0_2px_6px_rgba(15,23,42,0.18)]',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `relative h-10 w-20 rounded-full p-1 flex items-center transition-colors duration-[400ms]`
@@ -5657,6 +5872,7 @@ export default function TexHub() {
                 </button>
                 <span className="text-sm font-semibold text-[#334155] dark:text-slate-300">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-8 w-8 rounded-full bg-white shadow-[0_10px_22px_rgba(15,23,42,0.20)] dark:bg-white/90 dark:shadow-[0_14px_40px_rgba(0,0,0,0.65)]`
@@ -5689,6 +5905,7 @@ export default function TexHub() {
                 </span>
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-[#334155] dark:text-slate-300`
@@ -5718,6 +5935,7 @@ export default function TexHub() {
               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">Factory video gallery</h4>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `md:col-span-2`
@@ -5753,6 +5971,7 @@ export default function TexHub() {
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
                 Edge-to-edge thumbnails for an immersive profile experience.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `p-7`
@@ -5785,6 +6004,7 @@ export default function TexHub() {
                 Edge-to-edge thumbnails for an immersive profile experience.
               </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -5815,6 +6035,7 @@ export default function TexHub() {
               </p>
               <div className="mt-5 overflow-hidden rounded-2xl">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
@@ -5845,6 +6066,7 @@ export default function TexHub() {
                   {Array.from({ length: 6 }).map((_, i) => (
                     <div
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 overflow-hidden rounded-2xl`
@@ -5869,6 +6091,7 @@ export default function TexHub() {
                     <div
                       key={i}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid grid-cols-3`
@@ -5887,6 +6110,7 @@ export default function TexHub() {
                         loading ? 'skeleton' : 'bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-900 dark:to-slate-800',
                         !loading && i % 3 === 1 ? 'from-slate-100 to-slate-300 dark:from-slate-950 dark:to-slate-800' : '',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `aspect-video`
@@ -5918,6 +6142,7 @@ export default function TexHub() {
               <h4 className="text-base font-bold tracking-tight text-[#1E293B] dark:text-white">AI assistant</h4>
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `md:col-span-4`
@@ -5953,6 +6178,7 @@ export default function TexHub() {
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
                 A floating assistant that feels premium -- glassy, calm, and helpful.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `p-7`
@@ -5985,6 +6211,7 @@ export default function TexHub() {
                 A floating assistant that feels premium -- glassy, calm, and helpful.
               </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-base font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -6015,6 +6242,7 @@ export default function TexHub() {
               </p>
               <div className="mt-5 rounded-2xl bg-white/55 backdrop-blur-md p-4 shadow-[0_18px_50px_rgba(15,23,42,0.10)] ring-1 ring-white/50 dark:bg-white/[0.03] dark:ring-white/10">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
@@ -6046,11 +6274,16 @@ export default function TexHub() {
 #### `src/pages/TexHub.jsx:862`
 
 ```jsx
-              <div className="mt-5 rounded-2xl bg-white/55 backdrop-blur-md p-4 shadow-[0_18px_50px_rgba(15,23,42,0.10)] ring-1 ring-white/50 dark:bg-white/[0.03] dark:ring-white/10">
-                <p className="text-sm font-semibold text-[#1E293B] dark:text-white">“Need help posting a request*”</p>
-                <p className="mt-1 text-xs leading-relaxed text-[#475569] dark:text-slate-400">I can generate a structured template in seconds.</p>
-              </div>
+<div className="mt-5 rounded-2xl bg-white/55 backdrop-blur-md p-4 shadow-[0_18px_50px_rgba(15,23,42,0.10)] ring-1 ring-white/50 dark:bg-white/[0.03] dark:ring-white/10">
+  <p className="text-sm font-semibold text-[#1E293B] dark:text-white">
+    “Need help posting a request*”
+  </p>
+  <p className="mt-1 text-xs leading-relaxed text-[#475569] dark:text-slate-400">
+    I can generate a structured template in seconds.
+  </p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 rounded-2xl bg-white/55 backdrop-blur-md p-4 shadow-[0_18px_50px_rgba(15,23,42,0.10)] ring-1 ring-white/50 dark:bg-white/[0.03] dark:ring-white/10`
@@ -6092,6 +6325,7 @@ export default function TexHub() {
               </div>
             </Surface>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-[#1E293B] dark:text-white`
@@ -6121,6 +6355,7 @@ export default function TexHub() {
             </Surface>
             </BentoMotion>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-xs leading-relaxed text-[#475569] dark:text-slate-400`
@@ -6145,6 +6380,7 @@ export default function TexHub() {
             <div className="grid gap-10 lg:grid-cols-12 lg:items-center">
               <div className="lg:col-span-7">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-16`
@@ -6173,6 +6409,7 @@ export default function TexHub() {
               <div className="lg:col-span-7">
                 <h3 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Built for growing buying houses</h3>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `p-10`
@@ -6208,6 +6445,7 @@ export default function TexHub() {
                 <h3 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Built for growing buying houses</h3>
                 <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid gap-10 lg:grid-cols-12 lg:items-center`
@@ -6247,6 +6485,7 @@ export default function TexHub() {
                 <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
                   Unlimited sub-accounts · dedicated analytics · organization control · contract management
 ```
+
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-7`
@@ -6280,6 +6519,7 @@ export default function TexHub() {
                   Unlimited sub-accounts · dedicated analytics · organization control · contract management
                 </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white`
@@ -6310,6 +6550,7 @@ export default function TexHub() {
                 </p>
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
@@ -6334,6 +6575,7 @@ export default function TexHub() {
                   to="/pricing"
                   className="px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-emerald-600 text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-emerald-500 hover:shadow-[0_22px_50px_rgba(16,185,129,0.28)] dark:bg-emerald-500/80 dark:hover:bg-emerald-500/90 dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-5 lg:flex lg:justify-end`
@@ -6383,6 +6625,7 @@ export default function TexHub() {
                   View enterprise plans
                 </MagneticLinkButton>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-emerald-600 text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-emerald-500 hover:shadow-[0_22px_50px_rgba(16,185,129,0.28)] dark:bg-emerald-500/80 dark:hover:bg-emerald-500/90 dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]`
@@ -6424,6 +6667,7 @@ export default function TexHub() {
             <h3 className="text-xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Focused only on garments & textile</h3>
             <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">Industry categories:</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-16`
@@ -6457,11 +6701,16 @@ export default function TexHub() {
 #### `src/pages/TexHub.jsx:894`
 
 ```jsx
-          <div className="flex flex-col items-center text-center">
-            <h3 className="text-xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Focused only on garments & textile</h3>
-            <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">Industry categories:</p>
-          </div>
+<div className="flex flex-col items-center text-center">
+  <h3 className="text-xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">
+    Focused only on garments & textile
+  </h3>
+  <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
+    Industry categories:
+  </p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-col items-center text-center`
@@ -6498,6 +6747,7 @@ export default function TexHub() {
           </div>
           <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm text-[#334155] dark:text-slate-300">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xl font-extrabold tracking-tight text-[#1E293B] dark:text-white`
@@ -6537,6 +6787,7 @@ export default function TexHub() {
           <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm text-[#334155] dark:text-slate-300">
             {['Shirts', 'Pants', 'Knitwear', 'Woven', 'Denim', 'Custom production'].map((tag) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
@@ -6584,6 +6835,7 @@ export default function TexHub() {
               <span
                 key={tag}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-6 flex flex-wrap justify-center gap-3 text-sm text-[#334155] dark:text-slate-300`
@@ -6626,6 +6878,7 @@ export default function TexHub() {
                 {tag}
               </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-white/70 px-4 py-2 shadow-[0_14px_38px_rgba(15,23,42,0.07)] dark:bg-white/[0.03] dark:shadow-[0_20px_50px_rgba(0,0,0,0.45)]`
@@ -6652,6 +6905,7 @@ export default function TexHub() {
             <div className="grid gap-8 lg:grid-cols-12 lg:items-center">
               <div className="lg:col-span-7">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-16 pb-6`
@@ -6681,6 +6935,7 @@ export default function TexHub() {
               <div className="lg:col-span-7">
                 <h2 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Start connecting with the right partners</h2>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `p-10`
@@ -6716,6 +6971,7 @@ export default function TexHub() {
                 <h2 className="text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white">Start connecting with the right partners</h2>
                 <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid gap-8 lg:grid-cols-12 lg:items-center`
@@ -6755,6 +7011,7 @@ export default function TexHub() {
                 <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
                   Clear CTAs and clean surfaces -- your first step into a structured marketplace.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-7`
@@ -6788,6 +7045,7 @@ export default function TexHub() {
                   Clear CTAs and clean surfaces -- your first step into a structured marketplace.
                 </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-2xl font-extrabold tracking-tight text-[#1E293B] dark:text-white`
@@ -6818,6 +7076,7 @@ export default function TexHub() {
                 </p>
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400`
@@ -6842,6 +7101,7 @@ export default function TexHub() {
                   to="/signup"
                   className="shimmer-btn px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap gap-3 lg:col-span-5 lg:justify-end`
@@ -6893,6 +7153,7 @@ export default function TexHub() {
                   Create account
                 </MagneticLinkButton>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `shimmer-btn px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-[var(--gt-blue)] text-white font-semibold tracking-tight transition duration-300 ease-out hover:bg-[var(--gt-blue-hover)] hover:shadow-[0_22px_50px_rgba(10,102,194,0.25)] dark:shadow-[0_22px_60px_rgba(0,0,0,0.55)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]`
@@ -6935,6 +7196,7 @@ export default function TexHub() {
                   Login
                 </MagneticLinkButton>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `px-6 py-3 shadow-none inline-flex items-center justify-center rounded-2xl bg-white/70 text-[#1E293B] font-semibold tracking-tight backdrop-blur-sm transition duration-300 ease-out hover:bg-white hover:shadow-[0_22px_50px_rgba(15,23,42,0.10)] dark:bg-white/[0.03] dark:text-white dark:hover:bg-white/[0.06] dark:hover:shadow-[0_26px_70px_rgba(0,0,0,0.55)]`
@@ -6982,6 +7244,7 @@ export default function TexHub() {
                   A sourcing workflow network built only for garments and textiles: low noise, structured requests, and trust by design.
                 </p>
 ```
+
 - `src/pages/TexHub.jsx:555` — Solution
 
 ```jsx
@@ -6990,6 +7253,7 @@ export default function TexHub() {
                 Clear surfaces, verified signals, and structured workflows -- designed to stay calm at scale.
               </p>
 ```
+
 - `src/pages/TexHub.jsx:560` — Structured Buyer Requests
 
 ```jsx
@@ -6998,6 +7262,7 @@ export default function TexHub() {
                 <li>Internal Agent Lock System</li>
                 <li>Organized partner network</li>
 ```
+
 - `src/pages/TexHub.jsx:561` — Verified supplier priority
 
 ```jsx
@@ -7006,6 +7271,7 @@ export default function TexHub() {
                 <li>Organized partner network</li>
               </ul>
 ```
+
 - `src/pages/TexHub.jsx:562` — Internal Agent Lock System
 
 ```jsx
@@ -7014,6 +7280,7 @@ export default function TexHub() {
               </ul>
               </div>
 ```
+
 - `src/pages/TexHub.jsx:563` — Organized partner network
 
 ```jsx
@@ -7022,6 +7289,7 @@ export default function TexHub() {
               </div>
             </Surface>
 ```
+
 - `src/pages/TexHub.jsx:572` — How GarTexHub works
 
 ```jsx
@@ -7030,6 +7298,7 @@ export default function TexHub() {
           </div>
 
 ```
+
 - `src/pages/TexHub.jsx:573` — A simple flow that stays structured end-to-end.
 
 ```jsx
@@ -7038,6 +7307,7 @@ export default function TexHub() {
 
           <div className="mt-6 grid gap-6 md:grid-cols-3">
 ```
+
 - `src/pages/TexHub.jsx:578` — Step 1
 
 ```jsx
@@ -7046,6 +7316,7 @@ export default function TexHub() {
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
                 Buyers post structured requirements. Factories publish products and capacity.
 ```
+
 - `src/pages/TexHub.jsx:579` — Post or search
 
 ```jsx
@@ -7054,6 +7325,7 @@ export default function TexHub() {
                 Buyers post structured requirements. Factories publish products and capacity.
               </p>
 ```
+
 - `src/pages/TexHub.jsx:585` — Step 2
 
 ```jsx
@@ -7062,6 +7334,7 @@ export default function TexHub() {
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
                 Agents claim requests. AI summarizes context so the team moves fast without noise.
 ```
+
 - `src/pages/TexHub.jsx:586` — Smart matching + claim lead
 
 ```jsx
@@ -7070,6 +7343,7 @@ export default function TexHub() {
                 Agents claim requests. AI summarizes context so the team moves fast without noise.
               </p>
 ```
+
 - `src/pages/TexHub.jsx:592` — Step 3
 
 ```jsx
@@ -7078,6 +7352,7 @@ export default function TexHub() {
               <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-400">
                 Communicate, schedule meetings, and store agreements inside the Contract Vault.
 ```
+
 - `src/pages/TexHub.jsx:593` — Chat, call, contract
 
 ```jsx
@@ -7086,6 +7361,7 @@ export default function TexHub() {
                 Communicate, schedule meetings, and store agreements inside the Contract Vault.
               </p>
 ```
+
 - `src/pages/TexHub.jsx:604` — Why GarTexHub
 
 ```jsx
@@ -7094,6 +7370,7 @@ export default function TexHub() {
                 Clear positioning and a structured sourcing workflow -- built only for garments & textile.
               </p>
 ```
+
 - `src/pages/TexHub.jsx:640` — Platform features
 
 ```jsx
@@ -7102,6 +7379,7 @@ export default function TexHub() {
               Borderless surfaces, clean hierarchy, and strong trust indicators.
             </p>
 ```
+
 - `src/pages/TexHub.jsx:803` — Unique toggle
 
 ```jsx
@@ -7110,6 +7388,7 @@ export default function TexHub() {
                 A tactile switch for diverse content modes -- recessed track, raised handle.
               </p>
 ```
+
 - `src/pages/TexHub.jsx:835` — Factory video gallery
 
 ```jsx
@@ -7118,6 +7397,7 @@ export default function TexHub() {
                 Edge-to-edge thumbnails for an immersive profile experience.
               </p>
 ```
+
 - `src/pages/TexHub.jsx:858` — AI assistant
 
 ```jsx
@@ -7126,7 +7406,8 @@ export default function TexHub() {
                 A floating assistant that feels premium -- glassy, calm, and helpful.
               </p>
 ```
-- `src/pages/TexHub.jsx:863` — “Need help posting a request*”
+
+- `src/pages/TexHub.jsx:863` — “Need help posting a request\*”
 
 ```jsx
                 <p className="text-sm font-semibold text-[#1E293B] dark:text-white">“Need help posting a request*”</p>
@@ -7134,6 +7415,7 @@ export default function TexHub() {
               </div>
             </Surface>
 ```
+
 - `src/pages/TexHub.jsx:864` — I can generate a structured template in seconds.
 
 ```jsx
@@ -7142,6 +7424,7 @@ export default function TexHub() {
             </Surface>
             </BentoMotion>
 ```
+
 - `src/pages/TexHub.jsx:876` — Built for growing buying houses
 
 ```jsx
@@ -7150,6 +7433,7 @@ export default function TexHub() {
                   Unlimited sub-accounts · dedicated analytics · organization control · contract management
                 </p>
 ```
+
 - `src/pages/TexHub.jsx:895` — Focused only on garments & textile
 
 ```jsx
@@ -7158,6 +7442,7 @@ export default function TexHub() {
           </div>
           <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm text-[#334155] dark:text-slate-300">
 ```
+
 - `src/pages/TexHub.jsx:896` — Industry categories:
 
 ```jsx
@@ -7166,6 +7451,7 @@ export default function TexHub() {
           <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm text-[#334155] dark:text-slate-300">
             {['Shirts', 'Pants', 'Knitwear', 'Woven', 'Denim', 'Custom production'].map((tag) => (
 ```
+
 - `src/pages/TexHub.jsx:914` — Start connecting with the right partners
 
 ```jsx
@@ -7174,14 +7460,20 @@ export default function TexHub() {
                   Clear CTAs and clean surfaces -- your first step into a structured marketplace.
                 </p>
 ```
+
 - `src/pages/TexHub.jsx:41` — Verified
 
 ```jsx
-      title="Verified"
-    >
-      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_16px_rgba(16,185,129,0.65)] dark:bg-emerald-300 dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]" />
-      {label}
+title =
+  "Verified" >
+  (
+    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_16px_rgba(16,185,129,0.65)] dark:bg-emerald-300 dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]" />
+  );
+{
+  label;
+}
 ```
+
 - `src/pages/TexHub.jsx:817` — Toggle content mode
 
 ```jsx
@@ -7190,6 +7482,7 @@ export default function TexHub() {
                   <motion.div
                     layout
 ```
+
 - `src/pages/TexHub.jsx:199` — (element) <Link>
 
 ```jsx
@@ -7198,6 +7491,7 @@ export default function TexHub() {
         className={className}
         style={{ x: springX, y: springY }}
 ```
+
 - `src/pages/TexHub.jsx:808` — (element) <button>
 
 ```jsx
@@ -7206,11 +7500,12 @@ export default function TexHub() {
                   onClick={() => setMode((current) => (current === 'professional' ? 'diverse' : 'professional'))}
                   className={[
 ```
+
 ## 5) Backend Mapping (Frontend → Express → Controller → Service/DB)
 
-| Frontend call (path:line) | Express mount | Route definition | Controller file | Handler |
-|---|---|---|---|---|
-| GET /system/home (src/pages/TexHub.jsx:18) | /api/system -> server/routes/systemRoutes.js:127 | GET /home (server/routes/systemRoutes.js:7) | server/controllers/systemController.js | systemHome |
+| Frontend call (path:line)                   | Express mount                                    | Route definition                            | Controller file                        | Handler    |
+| ------------------------------------------- | ------------------------------------------------ | ------------------------------------------- | -------------------------------------- | ---------- |
+| GET /system/home (src/pages/TexHub.jsx:18)  | /api/system -> server/routes/systemRoutes.js:127 | GET /home (server/routes/systemRoutes.js:7) | server/controllers/systemController.js | systemHome |
 | GET /system/home (src/pages/TexHub.jsx:308) | /api/system -> server/routes/systemRoutes.js:127 | GET /home (server/routes/systemRoutes.js:7) | server/controllers/systemController.js | systemHome |
 
 ## 6) How to Edit Safely
@@ -7221,4 +7516,3 @@ export default function TexHub() {
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
-

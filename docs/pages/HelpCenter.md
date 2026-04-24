@@ -21,11 +21,16 @@
 - `header` at `src/pages/HelpCenter.jsx:379`
 
 ```jsx
-        <header className="text-center">
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">Help Center</h1>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Industrial reliability, tech-forward SaaS guidance.</p>
-        </header>
+<header className="text-center">
+  <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
+    Help Center
+  </h1>
+  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+    Industrial reliability, tech-forward SaaS guidance.
+  </p>
+</header>
 ```
+
 - `section` at `src/pages/HelpCenter.jsx:409`
 
 ```jsx
@@ -34,6 +39,7 @@
                     <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
                       <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">{section.title}</h2>
 ```
+
 - `section` at `src/pages/HelpCenter.jsx:569`
 
 ```jsx
@@ -42,6 +48,7 @@
                   <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
                     <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
 ```
+
 - `section` at `src/pages/HelpCenter.jsx:630`
 
 ```jsx
@@ -50,6 +57,7 @@
                     <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
                       <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
 ```
+
 - `section` at `src/pages/HelpCenter.jsx:722`
 
 ```jsx
@@ -58,6 +66,7 @@
                   <div className="flex items-center justify-between gap-3">
                     <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Contact Support</h2>
 ```
+
 ## 3) Styling (className blocks, utility breakdown, and custom CSS)
 
 ### 3.1 Custom CSS utilities referenced by this page (App.css / index.css)
@@ -99,12 +108,12 @@ function MotionItem({ index, className='', children }) {
   if (reduceMotion) return <div className={className}>{children}</div>
   return (
 ```
+
 **Raw class strings detected (best effort):**
 
 - _(dynamic className; inspect the snippet above)_
 
 **Utility breakdown (grouped):**
-
 
 #### `src/pages/HelpCenter.jsx:190`
 
@@ -114,12 +123,12 @@ function MotionItem({ index, className='', children }) {
     <motion.div
       className={className}
 ```
+
 **Raw class strings detected (best effort):**
 
 - _(dynamic className; inspect the snippet above)_
 
 **Utility breakdown (grouped):**
-
 
 #### `src/pages/HelpCenter.jsx:193`
 
@@ -129,21 +138,21 @@ function MotionItem({ index, className='', children }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: index * 0.05 }}
 ```
+
 **Raw class strings detected (best effort):**
 
 - _(dynamic className; inspect the snippet above)_
 
 **Utility breakdown (grouped):**
 
-
 #### `src/pages/HelpCenter.jsx:203`
 
 ```jsx
-function Skeleton({ className='' }) {
-  return <div className={['skeleton', className].join(' ')} />
+function Skeleton({ className = "" }) {
+  return <div className={["skeleton", className].join(" ")} />;
 }
-
 ```
+
 **Raw class strings detected (best effort):**
 
 - `skeleton`
@@ -162,6 +171,7 @@ function Skeleton({ className='' }) {
 
 function VerifiedBadge() {
 ```
+
 **Raw class strings detected (best effort):**
 
 - `skeleton`
@@ -180,6 +190,7 @@ function VerifiedBadge() {
         'bg-emerald-600/10 text-emerald-700 shadow-[0_0_0_1px_rgba(5,150,105,0.20),0_16px_36px_rgba(5,150,105,0.10)]',
         'dark:bg-emerald-500/12 dark:text-emerald-200 dark:shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_0_24px_rgba(16,185,129,0.12)]',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `verified-shimmer inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold`
@@ -219,6 +230,7 @@ function VerifiedBadge() {
     </span>
   )
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-1.5 w-1.5 rounded-full bg-emerald-600 shadow-[0_0_14px_rgba(5,150,105,0.55)] dark:bg-emerald-400 dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]`
@@ -245,6 +257,7 @@ function VerifiedBadge() {
         <header className="text-center">
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">Help Center</h1>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-h-screen overflow-x-hidden bg-slate-50 text-slate-900 dark:bg-[#0B0F1A] dark:text-slate-100`
@@ -285,6 +298,7 @@ function VerifiedBadge() {
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">Help Center</h1>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Industrial reliability, tech-forward SaaS guidance.</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8`
@@ -319,11 +333,16 @@ function VerifiedBadge() {
 #### `src/pages/HelpCenter.jsx:379`
 
 ```jsx
-        <header className="text-center">
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">Help Center</h1>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Industrial reliability, tech-forward SaaS guidance.</p>
-        </header>
+<header className="text-center">
+  <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
+    Help Center
+  </h1>
+  <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+    Industrial reliability, tech-forward SaaS guidance.
+  </p>
+</header>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-center`
@@ -354,6 +373,7 @@ function VerifiedBadge() {
         </header>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100`
@@ -382,6 +402,7 @@ function VerifiedBadge() {
 
         <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-4">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm text-slate-500 dark:text-slate-400`
@@ -412,6 +433,7 @@ function VerifiedBadge() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
               {hubTiles.map((tile, idx) => {
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-10 grid grid-cols-1 gap-8 lg:grid-cols-4`
@@ -442,6 +464,7 @@ function VerifiedBadge() {
               {hubTiles.map((tile, idx) => {
                 const Icon = tile.icon
 ```
+
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-3 space-y-8`
@@ -468,6 +491,7 @@ function VerifiedBadge() {
                 const Icon = tile.icon
                 return (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6`
@@ -491,6 +515,7 @@ function VerifiedBadge() {
                       <div className="flex items-start justify-between gap-3">
                         <div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `group block h-full`
@@ -518,6 +543,7 @@ function VerifiedBadge() {
                         <div>
                           <p className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">{tile.title}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `group block h-full`
@@ -553,6 +579,7 @@ function VerifiedBadge() {
                           <p className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">{tile.title}</p>
                           <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">{tile.desc}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-3`
@@ -587,6 +614,7 @@ function VerifiedBadge() {
                         </div>
                         <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 transition group-hover:bg-blue-600/14 dark:bg-blue-500/12 dark:text-blue-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100`
@@ -632,6 +660,7 @@ function VerifiedBadge() {
                         <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 transition group-hover:bg-blue-600/14 dark:bg-blue-500/12 dark:text-blue-400">
                           <Icon className="h-5 w-5" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400`
@@ -675,6 +704,7 @@ function VerifiedBadge() {
                         </span>
                       </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 transition group-hover:bg-blue-600/14 dark:bg-blue-500/12 dark:text-blue-400`
@@ -711,6 +741,7 @@ function VerifiedBadge() {
                       </div>
                     </a>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-5 w-5`
@@ -729,6 +760,7 @@ function VerifiedBadge() {
                     <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
                       <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">{section.title}</h2>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `scroll-mt-6`
@@ -765,6 +797,7 @@ function VerifiedBadge() {
                       <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">{section.title}</h2>
                       {section.id === 'verification' ? <VerifiedBadge /> : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3`
@@ -796,11 +829,14 @@ function VerifiedBadge() {
 #### `src/pages/HelpCenter.jsx:411`
 
 ```jsx
-                    <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
-                      <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">{section.title}</h2>
-                      {section.id === 'verification' ? <VerifiedBadge /> : null}
-                    </div>
+<div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
+  <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
+    {section.title}
+  </h2>
+  {section.id === "verification" ? <VerifiedBadge /> : null}
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3`
@@ -837,6 +873,7 @@ function VerifiedBadge() {
                     </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100`
@@ -862,6 +899,7 @@ function VerifiedBadge() {
 
                     {section.content ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 text-sm text-slate-500 dark:text-slate-400`
@@ -884,6 +922,7 @@ function VerifiedBadge() {
                           <li key={item} className="flex gap-2">
                             <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 space-y-2 text-sm text-slate-500 dark:text-slate-400`
@@ -910,11 +949,12 @@ function VerifiedBadge() {
 #### `src/pages/HelpCenter.jsx:423`
 
 ```jsx
-                          <li key={item} className="flex gap-2">
-                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
-                            <span>{item}</span>
-                          </li>
+<li key={item} className="flex gap-2">
+  <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
+  <span>{item}</span>
+</li>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex gap-2`
@@ -940,6 +980,7 @@ function VerifiedBadge() {
                           </li>
                         ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-0.5 text-blue-600 dark:text-blue-400`
@@ -961,6 +1002,7 @@ function VerifiedBadge() {
                           <motion.div
                             key={sub.name}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 grid gap-4 lg:grid-cols-3`
@@ -983,6 +1025,7 @@ function VerifiedBadge() {
                               'hover:-translate-y-0.5 hover:bg-slate-900/3 active:scale-[0.98]',
                               'dark:bg-white/5 dark:hover:bg-white/6 dark:hover:translate-y-0',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-slate-900/2 p-5 transition duration-300 ease-out`
@@ -1017,6 +1060,7 @@ function VerifiedBadge() {
                               {sub.points.map((p) => (
                                 <li key={p} className="flex gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-slate-900 dark:text-slate-100`
@@ -1048,6 +1092,7 @@ function VerifiedBadge() {
                                 <li key={p} className="flex gap-2">
                                   <span className="mt-0.5 text-blue-600/90 dark:text-blue-400">-</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 space-y-2 text-sm text-slate-500 dark:text-slate-400`
@@ -1074,11 +1119,12 @@ function VerifiedBadge() {
 #### `src/pages/HelpCenter.jsx:449`
 
 ```jsx
-                                <li key={p} className="flex gap-2">
-                                  <span className="mt-0.5 text-blue-600/90 dark:text-blue-400">-</span>
-                                  <span>{p}</span>
-                                </li>
+<li key={p} className="flex gap-2">
+  <span className="mt-0.5 text-blue-600/90 dark:text-blue-400">-</span>
+  <span>{p}</span>
+</li>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex gap-2`
@@ -1104,6 +1150,7 @@ function VerifiedBadge() {
                                 </li>
                               ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-0.5 text-blue-600/90 dark:text-blue-400`
@@ -1125,6 +1172,7 @@ function VerifiedBadge() {
                           <div key={roleBlock.role}>
                             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{roleBlock.role}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 space-y-5`
@@ -1150,6 +1198,7 @@ function VerifiedBadge() {
                               {roleBlock.docs.map((d) => (
                                 <li key={d} className="flex gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900 dark:text-slate-100`
@@ -1186,6 +1235,7 @@ function VerifiedBadge() {
                                 <li key={d} className="flex gap-2">
                                   <span className="mt-0.5 text-emerald-600 dark:text-emerald-400">-</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 grid grid-cols-1 gap-x-6 gap-y-2 text-sm text-slate-500 md:grid-cols-2 dark:text-slate-400`
@@ -1217,11 +1267,12 @@ function VerifiedBadge() {
 #### `src/pages/HelpCenter.jsx:467`
 
 ```jsx
-                                <li key={d} className="flex gap-2">
-                                  <span className="mt-0.5 text-emerald-600 dark:text-emerald-400">-</span>
-                                  <span>{d}</span>
-                                </li>
+<li key={d} className="flex gap-2">
+  <span className="mt-0.5 text-emerald-600 dark:text-emerald-400">-</span>
+  <span>{d}</span>
+</li>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex gap-2`
@@ -1247,6 +1298,7 @@ function VerifiedBadge() {
                                 </li>
                               ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-0.5 text-emerald-600 dark:text-emerald-400`
@@ -1268,6 +1320,7 @@ function VerifiedBadge() {
                           <div key={s.title} className="rounded-xl bg-slate-900/2 p-5 dark:bg-white/5">
                             <div className="flex items-center justify-between gap-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 space-y-4`
@@ -1300,6 +1353,7 @@ function VerifiedBadge() {
                               <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{s.title}</p>
                               {s.title.toLowerCase().includes('verified') ? <VerifiedBadge /> : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-slate-900/2 p-5 dark:bg-white/5`
@@ -1333,11 +1387,14 @@ function VerifiedBadge() {
 #### `src/pages/HelpCenter.jsx:482`
 
 ```jsx
-                            <div className="flex items-center justify-between gap-3">
-                              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{s.title}</p>
-                              {s.title.toLowerCase().includes('verified') ? <VerifiedBadge /> : null}
-                            </div>
+<div className="flex items-center justify-between gap-3">
+  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+    {s.title}
+  </p>
+  {s.title.toLowerCase().includes("verified") ? <VerifiedBadge /> : null}
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-3`
@@ -1369,6 +1426,7 @@ function VerifiedBadge() {
                             </div>
                             {s.text ? <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{s.text}</p> : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900 dark:text-slate-100`
@@ -1398,6 +1456,7 @@ function VerifiedBadge() {
                               <ul className="mt-3 space-y-2 text-sm text-slate-500 dark:text-slate-400">
                                 {s.points.map((p) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm text-slate-500 dark:text-slate-400`
@@ -1423,6 +1482,7 @@ function VerifiedBadge() {
                                   <li key={p} className="flex gap-2">
                                     <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 space-y-2 text-sm text-slate-500 dark:text-slate-400`
@@ -1449,11 +1509,12 @@ function VerifiedBadge() {
 #### `src/pages/HelpCenter.jsx:490`
 
 ```jsx
-                                  <li key={p} className="flex gap-2">
-                                    <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
-                                    <span>{p}</span>
-                                  </li>
+<li key={p} className="flex gap-2">
+  <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
+  <span>{p}</span>
+</li>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex gap-2`
@@ -1479,6 +1540,7 @@ function VerifiedBadge() {
                                   </li>
                                 ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-0.5 text-blue-600 dark:text-blue-400`
@@ -1500,6 +1562,7 @@ function VerifiedBadge() {
                                   <AnimatePresence initial={false} mode="popLayout">
                                     {lockGranted ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white/70 px-4 py-3 backdrop-blur-md shadow-[0_10px_24px_rgba(15,23,42,0.06)] dark:bg-white/5 dark:shadow-none`
@@ -1538,6 +1601,7 @@ function VerifiedBadge() {
                                     {lockGranted ? (
                                       <motion.div
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-3`
@@ -1561,6 +1625,7 @@ function VerifiedBadge() {
                                         <Check className="h-5 w-5" />
                                       </motion.div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600/10 text-emerald-700 dark:bg-emerald-500/12 dark:text-emerald-200`
@@ -1594,6 +1659,7 @@ function VerifiedBadge() {
                                     ) : (
                                       <motion.div
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-5 w-5`
@@ -1612,6 +1678,7 @@ function VerifiedBadge() {
                                         <Lock className="h-5 w-5" />
                                       </motion.div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900/6 text-slate-700 dark:bg-white/6 dark:text-slate-200`
@@ -1645,6 +1712,7 @@ function VerifiedBadge() {
                                     )}
                                   </AnimatePresence>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-5 w-5`
@@ -1663,6 +1731,7 @@ function VerifiedBadge() {
                                       {lockGranted ? 'Permission granted -- teammates can message.' : 'Locked -- teammates need permission.'}
                                     </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900 dark:text-slate-100`
@@ -1700,6 +1769,7 @@ function VerifiedBadge() {
                                     </p>
                                   </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500 dark:text-slate-400`
@@ -1732,6 +1802,7 @@ function VerifiedBadge() {
                                   {lockGranted ? 'Reset' : 'Grant permission'}
                                 </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-500 dark:text-slate-900 dark:hover:bg-blue-400`
@@ -1772,6 +1843,7 @@ function VerifiedBadge() {
                           <li key={p} className="flex gap-2">
                             <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 space-y-2 text-sm text-slate-500 dark:text-slate-400`
@@ -1798,11 +1870,12 @@ function VerifiedBadge() {
 #### `src/pages/HelpCenter.jsx:550`
 
 ```jsx
-                          <li key={p} className="flex gap-2">
-                            <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
-                            <span>{p}</span>
-                          </li>
+<li key={p} className="flex gap-2">
+  <span className="mt-0.5 text-blue-600 dark:text-blue-400">-</span>
+  <span>{p}</span>
+</li>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex gap-2`
@@ -1828,6 +1901,7 @@ function VerifiedBadge() {
                           </li>
                         ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-0.5 text-blue-600 dark:text-blue-400`
@@ -1849,6 +1923,7 @@ function VerifiedBadge() {
                       </p>
                     ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 borderless-divider-t pt-3 text-xs italic text-slate-500 dark:text-slate-400`
@@ -1875,6 +1950,7 @@ function VerifiedBadge() {
                   <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
                     <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `scroll-mt-6`
@@ -1911,6 +1987,7 @@ function VerifiedBadge() {
                     <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
                       10. Frequently Asked Questions (FAQ)
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3`
@@ -1944,6 +2021,7 @@ function VerifiedBadge() {
                       10. Frequently Asked Questions (FAQ)
                     </h2>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3`
@@ -1977,6 +2055,7 @@ function VerifiedBadge() {
                     </h2>
                     <span className="rounded-full bg-slate-900/4 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:bg-white/6 dark:text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100`
@@ -2014,6 +2093,7 @@ function VerifiedBadge() {
                     </span>
                   </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-slate-900/4 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:bg-white/6 dark:text-slate-400`
@@ -2045,6 +2125,7 @@ function VerifiedBadge() {
                       placeholder="Search FAQs..."
                       value={q}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4`
@@ -2066,6 +2147,7 @@ function VerifiedBadge() {
                   </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full rounded-full bg-slate-900/4 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400`
@@ -2102,6 +2184,7 @@ function VerifiedBadge() {
                       <>
                         <Skeleton className="h-16 rounded-xl" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 space-y-3`
@@ -2125,6 +2208,7 @@ function VerifiedBadge() {
                         <Skeleton className="h-16 rounded-xl" />
                       </>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-16 rounded-xl`
@@ -2144,6 +2228,7 @@ function VerifiedBadge() {
                       </>
                     ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-16 rounded-xl`
@@ -2163,6 +2248,7 @@ function VerifiedBadge() {
                     ) : (
                       <AnimatePresence mode="wait" initial={false}>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-16 rounded-xl`
@@ -2184,6 +2270,7 @@ function VerifiedBadge() {
                           {filteredFaqs.map((f) => (
                             <details
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-3`
@@ -2201,6 +2288,7 @@ function VerifiedBadge() {
                               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-900 dark:text-slate-100">
                                 <span className="min-w-0 truncate">Q: {f.q}</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `group rounded-xl bg-slate-900/2 p-4 transition-colors hover:bg-slate-900/3 dark:bg-white/5 dark:hover:bg-white/6`
@@ -2241,11 +2329,12 @@ function VerifiedBadge() {
 #### `src/pages/HelpCenter.jsx:611`
 
 ```jsx
-                              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-900 dark:text-slate-100">
-                                <span className="min-w-0 truncate">Q: {f.q}</span>
-                                <ChevronDown className="h-4 w-4 shrink-0 text-slate-500 transition-transform group-open:rotate-180 dark:text-slate-400" />
-                              </summary>
+<summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-900 dark:text-slate-100">
+  <span className="min-w-0 truncate">Q: {f.q}</span>
+  <ChevronDown className="h-4 w-4 shrink-0 text-slate-500 transition-transform group-open:rotate-180 dark:text-slate-400" />
+</summary>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-900 dark:text-slate-100`
@@ -2288,6 +2377,7 @@ function VerifiedBadge() {
                               </summary>
                               <p className="mt-3 pl-4 text-sm text-slate-500 dark:text-slate-400 borderless-shadow">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0 truncate`
@@ -2325,6 +2415,7 @@ function VerifiedBadge() {
                               <p className="mt-3 pl-4 text-sm text-slate-500 dark:text-slate-400 borderless-shadow">
                                 A: {f.a}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-4 w-4 shrink-0 text-slate-500 transition-transform group-open:rotate-180 dark:text-slate-400`
@@ -2359,6 +2450,7 @@ function VerifiedBadge() {
                               </p>
                             </details>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 pl-4 text-sm text-slate-500 dark:text-slate-400 borderless-shadow`
@@ -2384,6 +2476,7 @@ function VerifiedBadge() {
                     <div className="flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3">
                       <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `scroll-mt-6`
@@ -2420,6 +2513,7 @@ function VerifiedBadge() {
                       <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
                         Admin: Manage Knowledge Base FAQ
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3`
@@ -2453,6 +2547,7 @@ function VerifiedBadge() {
                         Admin: Manage Knowledge Base FAQ
                       </h2>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap items-center justify-between gap-3 borderless-divider-b pb-3`
@@ -2486,6 +2581,7 @@ function VerifiedBadge() {
                       </h2>
                       <span className="rounded-full bg-blue-600/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-blue-700 dark:bg-blue-500/12 dark:text-blue-200">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100`
@@ -2523,6 +2619,7 @@ function VerifiedBadge() {
                       </span>
                     </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-blue-600/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-blue-700 dark:bg-blue-500/12 dark:text-blue-200`
@@ -2554,6 +2651,7 @@ function VerifiedBadge() {
                         <input
                           placeholder="Question"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-6 grid grid-cols-1 gap-6 md:grid-cols-2`
@@ -2582,6 +2680,7 @@ function VerifiedBadge() {
                           placeholder="Question"
                           value={form.question}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-3`
@@ -2602,6 +2701,7 @@ function VerifiedBadge() {
                         />
                         <textarea
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full rounded-xl bg-slate-900/4 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400`
@@ -2638,6 +2738,7 @@ function VerifiedBadge() {
                         />
                         <input
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-h-28 w-full rounded-xl bg-slate-900/4 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400`
@@ -2675,6 +2776,7 @@ function VerifiedBadge() {
                         <div className="flex flex-wrap gap-2">
                           <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full rounded-xl bg-slate-900/4 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400`
@@ -2715,6 +2817,7 @@ function VerifiedBadge() {
                             type="submit"
                             className="rounded-full bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-500 dark:text-slate-900 dark:hover:bg-blue-400"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap gap-2`
@@ -2757,6 +2860,7 @@ function VerifiedBadge() {
                             {editingId ? 'Update' : 'Add'} FAQ
                           </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-500 dark:text-slate-900 dark:hover:bg-blue-400`
@@ -2796,6 +2900,7 @@ function VerifiedBadge() {
                               Cancel
                             </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-slate-900/4 px-5 py-2.5 text-xs font-semibold text-slate-900 transition hover:bg-slate-900/6 active:scale-[0.98] dark:bg-white/6 dark:text-slate-100 dark:hover:bg-white/8`
@@ -2830,6 +2935,7 @@ function VerifiedBadge() {
 
                       <div className="max-h-72 space-y-2 overflow-y-auto pr-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500 dark:text-slate-400`
@@ -2857,6 +2963,7 @@ function VerifiedBadge() {
                           <>
                             <Skeleton className="h-12 rounded-xl" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `max-h-72 space-y-2 overflow-y-auto pr-2`
@@ -2882,6 +2989,7 @@ function VerifiedBadge() {
                             <Skeleton className="h-12 rounded-xl" />
                             <Skeleton className="h-12 rounded-xl" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-12 rounded-xl`
@@ -2901,6 +3009,7 @@ function VerifiedBadge() {
                             <Skeleton className="h-12 rounded-xl" />
                           </>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-12 rounded-xl`
@@ -2920,6 +3029,7 @@ function VerifiedBadge() {
                           </>
                         ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-12 rounded-xl`
@@ -2939,6 +3049,7 @@ function VerifiedBadge() {
                         ) : (
                           entries.map((e) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-12 rounded-xl`
@@ -2958,6 +3069,7 @@ function VerifiedBadge() {
                               <div className="flex items-start justify-between gap-3">
                                 <div className="min-w-0 flex-1">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-[#ffffff] p-3 text-xs shadow-[0_10px_24px_rgba(15,23,42,0.06)] dark:bg-white/5 dark:shadow-none`
@@ -2994,6 +3106,7 @@ function VerifiedBadge() {
                                   <p className="truncate font-semibold text-slate-900 dark:text-slate-100">{e.question}</p>
                                   <p className="mt-1 truncate text-slate-500 dark:text-slate-400">{e.answer}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-3`
@@ -3024,11 +3137,14 @@ function VerifiedBadge() {
 #### `src/pages/HelpCenter.jsx:698`
 
 ```jsx
-                                <div className="min-w-0 flex-1">
-                                  <p className="truncate font-semibold text-slate-900 dark:text-slate-100">{e.question}</p>
-                                  <p className="mt-1 truncate text-slate-500 dark:text-slate-400">{e.answer}</p>
-                                </div>
+<div className="min-w-0 flex-1">
+  <p className="truncate font-semibold text-slate-900 dark:text-slate-100">
+    {e.question}
+  </p>
+  <p className="mt-1 truncate text-slate-500 dark:text-slate-400">{e.answer}</p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0 flex-1`
@@ -3059,6 +3175,7 @@ function VerifiedBadge() {
                                 </div>
                                 <div className="flex shrink-0 gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `truncate font-semibold text-slate-900 dark:text-slate-100`
@@ -3091,6 +3208,7 @@ function VerifiedBadge() {
                                 <div className="flex shrink-0 gap-2">
                                   <button onClick={() => selectForEdit(e)} className="text-blue-600 hover:underline dark:text-blue-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 truncate text-slate-500 dark:text-slate-400`
@@ -3124,6 +3242,7 @@ function VerifiedBadge() {
                                     Edit
                                   </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex shrink-0 gap-2`
@@ -3152,6 +3271,7 @@ function VerifiedBadge() {
                                   </button>
                                   <button onClick={() => removeFaq(e.id)} className="text-rose-600 hover:underline dark:text-rose-300">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-blue-600 hover:underline dark:text-blue-400`
@@ -3176,6 +3296,7 @@ function VerifiedBadge() {
                                   </button>
                                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-rose-600 hover:underline dark:text-rose-300`
@@ -3197,6 +3318,7 @@ function VerifiedBadge() {
                   <div className="flex items-center justify-between gap-3">
                     <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Contact Support</h2>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `scroll-mt-6`
@@ -3229,6 +3351,7 @@ function VerifiedBadge() {
                     <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Contact Support</h2>
                     <span className="rounded-full bg-slate-900/4 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:bg-white/6 dark:text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-3`
@@ -3272,6 +3395,7 @@ function VerifiedBadge() {
                     <span className="rounded-full bg-slate-900/4 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:bg-white/6 dark:text-slate-400">
                       Response varies
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-3`
@@ -3315,6 +3439,7 @@ function VerifiedBadge() {
                       Response varies
                     </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100`
@@ -3352,6 +3477,7 @@ function VerifiedBadge() {
                     </span>
                   </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-slate-900/4 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:bg-white/6 dark:text-slate-400`
@@ -3383,6 +3509,7 @@ function VerifiedBadge() {
                   </p>
                   <div className="mt-6 flex flex-wrap gap-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-sm leading-relaxed text-slate-500 dark:text-slate-400`
@@ -3412,6 +3539,7 @@ function VerifiedBadge() {
                       Open support ticket
                     </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-6 flex flex-wrap gap-3`
@@ -3452,6 +3580,7 @@ function VerifiedBadge() {
                     </button>
                     <button className="rounded-full bg-[#ffffff] px-6 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] dark:bg-white/6 dark:text-slate-100 dark:shadow-none dark:hover:translate-y-0 dark:hover:bg-white/8">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-500 dark:text-slate-900 dark:hover:bg-blue-400`
@@ -3497,6 +3626,7 @@ function VerifiedBadge() {
                     </button>
                   </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[#ffffff] px-6 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] dark:bg-white/6 dark:text-slate-100 dark:shadow-none dark:hover:translate-y-0 dark:hover:bg-white/8`
@@ -3535,6 +3665,7 @@ function VerifiedBadge() {
                   </p>
                 </SpotlightCard>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 text-xs text-slate-500 dark:text-slate-400`
@@ -3559,6 +3690,7 @@ function VerifiedBadge() {
                 </SpotlightCard>
               </section>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold`
@@ -3576,6 +3708,7 @@ function VerifiedBadge() {
               <SpotlightCard className={cardClassName({ glass: true })}>
                 <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">Search</h3>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-6`
@@ -3605,6 +3738,7 @@ function VerifiedBadge() {
                 <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">Search</h3>
                 <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Search FAQ answers instantly.</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `sticky top-8 space-y-6`
@@ -3638,6 +3772,7 @@ function VerifiedBadge() {
                 <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Search FAQ answers instantly.</p>
                 <div className="mt-4">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100`
@@ -3668,6 +3803,7 @@ function VerifiedBadge() {
                 <div className="mt-4">
                   <input
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100`
@@ -3698,6 +3834,7 @@ function VerifiedBadge() {
                   <input
                     value={q}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-xs text-slate-500 dark:text-slate-400`
@@ -3722,6 +3859,7 @@ function VerifiedBadge() {
                     value={q}
                     onChange={(e) => setQ(e.target.value)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4`
@@ -3739,6 +3877,7 @@ function VerifiedBadge() {
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full rounded-full bg-slate-900/4 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400`
@@ -3780,6 +3919,7 @@ function VerifiedBadge() {
                     <button
                       key={chip}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 flex flex-wrap gap-2`
@@ -3812,6 +3952,7 @@ function VerifiedBadge() {
                       {chip}
                     </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-slate-900/4 px-3 py-1 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-900/6 active:scale-[0.98] dark:bg-white/6 dark:text-slate-300 dark:hover:bg-white/8`
@@ -3846,6 +3987,7 @@ function VerifiedBadge() {
                 <div className="mt-4 flex flex-wrap gap-2">
                   {[...HELP_SECTIONS.map((s) => ({ id: s.id, label: s.title })), { id: 'faq', label: '10. FAQ' }].map((s) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100`
@@ -3881,6 +4023,7 @@ function VerifiedBadge() {
                   {[...HELP_SECTIONS.map((s) => ({ id: s.id, label: s.title })), { id: 'faq', label: '10. FAQ' }].map((s) => (
                     <a
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100`
@@ -3916,6 +4059,7 @@ function VerifiedBadge() {
                     <a
                       key={s.id}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 flex flex-wrap gap-2`
@@ -3943,6 +4087,7 @@ function VerifiedBadge() {
                       {s.label}
                     </a>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-blue-600/10 px-3 py-1 text-[11px] font-semibold text-blue-700 transition hover:bg-blue-600/14 active:scale-[0.98] dark:bg-blue-500/12 dark:text-blue-200 dark:hover:bg-blue-500/18`
@@ -3977,6 +4122,7 @@ function VerifiedBadge() {
                   <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">Floating Assistant</h3>
                   <span className="rounded-full bg-slate-900/4 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:bg-white/6 dark:text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-3`
@@ -4020,6 +4166,7 @@ function VerifiedBadge() {
                   <span className="rounded-full bg-slate-900/4 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:bg-white/6 dark:text-slate-400">
                     Orb mode
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-3`
@@ -4063,6 +4210,7 @@ function VerifiedBadge() {
                     Orb mode
                   </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100`
@@ -4100,6 +4248,7 @@ function VerifiedBadge() {
                   </span>
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-slate-900/4 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:bg-white/6 dark:text-slate-400`
@@ -4131,6 +4280,7 @@ function VerifiedBadge() {
                 </p>
                 <div className="mt-4 rounded-xl bg-slate-900/2 p-4 dark:bg-white/5">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400`
@@ -4162,6 +4312,7 @@ function VerifiedBadge() {
                   <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
                     Setup, navigation, support articles -- it does not negotiate.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 rounded-xl bg-slate-900/2 p-4 dark:bg-white/5`
@@ -4196,6 +4347,7 @@ function VerifiedBadge() {
                     Setup, navigation, support articles -- it does not negotiate.
                   </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-slate-900 dark:text-slate-100`
@@ -4222,6 +4374,7 @@ function VerifiedBadge() {
                   </p>
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-xs text-slate-500 dark:text-slate-400`
@@ -4248,6 +4401,7 @@ function VerifiedBadge() {
         </header>
 
 ```
+
 - `src/pages/HelpCenter.jsx:381` — Industrial reliability, tech-forward SaaS guidance.
 
 ```jsx
@@ -4256,6 +4410,7 @@ function VerifiedBadge() {
 
         <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-4">
 ```
+
 - `src/pages/HelpCenter.jsx:424` — -
 
 ```jsx
@@ -4264,6 +4419,7 @@ function VerifiedBadge() {
                           </li>
                         ))}
 ```
+
 - `src/pages/HelpCenter.jsx:450` — -
 
 ```jsx
@@ -4272,6 +4428,7 @@ function VerifiedBadge() {
                                 </li>
                               ))}
 ```
+
 - `src/pages/HelpCenter.jsx:468` — -
 
 ```jsx
@@ -4280,6 +4437,7 @@ function VerifiedBadge() {
                                 </li>
                               ))}
 ```
+
 - `src/pages/HelpCenter.jsx:491` — -
 
 ```jsx
@@ -4288,6 +4446,7 @@ function VerifiedBadge() {
                                   </li>
                                 ))}
 ```
+
 - `src/pages/HelpCenter.jsx:527` — Lock demo
 
 ```jsx
@@ -4296,6 +4455,7 @@ function VerifiedBadge() {
                                       {lockGranted ? 'Permission granted -- teammates can message.' : 'Locked -- teammates need permission.'}
                                     </p>
 ```
+
 - `src/pages/HelpCenter.jsx:551` — -
 
 ```jsx
@@ -4304,6 +4464,7 @@ function VerifiedBadge() {
                           </li>
                         ))}
 ```
+
 - `src/pages/HelpCenter.jsx:612` — Q: {f.q}
 
 ```jsx
@@ -4312,6 +4473,7 @@ function VerifiedBadge() {
                               </summary>
                               <p className="mt-3 pl-4 text-sm text-slate-500 dark:text-slate-400 borderless-shadow">
 ```
+
 - `src/pages/HelpCenter.jsx:725` — Contact Support
 
 ```jsx
@@ -4320,6 +4482,7 @@ function VerifiedBadge() {
                       Response varies
                     </span>
 ```
+
 - `src/pages/HelpCenter.jsx:742` — /help
 
 ```jsx
@@ -4328,6 +4491,7 @@ function VerifiedBadge() {
                 </SpotlightCard>
               </section>
 ```
+
 - `src/pages/HelpCenter.jsx:752` — Search
 
 ```jsx
@@ -4336,6 +4500,7 @@ function VerifiedBadge() {
                 <div className="mt-4">
                   <input
 ```
+
 - `src/pages/HelpCenter.jsx:753` — Search FAQ answers instantly.
 
 ```jsx
@@ -4344,6 +4509,7 @@ function VerifiedBadge() {
                   <input
                     value={q}
 ```
+
 - `src/pages/HelpCenter.jsx:777` — Quick navigation
 
 ```jsx
@@ -4352,6 +4518,7 @@ function VerifiedBadge() {
                   {[...HELP_SECTIONS.map((s) => ({ id: s.id, label: s.title })), { id: 'faq', label: '10. FAQ' }].map((s) => (
                     <a
 ```
+
 - `src/pages/HelpCenter.jsx:793` — Floating Assistant
 
 ```jsx
@@ -4360,6 +4527,7 @@ function VerifiedBadge() {
                     Orb mode
                   </span>
 ```
+
 - `src/pages/HelpCenter.jsx:802` — What it can do
 
 ```jsx
@@ -4368,6 +4536,7 @@ function VerifiedBadge() {
                     Setup, navigation, support articles -- it does not negotiate.
                   </p>
 ```
+
 - `src/pages/HelpCenter.jsx:582` — Search FAQs...
 
 ```jsx
@@ -4376,6 +4545,7 @@ function VerifiedBadge() {
                       onChange={(e) => setQ(e.target.value)}
                       className="w-full rounded-full bg-slate-900/4 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
 ```
+
 - `src/pages/HelpCenter.jsx:644` — Question
 
 ```jsx
@@ -4384,6 +4554,7 @@ function VerifiedBadge() {
                           onChange={(e) => setForm({ ...form, question: e.target.value })}
                           className="w-full rounded-xl bg-slate-900/4 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
 ```
+
 - `src/pages/HelpCenter.jsx:651` — Answer
 
 ```jsx
@@ -4392,6 +4563,7 @@ function VerifiedBadge() {
                           onChange={(e) => setForm({ ...form, answer: e.target.value })}
                           className="min-h-28 w-full rounded-xl bg-slate-900/4 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
 ```
+
 - `src/pages/HelpCenter.jsx:658` — Keywords (comma separated)
 
 ```jsx
@@ -4400,6 +4572,7 @@ function VerifiedBadge() {
                           onChange={(e) => setForm({ ...form, keywords: e.target.value })}
                           className="w-full rounded-xl bg-slate-900/4 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:bg-white/6 dark:text-slate-100 dark:placeholder:text-slate-400"
 ```
+
 - `src/pages/HelpCenter.jsx:758` — Search users, terms, workflows...
 
 ```jsx
@@ -4408,6 +4581,7 @@ function VerifiedBadge() {
                   />
                 </div>
 ```
+
 - `src/pages/HelpCenter.jsx:533` — (element) <button>
 
 ```jsx
@@ -4416,6 +4590,7 @@ function VerifiedBadge() {
                                   onClick={() => setLockGranted((v) => !v)}
                                   className="rounded-full bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-500 dark:text-slate-900 dark:hover:bg-blue-400"
 ```
+
 - `src/pages/HelpCenter.jsx:664` — (element) <button>
 
 ```jsx
@@ -4424,6 +4599,7 @@ function VerifiedBadge() {
                             className="rounded-full bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-[0.98] dark:bg-blue-500 dark:text-slate-900 dark:hover:bg-blue-400"
                           >
 ```
+
 - `src/pages/HelpCenter.jsx:671` — (element) <button>
 
 ```jsx
@@ -4432,6 +4608,7 @@ function VerifiedBadge() {
                               onClick={resetForm}
                               className="rounded-full bg-slate-900/4 px-5 py-2.5 text-xs font-semibold text-slate-900 transition hover:bg-slate-900/6 active:scale-[0.98] dark:bg-white/6 dark:text-slate-100 dark:hover:bg-white/8"
 ```
+
 - `src/pages/HelpCenter.jsx:703` — (element) <button>
 
 ```jsx
@@ -4440,6 +4617,7 @@ function VerifiedBadge() {
                                   </button>
                                   <button onClick={() => removeFaq(e.id)} className="text-rose-600 hover:underline dark:text-rose-300">
 ```
+
 - `src/pages/HelpCenter.jsx:706` — (element) <button>
 
 ```jsx
@@ -4448,6 +4626,7 @@ function VerifiedBadge() {
                                   </button>
                                 </div>
 ```
+
 - `src/pages/HelpCenter.jsx:734` — (element) <button>
 
 ```jsx
@@ -4456,6 +4635,7 @@ function VerifiedBadge() {
                     </button>
                     <button className="rounded-full bg-[#ffffff] px-6 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] dark:bg-white/6 dark:text-slate-100 dark:shadow-none dark:hover:translate-y-0 dark:hover:bg-white/8">
 ```
+
 - `src/pages/HelpCenter.jsx:737` — (element) <button>
 
 ```jsx
@@ -4464,6 +4644,7 @@ function VerifiedBadge() {
                     </button>
                   </div>
 ```
+
 - `src/pages/HelpCenter.jsx:764` — (element) <button>
 
 ```jsx
@@ -4472,14 +4653,15 @@ function VerifiedBadge() {
                       type="button"
                       onClick={() => setQ(chip)}
 ```
+
 ## 5) Backend Mapping (Frontend → Express → Controller → Service/DB)
 
-| Frontend call (path:line) | Express mount | Route definition | Controller file | Handler |
-|---|---|---|---|---|
-| GET /assistant/knowledge (src/pages/HelpCenter.jsx:276) | /api/assistant -> server/routes/assistantRoutes.js:121 | GET /knowledge (server/routes/assistantRoutes.js:26) | - | getAssistantKnowledge |
-| PUT /assistant/knowledge/${editingId} (src/pages/HelpCenter.jsx:321) | /api/assistant -> server/routes/assistantRoutes.js:121 | - | - | - |
-| POST /assistant/knowledge (src/pages/HelpCenter.jsx:323) | /api/assistant -> server/routes/assistantRoutes.js:121 | POST /knowledge (server/routes/assistantRoutes.js:27) | - | createAssistantKnowledge |
-| DELETE /assistant/knowledge/${entryId} (src/pages/HelpCenter.jsx:337) | /api/assistant -> server/routes/assistantRoutes.js:121 | - | - | - |
+| Frontend call (path:line)                                             | Express mount                                          | Route definition                                      | Controller file | Handler                  |
+| --------------------------------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------- | --------------- | ------------------------ |
+| GET /assistant/knowledge (src/pages/HelpCenter.jsx:276)               | /api/assistant -> server/routes/assistantRoutes.js:121 | GET /knowledge (server/routes/assistantRoutes.js:26)  | -               | getAssistantKnowledge    |
+| PUT /assistant/knowledge/${editingId} (src/pages/HelpCenter.jsx:321)  | /api/assistant -> server/routes/assistantRoutes.js:121 | -                                                     | -               | -                        |
+| POST /assistant/knowledge (src/pages/HelpCenter.jsx:323)              | /api/assistant -> server/routes/assistantRoutes.js:121 | POST /knowledge (server/routes/assistantRoutes.js:27) | -               | createAssistantKnowledge |
+| DELETE /assistant/knowledge/${entryId} (src/pages/HelpCenter.jsx:337) | /api/assistant -> server/routes/assistantRoutes.js:121 | -                                                     | -               | -                        |
 
 ## 6) How to Edit Safely
 
@@ -4489,4 +4671,3 @@ function VerifiedBadge() {
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
-

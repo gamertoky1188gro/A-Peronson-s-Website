@@ -1,34 +1,41 @@
-import { getInfraState, getSystemOverview, listProcesses, listServices, listStorage, performInfraAction } from '../services/infraService.js'
+import {
+  getInfraState,
+  getSystemOverview,
+  listProcesses,
+  listServices,
+  listStorage,
+  performInfraAction,
+} from "../services/infraService.js";
 
 export async function infraOverview(req, res) {
-  const data = await getSystemOverview()
-  return res.json(data)
+  const data = await getSystemOverview();
+  return res.json(data);
 }
 
 export async function infraProcesses(req, res) {
-  const data = await listProcesses()
-  return res.json({ items: data })
+  const data = await listProcesses();
+  return res.json({ items: data });
 }
 
 export async function infraServices(req, res) {
-  const data = await listServices()
-  return res.json({ items: data })
+  const data = await listServices();
+  return res.json({ items: data });
 }
 
 export async function infraStorage(req, res) {
-  const data = await listStorage()
-  return res.json({ items: data })
+  const data = await listStorage();
+  return res.json({ items: data });
 }
 
 export async function infraState(req, res) {
-  const data = await getInfraState()
-  return res.json(data)
+  const data = await getInfraState();
+  return res.json(data);
 }
 
 export async function infraAction(req, res) {
-  const action = String(req.body?.action || '').trim()
-  if (!action) return res.status(400).json({ error: 'action is required' })
-  const payload = req.body?.payload || {}
-  const result = await performInfraAction(action, payload)
-  return res.json(result)
+  const action = String(req.body?.action || "").trim();
+  if (!action) return res.status(400).json({ error: "action is required" });
+  const payload = req.body?.payload || {};
+  const result = await performInfraAction(action, payload);
+  return res.json(result);
 }

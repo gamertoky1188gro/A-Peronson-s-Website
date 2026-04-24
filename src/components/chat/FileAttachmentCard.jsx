@@ -1,120 +1,170 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from "react";
 
 const TEXT_EXTS = new Set([
-  'txt', 'log', 'csv', 'tsv', 'json', 'jsonc', 'xml',
-  'html', 'htm', 'css',
-  'js', 'jsx', 'ts', 'tsx',
-  'py', 'java', 'c', 'cpp', 'h', 'hpp', 'sql',
-  'yml', 'yaml',
-  'md', 'markdown',
-])
+  "txt",
+  "log",
+  "csv",
+  "tsv",
+  "json",
+  "jsonc",
+  "xml",
+  "html",
+  "htm",
+  "css",
+  "js",
+  "jsx",
+  "ts",
+  "tsx",
+  "py",
+  "java",
+  "c",
+  "cpp",
+  "h",
+  "hpp",
+  "sql",
+  "yml",
+  "yaml",
+  "md",
+  "markdown",
+]);
 
-function safeExt(value = '') {
-  const raw = String(value || '').trim()
-  if (!raw) return ''
-  const cleaned = raw.split('?')[0].split('#')[0]
-  const tail = cleaned.split('/').pop() || cleaned
-  const match = tail.match(/\.([a-z0-9]+)$/i)
-  return match ? match[1].toLowerCase() : ''
+function safeExt(value = "") {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  const cleaned = raw.split("?")[0].split("#")[0];
+  const tail = cleaned.split("/").pop() || cleaned;
+  const match = tail.match(/\.([a-z0-9]+)$/i);
+  return match ? match[1].toLowerCase() : "";
 }
 
-function safeDownloadName(name = '') {
-  const cleaned = String(name || '').trim()
-  if (!cleaned) return undefined
-  return cleaned.replace(/[\\/:??"<>|]+/g, '_')
+function safeDownloadName(name = "") {
+  const cleaned = String(name || "").trim();
+  if (!cleaned) return undefined;
+  return cleaned.replace(/[\\/:??"<>|]+/g, "_");
 }
 
 function formatBytes(bytes) {
-  const value = Number(bytes)
-  if (!Number.isFinite(value) || value <= 0) return ''
+  const value = Number(bytes);
+  if (!Number.isFinite(value) || value <= 0) return "";
 
-  const units = ['B', 'kB', 'MB', 'GB', 'TB']
-  const base = 1024
+  const units = ["B", "kB", "MB", "GB", "TB"];
+  const base = 1024;
 
-  let unitIndex = 0
-  let scaled = value
+  let unitIndex = 0;
+  let scaled = value;
   while (scaled >= base && unitIndex < units.length - 1) {
-    scaled /= base
-    unitIndex += 1
+    scaled /= base;
+    unitIndex += 1;
   }
 
-  if (unitIndex === 0) return `${Math.round(scaled)} ${units[unitIndex]}`
+  if (unitIndex === 0) return `${Math.round(scaled)} ${units[unitIndex]}`;
 
-  const rounded = scaled >= 100 ? Math.round(scaled) : scaled >= 10 ? Math.round(scaled * 10) / 10 : Math.round(scaled * 100) / 100
-  return `${rounded.toLocaleString()} ${units[unitIndex]}`
+  const rounded =
+    scaled >= 100
+      ? Math.round(scaled)
+      : scaled >= 10
+        ? Math.round(scaled * 10) / 10
+        : Math.round(scaled * 100) / 100;
+  return `${rounded.toLocaleString()} ${units[unitIndex]}`;
 }
 
 function classifyAttachment(attachment) {
-  const mime = String(attachment?.mime_type || attachment?.mimeType || '').trim().toLowerCase()
-  const ext = safeExt(attachment?.name) || safeExt(attachment?.url)
+  const mime = String(attachment?.mime_type || attachment?.mimeType || "")
+    .trim()
+    .toLowerCase();
+  const ext = safeExt(attachment?.name) || safeExt(attachment?.url);
 
-  if (mime === 'application/pdf' || ext === 'pdf') return 'pdf'
-  if (mime.startsWith('text/')) return 'text'
-  if (TEXT_EXTS.has(ext)) return 'text'
-  return 'file'
+  if (mime === "application/pdf" || ext === "pdf") return "pdf";
+  if (mime.startsWith("text/")) return "text";
+  if (TEXT_EXTS.has(ext)) return "text";
+  return "file";
 }
 
 function FileTypeBadge({ kind, isLight, ext }) {
-  const label = kind === 'pdf' ? 'PDF' : kind === 'text' ? (ext ? ext.toUpperCase() : 'TXT') : (ext ? ext.toUpperCase() : 'FILE')
+  const label =
+    kind === "pdf"
+      ? "PDF"
+      : kind === "text"
+        ? ext
+          ? ext.toUpperCase()
+          : "TXT"
+        : ext
+          ? ext.toUpperCase()
+          : "FILE";
 
   const palette = (() => {
-    if (kind === 'pdf') {
+    if (kind === "pdf") {
       return isLight
-        ? { bg: 'bg-red-600', text: 'text-white' }
-        : { bg: 'bg-red-500/20', text: 'text-red-200' }
+        ? { bg: "bg-red-600", text: "text-white" }
+        : { bg: "bg-red-500/20", text: "text-red-200" };
     }
-    if (kind === 'text') {
+    if (kind === "text") {
       return isLight
-        ? { bg: 'bg-emerald-600', text: 'text-white' }
-        : { bg: 'bg-emerald-500/20', text: 'text-emerald-200' }
+        ? { bg: "bg-emerald-600", text: "text-white" }
+        : { bg: "bg-emerald-500/20", text: "text-emerald-200" };
     }
     return isLight
-      ? { bg: 'bg-slate-600', text: 'text-white' }
-      : { bg: 'bg-white/10', text: 'text-slate-200' }
-  })()
+      ? { bg: "bg-slate-600", text: "text-white" }
+      : { bg: "bg-white/10", text: "text-slate-200" };
+  })();
 
   return (
-    <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl${palette.bg}${palette.text}text-[11px] font-extrabold tracking-wide`}>
+    <div
+      className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl${palette.bg}${palette.text}text-[11px] font-extrabold tracking-wide`}
+    >
       {label.slice(0, 4)}
     </div>
-  )
+  );
 }
 
 export default function FileAttachmentCard({
   attachment = null,
-  url = '',
+  url = "",
   isOwn = false,
   isLight = false,
   onOpen = null,
 }) {
-  const kind = useMemo(() => classifyAttachment(attachment), [attachment])
-  const ext = useMemo(() => safeExt(attachment?.name) || safeExt(attachment?.url), [attachment])
-  const name = String(attachment?.name || 'Attachment')
-  const bytes = Number(attachment?.size || 0)
+  const kind = useMemo(() => classifyAttachment(attachment), [attachment]);
+  const ext = useMemo(
+    () => safeExt(attachment?.name) || safeExt(attachment?.url),
+    [attachment],
+  );
+  const name = String(attachment?.name || "Attachment");
+  const bytes = Number(attachment?.size || 0);
 
-  const [pdfPreview, setPdfPreview] = useState({ loading: false, error: '', thumbUrl: '', pages: 0 })
-  const [textPreview, setTextPreview] = useState({ loading: false, error: '', snippet: '' })
+  const [pdfPreview, setPdfPreview] = useState({
+    loading: false,
+    error: "",
+    thumbUrl: "",
+    pages: 0,
+  });
+  const [textPreview, setTextPreview] = useState({
+    loading: false,
+    error: "",
+    snippet: "",
+  });
 
   useEffect(() => {
-    if (!url || kind !== 'pdf') {
-      setPdfPreview({ loading: false, error: '', thumbUrl: '', pages: 0 })
-      return undefined
+    if (!url || kind !== "pdf") {
+      setPdfPreview({ loading: false, error: "", thumbUrl: "", pages: 0 });
+      return undefined;
     }
 
-    let alive = true
-    let createdUrl = ''
+    let alive = true;
+    let createdUrl = "";
 
     async function renderPdfThumbnail() {
-      setPdfPreview({ loading: true, error: '', thumbUrl: '', pages: 0 })
+      setPdfPreview({ loading: true, error: "", thumbUrl: "", pages: 0 });
       try {
-        const [{ getDocument, GlobalWorkerOptions }, workerUrlModule] = await Promise.all([
-          import('pdfjs-dist'),
-          import('pdfjs-dist/build/pdf.worker.mjs?url'),
-        ])
+        const [{ getDocument, GlobalWorkerOptions }, workerUrlModule] =
+          await Promise.all([
+            import("pdfjs-dist"),
+            import("pdfjs-dist/build/pdf.worker.mjs?url"),
+          ]);
 
-        const workerSrc = workerUrlModule?.default
+        const workerSrc = workerUrlModule?.default;
         if (workerSrc && GlobalWorkerOptions?.workerSrc !== workerSrc) {
-          GlobalWorkerOptions.workerSrc = workerSrc
+          GlobalWorkerOptions.workerSrc = workerSrc;
         }
 
         const loadingTask = getDocument({
@@ -123,136 +173,178 @@ export default function FileAttachmentCard({
           isEvalSupported: false,
           // Reduce memory overhead for small thumbnails.
           useSystemFonts: true,
-        })
+        });
 
-        const pdf = await loadingTask.promise
-        const pages = Number(pdf?.numPages || 0)
+        const pdf = await loadingTask.promise;
+        const pages = Number(pdf?.numPages || 0);
 
-        const page = await pdf.getPage(1)
-        const viewport = page.getViewport({ scale: 1 })
-        const targetWidth = 720
-        const scale = viewport?.width ? targetWidth / viewport.width : 1
-        const scaledViewport = page.getViewport({ scale })
+        const page = await pdf.getPage(1);
+        const viewport = page.getViewport({ scale: 1 });
+        const targetWidth = 720;
+        const scale = viewport?.width ? targetWidth / viewport.width : 1;
+        const scaledViewport = page.getViewport({ scale });
 
-        const canvas = document.createElement('canvas')
-        const context = canvas.getContext('2d', { alpha: false })
-        canvas.width = Math.floor(scaledViewport.width)
-        canvas.height = Math.floor(scaledViewport.height)
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d", { alpha: false });
+        canvas.width = Math.floor(scaledViewport.width);
+        canvas.height = Math.floor(scaledViewport.height);
 
-        await page.render({ canvasContext: context, viewport: scaledViewport }).promise
+        await page.render({ canvasContext: context, viewport: scaledViewport })
+          .promise;
 
-        const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'))
-        if (!blob) throw new Error('Unable to render PDF thumbnail')
+        const blob = await new Promise((resolve) =>
+          canvas.toBlob(resolve, "image/png"),
+        );
+        if (!blob) throw new Error("Unable to render PDF thumbnail");
 
-        createdUrl = URL.createObjectURL(blob)
+        createdUrl = URL.createObjectURL(blob);
         if (!alive) {
-          URL.revokeObjectURL(createdUrl)
-          createdUrl = ''
-          return
+          URL.revokeObjectURL(createdUrl);
+          createdUrl = "";
+          return;
         }
 
-        setPdfPreview({ loading: false, error: '', thumbUrl: createdUrl, pages })
+        setPdfPreview({
+          loading: false,
+          error: "",
+          thumbUrl: createdUrl,
+          pages,
+        });
 
         // Best-effort cleanup (ignore failures).
-        try { page.cleanup?.() } catch { /* noop */ }
-        try { pdf.cleanup?.() } catch { /* noop */ }
-        try { loadingTask.destroy?.() } catch { /* noop */ }
+        try {
+          page.cleanup?.();
+        } catch {
+          /* noop */
+        }
+        try {
+          pdf.cleanup?.();
+        } catch {
+          /* noop */
+        }
+        try {
+          loadingTask.destroy?.();
+        } catch {
+          /* noop */
+        }
       } catch (error) {
-        if (!alive) return
-        setPdfPreview({ loading: false, error: error?.message || 'Unable to preview PDF', thumbUrl: '', pages: 0 })
+        if (!alive) return;
+        setPdfPreview({
+          loading: false,
+          error: error?.message || "Unable to preview PDF",
+          thumbUrl: "",
+          pages: 0,
+        });
       }
     }
 
-    renderPdfThumbnail()
+    renderPdfThumbnail();
 
     return () => {
-      alive = false
-      if (createdUrl) URL.revokeObjectURL(createdUrl)
-    }
-  }, [kind, url])
+      alive = false;
+      if (createdUrl) URL.revokeObjectURL(createdUrl);
+    };
+  }, [kind, url]);
 
   useEffect(() => {
-    if (!url || kind !== 'text') {
-      setTextPreview({ loading: false, error: '', snippet: '' })
-      return undefined
+    if (!url || kind !== "text") {
+      setTextPreview({ loading: false, error: "", snippet: "" });
+      return undefined;
     }
 
-    let alive = true
-    const controller = new AbortController()
+    let alive = true;
+    const controller = new AbortController();
 
     async function loadTextSnippet() {
-      setTextPreview({ loading: true, error: '', snippet: '' })
+      setTextPreview({ loading: true, error: "", snippet: "" });
       try {
-        const response = await fetch(url, { signal: controller.signal })
-        if (!response.ok) throw new Error(`Unable to load preview (${response.status})`)
+        const response = await fetch(url, { signal: controller.signal });
+        if (!response.ok)
+          throw new Error(`Unable to load preview (${response.status})`);
 
-        const len = Number(response.headers.get('content-length') || '0')
+        const len = Number(response.headers.get("content-length") || "0");
         if (len && len > 600_000) {
-          setTextPreview({ loading: false, error: 'File is too large to preview. Please open or download it.', snippet: '' })
-          return
+          setTextPreview({
+            loading: false,
+            error: "File is too large to preview. Please open or download it.",
+            snippet: "",
+          });
+          return;
         }
 
-        const content = await response.text()
-        const normalized = content.replace(/\r\n/g, '\n')
-        const lines = normalized.split('\n')
-        const clippedLines = lines.slice(0, 12).join('\n')
-        const suffix = lines.length > 12 || normalized.length > clippedLines.length ? '\n...' : ''
-        const snippet = `${clippedLines}${suffix}`.trim()
+        const content = await response.text();
+        const normalized = content.replace(/\r\n/g, "\n");
+        const lines = normalized.split("\n");
+        const clippedLines = lines.slice(0, 12).join("\n");
+        const suffix =
+          lines.length > 12 || normalized.length > clippedLines.length
+            ? "\n..."
+            : "";
+        const snippet = `${clippedLines}${suffix}`.trim();
 
-        if (!alive) return
-        setTextPreview({ loading: false, error: '', snippet })
+        if (!alive) return;
+        setTextPreview({ loading: false, error: "", snippet });
       } catch (error) {
-        if (!alive) return
-        if (error?.name === 'AbortError') return
-        setTextPreview({ loading: false, error: error?.message || 'Unable to preview file', snippet: '' })
+        if (!alive) return;
+        if (error?.name === "AbortError") return;
+        setTextPreview({
+          loading: false,
+          error: error?.message || "Unable to preview file",
+          snippet: "",
+        });
       }
     }
 
-    loadTextSnippet()
+    loadTextSnippet();
 
     return () => {
-      alive = false
-      controller.abort()
-    }
-  }, [kind, url])
+      alive = false;
+      controller.abort();
+    };
+  }, [kind, url]);
 
   const metaLine = useMemo(() => {
-    const sizeLabel = formatBytes(bytes)
-    if (kind === 'pdf') {
-      const pages = pdfPreview.pages
-      const pagesLabel = pages ? `${pages} page${pages === 1 ? '' : 's'}` : ''
-      const parts = [pagesLabel, 'PDF', sizeLabel].filter(Boolean)
-      return parts.join(' - ')
+    const sizeLabel = formatBytes(bytes);
+    if (kind === "pdf") {
+      const pages = pdfPreview.pages;
+      const pagesLabel = pages ? `${pages} page${pages === 1 ? "" : "s"}` : "";
+      const parts = [pagesLabel, "PDF", sizeLabel].filter(Boolean);
+      return parts.join(" - ");
     }
-    if (kind === 'text') {
-      const parts = [ext ? ext.toUpperCase() : 'TXT', sizeLabel].filter(Boolean)
-      return parts.join(' - ')
+    if (kind === "text") {
+      const parts = [ext ? ext.toUpperCase() : "TXT", sizeLabel].filter(
+        Boolean,
+      );
+      return parts.join(" - ");
     }
-    const parts = [ext ? ext.toUpperCase() : 'FILE', sizeLabel].filter(Boolean)
-    return parts.join(' - ')
-  }, [bytes, ext, kind, pdfPreview.pages])
+    const parts = [ext ? ext.toUpperCase() : "FILE", sizeLabel].filter(Boolean);
+    return parts.join(" - ");
+  }, [bytes, ext, kind, pdfPreview.pages]);
 
   const containerTone = (() => {
-    if (isOwn) return 'bg-black/20 text-white'
-    if (isLight) return 'bg-slate-50 text-slate-900'
-    return 'bg-black/20 text-white'
-  })()
+    if (isOwn) return "bg-black/20 text-white";
+    if (isLight) return "bg-slate-50 text-slate-900";
+    return "bg-black/20 text-white";
+  })();
 
   const previewBg = (() => {
-    if (isOwn) return 'bg-black/25'
-    if (isLight) return 'bg-white'
-    return 'bg-black/25'
-  })()
+    if (isOwn) return "bg-black/25";
+    if (isLight) return "bg-white";
+    return "bg-black/25";
+  })();
 
-  const buttonTone = isLight && !isOwn
-    ? 'text-slate-700 hover:bg-slate-100'
-    : 'text-white/90 hover:bg-white/10'
+  const buttonTone =
+    isLight && !isOwn
+      ? "text-slate-700 hover:bg-slate-100"
+      : "text-white/90 hover:bg-white/10";
 
-  const downloadName = safeDownloadName(name)
+  const downloadName = safeDownloadName(name);
 
   return (
-    <div className={`w-full overflow-hidden rounded-2xl shadow-borderless dark:shadow-borderlessDark${containerTone}`}>
-      {kind === 'pdf' ? (
+    <div
+      className={`w-full overflow-hidden rounded-2xl shadow-borderless dark:shadow-borderlessDark${containerTone}`}
+    >
+      {kind === "pdf" ? (
         <button
           type="button"
           onClick={() => onOpen?.()}
@@ -269,14 +361,16 @@ export default function FileAttachmentCard({
               />
             ) : (
               <div className="px-3 text-[11px] font-semibold opacity-70">
-                {pdfPreview.loading ? 'Generating preview...' : (pdfPreview.error || 'Preview unavailable')}
+                {pdfPreview.loading
+                  ? "Generating preview..."
+                  : pdfPreview.error || "Preview unavailable"}
               </div>
             )}
           </div>
         </button>
       ) : null}
 
-      {kind === 'text' ? (
+      {kind === "text" ? (
         <button
           type="button"
           onClick={() => onOpen?.()}
@@ -285,12 +379,16 @@ export default function FileAttachmentCard({
         >
           <div className="max-h-28 overflow-hidden p-3 text-left">
             {textPreview.loading ? (
-              <div className="text-[11px] font-semibold opacity-70">Loading preview...</div>
+              <div className="text-[11px] font-semibold opacity-70">
+                Loading preview...
+              </div>
             ) : textPreview.error ? (
-              <div className="text-[11px] font-semibold opacity-70">{textPreview.error}</div>
+              <div className="text-[11px] font-semibold opacity-70">
+                {textPreview.error}
+              </div>
             ) : (
               <pre className="whitespace-pre-wrap break-words font-mono text-[11px] leading-snug opacity-90">
-                {textPreview.snippet || ' '}
+                {textPreview.snippet || " "}
               </pre>
             )}
           </div>
@@ -300,13 +398,15 @@ export default function FileAttachmentCard({
       <button
         type="button"
         onClick={() => onOpen?.()}
-        className={`flex w-full items-center gap-3 px-3 py-3 text-left${kind === 'file' ? '' : ''}`}
+        className={`flex w-full items-center gap-3 px-3 py-3 text-left${kind === "file" ? "" : ""}`}
         title="Open preview"
       >
         <FileTypeBadge kind={kind} isLight={isLight && !isOwn} ext={ext} />
         <div className="min-w-0 flex-1">
           <div className="truncate text-[12px] font-semibold">{name}</div>
-          {metaLine ? <div className="truncate text-[11px] opacity-70">{metaLine}</div> : null}
+          {metaLine ? (
+            <div className="truncate text-[11px] opacity-70">{metaLine}</div>
+          ) : null}
         </div>
       </button>
 
@@ -327,6 +427,5 @@ export default function FileAttachmentCard({
         </a>
       </div>
     </div>
-  )
+  );
 }
-

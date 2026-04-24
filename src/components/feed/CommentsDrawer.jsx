@@ -1,125 +1,138 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { X } from 'lucide-react'
-import { apiRequest, getToken } from '../../lib/auth'
+import React, { useEffect, useMemo, useState } from "react";
+import { X } from "lucide-react";
+import { apiRequest, getToken } from "../../lib/auth";
 
 function formatDateTime(value) {
-  if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return ''
-  return date.toLocaleString()
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString();
 }
 
 export default function CommentsDrawer({ open, onClose, item }) {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [comments, setComments] = useState([])
-  const [input, setInput] = useState('')
-  const [replyingTo, setReplyingTo] = useState('')
-  const [replyInput, setReplyInput] = useState('')
-  const [expandedThreads, setExpandedThreads] = useState({})
-  const [submitting, setSubmitting] = useState(false)
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [comments, setComments] = useState([]);
+  const [input, setInput] = useState("");
+  const [replyingTo, setReplyingTo] = useState("");
+  const [replyInput, setReplyInput] = useState("");
+  const [expandedThreads, setExpandedThreads] = useState({});
+  const [submitting, setSubmitting] = useState(false);
 
-  const token = useMemo(() => getToken(), [])
+  const token = useMemo(() => getToken(), []);
 
   useEffect(() => {
-    if (!open || !item?.id || !item?.entityType) return
-    let alive = true
-    setLoading(true)
-    setError('')
-    apiRequest(`/social/${encodeURIComponent(item.entityType)}/${encodeURIComponent(item.id)}`, { token })
+    if (!open || !item?.id || !item?.entityType) return;
+    let alive = true;
+    setLoading(true);
+    setError("");
+    apiRequest(
+      `/social/${encodeURIComponent(item.entityType)}/${encodeURIComponent(item.id)}`,
+      { token },
+    )
       .then((data) => {
-        if (!alive) return
-        setComments(Array.isArray(data?.comments) ? data.comments : [])
+        if (!alive) return;
+        setComments(Array.isArray(data?.comments) ? data.comments : []);
       })
       .catch((err) => {
-        if (!alive) return
-        setError(err.message || 'Failed to load comments')
-        setComments([])
+        if (!alive) return;
+        setError(err.message || "Failed to load comments");
+        setComments([]);
       })
       .finally(() => {
-        if (!alive) return
-        setLoading(false)
-      })
+        if (!alive) return;
+        setLoading(false);
+      });
 
     return () => {
-      alive = false
-    }
-  }, [item?.entityType, item?.id, open, token])
+      alive = false;
+    };
+  }, [item?.entityType, item?.id, open, token]);
 
   function resetReply() {
-    setReplyingTo('')
-    setReplyInput('')
+    setReplyingTo("");
+    setReplyInput("");
   }
 
   async function submitComment() {
-    const text = input.trim()
-    if (!text || submitting || !item?.id || !item?.entityType) return
-    setSubmitting(true)
-    setError('')
+    const text = input.trim();
+    if (!text || submitting || !item?.id || !item?.entityType) return;
+    setSubmitting(true);
+    setError("");
     try {
-      const created = await apiRequest(`/social/${encodeURIComponent(item.entityType)}/${encodeURIComponent(item.id)}/comment`, {
-        method: 'POST',
-        token,
-        body: { text },
-      })
-      setComments((previous) => [created, ...previous])
-      setInput('')
+      const created = await apiRequest(
+        `/social/${encodeURIComponent(item.entityType)}/${encodeURIComponent(item.id)}/comment`,
+        {
+          method: "POST",
+          token,
+          body: { text },
+        },
+      );
+      setComments((previous) => [created, ...previous]);
+      setInput("");
     } catch (err) {
-      setError(err.message || 'Failed to post comment')
+      setError(err.message || "Failed to post comment");
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
   }
 
   async function submitReply(parentId) {
-    const text = replyInput.trim()
-    if (!text || submitting || !item?.id || !item?.entityType || !parentId) return
-    setSubmitting(true)
-    setError('')
+    const text = replyInput.trim();
+    if (!text || submitting || !item?.id || !item?.entityType || !parentId)
+      return;
+    setSubmitting(true);
+    setError("");
     try {
-      const created = await apiRequest(`/social/${encodeURIComponent(item.entityType)}/${encodeURIComponent(item.id)}/comment`, {
-        method: 'POST',
-        token,
-        body: { text, parent_id: parentId },
-      })
-      setComments((previous) => [created, ...previous])
-      resetReply()
+      const created = await apiRequest(
+        `/social/${encodeURIComponent(item.entityType)}/${encodeURIComponent(item.id)}/comment`,
+        {
+          method: "POST",
+          token,
+          body: { text, parent_id: parentId },
+        },
+      );
+      setComments((previous) => [created, ...previous]);
+      resetReply();
     } catch (err) {
-      setError(err.message || 'Failed to post reply')
+      setError(err.message || "Failed to post reply");
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
   }
 
   const commentTree = useMemo(() => {
-    const byId = new Map()
-    const roots = []
-    const sorted = [...comments].sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+    const byId = new Map();
+    const roots = [];
+    const sorted = [...comments].sort(
+      (a, b) => new Date(a.created_at) - new Date(b.created_at),
+    );
     sorted.forEach((comment) => {
-      byId.set(comment.id, { comment, children: [] })
-    })
+      byId.set(comment.id, { comment, children: [] });
+    });
     sorted.forEach((comment) => {
-      const node = byId.get(comment.id)
+      const node = byId.get(comment.id);
       if (comment.parent_id && byId.has(comment.parent_id)) {
-        byId.get(comment.parent_id).children.push(node)
+        byId.get(comment.parent_id).children.push(node);
       } else {
-        roots.push(node)
+        roots.push(node);
       }
-    })
-    return roots
-  }, [comments])
+    });
+    return roots;
+  }, [comments]);
 
   function toggleThread(id) {
-    setExpandedThreads((prev) => ({ ...prev, [id]: !prev[id] }))
+    setExpandedThreads((prev) => ({ ...prev, [id]: !prev[id] }));
   }
 
   function renderCommentNode(node, depth = 0) {
-    const { comment, children } = node
-    const safeDepth = Math.min(depth, 8)
-    const indent = safeDepth * 16
-    const hasChildren = children.length > 0
-    const shouldCollapse = hasChildren && !expandedThreads[comment.id] && children.length > 3
-    const visibleChildren = shouldCollapse ? children.slice(0, 3) : children
+    const { comment, children } = node;
+    const safeDepth = Math.min(depth, 8);
+    const indent = safeDepth * 16;
+    const hasChildren = children.length > 0;
+    const shouldCollapse =
+      hasChildren && !expandedThreads[comment.id] && children.length > 3;
+    const visibleChildren = shouldCollapse ? children.slice(0, 3) : children;
 
     return (
       <div key={comment.id} className="relative">
@@ -135,14 +148,26 @@ export default function CommentsDrawer({ open, onClose, item }) {
             />
           </>
         ) : null}
-        <div className="bg-white shadow-borderless dark:shadow-borderlessDark rounded-xl p-3" style={{ marginLeft: `${indent}px` }}>
+        <div
+          className="bg-white shadow-borderless dark:shadow-borderlessDark rounded-xl p-3"
+          style={{ marginLeft: `${indent}px` }}
+        >
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-xs font-semibold text-slate-900 truncate">
-                {comment.actor_name || 'User'}{' '}
-                {comment.actor_verified ? <span className="ml-1 text-[10px] text-[#0A66C2] font-bold" title="Verified">Verified</span> : null}
+                {comment.actor_name || "User"}{" "}
+                {comment.actor_verified ? (
+                  <span
+                    className="ml-1 text-[10px] text-[#0A66C2] font-bold"
+                    title="Verified"
+                  >
+                    Verified
+                  </span>
+                ) : null}
               </p>
-              <p className="text-[10px] text-slate-500">{formatDateTime(comment.created_at)}</p>
+              <p className="text-[10px] text-slate-500">
+                {formatDateTime(comment.created_at)}
+              </p>
             </div>
             <button
               type="button"
@@ -152,14 +177,16 @@ export default function CommentsDrawer({ open, onClose, item }) {
               Reply
             </button>
           </div>
-          <p className="mt-2 text-sm text-slate-800 whitespace-pre-wrap">{comment.text}</p>
+          <p className="mt-2 text-sm text-slate-800 whitespace-pre-wrap">
+            {comment.text}
+          </p>
 
           {replyingTo === comment.id ? (
             <div className="mt-3 flex gap-2 items-center">
               <input
                 value={replyInput}
                 onChange={(e) => setReplyInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && submitReply(comment.id)}
+                onKeyDown={(e) => e.key === "Enter" && submitReply(comment.id)}
                 placeholder="Write a reply..."
                 className="flex-1 rounded-full bg-slate-100 shadow-borderless dark:shadow-borderlessDark px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
               />
@@ -169,7 +196,7 @@ export default function CommentsDrawer({ open, onClose, item }) {
                 disabled={submitting || !replyInput.trim()}
                 className="rounded-full bg-[#0A66C2] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"
               >
-                {submitting ? 'Posting...' : 'Send'}
+                {submitting ? "Posting..." : "Send"}
               </button>
               <button
                 type="button"
@@ -184,7 +211,9 @@ export default function CommentsDrawer({ open, onClose, item }) {
 
         {hasChildren ? (
           <div className="mt-3 space-y-3">
-            {visibleChildren.map((child) => renderCommentNode(child, depth + 1))}
+            {visibleChildren.map((child) =>
+              renderCommentNode(child, depth + 1),
+            )}
             {shouldCollapse ? (
               <button
                 type="button"
@@ -206,29 +235,49 @@ export default function CommentsDrawer({ open, onClose, item }) {
           </div>
         ) : null}
       </div>
-    )
+    );
   }
 
-  if (!open) return null
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50">
-      <button type="button" aria-label="Close comments" onClick={onClose} className="absolute inset-0 bg-black/40" />
+      <button
+        type="button"
+        aria-label="Close comments"
+        onClick={onClose}
+        className="absolute inset-0 bg-black/40"
+      />
       <aside className="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col shadow-dividerL dark:shadow-dividerLDark">
         <header className="flex items-center justify-between gap-3 px-4 py-3 shadow-dividerB dark:shadow-dividerBDark">
           <div>
             <p className="text-sm font-semibold text-slate-900">Comments</p>
-            <p className="text-[11px] text-slate-500 truncate">{item?.author?.name || 'Post'}</p>
+            <p className="text-[11px] text-slate-500 truncate">
+              {item?.author?.name || "Post"}
+            </p>
           </div>
-          <button type="button" onClick={onClose} className="rounded-full p-2 hover:bg-slate-100" aria-label="Close">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-2 hover:bg-slate-100"
+            aria-label="Close"
+          >
             <X size={18} />
           </button>
         </header>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/60">
-          {loading ? <div className="text-sm text-slate-500">Loading comments...</div> : null}
-          {!loading && error ? <div className="text-sm text-rose-700 bg-rose-50 shadow-borderless dark:shadow-borderlessDark rounded-lg p-3">{error}</div> : null}
-          {!loading && !error && comments.length === 0 ? <div className="text-sm text-slate-500">No comments yet.</div> : null}
+          {loading ? (
+            <div className="text-sm text-slate-500">Loading comments...</div>
+          ) : null}
+          {!loading && error ? (
+            <div className="text-sm text-rose-700 bg-rose-50 shadow-borderless dark:shadow-borderlessDark rounded-lg p-3">
+              {error}
+            </div>
+          ) : null}
+          {!loading && !error && comments.length === 0 ? (
+            <div className="text-sm text-slate-500">No comments yet.</div>
+          ) : null}
 
           {!loading && commentTree.map((node) => renderCommentNode(node, 0))}
         </div>
@@ -238,7 +287,7 @@ export default function CommentsDrawer({ open, onClose, item }) {
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && submitComment()}
+              onKeyDown={(e) => e.key === "Enter" && submitComment()}
               placeholder="Write a comment..."
               className="flex-1 rounded-full bg-slate-100 shadow-borderless dark:shadow-borderlessDark px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
             />
@@ -248,14 +297,14 @@ export default function CommentsDrawer({ open, onClose, item }) {
               disabled={submitting || !input.trim()}
               className="rounded-full bg-[#0A66C2] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"
             >
-              {submitting ? 'Posting...' : 'Post'}
+              {submitting ? "Posting..." : "Post"}
             </button>
           </div>
-          <p className="mt-2 text-[10px] text-slate-500">Unverified senders may appear as message requests elsewhere.</p>
+          <p className="mt-2 text-[10px] text-slate-500">
+            Unverified senders may appear as message requests elsewhere.
+          </p>
         </footer>
       </aside>
     </div>
-  )
+  );
 }
-
-

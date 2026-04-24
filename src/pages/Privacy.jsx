@@ -17,14 +17,14 @@
     - Keep the legal text exact; only structure/styling should change.
     - This page does not fetch data; it is static content.
 */
-import React from 'react'
-import { motion, useReducedMotion } from 'framer-motion'
+import React from "react";
+import { motion, useReducedMotion } from "framer-motion";
 
-const easePremium = [0.16, 1, 0.3, 1]
-const Motion = motion
+const easePremium = [0.16, 1, 0.3, 1];
+const Motion = motion;
 
-function LegalCard({ children, className='', index = 0, id }) {
-  const reduceMotion = useReducedMotion()
+function LegalCard({ children, className = "", index = 0, id }) {
+  const reduceMotion = useReducedMotion();
 
   return (
     <motion.section
@@ -37,15 +37,15 @@ function LegalCard({ children, className='', index = 0, id }) {
         delay: reduceMotion ? 0 : index * 0.1,
       }}
       className={[
-        'rounded-2xl p-6 lg:p-8 transition-colors duration-500 ease-in-out',
-        'bg-[#ffffff] shadow-borderless dark:shadow-borderlessDark shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
-        'dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5',
+        "rounded-2xl p-6 lg:p-8 transition-colors duration-500 ease-in-out",
+        "bg-[#ffffff] shadow-borderless dark:shadow-borderlessDark shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]",
+        "dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5",
         className,
-      ].join(' ')}
+      ].join(" ")}
     >
       {children}
     </motion.section>
-  )
+  );
 }
 
 function TocLink({ href, label }) {
@@ -56,12 +56,12 @@ function TocLink({ href, label }) {
     >
       {label}
     </a>
-  )
+  );
 }
 
 export default function Privacy() {
-  const reduceMotion = useReducedMotion()
-  const lastUpdated = '16 March 2026'
+  const reduceMotion = useReducedMotion();
+  const lastUpdated = "16 March 2026";
 
   return (
     <div className="min-h-screen legal-weave bg-[#f8fafc] text-[#0f172a] dark:bg-[#020617] dark:text-[#f8fafc] transition-colors duration-500 ease-in-out px-4 py-8 lg:px-12 lg:py-12">
@@ -82,12 +82,24 @@ export default function Privacy() {
                   Privacy Policy
                 </h1>
                 <p className="mt-2 text-sm font-medium text-slate-600 dark:text-slate-300">
-                  Last Updated:{' '}
-                  <span className="text-[#0f172a] dark:text-slate-100">{lastUpdated}</span>
+                  Last Updated:{" "}
+                  <span className="text-[#0f172a] dark:text-slate-100">
+                    {lastUpdated}
+                  </span>
                 </p>
               </div>
               <div className="max-w-xl text-sm md:text-base leading-relaxed text-slate-600 dark:text-slate-300">
-                This Privacy Policy explains how our B2B Garments and Textile Marketplace platform <span className="font-bold text-indigo-700 dark:text-indigo-300">collects, uses, protects, and manages your information</span>. Our platform connects international Buyers, Factories, and Buying Houses in a secure and professional environment. <span className="font-semibold text-rose-700 dark:text-rose-300">By creating an account or using our services, you agree to the practices described in this policy.</span>
+                This Privacy Policy explains how our B2B Garments and Textile
+                Marketplace platform{" "}
+                <span className="font-bold text-indigo-700 dark:text-indigo-300">
+                  collects, uses, protects, and manages your information
+                </span>
+                . Our platform connects international Buyers, Factories, and
+                Buying Houses in a secure and professional environment.{" "}
+                <span className="font-semibold text-rose-700 dark:text-rose-300">
+                  By creating an account or using our services, you agree to the
+                  practices described in this policy.
+                </span>
               </div>
             </div>
           </div>
@@ -120,9 +132,19 @@ export default function Privacy() {
 
             <div className="grid grid-cols-12 gap-4">
               <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] shadow-borderless dark:shadow-borderlessDark dark:bg-white/5 dark:ring-1 dark:ring-white/10">
-                <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Account Data</h3>
+                <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">
+                  Account Data
+                </h3>
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
-                  {['Full Name', 'Organization Name', 'Email Address', 'Phone Number', 'Country', 'Verification Docs', 'Account Type'].map((item) => (
+                  {[
+                    "Full Name",
+                    "Organization Name",
+                    "Email Address",
+                    "Phone Number",
+                    "Country",
+                    "Verification Docs",
+                    "Account Type",
+                  ].map((item) => (
                     <li key={item} className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
                       {item}
@@ -132,9 +154,16 @@ export default function Privacy() {
               </div>
 
               <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] shadow-borderless dark:shadow-borderlessDark dark:bg-white/5 dark:ring-1 dark:ring-white/10">
-                <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Business Data</h3>
+                <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">
+                  Business Data
+                </h3>
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
-                  {['Product Specifications', 'Design Requirements', 'Order Documents', 'Digital Signature Records'].map((item) => (
+                  {[
+                    "Product Specifications",
+                    "Design Requirements",
+                    "Order Documents",
+                    "Digital Signature Records",
+                  ].map((item) => (
                     <li key={item} className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
                       {item}
@@ -144,21 +173,32 @@ export default function Privacy() {
               </div>
 
               <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] shadow-borderless dark:shadow-borderlessDark dark:bg-white/5 dark:ring-1 dark:ring-white/10">
-                <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Communications</h3>
+                <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">
+                  Communications
+                </h3>
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
-                  {['Chat messages', 'Video/Audio logs', 'Call recordings'].map((item) => (
-                    <li key={item} className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                      {item}
-                    </li>
-                  ))}
+                  {["Chat messages", "Video/Audio logs", "Call recordings"].map(
+                    (item) => (
+                      <li key={item} className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        {item}
+                      </li>
+                    ),
+                  )}
                 </ul>
               </div>
 
               <div className="col-span-12 md:col-span-6 rounded-2xl p-5 bg-black/[0.02] shadow-borderless dark:shadow-borderlessDark dark:bg-white/5 dark:ring-1 dark:ring-white/10">
-                <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">Technical Information</h3>
+                <h3 className="font-bold text-[#0f172a] dark:text-white mb-3">
+                  Technical Information
+                </h3>
                 <ul className="space-y-2 list-none p-0 m-0 text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
-                  {['IP address', 'Device/Browser type', 'Usage activity', 'Search history'].map((item) => (
+                  {[
+                    "IP address",
+                    "Device/Browser type",
+                    "Usage activity",
+                    "Search history",
+                  ].map((item) => (
                     <li key={item} className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                       {item}
@@ -180,15 +220,18 @@ export default function Privacy() {
             <div className="rounded-2xl p-5 bg-black/[0.02] shadow-borderless dark:shadow-borderlessDark dark:bg-white/5 dark:ring-1 dark:ring-white/10">
               <ul className="grid md:grid-cols-2 gap-4 list-none p-0 m-0">
                 {[
-                  'Account Management',
-                  'Order Matching',
-                  'AI-Assisted Replies',
-                  'Secure Communications',
-                  'Digital Contracts',
-                  'Fraud Prevention',
-                  'Personalized Alerts',
+                  "Account Management",
+                  "Order Matching",
+                  "AI-Assisted Replies",
+                  "Secure Communications",
+                  "Digital Contracts",
+                  "Fraud Prevention",
+                  "Personalized Alerts",
                 ].map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-sm md:text-base font-medium rounded-xl px-3 py-2">
+                  <li
+                    key={item}
+                    className="flex items-center gap-3 text-sm md:text-base font-medium rounded-xl px-3 py-2"
+                  >
                     <span className="text-sky-600 dark:text-sky-300">✓</span>
                     {item}
                   </li>
@@ -202,24 +245,46 @@ export default function Privacy() {
             className="col-span-12 dark:bg-[#0b1220] dark:text-white dark:ring-1 dark:ring-white/10"
             id="fraud"
           >
-            <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-4 text-[#0f172a] dark:text-white">3. Fraud Prevention Measures</h2>
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-4 text-[#0f172a] dark:text-white">
+              3. Fraud Prevention Measures
+            </h2>
             <p className="text-sm md:text-base leading-relaxed text-slate-700 dark:text-white/85 mb-4">
-              <span className="font-bold text-rose-700 dark:text-rose-300">We take fraud prevention seriously.</span> <span className="text-indigo-700 dark:text-indigo-300 font-semibold">All calls are recorded</span> and <span className="text-indigo-700 dark:text-indigo-300 font-semibold">contracts are digitally signed</span> for your security.
+              <span className="font-bold text-rose-700 dark:text-rose-300">
+                We take fraud prevention seriously.
+              </span>{" "}
+              <span className="text-indigo-700 dark:text-indigo-300 font-semibold">
+                All calls are recorded
+              </span>{" "}
+              and{" "}
+              <span className="text-indigo-700 dark:text-indigo-300 font-semibold">
+                contracts are digitally signed
+              </span>{" "}
+              for your security.
             </p>
             <ul className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-slate-700 dark:text-white/85 text-sm md:text-base leading-relaxed list-none p-0 m-0">
               {[
-                'Identity verification process',
-                'Secure digital contracts',
-                'Recorded calls for disputes',
-                'Verified user visibility',
-                'Role-based access control',
-                'Suspicious activity monitoring',
-                'Secure reference exchange',
+                "Identity verification process",
+                "Secure digital contracts",
+                "Recorded calls for disputes",
+                "Verified user visibility",
+                "Role-based access control",
+                "Suspicious activity monitoring",
+                "Secure reference exchange",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-3">
                   <span className="mt-1 bg-black/5 dark:bg-white/10 p-1 rounded-full">
-                    <svg className="w-3 h-3 text-indigo-700 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
+                    <svg
+                      className="w-3 h-3 text-indigo-700 dark:text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="3"
+                        d="M5 13l4 4L19 7"
+                      ></path>
                     </svg>
                   </span>
                   {item}
@@ -231,55 +296,76 @@ export default function Privacy() {
           {[
             {
               id: 4,
-              title: 'Data Sharing Policy',
-              text: 'We do not sell personal data to third parties. Information may be shared only between involved business partners, when legally required, or to prevent fraud.',
-              anchor: 'sharing',
+              title: "Data Sharing Policy",
+              text: "We do not sell personal data to third parties. Information may be shared only between involved business partners, when legally required, or to prevent fraud.",
+              anchor: "sharing",
             },
             {
               id: 5,
-              title: 'Call Recording & Chat Storage',
-              text: 'All communications conducted within the platform may be securely stored. Call recordings are retained strictly for legal protection and dispute resolution.',
-              anchor: 'storage',
+              title: "Call Recording & Chat Storage",
+              text: "All communications conducted within the platform may be securely stored. Call recordings are retained strictly for legal protection and dispute resolution.",
+              anchor: "storage",
             },
             {
               id: 6,
-              title: 'Digital Contracts & Signatures',
-              text: 'Digital signatures executed through the platform are legally binding. PDF copies are provided and securely stored for legal record integrity.',
-              anchor: 'contracts',
+              title: "Digital Contracts & Signatures",
+              text: "Digital signatures executed through the platform are legally binding. PDF copies are provided and securely stored for legal record integrity.",
+              anchor: "contracts",
             },
             {
               id: 7,
-              title: 'Data Security',
-              text: 'We employ encrypted transmission, secure server infrastructure, multi-level authentication, and granular role-based permissions.',
-              anchor: 'security',
+              title: "Data Security",
+              text: "We employ encrypted transmission, secure server infrastructure, multi-level authentication, and granular role-based permissions.",
+              anchor: "security",
             },
             {
               id: 8,
-              title: 'User Rights',
-              text: 'You have the right to update info, request deletion, obtain a copy of your data, and manage notification preferences.',
-              anchor: 'rights',
+              title: "User Rights",
+              text: "You have the right to update info, request deletion, obtain a copy of your data, and manage notification preferences.",
+              anchor: "rights",
             },
           ].map((item, idx) => (
-            <LegalCard key={item.id} index={3 + idx} id={item.anchor} className="col-span-12 md:col-span-6">
+            <LegalCard
+              key={item.id}
+              index={3 + idx}
+              id={item.anchor}
+              className="col-span-12 md:col-span-6"
+            >
               <h2 className="text-lg md:text-xl font-bold tracking-tight text-[#0f172a] dark:text-white mb-3">
                 {item.id}. {item.title}
               </h2>
-              <p className="text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">{item.text}</p>
+              <p className="text-sm md:text-base leading-relaxed text-slate-700 dark:text-slate-300">
+                {item.text}
+              </p>
             </LegalCard>
           ))}
 
-          <LegalCard index={8} className="col-span-12 dark:bg-[#0b1220] dark:text-white" id="contact">
-            <h2 className="text-xl font-bold mb-4 text-[#0f172a] dark:text-white">13. Contact Information</h2>
+          <LegalCard
+            index={8}
+            className="col-span-12 dark:bg-[#0b1220] dark:text-white"
+            id="contact"
+          >
+            <h2 className="text-xl font-bold mb-4 text-[#0f172a] dark:text-white">
+              13. Contact Information
+            </h2>
             <div className="space-y-1">
-              <p className="text-slate-500 dark:text-white/60 text-sm">Direct Support</p>
-              <p className="font-bold underline decoration-sky-500 underline-offset-4">gartexhub@gmail.com</p>
+              <p className="text-slate-500 dark:text-white/60 text-sm">
+                Direct Support
+              </p>
+              <p className="font-bold underline decoration-sky-500 underline-offset-4">
+                gartexhub@gmail.com
+              </p>
             </div>
           </LegalCard>
 
           <motion.footer
             initial={reduceMotion ? false : { opacity: 0, y: 20 }}
             animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, ease: easePremium, delay: reduceMotion ? 0 : 9 * 0.1 }}
+            transition={{
+              duration: 0.55,
+              ease: easePremium,
+              delay: reduceMotion ? 0 : 9 * 0.1,
+            }}
             className="col-span-12 text-center"
           >
             <div className="rounded-2xl p-6 bg-[#ffffff] shadow-borderless dark:shadow-borderlessDark shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#0f172a] dark:shadow-none dark:ring-1 dark:ring-white/5 transition-colors duration-500 ease-in-out">
@@ -291,6 +377,5 @@ export default function Privacy() {
         </div>
       </div>
     </div>
-  )
+  );
 }
-

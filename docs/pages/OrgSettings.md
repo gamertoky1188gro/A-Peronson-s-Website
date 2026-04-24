@@ -1,12 +1,14 @@
 # OrgSettings - Complete Page Specification (Manual)
 
 ## Page Title & Description
+
 - Page title: `OrgSettings`
 - Source file: `src/pages/OrgSettings.jsx`
 - Route: `/org-settings` (owner/admin only)
 - Purpose: Organization administration hub for profile data, verification/subscription status, security toggles, member management link, and assistant knowledge CRUD.
 
 ## Layout & Structure
+
 - Page wrapper: full-height white container.
 - Header block:
   - Title and subtitle.
@@ -29,11 +31,13 @@
     - Right: scrollable entries list with edit/delete actions.
 
 Approximate placement:
+
 - Tabs at top of panel (horizontal band).
 - Content area beneath occupying full width.
 - Assistant tab split 50/50 desktop, stacked mobile.
 
 ## Theme & Styling
+
 - Accent blue `#0A66C2` used for active tab underline and primary buttons.
 - Secondary text: `#5A5A5A`.
 - Status chips:
@@ -44,7 +48,9 @@ Approximate placement:
   - White backgrounds with rounded corners and shadows.
 
 ## Content Details
+
 Exact textual content:
+
 - `Organization Settings`
 - `Manage organization profile, verification, branding, security and subscription`
 - `General Info`
@@ -86,6 +92,7 @@ Exact textual content:
 - `No org-specific entries yet.`
 
 Dynamic status text:
+
 - Verification badge labels:
   - `Verified active`
   - `Expiring soon`
@@ -93,6 +100,7 @@ Dynamic status text:
 - Remaining days display from local state.
 
 ## Interactions & Functionality
+
 - State:
   - Active tab.
   - Remaining days (`remainingDays`, initial `4`).
@@ -117,10 +125,12 @@ Dynamic status text:
   - `Cancel edit` resets form.
 
 ## Images & Media
+
 - No media files used.
 - All data entry is text/checkbox/select/textarea based.
 
 ## Extra Notes / Metadata
+
 - `tab !== 'general' && !isOwnerAdmin` branch exists but is effectively unreachable because full panel already gated by owner/admin condition.
 - Accessibility:
   - Visible labels for all major fields.

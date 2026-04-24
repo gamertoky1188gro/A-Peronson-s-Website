@@ -39,8 +39,7 @@
     "exportPort": { "type": ["string", "array"] },
     "distanceKm": { "type": "number" },
     "locationLat": { "type": "number" },
-    "locationLng": { "type": "number" }
-    ,
+    "locationLng": { "type": "number" },
     "hasPermissionMatrix": { "type": "boolean" },
     "auditScoreMin": { "type": "number" },
     "permissionSection": { "type": "string" },

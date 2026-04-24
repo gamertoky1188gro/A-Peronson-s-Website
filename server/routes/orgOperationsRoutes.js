@@ -1,5 +1,5 @@
-import { Router } from 'express'
-import { allowRoles, requireAuth } from '../middleware/auth.js'
+import { Router } from "express";
+import { allowRoles, requireAuth } from "../middleware/auth.js";
 import {
   getLegacyOperationsPolicies,
   getOperationsPolicies,
@@ -11,21 +11,24 @@ import {
   postResolveEscalation,
   putLegacyOperationsPolicies,
   putOperationsPolicies,
-} from '../controllers/orgOperationsController.js'
+} from "../controllers/orgOperationsController.js";
 
-const router = Router()
+const router = Router();
 
-router.use(requireAuth, allowRoles('owner', 'admin', 'buying_house', 'factory', 'agent'))
+router.use(
+  requireAuth,
+  allowRoles("owner", "admin", "buying_house", "factory", "agent"),
+);
 
-router.get('/policies', getOperationsPolicies)
-router.put('/policies', putOperationsPolicies)
-router.get('/legacy-policies', getLegacyOperationsPolicies)
-router.put('/legacy-policies', putLegacyOperationsPolicies)
-router.get('/queue', getOperationsQueue)
-router.post('/rebalance', postOperationsRebalance)
-router.post('/escalate/:leadId', postOperationsEscalate)
-router.get('/escalations', getOperationsEscalations)
-router.post('/escalations/:leadId/resolve', postResolveEscalation)
-router.get('/workload', getOperationsWorkload)
+router.get("/policies", getOperationsPolicies);
+router.put("/policies", putOperationsPolicies);
+router.get("/legacy-policies", getLegacyOperationsPolicies);
+router.put("/legacy-policies", putLegacyOperationsPolicies);
+router.get("/queue", getOperationsQueue);
+router.post("/rebalance", postOperationsRebalance);
+router.post("/escalate/:leadId", postOperationsEscalate);
+router.get("/escalations", getOperationsEscalations);
+router.post("/escalations/:leadId/resolve", postResolveEscalation);
+router.get("/workload", getOperationsWorkload);
 
-export default router
+export default router;

@@ -60,6 +60,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
       <div className="w-full max-w-md bg-white neo-panel cyberpunk-card rounded-xl p-8">
         <div className="flex items-center justify-between">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-h-screen neo-page cyberpunk-page bg-white neo-panel cyberpunk-card flex items-center justify-center p-4`
@@ -97,6 +98,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <h1 className="text-3xl font-bold">Login</h1>
           <button type="button" onClick={handleBack} className="text-sm text-slate-600 hover:text-slate-900">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full max-w-md bg-white neo-panel cyberpunk-card rounded-xl p-8`
@@ -137,6 +139,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <button type="button" onClick={handleBack} className="text-sm text-slate-600 hover:text-slate-900">
             Back
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between`
@@ -165,6 +168,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             Back
           </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-3xl font-bold`
@@ -188,6 +192,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </button>
         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm text-slate-600 hover:text-slate-900`
@@ -208,6 +213,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         {/* Controlled form: React state is the single source of truth for inputs. */}
         <form onSubmit={handleLogin} className="mt-6 space-y-4">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm text-gray-600`
@@ -231,6 +237,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <label className="block text-sm font-medium mb-1">Email or Agent ID</label>
             <input
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-6 space-y-4`
@@ -256,6 +263,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `block text-sm font-medium mb-1`
@@ -278,6 +286,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <p className="mt-1 text-xs text-slate-500">Agents: Use your assigned Agent ID to login</p>
           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full px-4 py-3 borderless-shadow rounded-lg`
@@ -306,6 +315,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div>
             <label className="block text-sm font-medium mb-1">Password</label>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-xs text-slate-500`
@@ -332,6 +342,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required className="w-full px-4 py-3 borderless-shadow rounded-lg" />
           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `block text-sm font-medium mb-1`
@@ -361,6 +372,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 
           <div className="space-y-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full px-4 py-3 borderless-shadow rounded-lg`
@@ -386,6 +398,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
               Remember me
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-2`
@@ -408,11 +421,16 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/auth/Login.jsx:226`
 
 ```jsx
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
-              Remember me
-            </label>
+<label className="flex items-center gap-2 text-sm">
+  <input
+    type="checkbox"
+    checked={rememberMe}
+    onChange={(e) => setRememberMe(e.target.checked)}
+  />
+  Remember me
+</label>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2 text-sm`
@@ -438,6 +456,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 type="checkbox"
                 checked={rememberPasskeyUser}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2 text-sm`
@@ -463,6 +482,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 {passkeyHint.user_name ? ` · ${passkeyHint.user_name}` : ''}
                 {passkeyHint.user_email ? ` (${passkeyHint.user_email})` : ''}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500`
@@ -483,6 +503,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
                 {passkeyHint.user_email ? ` (${passkeyHint.user_email})` : ''}
               </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold`
@@ -500,6 +521,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           {/* Primary CTA: uses brand blue color */}
           <button disabled={loading} className="w-full px-4 py-3 rounded-lg bg-[var(--gt-blue)] hover:bg-[var(--gt-blue-hover)] text-white disabled:opacity-70 transition">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm text-red-500`
@@ -533,6 +555,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </button>
           <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full px-4 py-3 rounded-lg bg-[var(--gt-blue)] hover:bg-[var(--gt-blue-hover)] text-white disabled:opacity-70 transition`
@@ -570,6 +593,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             {passkeyLoading ? 'Opening passkey...' : 'Sign in with passkey'}
           </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full px-4 py-3 rounded-lg borderless-shadow text-slate-700 disabled:opacity-70`
@@ -606,6 +630,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             {enrollLoading ? 'Setting up passkey...' : 'Set up passkey (first time)'}
           </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full px-4 py-3 rounded-lg borderless-shadow text-slate-700 disabled:opacity-70`
@@ -643,6 +668,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         </p>
       </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-6 text-sm text-gray-600`
@@ -668,6 +694,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
       </div>
     </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[var(--gt-blue)] hover:underline`
@@ -691,6 +718,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             Back
           </button>
 ```
+
 - `src/pages/auth/Login.jsx:203` — Access pages based on your role (Buyer, Factory, Buying House, Admin).
 
 ```jsx
@@ -699,6 +727,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
         {/* Controlled form: React state is the single source of truth for inputs. */}
         <form onSubmit={handleLogin} className="mt-6 space-y-4">
 ```
+
 - `src/pages/auth/Login.jsx:208` — Email or Agent ID
 
 ```jsx
@@ -707,6 +736,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
 ```
+
 - `src/pages/auth/Login.jsx:217` — Agents: Use your assigned Agent ID to login
 
 ```jsx
@@ -715,6 +745,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           <div>
             <label className="block text-sm font-medium mb-1">Password</label>
 ```
+
 - `src/pages/auth/Login.jsx:220` — Password
 
 ```jsx
@@ -723,6 +754,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required className="w-full px-4 py-3 borderless-shadow rounded-lg" />
           </div>
 ```
+
 - `src/pages/auth/Login.jsx:274` — Create account
 
 ```jsx
@@ -731,6 +763,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
       </div>
     </div>
 ```
+
 - `src/pages/auth/Login.jsx:214` — Enter your email or Agent ID
 
 ```jsx
@@ -739,6 +772,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             />
             <p className="mt-1 text-xs text-slate-500">Agents: Use your assigned Agent ID to login</p>
 ```
+
 - `src/pages/auth/Login.jsx:199` — (element) <button>
 
 ```jsx
@@ -747,6 +781,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </button>
         </div>
 ```
+
 - `src/pages/auth/Login.jsx:251` — (element) <button>
 
 ```jsx
@@ -755,6 +790,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
           </button>
           <button
 ```
+
 - `src/pages/auth/Login.jsx:254` — (element) <button>
 
 ```jsx
@@ -763,6 +799,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             onClick={handlePasskeyLogin}
             disabled={passkeyLoading}
 ```
+
 - `src/pages/auth/Login.jsx:262` — (element) <button>
 
 ```jsx
@@ -771,6 +808,7 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
             onClick={handlePasskeyEnroll}
             disabled={enrollLoading}
 ```
+
 - `src/pages/auth/Login.jsx:274` — (element) <Link>
 
 ```jsx
@@ -779,17 +817,18 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
       </div>
     </div>
 ```
+
 ## 5) Backend Mapping (Frontend → Express → Controller → Service/DB)
 
-| Frontend call (path:line) | Express mount | Route definition | Controller file | Handler |
-|---|---|---|---|---|
-| GET /auth/login (src/pages/auth/Login.jsx:17) | /api/auth -> server/routes/authRoutes.js:111 | - | - | - |
-| POST /auth/login (src/pages/auth/Login.jsx:92) | /api/auth -> server/routes/authRoutes.js:111 | POST /login (server/routes/authRoutes.js:19) | - | login |
-| POST /auth/passkey/login/options (src/pages/auth/Login.jsx:118) | /api/auth -> server/routes/authRoutes.js:111 | POST /passkey/login/options (server/routes/authRoutes.js:20) | - | passkeyLoginOptions |
-| POST /auth/passkey/login/verify (src/pages/auth/Login.jsx:123) | /api/auth -> server/routes/authRoutes.js:111 | POST /passkey/login/verify (server/routes/authRoutes.js:21) | - | passkeyLoginVerify |
-| POST /auth/login (src/pages/auth/Login.jsx:164) | /api/auth -> server/routes/authRoutes.js:111 | POST /login (server/routes/authRoutes.js:19) | - | login |
-| POST /auth/passkey/registration/options (src/pages/auth/Login.jsx:168) | /api/auth -> server/routes/authRoutes.js:111 | POST /passkey/registration/options (server/routes/authRoutes.js:22) | - | passkeyRegistrationOptions |
-| POST /auth/passkey/registration/verify (src/pages/auth/Login.jsx:176) | /api/auth -> server/routes/authRoutes.js:111 | POST /passkey/registration/verify (server/routes/authRoutes.js:23) | - | passkeyRegistrationVerify |
+| Frontend call (path:line)                                              | Express mount                                | Route definition                                                    | Controller file | Handler                    |
+| ---------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------- | --------------- | -------------------------- |
+| GET /auth/login (src/pages/auth/Login.jsx:17)                          | /api/auth -> server/routes/authRoutes.js:111 | -                                                                   | -               | -                          |
+| POST /auth/login (src/pages/auth/Login.jsx:92)                         | /api/auth -> server/routes/authRoutes.js:111 | POST /login (server/routes/authRoutes.js:19)                        | -               | login                      |
+| POST /auth/passkey/login/options (src/pages/auth/Login.jsx:118)        | /api/auth -> server/routes/authRoutes.js:111 | POST /passkey/login/options (server/routes/authRoutes.js:20)        | -               | passkeyLoginOptions        |
+| POST /auth/passkey/login/verify (src/pages/auth/Login.jsx:123)         | /api/auth -> server/routes/authRoutes.js:111 | POST /passkey/login/verify (server/routes/authRoutes.js:21)         | -               | passkeyLoginVerify         |
+| POST /auth/login (src/pages/auth/Login.jsx:164)                        | /api/auth -> server/routes/authRoutes.js:111 | POST /login (server/routes/authRoutes.js:19)                        | -               | login                      |
+| POST /auth/passkey/registration/options (src/pages/auth/Login.jsx:168) | /api/auth -> server/routes/authRoutes.js:111 | POST /passkey/registration/options (server/routes/authRoutes.js:22) | -               | passkeyRegistrationOptions |
+| POST /auth/passkey/registration/verify (src/pages/auth/Login.jsx:176)  | /api/auth -> server/routes/authRoutes.js:111 | POST /passkey/registration/verify (server/routes/authRoutes.js:23)  | -               | passkeyRegistrationVerify  |
 
 ## 6) How to Edit Safely
 
@@ -799,4 +838,3 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
-

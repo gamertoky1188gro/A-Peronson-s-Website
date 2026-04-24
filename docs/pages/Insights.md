@@ -1,12 +1,14 @@
 # Insights - Complete Page Specification (Manual)
 
 ## Page Title & Description
+
 - Page title: `Insights`
 - Source file: `src/pages/Insights.jsx`
 - Route: `/insights` (owner/admin only)
 - Purpose: Analytics dashboard with summary KPIs; enterprise users get event-level analytics and export controls, non-enterprise users see upgrade prompt.
 
 ## Layout & Structure
+
 - Global shell: nav + footer + floating assistant from app layout.
 - Page container: centered `max-w-7xl`, padded.
 - Header row:
@@ -18,10 +20,11 @@
 - Main content (hidden if forbidden):
   1. KPI grid of four stat cards (`md:grid-cols-4`).
   2. Analytics panel card:
-    - Free plan view: plan notice + upgrade button.
-    - Enterprise view: `Analytics Events by Type`, event list, export buttons.
+  - Free plan view: plan notice + upgrade button.
+  - Enterprise view: `Analytics Events by Type`, event list, export buttons.
 
 ## Theme & Styling
+
 - Base: white page surface.
 - Text:
   - Primary dark text.
@@ -35,7 +38,9 @@
   - Rounded, shadowed, white cards (`neo-panel cyberpunk-card` classes).
 
 ## Content Details
+
 Exact text strings:
+
 - `Insights & Analytics`
 - `(Enterprise Plan)` / `(Free Plan)`
 - `Loading analytics…`
@@ -52,12 +57,14 @@ Exact text strings:
 - `Download PDF Report`
 
 Dynamic text:
+
 - Summary values from `dashboard.totals`:
   - buyer requests, chats, partner network, contracts/documents.
 - Event list from `dashboard.analytics_events.by_type`.
 - Subscription text from `subscription.plan`.
 
 ## Interactions & Functionality
+
 - Data source:
   - `useAnalyticsDashboard()` returns:
     - `dashboard`
@@ -76,10 +83,12 @@ Dynamic text:
   - `Download PDF Report` button (UI-only).
 
 ## Images & Media
+
 - No images/videos/icons from media files.
 - Purely text + card based interface.
 
 ## Extra Notes / Metadata
+
 - Responsive behavior:
   - KPI cards stack on small screens.
   - Event list uses vertical rows with label/count.

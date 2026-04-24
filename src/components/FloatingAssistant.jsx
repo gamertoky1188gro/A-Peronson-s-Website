@@ -18,61 +18,61 @@
     - WebSocket URL derived from API_BASE (http -> ws, /api -> /ws)
     - Message protocol expects { type: 'ask', question } and replies with { type: 'reply', answer }
 */
-import React, { useState, useRef, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
-import { API_BASE, getToken } from '../lib/auth'
-import BotLogo from './ui/BotLogo'
+import React, { useState, useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { API_BASE, getToken } from "../lib/auth";
+import BotLogo from "./ui/BotLogo";
 
 /**
  * Helper component to simulate typing effect
  */
 function TypewriterText({ text, speed = 20, onComplete }) {
   // `displayedText` grows one character at a time to mimic typing.
-  const [displayedText, setDisplayedText] = useState('')
+  const [displayedText, setDisplayedText] = useState("");
   // Current character index that has been "typed".
-  const [index, setIndex] = useState(0)
+  const [index, setIndex] = useState(0);
 
   useEffect(() => {
     // If we still have characters left, schedule the next tick.
     if (index < text.length) {
       const timeout = setTimeout(() => {
-        setDisplayedText(prev => prev + text[index])
-        setIndex(prev => prev + 1)
-      }, speed)
-      return () => clearTimeout(timeout)
+        setDisplayedText((prev) => prev + text[index]);
+        setIndex((prev) => prev + 1);
+      }, speed);
+      return () => clearTimeout(timeout);
     } else if (onComplete) {
       // Once typing finishes, notify parent so it can mark the message as no longer "new".
-      onComplete()
+      onComplete();
     }
-  }, [index, text, speed, onComplete])
+  }, [index, text, speed, onComplete]);
 
-  return <span>{displayedText}</span>
+  return <span>{displayedText}</span>;
 }
 
 export default function FloatingAssistant() {
   // Used to detect current route; we enable a special "orb" skin on /help only.
-  const location = useLocation()
-  const orbMode = location.pathname === '/help'
+  const location = useLocation();
+  const orbMode = location.pathname === "/help";
   // Whether the slide-in panel is visible.
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
   // Controlled input for the message composer.
-  const [input, setInput] = useState('')
+  const [input, setInput] = useState("");
   // Chat transcript (simple array of { role, text, isNew }).
   const [messages, setMessages] = useState([
-    { 
-      role: 'assistant', 
-      text: 'Hello! I am your GarTex Assistant (WS). How can I help you with your textile business today?',
-      isNew: false 
-    }
-  ])
+    {
+      role: "assistant",
+      text: "Hello! I am your GarTex Assistant (WS). How can I help you with your textile business today?",
+      isNew: false,
+    },
+  ]);
   // "Thinking" state: drives typing indicator dot and disables sending duplicates.
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
   // Refs:
   // - scrollRef: DOM element for scrolling message list to bottom
   // - socketRef: WebSocket instance reused across renders
-  const scrollRef = useRef(null)
-  const socketRef = useRef(null)
-  const requestSeqRef = useRef(1)
+  const scrollRef = useRef(null);
+  const socketRef = useRef(null);
+  const requestSeqRef = useRef(1);
 
   // Initialize WebSocket connection
   useEffect(() => {
@@ -80,99 +80,110 @@ export default function FloatingAssistant() {
     // - If API_BASE is absolute (http/https), swap scheme to ws/wss and map /api -> /ws.
     // - Otherwise, use current origin and `/ws`.
     const wsUrl = (() => {
-      if (API_BASE.startsWith('http://') || API_BASE.startsWith('https://')) {
-        return API_BASE.replace(/^http/, 'ws').replace(/\/api\/*$/, '/ws')
+      if (API_BASE.startsWith("http://") || API_BASE.startsWith("https://")) {
+        return API_BASE.replace(/^http/, "ws").replace(/\/api\/*$/, "/ws");
       }
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-      return `${protocol}//${window.location.host}/ws`
-    })()
-    const socket = new WebSocket(wsUrl)
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      return `${protocol}//${window.location.host}/ws`;
+    })();
+    const socket = new WebSocket(wsUrl);
 
     // Basic lifecycle logging (useful during dev).
     socket.onopen = () => {
-      console.log('Assistant WS Connected')
+      console.log("Assistant WS Connected");
       try {
-        const token = typeof getToken === 'function' ? getToken() : null
+        const token = typeof getToken === "function" ? getToken() : null;
         if (token) {
-          socket.send(JSON.stringify({ type: 'identify', token }))
+          socket.send(JSON.stringify({ type: "identify", token }));
         }
       } catch (err) {
-        console.warn('Assistant identify failed', err)
+        console.warn("Assistant identify failed", err);
       }
-    }
+    };
     socket.onmessage = (event) => {
       // Server sends JSON messages. We expect { type: 'reply' | 'error', ... }.
-      const data = JSON.parse(event.data)
-      if (data.type === 'reply') {
-        const botMsg = { 
-          role: 'assistant', 
-          text: data.answer || 'I am sorry, I could not find an answer to that.',
+      const data = JSON.parse(event.data);
+      if (data.type === "reply") {
+        const botMsg = {
+          role: "assistant",
+          text:
+            data.answer || "I am sorry, I could not find an answer to that.",
           isNew: true,
           request_id: data.request_id || null,
-        }
+        };
         // Append assistant message to transcript and stop loading indicator.
-        setMessages(prev => [...prev, botMsg])
-        setLoading(false)
-      } else if (data.type === 'error') {
+        setMessages((prev) => [...prev, botMsg]);
+        setLoading(false);
+      } else if (data.type === "error") {
         // Surface server errors as assistant messages so the UI stays consistent.
-        setMessages(prev => [...prev, { 
-          role: 'assistant', 
-          text: 'Error: ' + (data.message || 'Something went wrong'),
-          isNew: true,
-        }])
-        setLoading(false)
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            text: "Error: " + (data.message || "Something went wrong"),
+            isNew: true,
+          },
+        ]);
+        setLoading(false);
       }
-    }
-    socket.onclose = () => console.log('Assistant WS Disconnected')
-    socket.onerror = (err) => console.error('Assistant WS Error', err)
+    };
+    socket.onclose = () => console.log("Assistant WS Disconnected");
+    socket.onerror = (err) => console.error("Assistant WS Error", err);
 
     // Store socket in ref so `handleSend` can use it without re-creating listeners.
-    socketRef.current = socket
+    socketRef.current = socket;
 
     return () => {
       // Cleanly close connection on unmount.
       if (socket.readyState === WebSocket.OPEN) {
-        socket.close()
+        socket.close();
       }
-    }
-  }, [])
+    };
+  }, []);
 
   // Auto-scroll to bottom
   useEffect(() => {
     // Ensures latest message is visible without user needing to scroll.
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, loading])
+  }, [messages, loading]);
 
   async function handleSend(textOverride) {
     // Allow sending from quick suggestions or from input box.
-    const text = textOverride || input
-    if (!text.trim() || loading) return
+    const text = textOverride || input;
+    if (!text.trim() || loading) return;
 
     // Add the user's message to transcript immediately for snappy UX.
-    const requestId = `req_${requestSeqRef.current++}`
-    const userMsg = { role: 'user', text, request_id: requestId, isNew: false }
-    setMessages(prev => [...prev, userMsg])
-    setInput('')
-    setLoading(true)
+    const requestId = `req_${requestSeqRef.current++}`;
+    const userMsg = { role: "user", text, request_id: requestId, isNew: false };
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    setLoading(true);
 
     // Send the question over WS if connected; otherwise show a recoverable error message.
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send(JSON.stringify({ type: 'ask', question: text, request_id: requestId }))
+      socketRef.current.send(
+        JSON.stringify({ type: "ask", question: text, request_id: requestId }),
+      );
     } else {
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        text: 'Connection lost. Please refresh the page.',
-        isNew: true 
-      }])
-      setLoading(false)
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          text: "Connection lost. Please refresh the page.",
+          isNew: true,
+        },
+      ]);
+      setLoading(false);
     }
   }
 
   // After the typewriter effect finishes, mark the message as "old" so it renders as plain text next time.
   function markAsOld(msgIndex) {
-    setMessages(prev => prev.map((m, i) => i === msgIndex ? { ...m, isNew: false } : m))
+    setMessages((prev) =>
+      prev.map((m, i) => (i === msgIndex ? { ...m, isNew: false } : m)),
+    );
   }
 
   // Quick-start suggestion prompts (shown when the assistant is fresh / not busy).
@@ -180,8 +191,8 @@ export default function FloatingAssistant() {
     "How do I verify my account?",
     "Tell me about Premium benefits",
     "How do contracts work?",
-    "Need help with onboarding"
-  ]
+    "Need help with onboarding",
+  ];
 
   return (
     <>
@@ -191,19 +202,32 @@ export default function FloatingAssistant() {
           type="button"
           onClick={() => setOpen(!open)}
           className={[
-            'w-14 h-14 rounded-full flex items-center justify-center text-white transition-transform active:scale-95',
+            "w-14 h-14 rounded-full flex items-center justify-center text-white transition-transform active:scale-95",
             orbMode
-              ? 'assistant-orb-btn hover:scale-110'
-              : 'bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] shadow-xl hover:scale-110 ring-2 ring-white/20',
-          ].join(' ')}
-          aria-label={open ? 'Close assistant' : 'Open assistant'}
-          title={open ? 'Close assistant' : 'Open assistant'}
+              ? "assistant-orb-btn hover:scale-110"
+              : "bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] shadow-xl hover:scale-110 ring-2 ring-white/20",
+          ].join(" ")}
+          aria-label={open ? "Close assistant" : "Open assistant"}
+          title={open ? "Close assistant" : "Open assistant"}
         >
           {!open ? (
             <BotLogo width={22} height={22} />
           ) : (
-            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-white">
-              <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M6 6 L18 18 M6 18 L18 6" />
+            <svg
+              aria-hidden="true"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              className="text-white"
+            >
+              <path
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 6 L18 18 M6 18 L18 6"
+              />
             </svg>
           )}
         </button>
@@ -212,45 +236,79 @@ export default function FloatingAssistant() {
       {/* Slide-in drawer panel (off-canvas). */}
       <div
         className={`fixed top-0 right-0 h-full w-full md:w-[400px] bg-white shadow-2xl z-50 transform transition-transform duration-300 flex flex-col shadow-dividerL dark:shadow-dividerLDark ${
-          open ? 'translate-x-0' : 'translate-x-full'
+          open ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* Drawer header: title + live status (thinking/live) + close button. */}
         <div className="p-4 bg-[#0A66C2] text-white flex items-center justify-between shadow-md">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold backdrop-blur-sm">
-              <BotLogo width={24} height={24} variant="glyph" className="text-white" />
+              <BotLogo
+                width={24}
+                height={24}
+                variant="glyph"
+                className="text-white"
+              />
             </div>
             <div>
               <p className="font-bold tracking-tight">GarTex Assistant</p>
               <div className="flex items-center gap-1.5">
-                <span className={`w-2 h-2 rounded-full animate-pulse${loading ? 'bg-amber-400' : 'bg-green-400'}`}></span>
+                <span
+                  className={`w-2 h-2 rounded-full animate-pulse${loading ? "bg-amber-400" : "bg-green-400"}`}
+                ></span>
                 <p className="text-[10px] uppercase tracking-wider text-sky-100 font-semibold">
-                  {loading ? 'Thinking...' : 'Live Guidance'}
+                  {loading ? "Thinking..." : "Live Guidance"}
                 </p>
               </div>
             </div>
           </div>
-          <button onClick={() => setOpen(false)} aria-label="Close assistant" title="Close assistant" type="button" className="hover:bg-white/10 p-1 rounded-full transition-colors w-8 h-8 flex items-center justify-center">
-            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-white">
-              <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M6 6 L18 18 M6 18 L18 6" />
+          <button
+            onClick={() => setOpen(false)}
+            aria-label="Close assistant"
+            title="Close assistant"
+            type="button"
+            className="hover:bg-white/10 p-1 rounded-full transition-colors w-8 h-8 flex items-center justify-center"
+          >
+            <svg
+              aria-hidden="true"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              className="text-white"
+            >
+              <path
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 6 L18 18 M6 18 L18 6"
+              />
             </svg>
           </button>
         </div>
 
         {/* Transcript: scrollable list of chat bubbles. */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50">
+        <div
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50"
+        >
           {messages.map((msg, i) => (
-            <div key={i} className={`flex${msg.role === 'user' ? 'justify-end' : 'justify-start'}animate-in fade-in slide-in-from-bottom-2 duration-300`}>
-              <div className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed${
-                msg.role === 'user' 
-                  ? 'bg-[#0A66C2] text-white rounded-tr-none shadow-blue-100 shadow-lg' 
-                  : 'bg-white text-gray-800 rounded-tl-none shadow-sm'
-              }`}>
-                {msg.role === 'assistant' && msg.isNew ? (
-                  <TypewriterText 
-                    text={msg.text} 
-                    onComplete={() => markAsOld(i)} 
+            <div
+              key={i}
+              className={`flex${msg.role === "user" ? "justify-end" : "justify-start"}animate-in fade-in slide-in-from-bottom-2 duration-300`}
+            >
+              <div
+                className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed${
+                  msg.role === "user"
+                    ? "bg-[#0A66C2] text-white rounded-tr-none shadow-blue-100 shadow-lg"
+                    : "bg-white text-gray-800 rounded-tl-none shadow-sm"
+                }`}
+              >
+                {msg.role === "assistant" && msg.isNew ? (
+                  <TypewriterText
+                    text={msg.text}
+                    onComplete={() => markAsOld(i)}
                   />
                 ) : (
                   msg.text
@@ -258,7 +316,7 @@ export default function FloatingAssistant() {
               </div>
             </div>
           ))}
-          
+
           {loading && (
             // Typing indicator bubble shown while awaiting server reply.
             <div className="flex justify-start animate-in fade-in duration-200">
@@ -279,8 +337,8 @@ export default function FloatingAssistant() {
             // Quick suggestion chips appear early to guide first-time users.
             <div className="flex flex-wrap gap-2 mb-4 animate-in fade-in slide-in-from-bottom-1 duration-500">
               {suggestions.map((s, i) => (
-                <button 
-                  key={i} 
+                <button
+                  key={i}
                   onClick={() => handleSend(s)}
                   className="text-[11px] bg-sky-50 text-[#0A66C2] shadow-borderless dark:shadow-borderlessDark px-3 py-1.5 rounded-full hover:bg-sky-100 transition-all hover:scale-105 active:scale-95"
                 >
@@ -295,7 +353,7 @@ export default function FloatingAssistant() {
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
                 placeholder="Type your question..."
                 className="w-full px-4 py-2.5 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2] transition-all placeholder:text-gray-400"
               />
@@ -305,8 +363,18 @@ export default function FloatingAssistant() {
               disabled={loading || !input.trim()}
               className="w-10 h-10 rounded-full bg-[#0A66C2] text-white flex items-center justify-center disabled:opacity-30 disabled:grayscale transition-all hover:bg-[#004182] hover:shadow-lg active:scale-90 shrink-0"
             >
-              <svg className="w-5 h-5 rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+              <svg
+                className="w-5 h-5 rotate-45"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2.5"
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                ></path>
               </svg>
             </button>
           </div>
@@ -316,6 +384,5 @@ export default function FloatingAssistant() {
         </div>
       </div>
     </>
-  )
+  );
 }
-

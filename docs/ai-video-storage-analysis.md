@@ -21,8 +21,9 @@ const DEFAULT_CONFIG = {
 **NO OpenAI/GPT API Integration Found in Codebase!**
 
 I searched for:
+
 - `openai` - NOT FOUND
-- `gpt-` - NOT FOUND  
+- `gpt-` - NOT FOUND
 - `api.openai.com` - NOT FOUND
 - `azure openai` - NOT FOUND
 
@@ -56,6 +57,7 @@ plan_limits: {
 ```
 
 **Video limit is COUNT-based, not duration-based!**
+
 - FREE: 2 videos
 - PREMIUM: 200 videos
 
@@ -66,10 +68,10 @@ plan_limits: {
 // MAX_VIDEO_DURATION_SECONDS = 60
 
 function validateVideoUpload(file) {
-  const MAX_DURATION = 60 // seconds
+  const MAX_DURATION = 60; // seconds
   // Check video metadata.duration...
   if (videoDuration > MAX_DURATION) {
-    throw new Error('Video must be 60 seconds or less')
+    throw new Error("Video must be 60 seconds or less");
   }
 }
 ```
@@ -94,12 +96,13 @@ premium: {
 
 **Image Storage Estimates:**
 
-| Plan | Products | Max Images/Product | Total Images | Estimated Storage |
-|------|---------|-------------------|-------------|-------------------|
-| Free | 20 | 10 | 200 | ~500 MB |
-| Premium | 500 | 10 | 5,000 | ~12.5 GB |
+| Plan    | Products | Max Images/Product | Total Images | Estimated Storage |
+| ------- | -------- | ------------------ | ------------ | ----------------- |
+| Free    | 20       | 10                 | 200          | ~500 MB           |
+| Premium | 500      | 10                 | 5,000        | ~12.5 GB          |
 
 **Per Image Calculation:**
+
 - Average product image: 100-500 KB (compressed JPEG)
 - With thumbnails: +50 KB/image
 - **Total per image: ~150-550 KB**
@@ -112,31 +115,31 @@ premium: {
 
 ```javascript
 // Storage files used:
-- users.json
-- user_profiles.json  
-- products.json
-- buyer_requests.json
-- contracts.json
-- messages.json
-- violations.json
-- coupon_codes.json
-- coupon_redemptions.json
-- traffic_analytics.json
-- notifications.json
+-users.json -
+  user_profiles.json -
+  products.json -
+  buyer_requests.json -
+  contracts.json -
+  messages.json -
+  violations.json -
+  coupon_codes.json -
+  coupon_redemptions.json -
+  traffic_analytics.json -
+  notifications.json;
 ```
 
 **Estimate for 10,000 Users:**
 
-| Data Type | Est. Records | Est. Size |
-|----------|-------------|----------|
-| Users | 10,000 | ~10 MB |
-| Products | 50,000 | ~50 MB |
-| Buyer Requests | 30,000 | ~30 MB |
-| Contracts | 5,000 | ~5 MB |
-| Messages | 100,000 | ~20 MB |
-| Media URLs* | 50,000 | ~5 MB |
+| Data Type      | Est. Records | Est. Size |
+| -------------- | ------------ | --------- |
+| Users          | 10,000       | ~10 MB    |
+| Products       | 50,000       | ~50 MB    |
+| Buyer Requests | 30,000       | ~30 MB    |
+| Contracts      | 5,000        | ~5 MB     |
+| Messages       | 100,000      | ~20 MB    |
+| Media URLs\*   | 50,000       | ~5 MB     |
 
-*Note: Actual images/videos stored in cloud (S3/Cloudflare R2), not in database.
+\*Note: Actual images/videos stored in cloud (S3/Cloudflare R2), not in database.
 
 ---
 
@@ -144,13 +147,14 @@ premium: {
 
 **If you add OpenAI/GPT later:**
 
-| Feature | Request | Est. Cost/1K users |
-|---------|---------|-------------------|
-| Chat summary | 50 words | $0.002 |
-| AI negotiation | 100 words | $0.004 |
-| Product matching | 50 words | $0.002 |
+| Feature          | Request   | Est. Cost/1K users |
+| ---------------- | --------- | ------------------ |
+| Chat summary     | 50 words  | $0.002             |
+| AI negotiation   | 100 words | $0.004             |
+| Product matching | 50 words  | $0.002             |
 
 **Monthly Estimate (1,000 active users, 10 messages each):**
+
 - 10,000 summaries × $0.002 = $20/month
 - Add buffer = **~$50-100/month max**
 
@@ -158,13 +162,13 @@ premium: {
 
 ## 6. Conclusion
 
-| Question | Answer |
-|----------|-------|
-| Is AI expensive? | **NO** - Currently rule-based, $0 cost |
-| Video 60s limit? | **NOT enforced** - Currently count-based (2 free / 200 premium) |
-| Image storage? | **~500KB/image** - Cloud storage needed |
-| Database for 10K users? | **~150 MB** for JSON files |
-| Adding LLM later? | **~$50-100/month** if needed |
+| Question                | Answer                                                          |
+| ----------------------- | --------------------------------------------------------------- |
+| Is AI expensive?        | **NO** - Currently rule-based, $0 cost                          |
+| Video 60s limit?        | **NOT enforced** - Currently count-based (2 free / 200 premium) |
+| Image storage?          | **~500KB/image** - Cloud storage needed                         |
+| Database for 10K users? | **~150 MB** for JSON files                                      |
+| Adding LLM later?       | **~$50-100/month** if needed                                    |
 
 ---
 

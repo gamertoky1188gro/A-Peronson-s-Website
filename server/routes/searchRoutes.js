@@ -1,9 +1,9 @@
-import { Router } from 'express'
-import { requireAuth } from '../middleware/auth.js'
-import { createSearchAlert } from '../controllers/notificationController.js'
+import { Router } from "express";
+import { requireAuth } from "../middleware/auth.js";
+import { createSearchAlert } from "../controllers/notificationController.js";
 
-const router = Router()
+const router = Router();
 
-router.post('/alerts', requireAuth, createSearchAlert)
+router.post("/alerts", requireAuth, createSearchAlert);
 
-export default router
+export default router;

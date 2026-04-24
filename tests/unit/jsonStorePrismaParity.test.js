@@ -1,76 +1,80 @@
 /** @jest-environment node */
 
-import prisma from '../../server/utils/prisma.js'
-import { readJson, updateJson, writeJson } from '../../server/utils/jsonStore.js'
+import prisma from "../../server/utils/prisma.js";
+import {
+  readJson,
+  updateJson,
+  writeJson,
+} from "../../server/utils/jsonStore.js";
 
-describe('jsonStore Prisma parity', () => {
-  const originalNodeEnv = process.env.NODE_ENV
-  const originalRequirement = prisma.requirement
+describe("jsonStore Prisma parity", () => {
+  const originalNodeEnv = process.env.NODE_ENV;
+  const originalRequirement = prisma.requirement;
 
   afterEach(() => {
-    process.env.NODE_ENV = originalNodeEnv
-    prisma.requirement = originalRequirement
-  })
+    process.env.NODE_ENV = originalNodeEnv;
+    prisma.requirement = originalRequirement;
+  });
 
-  test('read/write parity matches expected behavior via Prisma delegate', async () => {
-    process.env.NODE_ENV = 'development'
+  test("read/write parity matches expected behavior via Prisma delegate", async () => {
+    process.env.NODE_ENV = "development";
 
-    let rows = []
+    let rows = [];
     prisma.requirement = {
       findMany: async () => rows,
       deleteMany: async ({ where } = {}) => {
-        const deletions = Array.isArray(where?.OR) ? where.OR : []
-        const deleteSet = new Set(deletions.map((d) => String(d.id || '')))
-        rows = rows.filter((row) => !deleteSet.has(String(row.id || '')))
-        return { count: deleteSet.size }
+        const deletions = Array.isArray(where?.OR) ? where.OR : [];
+        const deleteSet = new Set(deletions.map((d) => String(d.id || "")));
+        rows = rows.filter((row) => !deleteSet.has(String(row.id || "")));
+        return { count: deleteSet.size };
       },
       upsert: async ({ where, update, create }) => {
-        const id = String(where?.id || create?.id || '')
-        const idx = rows.findIndex((row) => String(row.id) === id)
+        const id = String(where?.id || create?.id || "");
+        const idx = rows.findIndex((row) => String(row.id) === id);
         if (idx >= 0) {
-          rows[idx] = { ...rows[idx], ...update }
-          return rows[idx]
+          rows[idx] = { ...rows[idx], ...update };
+          return rows[idx];
         }
-        const next = { ...create }
-        rows.push(next)
-        return next
+        const next = { ...create };
+        rows.push(next);
+        return next;
       },
-    }
+    };
 
-    await writeJson('requirements.json', [
-      { id: 'req-1', buyer_id: 'buyer-1', title: 'A', status: 'new' },
-      { id: 'req-2', buyer_id: 'buyer-1', title: 'B', status: 'new' },
-    ])
+    await writeJson("requirements.json", [
+      { id: "req-1", buyer_id: "buyer-1", title: "A", status: "new" },
+      { id: "req-2", buyer_id: "buyer-1", title: "B", status: "new" },
+    ]);
 
-    const firstRead = await readJson('requirements.json')
-    expect(firstRead).toHaveLength(2)
-    expect(firstRead.map((r) => r.id).sort()).toEqual(['req-1', 'req-2'])
+    const firstRead = await readJson("requirements.json");
+    expect(firstRead).toHaveLength(2);
+    expect(firstRead.map((r) => r.id).sort()).toEqual(["req-1", "req-2"]);
 
-    await writeJson('requirements.json', [
-      { id: 'req-1', buyer_id: 'buyer-1', title: 'A', status: 'contacted' },
-    ])
+    await writeJson("requirements.json", [
+      { id: "req-1", buyer_id: "buyer-1", title: "A", status: "contacted" },
+    ]);
 
-    const secondRead = await readJson('requirements.json')
+    const secondRead = await readJson("requirements.json");
     expect(secondRead).toEqual([
-      expect.objectContaining({ id: 'req-1', status: 'contacted' }),
-    ])
-  })
+      expect.objectContaining({ id: "req-1", status: "contacted" }),
+    ]);
+  });
 
-  test('unknown file returns empty array in non-test mode', async () => {
-    process.env.NODE_ENV = 'development'
-    const rows = await readJson('unknown.json')
-    expect(rows).toEqual([])
-  })
+  test("unknown file returns empty array in non-test mode", async () => {
+    process.env.NODE_ENV = "development";
+    const rows = await readJson("unknown.json");
+    expect(rows).toEqual([]);
+  });
 
-  test('update semantics work in test mode in-memory path', async () => {
-    process.env.NODE_ENV = 'test'
-    await writeJson('requirements.json', [{ id: 'req-mem-1', status: 'new' }])
+  test("update semantics work in test mode in-memory path", async () => {
+    process.env.NODE_ENV = "test";
+    await writeJson("requirements.json", [{ id: "req-mem-1", status: "new" }]);
 
-    await updateJson('requirements.json', (existing) => {
-      return existing.map((row) => ({ ...row, status: 'contacted' }))
-    })
+    await updateJson("requirements.json", (existing) => {
+      return existing.map((row) => ({ ...row, status: "contacted" }));
+    });
 
-    const rows = await readJson('requirements.json')
-    expect(rows).toEqual([{ id: 'req-mem-1', status: 'contacted' }])
-  })
-})
+    const rows = await readJson("requirements.json");
+    expect(rows).toEqual([{ id: "req-mem-1", status: "contacted" }]);
+  });
+});

@@ -57,11 +57,11 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/About.jsx:53`
 
 ```jsx
-function Skeleton({ className='' }) {
-  return <div className={['skeleton', className].join(' ')} />
+function Skeleton({ className = "" }) {
+  return <div className={["skeleton", className].join(" ")} />;
 }
-
 ```
+
 **Raw class strings detected (best effort):**
 
 - `skeleton`
@@ -80,6 +80,7 @@ function Skeleton({ className='' }) {
 
 function MotionItem({ index, className='', children }) {
 ```
+
 **Raw class strings detected (best effort):**
 
 - `skeleton`
@@ -98,12 +99,12 @@ function MotionItem({ index, className='', children }) {
   if (reduceMotion) return <div className={className}>{children}</div>
   return (
 ```
+
 **Raw class strings detected (best effort):**
 
 - _(dynamic className; inspect the snippet above)_
 
 **Utility breakdown (grouped):**
-
 
 #### `src/pages/About.jsx:59`
 
@@ -113,12 +114,12 @@ function MotionItem({ index, className='', children }) {
     <motion.div
       className={className}
 ```
+
 **Raw class strings detected (best effort):**
 
 - _(dynamic className; inspect the snippet above)_
 
 **Utility breakdown (grouped):**
-
 
 #### `src/pages/About.jsx:62`
 
@@ -128,12 +129,12 @@ function MotionItem({ index, className='', children }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: index * 0.05 }}
 ```
+
 **Raw class strings detected (best effort):**
 
 - _(dynamic className; inspect the snippet above)_
 
 **Utility breakdown (grouped):**
-
 
 #### `src/pages/About.jsx:75`
 
@@ -143,6 +144,7 @@ function MotionItem({ index, className='', children }) {
         'bg-emerald-600/10 text-emerald-700 shadow-[0_0_0_1px_rgba(5,150,105,0.20),0_16px_36px_rgba(5,150,105,0.12)]',
         'dark:bg-emerald-500/12 dark:text-emerald-200 dark:shadow-[0_0_0_1px_rgba(16,185,129,0.18),0_0_28px_rgba(16,185,129,0.14)]',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold`
@@ -180,6 +182,7 @@ function MotionItem({ index, className='', children }) {
     </span>
   )
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-1.5 w-1.5 rounded-full bg-emerald-600 shadow-[0_0_14px_rgba(5,150,105,0.55)] dark:bg-emerald-400 dark:shadow-[0_0_18px_rgba(16,185,129,0.55)]`
@@ -206,6 +209,7 @@ function MotionItem({ index, className='', children }) {
       </span>
     )
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center rounded-full bg-sky-500/10 px-2.5 py-1 text-[11px] font-semibold text-sky-700 shadow-[0_0_0_1px_rgba(56,189,248,0.18)] dark:bg-sky-400/10 dark:text-sky-200`
@@ -239,6 +243,7 @@ function MotionItem({ index, className='', children }) {
     </span>
   )
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center rounded-full bg-rose-500/10 px-2.5 py-1 text-[11px] font-semibold text-rose-700 shadow-[0_0_0_1px_rgba(244,63,94,0.18)] dark:bg-rose-400/10 dark:text-rose-200`
@@ -272,6 +277,7 @@ function MotionItem({ index, className='', children }) {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           <MotionItem index={0} className="lg:col-span-8">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `weave-bg relative min-h-screen overflow-x-hidden bg-[#F8FAFC] text-[#1E293B] dark:bg-[#0F172A] dark:text-[#F1F5F9]`
@@ -314,6 +320,7 @@ function MotionItem({ index, className='', children }) {
           <MotionItem index={0} className="lg:col-span-8">
             <SpotlightCard
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8`
@@ -345,6 +352,7 @@ function MotionItem({ index, className='', children }) {
             <SpotlightCard
               className={[
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid grid-cols-1 gap-6 lg:grid-cols-12`
@@ -369,6 +377,7 @@ function MotionItem({ index, className='', children }) {
               className={[
                 'rounded-xl p-8',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-8`
@@ -391,6 +400,7 @@ function MotionItem({ index, className='', children }) {
                 'bg-white/60 backdrop-blur-[10px]',
                 'shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-8`
@@ -416,6 +426,7 @@ function MotionItem({ index, className='', children }) {
               </h1>
               <p className="mt-3 text-lg italic text-[#475569] dark:text-slate-300">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-4xl font-extrabold tracking-tight text-[#1E293B] dark:text-[#F1F5F9] sm:text-5xl`
@@ -448,6 +459,7 @@ function MotionItem({ index, className='', children }) {
               </p>
               <p className="mt-5 max-w-3xl text-[15px] leading-relaxed text-[#475569] dark:text-slate-300">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-lg italic text-[#475569] dark:text-slate-300`
@@ -478,6 +490,7 @@ function MotionItem({ index, className='', children }) {
                 to create a structured, transparent, and trust-driven environment where international buyers, factories, and
                 buying houses can connect with confidence.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 max-w-3xl text-[15px] leading-relaxed text-[#475569] dark:text-slate-300`
@@ -504,6 +517,7 @@ function MotionItem({ index, className='', children }) {
                   to="/verification"
                   className="liquid-btn inline-flex items-center justify-center rounded-md bg-[#0F172A] px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(15,23,42,0.20)] transition hover:brightness-105 dark:bg-sky-500/15 dark:text-sky-100 dark:shadow-none"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-7 flex flex-wrap gap-3`
@@ -551,6 +565,7 @@ function MotionItem({ index, className='', children }) {
                   View verification standards
                 </MagneticButton>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `liquid-btn inline-flex items-center justify-center rounded-md bg-[#0F172A] px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(15,23,42,0.20)] transition hover:brightness-105 dark:bg-sky-500/15 dark:text-sky-100 dark:shadow-none`
@@ -591,6 +606,7 @@ function MotionItem({ index, className='', children }) {
                   Contact sales
                 </MagneticButton>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `liquid-btn inline-flex items-center justify-center rounded-md bg-white/70 px-5 py-3 text-sm font-semibold text-[#1E293B] shadow-[0_10px_26px_rgba(15,23,42,0.10)] transition hover:bg-white dark:bg-white/10 dark:text-white dark:shadow-none`
@@ -631,6 +647,7 @@ function MotionItem({ index, className='', children }) {
               className={[
                 'rounded-xl p-7',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-4`
@@ -653,6 +670,7 @@ function MotionItem({ index, className='', children }) {
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
                 'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-7`
@@ -677,11 +695,14 @@ function MotionItem({ index, className='', children }) {
 #### `src/pages/About.jsx:207`
 
 ```jsx
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-[#1E293B] dark:text-[#F1F5F9]">Trust indicators</p>
-                <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-              </div>
+<div className="flex items-center justify-between">
+  <p className="text-sm font-semibold text-[#1E293B] dark:text-[#F1F5F9]">
+    Trust indicators
+  </p>
+  <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between`
@@ -714,6 +735,7 @@ function MotionItem({ index, className='', children }) {
               </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-[#1E293B] dark:text-[#F1F5F9]`
@@ -742,6 +764,7 @@ function MotionItem({ index, className='', children }) {
 
               {loadError ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-5 w-5 text-emerald-600 dark:text-emerald-400`
@@ -764,6 +787,7 @@ function MotionItem({ index, className='', children }) {
 
               <div className="mt-5 grid gap-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-xs text-[#64748B] dark:text-slate-300`
@@ -792,6 +816,7 @@ function MotionItem({ index, className='', children }) {
                   <>
                     <Skeleton className="h-14 rounded-lg" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 grid gap-3`
@@ -816,6 +841,7 @@ function MotionItem({ index, className='', children }) {
                     <Skeleton className="h-14 rounded-lg" />
                     <Skeleton className="h-14 rounded-lg" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-14 rounded-lg`
@@ -835,6 +861,7 @@ function MotionItem({ index, className='', children }) {
                     <Skeleton className="h-14 rounded-lg" />
                   </>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-14 rounded-lg`
@@ -854,6 +881,7 @@ function MotionItem({ index, className='', children }) {
                   </>
                 ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-14 rounded-lg`
@@ -873,6 +901,7 @@ function MotionItem({ index, className='', children }) {
                 ) : (
                   <AnimatePresence mode="wait" initial={false}>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-14 rounded-lg`
@@ -894,6 +923,7 @@ function MotionItem({ index, className='', children }) {
                       {[
                         { label: 'Verified factories', value: String(about.stats.verifiedFactories) },
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid gap-3`
@@ -912,11 +942,19 @@ function MotionItem({ index, className='', children }) {
 #### `src/pages/About.jsx:240`
 
 ```jsx
-                        <div key={item.label} className="flex items-center justify-between rounded-lg bg-slate-900/4 px-4 py-3 dark:bg-white/5">
-                          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#64748B] dark:text-slate-300">{item.label}</p>
-                          <p className="text-lg font-extrabold tracking-tight text-[#1E293B] dark:text-white">{item.value}</p>
-                        </div>
+<div
+  key={item.label}
+  className="flex items-center justify-between rounded-lg bg-slate-900/4 px-4 py-3 dark:bg-white/5"
+>
+  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#64748B] dark:text-slate-300">
+    {item.label}
+  </p>
+  <p className="text-lg font-extrabold tracking-tight text-[#1E293B] dark:text-white">
+    {item.value}
+  </p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between rounded-lg bg-slate-900/4 px-4 py-3 dark:bg-white/5`
@@ -959,6 +997,7 @@ function MotionItem({ index, className='', children }) {
                         </div>
                       ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold uppercase tracking-[0.12em] text-[#64748B] dark:text-slate-300`
@@ -989,6 +1028,7 @@ function MotionItem({ index, className='', children }) {
                       ))}
                     </motion.div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-extrabold tracking-tight text-[#1E293B] dark:text-white`
@@ -1012,6 +1052,7 @@ function MotionItem({ index, className='', children }) {
               className={[
                 'rounded-xl p-7',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-12`
@@ -1034,6 +1075,7 @@ function MotionItem({ index, className='', children }) {
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
                 'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-7`
@@ -1063,6 +1105,7 @@ function MotionItem({ index, className='', children }) {
                 Cross-border textile trade often depends on informal communication, scattered documents, and manual
                 verification processes. This creates inefficiencies, misunderstandings, and trust barriers.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xl font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -1088,11 +1131,13 @@ function MotionItem({ index, className='', children }) {
 #### `src/pages/About.jsx:264`
 
 ```jsx
-              <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
-                Cross-border textile trade often depends on informal communication, scattered documents, and manual
-                verification processes. This creates inefficiencies, misunderstandings, and trust barriers.
-              </p>
+<p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
+  Cross-border textile trade often depends on informal communication, scattered
+  documents, and manual verification processes. This creates inefficiencies,
+  misunderstandings, and trust barriers.
+</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300`
@@ -1112,11 +1157,13 @@ function MotionItem({ index, className='', children }) {
 #### `src/pages/About.jsx:268`
 
 ```jsx
-              <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
-                GarTexHub was created to solve this problem by combining structured communication, verified business
-                identities, and secure documentation within one unified system.
-              </p>
+<p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
+  GarTexHub was created to solve this problem by combining structured
+  communication, verified business identities, and secure documentation within
+  one unified system.
+</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300`
@@ -1141,6 +1188,7 @@ function MotionItem({ index, className='', children }) {
               className={[
                 'rounded-xl p-7',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-4`
@@ -1163,6 +1211,7 @@ function MotionItem({ index, className='', children }) {
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
                 'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-7`
@@ -1192,6 +1241,7 @@ function MotionItem({ index, className='', children }) {
                 To simplify international garment sourcing by building a secure digital infrastructure that prioritizes
                 credibility, transparency, and efficiency.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -1217,11 +1267,12 @@ function MotionItem({ index, className='', children }) {
 #### `src/pages/About.jsx:287`
 
 ```jsx
-              <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
-                To simplify international garment sourcing by building a secure digital infrastructure that prioritizes
-                credibility, transparency, and efficiency.
-              </p>
+<p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
+  To simplify international garment sourcing by building a secure digital
+  infrastructure that prioritizes credibility, transparency, and efficiency.
+</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300`
@@ -1246,6 +1297,7 @@ function MotionItem({ index, className='', children }) {
               className={[
                 'rounded-xl p-7',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-4`
@@ -1268,6 +1320,7 @@ function MotionItem({ index, className='', children }) {
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
                 'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-7`
@@ -1297,6 +1350,7 @@ function MotionItem({ index, className='', children }) {
                 To become a trusted digital bridge between global buyers and garment manufacturers, reducing negotiation
                 friction and strengthening international trade relationships.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -1322,11 +1376,13 @@ function MotionItem({ index, className='', children }) {
 #### `src/pages/About.jsx:306`
 
 ```jsx
-              <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
-                To become a trusted digital bridge between global buyers and garment manufacturers, reducing negotiation
-                friction and strengthening international trade relationships.
-              </p>
+<p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
+  To become a trusted digital bridge between global buyers and garment
+  manufacturers, reducing negotiation friction and strengthening international
+  trade relationships.
+</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300`
@@ -1351,6 +1407,7 @@ function MotionItem({ index, className='', children }) {
               className={[
                 'rounded-xl p-7',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-4 lg:row-span-2`
@@ -1374,6 +1431,7 @@ function MotionItem({ index, className='', children }) {
                 'bg-white/60 backdrop-blur-[10px]',
                 'shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-7`
@@ -1399,6 +1457,7 @@ function MotionItem({ index, className='', children }) {
               <ul className="mt-6 space-y-4">
                 {howItWorks.map((step, idx) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -1426,6 +1485,7 @@ function MotionItem({ index, className='', children }) {
                   <motion.li
                     key={`${step}-${idx}`}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-6 space-y-4`
@@ -1444,6 +1504,7 @@ function MotionItem({ index, className='', children }) {
                     <span className="mt-1 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600/10 text-emerald-700 shadow-[0_0_0_1px_rgba(5,150,105,0.18)] dark:bg-emerald-500/12 dark:text-emerald-200">
                       <Check className="h-4 w-4" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex gap-3`
@@ -1483,6 +1544,7 @@ function MotionItem({ index, className='', children }) {
                     </span>
                     <div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600/10 text-emerald-700 shadow-[0_0_0_1px_rgba(5,150,105,0.18)] dark:bg-emerald-500/12 dark:text-emerald-200`
@@ -1519,6 +1581,7 @@ function MotionItem({ index, className='', children }) {
                     <div>
                       <p className="text-sm leading-relaxed text-[#475569] dark:text-slate-300">{step}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-4 w-4`
@@ -1545,6 +1608,7 @@ function MotionItem({ index, className='', children }) {
                   </motion.li>
                 ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm leading-relaxed text-[#475569] dark:text-slate-300`
@@ -1567,6 +1631,7 @@ function MotionItem({ index, className='', children }) {
               className={[
                 'rounded-xl p-7',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-8`
@@ -1589,6 +1654,7 @@ function MotionItem({ index, className='', children }) {
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
                 'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-7`
@@ -1618,6 +1684,7 @@ function MotionItem({ index, className='', children }) {
                   <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Verification & Trust</h2>
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap items-center justify-between gap-4`
@@ -1649,6 +1716,7 @@ function MotionItem({ index, className='', children }) {
                 <VerifiedBadge label="Verification green" />
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -1671,11 +1739,13 @@ function MotionItem({ index, className='', children }) {
 #### `src/pages/About.jsx:366`
 
 ```jsx
-              <p className="mt-4 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
-                GarTexHub uses a document-based verification system. Companies must submit legal and operational documents,
-                which are manually reviewed before verification status is granted.
-              </p>
+<p className="mt-4 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
+  GarTexHub uses a document-based verification system. Companies must submit
+  legal and operational documents, which are manually reviewed before
+  verification status is granted.
+</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 text-sm leading-relaxed text-[#475569] dark:text-slate-300`
@@ -1700,6 +1770,7 @@ function MotionItem({ index, className='', children }) {
               </p>
               <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300`
@@ -1724,6 +1795,7 @@ function MotionItem({ index, className='', children }) {
               </p>
             </SpotlightCard>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300`
@@ -1748,6 +1820,7 @@ function MotionItem({ index, className='', children }) {
               className={[
                 'needle-area rounded-xl p-7',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-7`
@@ -1772,6 +1845,7 @@ function MotionItem({ index, className='', children }) {
                 'bg-white/60 backdrop-blur-[10px]',
                 'shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `needle-area rounded-xl p-7`
@@ -1799,6 +1873,7 @@ function MotionItem({ index, className='', children }) {
                 <div className="min-w-0">
                   <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Verified documents</h2>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `needle-cursor`
@@ -1834,6 +1909,7 @@ function MotionItem({ index, className='', children }) {
                   <h2 className="text-lg font-bold tracking-tight text-[#1E293B] dark:text-white">Verified documents</h2>
                   <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-3`
@@ -1872,6 +1948,7 @@ function MotionItem({ index, className='', children }) {
                   <p className="mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
                     Skeleton loads into audit-ready details -- verified signals stay prominent.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0`
@@ -1905,6 +1982,7 @@ function MotionItem({ index, className='', children }) {
                     Skeleton loads into audit-ready details -- verified signals stay prominent.
                   </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -1935,6 +2013,7 @@ function MotionItem({ index, className='', children }) {
                   </p>
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-300`
@@ -1959,6 +2038,7 @@ function MotionItem({ index, className='', children }) {
 
               <div className="mt-6 grid gap-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-5 w-5 text-[#0F172A]/70 dark:text-slate-200`
@@ -1986,6 +2066,7 @@ function MotionItem({ index, className='', children }) {
                   <>
                     <Skeleton className="h-12 rounded-xl" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-6 grid gap-3`
@@ -2010,6 +2091,7 @@ function MotionItem({ index, className='', children }) {
                     <Skeleton className="h-12 rounded-xl" />
                     <Skeleton className="h-12 rounded-xl" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-12 rounded-xl`
@@ -2029,6 +2111,7 @@ function MotionItem({ index, className='', children }) {
                     <Skeleton className="h-12 rounded-xl" />
                   </>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-12 rounded-xl`
@@ -2048,6 +2131,7 @@ function MotionItem({ index, className='', children }) {
                   </>
                 ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-12 rounded-xl`
@@ -2067,6 +2151,7 @@ function MotionItem({ index, className='', children }) {
                 ) : (
                   <AnimatePresence mode="wait" initial={false}>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-12 rounded-xl`
@@ -2088,6 +2173,7 @@ function MotionItem({ index, className='', children }) {
                       {(about.documents || []).map((doc) => (
                         <div
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid gap-3`
@@ -2107,6 +2193,7 @@ function MotionItem({ index, className='', children }) {
                             'bg-[#FFFFFF] shadow-[0_10px_26px_rgba(15,23,42,0.08)]',
                             'transition duration-300 ease-out',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `group flex flex-wrap items-center justify-between gap-3 rounded-xl px-4 py-3`
@@ -2139,11 +2226,16 @@ function MotionItem({ index, className='', children }) {
 #### `src/pages/About.jsx:432`
 
 ```jsx
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-[#1E293B] dark:text-white">{doc.name}</p>
-                            <p className="mt-1 text-xs text-[#64748B] dark:text-slate-300">Updated {doc.updatedAt}</p>
-                          </div>
+<div className="min-w-0">
+  <p className="truncate text-sm font-semibold text-[#1E293B] dark:text-white">
+    {doc.name}
+  </p>
+  <p className="mt-1 text-xs text-[#64748B] dark:text-slate-300">
+    Updated {doc.updatedAt}
+  </p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0`
@@ -2176,6 +2268,7 @@ function MotionItem({ index, className='', children }) {
                           </div>
                           <div className="flex items-center gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `truncate text-sm font-semibold text-[#1E293B] dark:text-white`
@@ -2210,6 +2303,7 @@ function MotionItem({ index, className='', children }) {
                           <div className="flex items-center gap-2">
                             <StatusChip status={doc.status} />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-xs text-[#64748B] dark:text-slate-300`
@@ -2238,6 +2332,7 @@ function MotionItem({ index, className='', children }) {
                           </div>
                         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2`
@@ -2258,6 +2353,7 @@ function MotionItem({ index, className='', children }) {
               className={[
                 'rounded-xl p-7',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-5`
@@ -2280,6 +2376,7 @@ function MotionItem({ index, className='', children }) {
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
                 'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-7`
@@ -2309,6 +2406,7 @@ function MotionItem({ index, className='', children }) {
                 <span className="rounded-full bg-[#0F172A]/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#475569] dark:bg-white/8 dark:text-slate-300">
                   Coming soon
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-3`
@@ -2352,6 +2450,7 @@ function MotionItem({ index, className='', children }) {
                   Coming soon
                 </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -2389,6 +2488,7 @@ function MotionItem({ index, className='', children }) {
                 </span>
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[#0F172A]/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#475569] dark:bg-white/8 dark:text-slate-300`
@@ -2420,6 +2520,7 @@ function MotionItem({ index, className='', children }) {
               </p>
               <div className="mt-6 overflow-hidden rounded-xl bg-gradient-to-br from-sky-500/10 via-emerald-500/6 to-indigo-500/10 p-5 dark:from-sky-500/12 dark:via-emerald-500/8 dark:to-indigo-500/12">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm leading-relaxed text-[#475569] dark:text-slate-300`
@@ -2458,6 +2559,7 @@ function MotionItem({ index, className='', children }) {
                 <div className="mt-4 grid grid-cols-3 gap-2">
                   <div className="h-8 rounded-lg bg-white/55 backdrop-blur-md dark:bg-white/5" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-6 overflow-hidden rounded-xl bg-gradient-to-br from-sky-500/10 via-emerald-500/6 to-indigo-500/10 p-5 dark:from-sky-500/12 dark:via-emerald-500/8 dark:to-indigo-500/12`
@@ -2502,6 +2604,7 @@ function MotionItem({ index, className='', children }) {
                   <div className="h-8 rounded-lg bg-white/55 backdrop-blur-md dark:bg-white/5" />
                   <div className="h-8 rounded-lg bg-white/55 backdrop-blur-md dark:bg-white/5" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-32 rounded-lg bg-white/55 backdrop-blur-md dark:bg-white/5`
@@ -2534,6 +2637,7 @@ function MotionItem({ index, className='', children }) {
                   <div className="h-8 rounded-lg bg-white/55 backdrop-blur-md dark:bg-white/5" />
                   <div className="h-8 rounded-lg bg-white/55 backdrop-blur-md dark:bg-white/5" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 grid grid-cols-3 gap-2`
@@ -2564,6 +2668,7 @@ function MotionItem({ index, className='', children }) {
                   <div className="h-8 rounded-lg bg-white/55 backdrop-blur-md dark:bg-white/5" />
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-8 rounded-lg bg-white/55 backdrop-blur-md dark:bg-white/5`
@@ -2588,6 +2693,7 @@ function MotionItem({ index, className='', children }) {
                 </div>
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-8 rounded-lg bg-white/55 backdrop-blur-md dark:bg-white/5`
@@ -2612,6 +2718,7 @@ function MotionItem({ index, className='', children }) {
               </div>
             </SpotlightCard>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-8 rounded-lg bg-white/55 backdrop-blur-md dark:bg-white/5`
@@ -2636,6 +2743,7 @@ function MotionItem({ index, className='', children }) {
               className={[
                 'rounded-xl p-7',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-6`
@@ -2658,6 +2766,7 @@ function MotionItem({ index, className='', children }) {
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
                 'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-7`
@@ -2687,6 +2796,7 @@ function MotionItem({ index, className='', children }) {
                 GarTexHub is strictly dedicated to the Garments and Textile sector. By focusing on a single industry, we
                 provide smarter categorization, clearer communication, and more relevant matching between buyers and
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -2717,6 +2827,7 @@ function MotionItem({ index, className='', children }) {
                 provide smarter categorization, clearer communication, and more relevant matching between buyers and
                 manufacturers.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300`
@@ -2741,6 +2852,7 @@ function MotionItem({ index, className='', children }) {
               className={[
                 'rounded-xl p-7',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-6`
@@ -2763,6 +2875,7 @@ function MotionItem({ index, className='', children }) {
                 'bg-[#FFFFFF] shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
                 'dark:bg-[rgba(30,41,59,0.80)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-7`
@@ -2792,6 +2905,7 @@ function MotionItem({ index, className='', children }) {
                 We do not process direct financial transactions. Our platform is designed to facilitate secure communication,
                 structured agreements, and verified business interactions.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -2817,11 +2931,13 @@ function MotionItem({ index, className='', children }) {
 #### `src/pages/About.jsx:511`
 
 ```jsx
-              <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
-                We do not process direct financial transactions. Our platform is designed to facilitate secure communication,
-                structured agreements, and verified business interactions.
-              </p>
+<p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
+  We do not process direct financial transactions. Our platform is designed to
+  facilitate secure communication, structured agreements, and verified business
+  interactions.
+</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300`
@@ -2841,11 +2957,12 @@ function MotionItem({ index, className='', children }) {
 #### `src/pages/About.jsx:515`
 
 ```jsx
-              <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
-                GarTexHub operates with the principle that trust is earned through transparency, documentation, and
-                professional conduct.
-              </p>
+<p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
+  GarTexHub operates with the principle that trust is earned through
+  transparency, documentation, and professional conduct.
+</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300`
@@ -2870,6 +2987,7 @@ function MotionItem({ index, className='', children }) {
               className={[
                 'rounded-xl p-8',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-12`
@@ -2892,6 +3010,7 @@ function MotionItem({ index, className='', children }) {
                 'bg-white/60 backdrop-blur-[10px]',
                 'shadow-[0_10px_40px_rgba(15,23,42,0.08)]',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-8`
@@ -2917,6 +3036,7 @@ function MotionItem({ index, className='', children }) {
                 For partnership inquiries, support, or compliance-related questions, please contact us through our official
                 communication channels listed on the platform.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xl font-bold tracking-tight text-[#1E293B] dark:text-white`
@@ -2942,11 +3062,12 @@ function MotionItem({ index, className='', children }) {
 #### `src/pages/About.jsx:532`
 
 ```jsx
-              <p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
-                For partnership inquiries, support, or compliance-related questions, please contact us through our official
-                communication channels listed on the platform.
-              </p>
+<p className="mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300">
+  For partnership inquiries, support, or compliance-related questions, please
+  contact us through our official communication channels listed on the platform.
+</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-sm leading-relaxed text-[#475569] dark:text-slate-300`
@@ -2975,6 +3096,7 @@ function MotionItem({ index, className='', children }) {
               </div>
 
 ```
+
 - `src/pages/About.jsx:213` — Live data unavailable -- showing defaults.
 
 ```jsx
@@ -2983,6 +3105,7 @@ function MotionItem({ index, className='', children }) {
 
               <div className="mt-5 grid gap-3">
 ```
+
 - `src/pages/About.jsx:263` — Why GarTexHub Exists
 
 ```jsx
@@ -2991,6 +3114,7 @@ function MotionItem({ index, className='', children }) {
                 Cross-border textile trade often depends on informal communication, scattered documents, and manual
                 verification processes. This creates inefficiencies, misunderstandings, and trust barriers.
 ```
+
 - `src/pages/About.jsx:286` — Mission
 
 ```jsx
@@ -2999,6 +3123,7 @@ function MotionItem({ index, className='', children }) {
                 To simplify international garment sourcing by building a secure digital infrastructure that prioritizes
                 credibility, transparency, and efficiency.
 ```
+
 - `src/pages/About.jsx:305` — Vision
 
 ```jsx
@@ -3007,6 +3132,7 @@ function MotionItem({ index, className='', children }) {
                 To become a trusted digital bridge between global buyers and garment manufacturers, reducing negotiation
                 friction and strengthening international trade relationships.
 ```
+
 - `src/pages/About.jsx:325` — How the Platform Works
 
 ```jsx
@@ -3015,6 +3141,7 @@ function MotionItem({ index, className='', children }) {
               <ul className="mt-6 space-y-4">
                 {howItWorks.map((step, idx) => (
 ```
+
 - `src/pages/About.jsx:361` — Verification & Trust
 
 ```jsx
@@ -3023,6 +3150,7 @@ function MotionItem({ index, className='', children }) {
                 <VerifiedBadge label="Verification green" />
               </div>
 ```
+
 - `src/pages/About.jsx:395` — Verified documents
 
 ```jsx
@@ -3031,6 +3159,7 @@ function MotionItem({ index, className='', children }) {
                     Skeleton loads into audit-ready details -- verified signals stay prominent.
                   </p>
 ```
+
 - `src/pages/About.jsx:434` — Updated {doc.updatedAt}
 
 ```jsx
@@ -3039,6 +3168,7 @@ function MotionItem({ index, className='', children }) {
                           <div className="flex items-center gap-2">
                             <StatusChip status={doc.status} />
 ```
+
 - `src/pages/About.jsx:460` — Digital Bridge
 
 ```jsx
@@ -3047,6 +3177,7 @@ function MotionItem({ index, className='', children }) {
                   Coming soon
                 </span>
 ```
+
 - `src/pages/About.jsx:490` — Industry Focus
 
 ```jsx
@@ -3055,6 +3186,7 @@ function MotionItem({ index, className='', children }) {
                 GarTexHub is strictly dedicated to the Garments and Textile sector. By focusing on a single industry, we
                 provide smarter categorization, clearer communication, and more relevant matching between buyers and
 ```
+
 - `src/pages/About.jsx:510` — Professional Commitment
 
 ```jsx
@@ -3063,6 +3195,7 @@ function MotionItem({ index, className='', children }) {
                 We do not process direct financial transactions. Our platform is designed to facilitate secure communication,
                 structured agreements, and verified business interactions.
 ```
+
 - `src/pages/About.jsx:531` — Contact & Legal Information
 
 ```jsx
@@ -3071,11 +3204,12 @@ function MotionItem({ index, className='', children }) {
                 For partnership inquiries, support, or compliance-related questions, please contact us through our official
                 communication channels listed on the platform.
 ```
+
 ## 5) Backend Mapping (Frontend → Express → Controller → Service/DB)
 
-| Frontend call (path:line) | Express mount | Route definition | Controller file | Handler |
-|---|---|---|---|---|
-| GET /system/about (src/pages/About.jsx:17) | /api/system -> server/routes/systemRoutes.js:127 | GET /about (server/routes/systemRoutes.js:9) | server/controllers/systemController.js | systemAbout |
+| Frontend call (path:line)                   | Express mount                                    | Route definition                             | Controller file                        | Handler     |
+| ------------------------------------------- | ------------------------------------------------ | -------------------------------------------- | -------------------------------------- | ----------- |
+| GET /system/about (src/pages/About.jsx:17)  | /api/system -> server/routes/systemRoutes.js:127 | GET /about (server/routes/systemRoutes.js:9) | server/controllers/systemController.js | systemAbout |
 | GET /system/about (src/pages/About.jsx:113) | /api/system -> server/routes/systemRoutes.js:127 | GET /about (server/routes/systemRoutes.js:9) | server/controllers/systemController.js | systemAbout |
 
 ## 6) How to Edit Safely
@@ -3086,4 +3220,3 @@ function MotionItem({ index, className='', children }) {
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
-

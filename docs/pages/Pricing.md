@@ -57,11 +57,12 @@ _No <header/main/section/aside/footer/nav> tags detected by the heuristic extrac
 #### `src/pages/Pricing.jsx:58`
 
 ```jsx
-function Skeleton({ className='' }) {
+function Skeleton({ className = "" }) {
   // Shimmer skeleton block (App.css `.skeleton`).
-  return <div className={['skeleton', className].join(' ')} />
+  return <div className={["skeleton", className].join(" ")} />;
 }
 ```
+
 **Raw class strings detected (best effort):**
 
 - `skeleton`
@@ -80,6 +81,7 @@ function Skeleton({ className='' }) {
 
 function MotionItem({ index, className='', children }) {
 ```
+
 **Raw class strings detected (best effort):**
 
 - `skeleton`
@@ -98,12 +100,12 @@ function MotionItem({ index, className='', children }) {
   // Respect reduced-motion preference.
   if (reduceMotion) return <div className={className}>{children}</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - _(dynamic className; inspect the snippet above)_
 
 **Utility breakdown (grouped):**
-
 
 #### `src/pages/Pricing.jsx:66`
 
@@ -113,12 +115,12 @@ function MotionItem({ index, className='', children }) {
   return (
     <motion.div
 ```
+
 **Raw class strings detected (best effort):**
 
 - _(dynamic className; inspect the snippet above)_
 
 **Utility breakdown (grouped):**
-
 
 #### `src/pages/Pricing.jsx:70`
 
@@ -128,12 +130,12 @@ function MotionItem({ index, className='', children }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
 ```
+
 **Raw class strings detected (best effort):**
 
 - _(dynamic className; inspect the snippet above)_
 
 **Utility breakdown (grouped):**
-
 
 #### `src/pages/Pricing.jsx:378`
 
@@ -143,6 +145,7 @@ function MotionItem({ index, className='', children }) {
         <div className="grid gap-10 lg:grid-cols-12 lg:items-start">
           <div className="lg:col-span-7">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `relative min-h-screen overflow-x-hidden bg-[#fafafa] text-[#09090b] dark:bg-[#09090b] dark:text-[#fafafa]`
@@ -185,6 +188,7 @@ function MotionItem({ index, className='', children }) {
           <div className="lg:col-span-7">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#52525b] dark:text-[#a1a1aa]">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mx-auto max-w-7xl px-4 pb-16 pt-14 sm:px-6 lg:px-8`
@@ -227,6 +231,7 @@ function MotionItem({ index, className='', children }) {
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#52525b] dark:text-[#a1a1aa]">
               Pricing
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid gap-10 lg:grid-cols-12 lg:items-start`
@@ -261,6 +266,7 @@ function MotionItem({ index, className='', children }) {
               Pricing
             </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-7`
@@ -288,6 +294,7 @@ function MotionItem({ index, className='', children }) {
             </p>
             <h1 className="mt-3 text-4xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa] sm:text-5xl">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold uppercase tracking-[0.12em] text-[#52525b] dark:text-[#a1a1aa]`
@@ -322,6 +329,7 @@ function MotionItem({ index, className='', children }) {
             </h1>
             <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-[#52525b] dark:text-[#a1a1aa]">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-4xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa] sm:text-5xl`
@@ -352,11 +360,12 @@ function MotionItem({ index, className='', children }) {
 #### `src/pages/Pricing.jsx:388`
 
 ```jsx
-            <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-[#52525b] dark:text-[#a1a1aa]">
-              Borderless surfaces, verified signals, and export-ready reporting -- built for buying houses and factories.
-            </p>
-
+<p className="mt-4 max-w-xl text-[15px] leading-relaxed text-[#52525b] dark:text-[#a1a1aa]">
+  Borderless surfaces, verified signals, and export-ready reporting -- built for
+  buying houses and factories.
+</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 max-w-xl text-[15px] leading-relaxed text-[#52525b] dark:text-[#a1a1aa]`
@@ -383,6 +392,7 @@ function MotionItem({ index, className='', children }) {
                 to="/signup"
                 className="shimmer-btn inline-flex items-center justify-center rounded-md bg-[var(--gt-blue)] px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(10,102,194,0.25)] transition hover:brightness-105 dark:shadow-none"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-8 flex flex-wrap gap-3`
@@ -428,6 +438,7 @@ function MotionItem({ index, className='', children }) {
                 Create your organization
               </MagneticButton>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `shimmer-btn inline-flex items-center justify-center rounded-md bg-[var(--gt-blue)] px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(10,102,194,0.25)] transition hover:brightness-105 dark:shadow-none`
@@ -466,6 +477,7 @@ function MotionItem({ index, className='', children }) {
               className={[
                 'rounded-xl p-6',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `lg:col-span-5`
@@ -488,6 +500,7 @@ function MotionItem({ index, className='', children }) {
                 'bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
                 'dark:bg-[#18181b] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-6`
@@ -517,6 +530,7 @@ function MotionItem({ index, className='', children }) {
                 <span className="rounded-full bg-[rgba(9,9,11,0.06)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#52525b] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#a1a1aa]">
                   Live
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between`
@@ -557,6 +571,7 @@ function MotionItem({ index, className='', children }) {
                   Live
                 </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-[#09090b] dark:text-[#fafafa]`
@@ -592,6 +607,7 @@ function MotionItem({ index, className='', children }) {
                 </span>
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[rgba(9,9,11,0.06)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#52525b] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#a1a1aa]`
@@ -623,6 +639,7 @@ function MotionItem({ index, className='', children }) {
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {(pricing?.analytics?.tiles || []).slice(0, 4).map((tile) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-xs text-[#a1a1aa]`
@@ -651,6 +668,7 @@ function MotionItem({ index, className='', children }) {
                   <div
                     key={tile.label}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 grid gap-3 sm:grid-cols-2`
@@ -673,6 +691,7 @@ function MotionItem({ index, className='', children }) {
                     {loading ? (
                       <>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-lg bg-[rgba(9,9,11,0.04)] p-4 dark:bg-[rgba(250,250,250,0.04)]`
@@ -696,6 +715,7 @@ function MotionItem({ index, className='', children }) {
                         <Skeleton className="mt-3 h-3 w-28 rounded" />
                       </>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 w-24 rounded`
@@ -723,6 +743,7 @@ function MotionItem({ index, className='', children }) {
                       </>
                     ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 h-7 w-16 rounded`
@@ -748,6 +769,7 @@ function MotionItem({ index, className='', children }) {
                     ) : (
                       <>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 h-3 w-28 rounded`
@@ -770,6 +792,7 @@ function MotionItem({ index, className='', children }) {
                           {tile.value}
                         </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-[#52525b] dark:text-[#a1a1aa]`
@@ -799,6 +822,7 @@ function MotionItem({ index, className='', children }) {
                         </p>
                         <p className="mt-2 text-xs text-[#52525b] dark:text-[#a1a1aa]">{tile.sublabel}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-2xl font-bold tracking-tight`
@@ -827,6 +851,7 @@ function MotionItem({ index, className='', children }) {
                     )}
                   </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-xs text-[#52525b] dark:text-[#a1a1aa]`
@@ -850,6 +875,7 @@ function MotionItem({ index, className='', children }) {
             <h2 className="text-3xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">Simple, transparent pricing</h2>
             <p className="mt-3 text-sm leading-relaxed text-[#52525b] dark:text-[#a1a1aa]">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-16`
@@ -884,6 +910,7 @@ function MotionItem({ index, className='', children }) {
             <p className="mt-3 text-sm leading-relaxed text-[#52525b] dark:text-[#a1a1aa]">
               Choose the surface you need today -- upgrade when your team scales.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-center`
@@ -916,6 +943,7 @@ function MotionItem({ index, className='', children }) {
               Choose the surface you need today -- upgrade when your team scales.
             </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-3xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]`
@@ -946,6 +974,7 @@ function MotionItem({ index, className='', children }) {
             </p>
           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-sm leading-relaxed text-[#52525b] dark:text-[#a1a1aa]`
@@ -970,6 +999,7 @@ function MotionItem({ index, className='', children }) {
             const rolePlan = plansByRole[section.key]
             return (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-10 space-y-10`
@@ -988,6 +1018,7 @@ function MotionItem({ index, className='', children }) {
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{section.title}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-3xl borderless-shadow bg-white/70 p-6 shadow-[0_10px_30px_rgba(2,6,23,0.06)] dark:bg-[#0f172a]/70 dark:shadow-none dark:ring-1 dark:ring-white/10`
@@ -1032,6 +1063,7 @@ function MotionItem({ index, className='', children }) {
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{section.title}</p>
                     <h3 className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{section.subtitle}</h3>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-col gap-2 md:flex-row md:items-center md:justify-between`
@@ -1070,6 +1102,7 @@ function MotionItem({ index, className='', children }) {
                   </div>
                   {isLoggedIn && activePlanKey === section.key ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold uppercase tracking-[0.18em] text-slate-500`
@@ -1099,6 +1132,7 @@ function MotionItem({ index, className='', children }) {
                   {isLoggedIn && activePlanKey === section.key ? (
                     <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-2xl font-bold text-slate-900 dark:text-white`
@@ -1135,6 +1169,7 @@ function MotionItem({ index, className='', children }) {
                     </span>
                   ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-700`
@@ -1164,6 +1199,7 @@ function MotionItem({ index, className='', children }) {
             <SpotlightCard
               className={[
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-6 grid gap-6 lg:grid-cols-2`
@@ -1186,6 +1222,7 @@ function MotionItem({ index, className='', children }) {
                 'bg-[rgba(9,9,11,0.02)] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
                 'transition duration-300 ease-out',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-7`
@@ -1214,6 +1251,7 @@ function MotionItem({ index, className='', children }) {
                     <h3 className="text-lg font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">Free</h3>
                     <p className="mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">Start with essential workflow.</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-6`
@@ -1249,6 +1287,7 @@ function MotionItem({ index, className='', children }) {
                   </div>
                   <div className="text-right">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]`
@@ -1280,6 +1319,7 @@ function MotionItem({ index, className='', children }) {
                   <div className="text-right">
                     <p className="text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">$0</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]`
@@ -1306,11 +1346,14 @@ function MotionItem({ index, className='', children }) {
 #### `src/pages/Pricing.jsx:493`
 
 ```jsx
-                  <div className="text-right">
-                    <p className="text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">$0</p>
-                    <p className="text-xs text-[#52525b] dark:text-[#a1a1aa]">per month</p>
-                  </div>
+<div className="text-right">
+  <p className="text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">
+    $0
+  </p>
+  <p className="text-xs text-[#52525b] dark:text-[#a1a1aa]">per month</p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-right`
@@ -1340,6 +1383,7 @@ function MotionItem({ index, className='', children }) {
                   </div>
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]`
@@ -1367,6 +1411,7 @@ function MotionItem({ index, className='', children }) {
                 </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-[#52525b] dark:text-[#a1a1aa]`
@@ -1388,6 +1433,7 @@ function MotionItem({ index, className='', children }) {
                     <li key={f} className="flex items-start gap-2">
                       <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[rgba(9,9,11,0.06)] text-[#52525b] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#a1a1aa]">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-6 space-y-2 text-sm text-[#52525b] dark:text-[#a1a1aa]`
@@ -1428,6 +1474,7 @@ function MotionItem({ index, className='', children }) {
                         <Minus className="h-3 w-3" />
                       </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start gap-2`
@@ -1466,6 +1513,7 @@ function MotionItem({ index, className='', children }) {
                       </span>
                       <span>{f}</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[rgba(9,9,11,0.06)] text-[#52525b] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#a1a1aa]`
@@ -1500,6 +1548,7 @@ function MotionItem({ index, className='', children }) {
                       <span>{f}</span>
                     </li>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 w-3`
@@ -1518,6 +1567,7 @@ function MotionItem({ index, className='', children }) {
                     to="/signup"
                     className="inline-flex w-full items-center justify-center rounded-md bg-[rgba(9,9,11,0.06)] px-5 py-3 text-sm font-semibold text-[#09090b] transition hover:bg-[rgba(9,9,11,0.08)] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#fafafa] dark:hover:bg-[rgba(250,250,250,0.08)]"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-7`
@@ -1561,6 +1611,7 @@ function MotionItem({ index, className='', children }) {
                     Get started
                   </MagneticButton>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex w-full items-center justify-center rounded-md bg-[rgba(9,9,11,0.06)] px-5 py-3 text-sm font-semibold text-[#09090b] transition hover:bg-[rgba(9,9,11,0.08)] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#fafafa] dark:hover:bg-[rgba(250,250,250,0.08)]`
@@ -1599,6 +1650,7 @@ function MotionItem({ index, className='', children }) {
                   'bg-[rgba(255,255,255,0.70)] backdrop-blur-[12px]',
                   'borderless-shadow shadow-[0_10px_38px_-18px_rgba(0,0,0,0.22)]',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `conic-beam rounded-xl p-7`
@@ -1627,6 +1679,7 @@ function MotionItem({ index, className='', children }) {
                     <div className="flex items-center gap-2">
                       <h3 className="text-lg font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">Premium</h3>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-6`
@@ -1660,6 +1713,7 @@ function MotionItem({ index, className='', children }) {
                       <span className={['inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold', statusChip[verificationStatus]].join(' ')}>
                         {statusLabel[verificationStatus]}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2`
@@ -1698,6 +1752,7 @@ function MotionItem({ index, className='', children }) {
                         {statusLabel[verificationStatus]}
                       </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]`
@@ -1733,6 +1788,7 @@ function MotionItem({ index, className='', children }) {
                       </span>
                     </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold`
@@ -1761,6 +1817,7 @@ function MotionItem({ index, className='', children }) {
                   <div className="text-right">
                     <p className="text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">$199</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]`
@@ -1787,11 +1844,14 @@ function MotionItem({ index, className='', children }) {
 #### `src/pages/Pricing.jsx:543`
 
 ```jsx
-                  <div className="text-right">
-                    <p className="text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">$199</p>
-                    <p className="text-xs text-[#52525b] dark:text-[#a1a1aa]">per month</p>
-                  </div>
+<div className="text-right">
+  <p className="text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">
+    $199
+  </p>
+  <p className="text-xs text-[#52525b] dark:text-[#a1a1aa]">per month</p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-right`
@@ -1821,6 +1881,7 @@ function MotionItem({ index, className='', children }) {
                   </div>
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]`
@@ -1848,6 +1909,7 @@ function MotionItem({ index, className='', children }) {
                 </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-[#52525b] dark:text-[#a1a1aa]`
@@ -1869,6 +1931,7 @@ function MotionItem({ index, className='', children }) {
                     <li key={f} className="flex items-start gap-2">
                       <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[rgba(45,212,191,0.14)] text-[#2dd4bf]">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-6 space-y-2 text-sm text-[#52525b] dark:text-[#a1a1aa]`
@@ -1909,6 +1972,7 @@ function MotionItem({ index, className='', children }) {
                         <Check className="h-3 w-3" />
                       </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start gap-2`
@@ -1944,6 +2008,7 @@ function MotionItem({ index, className='', children }) {
                       </span>
                       <span>{f}</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[rgba(45,212,191,0.14)] text-[#2dd4bf]`
@@ -1975,6 +2040,7 @@ function MotionItem({ index, className='', children }) {
                       <span>{f}</span>
                     </li>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 w-3`
@@ -1993,6 +2059,7 @@ function MotionItem({ index, className='', children }) {
                     to="/signup"
                     className="shimmer-btn inline-flex w-full items-center justify-center rounded-md bg-[#2dd4bf] px-5 py-3 text-sm font-semibold text-[#09090b] shadow-[0_12px_34px_rgba(45,212,191,0.22)] transition hover:brightness-105 dark:shadow-none"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-7`
@@ -2036,6 +2103,7 @@ function MotionItem({ index, className='', children }) {
                     Choose premium
                   </MagneticButton>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `shimmer-btn inline-flex w-full items-center justify-center rounded-md bg-[#2dd4bf] px-5 py-3 text-sm font-semibold text-[#09090b] shadow-[0_12px_34px_rgba(45,212,191,0.22)] transition hover:brightness-105 dark:shadow-none`
@@ -2075,6 +2143,7 @@ function MotionItem({ index, className='', children }) {
             <MotionItem index={3} className="md:col-span-3">
               <SpotlightCard
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-16`
@@ -2100,6 +2169,7 @@ function MotionItem({ index, className='', children }) {
               <SpotlightCard
                 className={[
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid gap-6 md:grid-cols-6`
@@ -2123,6 +2193,7 @@ function MotionItem({ index, className='', children }) {
                 className={[
                   'rounded-xl p-7',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `md:col-span-3`
@@ -2145,6 +2216,7 @@ function MotionItem({ index, className='', children }) {
                   'bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
                   'dark:bg-[#18181b] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-7`
@@ -2174,6 +2246,7 @@ function MotionItem({ index, className='', children }) {
                   When your team scales, structure beats noise. Premium keeps workflows conflict-free and audit-ready.
                 </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]`
@@ -2203,6 +2276,7 @@ function MotionItem({ index, className='', children }) {
                 </p>
                 <ul className="mt-5 space-y-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]`
@@ -2229,6 +2303,7 @@ function MotionItem({ index, className='', children }) {
                     <li key={item} className="flex items-start gap-2">
                       <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[rgba(10,102,194,0.14)] text-[var(--gt-blue)]">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 space-y-2 text-sm text-[#52525b] dark:text-[#a1a1aa]`
@@ -2286,6 +2361,7 @@ function MotionItem({ index, className='', children }) {
                         <Check className="h-3 w-3" />
                       </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start gap-2`
@@ -2321,6 +2397,7 @@ function MotionItem({ index, className='', children }) {
                       </span>
                       <span>{item}</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-[rgba(10,102,194,0.14)] text-[var(--gt-blue)]`
@@ -2352,6 +2429,7 @@ function MotionItem({ index, className='', children }) {
                       <span>{item}</span>
                     </li>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 w-3`
@@ -2370,6 +2448,7 @@ function MotionItem({ index, className='', children }) {
                 className={[
                   'rounded-xl p-7',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `md:col-span-3`
@@ -2392,6 +2471,7 @@ function MotionItem({ index, className='', children }) {
                   'bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
                   'dark:bg-[#18181b] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-7`
@@ -2421,6 +2501,7 @@ function MotionItem({ index, className='', children }) {
                   <span className="rounded-full bg-[rgba(9,9,11,0.06)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#52525b] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#a1a1aa]">
                     Auto-sorted
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between`
@@ -2463,6 +2544,7 @@ function MotionItem({ index, className='', children }) {
                     Auto-sorted
                   </span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]`
@@ -2500,6 +2582,7 @@ function MotionItem({ index, className='', children }) {
                   </span>
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[rgba(9,9,11,0.06)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#52525b] dark:bg-[rgba(250,250,250,0.06)] dark:text-[#a1a1aa]`
@@ -2531,6 +2614,7 @@ function MotionItem({ index, className='', children }) {
                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
                   {(pricing?.analytics?.tiles || []).slice(0, 4).map((tile) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]`
@@ -2561,6 +2645,7 @@ function MotionItem({ index, className='', children }) {
                     <div
                       key={tile.label}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 grid gap-3 sm:grid-cols-2`
@@ -2583,6 +2668,7 @@ function MotionItem({ index, className='', children }) {
                       {loading ? (
                         <>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-lg bg-[rgba(9,9,11,0.04)] p-4 dark:bg-[rgba(250,250,250,0.04)]`
@@ -2606,6 +2692,7 @@ function MotionItem({ index, className='', children }) {
                           <Skeleton className="mt-3 h-3 w-20 rounded" />
                         </>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 w-24 rounded`
@@ -2633,6 +2720,7 @@ function MotionItem({ index, className='', children }) {
                         </>
                       ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 h-7 w-14 rounded`
@@ -2658,6 +2746,7 @@ function MotionItem({ index, className='', children }) {
                       ) : (
                         <>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 h-3 w-20 rounded`
@@ -2680,6 +2769,7 @@ function MotionItem({ index, className='', children }) {
                             {tile.value}
                           </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-[#52525b] dark:text-[#a1a1aa]`
@@ -2709,6 +2799,7 @@ function MotionItem({ index, className='', children }) {
                           </p>
                           <p className="mt-2 text-xs text-[#52525b] dark:text-[#a1a1aa]">{tile.sublabel}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-2xl font-bold tracking-tight`
@@ -2737,6 +2828,7 @@ function MotionItem({ index, className='', children }) {
                       )}
                     </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-xs text-[#52525b] dark:text-[#a1a1aa]`
@@ -2760,6 +2852,7 @@ function MotionItem({ index, className='', children }) {
           <p className="mt-2 text-center text-sm text-[#52525b] dark:text-[#a1a1aa]">A role-specific roundup of what the Premium plan unlocks.</p>
           <div className="mt-6 grid gap-6 lg:grid-cols-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-10`
@@ -2799,6 +2892,7 @@ function MotionItem({ index, className='', children }) {
           <div className="mt-6 grid gap-6 lg:grid-cols-3">
             {premiumFeatures.map((bundle) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa] text-center`
@@ -2836,6 +2930,7 @@ function MotionItem({ index, className='', children }) {
             {premiumFeatures.map((bundle) => (
               <SpotlightCard
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-center text-sm text-[#52525b] dark:text-[#a1a1aa]`
@@ -2867,6 +2962,7 @@ function MotionItem({ index, className='', children }) {
               <SpotlightCard
                 key={bundle.title}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-6 grid gap-6 lg:grid-cols-3`
@@ -2889,6 +2985,7 @@ function MotionItem({ index, className='', children }) {
                   'borderless-shadow bg-[rgba(9,9,11,0.04)]',
                   'shadow-[0_20px_40px_-26px_rgba(0,0,0,0.85)] dark:bg-[rgba(250,250,250,0.04)] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl p-6`
@@ -2919,6 +3016,7 @@ function MotionItem({ index, className='', children }) {
                   {bundle.items.map((item) => (
                     <li key={item} className="flex items-start gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold uppercase tracking-[0.3em] text-slate-400`
@@ -2954,6 +3052,7 @@ function MotionItem({ index, className='', children }) {
                     <li key={item} className="flex items-start gap-2">
                       <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-[#4B9DFB]" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 space-y-2 text-sm text-[#09090b] dark:text-[#fafafa]`
@@ -2985,11 +3084,12 @@ function MotionItem({ index, className='', children }) {
 #### `src/pages/Pricing.jsx:672`
 
 ```jsx
-                    <li key={item} className="flex items-start gap-2">
-                      <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-[#4B9DFB]" />
-                      <span>{item}</span>
-                    </li>
+<li key={item} className="flex items-start gap-2">
+  <span className="mt-[3px] h-1.5 w-1.5 rounded-full bg-[#4B9DFB]" />
+  <span>{item}</span>
+</li>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start gap-2`
@@ -3018,6 +3118,7 @@ function MotionItem({ index, className='', children }) {
                     </li>
                   ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-[3px] h-1.5 w-1.5 rounded-full bg-[#4B9DFB]`
@@ -3042,6 +3143,7 @@ function MotionItem({ index, className='', children }) {
             <h2 className="text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">Feature comparison</h2>
             <p className="mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">Horizontal lines only. Clear, audit-ready differences.</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-16`
@@ -3070,11 +3172,16 @@ function MotionItem({ index, className='', children }) {
 #### `src/pages/Pricing.jsx:684`
 
 ```jsx
-          <div className="text-center">
-            <h2 className="text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">Feature comparison</h2>
-            <p className="mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">Horizontal lines only. Clear, audit-ready differences.</p>
-          </div>
+<div className="text-center">
+  <h2 className="text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">
+    Feature comparison
+  </h2>
+  <p className="mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">
+    Horizontal lines only. Clear, audit-ready differences.
+  </p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-center`
@@ -3106,6 +3213,7 @@ function MotionItem({ index, className='', children }) {
           </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]`
@@ -3135,6 +3243,7 @@ function MotionItem({ index, className='', children }) {
 
           <div className="mt-6 overflow-x-auto rounded-xl bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#18181b] dark:borderless-shadow dark:shadow-none">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]`
@@ -3169,6 +3278,7 @@ function MotionItem({ index, className='', children }) {
               <thead>
                 <tr className="text-xs font-semibold uppercase tracking-[0.12em] text-[#52525b] dark:text-[#a1a1aa]">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-6 overflow-x-auto rounded-xl bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#18181b] dark:borderless-shadow dark:shadow-none`
@@ -3209,6 +3319,7 @@ function MotionItem({ index, className='', children }) {
                 <tr className="text-xs font-semibold uppercase tracking-[0.12em] text-[#52525b] dark:text-[#a1a1aa]">
                   <th className="px-6 py-4">Feature</th>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-full text-left text-sm`
@@ -3242,6 +3353,7 @@ function MotionItem({ index, className='', children }) {
                   <th className="px-6 py-4">Free</th>
                   <th className="px-6 py-4">Premium</th>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold uppercase tracking-[0.12em] text-[#52525b] dark:text-[#a1a1aa]`
@@ -3270,6 +3382,7 @@ function MotionItem({ index, className='', children }) {
                   <th className="px-6 py-4">Premium</th>
                 </tr>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `px-6 py-4`
@@ -3288,6 +3401,7 @@ function MotionItem({ index, className='', children }) {
                 </tr>
               </thead>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `px-6 py-4`
@@ -3306,6 +3420,7 @@ function MotionItem({ index, className='', children }) {
               </thead>
               <tbody className="divide-y divide-[#e4e4e7] dark:divide-[#27272a]">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `px-6 py-4`
@@ -3330,6 +3445,7 @@ function MotionItem({ index, className='', children }) {
                   <tr key={row.label} className="transition-colors hover:bg-black/[0.02] dark:hover:bg-white/[0.02]">
                     <td className="px-6 py-4 font-medium text-[#09090b] dark:text-[#fafafa]">{row.label}</td>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `divide-y divide-[#e4e4e7] dark:divide-[#27272a]`
@@ -3364,6 +3480,7 @@ function MotionItem({ index, className='', children }) {
                     <td className="px-6 py-4 text-[#52525b] dark:text-[#a1a1aa]">
                       {typeof row.free === 'boolean' ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `transition-colors hover:bg-black/[0.02] dark:hover:bg-white/[0.02]`
@@ -3399,6 +3516,7 @@ function MotionItem({ index, className='', children }) {
                       {typeof row.free === 'boolean' ? (
                         row.free ? <Check className="h-4 w-4 text-[#2dd4bf]" /> : <Minus className="h-4 w-4 text-[#a1a1aa]" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `px-6 py-4 font-medium text-[#09090b] dark:text-[#fafafa]`
@@ -3436,6 +3554,7 @@ function MotionItem({ index, className='', children }) {
                         row.free ? <Check className="h-4 w-4 text-[#2dd4bf]" /> : <Minus className="h-4 w-4 text-[#a1a1aa]" />
                       ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `px-6 py-4 text-[#52525b] dark:text-[#a1a1aa]`
@@ -3468,6 +3587,7 @@ function MotionItem({ index, className='', children }) {
                         row.free
                       )}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-4 w-4 text-[#2dd4bf]`
@@ -3490,6 +3610,7 @@ function MotionItem({ index, className='', children }) {
                         row.premium ? <Check className="h-4 w-4 text-[#2dd4bf]" /> : <Minus className="h-4 w-4 text-[#a1a1aa]" />
                       ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `px-6 py-4 text-[#52525b] dark:text-[#a1a1aa]`
@@ -3522,6 +3643,7 @@ function MotionItem({ index, className='', children }) {
                         row.premium
                       )}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-4 w-4 text-[#2dd4bf]`
@@ -3544,6 +3666,7 @@ function MotionItem({ index, className='', children }) {
             <h2 className="text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">FAQ</h2>
             <p className="mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">Short answers, no sales noise.</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-16`
@@ -3575,11 +3698,16 @@ function MotionItem({ index, className='', children }) {
 #### `src/pages/Pricing.jsx:724`
 
 ```jsx
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">FAQ</h2>
-            <p className="mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">Short answers, no sales noise.</p>
-          </div>
+<div className="mx-auto max-w-3xl text-center">
+  <h2 className="text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">
+    FAQ
+  </h2>
+  <p className="mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]">
+    Short answers, no sales noise.
+  </p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mx-auto max-w-3xl text-center`
@@ -3614,6 +3742,7 @@ function MotionItem({ index, className='', children }) {
           </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]`
@@ -3643,6 +3772,7 @@ function MotionItem({ index, className='', children }) {
 
           <div className="mx-auto mt-6 grid max-w-3xl gap-4">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]`
@@ -3673,6 +3803,7 @@ function MotionItem({ index, className='', children }) {
               { q: 'Can I upgrade anytime*', a: 'Yes -- your data stays intact.' },
               { q: 'Can I downgrade*', a: 'Yes -- plan limits apply immediately.' },
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mx-auto mt-6 grid max-w-3xl gap-4`
@@ -3715,6 +3846,7 @@ function MotionItem({ index, className='', children }) {
                     'bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
                     'dark:bg-[#18181b] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-6`
@@ -3744,6 +3876,7 @@ function MotionItem({ index, className='', children }) {
                 </SpotlightCard>
               </MotionItem>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-[#09090b] dark:text-[#fafafa]`
@@ -3771,6 +3904,7 @@ function MotionItem({ index, className='', children }) {
               </MotionItem>
             ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm text-[#52525b] dark:text-[#a1a1aa]`
@@ -3794,6 +3928,7 @@ function MotionItem({ index, className='', children }) {
             className={[
               'rounded-xl p-10 text-center',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-16 pb-4`
@@ -3818,6 +3953,7 @@ function MotionItem({ index, className='', children }) {
               'bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]',
               'dark:bg-[#18181b] dark:ring-1 dark:ring-white/10 dark:shadow-none',
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl p-10 text-center`
@@ -3849,6 +3985,7 @@ function MotionItem({ index, className='', children }) {
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-sm text-[#52525b] dark:text-[#a1a1aa]">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]`
@@ -3881,6 +4018,7 @@ function MotionItem({ index, className='', children }) {
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mx-auto mt-3 max-w-xl text-sm text-[#52525b] dark:text-[#a1a1aa]`
@@ -3913,6 +4051,7 @@ function MotionItem({ index, className='', children }) {
                 to="/signup"
                 className="shimmer-btn inline-flex items-center justify-center rounded-md bg-[var(--gt-blue)] px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(10,102,194,0.25)] transition hover:brightness-105 dark:shadow-none"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-7 flex flex-wrap justify-center gap-3`
@@ -3958,6 +4097,7 @@ function MotionItem({ index, className='', children }) {
                 Create your organization
               </MagneticButton>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `shimmer-btn inline-flex items-center justify-center rounded-md bg-[var(--gt-blue)] px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_28px_rgba(10,102,194,0.25)] transition hover:brightness-105 dark:shadow-none`
@@ -3996,6 +4136,7 @@ function MotionItem({ index, className='', children }) {
                 Choose premium
               </MagneticButton>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center justify-center rounded-md bg-[#2dd4bf] px-6 py-3 text-sm font-semibold text-[#09090b] shadow-[0_12px_34px_rgba(45,212,191,0.22)] transition hover:brightness-105 dark:shadow-none`
@@ -4036,6 +4177,7 @@ function MotionItem({ index, className='', children }) {
                   Live
                 </span>
 ```
+
 - `src/pages/Pricing.jsx:421` — Analytics unavailable -- showing defaults.
 
 ```jsx
@@ -4044,6 +4186,7 @@ function MotionItem({ index, className='', children }) {
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {(pricing?.analytics?.tiles || []).slice(0, 4).map((tile) => (
 ```
+
 - `src/pages/Pricing.jsx:453` — Simple, transparent pricing
 
 ```jsx
@@ -4052,6 +4195,7 @@ function MotionItem({ index, className='', children }) {
               Choose the surface you need today -- upgrade when your team scales.
             </p>
 ```
+
 - `src/pages/Pricing.jsx:490` — Free
 
 ```jsx
@@ -4060,6 +4204,7 @@ function MotionItem({ index, className='', children }) {
                   </div>
                   <div className="text-right">
 ```
+
 - `src/pages/Pricing.jsx:491` — Start with essential workflow.
 
 ```jsx
@@ -4068,6 +4213,7 @@ function MotionItem({ index, className='', children }) {
                   <div className="text-right">
                     <p className="text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">$0</p>
 ```
+
 - `src/pages/Pricing.jsx:494` — $0
 
 ```jsx
@@ -4076,6 +4222,7 @@ function MotionItem({ index, className='', children }) {
                   </div>
                 </div>
 ```
+
 - `src/pages/Pricing.jsx:495` — per month
 
 ```jsx
@@ -4084,6 +4231,7 @@ function MotionItem({ index, className='', children }) {
                 </div>
 
 ```
+
 - `src/pages/Pricing.jsx:536` — Premium
 
 ```jsx
@@ -4092,6 +4240,7 @@ function MotionItem({ index, className='', children }) {
                         {statusLabel[verificationStatus]}
                       </span>
 ```
+
 - `src/pages/Pricing.jsx:541` — Built for buying houses & enterprise teams.
 
 ```jsx
@@ -4100,6 +4249,7 @@ function MotionItem({ index, className='', children }) {
                   <div className="text-right">
                     <p className="text-2xl font-bold tracking-tight text-[#09090b] dark:text-[#fafafa]">$199</p>
 ```
+
 - `src/pages/Pricing.jsx:544` — $199
 
 ```jsx
@@ -4108,6 +4258,7 @@ function MotionItem({ index, className='', children }) {
                   </div>
                 </div>
 ```
+
 - `src/pages/Pricing.jsx:545` — per month
 
 ```jsx
@@ -4116,6 +4267,7 @@ function MotionItem({ index, className='', children }) {
                 </div>
 
 ```
+
 - `src/pages/Pricing.jsx:591` — Why enterprise matters
 
 ```jsx
@@ -4124,6 +4276,7 @@ function MotionItem({ index, className='', children }) {
                   When your team scales, structure beats noise. Premium keeps workflows conflict-free and audit-ready.
                 </p>
 ```
+
 - `src/pages/Pricing.jsx:620` — Enterprise analytics
 
 ```jsx
@@ -4132,6 +4285,7 @@ function MotionItem({ index, className='', children }) {
                     Auto-sorted
                   </span>
 ```
+
 - `src/pages/Pricing.jsx:625` — Decision-ready metrics without spreadsheet UI.
 
 ```jsx
@@ -4140,6 +4294,7 @@ function MotionItem({ index, className='', children }) {
                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
                   {(pricing?.analytics?.tiles || []).slice(0, 4).map((tile) => (
 ```
+
 - `src/pages/Pricing.jsx:657` — Premium feature deep dive
 
 ```jsx
@@ -4148,6 +4303,7 @@ function MotionItem({ index, className='', children }) {
           <div className="mt-6 grid gap-6 lg:grid-cols-3">
             {premiumFeatures.map((bundle) => (
 ```
+
 - `src/pages/Pricing.jsx:658` — A role-specific roundup of what the Premium plan unlocks.
 
 ```jsx
@@ -4156,6 +4312,7 @@ function MotionItem({ index, className='', children }) {
             {premiumFeatures.map((bundle) => (
               <SpotlightCard
 ```
+
 - `src/pages/Pricing.jsx:685` — Feature comparison
 
 ```jsx
@@ -4164,6 +4321,7 @@ function MotionItem({ index, className='', children }) {
           </div>
 
 ```
+
 - `src/pages/Pricing.jsx:686` — Horizontal lines only. Clear, audit-ready differences.
 
 ```jsx
@@ -4172,6 +4330,7 @@ function MotionItem({ index, className='', children }) {
 
           <div className="mt-6 overflow-x-auto rounded-xl bg-[#ffffff] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:bg-[#18181b] dark:borderless-shadow dark:shadow-none">
 ```
+
 - `src/pages/Pricing.jsx:725` — FAQ
 
 ```jsx
@@ -4180,6 +4339,7 @@ function MotionItem({ index, className='', children }) {
           </div>
 
 ```
+
 - `src/pages/Pricing.jsx:726` — Short answers, no sales noise.
 
 ```jsx
@@ -4188,11 +4348,12 @@ function MotionItem({ index, className='', children }) {
 
           <div className="mx-auto mt-6 grid max-w-3xl gap-4">
 ```
+
 ## 5) Backend Mapping (Frontend → Express → Controller → Service/DB)
 
-| Frontend call (path:line) | Express mount | Route definition | Controller file | Handler |
-|---|---|---|---|---|
-| GET /system/pricing (src/pages/Pricing.jsx:17) | /api/system -> server/routes/systemRoutes.js:127 | GET /pricing (server/routes/systemRoutes.js:8) | server/controllers/systemController.js | systemPricing |
+| Frontend call (path:line)                       | Express mount                                    | Route definition                               | Controller file                        | Handler       |
+| ----------------------------------------------- | ------------------------------------------------ | ---------------------------------------------- | -------------------------------------- | ------------- |
+| GET /system/pricing (src/pages/Pricing.jsx:17)  | /api/system -> server/routes/systemRoutes.js:127 | GET /pricing (server/routes/systemRoutes.js:8) | server/controllers/systemController.js | systemPricing |
 | GET /system/pricing (src/pages/Pricing.jsx:114) | /api/system -> server/routes/systemRoutes.js:127 | GET /pricing (server/routes/systemRoutes.js:8) | server/controllers/systemController.js | systemPricing |
 
 ## 6) How to Edit Safely
@@ -4203,4 +4364,3 @@ function MotionItem({ index, className='', children }) {
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
-

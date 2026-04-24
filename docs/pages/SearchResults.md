@@ -29,6 +29,7 @@
               <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
                 <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Early verified factories</p>
 ```
+
 ## 3) Styling (className blocks, utility breakdown, and custom CSS)
 
 ### 3.1 Custom CSS utilities referenced by this page (App.css / index.css)
@@ -70,6 +71,7 @@
         <div className="min-w-0 flex-1">
           <div className="h-3 w-1/3 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800`
@@ -112,6 +114,7 @@
           <div className="h-3 w-1/3 rounded-full skeleton" />
           <div className="mt-3 h-3 w-3/4 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-3`
@@ -146,6 +149,7 @@
           <div className="mt-3 h-3 w-3/4 rounded-full skeleton" />
           <div className="mt-2 h-3 w-2/3 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0 flex-1`
@@ -178,6 +182,7 @@
           <div className="mt-2 h-3 w-2/3 rounded-full skeleton" />
           <div className="mt-4 grid grid-cols-2 gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 w-1/3 rounded-full skeleton`
@@ -212,6 +217,7 @@
           <div className="mt-4 grid grid-cols-2 gap-2">
             <div className="h-3 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 h-3 w-3/4 rounded-full skeleton`
@@ -245,6 +251,7 @@
             <div className="h-3 rounded-full skeleton" />
             <div className="h-3 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 h-3 w-2/3 rounded-full skeleton`
@@ -275,6 +282,7 @@
             <div className="h-3 rounded-full skeleton" />
             <div className="h-3 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 grid grid-cols-2 gap-2`
@@ -302,6 +310,7 @@
             <div className="h-3 rounded-full skeleton" />
             <div className="h-3 rounded-full skeleton" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 rounded-full skeleton`
@@ -323,6 +332,7 @@
             <div className="h-3 rounded-full skeleton" />
           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 rounded-full skeleton`
@@ -344,6 +354,7 @@
           </div>
         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 rounded-full skeleton`
@@ -365,6 +376,7 @@
         </div>
         <div className="flex flex-col gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-3 rounded-full skeleton`
@@ -386,11 +398,12 @@
 #### `src/pages/SearchResults.jsx:319`
 
 ```jsx
-        <div className="flex flex-col gap-2">
-          <div className="h-9 w-28 rounded-full skeleton" />
-          <div className="h-9 w-28 rounded-full skeleton" />
-        </div>
+<div className="flex flex-col gap-2">
+  <div className="h-9 w-28 rounded-full skeleton" />
+  <div className="h-9 w-28 rounded-full skeleton" />
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-col gap-2`
@@ -418,6 +431,7 @@
         </div>
       </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-9 w-28 rounded-full skeleton`
@@ -440,6 +454,7 @@
       </div>
       <span className="sr-only">Loading result {index + 1}</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-9 w-28 rounded-full skeleton`
@@ -464,6 +479,7 @@
   )
 }
 ```
+
 **Raw class strings detected (best effort):**
 
 - `sr-only`
@@ -481,6 +497,7 @@
         const selected = values.includes(option)
         const count = getFacetCount(counts, option)
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap gap-2`
@@ -501,6 +518,7 @@
                 ? ' bg-[var(--gt-blue)] text-white ring-transparent dark:bg-[var(--gt-blue)] dark:text-white'
                 : ' bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10'
 ```
+
 **Raw class strings detected (best effort):**
 
 - ` bg-[var(--gt-blue)] text-white ring-transparent dark:bg-[var(--gt-blue)] dark:text-white`
@@ -535,6 +553,7 @@
           </button>
         )
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-white/80`
@@ -554,6 +573,7 @@
         const optValue = String(option?.value ?? '')
         const selected = selectedValue === optValue || (!selectedValue && !optValue)
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap gap-2`
@@ -574,6 +594,7 @@
                 ? ' bg-[var(--gt-blue)] text-white ring-transparent dark:bg-[var(--gt-blue)] dark:text-white'
                 : ' bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10'
 ```
+
 **Raw class strings detected (best effort):**
 
 - ` bg-[var(--gt-blue)] text-white ring-transparent dark:bg-[var(--gt-blue)] dark:text-white`
@@ -608,6 +629,7 @@
         <span>{Number.isFinite(minValue) ? format(minValue) : format(min)}</span>
         <div className="h-px flex-1 bg-slate-200" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-2`
@@ -638,6 +660,7 @@
         <div className="h-px flex-1 bg-slate-200" />
         <span>{Number.isFinite(maxValue) ? format(maxValue) : format(max)}</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2 text-[11px] text-slate-500`
@@ -666,6 +689,7 @@
       </div>
       <div className="flex items-center gap-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-px flex-1 bg-slate-200`
@@ -691,6 +715,7 @@
           type="range"
           min={min}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-3`
@@ -714,6 +739,7 @@
         <input
           type="range"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full`
@@ -734,6 +760,7 @@
       </div>
     </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full`
@@ -751,6 +778,7 @@
         <div className="rounded-2xl bg-white/70 p-4 shadow-sm ring-1 ring-slate-200/60 backdrop-blur-md dark:bg-slate-950/40 dark:ring-white/10">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out`
@@ -804,6 +832,7 @@
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `max-w-7xl mx-auto px-4 py-6`
@@ -849,6 +878,7 @@
             <div className="flex items-center gap-2">
               <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] text-white flex items-center justify-center">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-white/70 p-4 shadow-sm ring-1 ring-slate-200/60 backdrop-blur-md dark:bg-slate-950/40 dark:ring-white/10`
@@ -899,6 +929,7 @@
               <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] text-white flex items-center justify-center">
                 <SearchIcon size={18} />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between`
@@ -938,6 +969,7 @@
                 <SearchIcon size={18} />
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2`
@@ -970,6 +1002,7 @@
               </div>
               <div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-10 w-10 rounded-xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] text-white flex items-center justify-center`
@@ -999,6 +1032,7 @@
               </div>
             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-bold text-slate-900 dark:text-slate-100`
@@ -1025,6 +1059,7 @@
             </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500 dark:text-slate-400`
@@ -1046,6 +1081,7 @@
                 type="button"
                 onClick={() => setFiltersOpen((v) => !v)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex gap-2`
@@ -1063,11 +1099,12 @@
 #### `src/pages/SearchResults.jsx:1498`
 
 ```jsx
-                className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200/70 transition hover:bg-white active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
-              >
-                <Filter size={16} />
-                Filters
+className =
+  "inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200/70 transition hover:bg-white active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8" >
+  <Filter size={16} />;
+Filters;
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200/70 transition hover:bg-white active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8`
@@ -1110,6 +1147,7 @@
                 <Bell size={16} />
                 Save search
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center gap-2 rounded-full bg-[var(--gt-blue)] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95`
@@ -1140,11 +1178,12 @@
 #### `src/pages/SearchResults.jsx:1514`
 
 ```jsx
-                className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200/70 transition hover:bg-white active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
-              >
-                <Share2 size={16} />
-                Share
+className =
+  "inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200/70 transition hover:bg-white active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8" >
+  <Share2 size={16} />;
+Share;
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200/70 transition hover:bg-white active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8`
@@ -1187,6 +1226,7 @@
                 Alerts
               </Link>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200/70 transition hover:bg-white active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8`
@@ -1229,6 +1269,7 @@
               <input
                 ref={queryInputRef}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 flex flex-col gap-2 sm:flex-row`
@@ -1255,6 +1296,7 @@
                 ref={queryInputRef}
                 value={query}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `relative flex-1`
@@ -1273,6 +1315,7 @@
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-semibold tracking-widest text-slate-500 ring-1 ring-slate-200/70 dark:bg-slate-950/40 dark:text-slate-400 dark:ring-white/10">
                 {isMac ? 'Cmd K' : 'Ctrl K'}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full rounded-full bg-slate-100/70 px-4 py-3 pr-16 text-sm text-slate-800 shadow-inner ring-1 ring-slate-200/70 transition focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10`
@@ -1334,6 +1377,7 @@
               </span>
             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-semibold tracking-widest text-slate-500 ring-1 ring-slate-200/70 dark:bg-slate-950/40 dark:text-slate-400 dark:ring-white/10`
@@ -1379,6 +1423,7 @@
             >
               {loading ? 'Searching...' : 'Search'}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[var(--gt-blue)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95 disabled:opacity-60`
@@ -1416,6 +1461,7 @@
               type="button"
               onClick={clearCategories}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 flex flex-wrap items-center gap-2`
@@ -1441,6 +1487,7 @@
               All categories
             </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - ` bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50`
@@ -1468,6 +1515,7 @@
                 {option}
                 {Number.isFinite(Number(getFacetCount(facetCounts.category, option))) ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - ` bg-[var(--gt-blue)] text-white ring-transparent`
@@ -1495,6 +1543,7 @@
                   </span>
                 ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-white/80`
@@ -1514,6 +1563,7 @@
               {activeFilterChips.length ? activeFilterChips.map((chip) => (
                 <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `sticky top-2 z-20 mt-3 rounded-xl bg-white/90 p-2 ring-1 ring-slate-200/70 backdrop-blur dark:bg-slate-950/70 dark:ring-white/10`
@@ -1551,6 +1601,7 @@
                 <button
                   key={chip.key}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap items-center gap-2`
@@ -1572,6 +1623,7 @@
                   {chip.label} ×
                 </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-white/10 dark:text-slate-100`
@@ -1604,6 +1656,7 @@
                 type="button"
                 onClick={clearAllFilters}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500 dark:text-slate-400`
@@ -1628,6 +1681,7 @@
                 Clear all
               </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `ml-auto rounded-full px-3 py-1 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200/70 hover:bg-slate-50 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5`
@@ -1662,6 +1716,7 @@
                 <span className="text-rose-600">{estimateError}</span>
               ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-[11px] text-slate-500 dark:text-slate-400`
@@ -1691,6 +1746,7 @@
                 <>
                   {activeTab === 'requests'
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-rose-600`
@@ -1711,6 +1767,7 @@
                 <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Product</p>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Core filters are visible first</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 grid grid-cols-1 lg:grid-cols-3 gap-3`
@@ -1757,6 +1814,7 @@
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Core filters are visible first</p>
                 <div className="mt-3 grid grid-cols-1 gap-2" data-testid="default-core-filter-bar" data-core-filter-count={renderedDefaultCoreFilterKeys.length}>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/70 dark:bg-slate-900/40 dark:ring-white/10`
@@ -1801,6 +1859,7 @@
                 <div className="mt-3 grid grid-cols-1 gap-2" data-testid="default-core-filter-bar" data-core-filter-count={renderedDefaultCoreFilterKeys.length}>
                   <select
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-bold text-slate-700 dark:text-slate-200`
@@ -1835,6 +1894,7 @@
                   <select
                     value={filters.industry}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500 dark:text-slate-400 mt-1`
@@ -1864,6 +1924,7 @@
                     value={filters.industry}
                     onChange={(e) => updateCoreFilter('industry', e.target.value)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 grid grid-cols-1 gap-2`
@@ -1888,6 +1949,7 @@
                     <option value="">Industry (Any)</option>
                     {INDUSTRY_OPTIONS.map((option) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10`
@@ -1923,6 +1985,7 @@
                     <div className="mt-2">
                       <BucketChips
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white px-3 py-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -1960,6 +2023,7 @@
                       <BucketChips
                         options={MOQ_BUCKETS}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -1983,6 +2047,7 @@
                         options={MOQ_BUCKETS}
                         value={filters.moqRange}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -2000,6 +2065,7 @@
                         min={0}
                         max={5000}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3`
@@ -2017,6 +2083,7 @@
                     <div className="mt-2 flex items-center gap-2">
                       <select
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white px-3 py-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -2058,6 +2125,7 @@
                       <select
                         value={filters.priceCurrency || ''}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -2085,6 +2153,7 @@
                         value={filters.priceCurrency || ''}
                         onChange={(e) => updateCoreFilter('priceCurrency', e.target.value)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 flex items-center gap-2`
@@ -2109,6 +2178,7 @@
                         <option value="">Currency</option>
                         {CURRENCY_OPTIONS.map((c) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-28 rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10`
@@ -2147,6 +2217,7 @@
                           min={0}
                           max={200}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex-1`
@@ -2164,6 +2235,7 @@
                     <div className="mt-2">
                       <ChipGroup
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white px-3 py-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -2201,6 +2273,7 @@
                       <ChipGroup
                         options={INCOTERM_OPTIONS}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -2224,6 +2297,7 @@
                         options={INCOTERM_OPTIONS}
                         values={filters.incoterms || []}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -2241,6 +2315,7 @@
                     {productMoreOpen ? 'Hide more filters' : 'More filters'}
                   </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -2280,6 +2355,7 @@
                       <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
                         <input
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10`
@@ -2322,6 +2398,7 @@
                           type="checkbox"
                           checked={filters.verifiedOnly}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200`
@@ -2350,6 +2427,7 @@
                         Verified only
                       </label>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-4 w-4`
@@ -2368,6 +2446,7 @@
                   <div>
                     <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Supplier / Account</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - ` bg-amber-50 ring-amber-200 dark:bg-amber-500/10 dark:ring-amber-500/30`
@@ -2413,6 +2492,7 @@
                     <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Supplier / Account</p>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Core visible first, attributes under More filters</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-2`
@@ -2447,6 +2527,7 @@
                   </div>
                   <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-bold text-slate-700 dark:text-slate-200`
@@ -2475,6 +2556,7 @@
                   <button
                     type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500 dark:text-slate-400 mt-1`
@@ -2501,6 +2583,7 @@
                     {supplierMoreOpen ? 'Hide more filters' : 'More filters'}
                   </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -2540,6 +2623,7 @@
                     {advancedFiltersOpen ? 'Hide advanced' : 'Advanced'}
                   </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -2578,6 +2662,7 @@
                     <p className="text-[11px] font-semibold text-slate-500">Account type</p>
                     <div className="mt-2 flex flex-wrap gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 grid grid-cols-1 gap-2`
@@ -2623,6 +2708,7 @@
                     <div className="mt-2 flex flex-wrap gap-2">
                       {['', 'buyer', 'factory', 'buying_house'].map((value) => {
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white px-3 py-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -2667,13 +2753,14 @@
                       {['', 'buyer', 'factory', 'buying_house'].map((value) => {
                         const label = value === '' ? 'Any' : (value === 'buying_house' ? 'Buying House' : value.charAt(0).toUpperCase() + value.slice(1))
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
 - `mt-2 flex flex-wrap gap-2`
 - `, `
-- ` ? `
-- ` : (value === `
+- `?`
+- `: (value ===`
 
 **Utility breakdown (grouped):**
 
@@ -2703,12 +2790,13 @@
                         const label = value === '' ? 'Any' : (value === 'buying_house' ? 'Buying House' : value.charAt(0).toUpperCase() + value.slice(1))
                         const active = filters.orgType === value
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 flex flex-wrap gap-2`
 - `, `
-- ` ? `
-- ` : (value === `
+- `?`
+- `: (value ===`
 
 **Utility breakdown (grouped):**
 
@@ -2733,6 +2821,7 @@
                             {label}
                           </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - ` bg-[var(--gt-blue)] text-white ring-transparent`
@@ -2760,6 +2849,7 @@
                       <option value="">Lead time (Any)</option>
                       <option value="7">Lead time &lt;= 7 days</option>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10`
@@ -2798,6 +2888,7 @@
                       <input
                         type="checkbox"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 grid grid-cols-1 gap-2`
@@ -2830,6 +2921,7 @@
                         type="checkbox"
                         checked={filters.priorityOnly}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200`
@@ -2858,6 +2950,7 @@
                       Priority only
                       {!priorityAllowedForTab ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-4 w-4`
@@ -2876,6 +2969,7 @@
                         </span>
                       ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `ml-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700`
@@ -2903,6 +2997,7 @@
                         type="button"
                         onClick={() => setFilterMode('product')}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap gap-2 rounded-full bg-slate-50 p-1 text-[11px] font-semibold text-slate-600 dark:bg-white/5 dark:text-slate-300`
@@ -2940,6 +3035,7 @@
                         Product Filters
                       </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `product`
@@ -2966,6 +3062,7 @@
                         Supplier Filters
                       </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `supplier`
@@ -2992,6 +3089,7 @@
                       {(filterMode === 'product' ? productAdvancedOpen : supplierAdvancedOpen) ? 'Hide advanced block' : 'Open advanced block'}
                     </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -3034,6 +3132,7 @@
                           <div className="mt-2">
                             <ChipGroup
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -3070,6 +3169,7 @@
                             <ChipGroup
                               options={FABRIC_TYPE_OPTIONS}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -3093,6 +3193,7 @@
                               options={FABRIC_TYPE_OPTIONS}
                               values={filters.fabricType}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -3110,6 +3211,7 @@
                           <div className="mt-2">
                             <RangeSlider
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -3146,6 +3248,7 @@
                             <RangeSlider
                               min={80}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -3169,6 +3272,7 @@
                               min={80}
                               max={600}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -3186,6 +3290,7 @@
                           <option value="">Size range (Any)</option>
                           {SIZE_RANGE_OPTIONS.map((option) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10`
@@ -3222,6 +3327,7 @@
                               value={filters.sizeRangeCustom || ''}
                               onChange={(e) => updateAdvancedFilter('sizeRangeCustom', e.target.value)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -3242,6 +3348,7 @@
                           </div>
                         ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full rounded-lg bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10`
@@ -3280,6 +3387,7 @@
                           <div className="mt-2 flex flex-wrap gap-2">
                             {(filters.colorPantone || []).map((code) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -3320,6 +3428,7 @@
                             {(filters.colorPantone || []).map((code) => (
                               <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -3347,6 +3456,7 @@
                               <button
                                 key={code}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 flex flex-wrap gap-2`
@@ -3368,6 +3478,7 @@
                                 {code} ×
                               </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700`
@@ -3394,6 +3505,7 @@
                               value={pantoneDraft}
                               onChange={(e) => setPantoneDraft(e.target.value)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 flex gap-2`
@@ -3414,6 +3526,7 @@
                                 if (event.key === 'Enter') {
                                   event.preventDefault()
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex-1 rounded-lg bg-white px-3 py-2 text-xs text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10`
@@ -3455,6 +3568,7 @@
                               Add
                             </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-lg bg-[var(--gt-blue)] px-3 py-2 text-[11px] font-semibold text-white disabled:opacity-60`
@@ -3483,6 +3597,7 @@
                           <div className="mt-2 space-y-2">
                             {CUSTOMIZATION_OPTIONS.map((opt) => {
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -3520,6 +3635,7 @@
                             {CUSTOMIZATION_OPTIONS.map((opt) => {
                               const checked = Array.isArray(filters.customization) && filters.customization.includes(opt)
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -3544,6 +3660,7 @@
                               const checked = Array.isArray(filters.customization) && filters.customization.includes(opt)
                               return (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 space-y-2`
@@ -3562,6 +3679,7 @@
                                     type="checkbox"
                                     checked={checked}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200`
@@ -3590,6 +3708,7 @@
                                   {opt}
                                 </label>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-4 w-4`
@@ -3608,6 +3727,7 @@
                             type="checkbox"
                             checked={filters.sampleAvailable}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200`
@@ -3636,6 +3756,7 @@
                           Sample available
                         </label>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-4 w-4`
@@ -3654,6 +3775,7 @@
                             <p className="text-[11px] font-semibold text-slate-500">Sample lead time (days)</p>
                             <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -3694,6 +3816,7 @@
                             <button
                               type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-3`
@@ -3724,6 +3847,7 @@
                               type="button"
                               onClick={() => updateAdvancedFilter('sampleLeadTime', '')}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -3749,6 +3873,7 @@
                               Clear
                             </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[10px] font-semibold text-slate-500 hover:text-slate-700 disabled:opacity-60 dark:text-slate-300 dark:hover:text-slate-200`
@@ -3775,6 +3900,7 @@
                               type="range"
                               min="0"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 flex items-center gap-3`
@@ -3801,6 +3927,7 @@
                             <input
                               type="number"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full`
@@ -3821,6 +3948,7 @@
                           </div>
                           <div className="mt-1 text-[10px] text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-24 rounded-lg bg-white px-3 py-2 text-xs text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10`
@@ -3863,6 +3991,7 @@
                           </div>
                         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-[10px] text-slate-400`
@@ -3891,6 +4020,7 @@
                           <div className="mt-2">
                             <ChipGroup
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -3927,6 +4057,7 @@
                             <ChipGroup
                               options={CERTIFICATION_OPTIONS}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -3950,6 +4081,7 @@
                               options={CERTIFICATION_OPTIONS}
                               values={filters.certifications}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -3967,6 +4099,7 @@
                           <input
                             type="date"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -4004,6 +4137,7 @@
                             type="date"
                             value={filters.auditDate}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -4027,6 +4161,7 @@
                         </div>
                         <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 w-full rounded-lg bg-white px-3 py-2 text-xs text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10`
@@ -4071,6 +4206,7 @@
                           <div className="mt-2">
                             <ChipGroup
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -4107,6 +4243,7 @@
                             <ChipGroup
                               options={INCOTERM_OPTIONS}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -4130,6 +4267,7 @@
                               options={INCOTERM_OPTIONS}
                               values={filters.incoterms}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -4147,6 +4285,7 @@
                       supplierAdvancedOpen ? (
                       <>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500`
@@ -4166,6 +4305,7 @@
                           <div className="mt-2">
                             <ChipGroup
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -4202,6 +4342,7 @@
                             <ChipGroup
                               options={PAYMENT_OPTIONS}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -4225,6 +4366,7 @@
                               options={PAYMENT_OPTIONS}
                               values={filters.paymentTerms}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -4242,6 +4384,7 @@
                           <div className="mt-2">
                             <ChipGroup
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -4278,6 +4421,7 @@
                             <ChipGroup
                               options={DOCUMENT_READY_OPTIONS}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -4301,6 +4445,7 @@
                               options={DOCUMENT_READY_OPTIONS}
                               values={filters.documentReady}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -4318,6 +4463,7 @@
                             <p className="text-[11px] font-semibold text-slate-500">Audit score (min)</p>
                             <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -4358,6 +4504,7 @@
                             <button
                               type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-3`
@@ -4388,6 +4535,7 @@
                               type="button"
                               onClick={() => updateAdvancedFilter('auditScoreMin', '')}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -4413,6 +4561,7 @@
                               Clear
                             </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[10px] font-semibold text-slate-500 hover:text-slate-700 disabled:opacity-60`
@@ -4436,6 +4585,7 @@
                               type="range"
                               min="0"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 flex items-center gap-3`
@@ -4462,6 +4612,7 @@
                             <input
                               type="number"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full`
@@ -4482,6 +4633,7 @@
                           </div>
                           <div className="mt-1 text-[10px] text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-24 rounded-lg bg-white px-3 py-2 text-xs text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10`
@@ -4524,6 +4676,7 @@
                           </div>
                         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-[10px] text-slate-400`
@@ -4552,6 +4705,7 @@
                           <div className="mt-2">
                             <ChipGroup
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -4588,6 +4742,7 @@
                             <ChipGroup
                               options={LANGUAGE_OPTIONS}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -4611,6 +4766,7 @@
                               options={LANGUAGE_OPTIONS}
                               values={filters.languageSupport}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -4628,6 +4784,7 @@
                           <div className="mt-2 flex items-center gap-3">
                             <input
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -4668,6 +4825,7 @@
                             <input
                               type="range"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -4698,6 +4856,7 @@
                               type="range"
                               min="0"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 flex items-center gap-3`
@@ -4724,6 +4883,7 @@
                             <span className="text-[11px] font-semibold">{filters.capacityMin || 0}</span>
                           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full`
@@ -4746,6 +4906,7 @@
                         </div>
                         <div className="rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold`
@@ -4779,6 +4940,7 @@
                           <div className="mt-2">
                             <ChipGroup
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -4815,6 +4977,7 @@
                             <ChipGroup
                               options={PROCESS_OPTIONS}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -4838,6 +5001,7 @@
                               options={PROCESS_OPTIONS}
                               values={filters.processes}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -4855,6 +5019,7 @@
                             <p className="text-[11px] font-semibold text-slate-500">Years in business (min)</p>
                             <div className="mt-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid grid-cols-1 gap-2 md:grid-cols-2`
@@ -4898,6 +5063,7 @@
                             <div className="mt-2">
                               <BucketChips
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -4934,6 +5100,7 @@
                               <BucketChips
                                 options={YEARS_IN_BUSINESS_MIN_BUCKETS}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -4957,6 +5124,7 @@
                                 options={YEARS_IN_BUSINESS_MIN_BUCKETS}
                                 value={filters.yearsInBusinessMin}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -4974,6 +5142,7 @@
                             <div className="mt-2">
                               <BucketChips
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -5010,6 +5179,7 @@
                               <BucketChips
                                 options={RESPONSE_TIME_MAX_BUCKETS}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -5033,6 +5203,7 @@
                                 options={RESPONSE_TIME_MAX_BUCKETS}
                                 value={filters.responseTimeMax}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -5050,6 +5221,7 @@
                             <p className="text-[11px] font-semibold text-slate-500">Team seats (min)</p>
                             <div className="mt-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid grid-cols-1 gap-2 md:grid-cols-2`
@@ -5093,6 +5265,7 @@
                             <div className="mt-2">
                               <BucketChips
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -5129,6 +5302,7 @@
                               <BucketChips
                                 options={TEAM_SEATS_MIN_BUCKETS}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -5152,6 +5326,7 @@
                                 options={TEAM_SEATS_MIN_BUCKETS}
                                 value={filters.teamSeatsMin}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -5169,6 +5344,7 @@
                               type="checkbox"
                               checked={Boolean(filters.hasPermissionMatrix)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200`
@@ -5197,6 +5373,7 @@
                             Has role-based access (permission matrix)
                           </label>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-4 w-4`
@@ -5215,6 +5392,7 @@
                             <select
                               value={filters.permissionSection || ''}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -5249,6 +5427,7 @@
                               value={filters.permissionSection || ''}
                               onChange={(e) => updateAdvancedFilter('permissionSection', e.target.value)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -5272,6 +5451,7 @@
                               <option value="">Any (permission)</option>
                               <option value="requests">Requests</option>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 w-full rounded-lg bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10`
@@ -5314,6 +5494,7 @@
                                 type="checkbox"
                                 checked={Boolean(filters.permissionSectionEdit)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200`
@@ -5343,6 +5524,7 @@
                               Require edit access
                             </label>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-4 w-4`
@@ -5361,6 +5543,7 @@
                             <div className="mt-2">
                               <div className="flex gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -5401,6 +5584,7 @@
                               <div className="flex gap-2">
                                 <input
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -5428,6 +5612,7 @@
                                 <input
                                   type="text"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -5452,6 +5637,7 @@
                                   type="text"
                                   placeholder="Role (e.g., manager)"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex gap-2`
@@ -5478,6 +5664,7 @@
                                 <input
                                   type="number"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex-1 rounded-lg bg-white px-3 py-2 text-xs text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10`
@@ -5519,6 +5706,7 @@
                                 <button
                                   type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-24 rounded-lg bg-white px-3 py-2 text-xs text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10`
@@ -5560,6 +5748,7 @@
                                   Add
                                 </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-lg bg-[var(--gt-blue)] px-3 py-2 text-[11px] font-semibold text-white disabled:opacity-60`
@@ -5588,6 +5777,7 @@
                                   filters.roleSeats.map((entry) => (
                                     <div key={entry.role} className="flex items-center justify-between">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 space-y-1`
@@ -5611,6 +5801,7 @@
                                       <div>
                                         <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between`
@@ -5635,6 +5826,7 @@
                                         <button
                                           type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-700`
@@ -5657,6 +5849,7 @@
                                           Remove
                                         </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full px-2 py-1 text-[11px] font-semibold text-rose-600 ring-1 ring-rose-200/30`
@@ -5684,6 +5877,7 @@
                               </div>
                             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-400`
@@ -5703,6 +5897,7 @@
                             <div className="mt-2">
                               <ChipGroup
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -5739,6 +5934,7 @@
                               <ChipGroup
                                 options={EXPORT_PORT_OPTIONS}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -5762,6 +5958,7 @@
                                 options={EXPORT_PORT_OPTIONS}
                                 values={filters.exportPort}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -5779,6 +5976,7 @@
                             type="checkbox"
                             checked={filters.handlesMultipleFactories}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200`
@@ -5807,6 +6005,7 @@
                           Handles multiple factories
                         </label>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-4 w-4`
@@ -5825,6 +6024,7 @@
                           <div className="mt-2 flex gap-2">
                             <input
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white p-3 text-xs text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -5864,6 +6064,7 @@
                             <input
                               value={geoQuery}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500`
@@ -5890,6 +6091,7 @@
                               value={geoQuery}
                               onChange={(e) => setGeoQuery(e.target.value)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 flex gap-2`
@@ -5910,6 +6112,7 @@
                             <button
                               type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex-1 rounded-lg bg-white px-3 py-2 text-xs text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10`
@@ -5951,6 +6154,7 @@
                               Use my location
                             </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-lg bg-[var(--gt-blue)] px-3 py-2 text-[11px] font-semibold text-white disabled:opacity-60`
@@ -5979,6 +6183,7 @@
                           {geoResults.length ? (
                             <div className="mt-2 max-h-32 space-y-1 overflow-auto rounded-lg borderless-shadow bg-white p-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-[10px] text-slate-500`
@@ -6012,6 +6217,7 @@
                             <div className="mt-2 max-h-32 space-y-1 overflow-auto rounded-lg borderless-shadow bg-white p-2">
                               {geoResults.map((result) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-[10px] text-rose-600`
@@ -6043,6 +6249,7 @@
                                 <button
                                   key={result.id}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 max-h-32 space-y-1 overflow-auto rounded-lg borderless-shadow bg-white p-2`
@@ -6070,6 +6277,7 @@
                                   {result.label}
                                 </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full text-left text-[11px] text-slate-700 hover:text-[var(--gt-blue)]`
@@ -6094,6 +6302,7 @@
                             </div>
                           ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 rounded-lg bg-slate-50 px-3 py-2 text-[11px] text-slate-600`
@@ -6120,6 +6329,7 @@
                             <button
                               type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 flex items-center justify-between text-[10px] text-slate-500`
@@ -6150,6 +6360,7 @@
                               {showMapPreview ? 'Hide map' : 'Show map'}
                             </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[10px] font-semibold text-[var(--gt-blue)]`
@@ -6176,6 +6387,7 @@
                               type="range"
                               min="0"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 flex items-center gap-3`
@@ -6202,6 +6414,7 @@
                             <span className="text-[11px] font-semibold">{filters.distanceKm || 0}km</span>
                           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full`
@@ -6224,6 +6437,7 @@
                           {showMapPreview && filters.locationLat && filters.locationLng ? (
                             <div className="mt-2 h-36 overflow-hidden rounded-lg borderless-shadow">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold`
@@ -6252,6 +6466,7 @@
                             </div>
                           ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 h-36 overflow-hidden rounded-lg borderless-shadow`
@@ -6278,6 +6493,7 @@
                           ) : null}
                         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-full w-full`
@@ -6296,6 +6512,7 @@
                   </div>
                 ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500`
@@ -6315,6 +6532,7 @@
               </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-[11px] text-slate-500 dark:text-slate-400`
@@ -6338,6 +6556,7 @@
                 <div className="mt-2 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                   <p>Supplier filters use profile data such as main processes, export ports, and years in business.</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/70 dark:bg-slate-900/40 dark:ring-white/10`
@@ -6377,6 +6596,7 @@
                   <p>Supplier filters use profile data such as main processes, export ports, and years in business.</p>
                   <p>Distance radius uses coordinates. Use “Use my location” to fill lat/lng quickly. If a supplier has no coordinates, we fall back to country matching.</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-bold text-slate-700 dark:text-slate-200`
@@ -6406,6 +6626,7 @@
                   <p>Distance radius uses coordinates. Use “Use my location” to fill lat/lng quickly. If a supplier has no coordinates, we fall back to country matching.</p>
                   <p>Premium filters are optional. Core filters always remain free and unlimited.</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 space-y-2 text-[11px] text-slate-600 dark:text-slate-300`
@@ -6430,6 +6651,7 @@
                 <div className="mt-2 space-y-2 text-[11px] text-slate-600 dark:text-slate-300">
                   {quotaMessage ? <p>{quotaMessage}</p> : <p>Run a search to see quota status.</p>}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/70 dark:bg-slate-900/40 dark:ring-white/10`
@@ -6469,6 +6691,7 @@
                   {quotaMessage ? <p>{quotaMessage}</p> : <p>Run a search to see quota status.</p>}
                   {upgradePrompt ? <p className="text-amber-800 bg-amber-50 borderless-shadow rounded-xl p-2">{upgradePrompt}</p> : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-bold text-slate-700 dark:text-slate-200`
@@ -6505,6 +6728,7 @@
                   {upgradePrompt ? <p className="text-amber-800 bg-amber-50 borderless-shadow rounded-xl p-2">{upgradePrompt}</p> : null}
                   {alertFeedback ? <p className="text-sky-800 bg-sky-50 borderless-shadow rounded-xl p-2">{alertFeedback}</p> : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 space-y-2 text-[11px] text-slate-600 dark:text-slate-300`
@@ -6539,6 +6763,7 @@
                 </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-amber-800 bg-amber-50 borderless-shadow rounded-xl p-2`
@@ -6566,6 +6791,7 @@
 
                 <div className="mt-4">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sky-800 bg-sky-50 borderless-shadow rounded-xl p-2`
@@ -6592,6 +6818,7 @@
                   <div className="mt-2 flex flex-wrap gap-2">
                     <button type="button" onClick={() => applyPreset('buyer')} className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">Buyer</button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4`
@@ -6635,6 +6862,7 @@
                     <button type="button" onClick={() => applyPreset('buyer')} className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">Buyer</button>
                     <button type="button" onClick={() => applyPreset('buying_house')} className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">Buying house</button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-slate-500 dark:text-slate-400`
@@ -6676,6 +6904,7 @@
                     <button type="button" onClick={() => applyPreset('buying_house')} className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">Buying house</button>
                     <button type="button" onClick={() => applyPreset('factory')} className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">Factory</button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 flex flex-wrap gap-2`
@@ -6714,6 +6943,7 @@
                     <button type="button" onClick={() => applyPreset('factory')} className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">Factory</button>
                   </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10`
@@ -6746,6 +6976,7 @@
                   </div>
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10`
@@ -6778,6 +7009,7 @@
                 </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10`
@@ -6810,6 +7042,7 @@
                   {managePresetsOpen ? (
                     <div className="mt-2 space-y-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3`
@@ -6843,6 +7076,7 @@
                     <div className="mt-2 space-y-2">
                       {listLocalPresets().length ? listLocalPresets().map((p) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70`
@@ -6874,6 +7108,7 @@
                         <div key={p.key} className="flex items-center justify-between gap-2 rounded-xl bg-white p-2 ring-1 ring-slate-200/70">
                           <div className="min-w-0 text-xs text-slate-700">{p.key.replace('_', ' ')} preset</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 space-y-2`
@@ -6910,6 +7145,7 @@
                           <div className="flex gap-2">
                             <button type="button" onClick={() => applyPreset(p.key)} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Load</button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-2 rounded-xl bg-white p-2 ring-1 ring-slate-200/70`
@@ -6952,6 +7188,7 @@
                             <button type="button" onClick={() => applyPreset(p.key)} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Load</button>
                             <button type="button" onClick={() => shareLocalPreset(p)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Share</button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0 text-xs text-slate-700`
@@ -6989,6 +7226,7 @@
                             <button type="button" onClick={() => shareLocalPreset(p)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Share</button>
                             <button type="button" onClick={() => createServerPresetFromLocal(p.key)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Copy to server</button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex gap-2`
@@ -7023,6 +7261,7 @@
                             <button type="button" onClick={() => createServerPresetFromLocal(p.key)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Copy to server</button>
                             <button type="button" onClick={() => deleteLocalPreset(p.key)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-rose-600 ring-1 ring-rose-200/30">Delete</button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white`
@@ -7056,6 +7295,7 @@
                             <button type="button" onClick={() => deleteLocalPreset(p.key)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-rose-600 ring-1 ring-rose-200/30">Delete</button>
                           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70`
@@ -7086,6 +7326,7 @@
                           </div>
                         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70`
@@ -7116,6 +7357,7 @@
                         </div>
                       )) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full px-3 py-1 text-[11px] font-semibold text-rose-600 ring-1 ring-rose-200/30`
@@ -7143,6 +7385,7 @@
 
                       <div className="pt-2 border-t" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500`
@@ -7166,6 +7409,7 @@
                       <div>
                         <p className="text-xs font-semibold text-slate-500">Server presets</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `pt-2 border-t`
@@ -7190,6 +7434,7 @@
                           {serverPresetsLoading ? (
                             <div className="text-xs text-slate-500">Loading server presets...</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-slate-500`
@@ -7214,6 +7459,7 @@
                             <div className="text-xs text-slate-500">Loading server presets...</div>
                           ) : (serverPresets.length ? serverPresets.map((sp) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 space-y-2`
@@ -7236,6 +7482,7 @@
                             <div key={sp.id} className="flex items-center justify-between gap-2 rounded-xl bg-white p-2 ring-1 ring-slate-200/70">
                               <div className="min-w-0 text-xs text-slate-700">{sp.name}{String(sp.owner_id) === String(sessionUser?.id) ? ' (you)' : ''}</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500`
@@ -7271,6 +7518,7 @@
                               <div className="flex gap-2">
                                 <button type="button" onClick={() => applyServerPreset(sp)} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Load</button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center justify-between gap-2 rounded-xl bg-white p-2 ring-1 ring-slate-200/70`
@@ -7313,6 +7561,7 @@
                                 <button type="button" onClick={() => applyServerPreset(sp)} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Load</button>
                                 {String(sp.owner_id) === String(sessionUser?.id) ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0 text-xs text-slate-700`
@@ -7347,6 +7596,7 @@
                                 {String(sp.owner_id) === String(sessionUser?.id) ? (
                                   <>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex gap-2`
@@ -7377,6 +7627,7 @@
                                   <>
                                     <button type="button" onClick={() => updateServerPreset(sp.id)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Save</button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white`
@@ -7407,6 +7658,7 @@
                                   </>
                                 ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70`
@@ -7437,6 +7689,7 @@
                                 ) : null}
                               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full px-3 py-1 text-[11px] font-semibold text-rose-600 ring-1 ring-rose-200/30`
@@ -7464,6 +7717,7 @@
 
                           <div className="mt-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500`
@@ -7485,6 +7739,7 @@
                               const name = window.prompt('Preset name')
                               if (name) createServerPresetFromCurrent(name)
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -7508,6 +7763,7 @@
                         </div>
                       </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white`
@@ -7534,6 +7790,7 @@
                     <div className="mt-2 flex flex-wrap gap-2">
                       <button type="button" onClick={() => savePreset('buyer')} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Buyer</button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 rounded-xl borderless-shadow bg-slate-50 p-3 text-[11px] text-slate-600 dark:bg-white/5 dark:text-slate-200`
@@ -7579,6 +7836,7 @@
                       <button type="button" onClick={() => savePreset('buyer')} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Buyer</button>
                       <button type="button" onClick={() => savePreset('buying_house')} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Buying house</button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-slate-700 dark:text-slate-100`
@@ -7615,6 +7873,7 @@
                       <button type="button" onClick={() => savePreset('buying_house')} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Buying house</button>
                       <button type="button" onClick={() => savePreset('factory')} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Factory</button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 flex flex-wrap gap-2`
@@ -7647,6 +7906,7 @@
                       <button type="button" onClick={() => savePreset('factory')} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Factory</button>
                       <button type="button" onClick={() => setAutoSaveCandidate(null)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200/70 dark:text-slate-200 dark:ring-white/10">Dismiss</button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white`
@@ -7680,6 +7940,7 @@
                       <button type="button" onClick={() => setAutoSaveCandidate(null)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200/70 dark:text-slate-200 dark:ring-white/10">Dismiss</button>
                     </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white`
@@ -7713,6 +7974,7 @@
                     </div>
                   </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white`
@@ -7746,6 +8008,7 @@
                   </div>
                 ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full px-3 py-1 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200/70 dark:text-slate-200 dark:ring-white/10`
@@ -7776,6 +8039,7 @@
             <div className="relative flex items-center gap-2 px-4 py-3 bg-white/40 dark:bg-slate-950/20 borderless-divider-b dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
               {TAB_OPTIONS.map((t) => {
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-5 grid grid-cols-12 gap-4`
@@ -7824,6 +8088,7 @@
               {TAB_OPTIONS.map((t) => {
                 const Icon = t.icon
 ```
+
 **Raw class strings detected (best effort):**
 
 - `col-span-12 xl:col-span-9 rounded-2xl bg-white/70 shadow-sm ring-1 ring-slate-200/60 backdrop-blur-md overflow-hidden dark:bg-slate-950/30 dark:ring-white/10`
@@ -7867,6 +8132,7 @@
                 const Icon = t.icon
                 const active = activeTab === t.id
 ```
+
 **Raw class strings detected (best effort):**
 
 - `relative flex items-center gap-2 px-4 py-3 bg-white/40 dark:bg-slate-950/20 borderless-divider-b dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]`
@@ -7897,6 +8163,7 @@
                         ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
                         : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
 ```
+
 **Raw class strings detected (best effort):**
 
 - `bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35`
@@ -7931,6 +8198,7 @@
                       />
                     ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `absolute inset-0 rounded-full bg-indigo-500/10 dark:bg-white/10`
@@ -7958,6 +8226,7 @@
                       <span>{t.label}</span>
                       <span className="text-[11px] opacity-70">({count})</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `relative inline-flex items-center gap-2`
@@ -7983,6 +8252,7 @@
                   </motion.button>
                 )
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] opacity-70`
@@ -8001,6 +8271,7 @@
               <div className="space-y-3">
                 {Array.from({ length: 6 }).map((_, i) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `p-4`
@@ -8020,6 +8291,7 @@
                   <ResultSkeletonCard key={`result-skel-${i}`} index={i} />
                 ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-3`
@@ -8037,6 +8309,7 @@
               </div>
             ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-rose-50 p-6 text-sm text-rose-800 text-center ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30`
@@ -8068,6 +8341,7 @@
               </div>
             ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-slate-50 p-6 text-sm text-slate-700 text-center ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10`
@@ -8099,6 +8373,7 @@
                   <div className="space-y-3">
                     {requests.map((r, idx) => {
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-4`
@@ -8123,6 +8398,7 @@
                       const author = r.author || {}
                       const profileRoute = roleToProfileRoute(author.role, author.id)
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-3`
@@ -8140,6 +8416,7 @@
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 transition hover:-translate-y-0.5 hover:shadow-md dark:bg-slate-900/50 dark:ring-slate-800`
@@ -8179,6 +8456,7 @@
                               <div className="flex items-center gap-2">
                                 <Link to={profileRoute} className="font-semibold text-slate-900 dark:text-slate-100 hover:underline truncate">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-3`
@@ -8214,6 +8492,7 @@
                                 <Link to={profileRoute} className="font-semibold text-slate-900 dark:text-slate-100 hover:underline truncate">
                                   {author.name || 'Buyer'}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0`
@@ -8248,6 +8527,7 @@
                                   {author.name || 'Buyer'}
                                 </Link>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2`
@@ -8280,6 +8560,7 @@
                                 </Link>
                                 <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold uppercase text-slate-600 dark:bg-white/10 dark:text-slate-200">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-slate-900 dark:text-slate-100 hover:underline truncate`
@@ -8322,6 +8603,7 @@
                                 </span>
                                 {r.verified_only ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold uppercase text-slate-600 dark:bg-white/10 dark:text-slate-200`
@@ -8355,6 +8637,7 @@
                                   </span>
                                 ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center rounded-full bg-indigo-50 px-2 py-1 text-[10px] font-semibold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-200`
@@ -8387,6 +8670,7 @@
                                   </span>
                                 ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-200`
@@ -8419,6 +8703,7 @@
                                   </span>
                                 ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `verified-shimmer inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 px-2 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:from-emerald-500/12 dark:to-teal-400/10 dark:text-emerald-200 dark:ring-emerald-400/25`
@@ -8459,6 +8744,7 @@
                                   </span>
                                 ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200`
@@ -8491,6 +8777,7 @@
                                   </span>
                                 ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center rounded-full bg-sky-50 px-2 py-1 text-[10px] font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-200`
@@ -8523,6 +8810,7 @@
                               {(specLabel || quoteDeadline || expiresAt) ? (
                                 <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-slate-600 dark:text-slate-300">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500 dark:text-slate-400`
@@ -8553,6 +8841,7 @@
                                   {quoteDeadline ? <span className="rounded-full bg-sky-50 px-2 py-1 text-sky-700 dark:bg-sky-500/10 dark:text-sky-200">Quote by {quoteDeadline.toLocaleDateString()}</span> : null}
                                   {expiresAt ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 flex flex-wrap gap-2 text-[11px] text-slate-600 dark:text-slate-300`
@@ -8592,6 +8881,7 @@
                                   {expiresAt ? (
                                     <span className={`rounded-full px-2 py-1${isExpired ? 'bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-200' : 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-200'}`}>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-slate-100 px-2 py-1 dark:bg-white/10`
@@ -8632,6 +8922,7 @@
                                     <span className={`rounded-full px-2 py-1${isExpired ? 'bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-200' : 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-200'}`}>
                                       {isExpired ? 'Expired' : `Expires ${expiresAt.toLocaleDateString()}`}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-sky-50 px-2 py-1 text-sky-700 dark:bg-sky-500/10 dark:text-sky-200`
@@ -8672,6 +8963,7 @@
                                     </span>
                                   ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-200`
@@ -8702,6 +8994,7 @@
                                 </div>
                               ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-slate-100 px-2 py-1 dark:bg-white/10`
@@ -8726,6 +9019,7 @@
                                 <div>Category: <span className="font-semibold text-slate-800 dark:text-slate-100">{r.category || '-'}</span></div>
                                 <div>Quantity/MOQ: <span className="font-semibold text-slate-800 dark:text-slate-100">{r.quantity || '-'}</span></div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm text-slate-800 dark:text-slate-200 whitespace-pre-wrap`
@@ -8761,6 +9055,7 @@
                                 <div>Quantity/MOQ: <span className="font-semibold text-slate-800 dark:text-slate-100">{r.quantity || '-'}</span></div>
                                 <div>Timeline: <span className="font-semibold text-slate-800 dark:text-slate-100">{r.timeline_days || '-'}</span></div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-300`
@@ -8791,6 +9086,7 @@
                                 <div>Timeline: <span className="font-semibold text-slate-800 dark:text-slate-100">{r.timeline_days || '-'}</span></div>
                                 <div>Material: <span className="font-semibold text-slate-800 dark:text-slate-100">{r.material || '-'}</span></div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-slate-800 dark:text-slate-100`
@@ -8811,6 +9107,7 @@
                                 <div>Material: <span className="font-semibold text-slate-800 dark:text-slate-100">{r.material || '-'}</span></div>
                               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-slate-800 dark:text-slate-100`
@@ -8831,6 +9128,7 @@
                               </div>
                             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-slate-800 dark:text-slate-100`
@@ -8851,6 +9149,7 @@
                             </div>
                             <div className="flex flex-col gap-2 shrink-0">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-slate-800 dark:text-slate-100`
@@ -8879,6 +9178,7 @@
                                 Open profile
                               </Link>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-col gap-2 shrink-0`
@@ -8920,6 +9220,7 @@
                               </Link>
                               <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 text-center dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5`
@@ -8954,6 +9255,7 @@
                                 Contact
                               </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[var(--gt-blue)] px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95`
@@ -8985,6 +9287,7 @@
                       const author = p.author || {}
                       const profileRoute = roleToProfileRoute(author.role, author.id)
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-3`
@@ -9002,6 +9305,7 @@
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 transition hover:-translate-y-0.5 hover:shadow-md dark:bg-slate-900/50 dark:ring-slate-800`
@@ -9041,6 +9345,7 @@
                               <div className="flex items-center gap-2">
                                 <Link to={profileRoute} className="font-semibold text-slate-900 dark:text-slate-100 hover:underline truncate">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-3`
@@ -9076,6 +9381,7 @@
                                 <Link to={profileRoute} className="font-semibold text-slate-900 dark:text-slate-100 hover:underline truncate">
                                   {author.name || p.title || 'Company'}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0`
@@ -9110,6 +9416,7 @@
                                   {author.name || p.title || 'Company'}
                                 </Link>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2`
@@ -9142,6 +9449,7 @@
                                 </Link>
                                 {author.verified ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-slate-900 dark:text-slate-100 hover:underline truncate`
@@ -9169,6 +9477,7 @@
                                   </span>
                                 ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `verified-shimmer inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 px-2 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:from-emerald-500/12 dark:to-teal-400/10 dark:text-emerald-200 dark:ring-emerald-400/25`
@@ -9209,6 +9518,7 @@
                                   </span>
                                 ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200`
@@ -9241,6 +9551,7 @@
                                   </span>
                                 ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center rounded-full bg-indigo-50 px-2 py-1 text-[10px] font-semibold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-200`
@@ -9273,6 +9584,7 @@
                                   </span>
                                 ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-200`
@@ -9305,6 +9617,7 @@
                               </div>
                               <p className="mt-2 text-sm text-slate-800 dark:text-slate-100 font-semibold">{p.title || 'Product'}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500 dark:text-slate-400`
@@ -9335,6 +9648,7 @@
                               <p className="mt-2 text-sm text-slate-800 dark:text-slate-100 font-semibold">{p.title || 'Product'}</p>
                               <p className="mt-1 text-sm text-slate-700 dark:text-slate-300 line-clamp-2">{p.description || ''}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500 dark:text-slate-400 uppercase`
@@ -9370,6 +9684,7 @@
                               <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-300">
                                 <div>Category: <span className="font-semibold text-slate-800 dark:text-slate-100">{p.category || '-'}</span></div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm text-slate-800 dark:text-slate-100 font-semibold`
@@ -9407,6 +9722,7 @@
                                 <div>Category: <span className="font-semibold text-slate-800 dark:text-slate-100">{p.category || '-'}</span></div>
                                 <div>MOQ: <span className="font-semibold text-slate-800 dark:text-slate-100">{p.moq || '-'}</span></div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm text-slate-700 dark:text-slate-300 line-clamp-2`
@@ -9442,6 +9758,7 @@
                                 <div>MOQ: <span className="font-semibold text-slate-800 dark:text-slate-100">{p.moq || '-'}</span></div>
                                 <div>Lead time: <span className="font-semibold text-slate-800 dark:text-slate-100">{p.lead_time_days || '-'}</span></div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-300`
@@ -9472,6 +9789,7 @@
                                 <div>Lead time: <span className="font-semibold text-slate-800 dark:text-slate-100">{p.lead_time_days || '-'}</span></div>
                                 <div>Material: <span className="font-semibold text-slate-800 dark:text-slate-100">{p.material || '-'}</span></div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-slate-800 dark:text-slate-100`
@@ -9492,6 +9810,7 @@
                                 <div>Material: <span className="font-semibold text-slate-800 dark:text-slate-100">{p.material || '-'}</span></div>
                               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-slate-800 dark:text-slate-100`
@@ -9512,6 +9831,7 @@
                               </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-slate-800 dark:text-slate-100`
@@ -9532,6 +9852,7 @@
 
                               <div className="mt-3 text-xs text-slate-600 dark:text-slate-300">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-slate-800 dark:text-slate-100`
@@ -9553,11 +9874,23 @@
 #### `src/pages/SearchResults.jsx:2671`
 
 ```jsx
-                              <div className="mt-3 text-xs text-slate-600 dark:text-slate-300">
-                                Rating: <span className="font-semibold text-slate-800 dark:text-slate-100">{rating?.average_score ?? '0.0'}</span> ({rating?.total_count ?? 0}) - Confidence {Math.round((rating?.score_confidence ?? 0) * 100)}%
-                              </div>
-                              {p.hasVideo ? <div className="mt-2 text-xs font-semibold text-indigo-700 dark:text-indigo-200">Video available</div> : null}
+<div className="mt-3 text-xs text-slate-600 dark:text-slate-300">
+  Rating:{" "}
+  <span className="font-semibold text-slate-800 dark:text-slate-100">
+    {rating?.average_score ?? "0.0"}
+  </span>{" "}
+  ({rating?.total_count ?? 0}) - Confidence{" "}
+  {Math.round((rating?.score_confidence ?? 0) * 100)}%
+</div>;
+{
+  p.hasVideo ? (
+    <div className="mt-2 text-xs font-semibold text-indigo-700 dark:text-indigo-200">
+      Video available
+    </div>
+  ) : null;
+}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-xs text-slate-600 dark:text-slate-300`
@@ -9588,6 +9921,7 @@
                               {p.hasVideo ? <div className="mt-2 text-xs font-semibold text-indigo-700 dark:text-indigo-200">Video available</div> : null}
                             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-slate-800 dark:text-slate-100`
@@ -9614,6 +9948,7 @@
                             <div className="flex flex-col gap-2 shrink-0">
                               <Link to={profileRoute} className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 text-center dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-xs font-semibold text-indigo-700 dark:text-indigo-200`
@@ -9659,6 +9994,7 @@
                                 View profile
                               </Link>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-col gap-2 shrink-0`
@@ -9700,6 +10036,7 @@
                               </Link>
                               <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 text-center dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5`
@@ -9734,6 +10071,7 @@
                                 Quick view
                               </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5`
@@ -9767,6 +10105,7 @@
                                 Contact
                               </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[var(--gt-blue)] px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95`
@@ -9798,6 +10137,7 @@
               <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
                 <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Early verified factories</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `col-span-12 xl:col-span-3 space-y-4`
@@ -9837,6 +10177,7 @@
                 <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Premium-only early access list</p>
                 {!canEarlyAccess ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800`
@@ -9875,6 +10216,7 @@
                 {!canEarlyAccess ? (
                   <div className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-bold text-slate-900 dark:text-slate-100`
@@ -9916,6 +10258,7 @@
                   <div className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
                     Upgrade to Premium to unlock early access to newly verified factories.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-[11px] text-slate-500 dark:text-slate-400`
@@ -9952,6 +10295,7 @@
                     <div className="mt-2">
                       <Link to="/pricing" className="text-[11px] font-semibold text-[var(--gt-blue)] hover:underline">View Premium options</Link>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30`
@@ -9991,6 +10335,7 @@
                     </div>
                   </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -10016,6 +10361,7 @@
                   </div>
                 ) : earlyVerifiedError ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold text-[var(--gt-blue)] hover:underline`
@@ -10038,6 +10384,7 @@
                   <div className="mt-3 space-y-2">
                     {earlyVerifiedFactories.length ? earlyVerifiedFactories.slice(0, 6).map((row) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-xs text-rose-600 dark:text-rose-300`
@@ -10063,6 +10410,7 @@
                       <Link
                         key={row.id}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 space-y-2`
@@ -10081,6 +10429,7 @@
                         <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{row.name || 'Factory'}</p>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{row.country || '-'} - verified</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `block rounded-xl bg-white px-3 py-2 text-left ring-1 ring-slate-200/70 transition hover:bg-slate-50 dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/8`
@@ -10126,6 +10475,7 @@
                       </Link>
                     )) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-slate-900 dark:text-slate-100 truncate`
@@ -10154,6 +10504,7 @@
                     )) : (
                       <div className="text-xs text-slate-500 dark:text-slate-400">No new verified factories yet.</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500 dark:text-slate-400 truncate`
@@ -10179,6 +10530,7 @@
                   </div>
                 )}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500 dark:text-slate-400`
@@ -10199,6 +10551,7 @@
               <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Private to you - Recorded on Quick View</p>
               <div className="mt-3 space-y-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800`
@@ -10240,6 +10593,7 @@
               <div className="mt-3 space-y-2">
                 {recentViews.length ? recentViews.map((row) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-bold text-slate-900 dark:text-slate-100`
@@ -10271,6 +10625,7 @@
                 {recentViews.length ? recentViews.map((row) => (
                   <button
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-[11px] text-slate-500 dark:text-slate-400`
@@ -10297,6 +10652,7 @@
                   <button
                     key={row.id}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 space-y-2`
@@ -10310,11 +10666,17 @@
 #### `src/pages/SearchResults.jsx:2751`
 
 ```jsx
-                    className="w-full text-left rounded-xl bg-white px-3 py-2 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-[0.99] dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/8"
-                    title="Open Quick View"
-                  >
-                    <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{row.product?.title || 'Product'}</p>
+className =
+  "w-full text-left rounded-xl bg-white px-3 py-2 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-[0.99] dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/8";
+title =
+  "Open Quick View" >
+  (
+    <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
+      {row.product?.title || "Product"}
+    </p>
+  );
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full text-left rounded-xl bg-white px-3 py-2 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-[0.99] dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/8`
@@ -10362,6 +10724,7 @@
                   </button>
                 )) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-slate-900 dark:text-slate-100 truncate`
@@ -10390,6 +10753,7 @@
                 )) : (
                   <div className="text-xs text-slate-500 dark:text-slate-400">No views yet. Use "Quick view" on a product.</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500 dark:text-slate-400 truncate`
@@ -10415,6 +10779,7 @@
               </div>
               <div className="mt-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500 dark:text-slate-400`
@@ -10438,6 +10803,7 @@
               </div>
             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3`
@@ -10463,6 +10829,7 @@
             </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs font-semibold text-[var(--gt-blue)] hover:underline`
@@ -10485,6 +10852,7 @@
                 <p className="mt-1 text-xs text-amber-800 dark:text-amber-200/90">
                   Upgrade to Premium to unlock advanced filters. Core filters remain unlimited on the free plan.
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl p-4 ring-1 ring-amber-200 bg-amber-50 dark:bg-amber-500/10 dark:ring-amber-500/30`
@@ -10522,6 +10890,7 @@
                   Upgrade to Premium to unlock advanced filters. Core filters remain unlimited on the free plan.
                 </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-bold text-amber-900 dark:text-amber-200`
@@ -10549,6 +10918,7 @@
                 </p>
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-xs text-amber-800 dark:text-amber-200/90`
@@ -10575,6 +10945,7 @@
   )
 }
 ```
+
 - `src/pages/SearchResults.jsx:353` — ({count})
 
 ```jsx
@@ -10583,6 +10954,7 @@
           </button>
         )
 ```
+
 - `src/pages/SearchResults.jsx:1489` — Search
 
 ```jsx
@@ -10591,6 +10963,7 @@
               </div>
             </div>
 ```
+
 - `src/pages/SearchResults.jsx:1490` — Garments & Textile marketplace
 
 ```jsx
@@ -10599,6 +10972,7 @@
             </div>
 
 ```
+
 - `src/pages/SearchResults.jsx:1587` — No active filters
 
 ```jsx
@@ -10607,6 +10981,7 @@
                 type="button"
                 onClick={clearAllFilters}
 ```
+
 - `src/pages/SearchResults.jsx:1617` — Product
 
 ```jsx
@@ -10615,6 +10990,7 @@
                 <div className="mt-3 grid grid-cols-1 gap-2" data-testid="default-core-filter-bar" data-core-filter-count={renderedDefaultCoreFilterKeys.length}>
                   <select
 ```
+
 - `src/pages/SearchResults.jsx:1618` — Core filters are visible first
 
 ```jsx
@@ -10623,6 +10999,7 @@
                   <select
                     value={filters.industry}
 ```
+
 - `src/pages/SearchResults.jsx:1631` — MOQ range
 
 ```jsx
@@ -10631,6 +11008,7 @@
                       <BucketChips
                         options={MOQ_BUCKETS}
 ```
+
 - `src/pages/SearchResults.jsx:1661` — Price per unit
 
 ```jsx
@@ -10639,6 +11017,7 @@
                       <select
                         value={filters.priceCurrency || ''}
 ```
+
 - `src/pages/SearchResults.jsx:1688` — Incoterms
 
 ```jsx
@@ -10647,6 +11026,7 @@
                       <ChipGroup
                         options={INCOTERM_OPTIONS}
 ```
+
 - `src/pages/SearchResults.jsx:1731` — Supplier / Account
 
 ```jsx
@@ -10655,6 +11035,7 @@
                   </div>
                   <button
 ```
+
 - `src/pages/SearchResults.jsx:1732` — Core visible first, attributes under More filters
 
 ```jsx
@@ -10663,6 +11044,7 @@
                   <button
                     type="button"
 ```
+
 - `src/pages/SearchResults.jsx:1752` — Account type
 
 ```jsx
@@ -10671,6 +11053,7 @@
                       {['', 'buyer', 'factory', 'buying_house'].map((value) => {
                         const label = value === '' ? 'Any' : (value === 'buying_house' ? 'Buying House' : value.charAt(0).toUpperCase() + value.slice(1))
 ```
+
 - `src/pages/SearchResults.jsx:1830` — Fabric type
 
 ```jsx
@@ -10679,6 +11062,7 @@
                             <ChipGroup
                               options={FABRIC_TYPE_OPTIONS}
 ```
+
 - `src/pages/SearchResults.jsx:1842` — GSM / Weight
 
 ```jsx
@@ -10687,6 +11071,7 @@
                             <RangeSlider
                               min={80}
 ```
+
 - `src/pages/SearchResults.jsx:1881` — Color / Pantone
 
 ```jsx
@@ -10695,6 +11080,7 @@
                             {(filters.colorPantone || []).map((code) => (
                               <button
 ```
+
 - `src/pages/SearchResults.jsx:1919` — Customization
 
 ```jsx
@@ -10703,6 +11089,7 @@
                             {CUSTOMIZATION_OPTIONS.map((opt) => {
                               const checked = Array.isArray(filters.customization) && filters.customization.includes(opt)
 ```
+
 - `src/pages/SearchResults.jsx:1955` — Sample lead time (days)
 
 ```jsx
@@ -10711,6 +11098,7 @@
                               type="button"
                               onClick={() => updateAdvancedFilter('sampleLeadTime', '')}
 ```
+
 - `src/pages/SearchResults.jsx:1992` — Certifications
 
 ```jsx
@@ -10719,6 +11107,7 @@
                             <ChipGroup
                               options={CERTIFICATION_OPTIONS}
 ```
+
 - `src/pages/SearchResults.jsx:2004` — Last audit date
 
 ```jsx
@@ -10727,6 +11116,7 @@
                             type="date"
                             value={filters.auditDate}
 ```
+
 - `src/pages/SearchResults.jsx:2014` — Incoterms
 
 ```jsx
@@ -10735,6 +11125,7 @@
                             <ChipGroup
                               options={INCOTERM_OPTIONS}
 ```
+
 - `src/pages/SearchResults.jsx:2026` — Open advanced block to configure product attributes.
 
 ```jsx
@@ -10743,6 +11134,7 @@
                       supplierAdvancedOpen ? (
                       <>
 ```
+
 - `src/pages/SearchResults.jsx:2031` — Payment terms
 
 ```jsx
@@ -10751,6 +11143,7 @@
                             <ChipGroup
                               options={PAYMENT_OPTIONS}
 ```
+
 - `src/pages/SearchResults.jsx:2043` — Document readiness
 
 ```jsx
@@ -10759,6 +11152,7 @@
                             <ChipGroup
                               options={DOCUMENT_READY_OPTIONS}
 ```
+
 - `src/pages/SearchResults.jsx:2057` — Audit score (min)
 
 ```jsx
@@ -10767,6 +11161,7 @@
                               type="button"
                               onClick={() => updateAdvancedFilter('auditScoreMin', '')}
 ```
+
 - `src/pages/SearchResults.jsx:2094` — Language support
 
 ```jsx
@@ -10775,6 +11170,7 @@
                             <ChipGroup
                               options={LANGUAGE_OPTIONS}
 ```
+
 - `src/pages/SearchResults.jsx:2106` — Production capacity (units/month)
 
 ```jsx
@@ -10783,6 +11179,7 @@
                             <input
                               type="range"
 ```
+
 - `src/pages/SearchResults.jsx:2122` — Main processes
 
 ```jsx
@@ -10791,6 +11188,7 @@
                             <ChipGroup
                               options={PROCESS_OPTIONS}
 ```
+
 - `src/pages/SearchResults.jsx:2135` — Years in business (min)
 
 ```jsx
@@ -10799,6 +11197,7 @@
                               <BucketChips
                                 options={YEARS_IN_BUSINESS_MIN_BUCKETS}
 ```
+
 - `src/pages/SearchResults.jsx:2146` — Avg response time (max)
 
 ```jsx
@@ -10807,6 +11206,7 @@
                               <BucketChips
                                 options={RESPONSE_TIME_MAX_BUCKETS}
 ```
+
 - `src/pages/SearchResults.jsx:2159` — Team seats (min)
 
 ```jsx
@@ -10815,6 +11215,7 @@
                               <BucketChips
                                 options={TEAM_SEATS_MIN_BUCKETS}
 ```
+
 - `src/pages/SearchResults.jsx:2180` — Permission area
 
 ```jsx
@@ -10823,6 +11224,7 @@
                               value={filters.permissionSection || ''}
                               onChange={(e) => updateAdvancedFilter('permissionSection', e.target.value)}
 ```
+
 - `src/pages/SearchResults.jsx:2206` — Role seats
 
 ```jsx
@@ -10831,6 +11233,7 @@
                               <div className="flex gap-2">
                                 <input
 ```
+
 - `src/pages/SearchResults.jsx:2259` — Export ports
 
 ```jsx
@@ -10839,6 +11242,7 @@
                               <ChipGroup
                                 options={EXPORT_PORT_OPTIONS}
 ```
+
 - `src/pages/SearchResults.jsx:2282` — Location + radius
 
 ```jsx
@@ -10847,6 +11251,7 @@
                             <input
                               value={geoQuery}
 ```
+
 - `src/pages/SearchResults.jsx:2322` — Lat: {filters.locationLat \|\| '--'} · Lng: {filters.locationLng \|\| '--'}
 
 ```jsx
@@ -10855,6 +11260,7 @@
                               type="button"
                               onClick={() => setShowMapPreview((prev) => !prev)}
 ```
+
 - `src/pages/SearchResults.jsx:2351` — Open advanced block to configure supplier/account attributes.
 
 ```jsx
@@ -10863,6 +11269,7 @@
                   </div>
                 ) : (
 ```
+
 - `src/pages/SearchResults.jsx:2355` — Advanced filters are hidden to keep search simple. Use "More filters" when needed.
 
 ```jsx
@@ -10871,6 +11278,7 @@
               </div>
 
 ```
+
 - `src/pages/SearchResults.jsx:2360` — Filter guidance
 
 ```jsx
@@ -10879,6 +11287,7 @@
                   <p>Supplier filters use profile data such as main processes, export ports, and years in business.</p>
                   <p>Distance radius uses coordinates. Use “Use my location” to fill lat/lng quickly. If a supplier has no coordinates, we fall back to country matching.</p>
 ```
+
 - `src/pages/SearchResults.jsx:2362` — Supplier filters use profile data such as main processes, export ports, and years in business.
 
 ```jsx
@@ -10887,6 +11296,7 @@
                   <p>Premium filters are optional. Core filters always remain free and unlimited.</p>
                 </div>
 ```
+
 - `src/pages/SearchResults.jsx:2363` — Distance radius uses coordinates. Use “Use my location” to fill lat/lng quickly. If a supplier has no coordinates, we fall back to country matching.
 
 ```jsx
@@ -10895,6 +11305,7 @@
                 </div>
               </div>
 ```
+
 - `src/pages/SearchResults.jsx:2364` — Premium filters are optional. Core filters always remain free and unlimited.
 
 ```jsx
@@ -10903,6 +11314,7 @@
               </div>
 
 ```
+
 - `src/pages/SearchResults.jsx:2369` — Status & presets
 
 ```jsx
@@ -10911,6 +11323,7 @@
                   {quotaMessage ? <p>{quotaMessage}</p> : <p>Run a search to see quota status.</p>}
                   {upgradePrompt ? <p className="text-amber-800 bg-amber-50 borderless-shadow rounded-xl p-2">{upgradePrompt}</p> : null}
 ```
+
 - `src/pages/SearchResults.jsx:2371` — Run a search to see quota status.
 
 ```jsx
@@ -10919,6 +11332,7 @@
                   {alertFeedback ? <p className="text-sky-800 bg-sky-50 borderless-shadow rounded-xl p-2">{alertFeedback}</p> : null}
                 </div>
 ```
+
 - `src/pages/SearchResults.jsx:2377` — Apply preset
 
 ```jsx
@@ -10927,6 +11341,7 @@
                     <button type="button" onClick={() => applyPreset('buyer')} className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">Buyer</button>
                     <button type="button" onClick={() => applyPreset('buying_house')} className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">Buying house</button>
 ```
+
 - `src/pages/SearchResults.jsx:2379` — applyPreset('buyer')} className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">Buyer
 
 ```jsx
@@ -10935,6 +11350,7 @@
                     <button type="button" onClick={() => applyPreset('factory')} className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">Factory</button>
                   </div>
 ```
+
 - `src/pages/SearchResults.jsx:2380` — applyPreset('buying_house')} className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">Buying house
 
 ```jsx
@@ -10943,6 +11359,7 @@
                   </div>
                 </div>
 ```
+
 - `src/pages/SearchResults.jsx:2381` — applyPreset('factory')} className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">Factory
 
 ```jsx
@@ -10951,6 +11368,7 @@
                 </div>
 
 ```
+
 - `src/pages/SearchResults.jsx:2386` — setManagePresetsOpen((p) => !p)} className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Manage presets
 
 ```jsx
@@ -10959,6 +11377,7 @@
                     <div className="mt-2 space-y-2">
                       {listLocalPresets().length ? listLocalPresets().map((p) => (
 ```
+
 - `src/pages/SearchResults.jsx:2393` — applyPreset(p.key)} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Load
 
 ```jsx
@@ -10967,6 +11386,7 @@
                             <button type="button" onClick={() => createServerPresetFromLocal(p.key)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Copy to server</button>
                             <button type="button" onClick={() => deleteLocalPreset(p.key)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-rose-600 ring-1 ring-rose-200/30">Delete</button>
 ```
+
 - `src/pages/SearchResults.jsx:2394` — shareLocalPreset(p)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Share
 
 ```jsx
@@ -10975,6 +11395,7 @@
                             <button type="button" onClick={() => deleteLocalPreset(p.key)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-rose-600 ring-1 ring-rose-200/30">Delete</button>
                           </div>
 ```
+
 - `src/pages/SearchResults.jsx:2395` — createServerPresetFromLocal(p.key)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Copy to server
 
 ```jsx
@@ -10983,6 +11404,7 @@
                           </div>
                         </div>
 ```
+
 - `src/pages/SearchResults.jsx:2396` — deleteLocalPreset(p.key)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-rose-600 ring-1 ring-rose-200/30">Delete
 
 ```jsx
@@ -10991,6 +11413,7 @@
                         </div>
                       )) : (
 ```
+
 - `src/pages/SearchResults.jsx:2406` — Server presets
 
 ```jsx
@@ -10999,6 +11422,7 @@
                           {serverPresetsLoading ? (
                             <div className="text-xs text-slate-500">Loading server presets...</div>
 ```
+
 - `src/pages/SearchResults.jsx:2414` — applyServerPreset(sp)} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Load
 
 ```jsx
@@ -11007,6 +11431,7 @@
                                   <>
                                     <button type="button" onClick={() => updateServerPreset(sp.id)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Save</button>
 ```
+
 - `src/pages/SearchResults.jsx:2417` — updateServerPreset(sp.id)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Save
 
 ```jsx
@@ -11015,6 +11440,7 @@
                                   </>
                                 ) : null}
 ```
+
 - `src/pages/SearchResults.jsx:2418` — deleteServerPreset(sp.id)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-rose-600 ring-1 ring-rose-200/30">Delete
 
 ```jsx
@@ -11023,6 +11449,7 @@
                                 ) : null}
                               </div>
 ```
+
 - `src/pages/SearchResults.jsx:2441` — Save this search as a preset
 
 ```jsx
@@ -11031,6 +11458,7 @@
                       <button type="button" onClick={() => savePreset('buyer')} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Buyer</button>
                       <button type="button" onClick={() => savePreset('buying_house')} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Buying house</button>
 ```
+
 - `src/pages/SearchResults.jsx:2443` — savePreset('buyer')} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Buyer
 
 ```jsx
@@ -11039,6 +11467,7 @@
                       <button type="button" onClick={() => savePreset('factory')} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Factory</button>
                       <button type="button" onClick={() => setAutoSaveCandidate(null)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200/70 dark:text-slate-200 dark:ring-white/10">Dismiss</button>
 ```
+
 - `src/pages/SearchResults.jsx:2444` — savePreset('buying_house')} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Buying house
 
 ```jsx
@@ -11047,6 +11476,7 @@
                       <button type="button" onClick={() => setAutoSaveCandidate(null)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200/70 dark:text-slate-200 dark:ring-white/10">Dismiss</button>
                     </div>
 ```
+
 - `src/pages/SearchResults.jsx:2445` — savePreset('factory')} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Factory
 
 ```jsx
@@ -11055,6 +11485,7 @@
                     </div>
                   </div>
 ```
+
 - `src/pages/SearchResults.jsx:2446` — setAutoSaveCandidate(null)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200/70 dark:text-slate-200 dark:ring-white/10">Dismiss
 
 ```jsx
@@ -11063,6 +11494,7 @@
                   </div>
                 ) : null}
 ```
+
 - `src/pages/SearchResults.jsx:2484` — ({count})
 
 ```jsx
@@ -11071,6 +11503,7 @@
                   </motion.button>
                 )
 ```
+
 - `src/pages/SearchResults.jsx:2571` — - {author.country}
 
 ```jsx
@@ -11079,6 +11512,7 @@
                               {(specLabel || quoteDeadline || expiresAt) ? (
                                 <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-slate-600 dark:text-slate-300">
 ```
+
 - `src/pages/SearchResults.jsx:2576` — Quote by {quoteDeadline.toLocaleDateString()}
 
 ```jsx
@@ -11087,6 +11521,7 @@
                                     <span className={`rounded-full px-2 py-1${isExpired ? 'bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-200' : 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-200'}`}>
                                       {isExpired ? 'Expired' : `Expires ${expiresAt.toLocaleDateString()}`}
 ```
+
 - `src/pages/SearchResults.jsx:2583` — Max suppliers: {maxSuppliers}
 
 ```jsx
@@ -11095,6 +11530,7 @@
                                 </div>
                               ) : null}
 ```
+
 - `src/pages/SearchResults.jsx:2659` — - {author.country}
 
 ```jsx
@@ -11103,7 +11539,8 @@
                               </div>
                               <p className="mt-2 text-sm text-slate-800 dark:text-slate-100 font-semibold">{p.title || 'Product'}</p>
 ```
-- `src/pages/SearchResults.jsx:2660` — - {String(author.role).replaceAll('_', ' ')}
+
+- `src/pages/SearchResults.jsx:2660` — - {String(author.role).replaceAll('\_', ' ')}
 
 ```jsx
                                 {author.role ? <span className="text-[11px] text-slate-500 dark:text-slate-400 uppercase">- {String(author.role).replaceAll('_', ' ')}</span> : null}
@@ -11111,6 +11548,7 @@
                               <p className="mt-2 text-sm text-slate-800 dark:text-slate-100 font-semibold">{p.title || 'Product'}</p>
                               <p className="mt-1 text-sm text-slate-700 dark:text-slate-300 line-clamp-2">{p.description || ''}</p>
 ```
+
 - `src/pages/SearchResults.jsx:2713` — Early verified factories
 
 ```jsx
@@ -11119,6 +11557,7 @@
                 {!canEarlyAccess ? (
                   <div className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
 ```
+
 - `src/pages/SearchResults.jsx:2714` — Premium-only early access list
 
 ```jsx
@@ -11127,6 +11566,7 @@
                   <div className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
                     Upgrade to Premium to unlock early access to newly verified factories.
 ```
+
 - `src/pages/SearchResults.jsx:2719` — View Premium options
 
 ```jsx
@@ -11135,6 +11575,7 @@
                   </div>
                 ) : earlyVerifiedError ? (
 ```
+
 - `src/pages/SearchResults.jsx:2743` — Recently viewed
 
 ```jsx
@@ -11143,6 +11584,7 @@
               <div className="mt-3 space-y-2">
                 {recentViews.length ? recentViews.map((row) => (
 ```
+
 - `src/pages/SearchResults.jsx:2744` — Private to you - Recorded on Quick View
 
 ```jsx
@@ -11151,6 +11593,7 @@
                 {recentViews.length ? recentViews.map((row) => (
                   <button
 ```
+
 - `src/pages/SearchResults.jsx:2762` — Open full history
 
 ```jsx
@@ -11159,6 +11602,7 @@
             </div>
 
 ```
+
 - `src/pages/SearchResults.jsx:2768` — Advanced filters locked
 
 ```jsx
@@ -11167,6 +11611,7 @@
                   Upgrade to Premium to unlock advanced filters. Core filters remain unlimited on the free plan.
                 </p>
 ```
+
 - `src/pages/SearchResults.jsx:1534` — Search requests, factories, products...
 
 ```jsx
@@ -11175,6 +11620,7 @@
               />
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-semibold tracking-widest text-slate-500 ring-1 ring-slate-200/70 dark:bg-slate-950/40 dark:text-slate-400 dark:ring-white/10">
 ```
+
 - `src/pages/SearchResults.jsx:1711` — Country (e.g. Bangladesh)
 
 ```jsx
@@ -11183,6 +11629,7 @@
                       />
                       <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
 ```
+
 - `src/pages/SearchResults.jsx:1874` — Custom sizes (e.g. Chest:32-40; Waist:28-36)
 
 ```jsx
@@ -11191,6 +11638,7 @@
                               className="w-full rounded-lg bg-white px-3 py-2 text-sm text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
                             />
 ```
+
 - `src/pages/SearchResults.jsx:1898` — Add Pantone (e.g. 19-4052)
 
 ```jsx
@@ -11199,6 +11647,7 @@
                               className="flex-1 rounded-lg bg-white px-3 py-2 text-xs text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
                               onKeyDown={(event) => {
 ```
+
 - `src/pages/SearchResults.jsx:1982` — Any
 
 ```jsx
@@ -11207,6 +11656,7 @@
                               className="w-24 rounded-lg bg-white px-3 py-2 text-xs text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
                             />
 ```
+
 - `src/pages/SearchResults.jsx:2084` — Any
 
 ```jsx
@@ -11215,6 +11665,7 @@
                               className="w-24 rounded-lg bg-white px-3 py-2 text-xs text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
                             />
 ```
+
 - `src/pages/SearchResults.jsx:2211` — Role (e.g., manager)
 
 ```jsx
@@ -11223,6 +11674,7 @@
                                   onChange={(e) => setRoleSeatDraftRole(e.target.value)}
                                   disabled={premiumLocked}
 ```
+
 - `src/pages/SearchResults.jsx:2220` — Seats
 
 ```jsx
@@ -11231,6 +11683,7 @@
                                   onChange={(e) => setRoleSeatDraftSeats(e.target.value)}
                                   disabled={premiumLocked}
 ```
+
 - `src/pages/SearchResults.jsx:2287` — Search city or country
 
 ```jsx
@@ -11239,6 +11692,7 @@
                               className="flex-1 rounded-lg bg-white px-3 py-2 text-xs text-slate-800 ring-1 ring-slate-200/70 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-[rgba(10,102,194,0.35)] dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
                             />
 ```
+
 - `src/pages/SearchResults.jsx:2752` — Open Quick View
 
 ```jsx
@@ -11247,6 +11701,7 @@
                     <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{row.product?.title || 'Product'}</p>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{row.author?.name || 'Company'} - {new Date(row.viewed_at).toLocaleString()}</p>
 ```
+
 - `src/pages/SearchResults.jsx:336` — (element) <button>
 
 ```jsx
@@ -11255,6 +11710,7 @@
             type="button"
             disabled={disabled}
 ```
+
 - `src/pages/SearchResults.jsx:370` — (element) <button>
 
 ```jsx
@@ -11263,6 +11719,7 @@
             type="button"
             disabled={disabled}
 ```
+
 - `src/pages/SearchResults.jsx:1495` — (element) <button>
 
 ```jsx
@@ -11271,6 +11728,7 @@
                 onClick={() => setFiltersOpen((v) => !v)}
                 className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200/70 transition hover:bg-white active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
 ```
+
 - `src/pages/SearchResults.jsx:1503` — (element) <button>
 
 ```jsx
@@ -11279,6 +11737,7 @@
                 onClick={saveAlert}
                 className="inline-flex items-center gap-2 rounded-full bg-[var(--gt-blue)] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95"
 ```
+
 - `src/pages/SearchResults.jsx:1511` — (element) <button>
 
 ```jsx
@@ -11287,6 +11746,7 @@
                 onClick={handleShareClick}
                 className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200/70 transition hover:bg-white active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
 ```
+
 - `src/pages/SearchResults.jsx:1519` — (element) <Link>
 
 ```jsx
@@ -11295,6 +11755,7 @@
                 className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200/70 transition hover:bg-white active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
               >
 ```
+
 - `src/pages/SearchResults.jsx:1541` — (element) <button>
 
 ```jsx
@@ -11303,6 +11764,7 @@
               onClick={runSearch}
               className="rounded-full bg-[var(--gt-blue)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95 disabled:opacity-60"
 ```
+
 - `src/pages/SearchResults.jsx:1552` — (element) <button>
 
 ```jsx
@@ -11311,6 +11773,7 @@
               onClick={clearCategories}
               className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${category.length ? ' bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50' : ' bg-[var(--gt-blue)] text-white ring-transparent'}`}
 ```
+
 - `src/pages/SearchResults.jsx:1560` — (element) <button>
 
 ```jsx
@@ -11319,6 +11782,7 @@
                 type="button"
                 onClick={() => toggleCategory(option)}
 ```
+
 - `src/pages/SearchResults.jsx:1579` — (element) <button>
 
 ```jsx
@@ -11327,6 +11791,7 @@
                   type="button"
                   onClick={chip.onRemove}
 ```
+
 - `src/pages/SearchResults.jsx:1588` — (element) <button>
 
 ```jsx
@@ -11335,6 +11800,7 @@
                 onClick={clearAllFilters}
                 className="ml-auto rounded-full px-3 py-1 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200/70 hover:bg-slate-50 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5"
 ```
+
 - `src/pages/SearchResults.jsx:1699` — (element) <button>
 
 ```jsx
@@ -11343,6 +11809,7 @@
                     onClick={() => setProductMoreOpen((prev) => !prev)}
                     className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10"
 ```
+
 - `src/pages/SearchResults.jsx:1734` — (element) <button>
 
 ```jsx
@@ -11351,6 +11818,7 @@
                     onClick={() => setSupplierMoreOpen((prev) => !prev)}
                     className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10"
 ```
+
 - `src/pages/SearchResults.jsx:1741` — (element) <button>
 
 ```jsx
@@ -11359,6 +11827,7 @@
                     onClick={() => setAdvancedFiltersOpen((prev) => !prev)}
                     className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10"
 ```
+
 - `src/pages/SearchResults.jsx:1758` — (element) <button>
 
 ```jsx
@@ -11367,6 +11836,7 @@
                             type="button"
                             onClick={() => updateCoreFilter('orgType', value)}
 ```
+
 - `src/pages/SearchResults.jsx:1803` — (element) <button>
 
 ```jsx
@@ -11375,6 +11845,7 @@
                         onClick={() => setFilterMode('product')}
                         className={`rounded-full px-3 py-1 ${filterMode === 'product' ? 'bg-white text-slate-900 shadow-sm' : 'opacity-70'}`}
 ```
+
 - `src/pages/SearchResults.jsx:1810` — (element) <button>
 
 ```jsx
@@ -11383,6 +11854,7 @@
                         onClick={() => setFilterMode('supplier')}
                         className={`rounded-full px-3 py-1 ${filterMode === 'supplier' ? 'bg-white text-slate-900 shadow-sm' : 'opacity-70'}`}
 ```
+
 - `src/pages/SearchResults.jsx:1818` — (element) <button>
 
 ```jsx
@@ -11391,6 +11863,7 @@
                       onClick={() => (filterMode === 'product' ? setProductAdvancedOpen((prev) => !prev) : setSupplierAdvancedOpen((prev) => !prev))}
                       className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10"
 ```
+
 - `src/pages/SearchResults.jsx:1884` — (element) <button>
 
 ```jsx
@@ -11399,6 +11872,7 @@
                                 type="button"
                                 onClick={() => removePantone(code)}
 ```
+
 - `src/pages/SearchResults.jsx:1908` — (element) <button>
 
 ```jsx
@@ -11407,6 +11881,7 @@
                               onClick={() => addPantone(pantoneDraft)}
                               disabled={premiumLocked}
 ```
+
 - `src/pages/SearchResults.jsx:1956` — (element) <button>
 
 ```jsx
@@ -11415,6 +11890,7 @@
                               onClick={() => updateAdvancedFilter('sampleLeadTime', '')}
                               disabled={premiumLocked || !filters.sampleLeadTime}
 ```
+
 - `src/pages/SearchResults.jsx:2058` — (element) <button>
 
 ```jsx
@@ -11423,6 +11899,7 @@
                               onClick={() => updateAdvancedFilter('auditScoreMin', '')}
                               disabled={premiumLocked || !filters.auditScoreMin}
 ```
+
 - `src/pages/SearchResults.jsx:2226` — (element) <button>
 
 ```jsx
@@ -11431,6 +11908,7 @@
                                   onClick={addRoleSeat}
                                   disabled={premiumLocked || !roleSeatDraftRole}
 ```
+
 - `src/pages/SearchResults.jsx:2241` — (element) <button>
 
 ```jsx
@@ -11439,6 +11917,7 @@
                                           onClick={() => updateAdvancedFilter('roleSeats', (filters.roleSeats || []).filter((e) => e.role !== entry.role))}
                                           disabled={premiumLocked}
 ```
+
 - `src/pages/SearchResults.jsx:2291` — (element) <button>
 
 ```jsx
@@ -11447,6 +11926,7 @@
                               onClick={useCurrentLocation}
                               disabled={premiumLocked}
 ```
+
 - `src/pages/SearchResults.jsx:2305` — (element) <button>
 
 ```jsx
@@ -11455,6 +11935,7 @@
                                   type="button"
                                   onClick={() => selectGeoResult(result)}
 ```
+
 - `src/pages/SearchResults.jsx:2323` — (element) <button>
 
 ```jsx
@@ -11463,6 +11944,7 @@
                               onClick={() => setShowMapPreview((prev) => !prev)}
                               className="text-[10px] font-semibold text-[var(--gt-blue)]"
 ```
+
 - `src/pages/SearchResults.jsx:2379` — (element) <button>
 
 ```jsx
@@ -11471,6 +11953,7 @@
                     <button type="button" onClick={() => applyPreset('factory')} className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10">Factory</button>
                   </div>
 ```
+
 - `src/pages/SearchResults.jsx:2380` — (element) <button>
 
 ```jsx
@@ -11479,6 +11962,7 @@
                   </div>
                 </div>
 ```
+
 - `src/pages/SearchResults.jsx:2381` — (element) <button>
 
 ```jsx
@@ -11487,6 +11971,7 @@
                 </div>
 
 ```
+
 - `src/pages/SearchResults.jsx:2386` — (element) <button>
 
 ```jsx
@@ -11495,6 +11980,7 @@
                     <div className="mt-2 space-y-2">
                       {listLocalPresets().length ? listLocalPresets().map((p) => (
 ```
+
 - `src/pages/SearchResults.jsx:2393` — (element) <button>
 
 ```jsx
@@ -11503,6 +11989,7 @@
                             <button type="button" onClick={() => createServerPresetFromLocal(p.key)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Copy to server</button>
                             <button type="button" onClick={() => deleteLocalPreset(p.key)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-rose-600 ring-1 ring-rose-200/30">Delete</button>
 ```
+
 - `src/pages/SearchResults.jsx:2394` — (element) <button>
 
 ```jsx
@@ -11511,6 +11998,7 @@
                             <button type="button" onClick={() => deleteLocalPreset(p.key)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-rose-600 ring-1 ring-rose-200/30">Delete</button>
                           </div>
 ```
+
 - `src/pages/SearchResults.jsx:2395` — (element) <button>
 
 ```jsx
@@ -11519,6 +12007,7 @@
                           </div>
                         </div>
 ```
+
 - `src/pages/SearchResults.jsx:2396` — (element) <button>
 
 ```jsx
@@ -11527,6 +12016,7 @@
                         </div>
                       )) : (
 ```
+
 - `src/pages/SearchResults.jsx:2414` — (element) <button>
 
 ```jsx
@@ -11535,6 +12025,7 @@
                                   <>
                                     <button type="button" onClick={() => updateServerPreset(sp.id)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Save</button>
 ```
+
 - `src/pages/SearchResults.jsx:2417` — (element) <button>
 
 ```jsx
@@ -11543,6 +12034,7 @@
                                   </>
                                 ) : null}
 ```
+
 - `src/pages/SearchResults.jsx:2418` — (element) <button>
 
 ```jsx
@@ -11551,14 +12043,22 @@
                                 ) : null}
                               </div>
 ```
+
 - `src/pages/SearchResults.jsx:2428` — (element) <button>
 
 ```jsx
-                            <button type="button" onClick={() => {
-                              const name = window.prompt('Preset name')
-                              if (name) createServerPresetFromCurrent(name)
-                            }} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Save current as server preset</button>
+<button
+  type="button"
+  onClick={() => {
+    const name = window.prompt("Preset name");
+    if (name) createServerPresetFromCurrent(name);
+  }}
+  className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white"
+>
+  Save current as server preset
+</button>
 ```
+
 - `src/pages/SearchResults.jsx:2443` — (element) <button>
 
 ```jsx
@@ -11567,6 +12067,7 @@
                       <button type="button" onClick={() => savePreset('factory')} className="rounded-full bg-[var(--gt-blue)] px-3 py-1 text-[11px] font-semibold text-white">Factory</button>
                       <button type="button" onClick={() => setAutoSaveCandidate(null)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200/70 dark:text-slate-200 dark:ring-white/10">Dismiss</button>
 ```
+
 - `src/pages/SearchResults.jsx:2444` — (element) <button>
 
 ```jsx
@@ -11575,6 +12076,7 @@
                       <button type="button" onClick={() => setAutoSaveCandidate(null)} className="rounded-full px-3 py-1 text-[11px] font-semibold text-slate-600 ring-1 ring-slate-200/70 dark:text-slate-200 dark:ring-white/10">Dismiss</button>
                     </div>
 ```
+
 - `src/pages/SearchResults.jsx:2445` — (element) <button>
 
 ```jsx
@@ -11583,6 +12085,7 @@
                     </div>
                   </div>
 ```
+
 - `src/pages/SearchResults.jsx:2446` — (element) <button>
 
 ```jsx
@@ -11591,6 +12094,7 @@
                   </div>
                 ) : null}
 ```
+
 - `src/pages/SearchResults.jsx:2540` — (element) <Link>
 
 ```jsx
@@ -11599,6 +12103,7 @@
                                 </Link>
                                 <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold uppercase text-slate-600 dark:bg-white/10 dark:text-slate-200">
 ```
+
 - `src/pages/SearchResults.jsx:2596` — (element) <Link>
 
 ```jsx
@@ -11607,6 +12112,7 @@
                               </Link>
                               <button
 ```
+
 - `src/pages/SearchResults.jsx:2599` — (element) <button>
 
 ```jsx
@@ -11615,6 +12121,7 @@
                                 onClick={() => openChatNotice(author.name || 'buyer', {
                                   type: 'buyer_request',
 ```
+
 - `src/pages/SearchResults.jsx:2636` — (element) <Link>
 
 ```jsx
@@ -11623,6 +12130,7 @@
                                 </Link>
                                 {author.verified ? (
 ```
+
 - `src/pages/SearchResults.jsx:2677` — (element) <Link>
 
 ```jsx
@@ -11631,6 +12139,7 @@
                               </Link>
                               <button
 ```
+
 - `src/pages/SearchResults.jsx:2680` — (element) <button>
 
 ```jsx
@@ -11639,6 +12148,7 @@
                                 onClick={() => setQuickViewItem({ ...p, author })}
                                 className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5"
 ```
+
 - `src/pages/SearchResults.jsx:2687` — (element) <button>
 
 ```jsx
@@ -11647,6 +12157,7 @@
                                 onClick={() => openChatNotice(author.name || 'company', {
                                   type: 'product',
 ```
+
 - `src/pages/SearchResults.jsx:2719` — (element) <Link>
 
 ```jsx
@@ -11655,6 +12166,7 @@
                   </div>
                 ) : earlyVerifiedError ? (
 ```
+
 - `src/pages/SearchResults.jsx:2727` — (element) <Link>
 
 ```jsx
@@ -11663,6 +12175,7 @@
                         to={roleToProfileRoute(row.role, row.id)}
                         className="block rounded-xl bg-white px-3 py-2 text-left ring-1 ring-slate-200/70 transition hover:bg-slate-50 dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/8"
 ```
+
 - `src/pages/SearchResults.jsx:2747` — (element) <button>
 
 ```jsx
@@ -11671,6 +12184,7 @@
                     type="button"
                     onClick={() => setQuickViewItem({ ...row.product, author: row.author })}
 ```
+
 - `src/pages/SearchResults.jsx:2762` — (element) <Link>
 
 ```jsx
@@ -11679,27 +12193,28 @@
             </div>
 
 ```
+
 ## 5) Backend Mapping (Frontend → Express → Controller → Service/DB)
 
-| Frontend call (path:line) | Express mount | Route definition | Controller file | Handler |
-|---|---|---|---|---|
-| GET /users/verified/early (src/pages/SearchResults.jsx:507) | /api/users -> server/routes/userRoutes.js:112 | GET /verified/early (server/routes/userRoutes.js:28) | - | listEarlyVerifiedFactoriesController |
-| POST /search/alerts (src/pages/SearchResults.jsx:613) | /api/search -> server/routes/searchRoutes.js:130 | POST /alerts (server/routes/searchRoutes.js:7) | server/controllers/notificationController.js | createSearchAlert |
-| GET /requirements/search?${qsRequests} (src/pages/SearchResults.jsx:666) | /api/requirements -> server/routes/requirementRoutes.js:113 | - | - | - |
-| GET /products/search?${qsProducts} (src/pages/SearchResults.jsx:667) | /api/products -> server/routes/productRoutes.js:119 | - | - | - |
-| GET /requirements/search?${qsRequests} (src/pages/SearchResults.jsx:848) | /api/requirements -> server/routes/requirementRoutes.js:113 | - | - | - |
-| GET /products/search?${qsProducts} (src/pages/SearchResults.jsx:849) | /api/products -> server/routes/productRoutes.js:119 | - | - | - |
-| GET /products/views/me?cursor=0&limit=5 (src/pages/SearchResults.jsx:984) | /api/products -> server/routes/productRoutes.js:119 | - | - | - |
-| GET /ratings/search?profile_keys=${encodeURIComponent(keys.join( (src/pages/SearchResults.jsx:998) | /api/ratings -> server/routes/ratingsRoutes.js:137 | - | - | - |
-| GET /geo/search?q=${encodeURIComponent(q)} (src/pages/SearchResults.jsx:1066) | /api/geo -> server/routes/geoRoutes.js:143 | - | - | - |
-| POST /search/alerts (src/pages/SearchResults.jsx:1128) | /api/search -> server/routes/searchRoutes.js:130 | POST /alerts (server/routes/searchRoutes.js:7) | server/controllers/notificationController.js | createSearchAlert |
-| GET /presets (src/pages/SearchResults.jsx:1287) | /api/presets -> server/routes/presetsRoutes.js:131 | GET / (server/routes/presetsRoutes.js:13) | - | listPresetsController |
-| POST /presets (src/pages/SearchResults.jsx:1303) | /api/presets -> server/routes/presetsRoutes.js:131 | POST / (server/routes/presetsRoutes.js:14) | - | createPresetController |
-| POST /presets (src/pages/SearchResults.jsx:1326) | /api/presets -> server/routes/presetsRoutes.js:131 | POST / (server/routes/presetsRoutes.js:14) | - | createPresetController |
-| PATCH /presets/${encodeURIComponent(presetId)} (src/pages/SearchResults.jsx:1374) | /api/presets -> server/routes/presetsRoutes.js:131 | - | - | - |
-| DELETE /presets/${encodeURIComponent(presetId)} (src/pages/SearchResults.jsx:1390) | /api/presets -> server/routes/presetsRoutes.js:131 | - | - | - |
-| POST /workflow/journeys (src/pages/SearchResults.jsx:1420) | /api/workflow -> server/routes/workflowLifecycleRoutes.js:153 | POST /journeys (server/routes/workflowLifecycleRoutes.js:12) | - | createJourney |
-| GET /workflow/journeys/${encodeURIComponent(journey.id)}/transition (src/pages/SearchResults.jsx:1432) | /api/workflow -> server/routes/workflowLifecycleRoutes.js:153 | - | - | - |
+| Frontend call (path:line)                                                                              | Express mount                                                 | Route definition                                             | Controller file                              | Handler                              |
+| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------- | ------------------------------------------------------------ | -------------------------------------------- | ------------------------------------ |
+| GET /users/verified/early (src/pages/SearchResults.jsx:507)                                            | /api/users -> server/routes/userRoutes.js:112                 | GET /verified/early (server/routes/userRoutes.js:28)         | -                                            | listEarlyVerifiedFactoriesController |
+| POST /search/alerts (src/pages/SearchResults.jsx:613)                                                  | /api/search -> server/routes/searchRoutes.js:130              | POST /alerts (server/routes/searchRoutes.js:7)               | server/controllers/notificationController.js | createSearchAlert                    |
+| GET /requirements/search?${qsRequests} (src/pages/SearchResults.jsx:666)                               | /api/requirements -> server/routes/requirementRoutes.js:113   | -                                                            | -                                            | -                                    |
+| GET /products/search?${qsProducts} (src/pages/SearchResults.jsx:667)                                   | /api/products -> server/routes/productRoutes.js:119           | -                                                            | -                                            | -                                    |
+| GET /requirements/search?${qsRequests} (src/pages/SearchResults.jsx:848)                               | /api/requirements -> server/routes/requirementRoutes.js:113   | -                                                            | -                                            | -                                    |
+| GET /products/search?${qsProducts} (src/pages/SearchResults.jsx:849)                                   | /api/products -> server/routes/productRoutes.js:119           | -                                                            | -                                            | -                                    |
+| GET /products/views/me?cursor=0&limit=5 (src/pages/SearchResults.jsx:984)                              | /api/products -> server/routes/productRoutes.js:119           | -                                                            | -                                            | -                                    |
+| GET /ratings/search?profile_keys=${encodeURIComponent(keys.join( (src/pages/SearchResults.jsx:998)     | /api/ratings -> server/routes/ratingsRoutes.js:137            | -                                                            | -                                            | -                                    |
+| GET /geo/search?q=${encodeURIComponent(q)} (src/pages/SearchResults.jsx:1066)                          | /api/geo -> server/routes/geoRoutes.js:143                    | -                                                            | -                                            | -                                    |
+| POST /search/alerts (src/pages/SearchResults.jsx:1128)                                                 | /api/search -> server/routes/searchRoutes.js:130              | POST /alerts (server/routes/searchRoutes.js:7)               | server/controllers/notificationController.js | createSearchAlert                    |
+| GET /presets (src/pages/SearchResults.jsx:1287)                                                        | /api/presets -> server/routes/presetsRoutes.js:131            | GET / (server/routes/presetsRoutes.js:13)                    | -                                            | listPresetsController                |
+| POST /presets (src/pages/SearchResults.jsx:1303)                                                       | /api/presets -> server/routes/presetsRoutes.js:131            | POST / (server/routes/presetsRoutes.js:14)                   | -                                            | createPresetController               |
+| POST /presets (src/pages/SearchResults.jsx:1326)                                                       | /api/presets -> server/routes/presetsRoutes.js:131            | POST / (server/routes/presetsRoutes.js:14)                   | -                                            | createPresetController               |
+| PATCH /presets/${encodeURIComponent(presetId)} (src/pages/SearchResults.jsx:1374)                      | /api/presets -> server/routes/presetsRoutes.js:131            | -                                                            | -                                            | -                                    |
+| DELETE /presets/${encodeURIComponent(presetId)} (src/pages/SearchResults.jsx:1390)                     | /api/presets -> server/routes/presetsRoutes.js:131            | -                                                            | -                                            | -                                    |
+| POST /workflow/journeys (src/pages/SearchResults.jsx:1420)                                             | /api/workflow -> server/routes/workflowLifecycleRoutes.js:153 | POST /journeys (server/routes/workflowLifecycleRoutes.js:12) | -                                            | createJourney                        |
+| GET /workflow/journeys/${encodeURIComponent(journey.id)}/transition (src/pages/SearchResults.jsx:1432) | /api/workflow -> server/routes/workflowLifecycleRoutes.js:153 | -                                                            | -                                            | -                                    |
 
 ## 6) How to Edit Safely
 
@@ -11709,4 +12224,3 @@
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
-

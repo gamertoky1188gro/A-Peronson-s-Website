@@ -9,7 +9,12 @@
     "sessionId"
   ],
   "required_fields": ["type", "actor_id", "entity_id", "context"],
-  "optional_fields": ["metadata", "idempotency_key", "schema_version", "received_at"],
+  "optional_fields": [
+    "metadata",
+    "idempotency_key",
+    "schema_version",
+    "received_at"
+  ],
   "canonical_events": [
     "boost_cancelled",
     "boost_purchase",

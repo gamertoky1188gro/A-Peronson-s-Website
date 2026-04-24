@@ -6,7 +6,8 @@ import axios from "axios";
 import unzipper from "unzipper";
 import * as tar from "tar";
 
-const BASE_URL = "https://github.com/ggml-org/llama.cpp/releases/download/b8196";
+const BASE_URL =
+  "https://github.com/ggml-org/llama.cpp/releases/download/b8196";
 
 function safeExec(cmd) {
   try {
@@ -49,7 +50,9 @@ function detectCudaVersion() {
 }
 
 function detectNvidiaDriverVersion() {
-  const out = safeExec("nvidia-smi --query-gpu=driver_version --format=csv,noheader");
+  const out = safeExec(
+    "nvidia-smi --query-gpu=driver_version --format=csv,noheader",
+  );
   return out || null;
 }
 
@@ -86,7 +89,9 @@ function buildCandidateFilenames() {
     if (gpu.type === "cuda") {
       const major = gpu.version ? gpu.version.split(".")[0] : "12";
       const minor = major === "13" ? "1" : "4";
-      candidates.push(`llama-b8196-bin-win-cuda-${major}.${minor}-${mappedArch}.zip`);
+      candidates.push(
+        `llama-b8196-bin-win-cuda-${major}.${minor}-${mappedArch}.zip`,
+      );
       candidates.push(`llama-b8196-bin-win-vulkan-${mappedArch}.zip`);
     }
     if (gpu.type === "vulkan") {
@@ -119,7 +124,7 @@ async function downloadFile(url, outputPath) {
     url,
     method: "GET",
     responseType: "stream",
-    validateStatus: s => s < 400
+    validateStatus: (s) => s < 400,
   });
 
   response.data.pipe(writer);
@@ -134,7 +139,8 @@ async function extractFile(filePath) {
   fs.mkdirSync("./llama", { recursive: true });
 
   if (filePath.endsWith(".zip")) {
-    await fs.createReadStream(filePath)
+    await fs
+      .createReadStream(filePath)
       .pipe(unzipper.Extract({ path: "./llama" }))
       .promise();
   } else if (filePath.endsWith(".tar.gz")) {
@@ -173,6 +179,6 @@ async function main() {
   console.log("Installation complete.");
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error("Fatal error:", err.message);
 });

@@ -1,12 +1,17 @@
-import { Router } from 'express'
-import { requireAuth } from '../middleware/auth.js'
-import { approveReplyDraft, draftReply, extractRequirements, sendApprovedReply } from '../controllers/aiController.js'
+import { Router } from "express";
+import { requireAuth } from "../middleware/auth.js";
+import {
+  approveReplyDraft,
+  draftReply,
+  extractRequirements,
+  sendApprovedReply,
+} from "../controllers/aiController.js";
 
-const router = Router()
+const router = Router();
 
-router.post('/requirements/extract', requireAuth, extractRequirements)
-router.post('/reply/draft', requireAuth, draftReply)
-router.post('/reply/approve', requireAuth, approveReplyDraft)
-router.post('/reply/send', requireAuth, sendApprovedReply)
+router.post("/requirements/extract", requireAuth, extractRequirements);
+router.post("/reply/draft", requireAuth, draftReply);
+router.post("/reply/approve", requireAuth, approveReplyDraft);
+router.post("/reply/send", requireAuth, sendApprovedReply);
 
-export default router
+export default router;

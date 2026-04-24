@@ -13,8 +13,9 @@ This doc is generated from source snapshots with `path:line` references.
 - **Route definition:** `server/routes/verificationRoutes.js:16`
 
 ```js
-router.get('/me', requireAuth, getMyVerification)
+router.get("/me", requireAuth, getMyVerification);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `getMyVerification`
@@ -25,8 +26,14 @@ router.get('/me', requireAuth, getMyVerification)
 - **Route definition:** `server/routes/verificationRoutes.js:17`
 
 ```js
-router.post('/me', requireAuth, allowRoles('buyer', 'factory', 'buying_house'), submitMyVerification)
+router.post(
+  "/me",
+  requireAuth,
+  allowRoles("buyer", "factory", "buying_house"),
+  submitMyVerification,
+);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
   - `allowRoles('buyer', 'factory', 'buying_house')`
@@ -38,8 +45,14 @@ router.post('/me', requireAuth, allowRoles('buyer', 'factory', 'buying_house'), 
 - **Route definition:** `server/routes/verificationRoutes.js:18`
 
 ```js
-router.post('/renew', requireAuth, allowRoles('buyer', 'factory', 'buying_house'), renewMyVerification)
+router.post(
+  "/renew",
+  requireAuth,
+  allowRoles("buyer", "factory", "buying_house"),
+  renewMyVerification,
+);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
   - `allowRoles('buyer', 'factory', 'buying_house')`
@@ -51,8 +64,9 @@ router.post('/renew', requireAuth, allowRoles('buyer', 'factory', 'buying_house'
 - **Route definition:** `server/routes/verificationRoutes.js:19`
 
 ```js
-router.get('/admin/queue', requireAuth, requireAdminSecurity, adminQueue)
+router.get("/admin/queue", requireAuth, requireAdminSecurity, adminQueue);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
   - `requireAdminSecurity`
@@ -64,8 +78,14 @@ router.get('/admin/queue', requireAuth, requireAdminSecurity, adminQueue)
 - **Route definition:** `server/routes/verificationRoutes.js:20`
 
 ```js
-router.post('/admin/:userId/approve', requireAuth, requireAdminSecurity, adminApprove)
+router.post(
+  "/admin/:userId/approve",
+  requireAuth,
+  requireAdminSecurity,
+  adminApprove,
+);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
   - `requireAdminSecurity`
@@ -77,8 +97,14 @@ router.post('/admin/:userId/approve', requireAuth, requireAdminSecurity, adminAp
 - **Route definition:** `server/routes/verificationRoutes.js:21`
 
 ```js
-router.post('/admin/:userId/reject', requireAuth, requireAdminSecurity, adminReject)
+router.post(
+  "/admin/:userId/reject",
+  requireAuth,
+  requireAdminSecurity,
+  adminReject,
+);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
   - `requireAdminSecurity`
@@ -90,8 +116,14 @@ router.post('/admin/:userId/reject', requireAuth, requireAdminSecurity, adminRej
 - **Route definition:** `server/routes/verificationRoutes.js:22`
 
 ```js
-router.post('/admin/revoke-expired', requireAuth, requireAdminSecurity, adminRevokeExpired)
+router.post(
+  "/admin/revoke-expired",
+  requireAuth,
+  requireAdminSecurity,
+  adminRevokeExpired,
+);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
   - `requireAdminSecurity`
@@ -103,4 +135,3 @@ router.post('/admin/revoke-expired', requireAuth, requireAdminSecurity, adminRev
 - JSON helpers: `server/utils/jsonStore.js` (readJson/writeJson/updateJson).
 - Data files: `server/database/*.json`.
 - Controllers/services often read from `users.json`, `messages.json`, `metrics.json`, etc.
-

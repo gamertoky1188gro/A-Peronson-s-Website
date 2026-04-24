@@ -1,68 +1,87 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { apiRequest, getCurrentUser, getToken } from '../../lib/auth'
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { apiRequest, getCurrentUser, getToken } from "../../lib/auth";
 
 const STATUS_OPTIONS = [
-  { key: 'new', label: 'New' },
-  { key: 'contacted', label: 'Contacted' },
-  { key: 'negotiating', label: 'Negotiating' },
-  { key: 'sample_sent', label: 'Sample Sent' },
-  { key: 'order_confirmed', label: 'Order Confirmed' },
-  { key: 'closed', label: 'Closed' },
-]
+  { key: "new", label: "New" },
+  { key: "contacted", label: "Contacted" },
+  { key: "negotiating", label: "Negotiating" },
+  { key: "sample_sent", label: "Sample Sent" },
+  { key: "order_confirmed", label: "Order Confirmed" },
+  { key: "closed", label: "Closed" },
+];
 
 function formatDate(value) {
-  if (!value) return ''
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return String(value)
-  return d.toLocaleString()
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleString();
 }
 
-function statusBadgeClass(status = '') {
-  if (status === 'breached') return 'bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-200'
-  if (status === 'warning') return 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200'
-  return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-200'
+function statusBadgeClass(status = "") {
+  if (status === "breached")
+    return "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-200";
+  if (status === "warning")
+    return "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-200";
+  return "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-200";
 }
 
 function formatCountdown(deadlineAt) {
-  if (!deadlineAt) return 'No SLA'
-  const deadline = new Date(deadlineAt).getTime()
-  if (Number.isNaN(deadline)) return 'No SLA'
-  const deltaMinutes = Math.floor((deadline - Date.now()) / 60000)
-  if (deltaMinutes >= 0) return `${deltaMinutes}m left`
-  return `${Math.abs(deltaMinutes)}m overdue`
+  if (!deadlineAt) return "No SLA";
+  const deadline = new Date(deadlineAt).getTime();
+  if (Number.isNaN(deadline)) return "No SLA";
+  const deltaMinutes = Math.floor((deadline - Date.now()) / 60000);
+  if (deltaMinutes >= 0) return `${deltaMinutes}m left`;
+  return `${Math.abs(deltaMinutes)}m overdue`;
 }
 
-export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true, showOperations = true }) {
-  const token = useMemo(() => getToken(), [])
-  const canAssignLeads = Boolean(getCurrentUser()?.capabilities?.leads?.assign)
-  const navigate = useNavigate()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [items, setItems] = useState([])
-  const [selectedId, setSelectedId] = useState('')
-  const [selected, setSelected] = useState(null)
-  const [lookup, setLookup] = useState({})
-  const [noteDraft, setNoteDraft] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [queueMeta, setQueueMeta] = useState({ queue: [], team_queues: [], assignments: [], agent_capacity: [], escalations: [], workload: [] })
+export default function LeadManager({
+  title = "Leads (CRM)",
+  allowAssign = true,
+  showOperations = true,
+}) {
+  const token = useMemo(() => getToken(), []);
+  const canAssignLeads = Boolean(getCurrentUser()?.capabilities?.leads?.assign);
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [items, setItems] = useState([]);
+  const [selectedId, setSelectedId] = useState("");
+  const [selected, setSelected] = useState(null);
+  const [lookup, setLookup] = useState({});
+  const [noteDraft, setNoteDraft] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [queueMeta, setQueueMeta] = useState({
+    queue: [],
+    team_queues: [],
+    assignments: [],
+    agent_capacity: [],
+    escalations: [],
+    workload: [],
+  });
 
   const loadLeads = useCallback(async () => {
-    if (!token) return
-    setLoading(true)
-    setError('')
+    if (!token) return;
+    setLoading(true);
+    setError("");
     try {
-      const data = await apiRequest('/leads', { token })
-      const nextItems = Array.isArray(data?.items) ? data.items : []
-      let operationsQueue = []
+      const data = await apiRequest("/leads", { token });
+      const nextItems = Array.isArray(data?.items) ? data.items : [];
+      let operationsQueue = [];
       if (showOperations) {
         try {
           const [queueData, escalationsData, workloadData] = await Promise.all([
-            apiRequest('/org/ops/queue', { token }),
-            apiRequest('/org/ops/escalations', { token }).catch(() => ({ items: [] })),
-            apiRequest('/org/ops/workload', { token }).catch(() => ({ items: [] })),
-          ])
-          operationsQueue = Array.isArray(queueData?.queue) ? queueData.queue : []
+            apiRequest("/org/ops/queue", { token }),
+            apiRequest("/org/ops/escalations", { token }).catch(() => ({
+              items: [],
+            })),
+            apiRequest("/org/ops/workload", { token }).catch(() => ({
+              items: [],
+            })),
+          ]);
+          operationsQueue = Array.isArray(queueData?.queue)
+            ? queueData.queue
+            : [];
           setQueueMeta({
             queue: operationsQueue,
             team_queues: queueData?.team_queues || [],
@@ -70,189 +89,259 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
             agent_capacity: queueData?.agent_capacity || [],
             escalations: escalationsData?.items || [],
             workload: workloadData?.items || [],
-          })
+          });
         } catch {
-          setQueueMeta({ queue: [], team_queues: [], assignments: [], agent_capacity: [], escalations: [], workload: [] })
+          setQueueMeta({
+            queue: [],
+            team_queues: [],
+            assignments: [],
+            agent_capacity: [],
+            escalations: [],
+            workload: [],
+          });
         }
       }
 
-      const queueMap = new Map(operationsQueue.map((row) => [row.id, row]))
-      setItems(nextItems.map((lead) => ({ ...lead, ...(queueMap.get(lead.id) || {}) })))
+      const queueMap = new Map(operationsQueue.map((row) => [row.id, row]));
+      setItems(
+        nextItems.map((lead) => ({
+          ...lead,
+          ...(queueMap.get(lead.id) || {}),
+        })),
+      );
 
-      const ids = new Set()
+      const ids = new Set();
       nextItems.forEach((lead) => {
-        if (lead.counterparty_id) ids.add(String(lead.counterparty_id))
-        if (lead.assigned_agent_id) ids.add(String(lead.assigned_agent_id))
-      })
+        if (lead.counterparty_id) ids.add(String(lead.counterparty_id));
+        if (lead.assigned_agent_id) ids.add(String(lead.assigned_agent_id));
+      });
 
       if (ids.size > 0) {
-        const lookupRes = await apiRequest('/users/lookup', { method: 'POST', token, body: { ids: [...ids] } })
+        const lookupRes = await apiRequest("/users/lookup", {
+          method: "POST",
+          token,
+          body: { ids: [...ids] },
+        });
         const map = (lookupRes?.users || []).reduce((acc, user) => {
-          acc[user.id] = user
-          return acc
-        }, {})
-        setLookup(map)
+          acc[user.id] = user;
+          return acc;
+        }, {});
+        setLookup(map);
       } else {
-        setLookup({})
+        setLookup({});
       }
     } catch (err) {
-      setItems([])
-      setLookup({})
-      setError(err.message || 'Failed to load leads')
+      setItems([]);
+      setLookup({});
+      setError(err.message || "Failed to load leads");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [showOperations, token])
+  }, [showOperations, token]);
 
-  const loadLeadDetail = useCallback(async (leadId) => {
-    if (!token || !leadId) return
-    setSaving(true)
-    setError('')
-    try {
-      const data = await apiRequest(`/leads/${encodeURIComponent(leadId)}`, { token })
-      setSelected(data)
-    } catch (err) {
-      setSelected(null)
-      setError(err.message || 'Failed to load lead details')
-    } finally {
-      setSaving(false)
-    }
-  }, [token])
+  const loadLeadDetail = useCallback(
+    async (leadId) => {
+      if (!token || !leadId) return;
+      setSaving(true);
+      setError("");
+      try {
+        const data = await apiRequest(`/leads/${encodeURIComponent(leadId)}`, {
+          token,
+        });
+        setSelected(data);
+      } catch (err) {
+        setSelected(null);
+        setError(err.message || "Failed to load lead details");
+      } finally {
+        setSaving(false);
+      }
+    },
+    [token],
+  );
 
   useEffect(() => {
-    loadLeads()
-  }, [loadLeads])
+    loadLeads();
+  }, [loadLeads]);
 
   useEffect(() => {
     if (!selectedId) {
-      setSelected(null)
-      setNoteDraft('')
-      return
+      setSelected(null);
+      setNoteDraft("");
+      return;
     }
-    loadLeadDetail(selectedId)
-  }, [loadLeadDetail, selectedId])
+    loadLeadDetail(selectedId);
+  }, [loadLeadDetail, selectedId]);
 
   async function updateLead(patch) {
-    if (!token || !selectedId) return
-    setSaving(true)
-    setError('')
+    if (!token || !selectedId) return;
+    setSaving(true);
+    setError("");
     try {
-      const updated = await apiRequest(`/leads/${encodeURIComponent(selectedId)}`, { method: 'PATCH', token, body: patch })
-      setItems((prev) => prev.map((lead) => (lead.id === updated.id ? { ...lead, ...updated } : lead)))
-      setSelected((prev) => (prev ? { ...prev, ...updated } : prev))
+      const updated = await apiRequest(
+        `/leads/${encodeURIComponent(selectedId)}`,
+        { method: "PATCH", token, body: patch },
+      );
+      setItems((prev) =>
+        prev.map((lead) =>
+          lead.id === updated.id ? { ...lead, ...updated } : lead,
+        ),
+      );
+      setSelected((prev) => (prev ? { ...prev, ...updated } : prev));
     } catch (err) {
-      setError(err.message || 'Failed to update lead')
+      setError(err.message || "Failed to update lead");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
   }
 
   async function submitNote() {
-    if (!token || !selectedId) return
-    const text = noteDraft.trim()
-    if (!text) return
+    if (!token || !selectedId) return;
+    const text = noteDraft.trim();
+    if (!text) return;
 
-    setSaving(true)
-    setError('')
+    setSaving(true);
+    setError("");
     try {
-      const created = await apiRequest(`/leads/${encodeURIComponent(selectedId)}/notes`, { method: 'POST', token, body: { note: text } })
-      setSelected((prev) => (prev ? { ...prev, notes: [created, ...(prev.notes || [])] } : prev))
-      setNoteDraft('')
+      const created = await apiRequest(
+        `/leads/${encodeURIComponent(selectedId)}/notes`,
+        { method: "POST", token, body: { note: text } },
+      );
+      setSelected((prev) =>
+        prev ? { ...prev, notes: [created, ...(prev.notes || [])] } : prev,
+      );
+      setNoteDraft("");
     } catch (err) {
-      setError(err.message || 'Failed to add note')
+      setError(err.message || "Failed to add note");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
   }
 
   async function createReminder() {
-    if (!token || !selectedId) return
-    const remindAt = window.prompt('Reminder date/time (ISO or YYYY-MM-DD HH:mm)', new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString())
-    if (!remindAt) return
-    const message = window.prompt('Reminder note (optional)', 'Follow up') || 'Follow up'
+    if (!token || !selectedId) return;
+    const remindAt = window.prompt(
+      "Reminder date/time (ISO or YYYY-MM-DD HH:mm)",
+      new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    );
+    if (!remindAt) return;
+    const message =
+      window.prompt("Reminder note (optional)", "Follow up") || "Follow up";
 
-    setSaving(true)
-    setError('')
+    setSaving(true);
+    setError("");
     try {
-      const created = await apiRequest(`/leads/${encodeURIComponent(selectedId)}/reminders`, {
-        method: 'POST',
-        token,
-        body: { remind_at: remindAt, message },
-      })
-      setSelected((prev) => (prev ? { ...prev, reminders: [...(prev.reminders || []), created] } : prev))
+      const created = await apiRequest(
+        `/leads/${encodeURIComponent(selectedId)}/reminders`,
+        {
+          method: "POST",
+          token,
+          body: { remind_at: remindAt, message },
+        },
+      );
+      setSelected((prev) =>
+        prev
+          ? { ...prev, reminders: [...(prev.reminders || []), created] }
+          : prev,
+      );
     } catch (err) {
-      setError(err.message || 'Failed to create reminder')
+      setError(err.message || "Failed to create reminder");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
   }
 
   async function triggerRebalance() {
-    if (!token) return
-    setSaving(true)
-    setError('')
+    if (!token) return;
+    setSaving(true);
+    setError("");
     try {
-      await apiRequest('/org/ops/rebalance', { method: 'POST', token, body: { strategy: 'least_loaded' } })
-      await loadLeads()
-      if (selectedId) await loadLeadDetail(selectedId)
+      await apiRequest("/org/ops/rebalance", {
+        method: "POST",
+        token,
+        body: { strategy: "least_loaded" },
+      });
+      await loadLeads();
+      if (selectedId) await loadLeadDetail(selectedId);
     } catch (err) {
-      setError(err.message || 'Failed to rebalance queue')
+      setError(err.message || "Failed to rebalance queue");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
   }
 
   async function escalateLead(leadId) {
-    if (!token || !leadId) return
-    const reason = window.prompt('Escalation reason', 'SLA risk') || 'SLA risk'
-    setSaving(true)
-    setError('')
+    if (!token || !leadId) return;
+    const reason = window.prompt("Escalation reason", "SLA risk") || "SLA risk";
+    setSaving(true);
+    setError("");
     try {
-      const updated = await apiRequest(`/org/ops/escalate/${encodeURIComponent(leadId)}`, {
-        method: 'POST',
-        token,
-        body: { reason },
-      })
-      setItems((prev) => prev.map((lead) => (lead.id === updated.id ? { ...lead, ...updated } : lead)))
-      setSelected((prev) => (prev ? { ...prev, ...updated } : prev))
-      await loadLeads()
+      const updated = await apiRequest(
+        `/org/ops/escalate/${encodeURIComponent(leadId)}`,
+        {
+          method: "POST",
+          token,
+          body: { reason },
+        },
+      );
+      setItems((prev) =>
+        prev.map((lead) =>
+          lead.id === updated.id ? { ...lead, ...updated } : lead,
+        ),
+      );
+      setSelected((prev) => (prev ? { ...prev, ...updated } : prev));
+      await loadLeads();
     } catch (err) {
-      setError(err.message || 'Failed to escalate lead')
+      setError(err.message || "Failed to escalate lead");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
   }
 
   async function resolveEscalation(leadId) {
-    if (!token || !leadId) return
-    setSaving(true)
-    setError('')
+    if (!token || !leadId) return;
+    setSaving(true);
+    setError("");
     try {
-      await apiRequest(`/org/ops/escalations/${encodeURIComponent(leadId)}/resolve`, {
-        method: 'POST',
-        token,
-        body: { resolution_note: 'Resolved from CRM dashboard' },
-      })
-      await loadLeads()
+      await apiRequest(
+        `/org/ops/escalations/${encodeURIComponent(leadId)}/resolve`,
+        {
+          method: "POST",
+          token,
+          body: { resolution_note: "Resolved from CRM dashboard" },
+        },
+      );
+      await loadLeads();
     } catch (err) {
-      setError(err.message || 'Failed to resolve escalation')
+      setError(err.message || "Failed to resolve escalation");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
   }
 
-  const selectedAssignments = useMemo(() => (
-    (queueMeta.assignments || [])
-      .filter((row) => String(row.lead_id || '') === String(selectedId || ''))
-      .slice(0, 8)
-  ), [queueMeta.assignments, selectedId])
+  const selectedAssignments = useMemo(
+    () =>
+      (queueMeta.assignments || [])
+        .filter((row) => String(row.lead_id || "") === String(selectedId || ""))
+        .slice(0, 8),
+    [queueMeta.assignments, selectedId],
+  );
 
-  const selectedEscalation = useMemo(() => (
-    (queueMeta.escalations || []).find((row) => String(row.lead_id || '') === String(selectedId || '') && !row.resolved_at)
-  ), [queueMeta.escalations, selectedId])
+  const selectedEscalation = useMemo(
+    () =>
+      (queueMeta.escalations || []).find(
+        (row) =>
+          String(row.lead_id || "") === String(selectedId || "") &&
+          !row.resolved_at,
+      ),
+    [queueMeta.escalations, selectedId],
+  );
 
-  const selectedCounterparty = selected?.counterparty_id ? lookup[selected.counterparty_id] : null
-  const assignedAgent = selected?.assigned_agent_id ? lookup[selected.assigned_agent_id] : null
+  const selectedCounterparty = selected?.counterparty_id
+    ? lookup[selected.counterparty_id]
+    : null;
+  const assignedAgent = selected?.assigned_agent_id
+    ? lookup[selected.assigned_agent_id]
+    : null;
 
   return (
     <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
@@ -282,16 +371,31 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
             </div>
           </div>
 
-          {loading ? <div className="text-sm text-slate-500">Loading leads...</div> : null}
-          {error ? <div className="mt-2 text-sm text-rose-600">{error}</div> : null}
+          {loading ? (
+            <div className="text-sm text-slate-500">Loading leads...</div>
+          ) : null}
+          {error ? (
+            <div className="mt-2 text-sm text-rose-600">{error}</div>
+          ) : null}
 
           <div className="mt-3 space-y-2 max-h-[520px] overflow-auto pr-1">
-            {items.length === 0 && !loading ? <div className="text-sm text-slate-500">No leads yet. Leads are created automatically when chats start.</div> : null}
+            {items.length === 0 && !loading ? (
+              <div className="text-sm text-slate-500">
+                No leads yet. Leads are created automatically when chats start.
+              </div>
+            ) : null}
             {items.map((lead) => {
-              const counterparty = lead.counterparty_id ? lookup[lead.counterparty_id] : null
-              const label = counterparty?.name || lead.counterparty_id || 'Counterparty'
-              const isActive = lead.id === selectedId
-              const avatarUrl = counterparty?.profile?.profile_image || counterparty?.avatar_url || counterparty?.avatar || ''
+              const counterparty = lead.counterparty_id
+                ? lookup[lead.counterparty_id]
+                : null;
+              const label =
+                counterparty?.name || lead.counterparty_id || "Counterparty";
+              const isActive = lead.id === selectedId;
+              const avatarUrl =
+                counterparty?.profile?.profile_image ||
+                counterparty?.avatar_url ||
+                counterparty?.avatar ||
+                "";
 
               return (
                 <button
@@ -299,14 +403,20 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                   type="button"
                   onClick={() => setSelectedId(lead.id)}
                   className={[
-                    'w-full text-left rounded-lg bg-white shadow-borderless ring-1 ring-slate-200/60 px-3 py-2 transition dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10',
-                    isActive ? 'bg-gtBlue/10 ring-gtBlue/40 dark:bg-gtBlue/15 dark:ring-gtBlue/40' : 'hover:bg-slate-50 dark:hover:bg-white/8',
-                  ].join(' ')}
+                    "w-full text-left rounded-lg bg-white shadow-borderless ring-1 ring-slate-200/60 px-3 py-2 transition dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10",
+                    isActive
+                      ? "bg-gtBlue/10 ring-gtBlue/40 dark:bg-gtBlue/15 dark:ring-gtBlue/40"
+                      : "hover:bg-slate-50 dark:hover:bg-white/8",
+                  ].join(" ")}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
                       {avatarUrl ? (
-                        <img src={avatarUrl} alt={label} className="h-8 w-8 rounded-full object-cover" />
+                        <img
+                          src={avatarUrl}
+                          alt={label}
+                          className="h-8 w-8 rounded-full object-cover"
+                        />
                       ) : (
                         <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-200">
                           {String(label).slice(0, 2).toUpperCase()}
@@ -314,21 +424,33 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                       )}
                       <p className="font-medium truncate">{label}</p>
                     </div>
-                    <span className="text-[11px] uppercase tracking-widest text-slate-500">{(lead.status || 'new').replace(/_/g, ' ')}</span>
+                    <span className="text-[11px] uppercase tracking-widest text-slate-500">
+                      {(lead.status || "new").replace(/_/g, " ")}
+                    </span>
                   </div>
                   <div className="mt-1 flex items-center gap-2">
                     {lead?.sla?.status || lead?.sla?.deadline_at ? (
-                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${statusBadgeClass(lead?.sla?.status || 'healthy')}`}>
-                        SLA {lead?.sla?.status || 'active'} · {formatCountdown(lead?.sla?.deadline_at)}
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${statusBadgeClass(lead?.sla?.status || "healthy")}`}
+                      >
+                        SLA {lead?.sla?.status || "active"} ·{" "}
+                        {formatCountdown(lead?.sla?.deadline_at)}
                       </span>
                     ) : null}
                     {lead?.queue_owner_id ? (
-                      <span className="text-[10px] text-slate-500">Queue: {lookup[lead.queue_owner_id]?.name || lead.queue_owner_id}</span>
+                      <span className="text-[10px] text-slate-500">
+                        Queue:{" "}
+                        {lookup[lead.queue_owner_id]?.name ||
+                          lead.queue_owner_id}
+                      </span>
                     ) : null}
                   </div>
-                  <p className="mt-1 text-xs text-slate-500">Last: {formatDate(lead.last_interaction_at || lead.updated_at)}</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Last:{" "}
+                    {formatDate(lead.last_interaction_at || lead.updated_at)}
+                  </p>
                 </button>
-              )
+              );
             })}
           </div>
         </div>
@@ -342,33 +464,59 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
             <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark p-4">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
-                  <p className="text-xs uppercase tracking-widest text-slate-500">Counterparty</p>
+                  <p className="text-xs uppercase tracking-widest text-slate-500">
+                    Counterparty
+                  </p>
                   <div className="mt-2 flex items-center gap-3">
                     {selectedCounterparty?.profile?.profile_image ? (
-                      <img src={selectedCounterparty.profile.profile_image} alt={selectedCounterparty?.name} className="h-10 w-10 rounded-full object-cover" />
+                      <img
+                        src={selectedCounterparty.profile.profile_image}
+                        alt={selectedCounterparty?.name}
+                        className="h-10 w-10 rounded-full object-cover"
+                      />
                     ) : (
                       <div className="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-600">
-                        {String(selectedCounterparty?.name || selected?.counterparty_id || '--').slice(0, 2).toUpperCase()}
+                        {String(
+                          selectedCounterparty?.name ||
+                            selected?.counterparty_id ||
+                            "--",
+                        )
+                          .slice(0, 2)
+                          .toUpperCase()}
                       </div>
                     )}
                     <div className="min-w-0">
-                      <p className="font-semibold truncate">{selectedCounterparty?.name || selected?.counterparty_id || '--'}</p>
-                      <p className="text-xs text-slate-500">{selectedCounterparty?.profile?.organization_name || selectedCounterparty?.profile?.organization || ''}</p>
+                      <p className="font-semibold truncate">
+                        {selectedCounterparty?.name ||
+                          selected?.counterparty_id ||
+                          "--"}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {selectedCounterparty?.profile?.organization_name ||
+                          selectedCounterparty?.profile?.organization ||
+                          ""}
+                      </p>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-500">Match: {selected?.match_id || '--'}</p>
+                  <p className="text-xs text-slate-500">
+                    Match: {selected?.match_id || "--"}
+                  </p>
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs uppercase tracking-widest text-slate-500">Status</label>
+                  <label className="text-xs uppercase tracking-widest text-slate-500">
+                    Status
+                  </label>
                   <select
-                    value={selected?.status || 'new'}
+                    value={selected?.status || "new"}
                     onChange={(e) => updateLead({ status: e.target.value })}
                     className="rounded-md shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-sm"
                     disabled={saving}
                   >
                     {STATUS_OPTIONS.map((opt) => (
-                      <option key={opt.key} value={opt.key}>{opt.label}</option>
+                      <option key={opt.key} value={opt.key}>
+                        {opt.label}
+                      </option>
                     ))}
                   </select>
                   <button
@@ -376,8 +524,13 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                     className="rounded-md shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                     disabled={!selected?.match_id}
                     onClick={() => {
-                      if (!selected?.match_id) return
-                      navigate('/chat', { state: { matchId: selected.match_id, notice: 'Opening the lead conversation.' } })
+                      if (!selected?.match_id) return;
+                      navigate("/chat", {
+                        state: {
+                          matchId: selected.match_id,
+                          notice: "Opening the lead conversation.",
+                        },
+                      });
                     }}
                   >
                     Message
@@ -397,15 +550,32 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
 
               <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="rounded-lg bg-slate-50 p-3">
-                  <p className="text-xs uppercase tracking-widest text-slate-500">Assigned agent</p>
-                  <p className="mt-1 text-sm font-medium">{assignedAgent?.name || selected?.assigned_agent_id || 'Unassigned'}</p>
+                  <p className="text-xs uppercase tracking-widest text-slate-500">
+                    Assigned agent
+                  </p>
+                  <p className="mt-1 text-sm font-medium">
+                    {assignedAgent?.name ||
+                      selected?.assigned_agent_id ||
+                      "Unassigned"}
+                  </p>
                   {!allowAssign || !canAssignLeads ? null : (
                     <button
                       type="button"
                       onClick={() => {
-                        const assignedAgentId = window.prompt('Assign/reassign to agent id (user id)', selected?.assigned_agent_id || '') || ''
-                        const assignmentReason = window.prompt('Assignment reason (audit trail)', 'manual_reassignment') || 'manual_reassignment'
-                        updateLead({ assigned_agent_id: assignedAgentId, assignment_reason: assignmentReason })
+                        const assignedAgentId =
+                          window.prompt(
+                            "Assign/reassign to agent id (user id)",
+                            selected?.assigned_agent_id || "",
+                          ) || "";
+                        const assignmentReason =
+                          window.prompt(
+                            "Assignment reason (audit trail)",
+                            "manual_reassignment",
+                          ) || "manual_reassignment";
+                        updateLead({
+                          assigned_agent_id: assignedAgentId,
+                          assignment_reason: assignmentReason,
+                        });
                       }}
                       className="mt-2 text-sm text-gtBlue hover:underline"
                       disabled={saving}
@@ -414,15 +584,24 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                     </button>
                   )}
                   {allowAssign && !canAssignLeads ? (
-                    <p className="mt-2 text-xs text-slate-500">Lead assignment is restricted by your role policy.</p>
+                    <p className="mt-2 text-xs text-slate-500">
+                      Lead assignment is restricted by your role policy.
+                    </p>
                   ) : null}
                 </div>
                 <div className="rounded-lg bg-slate-50 p-3">
-                  <p className="text-xs uppercase tracking-widest text-slate-500">Updated</p>
-                  <p className="mt-1 text-sm font-medium">{formatDate(selected?.updated_at || '') || '--'}</p>
+                  <p className="text-xs uppercase tracking-widest text-slate-500">
+                    Updated
+                  </p>
+                  <p className="mt-1 text-sm font-medium">
+                    {formatDate(selected?.updated_at || "") || "--"}
+                  </p>
                   {selected?.sla?.status || selected?.sla?.deadline_at ? (
-                    <p className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${statusBadgeClass(selected?.sla?.status || 'healthy')}`}>
-                      SLA {selected?.sla?.status || 'active'} · {formatCountdown(selected?.sla?.deadline_at)}
+                    <p
+                      className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${statusBadgeClass(selected?.sla?.status || "healthy")}`}
+                    >
+                      SLA {selected?.sla?.status || "active"} ·{" "}
+                      {formatCountdown(selected?.sla?.deadline_at)}
                     </p>
                   ) : null}
                   {selectedEscalation ? (
@@ -436,7 +615,11 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                     </button>
                   ) : null}
                   {selected?.queue_owner_id ? (
-                    <p className="mt-1 text-xs text-slate-600">Queue owner: {lookup[selected.queue_owner_id]?.name || selected.queue_owner_id}</p>
+                    <p className="mt-1 text-xs text-slate-600">
+                      Queue owner:{" "}
+                      {lookup[selected.queue_owner_id]?.name ||
+                        selected.queue_owner_id}
+                    </p>
                   ) : null}
                   <button
                     type="button"
@@ -452,27 +635,49 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
               <div className="mt-5">
                 {showOperations ? (
                   <div className="mb-4 rounded-lg bg-slate-50 p-3">
-                    <p className="text-xs uppercase tracking-widest text-slate-500">Team queue snapshot</p>
+                    <p className="text-xs uppercase tracking-widest text-slate-500">
+                      Team queue snapshot
+                    </p>
                     <div className="mt-2 grid gap-2 md:grid-cols-2">
-                      {(queueMeta.team_queues || []).slice(0, 4).map((queue) => (
-                        <div key={queue.agent_id} className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs">
-                          <div className="font-medium">{queue.agent_name || queue.agent_id}</div>
-                          <div className="text-slate-500">Load: {queue.current_load} leads</div>
-                        </div>
-                      ))}
+                      {(queueMeta.team_queues || [])
+                        .slice(0, 4)
+                        .map((queue) => (
+                          <div
+                            key={queue.agent_id}
+                            className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs"
+                          >
+                            <div className="font-medium">
+                              {queue.agent_name || queue.agent_id}
+                            </div>
+                            <div className="text-slate-500">
+                              Load: {queue.current_load} leads
+                            </div>
+                          </div>
+                        ))}
                     </div>
-                    <p className="mt-3 text-xs uppercase tracking-widest text-slate-500">Escalation queue</p>
+                    <p className="mt-3 text-xs uppercase tracking-widest text-slate-500">
+                      Escalation queue
+                    </p>
                     <div className="mt-2 space-y-1">
                       {(queueMeta.escalations || []).slice(0, 5).map((item) => (
-                        <div key={item.id} className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs flex items-center justify-between gap-2">
-                          <span className="truncate">Lead {item.lead_id} · {item.reason}</span>
-                          <span className="text-slate-500">{formatDate(item.triggered_at)}</span>
+                        <div
+                          key={item.id}
+                          className="rounded-md shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs flex items-center justify-between gap-2"
+                        >
+                          <span className="truncate">
+                            Lead {item.lead_id} · {item.reason}
+                          </span>
+                          <span className="text-slate-500">
+                            {formatDate(item.triggered_at)}
+                          </span>
                         </div>
                       ))}
                     </div>
                   </div>
                 ) : null}
-                <p className="text-xs uppercase tracking-widest text-slate-500">Internal notes</p>
+                <p className="text-xs uppercase tracking-widest text-slate-500">
+                  Internal notes
+                </p>
                 <div className="mt-2 flex items-center gap-2">
                   <input
                     value={noteDraft}
@@ -492,11 +697,18 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
                 </div>
 
                 <div className="mt-3 space-y-2 max-h-[260px] overflow-auto pr-1">
-                  {(selected?.notes || []).length === 0 ? <div className="text-sm text-slate-500">No notes yet.</div> : null}
+                  {(selected?.notes || []).length === 0 ? (
+                    <div className="text-sm text-slate-500">No notes yet.</div>
+                  ) : null}
                   {(selected?.notes || []).map((note) => (
-                    <div key={note.id} className="rounded-lg shadow-borderless dark:shadow-borderlessDark p-3">
+                    <div
+                      key={note.id}
+                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark p-3"
+                    >
                       <p className="text-sm text-slate-900">{note.note}</p>
-                      <p className="mt-1 text-xs text-slate-500">{formatDate(note.created_at)}</p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {formatDate(note.created_at)}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -505,25 +717,48 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
               <div className="mt-5">
                 {selectedAssignments.length ? (
                   <div className="mb-4">
-                    <p className="text-xs uppercase tracking-widest text-slate-500">Assignment audit trail</p>
+                    <p className="text-xs uppercase tracking-widest text-slate-500">
+                      Assignment audit trail
+                    </p>
                     <div className="mt-2 space-y-1">
                       {selectedAssignments.map((item) => (
-                        <div key={item.id} className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs">
-                          <span className="font-medium">{item.reason || 'assignment'}</span>
-                          <span className="text-slate-500"> · {formatDate(item.assigned_at || item.created_at)}</span>
+                        <div
+                          key={item.id}
+                          className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
+                        >
+                          <span className="font-medium">
+                            {item.reason || "assignment"}
+                          </span>
+                          <span className="text-slate-500">
+                            {" "}
+                            · {formatDate(item.assigned_at || item.created_at)}
+                          </span>
                         </div>
                       ))}
                     </div>
                   </div>
                 ) : null}
-                <p className="text-xs uppercase tracking-widest text-slate-500">Reminders</p>
+                <p className="text-xs uppercase tracking-widest text-slate-500">
+                  Reminders
+                </p>
                 <div className="mt-2 space-y-2">
-                  {(selected?.reminders || []).length === 0 ? <div className="text-sm text-slate-500">No reminders yet.</div> : null}
+                  {(selected?.reminders || []).length === 0 ? (
+                    <div className="text-sm text-slate-500">
+                      No reminders yet.
+                    </div>
+                  ) : null}
                   {(selected?.reminders || []).map((reminder) => (
-                    <div key={reminder.id} className="rounded-lg shadow-borderless dark:shadow-borderlessDark p-3">
+                    <div
+                      key={reminder.id}
+                      className="rounded-lg shadow-borderless dark:shadow-borderlessDark p-3"
+                    >
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-sm font-medium">{reminder.message}</p>
-                        <p className="text-xs text-slate-500">{formatDate(reminder.remind_at)}</p>
+                        <p className="text-sm font-medium">
+                          {reminder.message}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {formatDate(reminder.remind_at)}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -534,5 +769,5 @@ export default function LeadManager({ title = 'Leads (CRM)', allowAssign = true,
         </div>
       </div>
     </div>
-  )
+  );
 }

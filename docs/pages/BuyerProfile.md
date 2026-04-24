@@ -30,6 +30,7 @@
             initial={reduceMotion ? false : { opacity: 0, y: 16 }}
             animate={reduceMotion ? false : { opacity: 1, y: 0 }}
 ```
+
 - `main` at `src/pages/BuyerProfile.jsx:326`
 
 ```jsx
@@ -38,6 +39,7 @@
           <JourneyTimeline
             title="Journey Timeline"
 ```
+
 ## 3) Styling (className blocks, utility breakdown, and custom CSS)
 
 ### 3.1 Custom CSS utilities referenced by this page (App.css / index.css)
@@ -79,6 +81,7 @@
   if (error) {
     return <div className="min-h-screen bg-slate-50 p-6 text-rose-700 dark:bg-[#020617] dark:text-rose-200 transition-colors duration-500 ease-in-out">{error}</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out`
@@ -112,6 +115,7 @@
   if (!user) {
     return <div className="min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out">Profile not found.</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-h-screen bg-slate-50 p-6 text-rose-700 dark:bg-[#020617] dark:text-rose-200 transition-colors duration-500 ease-in-out`
@@ -145,6 +149,7 @@
 
   return (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-h-screen bg-slate-50 p-6 text-slate-700 dark:bg-[#020617] dark:text-slate-200 transition-colors duration-500 ease-in-out`
@@ -175,6 +180,7 @@
         <aside className="col-span-12 lg:col-span-4 space-y-4">
           <motion.div
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out`
@@ -217,6 +223,7 @@
           <motion.div
             initial={reduceMotion ? false : { opacity: 0, y: 16 }}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `max-w-7xl mx-auto px-4 py-6 grid grid-cols-12 gap-4`
@@ -246,6 +253,7 @@
             initial={reduceMotion ? false : { opacity: 0, y: 16 }}
             animate={reduceMotion ? false : { opacity: 1, y: 0 }}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `col-span-12 lg:col-span-4 space-y-4`
@@ -267,6 +275,7 @@
             <div className="flex items-center gap-3">
               {user.profile?.profile_image ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800`
@@ -299,6 +308,7 @@
                 <img src={user.profile.profile_image} alt={user.name} className="h-14 w-14 rounded-2xl object-cover" />
               ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-3`
@@ -326,6 +336,7 @@
                 <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
               )}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-14 w-14 rounded-2xl object-cover`
@@ -353,6 +364,7 @@
               <div className="min-w-0">
                 <p className="text-lg font-bold text-slate-900 dark:text-slate-100 truncate">{user.name}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-14 w-14 rounded-2xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]`
@@ -387,6 +399,7 @@
                 <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
                   <span className="uppercase">Buyer</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0`
@@ -424,6 +437,7 @@
                   <span className="uppercase">Buyer</span>
                   {user.profile?.country ? <span>- {user.profile.country}</span> : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-lg font-bold text-slate-900 dark:text-slate-100 truncate`
@@ -459,6 +473,7 @@
                   {user.profile?.country ? <span>- {user.profile.country}</span> : null}
                   {user.verified ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400`
@@ -488,6 +503,7 @@
                   {user.verified ? (
                     <span className="verified-shimmer inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:from-emerald-500/12 dark:to-teal-400/10 dark:text-emerald-200 dark:ring-emerald-400/25">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `uppercase`
@@ -530,6 +546,7 @@
                     </span>
                   ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `verified-shimmer inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:from-emerald-500/12 dark:to-teal-400/10 dark:text-emerald-200 dark:ring-emerald-400/25`
@@ -570,6 +587,7 @@
                     </span>
                   ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200`
@@ -602,6 +620,7 @@
                     </span>
                   ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center rounded-full bg-blue-500/15 px-2 py-0.5 text-[10px] font-semibold text-blue-700 ring-1 ring-blue-500/20 dark:text-blue-200`
@@ -635,6 +654,7 @@
                     </span>
                   ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:text-emerald-200`
@@ -668,6 +688,7 @@
               <button onClick={follow} className="flex-1 rounded-full px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">
                 {relationship.following ? 'Following' : 'Follow'}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 flex gap-2`
@@ -719,6 +740,7 @@
                 {relationship.following ? 'Following' : 'Follow'}
               </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex-1 rounded-full bg-[var(--gt-blue)] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95`
@@ -766,6 +788,7 @@
               </button>
               <button onClick={connect} className="flex-1 rounded-full px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex-1 rounded-full px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5`
@@ -807,6 +830,7 @@
               </button>
             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex-1 rounded-full px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5`
@@ -854,6 +878,7 @@
                 <p className="text-[11px] text-slate-500">Industry</p>
                 <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.industry || 'Garments & Textile'}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 grid grid-cols-1 gap-3`
@@ -890,11 +915,14 @@
 #### `src/pages/BuyerProfile.jsx:276`
 
 ```jsx
-              <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                <p className="text-[11px] text-slate-500">Industry</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.industry || 'Garments & Textile'}</p>
-              </div>
+<div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+  <p className="text-[11px] text-slate-500">Industry</p>
+  <p className="mt-1 text-sm font-semibold text-slate-900">
+    {user.profile?.industry || "Garments & Textile"}
+  </p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
@@ -930,6 +958,7 @@
               </div>
               <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500`
@@ -965,6 +994,7 @@
               <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
                 <p className="text-[11px] text-slate-500">Organization</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm font-semibold text-slate-900`
@@ -995,11 +1025,14 @@
 #### `src/pages/BuyerProfile.jsx:280`
 
 ```jsx
-              <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                <p className="text-[11px] text-slate-500">Organization</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900">{user.profile?.organization_name || user.profile?.organization || user.name}</p>
-              </div>
+<div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+  <p className="text-[11px] text-slate-500">Organization</p>
+  <p className="mt-1 text-sm font-semibold text-slate-900">
+    {user.profile?.organization_name || user.profile?.organization || user.name}
+  </p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
@@ -1035,6 +1068,7 @@
               </div>
               <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500`
@@ -1070,6 +1104,7 @@
               <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
                 <p className="text-[11px] text-slate-500">Rating</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm font-semibold text-slate-900`
@@ -1105,6 +1140,7 @@
                 <p className="mt-1 text-sm font-semibold text-slate-900">{ratingSummary?.aggregate?.average_score ?? '0.0'} / 5</p>
                 <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
@@ -1142,6 +1178,7 @@
                 <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500`
@@ -1169,6 +1206,7 @@
               </div>
               <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm font-semibold text-slate-900`
@@ -1204,6 +1242,7 @@
               <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
                 <p className="text-[11px] text-slate-500">Certifications</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-600`
@@ -1236,6 +1275,7 @@
                 <p className="mt-1 text-sm font-semibold text-slate-900">
                   {(user.profile?.certifications || []).join(', ') || '--'}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
@@ -1276,6 +1316,7 @@
                   {(user.profile?.certifications || []).join(', ') || '--'}
                 </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500`
@@ -1306,6 +1347,7 @@
                 </p>
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm font-semibold text-slate-900`
@@ -1332,6 +1374,7 @@
                 <p className="mt-1 text-sm font-semibold text-slate-900">
                   {user.profile?.sourcing_capacity || user.profile?.monthly_capacity || user.profile?.annual_capacity || user.profile?.capacity || '--'}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
@@ -1370,6 +1413,7 @@
                   {user.profile?.sourcing_capacity || user.profile?.monthly_capacity || user.profile?.annual_capacity || user.profile?.capacity || '--'}
                 </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500`
@@ -1398,6 +1442,7 @@
                 </p>
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm font-semibold text-slate-900`
@@ -1422,6 +1467,7 @@
                 <p className="text-[11px] text-slate-500">Requests</p>
                 <p className="mt-1 text-sm font-semibold text-slate-900">{profile?.counts?.requests ?? 0}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 grid grid-cols-2 gap-3`
@@ -1463,6 +1509,7 @@
                 <p className="mt-1 text-sm font-semibold text-slate-900">{profile?.counts?.requests ?? 0}</p>
                 <p className="text-[11px] text-slate-600">Total posted</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white/60 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
@@ -1500,6 +1547,7 @@
                 <p className="text-[11px] text-slate-600">Total posted</p>
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500`
@@ -1527,6 +1575,7 @@
               </div>
               <div className="rounded-xl bg-white/60 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm font-semibold text-slate-900`
@@ -1562,6 +1611,7 @@
               <div className="rounded-xl bg-white/60 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
                 <p className="text-[11px] text-slate-500">Joined</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-600`
@@ -1594,6 +1644,7 @@
                 <p className="mt-1 text-sm font-semibold text-slate-900">{user.created_at ? new Date(user.created_at).getFullYear() : '--'}</p>
                 <p className="text-[11px] text-slate-600">Year</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-white/60 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
@@ -1631,6 +1682,7 @@
                 <p className="text-[11px] text-slate-600">Year</p>
               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500`
@@ -1658,6 +1710,7 @@
               </div>
             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm font-semibold text-slate-900`
@@ -1683,6 +1736,7 @@
             </div>
           </motion.div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-600`
@@ -1702,6 +1756,7 @@
               <p className="mt-1 text-sm font-semibold text-slate-900">{certification.status || 'pending'}</p>
               <p className="text-[11px] text-slate-600">Signed contracts: {certification.signed_contracts ?? 0}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-4 rounded-xl bg-white/60 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
@@ -1740,6 +1795,7 @@
               <p className="text-[11px] text-slate-600">Signed contracts: {certification.signed_contracts ?? 0}</p>
             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500`
@@ -1767,6 +1823,7 @@
             </div>
           ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm font-semibold text-slate-900`
@@ -1792,6 +1849,7 @@
           ) : null}
         </aside>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-600`
@@ -1811,6 +1869,7 @@
           <JourneyTimeline
             title="Journey Timeline"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `col-span-12 lg:col-span-8 space-y-4`
@@ -1836,6 +1895,7 @@
             <div className="relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 borderless-divider-b dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
               {['overview', 'requests', 'reviews'].map((tab) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] shadow-sm ring-1 ring-slate-200/60 overflow-hidden dark:bg-slate-900/50 dark:ring-slate-800`
@@ -1882,6 +1942,7 @@
                 <button
                   key={tab}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 borderless-divider-b dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]`
@@ -1919,6 +1980,7 @@
                       ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
                       : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
 ```
+
 **Raw class strings detected (best effort):**
 
 - `bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35`
@@ -1953,6 +2015,7 @@
                     />
                   ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `absolute inset-0 rounded-full bg-indigo-500/10 dark:bg-white/10`
@@ -1980,6 +2043,7 @@
                 <div className="space-y-4">
                   <div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `p-4`
@@ -2002,6 +2066,7 @@
                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100">About</p>
                     <p className="mt-2 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{user.profile?.about || 'No description added yet.'}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-4`
@@ -2032,6 +2097,7 @@
                   </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-bold text-slate-900 dark:text-slate-100`
@@ -2060,6 +2126,7 @@
 
                   {hasBrandKit ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap`
@@ -2084,6 +2151,7 @@
                       <div className="mt-3 flex items-center gap-3">
                         {brandProfile.brand_logo_url ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-slate-50/70 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
@@ -2122,6 +2190,7 @@
                         {brandProfile.brand_logo_url ? (
                           <img src={brandProfile.brand_logo_url} alt="Brand logo" className="h-12 w-12 rounded-xl object-cover" />
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900 dark:text-slate-100`
@@ -2157,6 +2226,7 @@
                           <img src={brandProfile.brand_logo_url} alt="Brand logo" className="h-12 w-12 rounded-xl object-cover" />
                         ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 flex items-center gap-3`
@@ -2185,6 +2255,7 @@
                           <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
                         )}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-12 w-12 rounded-xl object-cover`
@@ -2212,6 +2283,7 @@
                         <div className="min-w-0">
                           <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-12 w-12 rounded-xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]`
@@ -2246,6 +2318,7 @@
                             {brandProfile.brand_name || user.name}
                           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0`
@@ -2271,6 +2344,7 @@
                           </div>
                           {brandProfile.brand_tagline ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900 dark:text-slate-100 truncate`
@@ -2294,6 +2368,7 @@
                           {brandProfile.brand_website ? (
                             <div className="text-xs text-slate-500 dark:text-slate-400 truncate">{brandProfile.brand_website}</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-600 dark:text-slate-300`
@@ -2319,6 +2394,7 @@
                         </div>
                       </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500 dark:text-slate-400 truncate`
@@ -2341,6 +2417,7 @@
                       <div className="mt-2 text-sm text-slate-700 dark:text-slate-300">
                         {brandProfile.account_manager_name || 'Assigned manager'}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-slate-50/70 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
@@ -2381,6 +2458,7 @@
                         {brandProfile.account_manager_name || 'Assigned manager'}
                       </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900 dark:text-slate-100`
@@ -2411,6 +2489,7 @@
                       </div>
                       <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-sm text-slate-700 dark:text-slate-300`
@@ -2442,6 +2521,7 @@
                       </div>
                     </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-xs text-slate-500 dark:text-slate-400`
@@ -2464,6 +2544,7 @@
                       <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Country</p>
                       <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.country || '--'}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid grid-cols-1 sm:grid-cols-2 gap-3`
@@ -2505,11 +2586,16 @@
 #### `src/pages/BuyerProfile.jsx:409`
 
 ```jsx
-                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Country</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.country || '--'}</p>
-                    </div>
+<div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+    Country
+  </p>
+  <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+    {user.profile?.country || "--"}
+  </p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
@@ -2549,6 +2635,7 @@
                     </div>
                     <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
@@ -2588,6 +2675,7 @@
                     <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
                       <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Certifications</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
@@ -2622,11 +2710,16 @@
 #### `src/pages/BuyerProfile.jsx:413`
 
 ```jsx
-                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Certifications</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{(user.profile?.certifications || []).join(', ') || '--'}</p>
-                    </div>
+<div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+    Certifications
+  </p>
+  <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+    {(user.profile?.certifications || []).join(", ") || "--"}
+  </p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
@@ -2666,6 +2759,7 @@
                     </div>
                     <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
@@ -2705,6 +2799,7 @@
                     <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
                       <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Active Since</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
@@ -2739,11 +2834,16 @@
 #### `src/pages/BuyerProfile.jsx:417`
 
 ```jsx
-                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Active Since</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.profile?.active_since || new Date().getFullYear()}</p>
-                    </div>
+<div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+    Active Since
+  </p>
+  <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+    {user.profile?.active_since || new Date().getFullYear()}
+  </p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
@@ -2783,6 +2883,7 @@
                     </div>
                     <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
@@ -2822,6 +2923,7 @@
                     <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
                       <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Role</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
@@ -2856,11 +2958,16 @@
 #### `src/pages/BuyerProfile.jsx:421`
 
 ```jsx
-                    <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Role</p>
-                      <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">Buyer</p>
-                    </div>
+<div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+    Role
+  </p>
+  <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
+    Buyer
+  </p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
@@ -2900,6 +3007,7 @@
                     </div>
                   </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400`
@@ -2930,6 +3038,7 @@
                   </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100`
@@ -2953,6 +3062,7 @@
                         {(user.profile?.companies_worked_with || []).map((company, idx) => (
                           <div key={idx} className="flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-bold text-slate-900 dark:text-slate-100 mb-3`
@@ -2995,6 +3105,7 @@
                           <div key={idx} className="flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
                             {company.logo ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid grid-cols-1 sm:grid-cols-2 gap-3`
@@ -3030,6 +3141,7 @@
                               <img src={company.logo} alt={company.name} className="h-10 w-10 rounded-lg object-cover" />
                             ) : (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
@@ -3066,6 +3178,7 @@
                               <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500" />
                             )}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-10 w-10 rounded-lg object-cover`
@@ -3093,6 +3206,7 @@
                             <div className="min-w-0 flex-1">
                               <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{company.name}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500`
@@ -3123,11 +3237,18 @@
 #### `src/pages/BuyerProfile.jsx:438`
 
 ```jsx
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{company.name}</p>
-                              {company.location && <p className="text-xs text-slate-500 dark:text-slate-400">{company.location}</p>}
-                            </div>
+<div className="min-w-0 flex-1">
+  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+    {company.name}
+  </p>
+  {company.location && (
+    <p className="text-xs text-slate-500 dark:text-slate-400">
+      {company.location}
+    </p>
+  )}
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0 flex-1`
@@ -3158,6 +3279,7 @@
                             </div>
                           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900 dark:text-slate-100 truncate`
@@ -3185,6 +3307,7 @@
                           </div>
                         ))}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500 dark:text-slate-400`
@@ -3205,6 +3328,7 @@
                     <>
                       {requests.map((r) => (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-3`
@@ -3222,6 +3346,7 @@
                             <div className="flex-1">
                               <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{r.category || 'Request'}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl borderless-shadow bg-white p-4 dark:bg-slate-900/50`
@@ -3260,6 +3385,7 @@
                               <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{r.category || 'Request'}</p>
                               <p className="mt-1 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{r.custom_description || ''}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-3`
@@ -3295,6 +3421,7 @@
                               <p className="mt-1 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{r.custom_description || ''}</p>
                               <div className="mt-2 text-xs text-slate-600 dark:text-slate-400 grid grid-cols-2 gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex-1`
@@ -3333,6 +3460,7 @@
                               <div className="mt-2 text-xs text-slate-600 dark:text-slate-400 grid grid-cols-2 gap-2">
                                 <div>Quantity: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.quantity || '-'}</span></div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-bold text-slate-900 dark:text-slate-100`
@@ -3373,6 +3501,7 @@
                                 <div>Quantity: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.quantity || '-'}</span></div>
                                 <div>Timeline: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.timeline_days || '-'} days</span></div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap`
@@ -3409,6 +3538,7 @@
                                 <div>Timeline: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.timeline_days || '-'} days</span></div>
                                 <div>Material: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.material || '-'}</span></div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-xs text-slate-600 dark:text-slate-400 grid grid-cols-2 gap-2`
@@ -3439,6 +3569,7 @@
                                 <div>Material: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.material || '-'}</span></div>
                                 <div>Status: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.status || '-'}</span></div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-slate-800 dark:text-slate-200`
@@ -3459,6 +3590,7 @@
                                 <div>Status: <span className="font-semibold text-slate-800 dark:text-slate-200">{r.status || '-'}</span></div>
                               </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-slate-800 dark:text-slate-200`
@@ -3479,6 +3611,7 @@
                               </div>
                             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-slate-800 dark:text-slate-200`
@@ -3499,6 +3632,7 @@
                             </div>
                             <div className="shrink-0">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold text-slate-800 dark:text-slate-200`
@@ -3522,6 +3656,7 @@
                             </div>
                           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `shrink-0`
@@ -3554,6 +3689,7 @@
                           </div>
                         </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] transition`
@@ -3583,6 +3719,7 @@
                         <button
                           type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm text-slate-600 dark:text-slate-300`
@@ -3606,6 +3743,7 @@
                           Load more
                         </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8`
@@ -3643,6 +3781,7 @@
                   ) : (
                     <div className="rounded-xl bg-amber-50 p-4 text-sm text-amber-800 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm text-slate-600 dark:text-slate-300`
@@ -3676,6 +3815,7 @@
                       <p className="mt-2">Only the buyer can view detailed request information to protect business privacy.</p>
                       <p className="mt-3 text-xs">Total requests posted: <span className="font-bold">{profile?.counts?.requests || 0}</span></p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-amber-50 p-4 text-sm text-amber-800 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30`
@@ -3715,6 +3855,7 @@
                       <p className="mt-3 text-xs">Total requests posted: <span className="font-bold">{profile?.counts?.requests || 0}</span></p>
                     </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold`
@@ -3740,6 +3881,7 @@
                     </div>
                   )}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2`
@@ -3763,6 +3905,7 @@
                   )}
                 </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 text-xs`
@@ -3784,6 +3927,7 @@
                     <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Rating summary</p>
                     <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `space-y-3`
@@ -3822,6 +3966,7 @@
                     <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
                       {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 - {ratingSummary?.aggregate?.total_count ?? 0} reviews - {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10`
@@ -3863,6 +4008,7 @@
                       {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 - {ratingSummary?.aggregate?.total_count ?? 0} reviews - {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
                     </p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-bold text-slate-900 dark:text-slate-100`
@@ -3894,6 +4040,7 @@
                     </p>
                   </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm text-slate-700 dark:text-slate-300`
@@ -3916,11 +4063,15 @@
 #### `src/pages/BuyerProfile.jsx:503`
 
 ```jsx
-                  <div className="rounded-xl bg-indigo-50 p-3 text-xs text-indigo-800 ring-1 ring-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/30">
-                    <p className="font-semibold">Review Policy</p>
-                    <p className="mt-1">Reviews can only be edited or deleted by the person who wrote them. Profile owners cannot delete reviews to maintain transparency and trust.</p>
-                  </div>
+<div className="rounded-xl bg-indigo-50 p-3 text-xs text-indigo-800 ring-1 ring-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/30">
+  <p className="font-semibold">Review Policy</p>
+  <p className="mt-1">
+    Reviews can only be edited or deleted by the person who wrote them. Profile
+    owners cannot delete reviews to maintain transparency and trust.
+  </p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl bg-indigo-50 p-3 text-xs text-indigo-800 ring-1 ring-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-200 dark:ring-indigo-500/30`
@@ -3955,6 +4106,7 @@
                   </div>
                   {(ratingSummary?.recent_reviews || []).map((r) => {
 ```
+
 **Raw class strings detected (best effort):**
 
 - `font-semibold`
@@ -3975,6 +4127,7 @@
                   {(ratingSummary?.recent_reviews || []).map((r) => {
                     const canEdit = currentUser?.id && String(currentUser.id) === String(r.from_user_id || '')
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1`
@@ -3992,6 +4145,7 @@
                           <div className="flex-1">
                             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{r.score}* -- {r.reviewer_name || 'Anonymous'}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-950/30 dark:ring-white/10`
@@ -4033,6 +4187,7 @@
                             <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{r.score}* -- {r.reviewer_name || 'Anonymous'}</p>
                             <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{r.comment || 'No comment provided.'}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-3`
@@ -4067,6 +4222,7 @@
                             <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{r.comment || 'No comment provided.'}</p>
                             <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{r.created_at ? new Date(r.created_at).toLocaleDateString() : ''}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex-1`
@@ -4101,6 +4257,7 @@
                             <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{r.created_at ? new Date(r.created_at).toLocaleDateString() : ''}</p>
                           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900 dark:text-slate-100`
@@ -4132,6 +4289,7 @@
                           </div>
                           {canEdit ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm text-slate-700 dark:text-slate-300`
@@ -4159,6 +4317,7 @@
                           {canEdit ? (
                             <div className="flex flex-col gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-xs text-slate-500 dark:text-slate-400`
@@ -4186,6 +4345,7 @@
                                 type="button"
                                 className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-col gap-2`
@@ -4222,6 +4382,7 @@
                                   const score = window.prompt('Update rating (1-5)', String(r.score || '5'))
                                   if (!score) return
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50`
@@ -4257,6 +4418,7 @@
                                   if (!window.confirm('Delete this review?')) return
                                   try {
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-50`
@@ -4290,6 +4452,7 @@
               ) : null}
             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm text-slate-600 dark:text-slate-300`
@@ -4314,6 +4477,7 @@
                   {user.verified ? (
                     <span className="verified-shimmer inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:from-emerald-500/12 dark:to-teal-400/10 dark:text-emerald-200 dark:ring-emerald-400/25">
 ```
+
 - `src/pages/BuyerProfile.jsx:240` — - {user.profile.country}
 
 ```jsx
@@ -4322,6 +4486,7 @@
                     <span className="verified-shimmer inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:from-emerald-500/12 dark:to-teal-400/10 dark:text-emerald-200 dark:ring-emerald-400/25">
                       Verified
 ```
+
 - `src/pages/BuyerProfile.jsx:266` — Contact
 
 ```jsx
@@ -4330,6 +4495,7 @@
                 {relationship.following ? 'Following' : 'Follow'}
               </button>
 ```
+
 - `src/pages/BuyerProfile.jsx:277` — Industry
 
 ```jsx
@@ -4338,6 +4504,7 @@
               </div>
               <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
 ```
+
 - `src/pages/BuyerProfile.jsx:281` — Organization
 
 ```jsx
@@ -4346,6 +4513,7 @@
               </div>
               <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
 ```
+
 - `src/pages/BuyerProfile.jsx:285` — Rating
 
 ```jsx
@@ -4354,6 +4522,7 @@
                 <p className="text-[11px] text-slate-600">{ratingSummary?.aggregate?.total_count ?? 0} reviews</p>
               </div>
 ```
+
 - `src/pages/BuyerProfile.jsx:290` — Certifications
 
 ```jsx
@@ -4362,6 +4531,7 @@
                   {(user.profile?.certifications || []).join(', ') || '--'}
                 </p>
 ```
+
 - `src/pages/BuyerProfile.jsx:296` — Capacity
 
 ```jsx
@@ -4370,6 +4540,7 @@
                   {user.profile?.sourcing_capacity || user.profile?.monthly_capacity || user.profile?.annual_capacity || user.profile?.capacity || '--'}
                 </p>
 ```
+
 - `src/pages/BuyerProfile.jsx:304` — Requests
 
 ```jsx
@@ -4378,6 +4549,7 @@
                 <p className="text-[11px] text-slate-600">Total posted</p>
               </div>
 ```
+
 - `src/pages/BuyerProfile.jsx:306` — Total posted
 
 ```jsx
@@ -4386,6 +4558,7 @@
               <div className="rounded-xl bg-white/60 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
                 <p className="text-[11px] text-slate-500">Joined</p>
 ```
+
 - `src/pages/BuyerProfile.jsx:309` — Joined
 
 ```jsx
@@ -4394,6 +4567,7 @@
                 <p className="text-[11px] text-slate-600">Year</p>
               </div>
 ```
+
 - `src/pages/BuyerProfile.jsx:311` — Year
 
 ```jsx
@@ -4402,6 +4576,7 @@
             </div>
           </motion.div>
 ```
+
 - `src/pages/BuyerProfile.jsx:319` — Order Completion Certification
 
 ```jsx
@@ -4410,6 +4585,7 @@
               <p className="text-[11px] text-slate-600">Signed contracts: {certification.signed_contracts ?? 0}</p>
             </div>
 ```
+
 - `src/pages/BuyerProfile.jsx:321` — Signed contracts: {certification.signed_contracts ?? 0}
 
 ```jsx
@@ -4418,6 +4594,7 @@
           ) : null}
         </aside>
 ```
+
 - `src/pages/BuyerProfile.jsx:368` — About
 
 ```jsx
@@ -4426,6 +4603,7 @@
                   </div>
 
 ```
+
 - `src/pages/BuyerProfile.jsx:374` — Brand Kit
 
 ```jsx
@@ -4434,6 +4612,7 @@
                         {brandProfile.brand_logo_url ? (
                           <img src={brandProfile.brand_logo_url} alt="Brand logo" className="h-12 w-12 rounded-xl object-cover" />
 ```
+
 - `src/pages/BuyerProfile.jsx:398` — Dedicated Account Manager
 
 ```jsx
@@ -4442,6 +4621,7 @@
                         {brandProfile.account_manager_name || 'Assigned manager'}
                       </div>
 ```
+
 - `src/pages/BuyerProfile.jsx:410` — Country
 
 ```jsx
@@ -4450,6 +4630,7 @@
                     </div>
                     <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
 ```
+
 - `src/pages/BuyerProfile.jsx:414` — Certifications
 
 ```jsx
@@ -4458,6 +4639,7 @@
                     </div>
                     <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
 ```
+
 - `src/pages/BuyerProfile.jsx:418` — Active Since
 
 ```jsx
@@ -4466,6 +4648,7 @@
                     </div>
                     <div className="rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
 ```
+
 - `src/pages/BuyerProfile.jsx:422` — Role
 
 ```jsx
@@ -4474,6 +4657,7 @@
                     </div>
                   </div>
 ```
+
 - `src/pages/BuyerProfile.jsx:423` — Buyer
 
 ```jsx
@@ -4482,6 +4666,7 @@
                   </div>
 
 ```
+
 - `src/pages/BuyerProfile.jsx:429` — Companies Worked With
 
 ```jsx
@@ -4490,6 +4675,7 @@
                         {(user.profile?.companies_worked_with || []).map((company, idx) => (
                           <div key={idx} className="flex items-center gap-3 rounded-xl bg-slate-50/70 p-3 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
 ```
+
 - `src/pages/BuyerProfile.jsx:468` — Contact
 
 ```jsx
@@ -4498,6 +4684,7 @@
                           </div>
                         </div>
 ```
+
 - `src/pages/BuyerProfile.jsx:487` — Request details are private
 
 ```jsx
@@ -4506,6 +4693,7 @@
                       <p className="mt-3 text-xs">Total requests posted: <span className="font-bold">{profile?.counts?.requests || 0}</span></p>
                     </div>
 ```
+
 - `src/pages/BuyerProfile.jsx:488` — Only the buyer can view detailed request information to protect business privacy.
 
 ```jsx
@@ -4514,6 +4702,7 @@
                     </div>
                   )}
 ```
+
 - `src/pages/BuyerProfile.jsx:498` — Rating summary
 
 ```jsx
@@ -4522,6 +4711,7 @@
                       {ratingSummary?.aggregate?.average_score ?? '0.0'} / 5 - {ratingSummary?.aggregate?.total_count ?? 0} reviews - {ratingSummary?.aggregate?.reliability?.confidence || 'low'} confidence
                     </p>
 ```
+
 - `src/pages/BuyerProfile.jsx:504` — Review Policy
 
 ```jsx
@@ -4530,6 +4720,7 @@
                   </div>
                   {(ratingSummary?.recent_reviews || []).map((r) => {
 ```
+
 - `src/pages/BuyerProfile.jsx:505` — Reviews can only be edited or deleted by the person who wrote them. Profile owners cannot delete reviews to maintain transparency and trust.
 
 ```jsx
@@ -4538,6 +4729,7 @@
                   {(ratingSummary?.recent_reviews || []).map((r) => {
                     const canEdit = currentUser?.id && String(currentUser.id) === String(r.from_user_id || '')
 ```
+
 - `src/pages/BuyerProfile.jsx:252` — Boosted visibility enabled for Premium
 
 ```jsx
@@ -4546,6 +4738,7 @@
                     </span>
                   ) : null}
 ```
+
 - `src/pages/BuyerProfile.jsx:329` — Journey Timeline
 
 ```jsx
@@ -4554,6 +4747,7 @@
             contractId={journeyParams.get('contract_id') || ''}
             requirementId={journeyParams.get('requirement_id') || ''}
 ```
+
 - `src/pages/BuyerProfile.jsx:266` — (element) <button>
 
 ```jsx
@@ -4562,6 +4756,7 @@
                 {relationship.following ? 'Following' : 'Follow'}
               </button>
 ```
+
 - `src/pages/BuyerProfile.jsx:267` — (element) <button>
 
 ```jsx
@@ -4570,6 +4765,7 @@
               </button>
               <button onClick={connect} className="flex-1 rounded-full px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">
 ```
+
 - `src/pages/BuyerProfile.jsx:270` — (element) <button>
 
 ```jsx
@@ -4578,6 +4774,7 @@
               </button>
             </div>
 ```
+
 - `src/pages/BuyerProfile.jsx:342` — (element) <button>
 
 ```jsx
@@ -4586,6 +4783,7 @@
                   type="button"
                   onClick={() => setActiveTab(tab)}
 ```
+
 - `src/pages/BuyerProfile.jsx:468` — (element) <button>
 
 ```jsx
@@ -4594,6 +4792,7 @@
                           </div>
                         </div>
 ```
+
 - `src/pages/BuyerProfile.jsx:475` — (element) <button>
 
 ```jsx
@@ -4602,6 +4801,7 @@
                           onClick={() => loadRequests({ reset: false })}
                           className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
 ```
+
 - `src/pages/BuyerProfile.jsx:519` — (element) <button>
 
 ```jsx
@@ -4610,6 +4810,7 @@
                                 className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50"
                                 onClick={async () => {
 ```
+
 - `src/pages/BuyerProfile.jsx:536` — (element) <button>
 
 ```jsx
@@ -4618,19 +4819,20 @@
                                 className="rounded-full borderless-shadow px-3 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-50"
                                 onClick={async () => {
 ```
+
 ## 5) Backend Mapping (Frontend → Express → Controller → Service/DB)
 
-| Frontend call (path:line) | Express mount | Route definition | Controller file | Handler |
-|---|---|---|---|---|
-| GET /profiles/${encodeURIComponent(id)} (src/pages/BuyerProfile.jsx:95) | /api/profiles -> server/routes/profileRoutes.js:139 | - | - | - |
-| GET /ratings/profiles/user:${encodeURIComponent(id)} (src/pages/BuyerProfile.jsx:112) | /api/ratings -> server/routes/ratingsRoutes.js:137 | - | - | - |
-| GET /certifications/org/${encodeURIComponent(id)} (src/pages/BuyerProfile.jsx:122) | /api/certifications -> server/routes/certificationRoutes.js:149 | - | - | - |
-| GET /profiles/${encodeURIComponent(id)}/requests?cursor=${cursor}&limit=10 (src/pages/BuyerProfile.jsx:134) | /api/profiles -> server/routes/profileRoutes.js:139 | - | - | - |
-| GET /boosts/me (src/pages/BuyerProfile.jsx:165) | /api/boosts -> server/routes/boostRoutes.js:142 | GET /me (server/routes/boostRoutes.js:7) | server/controllers/boostController.js | getMyBoosts |
-| POST /users/${encodeURIComponent(id)}/follow (src/pages/BuyerProfile.jsx:182) | /api/users -> server/routes/userRoutes.js:112 | - | - | - |
-| POST /users/${encodeURIComponent(id)}/friend-request (src/pages/BuyerProfile.jsx:192) | /api/users -> server/routes/userRoutes.js:112 | - | - | - |
-| PATCH /ratings/${r.id} (src/pages/BuyerProfile.jsx:527) | /api/ratings -> server/routes/ratingsRoutes.js:137 | - | - | - |
-| DELETE /ratings/${r.id} (src/pages/BuyerProfile.jsx:542) | /api/ratings -> server/routes/ratingsRoutes.js:137 | - | - | - |
+| Frontend call (path:line)                                                                                   | Express mount                                                   | Route definition                         | Controller file                       | Handler     |
+| ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ---------------------------------------- | ------------------------------------- | ----------- |
+| GET /profiles/${encodeURIComponent(id)} (src/pages/BuyerProfile.jsx:95)                                     | /api/profiles -> server/routes/profileRoutes.js:139             | -                                        | -                                     | -           |
+| GET /ratings/profiles/user:${encodeURIComponent(id)} (src/pages/BuyerProfile.jsx:112)                       | /api/ratings -> server/routes/ratingsRoutes.js:137              | -                                        | -                                     | -           |
+| GET /certifications/org/${encodeURIComponent(id)} (src/pages/BuyerProfile.jsx:122)                          | /api/certifications -> server/routes/certificationRoutes.js:149 | -                                        | -                                     | -           |
+| GET /profiles/${encodeURIComponent(id)}/requests?cursor=${cursor}&limit=10 (src/pages/BuyerProfile.jsx:134) | /api/profiles -> server/routes/profileRoutes.js:139             | -                                        | -                                     | -           |
+| GET /boosts/me (src/pages/BuyerProfile.jsx:165)                                                             | /api/boosts -> server/routes/boostRoutes.js:142                 | GET /me (server/routes/boostRoutes.js:7) | server/controllers/boostController.js | getMyBoosts |
+| POST /users/${encodeURIComponent(id)}/follow (src/pages/BuyerProfile.jsx:182)                               | /api/users -> server/routes/userRoutes.js:112                   | -                                        | -                                     | -           |
+| POST /users/${encodeURIComponent(id)}/friend-request (src/pages/BuyerProfile.jsx:192)                       | /api/users -> server/routes/userRoutes.js:112                   | -                                        | -                                     | -           |
+| PATCH /ratings/${r.id} (src/pages/BuyerProfile.jsx:527)                                                     | /api/ratings -> server/routes/ratingsRoutes.js:137              | -                                        | -                                     | -           |
+| DELETE /ratings/${r.id} (src/pages/BuyerProfile.jsx:542)                                                    | /api/ratings -> server/routes/ratingsRoutes.js:137              | -                                        | -                                     | -           |
 
 ## 6) How to Edit Safely
 
@@ -4640,4 +4842,3 @@
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
-

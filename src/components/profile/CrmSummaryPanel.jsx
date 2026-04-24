@@ -1,95 +1,123 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { apiRequest, getCurrentUser, getToken } from '../../lib/auth'
+import React, { useEffect, useMemo, useState } from "react";
+import { apiRequest, getCurrentUser, getToken } from "../../lib/auth";
 
 function formatDate(value) {
-  if (!value) return '--'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return '--'
-  return date.toLocaleString()
+  if (!value) return "--";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "--";
+  return date.toLocaleString();
 }
 
 function withinRange(iso, range = {}) {
-  if (!range?.from && !range?.to) return true
-  const ts = new Date(iso || '').getTime()
-  if (!Number.isFinite(ts)) return false
-  if (range.from && ts < range.from) return false
-  if (range.to && ts > range.to) return false
-  return true
+  if (!range?.from && !range?.to) return true;
+  const ts = new Date(iso || "").getTime();
+  if (!Number.isFinite(ts)) return false;
+  if (range.from && ts < range.from) return false;
+  if (range.to && ts > range.to) return false;
+  return true;
 }
 
 export default function CrmSummaryPanel({ targetId }) {
-  const token = useMemo(() => getToken(), [])
-  const currentUser = useMemo(() => getCurrentUser(), [])
-  const actorRole = String(currentUser?.role || '').toLowerCase()
-  const actorOrgId = actorRole === 'agent' ? String(currentUser?.org_owner_id || '') : String(currentUser?.id || '')
-  const [data, setData] = useState(null)
-  const [error, setError] = useState('')
-  const [filterType, setFilterType] = useState('all')
-  const [filterMatch, setFilterMatch] = useState('')
-  const [filterFrom, setFilterFrom] = useState('')
-  const [filterTo, setFilterTo] = useState('')
-  const [expandedThreads, setExpandedThreads] = useState({})
+  const token = useMemo(() => getToken(), []);
+  const currentUser = useMemo(() => getCurrentUser(), []);
+  const actorRole = String(currentUser?.role || "").toLowerCase();
+  const actorOrgId =
+    actorRole === "agent"
+      ? String(currentUser?.org_owner_id || "")
+      : String(currentUser?.id || "");
+  const [data, setData] = useState(null);
+  const [error, setError] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [filterMatch, setFilterMatch] = useState("");
+  const [filterFrom, setFilterFrom] = useState("");
+  const [filterTo, setFilterTo] = useState("");
+  const [expandedThreads, setExpandedThreads] = useState({});
 
   useEffect(() => {
-    if (!token || !targetId) return
-    const relationshipMode = actorOrgId && String(targetId) !== String(actorOrgId)
+    if (!token || !targetId) return;
+    const relationshipMode =
+      actorOrgId && String(targetId) !== String(actorOrgId);
     const endpoint = relationshipMode
       ? `/crm/relationship/${encodeURIComponent(targetId)}`
-      : `/crm/profile/${encodeURIComponent(targetId)}`
-    let alive = true
+      : `/crm/profile/${encodeURIComponent(targetId)}`;
+    let alive = true;
     apiRequest(endpoint, { token })
       .then((res) => {
-        if (!alive) return
-        setData(res)
-        setError('')
+        if (!alive) return;
+        setData(res);
+        setError("");
       })
       .catch((err) => {
-        if (!alive) return
-        setError(err.status === 403 ? '' : (err.message || 'Unable to load CRM summary'))
-        setData(null)
-      })
+        if (!alive) return;
+        setError(
+          err.status === 403 ? "" : err.message || "Unable to load CRM summary",
+        );
+        setData(null);
+      });
     return () => {
-      alive = false
-    }
-  }, [targetId, token, actorOrgId])
+      alive = false;
+    };
+  }, [targetId, token, actorOrgId]);
 
-  if (!data && !error) return null
-  if (!data) return null
+  if (!data && !error) return null;
+  if (!data) return null;
 
-  const leadStatus = data?.leads?.by_status || {}
-  const threads = Array.isArray(data?.messages?.threads) ? data.messages.threads : []
-  const calls = Array.isArray(data?.calls?.items) ? data.calls.items : []
-  const contracts = Array.isArray(data?.contracts?.items) ? data.contracts.items : []
-  const previousOrders = Array.isArray(data?.previous_orders) ? data.previous_orders : []
-  const agentOutcomes = Array.isArray(data?.agent_outcomes) ? data.agent_outcomes : []
-  const openLink = currentUser?.role === 'agent' ? '/agent?tab=leads' : '/owner?tab=leads'
-  const counterparty = data?.counterparty || null
-  const titleHint = counterparty?.name ? `Relationship with ${counterparty.name}` : ''
+  const leadStatus = data?.leads?.by_status || {};
+  const threads = Array.isArray(data?.messages?.threads)
+    ? data.messages.threads
+    : [];
+  const calls = Array.isArray(data?.calls?.items) ? data.calls.items : [];
+  const contracts = Array.isArray(data?.contracts?.items)
+    ? data.contracts.items
+    : [];
+  const previousOrders = Array.isArray(data?.previous_orders)
+    ? data.previous_orders
+    : [];
+  const agentOutcomes = Array.isArray(data?.agent_outcomes)
+    ? data.agent_outcomes
+    : [];
+  const openLink =
+    currentUser?.role === "agent" ? "/agent?tab=leads" : "/owner?tab=leads";
+  const counterparty = data?.counterparty || null;
+  const titleHint = counterparty?.name
+    ? `Relationship with ${counterparty.name}`
+    : "";
 
   const range = {
     from: filterFrom ? new Date(`${filterFrom}T00:00:00`).getTime() : null,
     to: filterTo ? new Date(`${filterTo}T23:59:59`).getTime() : null,
-  }
+  };
 
-  const matches = threads.map((thread) => thread.match_id).filter(Boolean)
+  const matches = threads.map((thread) => thread.match_id).filter(Boolean);
   const filteredThreads = threads
     .filter((thread) => (filterMatch ? thread.match_id === filterMatch : true))
     .map((thread) => ({
       ...thread,
       messages: Array.isArray(thread.messages)
-        ? thread.messages.filter((msg) => withinRange(msg.timestamp || msg.created_at, range))
+        ? thread.messages.filter((msg) =>
+            withinRange(msg.timestamp || msg.created_at, range),
+          )
         : [],
     }))
-    .filter((thread) => (range.from || range.to ? thread.messages.length > 0 : true))
+    .filter((thread) =>
+      range.from || range.to ? thread.messages.length > 0 : true,
+    );
 
   const filteredCalls = calls
-    .filter((call) => (filterMatch ? String(call.match_id || call?.context?.chat_thread_id || '') === filterMatch : true))
-    .filter((call) => withinRange(call.created_at || call.started_at, range))
+    .filter((call) =>
+      filterMatch
+        ? String(call.match_id || call?.context?.chat_thread_id || "") ===
+          filterMatch
+        : true,
+    )
+    .filter((call) => withinRange(call.created_at || call.started_at, range));
 
-  const filteredContracts = contracts.filter((contract) => withinRange(contract.updated_at || contract.created_at, range))
+  const filteredContracts = contracts.filter((contract) =>
+    withinRange(contract.updated_at || contract.created_at, range),
+  );
 
   function toggleThread(matchId) {
-    setExpandedThreads((prev) => ({ ...prev, [matchId]: !prev[matchId] }))
+    setExpandedThreads((prev) => ({ ...prev, [matchId]: !prev[matchId] }));
   }
 
   return (
@@ -97,9 +125,14 @@ export default function CrmSummaryPanel({ targetId }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-slate-900">CRM Timeline</p>
-          <p className="text-[11px] text-slate-500">{titleHint || 'Visible only to your team'}</p>
+          <p className="text-[11px] text-slate-500">
+            {titleHint || "Visible only to your team"}
+          </p>
         </div>
-        <a href={openLink} className="rounded-full bg-[#0A66C2] px-3 py-1 text-[11px] font-semibold text-white">
+        <a
+          href={openLink}
+          className="rounded-full bg-[#0A66C2] px-3 py-1 text-[11px] font-semibold text-white"
+        >
           Open Leads
         </a>
       </div>
@@ -111,7 +144,9 @@ export default function CrmSummaryPanel({ targetId }) {
             {Object.keys(leadStatus).length ? (
               Object.entries(leadStatus).map(([status, count]) => (
                 <div key={status} className="flex items-center justify-between">
-                  <span className="capitalize">{String(status).replace(/_/g, ' ')}</span>
+                  <span className="capitalize">
+                    {String(status).replace(/_/g, " ")}
+                  </span>
                   <span className="font-semibold">{count}</span>
                 </div>
               ))
@@ -126,20 +161,28 @@ export default function CrmSummaryPanel({ targetId }) {
           <div className="mt-2 space-y-1 text-xs text-slate-700">
             <div className="flex items-center justify-between">
               <span>Total threads</span>
-              <span className="font-semibold">{data?.messages?.total_threads ?? 0}</span>
+              <span className="font-semibold">
+                {data?.messages?.total_threads ?? 0}
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <span>Total messages</span>
-              <span className="font-semibold">{data?.messages?.total_messages ?? 0}</span>
+              <span className="font-semibold">
+                {data?.messages?.total_messages ?? 0}
+              </span>
             </div>
             {threads[0]?.last_message_at ? (
-              <div className="text-[10px] text-slate-500">Latest: {formatDate(threads[0].last_message_at)}</div>
+              <div className="text-[10px] text-slate-500">
+                Latest: {formatDate(threads[0].last_message_at)}
+              </div>
             ) : null}
           </div>
         </div>
 
         <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3">
-          <p className="text-xs font-semibold text-slate-600">Calls & Contracts</p>
+          <p className="text-xs font-semibold text-slate-600">
+            Calls & Contracts
+          </p>
           <div className="mt-2 space-y-2 text-xs text-slate-700">
             <div className="flex items-center justify-between">
               <span>Calls</span>
@@ -147,13 +190,23 @@ export default function CrmSummaryPanel({ targetId }) {
             </div>
             <div className="flex items-center justify-between">
               <span>Contracts</span>
-              <span className="font-semibold">{data?.contracts?.total ?? 0}</span>
+              <span className="font-semibold">
+                {data?.contracts?.total ?? 0}
+              </span>
             </div>
             {contracts.length ? (
-              <div className="text-[10px] text-slate-500">Latest contract: {formatDate(contracts[0]?.updated_at || contracts[0]?.created_at)}</div>
+              <div className="text-[10px] text-slate-500">
+                Latest contract:{" "}
+                {formatDate(
+                  contracts[0]?.updated_at || contracts[0]?.created_at,
+                )}
+              </div>
             ) : null}
             {calls.length ? (
-              <div className="text-[10px] text-slate-500">Latest call: {formatDate(calls[0]?.created_at || calls[0]?.started_at)}</div>
+              <div className="text-[10px] text-slate-500">
+                Latest call:{" "}
+                {formatDate(calls[0]?.created_at || calls[0]?.started_at)}
+              </div>
             ) : null}
           </div>
         </div>
@@ -161,7 +214,9 @@ export default function CrmSummaryPanel({ targetId }) {
 
       <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-4">
         <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white p-3">
-          <label className="text-[11px] font-semibold text-slate-500">Type</label>
+          <label className="text-[11px] font-semibold text-slate-500">
+            Type
+          </label>
           <select
             value={filterType}
             onChange={(event) => setFilterType(event.target.value)}
@@ -175,7 +230,9 @@ export default function CrmSummaryPanel({ targetId }) {
         </div>
 
         <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white p-3">
-          <label className="text-[11px] font-semibold text-slate-500">Match</label>
+          <label className="text-[11px] font-semibold text-slate-500">
+            Match
+          </label>
           <select
             value={filterMatch}
             onChange={(event) => setFilterMatch(event.target.value)}
@@ -183,13 +240,17 @@ export default function CrmSummaryPanel({ targetId }) {
           >
             <option value="">All threads</option>
             {matches.map((match) => (
-              <option key={match} value={match}>{match.slice(0, 18)}...</option>
+              <option key={match} value={match}>
+                {match.slice(0, 18)}...
+              </option>
             ))}
           </select>
         </div>
 
         <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white p-3">
-          <label className="text-[11px] font-semibold text-slate-500">From</label>
+          <label className="text-[11px] font-semibold text-slate-500">
+            From
+          </label>
           <input
             type="date"
             value={filterFrom}
@@ -209,78 +270,146 @@ export default function CrmSummaryPanel({ targetId }) {
         </div>
       </div>
 
-      {(filterType === 'all' || filterType === 'messages') ? (
+      {filterType === "all" || filterType === "messages" ? (
         <div className="mt-4">
-          <p className="text-sm font-semibold text-slate-900">Message Timeline</p>
+          <p className="text-sm font-semibold text-slate-900">
+            Message Timeline
+          </p>
           <div className="mt-2 space-y-3">
-            {filteredThreads.length ? filteredThreads.map((thread) => (
-              <div key={thread.match_id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3">
-                <div className="flex items-center justify-between">
-                  <div className="text-xs font-semibold text-slate-700">Thread {thread.match_id.slice(0, 10)}...</div>
-                  <button type="button" onClick={() => toggleThread(thread.match_id)} className="text-[11px] font-semibold text-[#0A66C2]">
-                    {expandedThreads[thread.match_id] ? 'Hide' : 'View'} ({thread.message_count})
-                  </button>
-                </div>
-                <div className="text-[10px] text-slate-500">Last: {formatDate(thread.last_message_at)}</div>
-                {expandedThreads[thread.match_id] ? (
-                  <div className="mt-3 space-y-2">
-                    {thread.messages.map((msg) => (
-                      <div key={msg.id} className="rounded-lg bg-white p-2 text-xs text-slate-700">
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold">{msg.sender_name || msg.sender_id}</span>
-                          <span className="text-[10px] text-slate-400">{formatDate(msg.timestamp || msg.created_at)}</span>
-                        </div>
-                        <p className="mt-1 whitespace-pre-wrap">{msg.message}</p>
-                      </div>
-                    ))}
+            {filteredThreads.length ? (
+              filteredThreads.map((thread) => (
+                <div
+                  key={thread.match_id}
+                  className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs font-semibold text-slate-700">
+                      Thread {thread.match_id.slice(0, 10)}...
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleThread(thread.match_id)}
+                      className="text-[11px] font-semibold text-[#0A66C2]"
+                    >
+                      {expandedThreads[thread.match_id] ? "Hide" : "View"} (
+                      {thread.message_count})
+                    </button>
                   </div>
-                ) : null}
+                  <div className="text-[10px] text-slate-500">
+                    Last: {formatDate(thread.last_message_at)}
+                  </div>
+                  {expandedThreads[thread.match_id] ? (
+                    <div className="mt-3 space-y-2">
+                      {thread.messages.map((msg) => (
+                        <div
+                          key={msg.id}
+                          className="rounded-lg bg-white p-2 text-xs text-slate-700"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold">
+                              {msg.sender_name || msg.sender_id}
+                            </span>
+                            <span className="text-[10px] text-slate-400">
+                              {formatDate(msg.timestamp || msg.created_at)}
+                            </span>
+                          </div>
+                          <p className="mt-1 whitespace-pre-wrap">
+                            {msg.message}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              ))
+            ) : (
+              <div className="text-xs text-slate-500">
+                No message history yet.
               </div>
-            )) : <div className="text-xs text-slate-500">No message history yet.</div>}
+            )}
           </div>
         </div>
       ) : null}
 
-      {(filterType === 'all' || filterType === 'calls') ? (
+      {filterType === "all" || filterType === "calls" ? (
         <div className="mt-4">
           <p className="text-sm font-semibold text-slate-900">Call History</p>
           <div className="mt-2 space-y-2">
-            {filteredCalls.length ? filteredCalls.map((call) => (
-              <div key={call.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3 text-xs text-slate-700">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold">{call.title || 'Call session'}</span>
-                  <span className="text-[10px] text-slate-400">{formatDate(call.created_at || call.started_at)}</span>
+            {filteredCalls.length ? (
+              filteredCalls.map((call) => (
+                <div
+                  key={call.id}
+                  className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3 text-xs text-slate-700"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold">
+                      {call.title || "Call session"}
+                    </span>
+                    <span className="text-[10px] text-slate-400">
+                      {formatDate(call.created_at || call.started_at)}
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-slate-500">
+                    Participants:{" "}
+                    {(call.participants || []).map((p) => p.name).join(", ") ||
+                      "N/A"}
+                  </div>
                 </div>
-                <div className="text-[10px] text-slate-500">Participants: {(call.participants || []).map((p) => p.name).join(', ') || 'N/A'}</div>
-              </div>
-            )) : <div className="text-xs text-slate-500">No call history yet.</div>}
+              ))
+            ) : (
+              <div className="text-xs text-slate-500">No call history yet.</div>
+            )}
           </div>
         </div>
       ) : null}
 
-      {(filterType === 'all' || filterType === 'contracts') ? (
+      {filterType === "all" || filterType === "contracts" ? (
         <div className="mt-4">
-          <p className="text-sm font-semibold text-slate-900">Contracts & Previous Orders</p>
+          <p className="text-sm font-semibold text-slate-900">
+            Contracts & Previous Orders
+          </p>
           <div className="mt-2 space-y-2">
-            {filteredContracts.length ? filteredContracts.map((contract) => (
-              <div key={contract.id} className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3 text-xs text-slate-700">
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold">{contract.contract_number || contract.title || 'Contract'}</span>
-                  <span className="text-[10px] text-slate-400">{formatDate(contract.updated_at || contract.created_at)}</span>
+            {filteredContracts.length ? (
+              filteredContracts.map((contract) => (
+                <div
+                  key={contract.id}
+                  className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-3 text-xs text-slate-700"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold">
+                      {contract.contract_number || contract.title || "Contract"}
+                    </span>
+                    <span className="text-[10px] text-slate-400">
+                      {formatDate(contract.updated_at || contract.created_at)}
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-slate-500">
+                    Status: {contract.lifecycle_status || "draft"}
+                  </div>
                 </div>
-                <div className="text-[10px] text-slate-500">Status: {contract.lifecycle_status || 'draft'}</div>
-              </div>
-            )) : <div className="text-xs text-slate-500">No contracts yet.</div>}
+              ))
+            ) : (
+              <div className="text-xs text-slate-500">No contracts yet.</div>
+            )}
           </div>
 
           {previousOrders.length ? (
             <div className="mt-3 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white p-3">
-              <p className="text-xs font-semibold text-slate-600">Previous orders (signed contracts)</p>
+              <p className="text-xs font-semibold text-slate-600">
+                Previous orders (signed contracts)
+              </p>
               <div className="mt-2 space-y-2 text-xs text-slate-700">
                 {previousOrders.map((order) => (
-                  <div key={order.id} className="flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2">
-                    <span className="truncate">{order.contract_number || order.title || 'Contract'}</span>
-                    <span className="text-[10px] text-slate-500">{formatDate(order.signed_at)}</span>
+                  <div
+                    key={order.id}
+                    className="flex items-center justify-between rounded-lg shadow-borderless dark:shadow-borderlessDark px-3 py-2"
+                  >
+                    <span className="truncate">
+                      {order.contract_number || order.title || "Contract"}
+                    </span>
+                    <span className="text-[10px] text-slate-500">
+                      {formatDate(order.signed_at)}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -301,11 +430,16 @@ export default function CrmSummaryPanel({ targetId }) {
               <span className="text-right">Converted</span>
             </div>
             {agentOutcomes.map((agent) => (
-              <div key={agent.agent_id} className="grid grid-cols-6 gap-2 rounded-lg shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2">
+              <div
+                key={agent.agent_id}
+                className="grid grid-cols-6 gap-2 rounded-lg shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2"
+              >
                 <span className="col-span-2 truncate">{agent.name}</span>
                 <span className="text-right">{agent.assigned_leads ?? 0}</span>
                 <span className="text-right">{agent.closed_leads ?? 0}</span>
-                <span className="text-right">{agent.orders_confirmed ?? 0}</span>
+                <span className="text-right">
+                  {agent.orders_confirmed ?? 0}
+                </span>
                 <span className="text-right">{agent.conversions ?? 0}</span>
               </div>
             ))}
@@ -313,5 +447,5 @@ export default function CrmSummaryPanel({ targetId }) {
         </div>
       ) : null}
     </section>
-  )
+  );
 }

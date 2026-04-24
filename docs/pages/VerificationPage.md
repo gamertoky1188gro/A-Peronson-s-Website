@@ -26,6 +26,7 @@
         <p className="text-sm text-slate-600 mt-1">Verification is subscription-based and renews monthly.</p>
         <p className="text-xs text-slate-500 mt-1">First month: $1.99 â€¢ Renewals: $6.99/month</p>
 ```
+
 - `section` at `src/pages/VerificationPage.jsx:273`
 
 ```jsx
@@ -34,6 +35,7 @@
           <div className="flex items-start justify-between gap-3">
             <div>
 ```
+
 - `aside` at `src/pages/VerificationPage.jsx:369`
 
 ```jsx
@@ -42,6 +44,7 @@
           <div className="rounded-2xl borderless-shadow bg-slate-50 p-4">
             <p className="text-3xl font-extrabold text-slate-900">{credibilityScore}/100</p>
 ```
+
 ## 3) Styling (className blocks, utility breakdown, and custom CSS)
 
 ### 3.1 Custom CSS utilities referenced by this page (App.css / index.css)
@@ -83,6 +86,7 @@
         <h1 className="text-2xl font-bold">Verification Center</h1>
         <p className="text-sm text-slate-600 mt-1">Verification is subscription-based and renews monthly.</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mx-auto max-w-6xl px-4 py-6 space-y-6`
@@ -120,6 +124,7 @@
         <p className="text-sm text-slate-600 mt-1">Verification is subscription-based and renews monthly.</p>
         <p className="text-xs text-slate-500 mt-1">First month: $1.99 â€¢ Renewals: $6.99/month</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl borderless-shadow bg-white p-5`
@@ -153,6 +158,7 @@
         <p className="text-xs text-slate-500 mt-1">First month: $1.99 â€¢ Renewals: $6.99/month</p>
         <p className="text-xs text-slate-500 mt-2">Review status: <span className="font-semibold">{reviewStatus}</span>{reviewReason ? ` â€¢ ${reviewReason}` : ''}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-2xl font-bold`
@@ -183,6 +189,7 @@
         <p className="text-xs text-slate-500 mt-2">Review status: <span className="font-semibold">{reviewStatus}</span>{reviewReason ? ` â€¢ ${reviewReason}` : ''}</p>
         <p className="text-xs text-slate-500 mt-2">Need help* Visit the <a href="/help" className="underline text-slate-700">Help Center</a>.</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm text-slate-600 mt-1`
@@ -214,6 +221,7 @@
         <p className="text-xs text-slate-500 mt-2">Need help* Visit the <a href="/help" className="underline text-slate-700">Help Center</a>.</p>
       </header>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500 mt-1`
@@ -242,6 +250,7 @@
       </header>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500 mt-2`
@@ -268,6 +277,7 @@
 
       <section className="grid gap-4 md:grid-cols-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500 mt-2`
@@ -298,6 +308,7 @@
           <div className="flex items-start justify-between gap-3">
             <div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid gap-4 md:grid-cols-3`
@@ -333,6 +344,7 @@
             <div>
               <p className="text-sm font-bold text-slate-900">Your requirements</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl borderless-shadow bg-white p-5 md:col-span-2 space-y-4`
@@ -369,6 +381,7 @@
               <p className="text-sm font-bold text-slate-900">Your requirements</p>
               <p className="text-[11px] text-slate-500">Role-based checklist. Uploading more proof increases credibility.</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-start justify-between gap-3`
@@ -399,6 +412,7 @@
             </div>
             <div className={`rounded-full borderless-shadow px-3 py-1 text-xs font-bold${verified ? 'bg-[#0A66C2]/10 text-[#0A66C2] ring-1 ring-[#0A66C2]/30' : 'bg-slate-50 text-slate-700 ring-1 ring-slate-200'}`}>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-bold text-slate-900`
@@ -432,6 +446,7 @@
             <div className={`rounded-full borderless-shadow px-3 py-1 text-xs font-bold${verified ? 'bg-[#0A66C2]/10 text-[#0A66C2] ring-1 ring-[#0A66C2]/30' : 'bg-slate-50 text-slate-700 ring-1 ring-slate-200'}`}>
               {verified ? 'Verified' : 'Not verified'}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500`
@@ -467,6 +482,7 @@
             </div>
           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `bg-[#0A66C2]/10 text-[#0A66C2] ring-1 ring-[#0A66C2]/30`
@@ -499,6 +515,7 @@
                 <label className="text-sm font-semibold text-slate-700" htmlFor="buyer-country">Buyer Country</label>
                 <select
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-xl borderless-shadow bg-slate-50 p-4`
@@ -532,6 +549,7 @@
                 <select
                   id="buyer-country"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex flex-wrap items-center gap-2`
@@ -561,6 +579,7 @@
                   id="buyer-country"
                   value={buyerCountry}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-700`
@@ -578,11 +597,18 @@
 #### `src/pages/VerificationPage.jsx:293`
 
 ```jsx
-                  className="text-sm borderless-shadow rounded-xl px-3 py-2 bg-white"
-                >
-                  <option value="">Select country</option>
-                  {BUYER_COUNTRY_OPTIONS.map((country) => <option key={country} value={country}>{country}</option>)}
+className =
+  "text-sm borderless-shadow rounded-xl px-3 py-2 bg-white" >
+  <option value="">Select country</option>;
+{
+  BUYER_COUNTRY_OPTIONS.map((country) => (
+    <option key={country} value={country}>
+      {country}
+    </option>
+  ));
+}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm borderless-shadow rounded-xl px-3 py-2 bg-white`
@@ -608,6 +634,7 @@
               </div>
               {!buyerCountry ? <p className="mt-2 text-xs text-rose-700">Buyer country is required before completing buyer verification.</p> : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500`
@@ -634,6 +661,7 @@
               {!buyerCountry ? <p className="mt-2 text-xs text-rose-700">Buyer country is required before completing buyer verification.</p> : null}
             </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-600`
@@ -658,6 +686,7 @@
           ) : null}
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-xs text-rose-700`
@@ -678,6 +707,7 @@
               const submitted = Boolean(documents?.[documentKey])
               const status = submitted ? 'submitted' : 'missing'
 ```
+
 **Raw class strings detected (best effort):**
 
 - `grid gap-3 md:grid-cols-2`
@@ -704,6 +734,7 @@
                     <p className="text-sm font-semibold text-slate-900 truncate">{LABELS[documentKey] || documentKey}</p>
                     <p className="text-[11px] text-slate-500 truncate">{submitted ? 'Submitted' : 'Missing'}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl borderless-shadow bg-white p-4 flex items-center justify-between gap-3`
@@ -737,11 +768,16 @@
 #### `src/pages/VerificationPage.jsx:311`
 
 ```jsx
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-slate-900 truncate">{LABELS[documentKey] || documentKey}</p>
-                    <p className="text-[11px] text-slate-500 truncate">{submitted ? 'Submitted' : 'Missing'}</p>
-                  </div>
+<div className="min-w-0">
+  <p className="text-sm font-semibold text-slate-900 truncate">
+    {LABELS[documentKey] || documentKey}
+  </p>
+  <p className="text-[11px] text-slate-500 truncate">
+    {submitted ? "Submitted" : "Missing"}
+  </p>
+</div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `min-w-0`
@@ -769,6 +805,7 @@
                   </div>
                   <div className="flex items-center gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-semibold text-slate-900 truncate`
@@ -799,6 +836,7 @@
                   <div className="flex items-center gap-2">
                     <span className={`rounded-full borderless-shadow px-3 py-1 text-xs font-bold${statusChipClass(status)}`}>{status}</span>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-[11px] text-slate-500 truncate`
@@ -825,6 +863,7 @@
                     <button
                       type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex items-center gap-2`
@@ -848,6 +887,7 @@
                       type="button"
                       onClick={() => openPicker(documentKey)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `button`
@@ -865,6 +905,7 @@
                       {busyDoc === documentKey ? 'Uploading...' : 'Upload'}
                     </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full borderless-shadow px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 disabled:cursor-not-allowed`
@@ -899,6 +940,7 @@
             <p className="mt-1 text-[11px] text-slate-500">Optional proofs can be added anytime. More proof = more trust.</p>
             <div className="mt-3 flex flex-col sm:flex-row gap-2">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl borderless-shadow bg-slate-50 p-4`
@@ -938,6 +980,7 @@
             <div className="mt-3 flex flex-col sm:flex-row gap-2">
               <input
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-bold text-slate-900`
@@ -971,6 +1014,7 @@
               <input
                 value={optionalLicenseInput}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-[11px] text-slate-500`
@@ -1000,6 +1044,7 @@
                 value={optionalLicenseInput}
                 onChange={(e) => setOptionalLicenseInput(e.target.value)}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 flex flex-col sm:flex-row gap-2`
@@ -1023,6 +1068,7 @@
               <button
                 type="button"
 ```
+
 **Raw class strings detected (best effort):**
 
 - `flex-1 rounded-full borderless-shadow bg-white px-4 py-2 text-sm`
@@ -1053,6 +1099,7 @@
                 Add
               </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182]`
@@ -1081,6 +1128,7 @@
                 <button
                   key={lic}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-3 flex flex-wrap gap-2`
@@ -1102,6 +1150,7 @@
                 >
                   {lic} ✕
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-full borderless-shadow bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-rose-50`
@@ -1134,6 +1183,7 @@
           </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500`
@@ -1152,6 +1202,7 @@
         </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm text-emerald-700`
@@ -1172,6 +1223,7 @@
 
         <aside className="rounded-2xl borderless-shadow bg-white p-5 space-y-3">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm text-rose-700`
@@ -1199,6 +1251,7 @@
           <div className="rounded-2xl borderless-shadow bg-slate-50 p-4">
             <p className="text-3xl font-extrabold text-slate-900">{credibilityScore}/100</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl borderless-shadow bg-white p-5 space-y-3`
@@ -1233,6 +1286,7 @@
             <p className="text-3xl font-extrabold text-slate-900">{credibilityScore}/100</p>
             <p className="mt-1 text-sm font-semibold text-slate-800">{credibilityBadge}</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-sm font-bold text-slate-900`
@@ -1267,6 +1321,7 @@
             <p className="mt-1 text-sm font-semibold text-slate-800">{credibilityBadge}</p>
             <p className="mt-2 text-xs text-slate-600">More licensing proof increases credibility and international trust.</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl borderless-shadow bg-slate-50 p-4`
@@ -1303,6 +1358,7 @@
             <p className="mt-2 text-xs text-slate-600">More licensing proof increases credibility and international trust.</p>
           </div>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-3xl font-extrabold text-slate-900`
@@ -1332,6 +1388,7 @@
           </div>
 
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm font-semibold text-slate-800`
@@ -1357,6 +1414,7 @@
 
           <div className="rounded-2xl borderless-shadow bg-slate-50 p-4">
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-2 text-xs text-slate-600`
@@ -1384,6 +1442,7 @@
             <p className="mt-1 text-sm font-semibold text-slate-900">{remainingDays > 0 ? 'Active' : 'Inactive'}</p>
             <p className="mt-1 text-[11px] text-slate-600">Verification approval requires an active verification subscription.</p>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `rounded-2xl borderless-shadow bg-slate-50 p-4`
@@ -1418,6 +1477,7 @@
             <p className="mt-1 text-[11px] text-slate-600">Verification approval requires an active verification subscription.</p>
             {remainingDays ? (
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-xs text-slate-500`
@@ -1446,6 +1506,7 @@
             {remainingDays ? (
               <p className={`mt-2 text-[11px]${expiringSoon ? 'text-amber-700' : 'text-slate-600'}`}>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-sm font-semibold text-slate-900`
@@ -1474,12 +1535,13 @@
               <p className={`mt-2 text-[11px]${expiringSoon ? 'text-amber-700' : 'text-slate-600'}`}>
                 Remaining: {remainingDays} day{remainingDays === 1 ? '' : 's'} {expiringSoon ? '(expiring soon)' : ''}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `mt-1 text-[11px] text-slate-600`
 - `text-amber-700`
 - `text-slate-600`
-- ` : `
+- `:`
 - `} {expiringSoon ? `
 
 **Utility breakdown (grouped):**
@@ -1505,11 +1567,12 @@
               </p>
             ) : null}
 ```
+
 **Raw class strings detected (best effort):**
 
 - `text-amber-700`
 - `text-slate-600`
-- ` : `
+- `:`
 - `} {expiringSoon ? `
 
 **Utility breakdown (grouped):**
@@ -1531,6 +1594,7 @@
             {renewing ? 'Processing...' : 'Pay / Renew Verification'}
           </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182] disabled:opacity-70`
@@ -1570,6 +1634,7 @@
             Refresh status
           </button>
 ```
+
 **Raw class strings detected (best effort):**
 
 - `w-full rounded-full borderless-shadow bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50`
@@ -1601,6 +1666,7 @@
   )
 }
 ```
+
 **Raw class strings detected (best effort):**
 
 - `hidden`
@@ -1622,6 +1688,7 @@
         <p className="text-xs text-slate-500 mt-1">First month: $1.99 â€¢ Renewals: $6.99/month</p>
         <p className="text-xs text-slate-500 mt-2">Review status: <span className="font-semibold">{reviewStatus}</span>{reviewReason ? ` â€¢ ${reviewReason}` : ''}</p>
 ```
+
 - `src/pages/VerificationPage.jsx:267` — Verification is subscription-based and renews monthly.
 
 ```jsx
@@ -1630,6 +1697,7 @@
         <p className="text-xs text-slate-500 mt-2">Review status: <span className="font-semibold">{reviewStatus}</span>{reviewReason ? ` â€¢ ${reviewReason}` : ''}</p>
         <p className="text-xs text-slate-500 mt-2">Need help* Visit the <a href="/help" className="underline text-slate-700">Help Center</a>.</p>
 ```
+
 - `src/pages/VerificationPage.jsx:268` — First month: $1.99 â€¢ Renewals: $6.99/month
 
 ```jsx
@@ -1638,6 +1706,7 @@
         <p className="text-xs text-slate-500 mt-2">Need help* Visit the <a href="/help" className="underline text-slate-700">Help Center</a>.</p>
       </header>
 ```
+
 - `src/pages/VerificationPage.jsx:277` — Your requirements
 
 ```jsx
@@ -1646,6 +1715,7 @@
             </div>
             <div className={`rounded-full borderless-shadow px-3 py-1 text-xs font-bold${verified ? 'bg-[#0A66C2]/10 text-[#0A66C2] ring-1 ring-[#0A66C2]/30' : 'bg-slate-50 text-slate-700 ring-1 ring-slate-200'}`}>
 ```
+
 - `src/pages/VerificationPage.jsx:278` — Role-based checklist. Uploading more proof increases credibility.
 
 ```jsx
@@ -1654,6 +1724,7 @@
             <div className={`rounded-full borderless-shadow px-3 py-1 text-xs font-bold${verified ? 'bg-[#0A66C2]/10 text-[#0A66C2] ring-1 ring-[#0A66C2]/30' : 'bg-slate-50 text-slate-700 ring-1 ring-slate-200'}`}>
               {verified ? 'Verified' : 'Not verified'}
 ```
+
 - `src/pages/VerificationPage.jsx:288` — Buyer Country
 
 ```jsx
@@ -1662,6 +1733,7 @@
                   id="buyer-country"
                   value={buyerCountry}
 ```
+
 - `src/pages/VerificationPage.jsx:298` — Saving...
 
 ```jsx
@@ -1670,6 +1742,7 @@
               </div>
               {!buyerCountry ? <p className="mt-2 text-xs text-rose-700">Buyer country is required before completing buyer verification.</p> : null}
 ```
+
 - `src/pages/VerificationPage.jsx:301` — Buyer country is required before completing buyer verification.
 
 ```jsx
@@ -1678,6 +1751,7 @@
           ) : null}
 
 ```
+
 - `src/pages/VerificationPage.jsx:332` — Optional licenses
 
 ```jsx
@@ -1686,6 +1760,7 @@
             <div className="mt-3 flex flex-col sm:flex-row gap-2">
               <input
 ```
+
 - `src/pages/VerificationPage.jsx:333` — Optional proofs can be added anytime. More proof = more trust.
 
 ```jsx
@@ -1694,6 +1769,7 @@
               <input
                 value={optionalLicenseInput}
 ```
+
 - `src/pages/VerificationPage.jsx:361` — No optional licenses yet.
 
 ```jsx
@@ -1702,6 +1778,7 @@
           </div>
 
 ```
+
 - `src/pages/VerificationPage.jsx:370` — Credibility
 
 ```jsx
@@ -1710,6 +1787,7 @@
             <p className="text-3xl font-extrabold text-slate-900">{credibilityScore}/100</p>
             <p className="mt-1 text-sm font-semibold text-slate-800">{credibilityBadge}</p>
 ```
+
 - `src/pages/VerificationPage.jsx:374` — More licensing proof increases credibility and international trust.
 
 ```jsx
@@ -1718,6 +1796,7 @@
 
           <div className="rounded-2xl borderless-shadow bg-slate-50 p-4">
 ```
+
 - `src/pages/VerificationPage.jsx:378` — Subscription
 
 ```jsx
@@ -1726,6 +1805,7 @@
             <p className="mt-1 text-[11px] text-slate-600">Verification approval requires an active verification subscription.</p>
             {remainingDays ? (
 ```
+
 - `src/pages/VerificationPage.jsx:380` — Verification approval requires an active verification subscription.
 
 ```jsx
@@ -1734,6 +1814,7 @@
               <p className={`mt-2 text-[11px]${expiringSoon ? 'text-amber-700' : 'text-slate-600'}`}>
                 Remaining: {remainingDays} day{remainingDays === 1 ? '' : 's'} {expiringSoon ? '(expiring soon)' : ''}
 ```
+
 - `src/pages/VerificationPage.jsx:338` — e.g. OEKO-TEX, BSCI, WRAP...
 
 ```jsx
@@ -1742,6 +1823,7 @@
               />
               <button
 ```
+
 - `src/pages/VerificationPage.jsx:356` — Remove
 
 ```jsx
@@ -1750,6 +1832,7 @@
                   {lic} ✕
                 </button>
 ```
+
 - `src/pages/VerificationPage.jsx:317` — (element) <button>
 
 ```jsx
@@ -1758,6 +1841,7 @@
                       onClick={() => openPicker(documentKey)}
                       disabled={busyDoc === documentKey || (role === 'buyer' && !buyerCountry)}
 ```
+
 - `src/pages/VerificationPage.jsx:341` — (element) <button>
 
 ```jsx
@@ -1766,6 +1850,7 @@
                 onClick={addOptionalLicense}
                 className="rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white hover:bg-[#004182]"
 ```
+
 - `src/pages/VerificationPage.jsx:351` — (element) <button>
 
 ```jsx
@@ -1774,6 +1859,7 @@
                   type="button"
                   onClick={() => removeOptionalLicense(lic)}
 ```
+
 - `src/pages/VerificationPage.jsx:388` — (element) <button>
 
 ```jsx
@@ -1782,6 +1868,7 @@
             onClick={handleRenewVerification}
             disabled={renewing}
 ```
+
 - `src/pages/VerificationPage.jsx:397` — (element) <button>
 
 ```jsx
@@ -1790,16 +1877,17 @@
             onClick={loadStatus}
             className="w-full rounded-full borderless-shadow bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
 ```
+
 ## 5) Backend Mapping (Frontend → Express → Controller → Service/DB)
 
-| Frontend call (path:line) | Express mount | Route definition | Controller file | Handler |
-|---|---|---|---|---|
-| GET /verification/me (src/pages/VerificationPage.jsx:109) | /api/verification -> server/routes/verificationRoutes.js:115 | GET /me (server/routes/verificationRoutes.js:16) | - | getMyVerification |
-| POST /verification/me (src/pages/VerificationPage.jsx:138) | /api/verification -> server/routes/verificationRoutes.js:115 | POST /me (server/routes/verificationRoutes.js:17) | - | submitMyVerification |
-| POST /verification/me (src/pages/VerificationPage.jsx:177) | /api/verification -> server/routes/verificationRoutes.js:115 | POST /me (server/routes/verificationRoutes.js:17) | - | submitMyVerification |
-| POST /verification/me (src/pages/VerificationPage.jsx:212) | /api/verification -> server/routes/verificationRoutes.js:115 | POST /me (server/routes/verificationRoutes.js:17) | - | submitMyVerification |
-| POST /verification/me (src/pages/VerificationPage.jsx:230) | /api/verification -> server/routes/verificationRoutes.js:115 | POST /me (server/routes/verificationRoutes.js:17) | - | submitMyVerification |
-| POST /verification/renew (src/pages/VerificationPage.jsx:244) | /api/verification -> server/routes/verificationRoutes.js:115 | POST /renew (server/routes/verificationRoutes.js:18) | - | renewMyVerification |
+| Frontend call (path:line)                                     | Express mount                                                | Route definition                                     | Controller file | Handler              |
+| ------------------------------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------- | --------------- | -------------------- |
+| GET /verification/me (src/pages/VerificationPage.jsx:109)     | /api/verification -> server/routes/verificationRoutes.js:115 | GET /me (server/routes/verificationRoutes.js:16)     | -               | getMyVerification    |
+| POST /verification/me (src/pages/VerificationPage.jsx:138)    | /api/verification -> server/routes/verificationRoutes.js:115 | POST /me (server/routes/verificationRoutes.js:17)    | -               | submitMyVerification |
+| POST /verification/me (src/pages/VerificationPage.jsx:177)    | /api/verification -> server/routes/verificationRoutes.js:115 | POST /me (server/routes/verificationRoutes.js:17)    | -               | submitMyVerification |
+| POST /verification/me (src/pages/VerificationPage.jsx:212)    | /api/verification -> server/routes/verificationRoutes.js:115 | POST /me (server/routes/verificationRoutes.js:17)    | -               | submitMyVerification |
+| POST /verification/me (src/pages/VerificationPage.jsx:230)    | /api/verification -> server/routes/verificationRoutes.js:115 | POST /me (server/routes/verificationRoutes.js:17)    | -               | submitMyVerification |
+| POST /verification/renew (src/pages/VerificationPage.jsx:244) | /api/verification -> server/routes/verificationRoutes.js:115 | POST /renew (server/routes/verificationRoutes.js:18) | -               | renewMyVerification  |
 
 ## 6) How to Edit Safely
 
@@ -1809,4 +1897,3 @@
   - `src/App.css`
   - `src/index.css` (contains global dark-mode overrides that can affect borders/shadows)
 - **When line numbers drift:** re-run `npm run docs:generate` to refresh `path:line` references.
-

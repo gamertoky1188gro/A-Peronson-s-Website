@@ -13,8 +13,9 @@ This doc is generated from source snapshots with `path:line` references.
 - **Route definition:** `server/routes/callSessionRoutes.js:41`
 
 ```js
-router.post('/scheduled', requireAuth, createScheduledCall)
+router.post("/scheduled", requireAuth, createScheduledCall);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `createScheduledCall`
@@ -25,8 +26,9 @@ router.post('/scheduled', requireAuth, createScheduledCall)
 - **Route definition:** `server/routes/callSessionRoutes.js:42`
 
 ```js
-router.post('/join', requireAuth, joinOrCreateCall)
+router.post("/join", requireAuth, joinOrCreateCall);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `joinOrCreateCall`
@@ -37,8 +39,9 @@ router.post('/join', requireAuth, joinOrCreateCall)
 - **Route definition:** `server/routes/callSessionRoutes.js:43`
 
 ```js
-router.post('/friend/:userId/join', requireAuth, joinFriendCall)
+router.post("/friend/:userId/join", requireAuth, joinFriendCall);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `joinFriendCall`
@@ -49,8 +52,9 @@ router.post('/friend/:userId/join', requireAuth, joinFriendCall)
 - **Route definition:** `server/routes/callSessionRoutes.js:44`
 
 ```js
-router.get('/history', requireAuth, getCallHistory)
+router.get("/history", requireAuth, getCallHistory);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `getCallHistory`
@@ -61,8 +65,9 @@ router.get('/history', requireAuth, getCallHistory)
 - **Route definition:** `server/routes/callSessionRoutes.js:45`
 
 ```js
-router.get('/by-contract/:contractId', requireAuth, getCallsByContract)
+router.get("/by-contract/:contractId", requireAuth, getCallsByContract);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `getCallsByContract`
@@ -73,8 +78,9 @@ router.get('/by-contract/:contractId', requireAuth, getCallsByContract)
 - **Route definition:** `server/routes/callSessionRoutes.js:46`
 
 ```js
-router.get('/pending', requireAuth, getPendingInvites)
+router.get("/pending", requireAuth, getPendingInvites);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `getPendingInvites`
@@ -85,8 +91,9 @@ router.get('/pending', requireAuth, getPendingInvites)
 - **Route definition:** `server/routes/callSessionRoutes.js:47`
 
 ```js
-router.get('/:callId/ice', requireAuth, getCallIceServers)
+router.get("/:callId/ice", requireAuth, getCallIceServers);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `getCallIceServers`
@@ -97,8 +104,9 @@ router.get('/:callId/ice', requireAuth, getCallIceServers)
 - **Route definition:** `server/routes/callSessionRoutes.js:48`
 
 ```js
-router.get('/:callId', requireAuth, getCall)
+router.get("/:callId", requireAuth, getCall);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `getCall`
@@ -109,8 +117,9 @@ router.get('/:callId', requireAuth, getCall)
 - **Route definition:** `server/routes/callSessionRoutes.js:49`
 
 ```js
-router.post('/:callId/start', requireAuth, startCall)
+router.post("/:callId/start", requireAuth, startCall);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `startCall`
@@ -121,8 +130,9 @@ router.post('/:callId/start', requireAuth, startCall)
 - **Route definition:** `server/routes/callSessionRoutes.js:50`
 
 ```js
-router.post('/:callId/end', requireAuth, endCall)
+router.post("/:callId/end", requireAuth, endCall);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `endCall`
@@ -133,8 +143,9 @@ router.post('/:callId/end', requireAuth, endCall)
 - **Route definition:** `server/routes/callSessionRoutes.js:51`
 
 ```js
-router.patch('/:callId/recording', requireAuth, updateRecording)
+router.patch("/:callId/recording", requireAuth, updateRecording);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `updateRecording`
@@ -145,8 +156,9 @@ router.patch('/:callId/recording', requireAuth, updateRecording)
 - **Route definition:** `server/routes/callSessionRoutes.js:52`
 
 ```js
-router.get('/:callId/recording', requireAuth, getRecording)
+router.get("/:callId/recording", requireAuth, getRecording);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `getRecording`
@@ -157,8 +169,13 @@ router.get('/:callId/recording', requireAuth, getRecording)
 - **Route definition:** `server/routes/callSessionRoutes.js:53`
 
 ```js
-router.post('/:callId/recording/viewed', requireAuth, markRecordingViewedController)
+router.post(
+  "/:callId/recording/viewed",
+  requireAuth,
+  markRecordingViewedController,
+);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
 - **Handler:** `markRecordingViewedController`
@@ -169,8 +186,14 @@ router.post('/:callId/recording/viewed', requireAuth, markRecordingViewedControl
 - **Route definition:** `server/routes/callSessionRoutes.js:54`
 
 ```js
-router.post('/:callId/recording/upload', requireAuth, recordingUpload.single('file'), uploadRecordingFile)
+router.post(
+  "/:callId/recording/upload",
+  requireAuth,
+  recordingUpload.single("file"),
+  uploadRecordingFile,
+);
 ```
+
 - **Middleware stack (in order):**
   - `requireAuth`
   - `recordingUpload.single('file')`
@@ -182,4 +205,3 @@ router.post('/:callId/recording/upload', requireAuth, recordingUpload.single('fi
 - JSON helpers: `server/utils/jsonStore.js` (readJson/writeJson/updateJson).
 - Data files: `server/database/*.json`.
 - Controllers/services often read from `users.json`, `messages.json`, `metrics.json`, etc.
-

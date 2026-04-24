@@ -1,11 +1,13 @@
 # PartnerNetwork - Complete Page Specification (Manual)
 
 ## Page Title & Description
+
 - Page title: `PartnerNetwork`
 - Route: `/partner-network` (protected, role-restricted in app routing).
 - Purpose: Manage partner requests and connected relationships by status, including send/accept/reject/cancel actions.
 
 ## Layout & Structure
+
 - Top header row:
   - title and subtitle
   - optional view-only indicator for agent mode
@@ -25,10 +27,12 @@
 - Empty state message when no rows.
 
 Approximate placement:
+
 - Controls in top ~25% of page.
 - Cards occupy remaining page height.
 
 ## Theme & Styling
+
 - White panel style with blue brand action.
 - Primary color: `#0A66C2`.
 - Text palette: dark neutral with muted secondary gray.
@@ -38,7 +42,9 @@ Approximate placement:
   - blue background + white text.
 
 ## Content Details
+
 Exact key text:
+
 - Heading: `Partner Network`
 - Subtitle: `Manage connected factories and request workflow by account ID`
 - Agent notice: `Agent mode: view-only access enabled.`
@@ -66,6 +72,7 @@ Exact key text:
   - `Loading...`
 
 ## Interactions & Functionality
+
 - Data load:
   - `GET /partners?status=<tab>` on mount and tab changes.
 - Search:
@@ -91,10 +98,12 @@ Exact key text:
   - otherwise shows API error text.
 
 ## Images & Media
+
 - No image/media assets.
 - Uses text-only verified badge marker: `✓ Verified`.
 
 ## Extra Notes / Metadata
+
 - SEO:
   - no explicit page metadata tags.
 - Accessibility:
