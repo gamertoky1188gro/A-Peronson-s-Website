@@ -532,6 +532,35 @@ const ACTION_GROUPS = [
     ],
   },
   {
+    label: 'Feed Page Settings',
+    actions: [
+      { id: 'feed_page_config.get', label: 'Get Feed Page Config', route: '/admin/actions', fields: [] },
+      { id: 'feed_page_config.update', label: 'Update Feed Page Config', route: '/admin/actions', fields: [
+        { key: 'feed_center', label: 'Feed Center Title' },
+        { key: 'premium_badge', label: 'Premium Badge' },
+        { key: 'quick_actions', label: 'Quick Actions Label' },
+        { key: 'live_status', label: 'Live Status' },
+        { key: 'search', label: 'Search Label' },
+        { key: 'search_placeholder', label: 'Search Placeholder' },
+        { key: 'categories', label: 'Categories Label' },
+        { key: 'premium_experience', label: 'Premium Experience' },
+        { key: 'hero_title', label: 'Hero Title' },
+        { key: 'hero_description', label: 'Hero Description' },
+        { key: 'stats_buyer_requests', label: 'Stats - Buyer Requests' },
+        { key: 'stats_company_products', label: 'Stats - Company Products' },
+        { key: 'stats_feed_posts', label: 'Stats - Feed Posts' },
+        { key: 'tabs', label: 'Tabs (comma separated)' },
+        { key: 'messages_share_copied', label: 'Msg - Share Copied' },
+        { key: 'messages_report_submitted', label: 'Msg - Report Submitted' },
+        { key: 'messages_interest_expressed', label: 'Msg - Interest Expressed' },
+        { key: 'messages_rate_limited', label: 'Msg - Rate Limited' },
+        { key: 'messages_all_caught_up', label: 'Msg - All Caught Up' },
+        { key: 'messages_no_results', label: 'Msg - No Results' },
+        { key: 'messages_load_failed', label: 'Msg - Load Failed' },
+      ] },
+    ],
+  },
+  {
     label: 'CMS Actions',
     actions: [
       { id: 'cms.article.create', label: 'Create article', route: '/admin/cms/actions', fields: [{ key: 'title', label: 'Title' }, { key: 'status', label: 'Status' }, { key: 'author', label: 'Author' }] },
@@ -1358,7 +1387,7 @@ const [orgOwnership, setOrgOwnership] = useState({ orgs: [], staff_list: [] })
   const [clothingRulesNotice, setClothingRulesNotice] = useState('')
   const [clothingRulesError, setClothingRulesError] = useState('')
 
-  const [adminUiSettingsForm, setAdminUiSettingsForm] = useState({
+const [adminUiSettingsForm, setAdminUiSettingsForm] = useState({
     allowed_roles: '',
     fallback_inventory_json: '',
     pie_palette: '',
@@ -1369,7 +1398,7 @@ const [orgOwnership, setOrgOwnership] = useState({ orgs: [], staff_list: [] })
     contract_no_data_label: '',
     empty_states_json: '',
   })
-  const [adminUiSettingsDirty, setAdminUiSettingsDirty] = useState(false)
+const [adminUiSettingsDirty, setAdminUiSettingsDirty] = useState(false)
   const [adminUiSettingsBusy, setAdminUiSettingsBusy] = useState(false)
   const [adminUiSettingsNotice, setAdminUiSettingsNotice] = useState('')
   const [adminUiSettingsError, setAdminUiSettingsError] = useState('')
@@ -1407,10 +1436,22 @@ const adminPanelAllowedRoles = useMemo(() => getAdminPanelAllowedRoles(master?.c
   const isAllowedAdminViewer = adminPanelAllowedRoles.includes(userRole)
 
   const actionGroups = useMemo(() => {
+    const staticGroups = ACTION_GROUPS
     if (dynamicActionGroups && dynamicActionGroups.length > 0) {
-      return dynamicActionGroups
+      const merged = []
+      const seen = new Map()
+      for (const group of staticGroups) {
+        merged.push(group)
+        seen.set(group.label, true)
+      }
+      for (const group of dynamicActionGroups) {
+        if (!seen.has(group.label)) {
+          merged.push(group)
+        }
+      }
+      return merged
     }
-    return ACTION_GROUPS
+    return staticGroups
   }, [dynamicActionGroups])
 
   const actionOptions = useMemo(() => {
@@ -3192,13 +3233,13 @@ useEffect(() => {
                                 <span className="inline-flex items-center gap-2 text-sm font-medium text-amber-500 dark:text-amber-300">
                                   <span className="h-2 w-2 animate-pulse rounded-full bg-amber-400" /> Checking...
                                 </span>
-                              ) : error ? (
-                                <span className="inline-flex items-center gap-2 text-sm font-medium text-rose-500 dark:text-rose-300">
-                                  <span className="h-2 w-2 rounded-full bg-rose-400" /> Degraded
-                                </span>
-                              ) : (
+                              ) : !error ? (
                                 <span className="inline-flex items-center gap-2 text-sm font-medium text-emerald-500 dark:text-emerald-300">
                                   <span className="h-2 w-2 rounded-full bg-emerald-400" /> Live
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-2 text-sm font-medium text-rose-500 dark:text-rose-300">
+                                  <span className="h-2 w-2 rounded-full bg-rose-400" /> Degraded
                                 </span>
                               )}
                             </div>

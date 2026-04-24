@@ -97,12 +97,42 @@ const DEFAULT_CONFIG = {
       context_exceptions: [],
       reason_templates: {
         rejected: 'This listing appears to include indecent or revealing clothing. Please adjust images or description to match our content standards for modest apparel.',
-        pending_review: 'This listing needs a manual review to confirm it follows our content standards.',
+pending_review: 'This listing needs a manual review to confirm it follows our content standards.',
         fix_guidance: 'Update images, title, or description to describe modest apparel. Innerwear or under-layer items must be clearly labeled.',
       },
     },
   },
   org_quotas: {},
+  feed_page: {
+    enabled: true,
+    tabs: ['All', 'Buyer Requests', 'Company Products', 'Posts', 'Unique OFF'],
+    labels: {
+      feed_center: 'Feed Center',
+      premium_badge: 'Premium moderation dashboard',
+      quick_actions: 'Quick actions',
+      live_status: 'Live',
+      search: 'Search',
+      search_placeholder: 'Search posts, buyers...',
+      categories: 'All categories',
+      premium_experience: 'Premium feed experience',
+      hero_title: 'Modern buyer and company feed, tuned for clarity and speed.',
+      hero_description: 'Browse buyer requests, company products, and posts from one polished admin-friendly workspace with a clean blue-sky visual system.',
+      stats: {
+        buyer_requests: 'Buyer Requests',
+        company_products: 'Company Products',
+        feed_posts: 'Feed Posts',
+      },
+    },
+    messages: {
+      share_copied: 'Share link copied to clipboard.',
+      report_submitted: 'Report submitted. Thank you.',
+      interest_expressed: 'Interest expressed.',
+      rate_limited: 'Please wait a few seconds before reporting again.',
+      all_caught_up: "You're all caught up.",
+      no_results: 'No posts matched your filters.',
+      load_failed: 'Failed to load feed',
+    },
+  },
   ui: {
     admin_panel: {
       allowed_roles: ['owner', 'admin'],
@@ -168,6 +198,14 @@ const DEFAULT_CONFIG = {
 export async function getAdminConfig() {
   const parsed = await readLocalJson('admin_config.json', DEFAULT_CONFIG)
   return mergeDeep(DEFAULT_CONFIG, parsed || {})
+}
+
+export async function readConfig() {
+  return getAdminConfig()
+}
+
+export async function writeConfig(config) {
+  await writeLocalJson('admin_config.json', config)
 }
 
 export async function updateAdminConfig(patch = {}) {

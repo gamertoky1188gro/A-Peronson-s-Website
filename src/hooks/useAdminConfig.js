@@ -59,7 +59,7 @@ export function useAdminFullConfig() {
       setConfig(data)
       setError(null)
     } catch (e) {
-      console.error('[useAdminFullConfig] Failed to fetch config:', e.message)
+      console.log('[useAdminFullConfig] Failed to fetch config:', e.message)
       setError(e)
       setConfig(null)
     } finally {
@@ -126,7 +126,7 @@ export function useInventory() {
           setInventory(data)
         }
       } catch (e) {
-        console.error('[useInventory] Error:', e.message)
+        console.log('[useInventory] Using fallback (auth may not be ready)')
       } finally {
         setLoading(false)
       }
@@ -156,7 +156,7 @@ export function useUiConfig() {
           empty_states: data?.empty_states || DEFAULT_EMPTY_STATE_COPY,
         })
       } catch (e) {
-        console.error('[useUiConfig] Error:', e.message)
+        console.log('[useUiConfig] Using fallback (auth may not be ready)')
       } finally {
         setLoading(false)
       }
@@ -189,7 +189,7 @@ export function useCapabilities(moduleId) {
           setCapabilities(data || [])
         }
       } catch (e) {
-        console.error('[useCapabilities] Error:', e.message)
+        console.log('[useCapabilities] Error:', e.message)
       } finally {
         setLoading(false)
       }
@@ -211,7 +211,7 @@ export function useActions() {
         const data = await apiRequest('/admin/config/actions', { method: 'GET' })
         setActions(data || [])
       } catch (e) {
-        console.error('[useActions] Error:', e.message)
+        console.log('[useActions] Error:', e.message)
       } finally {
         setLoading(false)
       }
@@ -223,7 +223,7 @@ export function useActions() {
 }
 
 export function useActionGroups() {
-  const [groups, setGroups] = useState([])
+  const [groups, setGroups] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -231,9 +231,10 @@ export function useActionGroups() {
       setLoading(true)
       try {
         const data = await apiRequest('/admin/config/actions/groups', { method: 'GET' })
-        setGroups(data || [])
+        setGroups((data && data.length > 0) ? data : null)
       } catch (e) {
-        console.error('[useActionGroups] Error:', e.message)
+        console.log('[useActionGroups] Error:', e.message)
+        setGroups(null)
       } finally {
         setLoading(false)
       }
@@ -261,7 +262,7 @@ export function useRoleConfig() {
           roles: rolesList || [],
         })
       } catch (e) {
-        console.error('[useRoleConfig] Error:', e.message)
+        console.log('[useRoleConfig] Error:', e.message)
       } finally {
         setLoading(false)
       }

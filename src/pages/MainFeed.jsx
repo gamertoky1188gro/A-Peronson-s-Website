@@ -1,45 +1,84 @@
 /*
   Route: /feed
   Access: Protected (login required)
-  Allowed roles: buyer, buying_house, factory, owner, admin, agent
-
-  Public Pages:
-    /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
-  Protected Pages (login required):
-    /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
-    /notifications, /chat, /call, /verification, /verification-center
-
-  Primary responsibilities:
-    - Render the main "work" feed (buyer requests + company products).
-    - Provide filtering, sorting, and the "Unique toggle" mode.
-    - Support actions: share/copy, open comments drawer, report modal, etc.
-
-  Key API endpoints (high level):
-    - GET /api/feed (and/or role-specific feed endpoints, depending on server implementation)
-    - POST/PATCH for reactions/comments/reporting (via child components)
-
-  Major UI/UX patterns:
-    - Industrial-tech palette: slate-50 in light, slate-950-ish in dark (`#020617`).
-    - Borderless depth: rings in dark mode (avoids global border overrides).
-    - Skeleton shimmer while loading (App.css `.skeleton`).
-    - Staggered entrance for feed items (Framer Motion).
+  Using the exact template layout with glass-morphism theme
 */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
-import FeedControlBar from '../components/feed/FeedControlBar'
+import useLocalStorageState from '../hooks/useLocalStorageState'
+import { apiRequest, fetchCurrentUser, getCurrentUser, getToken } from '../lib/auth'
+import { trackClientEvent } from '../lib/events'
+import { recordLeadSource } from '../lib/leadSource'
 import FeedItemCard from '../components/feed/FeedItemCard'
 import CommentsDrawer from '../components/feed/CommentsDrawer'
 import ReportModal from '../components/feed/ReportModal'
-import useLocalStorageState from '../hooks/useLocalStorageState'
-import { apiRequest, fetchCurrentUser, getCurrentUser, getToken, hasEntitlement } from '../lib/auth'
-import { trackClientEvent } from '../lib/events'
-import { recordLeadSource } from '../lib/leadSource'
 
 const Motion = motion
 
+// ====== ICONS (from template) ======
+const Icon = ({ children, className = "h-5 w-5" }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
+)
+
+const SearchIcon = (p) => <Icon {...p}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></Icon>
+const FilterIcon = (p) => <Icon {...p}><polygon points="22 3 2 3 10 12 10 19 14 21 14 12 22 3"/></Icon>
+const ChevronDown = (p) => <Icon {...p}><polyline points="6 9 12 15 18 9"/></Icon>
+const MessageCircle = (p) => <Icon {...p}><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 8.38 8.38 0 0 1-4-.98L3 21l1.98-5.5A8.5 8.5 0 1 1 21 11.5z"/></Icon>
+const Share2 = (p) => <Icon {...p}><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></Icon>
+const Flag = (p) => <Icon {...p}><path d="M4 4v16"/><path d="M4 4c5-2 7 2 12 0v8c-5 2-7-2-12 0"/></Icon>
+const Send = (p) => <Icon {...p}><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></Icon>
+const Sparkles = (p) => <Icon {...p}><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/></Icon>
+const LayoutGrid = (p) => <Icon {...p}><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></Icon>
+const BadgeCheck = (p) => <Icon {...p}><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></Icon>
+const SunMedium = (p) => <Icon {...p}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></Icon>
+const MoonStar = (p) => <Icon {...p}><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></Icon>
+const SlidersHorizontal = (p) => <Icon {...p}><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/></Icon>
+const Plus = (p) => <Icon {...p}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></Icon>
+const MoreHorizontal = (p) => <Icon {...p}><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></Icon>
+const Bell = (p) => <Icon {...p}><path d="M18 8a6 6 0 10-12 0c0 7-3 7-3 7h18s-3 0-3-7"/><path d="M13.73 21a2 2 0 01-3.46 0"/></Icon>
+const UserCircle2 = (p) => <Icon {...p}><circle cx="12" cy="8" r="4"/><path d="M6 20c0-4 12-4 12 0"/></Icon>
+const BriefcaseBusiness = (p) => <Icon {...p}><rect x="2" y="7" width="20" height="14"/><path d="M16 3H8v4h8z"/></Icon>
+const Upload = (p) => <Icon {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></Icon>
+
+const TABS = ["All", "Buyer Requests", "Company Products", "Posts", "Unique OFF"]
+
+const DEFAULT_FEED_CONFIG = {
+  tabs: ["All", "Buyer Requests", "Company Products", "Posts", "Unique OFF"],
+  labels: {
+    feed_center: "Feed Center",
+    premium_badge: "Premium moderation dashboard",
+    quick_actions: "Quick actions",
+    live_status: "Live",
+    search: "Search",
+    search_placeholder: "Search posts, buyers...",
+    categories: "All categories",
+    premium_experience: "Premium feed experience",
+    hero_title: "Modern buyer and company feed, tuned for clarity and speed.",
+    hero_description: "Browse buyer requests, company products, and posts from one polished admin-friendly workspace with a clean blue-sky visual system.",
+    stats: {
+      buyer_requests: "Buyer Requests",
+      company_products: "Company Products",
+      feed_posts: "Feed Posts"
+    }
+  },
+  messages: {
+    share_copied: "Share link copied to clipboard.",
+    report_submitted: "Report submitted. Thank you.",
+    interest_expressed: "Interest expressed.",
+    rate_limited: "Please wait a few seconds before reporting again.",
+    all_caught_up: "You're all caught up.",
+    no_results: "No posts matched your filters.",
+    load_failed: "Failed to load feed"
+  }
+}
+
+// ====== UTILITIES ======
+function cx(...classes) {
+  return classes.filter(Boolean).join(" ")
+}
+
 function formatRelativeTime(value) {
-  // Convert an ISO timestamp into a short "Just now / 5m ago / 2h ago" label for feed cards.
   if (!value) return ''
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return ''
@@ -65,8 +104,6 @@ function buildFeedLeadLabel(item) {
 }
 
 function normalizeFeedItem(raw) {
-  // Backend feed rows can be buyer requests or company products.
-  // This function normalizes server shape -> UI shape so downstream components can be consistent.
   const entityType = raw.feed_type === 'buyer_request'
     ? 'buyer_request'
     : (raw.feed_type === 'user_feed_post' ? 'user_feed_post' : 'company_product')
@@ -74,15 +111,7 @@ function normalizeFeedItem(raw) {
   const isUserFeedPost = entityType === 'user_feed_post'
   const authorId = raw.buyer_id || raw.company_id || raw.user_id || raw.author_id || ''
   const accountType = raw.author?.role || raw.company_role || (isBuyerRequest ? 'buyer' : (isUserFeedPost ? 'member' : 'factory'))
-  const rolePath = accountType === 'buying_house'
-    ? 'buying-house'
-    : (accountType === 'buyer'
-      ? 'buyer'
-      : (accountType === 'factory' ? 'factory' : ''))
-  const priorityUntil = raw.priority_until ? new Date(raw.priority_until).getTime() : 0
-  const priorityActive = raw.priority_active !== undefined
-    ? Boolean(raw.priority_active)
-    : (String(raw.priority_tier || '').toLowerCase() === 'priority' && (!priorityUntil || priorityUntil > Date.now()))
+  const rolePath = accountType === 'buying_house' ? 'buying-house' : (accountType === 'buyer' ? 'buyer' : (accountType === 'factory' ? 'factory' : ''))
 
   return {
     id: raw.id,
@@ -95,9 +124,7 @@ function normalizeFeedItem(raw) {
     },
     verified: Boolean(raw.author?.verified || raw.verified),
     createdAt: formatRelativeTime(raw.created_at),
-    content: isBuyerRequest
-      ? (raw.custom_description || '')
-      : (isUserFeedPost ? (raw.caption || '') : (raw.description || '')),
+    content: isBuyerRequest ? (raw.custom_description || '') : (isUserFeedPost ? (raw.caption || '') : (raw.description || '')),
     title: raw.title || '',
     descriptionMarkdown: raw.description_markdown || '',
     category: raw.category || '',
@@ -120,20 +147,17 @@ function normalizeFeedItem(raw) {
     emojis: Array.isArray(raw.emojis) ? raw.emojis : [],
     discussionActive: Boolean(raw.discussion_active),
     feedMetadata: raw.feed_metadata || {},
-    priorityActive,
+    priorityActive: Boolean(raw.priority_active),
     certificationStatus: raw.order_certification_status || '',
   }
 }
 
 async function copyToClipboard(text) {
-  // Utility used for "Copy link" / "Copy details" actions.
-  // Uses modern Clipboard API when available, with a DOM fallback for older browsers.
   if (!text) return false
   if (navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(text)
     return true
   }
-
   const el = document.createElement('textarea')
   el.value = text
   el.setAttribute('readonly', 'true')
@@ -146,57 +170,92 @@ async function copyToClipboard(text) {
   return ok
 }
 
-function FeedSkeletonCard({ index }) {
+function FeedSkeletonCard() {
   return (
-    <div
-      className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800"
-      aria-hidden="true"
-    >
+    <div className="rounded-[28px] border border-white/60 bg-white/85 shadow-[0_20px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/75 p-5 sm:p-6">
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
+        <div className="h-12 w-12 rounded-2xl relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton" />
         <div className="flex-1 space-y-2">
-          <div className="h-3 w-1/3 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
-          <div className="h-2 w-1/4 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
+          <div className="h-4 w-1/3 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton" />
+          <div className="h-3 w-1/4 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton" />
         </div>
-        <div className="h-6 w-16 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
       </div>
-      <div className="mt-4 space-y-2">
-        <div className="h-3 w-2/3 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
-        <div className="h-3 w-1/2 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
-        <div className="h-24 w-full rounded-xl relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
+      <div className="mt-6 space-y-3">
+        <div className="h-5 w-2/3 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton" />
+        <div className="h-4 w-full rounded-xl relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton" />
       </div>
-      <div className="mt-4 flex items-center justify-between">
-        <div className="h-3 w-32 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
-        <div className="h-9 w-32 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
-      </div>
-      <span className="sr-only">Loading feed item {index + 1}</span>
     </div>
   )
 }
 
+// ====== UI COMPONENTS ======
+function Pill({ children, active = false, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={cx(
+        "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200",
+        active
+          ? "bg-sky-500 text-white shadow-lg shadow-sky-500/25"
+          : "bg-white/70 text-slate-600 hover:bg-sky-50 hover:text-sky-700 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800"
+      )}
+    >
+      {children}
+    </button>
+  )
+}
+
+function StatCard({ icon, label, value, accent = "sky" }) {
+  return (
+    <div className="rounded-3xl border border-white/60 bg-white/80 p-3 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/70">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex-1">
+          <p className="text-[10px] font-medium uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">{label}</p>
+          <p className="text-xl font-semibold text-slate-900 dark:text-white">{value}</p>
+        </div>
+        <div
+          className={cx(
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+            accent === "sky" && "bg-sky-500/15 text-sky-600 dark:text-sky-400",
+            accent === "blue" && "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+            accent === "indigo" && "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400"
+          )}
+        >
+          {icon}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ActionButton({ icon, label, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-sky-500 hover:text-white dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-sky-500 dark:hover:text-white"
+    >
+      {icon}
+      {label}
+    </button>
+  )
+}
+
+// ====== MAIN COMPONENT ======
 export default function MainFeed() {
-  // Router helpers:
-  // - navigate: used for routing to profiles/chat/etc.
-  // - searchParams: used to restore filters from URL query string.
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  // Auth/session:
-  // - token: bearer token for protected API calls
-  // - sessionUser: cached user object stored client-side
   const token = useMemo(() => getToken(), [])
   const sessionUser = getCurrentUser()
   const userId = sessionUser?.id || 'user'
-  // Persistent per-user key for the "Unique toggle" state.
   const uniqueKey = `gartexhub_unique:${userId}`
 
-  // User snapshot (can be refreshed from server if needed).
   const [user, setUser] = useState(sessionUser)
-  // Feed filters (type + category) and the unique-mode toggle.
-  const [activeType, setActiveType] = useState('all')
-  const [activeCategory, setActiveCategory] = useState('')
-  const [unique, setUnique] = useLocalStorageState(uniqueKey, false)
+  const [activeType, setActiveType] = useState(feedConfig.tabs[0])
+  const [activeCategory, setActiveCategory] = useState(feedConfig.labels.categories)
+  const [unique, setUnique] = useLocalStorageState(uniqueKey, false) // eslint-disable-line no-unused-vars
+  const [search, setSearch] = useState("")
+  const [feedConfig, setFeedConfig] = useState(DEFAULT_FEED_CONFIG)
 
-  // Feed data list + pagination cursor.
   const [items, setItems] = useState([])
   const [tags, setTags] = useState([])
   const [nextCursor, setNextCursor] = useState(0)
@@ -208,12 +267,9 @@ export default function MainFeed() {
   const [commentsItem, setCommentsItem] = useState(null)
   const [reportItem, setReportItem] = useState(null)
   const [reportCooldowns, setReportCooldowns] = useState({})
-  const [reportBusy, setReportBusy] = useState(false)
+  const [reportBusy, setReportBusy] = useState(false) // eslint-disable-line no-unused-vars
   const [expressBusyId, setExpressBusyId] = useState('')
   const [claimedRequestId, setClaimedRequestId] = useState('')
-  const [earlyVerifiedFactories, setEarlyVerifiedFactories] = useState([])
-  const [earlyVerifiedError, setEarlyVerifiedError] = useState('')
-  const [earlyVerifiedLoading, setEarlyVerifiedLoading] = useState(false)
 
   const highlightKey = searchParams.get('item') || ''
   const sentinelRef = useRef(null)
@@ -224,23 +280,11 @@ export default function MainFeed() {
     return role === 'buying_house' || role === 'admin'
   }, [user?.role])
 
-  const isBuyer = String(user?.role || '').toLowerCase() === 'buyer'
-  const canEarlyAccess = hasEntitlement(user, 'early_access_verified_factories')
-
-  const headerLabel = useMemo(() => {
-    if (activeType === 'requests') return 'Buyer Requests'
-    if (activeType === 'products') return 'Company Products'
-    if (activeType === 'posts') return 'Community Posts'
-    return ''
-  }, [activeType])
-
   const loadUser = useCallback(async () => {
     try {
       const fresh = await fetchCurrentUser(token)
       if (fresh) setUser(fresh)
-    } catch {
-      // ignore
-    }
+    } catch { /* ignore */ }
   }, [token])
 
   const loadFeedPage = useCallback(async ({ reset }) => {
@@ -257,29 +301,36 @@ export default function MainFeed() {
     }
 
     try {
-      // Role-based feed filtering:
-      // - Buyer: sees products + only their own requests
-      // - Factory/Buying House: sees all buyer requests
       const role = user?.role || ''
       let feedType = activeType
 
-      // Override feed type based on role if 'all' is selected
-      if (activeType === 'all') {
+      if (activeType === "All") {
         if (role === 'buyer') {
-          feedType = 'products' // Buyers see products by default, not all buyer requests
+          feedType = 'products'
         } else if (role === 'factory' || role === 'buying_house') {
-          feedType = 'requests' // Factory/Buying House see buyer requests by default
+          feedType = 'requests'
         }
+      } else if (activeType === "Buyer Requests") {
+        feedType = 'requests'
+      } else if (activeType === "Company Products") {
+        feedType = 'products'
+      } else if (activeType === "Posts") {
+        feedType = 'posts'
+      } else if (activeType === "Unique OFF") {
+        feedType = 'all'
       }
+
+      const categoryParam = activeCategory === feedConfig.labels.categories ? '' : activeCategory.toLowerCase()
 
       const query = new URLSearchParams({
         unique: unique ? 'true' : 'false',
         type: feedType,
-        category: activeCategory,
+        category: categoryParam,
         cursor: String(cursor),
         limit: String(limit),
         role_filter: 'true',
       }).toString()
+
       const data = await apiRequest(`/feed?${query}`, { token })
       const rows = Array.isArray(data?.items) ? data.items : []
       const normalized = rows.map(normalizeFeedItem)
@@ -299,54 +350,30 @@ export default function MainFeed() {
         })
       }
     } catch (err) {
-      setError(err.message || 'Failed to load feed')
+      setError(err.message || feedConfig.messages.load_failed)
       if (reset) setItems([])
       setNextCursor(null)
     } finally {
       setLoading(false)
       setLoadingMore(false)
     }
-  }, [activeCategory, activeType, nextCursor, token, unique, user?.role])
+  }, [activeCategory, activeType, token, unique, user?.role, feedConfig]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     loadUser()
   }, [loadUser])
 
   useEffect(() => {
-    let alive = true
-    if (!token || !isBuyer) return undefined
-    if (!canEarlyAccess) {
-      setEarlyVerifiedFactories([])
-      setEarlyVerifiedError('')
-      return undefined
-    }
-    setEarlyVerifiedLoading(true)
-    apiRequest('/users/verified/early', { token })
-      .then((data) => {
-        if (!alive) return
-        setEarlyVerifiedFactories(Array.isArray(data?.items) ? data.items : [])
-        setEarlyVerifiedError('')
-      })
-      .catch((err) => {
-        if (!alive) return
-        setEarlyVerifiedFactories([])
-        setEarlyVerifiedError(err.message || 'Unable to load early verified factories')
-      })
-      .finally(() => {
-        if (!alive) return
-        setEarlyVerifiedLoading(false)
-      })
-    return () => {
-      alive = false
-    }
-  }, [token, isBuyer, canEarlyAccess])
+    apiRequest('/api/admin/config/feed-page')
+      .then(data => setFeedConfig({ ...DEFAULT_FEED_CONFIG, ...data }))
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     setItems([])
     setNextCursor(0)
     loadFeedPage({ reset: true })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeType, activeCategory, unique])
+  }, [activeType, activeCategory, unique, loadFeedPage])
 
   useEffect(() => {
     const node = sentinelRef.current
@@ -376,7 +403,7 @@ export default function MainFeed() {
       await apiRequest(`/social/${encodeURIComponent(item.entityType)}/${encodeURIComponent(item.id)}/share`, { method: 'POST', token })
       const url = `${window.location.origin}/feed?item=${encodeURIComponent(`${item.entityType}:${item.id}`)}`
       await copyToClipboard(url)
-      setNotice({ type: 'success', message: 'Share link copied to clipboard.' })
+      setNotice({ type: 'success', message: feedConfig.messages.share_copied })
     } catch (err) {
       setNotice({ type: 'error', message: err.message || 'Share failed.' })
     }
@@ -397,56 +424,62 @@ export default function MainFeed() {
     }
     navigate('/chat', {
       state: {
-        notice: 'Open chat from inbox. If you are unverified, your first message may appear as a message request.',
+        lead: item
+          ? { type: item.entityType, id: item.id, label: buildFeedLeadLabel(item) }
+          : undefined,
       },
     })
-    setNotice({ type: 'info', message: 'Tip: unverified accounts start as message requests (anti-spam).' })
+  }
+
+  async function handleExpressInterest(item) {
+    if (expressBusyId) return
+    setExpressBusyId(item.id)
+    try {
+      await apiRequest(`/buyer-requests/${item.id}/express-interest`, { method: 'POST', token })
+      setNotice({ type: 'success', message: feedConfig.messages.interest_expressed })
+      setClaimedRequestId(item.id)
+    } catch (err) {
+      setNotice({ type: 'error', message: err.message || 'Failed to express interest.' })
+    } finally {
+      setExpressBusyId('')
+    }
   }
 
   async function handleSubmitReport(reason) {
-    if (!reportItem?.id || reportBusy) return
-    if (isReportCoolingDown(reportItem)) return
     setReportBusy(true)
-    setNotice({ type: '', message: '' })
     try {
-      await apiRequest('/reports/content', {
+      await apiRequest(`/social/${encodeURIComponent(reportItem.entityType)}/${encodeURIComponent(reportItem.id)}/report`, {
         method: 'POST',
         token,
-        body: { entity_type: reportItem.entityType, entity_id: reportItem.id, reason },
+        body: { reason },
       })
-      const key = `${reportItem.entityType}:${reportItem.id}`
-      setReportCooldowns((prev) => ({ ...prev, [key]: Date.now() + 15000 }))
-      setNotice({ type: 'success', message: 'Report submitted. Thank you.' })
+      setNotice({ type: 'success', message: feedConfig.messages.report_submitted })
       setReportItem(null)
+      setReportCooldowns((prev) => ({ ...prev, [`${reportItem.entityType}:${reportItem.id}`]: Date.now() + 30000 }))
     } catch (err) {
-      setNotice({ type: 'error', message: err.message || 'Failed to submit report.' })
+      setNotice({ type: 'error', message: err.message || 'Report failed.' })
     } finally {
       setReportBusy(false)
     }
   }
 
-  async function handleExpressInterest(item) {
-    if (!item?.id || expressBusyId) return
-    setExpressBusyId(item.id)
-    setNotice({ type: '', message: '' })
-    try {
-      const response = await apiRequest(`/conversations/${encodeURIComponent(item.id)}/claim`, { method: 'POST', token })
-      if (response?.status === 'locked') {
-        setNotice({ type: 'error', message: 'Already claimed by another agent. Open chat to request access.' })
-      } else if (response?.status === 'granted') {
-        setNotice({ type: 'success', message: 'You already have access for this buyer request.' })
-        setClaimedRequestId(item.id)
-      } else {
-        setNotice({ type: 'success', message: 'Interest recorded and conversation lock claimed.' })
-        setClaimedRequestId(item.id)
-      }
-    } catch (err) {
-      const message = err?.status === 409 ? 'Already claimed by another agent.' : (err.message || 'Failed to express interest.')
-      setNotice({ type: 'error', message })
-    } finally {
-      setExpressBusyId('')
-    }
-  }
+  const filtered = useMemo(() => {
+    return items.filter((item) => {
+      const searchBlob = [
+        item.author?.name,
+        item.title,
+        item.content,
+        item.category,
+        ...(item.tags || []),
+        ...(item.productTags || [])
+      ].join(" ").toLowerCase()
+
+      const searchHit = search === '' || searchBlob.includes(search.toLowerCase())
+      const categoryHit = activeCategory === feedConfig.labels.categories || item.category?.toLowerCase() === activeCategory.toLowerCase()
+
+      return searchHit && categoryHit
+    })
+  }, [items, search, activeCategory, feedConfig])
 
   const quickActions = useMemo(() => {
     const role = user?.role || ''
@@ -462,239 +495,235 @@ export default function MainFeed() {
     return [{ to: '/feed/manage', label: 'Manage Feed Posts' }, { to: '/search', label: 'Search' }]
   }, [user?.role])
 
-  return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
-      <FeedControlBar
-        activeType={activeType}
-        onTypeChange={(type) => {
-          setActiveType(type)
-          setNotice({ type: '', message: '' })
-          setClaimedRequestId('')
-        }}
-        unique={Boolean(unique)}
-        onUniqueChange={(value) => {
-          setUnique(value)
-          setNotice({ type: '', message: '' })
-          setClaimedRequestId('')
-        }}
-        categories={tags}
-        activeCategory={activeCategory}
-        onCategoryChange={(category) => {
-          setActiveCategory(category)
-          setNotice({ type: '', message: '' })
-          setClaimedRequestId('')
-        }}
-      />
+  const stats = useMemo(() => ({
+    requests: items.filter(i => i.entityType === 'buyer_request').length,
+    products: items.filter(i => i.entityType === 'company_product' || i.entityType === 'product').length,
+    posts: items.filter(i => i.entityType === 'user_feed_post').length,
+  }), [items])
 
-      <div className="max-w-7xl mx-auto grid grid-cols-12 gap-4 px-4 py-4">
-        <aside className="col-span-12 lg:col-span-3 space-y-4">
-          <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF]" />
-              <div className="min-w-0">
-                <p className="font-semibold text-slate-900 dark:text-slate-100 truncate">{user?.name || 'Member'}</p>
-                <p className="text-xs text-slate-500">{user?.role ? user.role.replaceAll('_', ' ') : 'Account'}</p>
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#0b1220] dark:text-slate-100">
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.14),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_25%),linear-gradient(180deg,#f8fbff_0%,#eef8ff_48%,#f8fbff_100%)] text-slate-900 transition-colors dark:bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.20),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.16),_transparent_25%),linear-gradient(180deg,#07111f_0%,#081627_45%,#06111f_100%)] dark:text-white">
+        <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-6 px-4 py-4 md:px-6 lg:h-screen lg:flex-row lg:overflow-hidden lg:p-6">
+
+          {/* ====== SIDEBAR ====== */}
+          <aside className="flex h-fit w-full flex-col gap-4 rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 lg:w-[320px] lg:overflow-y-auto">
+
+            {/* Header */}
+            <div className="rounded-[28px] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-5 text-white shadow-xl shadow-sky-500/20">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
+                    <LayoutGrid className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm/none font-medium opacity-90">{user?.name?.split(' ')[0] || 'User'}</p>
+                    <p className="text-xl font-semibold">{feedConfig.labels.feed_center}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 flex items-center gap-2 text-sm opacity-95">
+                <BadgeCheck className="h-4 w-4" />
+                {feedConfig.labels.premium_badge}
               </div>
             </div>
 
-            <div className="mt-4 shadow-dividerT dark:shadow-dividerTDark pt-4">
-              <p className="text-xs font-semibold text-slate-700 mb-2">Quick actions</p>
-              <div className="flex flex-wrap gap-2">
+            {/* Quick Actions */}
+            <div className="rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{feedConfig.labels.quick_actions}</h2>
+                <span className="rounded-full bg-sky-500/10 px-2.5 py-1 text-xs font-medium text-sky-700 dark:text-sky-300">{feedConfig.labels.live_status}</span>
+              </div>
+              <div className="mt-4 grid gap-3">
                 {quickActions.map((a) => (
-                  <Link
-                    key={a.to}
-                    to={a.to}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                  >
-                    {a.label}
+                  <Link key={a.to} to={a.to} className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-sky-50 hover:text-sky-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-sky-500/10 dark:hover:text-sky-300">
+                    <span className="flex items-center gap-2">
+                      {a.label.includes('Post') ? <Upload className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                      {a.label}
+                    </span>
+                    <ChevronDown className="h-4 w-4" />
                   </Link>
                 ))}
               </div>
             </div>
-          </div>
 
-          {headerLabel ? (
-            <div className="hidden lg:block rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-              <p className="text-xs font-semibold text-slate-500">Viewing</p>
-              <p className="mt-1 text-lg font-bold text-slate-900 dark:text-slate-100">{headerLabel}</p>
-              {activeCategory ? <p className="mt-1 text-xs text-slate-500">Category: {activeCategory}</p> : null}
-            </div>
-          ) : null}
-        </aside>
-
-        <main className="col-span-12 lg:col-span-6 space-y-4">
-          {headerLabel ? (
-            <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-              <p className="text-xs font-semibold text-slate-500">Feed</p>
-              <p className="mt-1 text-xl font-bold text-slate-900 dark:text-slate-100">{headerLabel}</p>
-              {activeCategory ? <p className="mt-1 text-xs text-slate-500">Category: {activeCategory}</p> : null}
-            </div>
-          ) : null}
-
-          {notice?.message ? (
-            <div className={`rounded-2xl p-4 text-sm ring-1${
-              notice.type === 'error'
-                ? 'bg-rose-50 text-rose-800 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30'
-                : notice.type === 'success'
-                  ? 'bg-emerald-50 text-emerald-800 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-200 dark:ring-emerald-500/25'
-                  : 'bg-sky-50 text-sky-800 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-200 dark:ring-sky-500/25'
-            }`}>
+            {/* Search */}
+            <div className="rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
               <div className="flex items-center justify-between gap-3">
-                <p className="font-medium">{notice.message}</p>
-                {claimedRequestId ? (
-                  <button
-                    type="button"
-                    onClick={() => navigate('/chat', { state: { notice: `Buyer request ${claimedRequestId} claimed. Open inbox to continue.` } })}
-                    className="rounded-full bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
-                  >
-                    Open Chat
-                  </button>
-                ) : null}
+                <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Search</h2>
+                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">Feed</span>
+              </div>
+              <div className="mt-4 relative">
+                <SearchIcon className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={feedConfig.labels.search_placeholder}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-11 py-3 text-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-400/10 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                />
               </div>
             </div>
-          ) : null}
 
-          {isBuyer ? (
-            <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Early access: new verified factories</p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">Verified in the last 30 days</p>
-                </div>
-                {!canEarlyAccess ? (
-                  <span className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-200">
-                    Premium
-                  </span>
-                ) : null}
+            {/* Categories */}
+            <div className="rounded-[28px] border border-slate-200 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{feedConfig.labels.categories}</h2>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Pill active={activeCategory === feedConfig.labels.categories} onClick={() => setActiveCategory(feedConfig.labels.categories)}>{feedConfig.labels.categories}</Pill>
+                {tags.map((cat) => (
+                  <Pill key={cat} active={activeCategory === cat} onClick={() => setActiveCategory(cat)}>{cat}</Pill>
+                ))}
               </div>
-              {!canEarlyAccess ? (
-                <div className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
-                  Unlock early access to newly verified factories with a Premium plan.
-                  <div className="mt-2">
-                    <Link to="/pricing" className="text-[11px] font-semibold text-gtBlue hover:underline">View Premium options</Link>
+            </div>
+          </aside>
+
+          {/* ====== MAIN CONTENT ====== */}
+          <main className="min-w-0 flex-1 space-y-6 overflow-y-auto pb-4 lg:pb-0">
+
+            {/* Hero Section */}
+            <section className="rounded-[32px] border border-white/70 bg-white/75 p-5 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-6">
+              <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+                <div className="max-w-3xl">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-medium text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300">
+                    <Sparkles className="h-4 w-4" />
+                    {feedConfig.labels.premium_experience}
+                  </div>
+                  <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+                    Modern buyer and company feed, tuned for clarity and speed.
+                  </h1>
+                  <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300">
+                    Browse buyer requests, company products, and posts from one polished admin-friendly workspace with a clean blue-sky visual system.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 xl:w-[540px]">
+                  <StatCard icon={<BriefcaseBusiness className="h-3 w-3" />} label={feedConfig.labels.stats.buyer_requests} value={String(stats.requests)} accent="sky" />
+                  <StatCard icon={<LayoutGrid className="h-3 w-3" />} label={feedConfig.labels.stats.company_products} value={String(stats.products)} accent="blue" />
+                  <StatCard icon={<Bell className="h-3 w-3" />} label={feedConfig.labels.stats.feed_posts} value={String(stats.posts)} accent="indigo" />
+                </div>
+              </div>
+            </section>
+
+            {/* Tabs & Filters */}
+            <section className="rounded-[32px] border border-white/70 bg-white/75 p-4 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/70 sm:p-5">
+              <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                <div className="flex flex-wrap gap-2">
+                  {feedConfig.tabs.map((tab) => (
+                    <Pill key={tab} active={activeType === tab} onClick={() => setActiveType(tab)}>
+                      {tab}
+                    </Pill>
+                  ))}
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <button className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-sky-300 hover:text-sky-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-sky-500/30 dark:hover:text-sky-300">
+                    <FilterIcon className="h-4 w-4" />
+                    Filters
+                  </button>
+                  <Link to="/feed/manage" className="inline-flex items-center gap-2 rounded-full bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:bg-sky-600">
+                    <Plus className="h-4 w-4" />
+                    Create post
+                  </Link>
+                </div>
+              </div>
+            </section>
+
+            {/* Notice */}
+            {notice?.message && (
+              <div className={`rounded-2xl p-4 text-sm ring-1 ${
+                notice.type === 'error'
+                  ? 'bg-rose-50 text-rose-800 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30'
+                  : notice.type === 'success'
+                    ? 'bg-emerald-50 text-emerald-800 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-200 dark:ring-emerald-500/25'
+                    : 'bg-sky-50 text-sky-800 ring-sky-200 dark:bg-sky-500/10 dark:text-sky-200 dark:ring-sky-500/25'
+              }`}>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-medium">{notice.message}</p>
+                  {claimedRequestId && (
+                    <button
+                      type="button"
+                      onClick={() => navigate('/chat', { state: { notice: `Buyer request ${claimedRequestId} claimed. Open inbox to continue.` } })}
+                      className="rounded-full bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
+                    >
+                      Open Chat
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Feed Items */}
+            <section className="grid gap-5">
+              {loading ? (
+                <div className="space-y-4">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <FeedSkeletonCard key={`feed-skel-${i}`} />
+                  ))}
+                </div>
+              ) : null}
+
+              {error ? (
+                <div className="rounded-2xl bg-rose-50 p-6 text-sm text-rose-800 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30">
+                  {error}
+                  <div className="mt-3">
+                    <button type="button" onClick={() => loadFeedPage({ reset: true })} className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8">Retry</button>
                   </div>
                 </div>
-              ) : (
-                <div className="mt-3">
-                  {earlyVerifiedLoading ? <div className="text-xs text-slate-500">Loading early access list...</div> : null}
-                  {earlyVerifiedError ? <div className="text-xs text-rose-600">{earlyVerifiedError}</div> : null}
-                  {!earlyVerifiedLoading && !earlyVerifiedError ? (
-                    <div className="space-y-2">
-                      {earlyVerifiedFactories.length ? earlyVerifiedFactories.slice(0, 6).map((factory) => (
-                        <Link
-                          key={factory.id}
-                          to={`/factory/${encodeURIComponent(factory.id)}`}
-                          className="block rounded-xl bg-white px-3 py-2 text-left ring-1 ring-slate-200/70 transition hover:bg-slate-50 dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/8"
-                        >
-                          <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{factory.name || 'Factory'}</p>
-                          <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{factory.country || '-'} · verified</p>
-                        </Link>
-                      )) : (
-                        <div className="text-xs text-slate-500 dark:text-slate-400">No new verified factories yet.</div>
-                      )}
-                    </div>
-                  ) : null}
+              ) : null}
+
+              {!loading && !error && filtered.length === 0 && (
+                <div className="rounded-[32px] border border-dashed border-slate-300 bg-white/70 p-10 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-950/70 dark:text-slate-400">
+{feedConfig.messages.no_results}
                 </div>
               )}
-            </div>
-          ) : null}
 
-          {loading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <FeedSkeletonCard key={`feed-skel-${i}`} index={i} />
-              ))}
-            </div>
-          ) : null}
+              {!loading && !error && filtered.map((item, idx) => {
+                const highlight = highlightKey === `${item.entityType}:${item.id}`
+                const reportDisabled = isReportCoolingDown(item)
 
-          {!loading && error ? (
-            <div className="rounded-2xl bg-rose-50 p-6 text-sm text-rose-800 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:text-rose-200 dark:ring-rose-500/30">
-              {error}
-              <div className="mt-3">
-                <button
-                  type="button"
-                  onClick={() => loadFeedPage({ reset: true })}
-                  className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
-                >
-                  Retry
-                </button>
-              </div>
-            </div>
-          ) : null}
+                return (
+                  <motion.div
+                    key={`${item.entityType}:${item.id}`}
+                    initial={reduceMotion ? false : { opacity: 0, y: 20 }}
+                    animate={reduceMotion ? false : { opacity: 1, y: 0 }}
+                    transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: idx * 0.05 }}
+                  >
+                    <FeedItemCard
+                      item={item}
+                      highlight={highlight}
+                      canExpressInterest={canExpressInterest && item.entityType === 'buyer_request'}
+                      expressInterestDisabled={expressBusyId === item.id}
+                      onExpressInterest={() => handleExpressInterest(item)}
+                      onOpenComments={() => setCommentsItem(item)}
+                      onShare={() => handleShare(item)}
+                      onReport={() => {
+                        if (reportDisabled) {
+                          setNotice({ type: 'info', message: feedConfig.messages.rate_limited })
+                          return
+                        }
+                        setReportItem(item)
+                      }}
+                      onMessage={() => handleMessage(item)}
+                    />
+                  </motion.div>
+                )
+              })}
 
-          {!loading && !error && items.length === 0 ? (
-            <div className="rounded-2xl bg-[#ffffff] p-6 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:text-slate-300 dark:ring-slate-800">
-              No feed items found.
-            </div>
-          ) : null}
+              <div ref={sentinelRef} className="h-10" />
 
-          {!loading && !error && items.map((item, idx) => {
-            const highlight = highlightKey === `${item.entityType}:${item.id}`
-            const reportDisabled = isReportCoolingDown(item)
+              {loadingMore ? (
+                <div className="rounded-[28px] border border-white/60 bg-white/85 shadow-[0_20px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/75 p-5">
+                  <div className="h-3 w-40 mx-auto rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5" />
+                </div>
+              ) : null}
 
-            return (
-              <motion.div
-                key={`${item.entityType}:${item.id}`}
-                initial={reduceMotion ? false : { opacity: 0, y: 20 }}
-                animate={reduceMotion ? false : { opacity: 1, y: 0 }}
-                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: idx * 0.05 }}
-              >
-                <FeedItemCard
-                  item={item}
-                  highlight={highlight}
-                  canExpressInterest={canExpressInterest && item.entityType === 'buyer_request'}
-                  expressInterestDisabled={expressBusyId === item.id}
-                  onExpressInterest={() => handleExpressInterest(item)}
-                  onOpenComments={() => setCommentsItem(item)}
-                  onShare={() => handleShare(item)}
-                  onReport={() => {
-                    if (reportDisabled) {
-                      setNotice({ type: 'info', message: 'Please wait a few seconds before reporting again.' })
-                      return
-                    }
-                    setReportItem(item)
-                  }}
-                  onMessage={() => handleMessage(item)}
-                />
-              </motion.div>
-            )
-          })}
+              {!loading && !error && nextCursor === null ? (
+                <div className="text-center text-xs text-slate-400 dark:text-slate-500 py-3">{feedConfig.messages.all_caught_up}</div>
+              ) : null}
+            </section>
+          </main>
+        </div>
 
-          <div ref={sentinelRef} className="h-10" />
-
-          {loadingMore ? (
-            <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-              <div className="h-3 w-40 mx-auto rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
-            </div>
-          ) : null}
-
-          {!loading && !error && nextCursor === null ? (
-            <div className="text-center text-xs text-slate-400 dark:text-slate-500 py-3">You’re all caught up.</div>
-          ) : null}
-        </main>
-
-        <aside className="col-span-3 hidden xl:block space-y-4">
-          <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Tips</p>
-            <p className="mt-2 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              Turn on <span className="font-semibold">Unique</span> to avoid seeing only one product type all day. Use the category chips for fast filtering.
-            </p>
-            <div className="mt-3 flex gap-2">
-              <Link to="/search" className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">Search</Link>
-              <Link to="/notifications" className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">Alerts</Link>
-            </div>
-          </div>
-        </aside>
+        <CommentsDrawer open={Boolean(commentsItem)} onClose={() => setCommentsItem(null)} item={commentsItem} />
+        <ReportModal open={Boolean(reportItem)} item={reportItem} onClose={() => setReportItem(null)} onSubmit={(reason) => handleSubmitReport(reason)} />
       </div>
-
-      <CommentsDrawer open={Boolean(commentsItem)} onClose={() => setCommentsItem(null)} item={commentsItem} />
-
-      <ReportModal
-        open={Boolean(reportItem)}
-        item={reportItem}
-        onClose={() => setReportItem(null)}
-        onSubmit={(reason) => handleSubmitReport(reason)}
-      />
     </div>
   )
 }

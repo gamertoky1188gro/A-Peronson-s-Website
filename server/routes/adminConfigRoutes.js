@@ -28,6 +28,7 @@ import {
   getAllConfig,
   getConfigHistory,
 } from '../services/adminDynamicConfigService.js'
+import { readConfig, writeConfig } from '../services/adminConfigService.js'
 
 const router = express.Router()
 
@@ -344,3 +345,73 @@ router.get('/config/total-config', requireAdminSecurity, async (req, res) => {
 })
 
 export default router
+
+// Feed Page Config Routes
+router.get('/config/feed-page', requireAdminSecurity, async (req, res) => {
+  try {
+    const config = await readConfig()
+    res.json(config.feed_page || {})
+  } catch (error) {
+    console.error('[AdminConfig] GET /config/feed-page error:', error.message)
+    res.status(500).json({ error: 'Failed to fetch feed page config' })
+  }
+})
+
+router.patch('/config/feed-page', requireAdminSecurity, async (req, res) => {
+  try {
+    const config = await readConfig()
+    config.feed_page = { ...config.feed_page, ...req.body }
+    await writeConfig(config)
+    res.json(config.feed_page)
+  } catch (error) {
+    console.error('[AdminConfig] PATCH /config/feed-page error:', error.message)
+    res.status(500).json({ error: 'Failed to update feed page config' })
+  }
+})
+
+// Admin actions for Feed Page config management
+router.post('/actions', requireAdminSecurity, async (req, res) => {
+  try {
+    const { action, payload } = req.body || {}
+
+    if (action === 'feed_page_config.update') {
+      const config = await readConfig()
+      const updates = payload || {}
+
+      if (updates.feed_center) config.feed_page.labels.feed_center = updates.feed_center
+      if (updates.premium_badge) config.feed_page.labels.premium_badge = updates.premium_badge
+      if (updates.quick_actions) config.feed_page.labels.quick_actions = updates.quick_actions
+      if (updates.live_status) config.feed_page.labels.live_status = updates.live_status
+      if (updates.search) config.feed_page.labels.search = updates.search
+      if (updates.search_placeholder) config.feed_page.labels.search_placeholder = updates.search_placeholder
+      if (updates.categories) config.feed_page.labels.categories = updates.categories
+      if (updates.premium_experience) config.feed_page.labels.premium_experience = updates.premium_experience
+      if (updates.hero_title) config.feed_page.labels.hero_title = updates.hero_title
+      if (updates.hero_description) config.feed_page.labels.hero_description = updates.hero_description
+      if (updates.stats_buyer_requests) config.feed_page.labels.stats.buyer_requests = updates.stats_buyer_requests
+      if (updates.stats_company_products) config.feed_page.labels.stats.company_products = updates.stats_company_products
+      if (updates.stats_feed_posts) config.feed_page.labels.stats.feed_posts = updates.stats_feed_posts
+      if (updates.tabs) config.feed_page.tabs = updates.tabs.split(',').map(t => t.trim()).filter(Boolean)
+      if (updates.messages_share_copied) config.feed_page.messages.share_copied = updates.messages_share_copied
+      if (updates.messages_report_submitted) config.feed_page.messages.report_submitted = updates.messages_report_submitted
+      if (updates.messages_interest_expressed) config.feed_page.messages.interest_expressed = updates.messages_interest_expressed
+      if (updates.messages_rate_limited) config.feed_page.messages.rate_limited = updates.messages_rate_limited
+      if (updates.messages_all_caught_up) config.feed_page.messages.all_caught_up = updates.messages_all_caught_up
+      if (updates.messages_no_results) config.feed_page.messages.no_results = updates.messages_no_results
+      if (updates.messages_load_failed) config.feed_page.messages.load_failed = updates.messages_load_failed
+
+      await writeConfig(config)
+      return res.json({ ok: true, feed_page: config.feed_page })
+    }
+
+    if (action === 'feed_page_config.get') {
+      const config = await readConfig()
+      return res.json({ ok: true, feed_page: config.feed_page })
+    }
+
+    res.status(400).json({ error: 'Unknown action' })
+  } catch (error) {
+    console.error('[AdminConfig] POST /actions error:', error.message)
+    res.status(500).json({ error: 'Action failed' })
+  }
+})
