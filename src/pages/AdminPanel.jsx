@@ -2988,7 +2988,7 @@ useEffect(() => {
           </div>
         </aside>
 
-        <main className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden pl-[320px] px-4 py-4 sm:px-6 sm:py-6">
+        <main className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden pl-[320px] pr-4 py-4 sm:pl-[320px] sm:pr-6 sm:py-6 lg:pl-[320px]">
           <div className="flex flex-wrap items-center justify-between gap-3 pb-4">
             <button
               type="button"
