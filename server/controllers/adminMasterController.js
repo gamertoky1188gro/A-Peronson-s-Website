@@ -111,7 +111,7 @@ function generatePdf(data, dataset, res) {
           doc.fontSize(8)
           doc.strokeColor('#cccccc').lineWidth(0.5)
           
-          rows.slice(0, 200).forEach((row, idx) => {
+          rows.slice(0, 200).forEach((row) => {
             if (doc.y > 750) {
               doc.addPage()
               y = 50

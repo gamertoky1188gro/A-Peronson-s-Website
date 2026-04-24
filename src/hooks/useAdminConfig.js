@@ -125,7 +125,7 @@ export function useInventory() {
         if (data && data.length > 0) {
           setInventory(data)
         }
-      } catch (e) {
+      } catch {
         console.log('[useInventory] Using fallback (auth may not be ready)')
       } finally {
         setLoading(false)
@@ -155,7 +155,7 @@ export function useUiConfig() {
           section_metrics: data?.section_metrics || DEFAULT_SECTION_METRICS,
           empty_states: data?.empty_states || DEFAULT_EMPTY_STATE_COPY,
         })
-      } catch (e) {
+      } catch {
         console.log('[useUiConfig] Using fallback (auth may not be ready)')
       } finally {
         setLoading(false)

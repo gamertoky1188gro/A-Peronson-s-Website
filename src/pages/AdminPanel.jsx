@@ -611,7 +611,7 @@ function formatCurrency(value) {
   return Number.isFinite(num) ? `$${num.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : '$0'
 }
 
-function resolvePath(source, path) {
+function _resolvePath(source, path) {
   if (!source || !path) return undefined
   return path.split('.').reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : undefined), source)
 }
@@ -8334,6 +8334,7 @@ useEffect(() => {
                 </div>
               </div>
 ) : null}
+          </section>
 
           {activeCategory === 'ultra-security' ? null : (
           <aside className="space-y-4">
@@ -8492,6 +8493,12 @@ useEffect(() => {
                 ) : null}
               </div>
             ) : null}
+          </aside>
+          )}
+          </div>
+          </>
+          ) : null}
+          </div>
           </div>
         </main>
       </div>
