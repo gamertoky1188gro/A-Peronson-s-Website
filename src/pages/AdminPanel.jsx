@@ -2896,7 +2896,9 @@ useEffect(() => {
         <div className="admin-noise" />
         
         <aside
-          className="fixed left-0 top-0 z-20 h-full w-[320px] overflow-hidden border-r bg-inherit"
+          className={`fixed left-0 top-0 z-20 h-full w-[320px] overflow-hidden border-r bg-inherit transition-transform duration-300 ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          } lg:translate-x-0`}
         >
           <div className="absolute inset-0 pointer-events-none">
             <div className={`absolute -top-20 -right-20 h-56 w-56 rounded-full blur-3xl ${adminDark ? "bg-cyan-500/18" : "bg-sky-300/35"}`} />
@@ -2993,7 +2995,7 @@ useEffect(() => {
             <button
               type="button"
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="hidden"
+              className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white p-2 text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 lg:hidden"
             >
               <Menu className="h-5 w-5" />
             </button>
@@ -3017,7 +3019,7 @@ useEffect(() => {
           {/* Mobile backdrop */}
           {sidebarOpen && (
             <div
-              className="fixed inset-0 z-40 bg-black/50 sm:hidden"
+              className="fixed inset-0 z-40 bg-black/50 lg:hidden"
               onClick={() => setSidebarOpen(false)}
             />
           )}
