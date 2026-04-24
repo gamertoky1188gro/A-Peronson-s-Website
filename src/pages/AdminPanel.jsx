@@ -2896,7 +2896,7 @@ useEffect(() => {
         <div className="admin-noise" />
         
         <aside
-          className={`fixed left-0 top-0 z-20 h-full w-[320px] overflow-hidden border-r bg-inherit transition-transform duration-300 ${
+          className={`fixed left-0 top-0 z-20 h-full w-[320px] overflow-hidden border-r border-slate-200/80 dark:border-white/10 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl transition-transform duration-300 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           } lg:translate-x-0`}
         >
