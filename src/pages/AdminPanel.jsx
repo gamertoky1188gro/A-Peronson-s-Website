@@ -1,4 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import HomePage from './admin/HomePage'
+import PlatformPage from './admin/PlatformPage'
+import InfraPage from './admin/InfraPage'
+import NetworkPage from './admin/NetworkPage'
+import ServerAdminPage from './admin/ServerAdminPage'
+import CmsPage from './admin/CmsPage'
+import UltraSecurityPage from './admin/UltraSecurityPage'
+import ConfigPage from './admin/ConfigPage'
 import {
   Activity,
   AlertTriangle,
@@ -3032,469 +3040,36 @@ useEffect(() => {
                 </div>
               ) : null}
 
-              {activeCategory === 'home' ? (
-                <>
-                  <div className="mb-6 overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white/75 p-5 shadow-[0_24px_80px_-35px_rgba(14,165,233,0.35)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
-                    <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-                      <div className="flex items-start gap-4">
-                        <div className="rounded-[1.4rem] border border-sky-400/20 bg-gradient-to-br from-sky-400 to-blue-500 p-3 text-white shadow-lg shadow-sky-500/25">
-                          <ShieldCheck className="h-7 w-7" />
-                        </div>
-                        <div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
-                              Owner Admin
-                            </h1>
-                            <Pill>
-                              {loading ? (
-                                <>
-                                  <span className="h-2 w-2 animate-pulse rounded-full bg-amber-400 shadow-[0_0_0_4px_rgba(251,191,36,0.15)]" />
-                                  Checking...
-                                </>
-                              ) : error ? (
-                                <>
-                                  <span className="h-2 w-2 rounded-full bg-rose-400 shadow-[0_0_0_4px_rgba(251,113,113,0.15)]" />
-                                  Degraded
-                                </>
-                              ) : (
-                                <>
-                                  <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(52,211,153,0.15)]" />
-                                  Live
-                                </>
-                              )}
-                            </Pill>
-                            <Pill>
-                              <LockKeyhole className="h-3.5 w-3.5" />
-                              MFA {securityContext.mfa_required ? 'Required' : 'Optional'}
-                            </Pill>
-                            <Pill>
-                              <Sparkles className="h-3.5 w-3.5" />
-                              Exec {securityContext.exec_enabled ? 'Enabled' : 'Simulated'}
-                            </Pill>
-                          </div>
-                          <div className="mt-2 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                            <LayoutDashboard className="h-4 w-4 text-sky-500" />
-                            <span className="font-medium text-slate-700 dark:text-slate-200">Command Deck</span>
-                            <span>• Real-time control for platform, infra, and network operations. Everything is tracked and auditable.</span>
-                          </div>
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            <Pill>
-                              <ShieldCheck className="h-3.5 w-3.5" />
-                              Owner Access
-                            </Pill>
-                            <Pill>
-                              <ClipboardList className="h-3.5 w-3.5" />
-                              Audit logs enabled
-                            </Pill>
-                            <Pill>
-                              <Activity className="h-3.5 w-3.5" />
-                              System Pulse
-                            </Pill>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-3">
-                        <button
-                          onClick={() => setAdminDark((v) => !v)}
-                          className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-lg dark:border-white/10 dark:bg-white/5 dark:text-slate-100"
-                        >
-                          {adminDark ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
-                          {adminDark ? "Light mode" : "Dark mode"}
-                        </button>
-                        <button 
-                          onClick={() => downloadCsv('/admin/exports/run?dataset=full_system&format=pdf', 'system_audit.pdf').catch(e => setError(e.message))}
-                          className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_14px_40px_-16px_rgba(14,165,233,0.85)] transition hover:-translate-y-0.5"
-                        >
-                          <Download className="h-4 w-4" />
-                          Export report
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                    <MetricCard loading={loading} label="Total accounts" value={formatNumber(summary?.users?.total)} hint="Owner access enabled" icon={Users} />
-                    <MetricCard loading={loading} label="Pending verifications" value={formatNumber(summary?.verification?.pending)} hint="Audit gate clear" icon={ShieldCheck} />
-                    <MetricCard loading={loading} label="Infra alerts" value={formatNumber(network?.alert_count)} hint="System pulse live" icon={Bell} />
-                    <MetricCard loading={loading} label="Open tickets" value={formatNumber(summary?.support?.open)} hint="Support queue empty" icon={Ticket} />
-                  </div>
-
-                  <div className="mt-4 grid gap-4 xl:grid-cols-[1.35fr_0.95fr]">
-                    <div className="rounded-[2rem] border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.3)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
-                      <SectionTitle
-                        title="Platform Snapshot"
-                        subtitle="Core platform health, account state, and audience flow at a glance."
-                        icon={Globe}
-                      />
-                      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                        <div className="rounded-3xl border border-slate-200/70 bg-slate-50/90 p-4 dark:border-white/5 dark:bg-white/5">
-                          <p className="text-sm text-slate-500 dark:text-slate-400">Total accounts</p>
-                          <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
-                            {loading ? <SkeletonLine className="h-8 w-20" /> : formatNumber(summary?.users?.total)}
-                          </div>
-                        </div>
-                        <div className="rounded-3xl border border-slate-200/70 bg-slate-50/90 p-4 dark:border-white/5 dark:bg-white/5">
-                          <p className="text-sm text-slate-500 dark:text-slate-400">Verification pending</p>
-                          <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
-                            {loading ? <SkeletonLine className="h-8 w-16" /> : formatNumber(summary?.verification?.pending)}
-                          </div>
-                        </div>
-                        <div className="rounded-3xl border border-slate-200/70 bg-slate-50/90 p-4 dark:border-white/5 dark:bg-white/5">
-                          <p className="text-sm text-slate-500 dark:text-slate-400">Reports open</p>
-                          <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
-                            {loading ? <SkeletonLine className="h-8 w-16" /> : formatNumber(summary?.support?.open)}
-                          </div>
-                        </div>
-                        <div className="rounded-3xl border border-slate-200/70 bg-slate-50/90 p-4 dark:border-white/5 dark:bg-white/5">
-                          <p className="text-sm text-slate-500 dark:text-slate-400">Domain clicks / visits</p>
-                          <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">
-                            {loading ? (
-                              <SkeletonLine className="h-8 w-32" />
-                            ) : (
-                              `${formatNumber(summary?.traffic?.clicks)} / ${formatNumber(summary?.traffic?.visits)}`
-                            )}
-                          </div>
-                          <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                            {loading ? (
-                              <SkeletonLine className="h-4 w-36" />
-                            ) : (
-                              <>
-                                Spend: {formatCurrency(summary?.traffic?.spend || 0)} · CPC:{' '}
-                                {summary?.traffic?.cpc ? formatCurrency(summary.traffic.cpc) : '--'}
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                        <div className="rounded-3xl border border-slate-200/70 bg-slate-50/90 p-4 dark:border-white/5 dark:bg-white/5">
-                          <div className="mb-3 flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Infra + Network Health</p>
-                              <p className="text-xs text-slate-500 dark:text-slate-400">Live system stats from infra and network controllers.</p>
-                            </div>
-                            <div className="rounded-2xl bg-sky-500/10 p-2 text-sky-500 dark:text-sky-300">
-                              <Network className="h-4 w-4" />
-                            </div>
-                          </div>
-                          <div className="grid gap-3 sm:grid-cols-2">
-                            <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-3 dark:border-white/5 dark:bg-slate-950/50">
-                              <div className="flex items-center justify-between gap-3">
-                                <div>
-                                  <p className="text-xs text-slate-500 dark:text-slate-400">CPU usage (%)</p>
-                                  <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
-                                    {loading ? <SkeletonLine className="h-7 w-12" /> : `${infra?.cpu?.usage_percent?.toFixed?.(0) || '0'}%`}
-                                  </div>
-                                </div>
-                                <Cpu className="h-4 w-4 text-sky-500" />
-                              </div>
-                            </div>
-                            <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-3 dark:border-white/5 dark:bg-slate-950/50">
-                              <div className="flex items-center justify-between gap-3">
-                                <div>
-                                  <p className="text-xs text-slate-500 dark:text-slate-400">Memory used</p>
-                                  <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
-                                    {loading ? (
-                                      <SkeletonLine className="h-7 w-20" />
-                                    ) : (
-                                      `${infra?.memory?.used_bytes ? formatNumber(Math.round(infra.memory.used_bytes / (1024 * 1024))) : '0'} MB`
-                                    )}
-                                  </div>
-                                </div>
-                                <Layers3 className="h-4 w-4 text-sky-500" />
-                              </div>
-                            </div>
-                            <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-3 dark:border-white/5 dark:bg-slate-950/50">
-                              <div className="flex items-center justify-between gap-3">
-                                <div>
-                                  <p className="text-xs text-slate-500 dark:text-slate-400">Devices up/down</p>
-                                  <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
-                                    {loading ? (
-                                      <SkeletonLine className="h-7 w-24" />
-                                    ) : (
-                                      `${formatNumber(network?.device_up)} / ${formatNumber(network?.device_down)}`
-                                    )}
-                                  </div>
-                                </div>
-                                <Network className="h-4 w-4 text-sky-500" />
-                              </div>
-                            </div>
-                            <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-3 dark:border-white/5 dark:bg-slate-950/50">
-                              <div className="flex items-center justify-between gap-3">
-                                <div>
-                                  <p className="text-xs text-slate-500 dark:text-slate-400">Network alerts</p>
-                                  <div className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
-                                    {loading ? <SkeletonLine className="h-7 w-12" /> : formatNumber(network?.alert_count)}
-                                  </div>
-                                </div>
-                                <AlertTriangle className="h-4 w-4 text-sky-500" />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="rounded-3xl border border-slate-200/70 bg-slate-50/90 p-4 dark:border-white/5 dark:bg-white/5">
-                          <div className="mb-3 flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-medium text-slate-700 dark:text-slate-200">System Pulse</p>
-                              <p className="text-xs text-slate-500 dark:text-slate-400">Operational readiness and administrative controls.</p>
-                            </div>
-                            <div className="rounded-2xl bg-emerald-500/10 p-2 text-emerald-500 dark:text-emerald-300">
-                              <Activity className="h-4 w-4" />
-                            </div>
-                          </div>
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between rounded-2xl border border-slate-200/70 bg-white/80 px-4 py-3 dark:border-white/5 dark:bg-slate-950/50">
-                              <span className="text-sm text-slate-600 dark:text-slate-300">Live status</span>
-                              {loading ? (
-                                <span className="inline-flex items-center gap-2 text-sm font-medium text-amber-500 dark:text-amber-300">
-                                  <span className="h-2 w-2 animate-pulse rounded-full bg-amber-400" /> Checking...
-                                </span>
-                              ) : !error ? (
-                                <span className="inline-flex items-center gap-2 text-sm font-medium text-emerald-500 dark:text-emerald-300">
-                                  <span className="h-2 w-2 rounded-full bg-emerald-400" /> Live
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center gap-2 text-sm font-medium text-rose-500 dark:text-rose-300">
-                                  <span className="h-2 w-2 rounded-full bg-rose-400" /> Degraded
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center justify-between rounded-2xl border border-slate-200/70 bg-white/80 px-4 py-3 dark:border-white/5 dark:bg-slate-950/50">
-                              <span className="text-sm text-slate-600 dark:text-slate-300">Premium users</span>
-                              <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                                {loading ? <SkeletonLine className="h-5 w-12" /> : formatNumber(premiumUsers.length)}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between rounded-2xl border border-slate-200/70 bg-white/80 px-4 py-3 dark:border-white/5 dark:bg-slate-950/50">
-                              <span className="text-sm text-slate-600 dark:text-slate-300">Suspended</span>
-                              <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                                {loading ? <SkeletonLine className="h-5 w-12" /> : formatNumber(summary?.users?.suspended)}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-[2rem] border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.3)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
-                      <SectionTitle
-                        title="Action Console"
-                        subtitle="Run platform, infra, and network actions with full audit logging."
-                        icon={Wrench}
-                      />
-                      <div className="rounded-3xl border border-amber-400/20 bg-amber-400/10 p-4 text-sm text-amber-800 dark:text-amber-200">
-                        Step-up required for destructive actions
-                      </div>
-                      <div className="mt-4 space-y-4">
-                        <label className="block">
-                          <span className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">Action</span>
-                          <div className="relative">
-                            <select
-                              value={selectedActionId}
-                              onChange={(e) => setSelectedActionId(e.target.value)}
-                              className="w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-10 text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-500/10 dark:border-white/10 dark:bg-slate-950 dark:text-white"
-                            >
-                              {actionGroups.map((group) => (
-                                <optgroup key={group.label} label={group.label}>
-                                  {group.actions.map((action) => (
-                                    <option key={action.id} value={action.id}>{action.label}</option>
-                                  ))}
-                                </optgroup>
-                              ))}
-                            </select>
-                            <ChevronRight className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 rotate-90 text-slate-400" />
-                          </div>
-                        </label>
-
-                        {selectedAction?.fields?.length ? (
-                          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                             {selectedAction.fields.map((field) => (
-                               <label key={field.key} className="flex flex-col gap-1 text-xs">
-                                 <span className="text-[10px] font-semibold uppercase text-slate-500">{field.label}</span>
-                                 <input
-                                   value={actionForm[field.key] || ''}
-                                   onChange={(event) => setActionForm((prev) => ({ ...prev, [field.key]: event.target.value }))}
-                                   className="rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                                   placeholder={field.label}
-                                 />
-                               </label>
-                             ))}
-                          </div>
-                        ) : (
-                          <div className="rounded-3xl border border-slate-200/70 bg-slate-50/90 p-4 dark:border-white/5 dark:bg-white/5">
-                            <div className="flex items-center gap-3">
-                              <div className="rounded-2xl bg-sky-500/10 p-2 text-sky-500 dark:text-sky-300">
-                                {selectedAction?.icon ? <selectedAction.icon className="h-4 w-4" /> : <Settings className="h-4 w-4" />}
-                              </div>
-                              <div>
-                                <p className="text-sm font-medium text-slate-900 dark:text-white">{selectedAction?.label}</p>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">No parameters required.</p>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        <button 
-                          onClick={() => runAction(selectedAction)}
-                          disabled={actionBusy === selectedAction?.id}
-                          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-blue-500 to-sky-600 px-4 py-3 font-semibold text-white shadow-[0_20px_60px_-18px_rgba(14,165,233,0.9)] transition hover:-translate-y-0.5"
-                        >
-                          {actionBusy === selectedAction?.id ? 'Running...' : 'Run action'}
-                          <ArrowUpRight className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid gap-4 xl:grid-cols-3">
-                    <div className="rounded-[2rem] border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70 xl:col-span-2">
-                      <SectionTitle
-                        title="Active Users"
-                        subtitle="Last 14 days unique logins"
-                        icon={Users}
-                      />
-                      <div className="h-[320px]">
-                        {loading ? (
-                          <SkeletonChart height={320} />
-                        ) : (
-                          <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={activeUsersTrend}>
-                              <defs>
-                                <linearGradient id="activeUsersFill" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor="#38bdf8" stopOpacity={0.45} />
-                                  <stop offset="95%" stopColor="#38bdf8" stopOpacity={0.02} />
-                                </linearGradient>
-                              </defs>
-                              <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.14} />
-                              <XAxis dataKey="day" tickLine={false} axisLine={false} />
-                              <YAxis tickLine={false} axisLine={false} />
-                              <Tooltip />
-                              <Area type="monotone" dataKey="count" stroke="#0ea5e9" fill="url(#activeUsersFill)" strokeWidth={3} />
-                            </AreaChart>
-                          </ResponsiveContainer>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="rounded-[2rem] border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
-                      <SectionTitle
-                        title="Contract Status"
-                        subtitle="Signed vs pending vs disputes"
-                        icon={ShieldCheck}
-                      />
-                      <div className="h-[320px]">
-                        {loading ? (
-                          <SkeletonChart height={320} />
-                        ) : (
-                          <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                              <Pie
-                                data={contractStatusData}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={72}
-                                outerRadius={110}
-                                paddingAngle={4}
-                                dataKey="value"
-                              >
-                                {contractStatusData.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={piePalette[index % piePalette.length]} />
-                                ))}
-                              </Pie>
-                              <Tooltip
-                                contentStyle={{
-                                  backgroundColor: adminDark ? '#020617' : '#ffffff',
-                                  border: 'none',
-                                  borderRadius: '16px',
-                                  boxShadow: '0 20px 40px -10px rgba(0,0,0,0.2)'
-                                }}
-                              />
-                              <Legend verticalAlign="bottom" height={36}/>
-                            </PieChart>
-                          </ResponsiveContainer>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid gap-4 xl:grid-cols-2">
-                    <div className="rounded-[2rem] border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
-                      <SectionTitle
-                        title="Buyer Requests"
-                        subtitle="Demand flow over time"
-                        icon={Search}
-                      />
-                      <div className="h-[280px]">
-                        {loading ? (
-                          <SkeletonChart height={280} />
-                        ) : (
-                          <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={buyerRequestTrend}>
-                              <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.14} />
-                              <XAxis dataKey="day" tickLine={false} axisLine={false} />
-                              <YAxis tickLine={false} axisLine={false} />
-                              <Tooltip />
-                              <Area type="monotone" dataKey="count" stroke="#38bdf8" strokeWidth={3} fillOpacity={1} fill="url(#colorCount)" />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="rounded-[2rem] border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
-                      <SectionTitle
-                        title="Infra Overview"
-                        subtitle="CPU, memory, and network stability in one view"
-                        icon={Cpu}
-                      />
-                      <div className="h-[280px]">
-                        {loading ? (
-                          <SkeletonChart height={280} />
-                        ) : (
-                          <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={[
-                              { label: "CPU", value: infra?.cpu?.usage_percent ?? (infra?.cpu?.load_1m || 0) },
-                              { label: "Memory", value: infra?.memory?.used_bytes ? Math.round((infra.memory.used_bytes / infra.memory.total_bytes) * 100) : 0 },
-                              { label: "Devices", value: network?.device_total || 0 },
-                              { label: "Alerts", value: network?.alert_count || 0 },
-                            ]}>
-                              <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.14} />
-                              <XAxis dataKey="label" tickLine={false} axisLine={false} />
-                              <YAxis tickLine={false} axisLine={false} />
-                              <Tooltip />
-                              <Bar dataKey="value" radius={[12, 12, 0, 0]}>
-                                {[
-                                  "#38bdf8",
-                                  "#60a5fa",
-                                  "#0ea5e9",
-                                  "#93c5fd",
-                                ].map((fill) => (
-                                  <Cell key={fill} fill={fill} />
-                                ))}
-                              </Bar>
-                            </BarChart>
-                          </ResponsiveContainer>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 rounded-[2rem] border border-slate-200/80 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.28)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70">
-                    <SectionTitle
-                      title="Premium Capability Matrix"
-                      subtitle="Buyer, Factory, and Buying House premium feature sets"
-                      icon={Sparkles}
-                    />
-                    <div className="grid gap-4 xl:grid-cols-3">
-                      <BenefitCard title="Buyer (Premium)" items={buyerBenefits} />
-                      <BenefitCard title="Factory (Premium)" items={factoryBenefits} />
-                      <BenefitCard title="Buying House (Premium)" items={buyingHouseBenefits} />
-                    </div>
-                  </div>
-                </>
+{activeCategory === 'home' ? (
+                <HomePage
+                  loading={loading}
+                  error={error}
+                  adminDark={adminDark}
+                  setAdminDark={setAdminDark}
+                  summary={summary}
+                  infra={infra}
+                  network={network}
+                  securityContext={securityContext}
+                  downloadCsv={downloadCsv}
+                  setError={setError}
+                  formatNumber={formatNumber}
+                  formatCurrency={formatCurrency}
+                  premiumUsers={premiumUsers}
+                  activeUsersTrend={activeUsersTrend}
+                  contractStatusData={contractStatusData}
+                  buyerRequestTrend={buyerRequestTrend}
+                  buyerBenefits={buyerBenefits}
+                  factoryBenefits={factoryBenefits}
+                  buyingHouseBenefits={buyingHouseBenefits}
+                  selectedActionId={selectedActionId}
+                  setSelectedActionId={setSelectedActionId}
+                  actionForm={actionForm}
+                  setActionForm={setActionForm}
+                  actionGroups={actionGroups}
+                  runAction={runAction}
+                  actionBusy={actionBusy}
+                  piePalette={piePalette}
+                />
               ) : null}
 
               {activeCategory !== 'home' ? (
@@ -3515,246 +3090,92 @@ useEffect(() => {
               </div>
             </div>
 
-            {activeCategory === 'platform' ? (
-              <div className="admin-card admin-sweep rounded-3xl p-6">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-bold">User Management</p>
-                    <p className="text-xs text-slate-500">Search users and apply role, verification, plan, or trust controls.</p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <input
-                      value={userQuery}
-                      onChange={(event) => setUserQuery(event.target.value)}
-                      className="w-56 rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                      placeholder="Search name/email/role"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => exportEmailsCsv(users)}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark bg-black/40 px-3 py-2 text-xs font-semibold text-orange-100 hover:bg-[#13171E]"
-                    >
-                      Export CSV
-                    </button>
-                  </div>
-                </div>
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-600">
-                  <select
-                    value={roleFilter}
-                    onChange={(event) => setRoleFilter(event.target.value)}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                  >
-                    <option value="all">All roles</option>
-                    <option value="buyer">buyer</option>
-                    <option value="factory">factory</option>
-                    <option value="buying_house">buying_house</option>
-                    <option value="agent">agent</option>
-                    <option value="admin">admin</option>
-                    <option value="owner">owner</option>
-                  </select>
-                  <select
-                    value={statusFilter}
-                    onChange={(event) => setStatusFilter(event.target.value)}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                  >
-                    <option value="all">All statuses</option>
-                    <option value="active">active</option>
-                    <option value="suspended">suspended</option>
-                    <option value="inactive">inactive</option>
-                    <option value="banned">banned</option>
-                  </select>
-                  <select
-                    value={verificationFilter}
-                    onChange={(event) => setVerificationFilter(event.target.value)}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                  >
-                    <option value="all">All verification</option>
-                    <option value="verified">verified</option>
-                    <option value="unverified">unverified</option>
-                  </select>
-                  <select
-                    value={premiumFilter}
-                    onChange={(event) => setPremiumFilter(event.target.value)}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                  >
-                    <option value="all">All plans</option>
-                    <option value="premium">premium</option>
-                    <option value="free">free</option>
-                  </select>
-                  <select
-                    value={regionFilter}
-                    onChange={(event) => setRegionFilter(event.target.value)}
-                    className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs dark:bg-slate-950"
-                  >
-                    {regionOptions.map((region) => (
-                      <option key={region} value={region}>{region === 'all' ? 'All regions' : region}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="mt-4 space-y-3">
-                  {filteredUsers.slice(0, 20).map((u) => {
-                    const draft = userDrafts[u.id] || {}
-                    const roleValue = draft.role ?? u.role ?? 'buyer'
-                    const statusValue = draft.status ?? u.status ?? 'active'
-                    const verifiedValue = draft.verified ?? u.verified ?? false
-                    const subValue = draft.subscription_status ?? u.subscription_status ?? 'free'
-                    const strikeValue = draft.policy_strikes ?? u.policy_strikes ?? 0
-                    const fraudValue = draft.fraud_flags ?? (Array.isArray(u.profile?.fraud_flags) ? u.profile.fraud_flags.join(', ') : '')
-                    const notesValue = draft.admin_notes ?? u.profile?.admin_notes ?? ''
-                    const mfaSetupCode = draft.mfa_setup_code ?? u.profile?.mfa_setup_code ?? ''
-                    const stepupSetupCode = draft.stepup_setup_code ?? u.profile?.stepup_setup_code ?? ''
-
-                    return (
-                      <div key={u.id} className="rounded-2xl shadow-borderless dark:shadow-borderlessDark p-4 text-xs">
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-semibold">{u.name || 'Unnamed'} ({u.email || 'no email'})</p>
-                            <p className="text-[11px] text-slate-500">Role: {u.role} / Status: {u.status} / Verified: {String(u.verified)} / Plan: {u.subscription_status || 'free'}</p>
-                            <p className="text-[11px] text-slate-400">
-                              Created: {u.created_at ? new Date(u.created_at).toLocaleString() : '--'}
-                              {' '}| Country: {u.profile?.country || 'N/A'}
-                              {u.org_owner_id ? ` | Org owner: ${u.org_owner_id}` : ''}
-                              {u.member_id ? ` | Agent ID: ${u.member_id}` : ''}
-                            </p>
-                          </div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => forceLogout(u.id)}
-                              className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
-                            >
-                              Force logout
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => resetPassword(u.id)}
-                              className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
-                            >
-                              Reset password
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => lockMessaging(u.id, 24)}
-                              className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
-                            >
-                              Lock messaging 24h
-                            </button>
-                          </div>
-                        </div>
-                        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                          <label className="flex flex-col gap-1">
-                            <span className="text-[10px] font-semibold uppercase text-slate-500">Role</span>
-                            <select
-                              value={roleValue}
-                              onChange={(event) => updateDraft(u.id, 'role', event.target.value)}
-                              className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
-                            >
-                              <option value="buyer">buyer</option>
-                              <option value="factory">factory</option>
-                              <option value="buying_house">buying_house</option>
-                              <option value="agent">agent</option>
-                              <option value="admin">admin</option>
-                              <option value="owner">owner</option>
-                            </select>
-                          </label>
-                          <label className="flex flex-col gap-1">
-                            <span className="text-[10px] font-semibold uppercase text-slate-500">Status</span>
-                            <select
-                              value={statusValue}
-                              onChange={(event) => updateDraft(u.id, 'status', event.target.value)}
-                              className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
-                            >
-                              <option value="active">active</option>
-                              <option value="suspended">suspended</option>
-                            </select>
-                          </label>
-                          <label className="flex flex-col gap-1">
-                            <span className="text-[10px] font-semibold uppercase text-slate-500">Verified</span>
-                            <select
-                              value={String(verifiedValue)}
-                              onChange={(event) => updateDraft(u.id, 'verified', event.target.value === 'true')}
-                              className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
-                            >
-                              <option value="true">true</option>
-                              <option value="false">false</option>
-                            </select>
-                          </label>
-                          <label className="flex flex-col gap-1">
-                            <span className="text-[10px] font-semibold uppercase text-slate-500">Plan</span>
-                            <select
-                              value={subValue}
-                              onChange={(event) => updateDraft(u.id, 'subscription_status', event.target.value)}
-                              className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
-                            >
-                              <option value="free">free</option>
-                              <option value="premium">premium</option>
-                            </select>
-                          </label>
-                          <label className="flex flex-col gap-1">
-                            <span className="text-[10px] font-semibold uppercase text-slate-500">Strikes</span>
-                            <input
-                              type="number"
-                              min="0"
-                              value={strikeValue}
-                              onChange={(event) => updateDraft(u.id, 'policy_strikes', Number(event.target.value))}
-                              className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
-                            />
-                          </label>
-                          <label className="flex flex-col gap-1">
-                            <span className="text-[10px] font-semibold uppercase text-slate-500">Fraud flags</span>
-                            <input
-                              value={fraudValue}
-                              onChange={(event) => updateDraft(u.id, 'fraud_flags', event.target.value)}
-                              className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
-                              placeholder="flag1, flag2"
-                            />
-                          </label>
-                        </div>
-                        <label className="mt-3 flex flex-col gap-1">
-                          <span className="text-[10px] font-semibold uppercase text-slate-500">Admin notes</span>
-                          <textarea
-                            rows="2"
-                            value={notesValue}
-                            onChange={(event) => updateDraft(u.id, 'admin_notes', event.target.value)}
-                            className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
-                            placeholder="Internal notes visible to admins only"
-                          />
-                        </label>
-                        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                          <label className="flex flex-col gap-1">
-                            <span className="text-[10px] font-semibold uppercase text-slate-500">MFA setup code</span>
-                            <input
-                              value={mfaSetupCode}
-                              onChange={(event) => updateDraft(u.id, 'mfa_setup_code', event.target.value)}
-                              className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
-                              placeholder="Per-account MFA setup code"
-                            />
-                          </label>
-                          <label className="flex flex-col gap-1">
-                            <span className="text-[10px] font-semibold uppercase text-slate-500">Step-up setup code</span>
-                            <input
-                              value={stepupSetupCode}
-                              onChange={(event) => updateDraft(u.id, 'stepup_setup_code', event.target.value)}
-                              className="rounded-lg shadow-borderless dark:shadow-borderlessDark px-2 py-1 text-xs dark:bg-slate-950"
-                              placeholder="Per-account step-up setup code"
-                            />
-                          </label>
-                        </div>
-                        <div className="mt-3 flex items-center justify-end">
-                          <button
-                            type="button"
-                            onClick={() => saveUserEdits(u.id)}
-                            className="rounded-full bg-slate-900 px-4 py-2 text-[11px] font-semibold text-white hover:bg-slate-800"
-                          >
-                            Save changes
-                          </button>
-                        </div>
-                      </div>
-                    )
-                  })}
-                  {!loading && filteredUsers.length === 0 ? <p className="text-xs text-slate-500">No users match the filter.</p> : null}
-                </div>
-              </div>
+{activeCategory === 'platform' ? (
+              <PlatformPage
+                adminDark={adminDark}
+                userQuery={userQuery}
+                setUserQuery={setUserQuery}
+                userDrafts={userDrafts}
+                setUserDrafts={setUserDrafts}
+                roleFilter={roleFilter}
+                setRoleFilter={setRoleFilter}
+                statusFilter={statusFilter}
+                setStatusFilter={setStatusFilter}
+                verificationFilter={verificationFilter}
+                setVerificationFilter={setVerificationFilter}
+                premiumFilter={premiumFilter}
+                setPremiumFilter={setPremiumFilter}
+                regionFilter={regionFilter}
+                setRegionFilter={setRegionFilter}
+                filteredUsers={filteredUsers}
+                users={users}
+                exportEmailsCsv={exportEmailsCsv}
+                formatNumber={formatNumber}
+                emptyCopy={emptyCopy}
+                refreshSignups={refreshSignups}
+                signups={signups}
+                downloadCsv={downloadCsv}
+                setError={setError}
+                refreshFraudReview={refreshFraudReview}
+                fraudReview={fraudReview}
+                refreshStrikeHistory={refreshStrikeHistory}
+                strikeHistory={strikeHistory}
+                refreshOrgOwnership={refreshOrgOwnership}
+                orgOwnership={orgOwnership}
+                refreshWalletLedger={refreshWalletLedger}
+                walletLedger={walletLedger}
+                refreshCatalog={refreshCatalog}
+                catalog={catalog}
+                featuredForm={featuredForm}
+                setFeaturedForm={setFeaturedForm}
+                runInlineAdminAction={runInlineAdminAction}
+                refreshVerificationQueue={refreshVerificationQueue}
+                verificationQueue={verificationQueue}
+                refreshContractsVault={refreshContractsVault}
+                contractsVault={contractsVault}
+                paymentProofs={paymentProofs}
+                refreshDisputes={refreshDisputes}
+                disputes={disputes}
+                refreshModerationQueues={refreshModerationQueues}
+                moderationPending={moderationPending}
+                moderationRejected={moderationRejected}
+                apiRequest={apiRequest}
+                getToken={getToken}
+                buildAdminHeaders={buildAdminHeaders}
+                refreshMessagePolicyOps={refreshMessagePolicyOps}
+                policyQueueItems={policyQueueItems}
+                setPolicyQueueItems={setPolicyQueueItems}
+                policyReviewRows={policyReviewRows}
+                setPolicyReviewRows={setPolicyReviewRows}
+                policyMetrics={policyMetrics}
+                updateDraft={updateDraft}
+                forceLogout={forceLogout}
+                resetPassword={resetPassword}
+                lockMessaging={lockMessaging}
+                saveUserEdits={saveUserEdits}
+                regionOptions={regionOptions}
+                loading={loading}
+                reputationSenderId={reputationSenderId}
+                setReputationSenderId={setReputationSenderId}
+                reputationDelta={reputationDelta}
+                setReputationDelta={setReputationDelta}
+                saveClothingRules={saveClothingRules}
+                clothingRulesBusy={clothingRulesBusy}
+                clothingRulesForm={clothingRulesForm}
+                setClothingRulesForm={setClothingRulesForm}
+                clothingRulesError={clothingRulesError}
+                refreshSupportTickets={refreshSupportTickets}
+                supportTickets={supportTickets}
+                supportLoading={supportLoading}
+                supportFilters={supportFilters}
+                setSupportFilters={setSupportFilters}
+                assignSupportTicketAdmin={assignSupportTicketAdmin}
+                updateSupportTicketAdmin={updateSupportTicketAdmin}
+                refreshPartnerRequests={refreshPartnerRequests}
+                partnerRequests={partnerRequests}
+                couponReport={couponReport}
+                formatCurrency={formatCurrency}
+              />
             ) : null}
 
             {activeCategory === 'platform' ? (
@@ -4954,744 +4375,39 @@ useEffect(() => {
               </div>
             ) : null}
 
-            {activeCategory === 'infra' ? (
-              <div
-                className={cn(
-                  'rounded-[32px] border p-4 sm:p-5',
-                  adminDark ? 'border-slate-800/70 bg-slate-950/50' : 'border-slate-200 bg-white/75'
-                )}
-              >
-                <div
-                  className={cn(
-                    'rounded-[28px] p-4 sm:p-5',
-                    adminDark
-                      ? 'bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),_transparent_38%),linear-gradient(180deg,#07111f_0%,#020617_100%)] text-slate-100'
-                      : 'bg-[radial-gradient(circle_at_top,_rgba(125,211,252,0.22),_transparent_36%),linear-gradient(180deg,#f8fdff_0%,#eef7ff_100%)] text-slate-900'
-                  )}
-                >
-                  <div className="mx-auto max-w-[1700px]">
-                    <header
-                      className={cn(
-                        'sticky top-3 z-30 mb-6 rounded-[28px] border px-4 py-4 lg:px-6',
-                        adminDark
-                          ? 'border-slate-800 bg-slate-950/75 shadow-[0_18px_70px_-34px_rgba(15,23,42,0.4)]'
-                          : 'border-slate-200 bg-white shadow-sm'
-                      )}
-                    >
-                      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-                        <div className="flex flex-wrap items-center gap-3">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 via-blue-500 to-cyan-400 text-white shadow-lg shadow-sky-500/30">
-                            <LayoutDashboard className="h-6 w-6" />
-                          </div>
-                          <div>
-                            <div className="flex flex-wrap items-center gap-2">
-                              <h1 className={cn('text-xl font-semibold tracking-tight sm:text-2xl', adminDark ? 'text-white' : 'text-slate-900')}>
-                                Server / System / Infrastructure Management
-                              </h1>
-                              <Badge tone="live" darkMode={adminDark}>
-                                live
-                              </Badge>
-                            </div>
-                            <p className={cn('mt-1 text-sm', adminDark ? 'text-slate-400' : 'text-slate-500')}>
-                              Professional operations console with auditability, safety guards, and premium status surfaces.
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-1 flex-col gap-3 xl:max-w-3xl xl:flex-row xl:items-center xl:justify-end">
-                          <div className="relative w-full xl:max-w-xl">
-                            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                            <input
-                              value={infraSearch}
-                              onChange={(event) => setInfraSearch(event.target.value)}
-                              placeholder="Search users, logs, rules, services, APIs..."
-                              className={cn(infraInputClass, 'pl-11')}
-                            />
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <button
-                              type="button"
-                              onClick={() => setAdminDark((v) => !v)}
-                              className={cn(
-                                'inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition',
-                                adminDark
-                                  ? 'border-sky-400/20 bg-sky-500/10 text-sky-200 hover:bg-sky-500/15'
-                                  : 'border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100'
-                              )}
-                            >
-                              {adminDark ? <SunMedium className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                              {adminDark ? 'Light mode' : 'Dark mode'}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </header>
-
-                    <div className="mb-6 grid gap-4 lg:grid-cols-4">
-                      <StatCard
-                        icon={Server}
-                        title="CPU"
-                        value={`${infra?.cpu?.cores || '--'} cores`}
-                        meta={`Usage: ${infra?.cpu?.usage_percent?.toFixed?.(0) || '0'}%`}
-                        tone="sky"
-                        darkMode={adminDark}
-                      />
-                      <StatCard
-                        icon={Database}
-                        title="Memory"
-                        value={`${infra?.memory?.used_bytes ? formatNumber(Math.round(infra.memory.used_bytes / (1024 * 1024))) : '--'} MB used`}
-                        meta={`Free: ${infra?.memory?.free_bytes ? formatNumber(Math.round(infra.memory.free_bytes / (1024 * 1024))) : '--'} MB`}
-                        tone="blue"
-                        darkMode={adminDark}
-                      />
-                      <StatCard
-                        icon={Users}
-                        title="Services"
-                        value={`${formatNumber(infra?.services?.length)}`}
-                        meta={`Processes: ${formatNumber(infra?.processes?.length)}`}
-                        tone="emerald"
-                        darkMode={adminDark}
-                      />
-                      <StatCard
-                        icon={Database}
-                        title="Storage + I/O"
-                        value={`${formatNumber(infra?.storage?.length)} mounts`}
-                        meta={`Disk IOPS: ${infra?.io?.disk_iops ?? '--'} · Bandwidth: ${infra?.network?.bandwidth_mbps ?? '--'} Mbps`}
-                        tone="amber"
-                        darkMode={adminDark}
-                      />
-                    </div>
-
-                    <div className="grid gap-6 xl:grid-cols-12">
-                      <div className="space-y-6 xl:col-span-8">
-                        <SectionCard
-                          title="System Overview"
-                          subtitle="CPU, memory, storage, and services pulled from infra adapters."
-                          icon={Activity}
-                          actionLabel="Refresh"
-                          onAction={() => refreshInfraAll()}
-                          darkMode={adminDark}
-                        >
-                          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                            {[
-                              ['CPU', `${infra?.cpu?.cores || '--'} cores`, `Usage: ${infra?.cpu?.usage_percent?.toFixed?.(0) || '0'}%`],
-                              [
-                                'Memory',
-                                `${infra?.memory?.used_bytes ? formatNumber(Math.round(infra.memory.used_bytes / (1024 * 1024))) : '--'} MB used`,
-                                `Free: ${infra?.memory?.free_bytes ? formatNumber(Math.round(infra.memory.free_bytes / (1024 * 1024))) : '--'} MB`,
-                              ],
-                              ['Services', `${formatNumber(infra?.services?.length)}`, `Processes: ${formatNumber(infra?.processes?.length)}`],
-                              [
-                                'Storage + I/O',
-                                `${formatNumber(infra?.storage?.length)} mounts`,
-                                `Disk IOPS: ${infra?.io?.disk_iops ?? '--'} · Bandwidth: ${infra?.network?.bandwidth_mbps ?? '--'} Mbps`,
-                              ],
-                            ].map(([label, value, meta]) => (
-                              <div key={label} className={infraFieldPanel}>
-                                <div className={adminDark ? 'text-slate-400' : 'text-slate-500'}>{label}</div>
-                                <div className={cn('mt-2 text-2xl font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>{value}</div>
-                                <div className={adminDark ? 'mt-1 text-sm text-slate-400' : 'mt-1 text-sm text-slate-500'}>{meta}</div>
-                              </div>
-                            ))}
-                          </div>
-                        </SectionCard>
-
-                        <div className="grid gap-6 md:grid-cols-2">
-                          <SectionCard
-                            title="Verification Queue"
-                            subtitle="EU/USA docs pending review."
-                            icon={ShieldCheck}
-                            actionLabel="Refresh"
-                            actionIcon={RefreshCw}
-                            onAction={() => refreshVerificationQueue()}
-                            darkMode={adminDark}
-                          >
-                            <div className="space-y-3">
-                              {verificationQueue.slice(0, 3).map((row) => (
-                                <div
-                                  key={row.id || row.user_id}
-                                  className={cn('rounded-3xl border px-4 py-3 text-sm', adminDark ? 'border-slate-800 bg-slate-900/70 text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-600')}
-                                >
-                                  <div className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{row.user_name || row.user_email || row.user_id}</div>
-                                  <div className={adminDark ? 'mt-1 text-xs text-slate-400' : 'mt-1 text-xs text-slate-500'}>
-                                    Doc: {row.doc_type || row.type || 'business'} · Status: {row.status || 'pending'}
-                                  </div>
-                                </div>
-                              ))}
-                              {!verificationQueue.length ? (
-                                <div className={cn('rounded-3xl border border-dashed p-5 text-sm', adminDark ? 'border-slate-800 bg-slate-900/70 text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-500')}>
-                                  {emptyCopy('verification.pending', 'No pending verifications in queue.')}
-                                </div>
-                              ) : null}
-                            </div>
-                          </SectionCard>
-
-                          <SectionCard
-                            title="Dispute Radar"
-                            subtitle="Contracts with open issues."
-                            icon={AlertTriangle}
-                            actionLabel="Sync"
-                            actionIcon={RefreshCw}
-                            onAction={() => refreshDisputes()}
-                            darkMode={adminDark}
-                          >
-                            <div className="space-y-3">
-                              {disputes.slice(0, 3).map((dispute) => (
-                                <div
-                                  key={dispute.id}
-                                  className={cn('rounded-3xl border px-4 py-3 text-sm', adminDark ? 'border-slate-800 bg-slate-900/70 text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-600')}
-                                >
-                                  <div className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{dispute.title || dispute.contract_id || 'Dispute'}</div>
-                                  <div className={adminDark ? 'mt-1 text-xs text-slate-400' : 'mt-1 text-xs text-slate-500'}>
-                                    Status: {dispute.status || 'open'} · Priority: {dispute.priority || 'normal'}
-                                  </div>
-                                </div>
-                              ))}
-                              {!disputes.length ? (
-                                <div className={cn('rounded-3xl border border-dashed p-5 text-sm', adminDark ? 'border-slate-800 bg-slate-900/70 text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-500')}>
-                                  {emptyCopy('disputes.none', 'No active disputes.')}
-                                </div>
-                              ) : null}
-                            </div>
-                          </SectionCard>
-                        </div>
-
-                        <SectionCard
-                          title="Audit Pulse"
-                          subtitle="Most recent admin actions."
-                          icon={ShieldCheck}
-                          actionLabel="Refresh"
-                          actionIcon={RefreshCw}
-                          onAction={() => refreshAudit()}
-                          darkMode={adminDark}
-                        >
-                          <div className="space-y-3">
-                            {filteredInfraAuditRows.slice(0, 5).map((entry) => (
-                              <div
-                                key={entry.id || entry.at}
-                                className={cn('flex items-center justify-between rounded-2xl border px-4 py-3', adminDark ? 'border-slate-800 bg-slate-900/60' : 'border-slate-200 bg-white')}
-                              >
-                                <div className="flex items-center gap-3">
-                                  <div className={cn('flex h-9 w-9 items-center justify-center rounded-2xl', adminDark ? 'bg-sky-500/10 text-sky-300' : 'bg-sky-50 text-sky-600')}>
-                                    <TerminalSquare className="h-4 w-4" />
-                                  </div>
-                                  <div>
-                                    <div className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{entry.action || entry.path || 'Admin action'}</div>
-                                    <div className={adminDark ? 'text-xs text-slate-400' : 'text-xs text-slate-500'}>
-                                      {entry.at ? new Date(entry.at).toLocaleString() : '--'} · {entry.actor || 'system'}
-                                    </div>
-                                  </div>
-                                </div>
-                                <Badge tone="info" darkMode={adminDark}>
-                                  {entry.status ?? 200}
-                                </Badge>
-                              </div>
-                            ))}
-                            {!filteredInfraAuditRows.length ? (
-                              <div className={cn('rounded-3xl border border-dashed p-5 text-sm', adminDark ? 'border-slate-800 bg-slate-900/70 text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-500')}>
-                                No recent activity.
-                              </div>
-                            ) : null}
-                          </div>
-                        </SectionCard>
-
-                        <div className="grid gap-6 md:grid-cols-2">
-                          <SectionCard
-                            title="Firewall Rules"
-                            subtitle="Safe presets for allow/deny."
-                            icon={Shield}
-                            actionLabel="Refresh"
-                            onAction={() => refreshInfraState()}
-                            darkMode={adminDark}
-                          >
-                            <div className="space-y-3">
-                              <div>
-                                <label className={cn('mb-2 block text-xs font-medium uppercase tracking-[0.18em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>
-                                  Preset
-                                </label>
-                                <div className="relative">
-                                  <select
-                                    value={`${firewallForm.action}:${firewallForm.port || ''}`}
-                                    onChange={(event) => {
-                                      const [actionValue, portValue] = event.target.value.split(':')
-                                      setFirewallForm((prev) => ({ ...prev, action: actionValue, port: portValue || '', protocol: 'tcp' }))
-                                    }}
-                                    className={cn(infraInputClass, 'appearance-none pr-10')}
-                                  >
-                                    <option value="allow:">Preset (select)</option>
-                                    <option value="allow:22">Allow SSH 22</option>
-                                    <option value="allow:80">Allow HTTP 80</option>
-                                    <option value="allow:443">Allow HTTPS 443</option>
-                                    <option value="block:25">Block SMTP 25</option>
-                                  </select>
-                                  <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                                </div>
-                              </div>
-                              <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                  <label className={cn('mb-2 block text-xs font-medium uppercase tracking-[0.18em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>
-                                    Port
-                                  </label>
-                                  <input
-                                    value={firewallForm.port}
-                                    onChange={(event) => setFirewallForm((prev) => ({ ...prev, port: event.target.value }))}
-                                    placeholder="22"
-                                    className={infraInputClass}
-                                  />
-                                </div>
-                                <div>
-                                  <label className={cn('mb-2 block text-xs font-medium uppercase tracking-[0.18em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>
-                                    Protocol
-                                  </label>
-                                  <select
-                                    value={firewallForm.protocol}
-                                    onChange={(event) => setFirewallForm((prev) => ({ ...prev, protocol: event.target.value }))}
-                                    className={infraInputClass}
-                                  >
-                                    <option value="tcp">tcp</option>
-                                    <option value="udp">udp</option>
-                                  </select>
-                                </div>
-                              </div>
-                              <div>
-                                <label className={cn('mb-2 block text-xs font-medium uppercase tracking-[0.18em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>
-                                  Description
-                                </label>
-                                <input
-                                  value={firewallForm.description}
-                                  onChange={(event) => setFirewallForm((prev) => ({ ...prev, description: event.target.value }))}
-                                  placeholder="Allow ingress from trusted host"
-                                  className={infraInputClass}
-                                />
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  runInfraAction(`firewall.${firewallForm.action}_port`, {
-                                    port: firewallForm.port,
-                                    protocol: firewallForm.protocol,
-                                    description: firewallForm.description,
-                                  })
-                                }
-                                className={cn(
-                                  'w-full rounded-2xl px-4 py-3.5 text-sm font-semibold text-white transition',
-                                  adminDark ? 'bg-gradient-to-r from-sky-500 to-cyan-400 shadow-lg shadow-sky-500/25' : 'bg-sky-600 hover:bg-sky-500'
-                                )}
-                              >
-                                Apply rule
-                              </button>
-                              <div className="space-y-2">
-                                {(infraState?.firewall_rules || []).slice(0, 6).map((rule) => (
-                                  <div
-                                    key={rule.id}
-                                    className={cn('flex items-center justify-between rounded-2xl border px-4 py-3 text-sm', adminDark ? 'border-slate-800 bg-slate-900/60' : 'border-slate-200 bg-white')}
-                                  >
-                                    <div className={cn('text-sm font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{rule.action} {rule.port}/{rule.protocol}</div>
-                                    <button
-                                      type="button"
-                                      onClick={() => runInfraAction('firewall.remove_rule', { rule_id: rule.id })}
-                                      className={cn('inline-flex items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-semibold', adminDark ? 'border-rose-400/20 bg-rose-500/10 text-rose-300' : 'border-rose-200 bg-rose-50 text-rose-700')}
-                                    >
-                                      <Trash2 className="h-3.5 w-3.5" /> Remove
-                                    </button>
-                                  </div>
-                                ))}
-                                {(infraState?.firewall_rules || []).length === 0 ? (
-                                  <div className={cn('rounded-2xl border border-dashed p-4 text-sm', adminDark ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-500')}>
-                                    {emptyCopy('firewall.rules.none', 'No rules yet.')}
-                                  </div>
-                                ) : null}
-                              </div>
-                            </div>
-                          </SectionCard>
-
-                          <SectionCard
-                            title="Package Updates"
-                            subtitle="Safe presets for update checks and installs."
-                            icon={Server}
-                            actionLabel="Run package action"
-                            actionIcon={Download}
-                            onAction={() => runInfraAction('package.update', { mode: packageForm.mode, apply: packageForm.mode !== 'check' })}
-                            darkMode={adminDark}
-                          >
-                            <div className="space-y-3">
-                              <div className="relative">
-                                <select
-                                  value={packageForm.mode}
-                                  onChange={(event) => setPackageForm((prev) => ({ ...prev, mode: event.target.value, apply: event.target.value !== 'check' }))}
-                                  className={cn(infraInputClass, 'appearance-none pr-10')}
-                                >
-                                  <option value="check">Check updates (safe)</option>
-                                  <option value="security">Apply security updates</option>
-                                  <option value="all">Apply all updates</option>
-                                </select>
-                                <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                              </div>
-                              <div className="grid gap-3 sm:grid-cols-2">
-                                <div className={infraFieldPanel}>
-                                  <div className={cn('flex items-center gap-2 text-sm font-medium', adminDark ? 'text-white' : 'text-slate-900')}>
-                                    <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Safe check
-                                  </div>
-                                  <p className={adminDark ? 'mt-2 text-sm text-slate-400' : 'mt-2 text-sm text-slate-500'}>
-                                    Run controlled update scans without auto-installing risky packages.
-                                  </p>
-                                </div>
-                                <div className={infraFieldPanel}>
-                                  <div className={cn('flex items-center gap-2 text-sm font-medium', adminDark ? 'text-white' : 'text-slate-900')}>
-                                    <ShieldCheck className="h-4 w-4 text-sky-500" /> Admin guard
-                                  </div>
-                                  <p className={adminDark ? 'mt-2 text-sm text-slate-400' : 'mt-2 text-sm text-slate-500'}>
-                                    Only verified operators may apply changes on production nodes.
-                                  </p>
-                                </div>
-                              </div>
-                              <div className={cn('rounded-2xl border border-dashed p-4 text-sm', adminDark ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-500')}>
-                                Last updates: {(infraState?.updates || []).slice(0, 3).map((row) => row.mode).join(', ') || 'none'}
-                              </div>
-                            </div>
-                          </SectionCard>
-                        </div>
-
-                        <div className="grid gap-6 md:grid-cols-2">
-                          <SectionCard
-                            title="Cron Manager"
-                            subtitle="Schedule safe recurring tasks."
-                            icon={Clock3}
-                            actionLabel="Add cron job"
-                            actionIcon={ArrowRight}
-                            onAction={() => runInfraAction('cron.add', cronForm)}
-                            darkMode={adminDark}
-                          >
-                            <div className="space-y-3">
-                              <div className="relative">
-                                <select
-                                  value={cronForm.schedule}
-                                  onChange={(event) => {
-                                    const value = event.target.value
-                                    if (value === '0 2 * * *') {
-                                      setCronForm({ name: 'Daily backup', schedule: value, command: 'backup.run' })
-                                    } else if (value === '0 0 * * 0') {
-                                      setCronForm({ name: 'Weekly cleanup', schedule: value, command: 'log.rotate' })
-                                    } else {
-                                      setCronForm((prev) => ({ ...prev, schedule: value }))
-                                    }
-                                  }}
-                                  className={cn(infraInputClass, 'appearance-none pr-10')}
-                                >
-                                  <option value="">Preset (select)</option>
-                                  <option value="0 2 * * *">Daily backup at 2am</option>
-                                  <option value="0 0 * * 0">Weekly cleanup (Sunday)</option>
-                                </select>
-                                <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                              </div>
-                              <input value={cronForm.name} onChange={(event) => setCronForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Job name" className={infraInputClass} />
-                              <input value={cronForm.schedule} onChange={(event) => setCronForm((prev) => ({ ...prev, schedule: event.target.value }))} placeholder="Cron schedule" className={infraInputClass} />
-                              <input value={cronForm.command} onChange={(event) => setCronForm((prev) => ({ ...prev, command: event.target.value }))} placeholder="Command" className={infraInputClass} />
-                              <div className="space-y-2">
-                                {(infraState?.cron_jobs || []).slice(0, 4).map((job) => (
-                                  <div
-                                    key={job.id}
-                                    className={cn('flex items-center justify-between rounded-2xl border px-4 py-3 text-sm', adminDark ? 'border-slate-800 bg-slate-900/60' : 'border-slate-200 bg-white')}
-                                  >
-                                    <div className={cn('text-sm font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{job.name} · {job.schedule}</div>
-                                    <button
-                                      type="button"
-                                      onClick={() => runInfraAction('cron.remove', { job_id: job.id })}
-                                      className={cn('inline-flex items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-semibold', adminDark ? 'border-rose-400/20 bg-rose-500/10 text-rose-300' : 'border-rose-200 bg-rose-50 text-rose-700')}
-                                    >
-                                      <Trash2 className="h-3.5 w-3.5" /> Remove
-                                    </button>
-                                  </div>
-                                ))}
-                                {(infraState?.cron_jobs || []).length === 0 ? (
-                                  <div className={cn('rounded-2xl border border-dashed p-4 text-sm', adminDark ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-500')}>
-                                    {emptyCopy('cron.jobs.none', 'No cron jobs yet.')}
-                                  </div>
-                                ) : null}
-                              </div>
-                            </div>
-                          </SectionCard>
-
-                          <SectionCard
-                            title="System Logs + Zombie Scan"
-                            subtitle="Syslog snapshots and zombie detection."
-                            icon={AlertTriangle}
-                            actionLabel="Collect logs"
-                            actionIcon={RefreshCw}
-                            onAction={() => runInfraAction('log.collect', { level: 'info', message: 'Manual log snapshot' })}
-                            darkMode={adminDark}
-                          >
-                            <div className="space-y-3">
-                              <button
-                                type="button"
-                                onClick={() => runInfraAction('process.scan_zombies')}
-                                className={cn(
-                                  'w-full rounded-2xl px-4 py-3 text-sm font-semibold transition',
-                                  adminDark ? 'border border-sky-400/20 bg-sky-500/10 text-sky-200 hover:bg-sky-500/15' : 'border border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100'
-                                )}
-                              >
-                                Scan zombies
-                              </button>
-                              <div className="grid gap-3 sm:grid-cols-2">
-                                <div className={infraFieldPanel}>
-                                  <div className={adminDark ? 'text-xs uppercase tracking-[0.2em] text-slate-400' : 'text-xs uppercase tracking-[0.2em] text-slate-500'}>
-                                    Log integrity
-                                  </div>
-                                  <div className={cn('mt-2 flex items-center gap-2 text-sm font-medium', adminDark ? 'text-white' : 'text-slate-900')}>
-                                    <Lock className="h-4 w-4 text-emerald-500" /> Tamper-evident
-                                  </div>
-                                </div>
-                                <div className={infraFieldPanel}>
-                                  <div className={adminDark ? 'text-xs uppercase tracking-[0.2em] text-slate-400' : 'text-xs uppercase tracking-[0.2em] text-slate-500'}>
-                                    Zombie scan
-                                  </div>
-                                  <div className={cn('mt-2 flex items-center gap-2 text-sm font-medium', adminDark ? 'text-white' : 'text-slate-900')}>
-                                    {(infraState?.zombie_processes || []).length ? (
-                                      <>
-                                        <XCircle className="h-4 w-4 text-rose-500" /> {(infraState?.zombie_processes || []).length} anomalies
-                                      </>
-                                    ) : (
-                                      <>
-                                        <CheckCircle2 className="h-4 w-4 text-sky-500" /> No anomalies
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="space-y-2">
-                                {(infraState?.logs || []).slice(0, 4).map((log) => (
-                                  <div key={log.id} className={cn('rounded-2xl border px-4 py-3 text-sm', adminDark ? 'border-slate-800 bg-slate-900/60 text-slate-300' : 'border-slate-200 bg-white text-slate-700')}>
-                                    {log.level || 'info'} · {log.message}
-                                  </div>
-                                ))}
-                                {(infraState?.zombie_processes || []).slice(0, 2).map((proc) => (
-                                  <div key={proc.pid} className={cn('rounded-2xl border px-4 py-3 text-sm', adminDark ? 'border-rose-400/20 bg-rose-500/10 text-rose-300' : 'border-rose-200 bg-rose-50 text-rose-700')}>
-                                    Zombie: {proc.name} ({proc.pid})
-                                  </div>
-                                ))}
-                                {(infraState?.logs || []).length === 0 ? (
-                                  <div className={cn('rounded-2xl border border-dashed p-4 text-sm', adminDark ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-500')}>
-                                    No logs collected yet.
-                                  </div>
-                                ) : null}
-                              </div>
-                            </div>
-                          </SectionCard>
-                        </div>
-                      </div>
-
-                      <div className="space-y-6 xl:col-span-4">
-                        <SectionCard
-                          title="OS Users + SSH Keys"
-                          subtitle="Create/delete accounts and manage keys."
-                          icon={Users}
-                          actionLabel="Manage access"
-                          actionIcon={Shield}
-                          onAction={() => refreshInfraState()}
-                          darkMode={adminDark}
-                        >
-                          <div className="space-y-3">
-                            <input value={osUserForm.username} onChange={(event) => setOsUserForm((prev) => ({ ...prev, username: event.target.value }))} placeholder="Username" className={infraInputClass} />
-                            <button
-                              type="button"
-                              onClick={() => runInfraAction('os.user.create', { username: osUserForm.username, role: osUserForm.role })}
-                              className={cn('w-full rounded-2xl px-4 py-3 text-sm font-semibold text-white', adminDark ? 'bg-gradient-to-r from-sky-500 to-blue-500' : 'bg-sky-600')}
-                            >
-                              Create OS user
-                            </button>
-                            <input value={sshKeyForm.label} onChange={(event) => setSshKeyForm((prev) => ({ ...prev, label: event.target.value }))} placeholder="SSH key label" className={infraInputClass} />
-                            <input value={sshKeyForm.fingerprint} onChange={(event) => setSshKeyForm((prev) => ({ ...prev, fingerprint: event.target.value }))} placeholder="Fingerprint" className={infraInputClass} />
-                            <button
-                              type="button"
-                              onClick={() => runInfraAction('ssh.key.add', sshKeyForm)}
-                              className={cn('w-full rounded-2xl border px-4 py-3 text-sm font-semibold', adminDark ? 'border-sky-400/20 bg-sky-500/10 text-sky-200' : 'border-sky-200 bg-sky-50 text-sky-700')}
-                            >
-                              Add SSH key
-                            </button>
-
-                            <div className="space-y-2 pt-2">
-                              {(infraState?.os_users || []).slice(0, 4).map((userRow) => (
-                                <div
-                                  key={userRow.id}
-                                  className={cn('flex items-center justify-between rounded-2xl border px-4 py-3', adminDark ? 'border-slate-800 bg-slate-900/60' : 'border-slate-200 bg-white')}
-                                >
-                                  <div className={cn('flex items-center gap-2 text-sm font-medium', adminDark ? 'text-white' : 'text-slate-900')}>
-                                    <Shield className="h-4 w-4 text-sky-500" /> {userRow.username}
-                                  </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => runInfraAction('os.user.delete', { username: userRow.username })}
-                                    className={cn('inline-flex items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-semibold', adminDark ? 'border-rose-400/20 bg-rose-500/10 text-rose-300' : 'border-rose-200 bg-rose-50 text-rose-700')}
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" /> Delete
-                                  </button>
-                                </div>
-                              ))}
-                              {(infraState?.ssh_keys || []).slice(0, 3).map((key) => (
-                                <div
-                                  key={key.id}
-                                  className={cn('flex items-center justify-between rounded-2xl border px-4 py-3', adminDark ? 'border-slate-800 bg-slate-900/60' : 'border-slate-200 bg-white')}
-                                >
-                                  <div className={cn('flex items-center gap-2 text-sm font-medium', adminDark ? 'text-white' : 'text-slate-900')}>
-                                    <LockKeyhole className="h-4 w-4 text-sky-500" /> {key.label}
-                                  </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => runInfraAction('ssh.key.remove', { key_id: key.id })}
-                                    className={cn('inline-flex items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-semibold', adminDark ? 'border-rose-400/20 bg-rose-500/10 text-rose-300' : 'border-rose-200 bg-rose-50 text-rose-700')}
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" /> Remove
-                                  </button>
-                                </div>
-                              ))}
-                              {(infraState?.os_users || []).length === 0 && (infraState?.ssh_keys || []).length === 0 ? (
-                                <div className={cn('rounded-2xl border border-dashed p-4 text-sm', adminDark ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-500')}>
-                                  No OS users or SSH keys found.
-                                </div>
-                              ) : null}
-                            </div>
-                          </div>
-                        </SectionCard>
-
-                        <SectionCard
-                          title="SSL + Backups + Network Settings"
-                          subtitle="Certificates, retention, DNS, timezone."
-                          icon={Wifi}
-                          actionLabel="Save settings"
-                          actionIcon={SlidersHorizontal}
-                          onAction={async () => {
-                            if (sslForm.domain) await runInfraAction('ssl.cert.issue', { domain: sslForm.domain })
-                            if (infraBackupForm.retention_days) await runInfraAction('backup.retention', { retention_days: infraBackupForm.retention_days })
-                            if (timeForm.timezone) await runInfraAction('system.timezone.set', { timezone: timeForm.timezone })
-                          }}
-                          darkMode={adminDark}
-                        >
-                          <div className="space-y-3">
-                            <input value={sslForm.domain} onChange={(event) => setSslForm((prev) => ({ ...prev, domain: event.target.value }))} placeholder="Domain" className={infraInputClass} />
-                            <button
-                              type="button"
-                              onClick={() => runInfraAction('ssl.cert.issue', { domain: sslForm.domain })}
-                              className={cn('w-full rounded-2xl px-4 py-3 text-sm font-semibold text-white', adminDark ? 'bg-gradient-to-r from-sky-500 to-cyan-400' : 'bg-sky-600')}
-                            >
-                              Issue SSL cert
-                            </button>
-                            <div className="grid grid-cols-2 gap-3">
-                              <input
-                                value={infraBackupForm.retention_days}
-                                onChange={(event) => setInfraBackupForm((prev) => ({ ...prev, retention_days: event.target.value }))}
-                                placeholder="Retention days"
-                                className={infraInputClass}
-                              />
-                              <button
-                                type="button"
-                                onClick={() => runInfraAction('backup.retention', { retention_days: infraBackupForm.retention_days })}
-                                className={cn('rounded-2xl border px-4 py-3 text-sm font-semibold', adminDark ? 'border-sky-400/20 bg-sky-500/10 text-sky-200' : 'border-sky-200 bg-sky-50 text-sky-700')}
-                              >
-                                Update retention
-                              </button>
-                            </div>
-                            <input value={timeForm.timezone} onChange={(event) => setTimeForm((prev) => ({ ...prev, timezone: event.target.value }))} placeholder="Timezone (e.g. UTC)" className={infraInputClass} />
-                            <button
-                              type="button"
-                              onClick={() => runInfraAction('system.timezone.set', { timezone: timeForm.timezone })}
-                              className={cn('w-full rounded-2xl border px-4 py-3 text-sm font-semibold', adminDark ? 'border-sky-400/20 bg-sky-500/10 text-sky-200' : 'border-sky-200 bg-sky-50 text-sky-700')}
-                            >
-                              Set timezone
-                            </button>
-                            <div className={cn('rounded-2xl p-4 text-sm', adminDark ? 'border border-slate-800 bg-slate-900/60 text-slate-400' : 'border border-slate-200 bg-slate-50 text-slate-600')}>
-                              <div className="flex items-center justify-between gap-4">
-                                <span>Retention: {infraState?.backups?.retention_days || 0} days · SSLs: {(infraState?.ssl_certs || []).length}</span>
-                                <span className={adminDark ? 'font-medium text-white' : 'font-medium text-slate-900'}>
-                                  Timezone: {infraState?.time_settings?.timezone || 'unset'}
-                                </span>
-                              </div>
-                              <div className="mt-2 text-xs">NTP sync: {infraState?.time_settings?.last_sync_at || 'never'}</div>
-                            </div>
-                          </div>
-                        </SectionCard>
-
-                        <SectionCard
-                          title="Admin Audit Log"
-                          subtitle="Immutable, tamper-evident audit trail for every admin action."
-                          icon={ShieldCheck}
-                          actionLabel="Refresh log"
-                          actionIcon={RefreshCw}
-                          onAction={() => refreshAudit()}
-                          darkMode={adminDark}
-                        >
-                          <div className="space-y-3">
-                            {filteredInfraAuditRows.slice(0, 8).map((entry) => (
-                              <div key={entry.id || entry.at} className={cn('rounded-2xl border p-4', adminDark ? 'border-slate-800 bg-slate-900/60' : 'border-slate-200 bg-white')}>
-                                <div className="flex items-start justify-between gap-3">
-                                  <div>
-                                    <div className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{entry.action || entry.path || 'Admin action'}</div>
-                                    <div className={adminDark ? 'mt-1 text-xs text-slate-400' : 'mt-1 text-xs text-slate-500'}>{entry.at ? new Date(entry.at).toLocaleString() : '--'} · {entry.actor || 'system'}</div>
-                                  </div>
-                                  <Badge tone="live" darkMode={adminDark}>
-                                    {entry.status ?? 200}
-                                  </Badge>
-                                </div>
-                                <div className={adminDark ? 'mt-3 grid gap-1 text-xs text-slate-400' : 'mt-3 grid gap-1 text-xs text-slate-500'}>
-                                  <div>Actor: {entry.actor_id || entry.actor || 'system'}</div>
-                                  <div>IP: {entry.ip || '--'} / Device: {entry.device_id || '--'}</div>
-                                </div>
-                              </div>
-                            ))}
-                            {!filteredInfraAuditRows.length ? (
-                              <div className={cn('rounded-2xl border border-dashed p-4 text-sm', adminDark ? 'border-slate-800 text-slate-400' : 'border-slate-200 text-slate-500')}>
-                                No audit entries yet.
-                              </div>
-                            ) : null}
-                          </div>
-                        </SectionCard>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 grid gap-4 xl:grid-cols-5">
-                      {INFRA_CAPABILITIES.map((cap) => {
-                        const Icon = cap.icon
-                        return (
-                          <div
-                            key={cap.title}
-                            className={cn(
-                              'rounded-[26px] border p-5',
-                              adminDark ? 'border-slate-800 bg-slate-950/70 shadow-[0_18px_70px_-36px_rgba(15,23,42,0.35)]' : 'border-slate-200 bg-white shadow-sm'
-                            )}
-                          >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className={cn('rounded-2xl border p-3', adminDark ? 'border-sky-400/20 bg-sky-500/10 text-sky-300' : 'border-sky-200 bg-sky-50 text-sky-600')}>
-                                <Icon className="h-5 w-5" />
-                              </div>
-                              <Badge tone="live" darkMode={adminDark}>
-                                live
-                              </Badge>
-                            </div>
-                            <div className={cn('mt-4 text-base font-semibold tracking-tight', adminDark ? 'text-white' : 'text-slate-900')}>{cap.title}</div>
-                            <div className={cn('mt-2 text-3xl font-semibold', adminDark ? 'text-sky-300' : 'text-sky-600')}>{cap.count}</div>
-                            <p className={adminDark ? 'mt-2 text-sm text-slate-400' : 'mt-2 text-sm text-slate-500'}>{cap.subtitle}</p>
-                          </div>
-                        )
-                      })}
-                    </div>
-
-                    <footer
-                      className={cn(
-                        'mt-6 rounded-[28px] border px-5 py-4 text-sm',
-                        adminDark ? 'border-slate-800 bg-slate-950/70 text-slate-400 shadow-[0_18px_70px_-36px_rgba(15,23,42,0.3)]' : 'border-slate-200 bg-white text-slate-500 shadow-sm'
-                      )}
-                    >
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex items-center gap-2">
-                          <Server className="h-4 w-4 text-sky-500" /> Premium infrastructure control surface
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Sparkles className="h-4 w-4 text-cyan-400" /> Blue-sky themed • audit-first • responsive
-                        </div>
-                      </div>
-                    </footer>
-                  </div>
-                </div>
-              </div>
+{activeCategory === 'infra' ? (
+              <InfraPage
+                adminDark={adminDark}
+                setAdminDark={setAdminDark}
+                infra={infra}
+                infraState={infraState}
+                infraSearch={infraSearch}
+                setInfraSearch={setInfraSearch}
+                audit={audit}
+                emptyCopy={emptyCopy}
+                refreshInfraState={refreshInfraState}
+                refreshInfraAll={refreshInfraAll}
+                refreshAudit={refreshAudit}
+                runInfraAction={runInfraAction}
+                firewallForm={firewallForm}
+                setFirewallForm={setFirewallForm}
+                packageForm={packageForm}
+                setPackageForm={setPackageForm}
+                cronForm={cronForm}
+                setCronForm={setCronForm}
+                osUserForm={osUserForm}
+                setOsUserForm={setOsUserForm}
+                sshKeyForm={sshKeyForm}
+                setSshKeyForm={setSshKeyForm}
+                sslForm={sslForm}
+                setSslForm={setSslForm}
+                infraBackupForm={infraBackupForm}
+                setInfraBackupForm={setInfraBackupForm}
+                timeForm={timeForm}
+                setTimeForm={setTimeForm}
+                verificationQueue={verificationQueue}
+                disputes={disputes}
+              />
             ) : null}
 
             {activeCategory === 'network' ? (
@@ -6389,7 +5105,7 @@ useEffect(() => {
                         </div>
                   </section>
                 </div>
-              </div>
+</div>
             ) : null}
 
             {activeCategory === 'server-admin' ? (
@@ -7316,12 +6032,11 @@ useEffect(() => {
                           <div className={cn('rounded-3xl border border-dashed p-5 text-sm', adminDark ? 'border-white/10 bg-white/[0.03] text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-600')}>
                             No audit entries found.
                           </div>
-                        ) : null}
-                      </div>
+) : null}
                     </div>
                   </section>
 
-                  <section className={cn('rounded-[2rem] border p-5 shadow-xl shadow-sky-900/10 backdrop-blur-xl', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/70')}>
+                  <div className={cn('rounded-[2rem] border p-5 shadow-xl shadow-sky-900/10 backdrop-blur-xl', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/70')}>
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <p className={cn('text-xs uppercase tracking-[0.22em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>Design system</p>
@@ -7349,994 +6064,70 @@ useEffect(() => {
               </div>
             ) : null}
 
-            {activeCategory === 'cms' ? (
-              <div
-                className={cn(
-                  'rounded-[32px] border p-4 sm:p-5',
-                  adminDark ? 'border-slate-800/70 bg-slate-950/50' : 'border-slate-200 bg-white/75'
-                )}
-              >
-                <div
-                  className={cn(
-                    'rounded-[28px] border p-5 shadow-2xl backdrop-blur-xl sm:p-6',
-                    adminDark
-                      ? 'border-white/10 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.16),_transparent_32%),linear-gradient(180deg,#020617_0%,#07111f_50%,#030712_100%)] text-white'
-                      : 'border-slate-200/80 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.16),_transparent_32%),linear-gradient(180deg,#f8fbff_0%,#eef7ff_48%,#f8fafc_100%)] text-slate-900'
-                  )}
-                >
-                  <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-                    <div className="max-w-3xl">
-                      <div className="mb-3 flex flex-wrap items-center gap-2">
-                        <CmsMiniBadge dark={adminDark}>CMS + Content Management</CmsMiniBadge>
-                        <span className={cmsChipClass(adminDark, true)}>
-                          <span className="h-2 w-2 rounded-full bg-sky-400" /> live
-                        </span>
-                        <span className={cmsChipClass(adminDark)}>
-                          <ShieldCheck className="h-3.5 w-3.5" /> secured
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={cn(
-                            'rounded-2xl border p-3',
-                            adminDark ? 'border-sky-400/20 bg-sky-400/10 text-sky-300' : 'border-sky-200 bg-sky-50 text-sky-600'
-                          )}
-                        >
-                          <LayoutDashboard className="h-6 w-6" />
-                        </div>
-                        <div>
-                          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Admin Command Center</h1>
-                          <p className={cn('mt-2 max-w-2xl text-sm sm:text-base', adminDark ? 'text-slate-300' : 'text-slate-700')}>
-                            A premium control surface for headless CMS, frontend configuration, automation, deployment, verification, and audit telemetry.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-3">
-                      <div className={cn('flex items-center gap-2 rounded-2xl border px-3 py-2', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200/80 bg-white/80')}>
-                        <Search className="h-4 w-4 text-sky-400" />
-                        <input
-                          value={cmsAuditQuery}
-                          onChange={(e) => setCmsAuditQuery(e.target.value)}
-                          placeholder="Search logs..."
-                          className={cn(
-                            'w-44 bg-transparent text-sm outline-none',
-                            adminDark ? 'text-slate-100 placeholder:text-slate-500' : 'text-slate-900 placeholder:text-slate-400'
-                          )}
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setAdminDark((v) => !v)}
-                        className={cn(
-                          'inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5',
-                          adminDark ? 'border-white/10 bg-white/5 hover:bg-white/10' : 'border-slate-200/80 bg-white hover:bg-slate-50'
-                        )}
-                      >
-                        {adminDark ? <SunMedium className="h-4 w-4 text-amber-300" /> : <Moon className="h-4 w-4 text-slate-700" />}
-                        {adminDark ? 'Light mode' : 'Dark mode'}
-                      </button>
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:-translate-y-0.5"
-                      >
-                        <Sparkles className="h-4 w-4" /> Premium Action
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                    <CmsStatCard
-                      dark={adminDark}
-                      icon={BookOpen}
-                      label="Content items"
-                      value={String((cmsState?.articles || []).length + (cmsState?.pages || []).length)}
-                      meta={`Articles: ${(cmsState?.articles || []).length} · Pages: ${(cmsState?.pages || []).length}`}
-                      trend={cmsState?.articles?.length ? `+${Math.min(2, cmsState.articles.length)} this week` : ''}
-                    />
-                    <CmsStatCard
-                      dark={adminDark}
-                      icon={HardDrive}
-                      label="Media items"
-                      value={String((cmsState?.media || []).length)}
-                      meta="Assets and uploads tracked"
-                    />
-                    <CmsStatCard
-                      dark={adminDark}
-                      icon={Workflow}
-                      label="Deployments"
-                      value={String((cmsState?.deployments || []).length)}
-                      meta={`Cron scripts: ${(cmsState?.cron_scripts || []).length}`}
-                    />
-                    <CmsStatCard
-                      dark={adminDark}
-                      icon={FileText}
-                      label="Versions"
-                      value={String((cmsState?.versions || []).length)}
-                      meta={`Theme: ${cmsState?.theme?.active || '--'}`}
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-6 flex flex-wrap gap-2">
-                  <button type="button" onClick={() => setCmsTab('cms')} className={cmsChipClass(adminDark, cmsTab === 'cms')}>
-                    <BookOpen className="h-3.5 w-3.5" /> CMS
-                  </button>
-                  <button type="button" onClick={() => setCmsTab('frontend')} className={cmsChipClass(adminDark, cmsTab === 'frontend')}>
-                    <Globe2 className="h-3.5 w-3.5" /> Frontend
-                  </button>
-                  <button type="button" onClick={() => setCmsTab('deploy')} className={cmsChipClass(adminDark, cmsTab === 'deploy')}>
-                    <Workflow className="h-3.5 w-3.5" /> Deployment
-                  </button>
-                  <button type="button" onClick={() => setCmsTab('audit')} className={cmsChipClass(adminDark, cmsTab === 'audit')}>
-                    <ShieldCheck className="h-3.5 w-3.5" /> Audit
-                  </button>
-                </div>
-
-                <div className="mt-6 grid gap-6 lg:grid-cols-12">
-                  <div className="space-y-6 lg:col-span-8">
-                    {cmsTab === 'cms' || cmsTab === 'frontend' || cmsTab === 'deploy' ? (
-                      <CmsSectionCard
-                        dark={adminDark}
-                        icon={Layers3}
-                        title="CMS + Content Management"
-                        subtitle="3 sections · live"
-                        action={
-                          <button
-                            type="button"
-                            onClick={() => refreshCmsState()}
-                            className={cn(
-                              'inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium',
-                              adminDark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                            )}
-                          >
-                            <RefreshCw className="h-4 w-4" /> Refresh
-                          </button>
-                        }
-                      >
-                        <div className="grid gap-4 md:grid-cols-3">
-                          {[
-                            {
-                              title: 'Articles + Pages',
-                              desc: 'Headless CMS editor output.',
-                              meta: `Media items: ${(cmsState?.media || []).length}`,
-                            },
-                            {
-                              title: 'Theme + SEO + Cache',
-                              desc: 'Frontend configuration.',
-                              meta: `Cache cleared: ${cmsState?.cache?.last_cleared_at || 'never'}`,
-                            },
-                            {
-                              title: 'Deployments + Backups',
-                              desc: 'Automation and cron scripts.',
-                              meta: `Versions: ${(cmsState?.versions || []).length}`,
-                            },
-                          ].map((card) => (
-                            <div
-                              key={card.title}
-                              className={cn(
-                                'rounded-2xl border p-4',
-                                adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50/70'
-                              )}
-                            >
-                              <div className="flex items-center justify-between gap-3">
-                                <h3 className={cn('font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>{card.title}</h3>
-                                <ChevronRight className={cn('h-4 w-4', adminDark ? 'text-slate-400' : 'text-slate-500')} />
-                              </div>
-                              <p className={cn('mt-2 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>{card.desc}</p>
-                              <div className="mt-4 flex items-center justify-between gap-3">
-                                <span className={cn('text-xs', adminDark ? 'text-slate-400' : 'text-slate-500')}>{card.meta}</span>
-                                <span className={cmsChipClass(adminDark)}>
-                                  <Clock3 className="h-3.5 w-3.5" /> synced
-                                </span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </CmsSectionCard>
-                    ) : null}
-
-                    {(cmsTab === 'cms' || cmsTab === 'frontend') ? (
-                      <div className="grid gap-6 xl:grid-cols-2">
-                        <CmsSectionCard
-                          dark={adminDark}
-                          icon={LockKeyhole}
-                          title="Headless CMS Integration"
-                          subtitle="3 capabilities · live"
-                          action={<CmsMiniBadge dark={adminDark}>Ready</CmsMiniBadge>}
-                        >
-                          <div className="space-y-3">
-                            {[
-                              ['Content API', 'Deliver structured data to every surface.'],
-                              ['Media pipeline', 'Image transforms, upload tracking, and delivery.'],
-                              ['Role-safe publishing', 'Approval gates and audit attribution.'],
-                            ].map(([title, desc]) => (
-                              <div
-                                key={title}
-                                className={cn(
-                                  'flex items-start gap-3 rounded-2xl border p-4',
-                                  adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50/70'
-                                )}
-                              >
-                                <div className="mt-1 rounded-xl bg-sky-400/10 p-2 text-sky-400">
-                                  <Database className="h-4 w-4" />
-                                </div>
-                                <div>
-                                  <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{title}</p>
-                                  <p className={cn('mt-1 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>{desc}</p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </CmsSectionCard>
-
-                        <CmsSectionCard
-                          dark={adminDark}
-                          icon={Globe2}
-                          title="Frontend Configuration"
-                          subtitle="4 capabilities · live"
-                          action={
-                            <button
-                              type="button"
-                              onClick={() => refreshCmsState()}
-                              className={cn(
-                                'inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium',
-                                adminDark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                              )}
-                            >
-                              <RefreshCw className="h-4 w-4" /> Refresh
-                            </button>
-                          }
-                        >
-                          <div className="space-y-3">
-                            {[
-                              ['Theme', cmsState?.theme?.active ? `Active: ${cmsState.theme.active}` : 'Not configured'],
-                              ['SEO title', cmsState?.seo?.default_title || 'Not set'],
-                              ['Cache', cmsState?.cache?.last_cleared_at ? `Cleared: ${cmsState.cache.last_cleared_at}` : 'Clearable from the dashboard'],
-                              ['Env vars', `${Object.keys(cmsState?.env?.vars || {}).length} active values exposed`],
-                            ].map(([label, value]) => (
-                              <div
-                                key={label}
-                                className={cn(
-                                  'flex items-center justify-between rounded-2xl border px-4 py-3',
-                                  adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white'
-                                )}
-                              >
-                                <div>
-                                  <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>{label}</p>
-                                  <p className={cn('mt-0.5 font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{value}</p>
-                                </div>
-                                <CmsMiniBadge dark={adminDark}>{label === 'Cache' ? 'mutable' : 'set'}</CmsMiniBadge>
-                              </div>
-                            ))}
-                          </div>
-                        </CmsSectionCard>
-                      </div>
-                    ) : null}
-
-                    {(cmsTab === 'deploy' || cmsTab === 'cms') ? (
-                      <CmsSectionCard
-                        dark={adminDark}
-                        icon={Workflow}
-                        title="Deployment & Automation"
-                        subtitle="3 capabilities · live"
-                        action={<CmsMiniBadge dark={adminDark}>Cron-enabled</CmsMiniBadge>}
-                      >
-                        <div className="grid gap-4 md:grid-cols-3">
-                          {[
-                            ['Build orchestration', 'Versioned deploys with clear audit roots.'],
-                            ['Backup jobs', 'Automated snapshots and restore paths.'],
-                            ['Schedulers', 'Cron scripts for recurring admin tasks.'],
-                          ].map(([title, desc]) => (
-                            <div
-                              key={title}
-                              className={cn(
-                                'rounded-2xl border p-4',
-                                adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50/70'
-                              )}
-                            >
-                              <div className="flex items-center justify-between">
-                                <h3 className={cn('font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>{title}</h3>
-                                <TerminalSquare className="h-4 w-4 text-sky-400" />
-                              </div>
-                              <p className={cn('mt-2 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>{desc}</p>
-                              <div className="mt-4 flex items-center gap-2 text-xs text-sky-400">
-                                <ArrowRight className="h-3.5 w-3.5" /> operational
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </CmsSectionCard>
-                    ) : null}
-
-                    {cmsTab === 'audit' ? (
-                      <CmsSectionCard
-                        dark={adminDark}
-                        icon={ShieldCheck}
-                        title="Audit Pulse"
-                        subtitle="Most recent admin actions"
-                        action={
-                          <button
-                            type="button"
-                            onClick={() => refreshAudit()}
-                            className={cn(
-                              'inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium',
-                              adminDark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                            )}
-                          >
-                            <RefreshCw className="h-4 w-4" /> Refresh
-                          </button>
-                        }
-                      >
-                        <div className="space-y-3">
-                          {filteredCmsAuditRows.slice(0, 5).map((item) => (
-                            <div
-                              key={`${item.id || item.at || item.path}`}
-                              className={cn(
-                                'flex flex-col gap-3 rounded-2xl border p-4 md:flex-row md:items-center md:justify-between',
-                                adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50/70'
-                              )}
-                            >
-                              <div>
-                                <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{item.path || item.action || '--'}</p>
-                                <p className={cn('mt-1 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>
-                                  {item.at ? new Date(item.at).toLocaleString() : '--'} · system
-                                </p>
-                              </div>
-                              <span className={cmsChipClass(adminDark)}>
-                                <Activity className="h-3.5 w-3.5" /> {item.status ?? 200}
-                              </span>
-                            </div>
-                          ))}
-                          {filteredCmsAuditRows.length === 0 ? (
-                            <div className={cn('rounded-2xl border border-dashed p-5 text-sm', adminDark ? 'border-white/10 bg-white/[0.03] text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-600')}>
-                              No audit entries found.
-                            </div>
-                          ) : null}
-                        </div>
-                      </CmsSectionCard>
-                    ) : null}
-                  </div>
-
-                  <div className="space-y-6 lg:col-span-4">
-                    <CmsSectionCard
-                      dark={adminDark}
-                      icon={Gauge}
-                      title="Platform Snapshot"
-                      subtitle="Live signal and trend"
-                      action={<CmsMiniBadge dark={adminDark}>Realtime</CmsMiniBadge>}
-                    >
-                      <div className={cn('rounded-3xl border p-4', adminDark ? 'border-white/10 bg-slate-950/80' : 'border-slate-200 bg-white')}>
-                        <div className="mb-4 flex items-center justify-between">
-                          <div>
-                            <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>Command health</p>
-                            <p className={cn('mt-1 text-2xl font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>98.7%</p>
-                          </div>
-                          <div className="rounded-2xl bg-sky-400/10 p-3 text-sky-400">
-                            <Activity className="h-5 w-5" />
-                          </div>
-                        </div>
-                        <div className="h-56">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={cmsTrendData}>
-                              <defs>
-                                <linearGradient id="cmsFillSky" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor="#38bdf8" stopOpacity={adminDark ? 0.35 : 0.25} />
-                                  <stop offset="95%" stopColor="#38bdf8" stopOpacity={0.02} />
-                                </linearGradient>
-                              </defs>
-                              <CartesianGrid
-                                strokeDasharray="3 3"
-                                stroke={adminDark ? 'rgba(148,163,184,0.18)' : 'rgba(148,163,184,0.25)'}
-                                vertical={false}
-                              />
-                              <XAxis
-                                dataKey="name"
-                                tick={{ fill: adminDark ? '#94a3b8' : '#64748b', fontSize: 12 }}
-                                axisLine={false}
-                                tickLine={false}
-                              />
-                              <YAxis
-                                tick={{ fill: adminDark ? '#94a3b8' : '#64748b', fontSize: 12 }}
-                                axisLine={false}
-                                tickLine={false}
-                                width={24}
-                              />
-                              <Tooltip
-                                contentStyle={{
-                                  background: adminDark ? 'rgba(2,6,23,0.95)' : 'rgba(255,255,255,0.98)',
-                                  border: adminDark ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(226,232,240,1)',
-                                  borderRadius: 16,
-                                  color: adminDark ? '#fff' : '#0f172a',
-                                }}
-                              />
-                              <Area
-                                type="monotone"
-                                dataKey="value"
-                                stroke={adminDark ? 'rgba(186,230,253,0.95)' : 'rgba(2,132,199,0.92)'}
-                                strokeWidth={3}
-                                fill="url(#cmsFillSky)"
-                              />
-                            </AreaChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
-                    </CmsSectionCard>
-
-                    <CmsSectionCard
-                      dark={adminDark}
-                      icon={BadgeCheck}
-                      title="Verification Queue"
-                      subtitle="EU/USA docs pending review"
-                      action={
-                        <button
-                          type="button"
-                          onClick={() => refreshVerificationQueue()}
-                          className={cn(
-                            'inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium',
-                            adminDark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                          )}
-                        >
-                          <RefreshCw className="h-4 w-4" /> Refresh
-                        </button>
-                      }
-                    >
-                      <div className={cn('rounded-3xl border p-5', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50/70')}>
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>
-                              {verificationQueue.length
-                                ? `${verificationQueue.length} items pending review.`
-                                : emptyCopy('verification.pending', 'No pending verifications in queue.')}
-                            </p>
-                            <p className={cn('mt-1 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>
-                              All onboarding documents are currently in a clean state.
-                            </p>
-                          </div>
-                          <span className={cmsChipClass(adminDark)}>
-                            <BadgeCheck className="h-3.5 w-3.5" /> {verificationQueue.length ? 'pending' : 'clear'}
-                          </span>
-                        </div>
-                      </div>
-                    </CmsSectionCard>
-
-                    <CmsSectionCard
-                      dark={adminDark}
-                      icon={FileText}
-                      title="Dispute Radar"
-                      subtitle="Contracts with open issues"
-                      action={
-                        <button
-                          type="button"
-                          onClick={() => refreshDisputes()}
-                          className={cn(
-                            'inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium',
-                            adminDark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                          )}
-                        >
-                          <RefreshCw className="h-4 w-4" /> Sync
-                        </button>
-                      }
-                    >
-                      <div className={cn('rounded-3xl border p-5', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50/70')}>
-                        <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>
-                          {disputes.length ? `${disputes.length} open disputes.` : emptyCopy('disputes.none', 'No active disputes.')}
-                        </p>
-                        <p className={cn('mt-1 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>
-                          Contract review and escalation feeds are currently idle.
-                        </p>
-                      </div>
-                    </CmsSectionCard>
-
-                    <CmsSectionCard
-                      dark={adminDark}
-                      icon={Clock3}
-                      title="Admin Audit Log"
-                      subtitle="Immutable, tamper-evident audit trail for every admin action."
-                      action={
-                        <button
-                          type="button"
-                          onClick={() => refreshAudit()}
-                          className={cn(
-                            'inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium',
-                            adminDark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                          )}
-                        >
-                          <RefreshCw className="h-4 w-4" /> Refresh log
-                        </button>
-                      }
-                    >
-                      <div className="max-h-[540px] space-y-3 overflow-auto pr-1">
-                        {filteredCmsAuditRows.map((log) => (
-                          <div
-                            key={`${log.id || log.at}-${log.path || log.action}`}
-                            className={cn('rounded-2xl border p-4', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white')}
-                          >
-                            <div className="flex items-start justify-between gap-4">
-                              <div>
-                                <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{log.path || log.action || '--'}</p>
-                                <p className={cn('mt-1 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>
-                                  {log.at ? new Date(log.at).toLocaleString() : '--'}
-                                </p>
-                              </div>
-                              <span className={cmsChipClass(adminDark)}>
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" /> {log.status ?? 200}
-                              </span>
-                            </div>
-                            <div className={cn('mt-3 grid gap-2 text-xs sm:grid-cols-2', adminDark ? 'text-slate-400' : 'text-slate-600')}>
-                              <div>Actor: {log.actor_id || log.actor || 'system'}</div>
-                              <div>IP: {log.ip || '--'} / Device: {log.device_id || '--'}</div>
-                            </div>
-                          </div>
-                        ))}
-                        {filteredCmsAuditRows.length === 0 ? (
-                          <div className={cn('rounded-2xl border border-dashed p-5 text-sm', adminDark ? 'border-white/10 bg-white/[0.03] text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-600')}>
-                            No audit entries found.
-                          </div>
-                        ) : null}
-                      </div>
-                    </CmsSectionCard>
-                  </div>
-                </div>
+{activeCategory === 'cms' ? (
+              <div className="space-y-4">
+                <CmsPage
+                  adminDark={adminDark}
+                  setAdminDark={setAdminDark}
+                  cmsTab={cmsTab}
+                  setCmsTab={setCmsTab}
+                  cmsState={cmsState}
+                  cmsAuditQuery={cmsAuditQuery}
+                  setCmsAuditQuery={setCmsAuditQuery}
+                  refreshCmsState={refreshCmsState}
+                  cmsTrendData={cmsTrendData}
+                  filteredCmsAuditRows={filteredCmsAuditRows}
+                  verificationQueue={verificationQueue}
+                  refreshVerificationQueue={refreshVerificationQueue}
+                  disputes={disputes}
+                  refreshDisputes={refreshDisputes}
+                  audit={audit}
+                  refreshAudit={refreshAudit}
+                  emptyCopy={emptyCopy}
+                />
+                <UltraSecurityPage
+                  adminDark={adminDark}
+                  setAdminDark={setAdminDark}
+                  securityState={securityState}
+                  ultraSecurityCapabilities={ultraSecurityCapabilities}
+                  ultraMiniChartPoints={ultraMiniChartPoints}
+                  ultraMiniChartKpis={ultraMiniChartKpis}
+                  ultraAuditQuery={ultraAuditQuery}
+                  setUltraAuditQuery={setUltraAuditQuery}
+                  runSecurityAction={runSecurityAction}
+                  refreshSecurityState={refreshSecurityState}
+                  refreshAudit={refreshAudit}
+                  refreshVerificationQueue={refreshVerificationQueue}
+                  refreshDisputes={refreshDisputes}
+                  verificationQueue={verificationQueue}
+                  disputes={disputes}
+                  filteredUltraAuditRows={filteredUltraAuditRows}
+                  audit={audit}
+                  emptyCopy={emptyCopy}
+                />
+                <ConfigPage
+                  adminDark={adminDark}
+                  configEditorTab={configEditorTab}
+                  setConfigEditorTab={setConfigEditorTab}
+                  configEditorData={configEditorData}
+                  configEditorLoading={configEditorLoading}
+                  configEditorSaving={configEditorSaving}
+                  configEditorNotice={configEditorNotice}
+                  configEditorError={configEditorError}
+                  apiRequest={apiRequest}
+                  setConfigEditorSaving={setConfigEditorSaving}
+                  setConfigEditorNotice={setConfigEditorNotice}
+                  setConfigEditorError={setConfigEditorError}
+                  setConfigEditorData={setConfigEditorData}
+                />
               </div>
             ) : null}
-
-            {activeCategory === 'ultra-security' ? (
-              <div
-                className={cn(
-                  'rounded-[32px] border p-4 sm:p-5',
-                  adminDark ? 'border-slate-800/70 bg-slate-950/50' : 'border-slate-200 bg-white/75'
-                )}
-              >
-                <div
-                  className={cn(
-                    'rounded-[32px] border p-5 backdrop-blur-xl',
-                    adminDark
-                      ? 'border-white/10 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.24),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.18),_transparent_22%),linear-gradient(180deg,_#020617_0%,_#07111f_55%,_#050b16_100%)] text-slate-100'
-                      : 'border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.18),_transparent_26%),radial-gradient(circle_at_top_right,_rgba(37,99,235,0.10),_transparent_22%),linear-gradient(180deg,_#eff8ff_0%,_#f8fbff_55%,_#eef6ff_100%)] text-slate-900'
-                  )}
-                >
-                  <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">
-                          <ShieldCheck className="h-4 w-4" /> ultra security layer
-                        </span>
-                        <UltraPill dark={adminDark} active>
-                          Advanced
-                        </UltraPill>
-                        <UltraPill dark={adminDark}>Live</UltraPill>
-                      </div>
-                      <h1 className={cn('mt-4 text-3xl font-semibold tracking-tight sm:text-4xl', adminDark ? 'text-white' : 'text-slate-900')}>
-                        Zero Trust, incident response, and immutable audit control in one command deck.
-                      </h1>
-                      <p className={cn('mt-3 max-w-3xl text-sm leading-6 sm:text-base', adminDark ? 'text-slate-300' : 'text-slate-700')}>
-                        A premium admin surface for secure operations, session governance, forensic logs, and tamper-evident oversight.
-                      </p>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setAdminDark((v) => !v)}
-                        className={cn(
-                          'inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium transition hover:-translate-y-0.5',
-                          adminDark ? 'border-white/10 bg-white/10 text-white' : 'border-slate-200 bg-white text-slate-900'
-                        )}
-                      >
-                        {adminDark ? <SunMedium className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                        {adminDark ? 'Light mode' : 'Dark mode'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          refreshSecurityState()
-                          refreshAudit()
-                        }}
-                        className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-cyan-500/25 transition hover:-translate-y-0.5"
-                      >
-                        <RefreshCw className="h-4 w-4" /> Refresh
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 grid gap-5 xl:grid-cols-12">
-                    <div className="space-y-5 xl:col-span-8">
-                      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                        <UltraStatCard
-                          dark={adminDark}
-                          label="Zero-trust"
-                          value={securityState?.zero_trust?.enabled ? 'On' : 'Off'}
-                          icon={Shield}
-                          tone={securityState?.zero_trust?.enabled ? 'good' : 'warn'}
-                        />
-                        <UltraStatCard
-                          dark={adminDark}
-                          label="MFA required"
-                          value={securityState?.mfa?.required ? 'Yes' : 'No'}
-                          icon={BadgeCheck}
-                          tone={securityState?.mfa?.required ? 'good' : 'warn'}
-                        />
-                        <UltraStatCard
-                          dark={adminDark}
-                          label="Session timeout"
-                          value={String(securityState?.session?.timeout_minutes ?? 30)}
-                          sub="min"
-                          icon={Clock3}
-                        />
-                        <UltraStatCard
-                          dark={adminDark}
-                          label="IP allowlist"
-                          value={String((securityState?.ip_whitelist || []).length)}
-                          icon={Globe2}
-                          tone="good"
-                        />
-                      </div>
-
-                      <UltraSectionCard
-                        dark={adminDark}
-                        title="Zero Trust + MFA"
-                        subtitle="Session control and device fingerprints."
-                        right={
-                          <div className="flex items-center gap-2 text-sm text-cyan-300">
-                            <LockKeyhole className="h-4 w-4" />
-                            hardened access
-                          </div>
-                        }
-                      >
-                        <div className="grid gap-4 lg:grid-cols-2">
-                          <div className="space-y-4">
-                            <UltraToggle
-                              dark={adminDark}
-                              on={Boolean(securityState?.zero_trust?.enabled)}
-                              label="Toggle zero-trust"
-                              hint="Strict session validation and conditional access."
-                              onToggle={() =>
-                                runSecurityAction('security.zero_trust.toggle', { enabled: !securityState?.zero_trust?.enabled })
-                              }
-                            />
-
-                            <div className={cn('grid gap-4 rounded-2xl border p-4', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>Rotate keys</p>
-                                  <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-500')}>Encryption keys and session secrets.</p>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => runSecurityAction('security.encryption.rotate')}
-                                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-400 px-4 py-2 text-sm font-semibold text-white"
-                                >
-                                  <KeyRound className="h-4 w-4" /> Rotate
-                                </button>
-                              </div>
-
-                              <div className={cn('grid gap-3 sm:grid-cols-2', adminDark ? 'text-slate-200' : 'text-slate-800')}>
-                                <div className={cn('rounded-xl border p-3', adminDark ? 'border-white/10 bg-black/10' : 'border-slate-200 bg-white')}>
-                                  <p className={cn('text-xs uppercase tracking-[0.18em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>Session fingerprint</p>
-                                  <p className="mt-1 font-medium">{securityState?.device_fingerprinting?.enabled ? 'Enabled' : 'Off'}</p>
-                                </div>
-                                <div className={cn('rounded-xl border p-3', adminDark ? 'border-white/10 bg-black/10' : 'border-slate-200 bg-white')}>
-                                  <p className={cn('text-xs uppercase tracking-[0.18em]', adminDark ? 'text-slate-400' : 'text-slate-500')}>Geo-fence</p>
-                                  <p className="mt-1 font-medium">{securityState?.geo_fence?.enabled ? 'On' : 'Off'}</p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="grid gap-4">
-                            <div className={cn('rounded-2xl border p-4', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
-                              <div className="mb-3 flex items-center justify-between">
-                                <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>Current security state</p>
-                                <span className="inline-flex items-center gap-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2.5 py-1 text-[11px] font-semibold text-cyan-300">
-                                  <ShieldCheck className="h-3.5 w-3.5" /> active
-                                </span>
-                              </div>
-                              <div className="space-y-3 text-sm">
-                                {[
-                                  ['Zero-trust', securityState?.zero_trust?.enabled ? 'On' : 'Off'],
-                                  ['MFA required', securityState?.mfa?.required ? 'Yes' : 'No'],
-                                  ['Session timeout', `${securityState?.session?.timeout_minutes ?? 30} min`],
-                                  ['IP allowlist', String((securityState?.ip_whitelist || []).length)],
-                                  ['Geo-fence', securityState?.geo_fence?.enabled ? 'On' : 'Off'],
-                                ].map(([key, value]) => (
-                                  <div
-                                    key={key}
-                                    className={cn('flex items-center justify-between border-b border-dashed pb-2 last:border-0 last:pb-0', adminDark ? 'border-white/10' : 'border-slate-200')}
-                                  >
-                                    <span className={adminDark ? 'text-slate-400' : 'text-slate-600'}>{key}</span>
-                                    <span className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{value}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-
-                            <div className={cn('rounded-2xl border p-4', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>Incident Response</p>
-                                  <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-500')}>Incident dashboard and approvals.</p>
-                                </div>
-                                <AlertTriangle className="h-5 w-5 text-amber-400" />
-                              </div>
-                              <div className="mt-4 flex flex-wrap gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => runSecurityAction('security.export.request', { dataset: 'full' })}
-                                  className="rounded-xl border border-amber-400/30 bg-amber-500/10 px-4 py-2 text-sm font-medium text-amber-200"
-                                >
-                                  Approvals queue
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => runSecurityAction('security.incident.create', { title: 'Lockdown', severity: 'high' })}
-                                  className={cn('rounded-xl border px-4 py-2 text-sm font-medium', adminDark ? 'border-white/10 text-slate-200' : 'border-slate-200 text-slate-800')}
-                                >
-                                  Lockdown playbook
-                                </button>
-                              </div>
-                              <div className={cn('mt-4 space-y-2 text-[11px]', adminDark ? 'text-slate-300' : 'text-slate-700')}>
-                                {(securityState?.incidents || []).slice(0, 3).map((incident) => (
-                                  <div key={incident.id} className={cn('rounded-xl border px-3 py-2', adminDark ? 'border-white/10 bg-slate-950/25' : 'border-slate-200 bg-white')}>
-                                    {incident.title} · {incident.status}
-                                  </div>
-                                ))}
-                                {(securityState?.data_exports?.pending || []).slice(0, 2).map((req) => (
-                                  <div key={req.id} className={cn('text-[11px]', adminDark ? 'text-slate-400' : 'text-slate-600')}>
-                                    Export {req.dataset} · {req.status}
-                                  </div>
-                                ))}
-                                {!securityState?.incidents?.length && !(securityState?.data_exports?.pending || []).length ? (
-                                  <div className={adminDark ? 'text-slate-400' : 'text-slate-600'}>No active incidents.</div>
-                                ) : null}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </UltraSectionCard>
-
-                      <UltraSectionCard
-                        dark={adminDark}
-                        title="Forensic + Immutable Backups"
-                        subtitle="Tamper-proof logs and snapshots."
-                        right={<UltraPill dark={adminDark} active>Immutable</UltraPill>}
-                      >
-                        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                          <UltraStatCard dark={adminDark} label="Forensic logs" value={String((securityState?.forensic_logs || []).length)} icon={BookOpen} />
-                          <UltraStatCard dark={adminDark} label="Immutable snapshots" value={securityState?.immutable_backups?.last_snapshot_at || 'none'} icon={Database} tone="warn" />
-                          <UltraStatCard dark={adminDark} label="Last key rotation" value={securityState?.encryption?.last_rotated_at || 'never'} icon={KeyRound} tone="warn" />
-                          <UltraStatCard dark={adminDark} label="Tamper-proof logs" value={securityState?.tamper_proof_logs?.enabled ? 'On' : 'Off'} icon={ShieldAlert} tone={securityState?.tamper_proof_logs?.enabled ? 'good' : 'warn'} />
-                        </div>
-
-                        <div className="mt-4 grid gap-4 lg:grid-cols-3">
-                          <div className={cn('rounded-2xl border p-4 lg:col-span-2', adminDark ? 'border-white/10 bg-slate-950/25' : 'border-slate-200 bg-white')}>
-                            <div className="mb-3 flex items-center justify-between">
-                              <div>
-                                <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>Zero-Trust &amp; Incident Response</p>
-                                <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-500')}>{ultraSecurityCapabilities.length} capabilities</p>
-                              </div>
-                              <Sparkles className="h-5 w-5 text-cyan-300" />
-                            </div>
-                            <div className="grid gap-2 sm:grid-cols-2">
-                              {ultraSecurityCapabilities.map((cap) => (
-                                <div key={cap} className={cn('flex items-start gap-2 rounded-xl border p-3 text-sm', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
-                                  <CheckCircle2 className="mt-0.5 h-4 w-4 flex-none text-cyan-300" />
-                                  <span className={cn(adminDark ? 'text-slate-200' : 'text-slate-800')}>{cap}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          <div className={cn('rounded-2xl border p-4', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
-                            <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>Risk posture</p>
-                            <div className="mt-4 space-y-4">
-                              {[
-                                ['Access risk', 'Low', 'w-2/5', 'from-sky-500 to-cyan-400', 'text-cyan-300'],
-                                ['Backup integrity', 'High', 'w-4/5', 'from-cyan-400 to-sky-500', 'text-cyan-300'],
-                                ['Response readiness', 'Review', 'w-3/5', 'from-amber-400 to-orange-400', 'text-amber-300'],
-                              ].map(([label, value, widthClass, gradient, valueClass]) => (
-                                <div key={label}>
-                                  <div className="mb-2 flex items-center justify-between text-sm">
-                                    <span className={adminDark ? 'text-slate-300' : 'text-slate-700'}>{label}</span>
-                                    <span className={valueClass}>{value}</span>
-                                  </div>
-                                  <div className={cn('h-2 rounded-full', adminDark ? 'bg-white/10' : 'bg-slate-200')}>
-                                    <div className={cn('h-2 rounded-full bg-gradient-to-r', widthClass, gradient)} />
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </UltraSectionCard>
-                    </div>
-
-                    <div className="space-y-5 xl:col-span-4">
-                      <UltraTinyChart dark={adminDark} points={ultraMiniChartPoints} kpis={ultraMiniChartKpis} />
-
-                      <UltraSectionCard
-                        dark={adminDark}
-                        title="Verification Queue"
-                        subtitle="EU/USA docs pending review."
-                        right={
-                          <button
-                            type="button"
-                            onClick={() => refreshVerificationQueue()}
-                            className={cn(
-                              'inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm',
-                              adminDark ? 'border-white/10 bg-white/5 text-slate-200' : 'border-slate-200 bg-white text-slate-900'
-                            )}
-                          >
-                            <RefreshCw className="h-4 w-4" /> Refresh
-                          </button>
-                        }
-                      >
-                        <div className={cn('rounded-2xl border p-4', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
-                          <div className="space-y-2 text-xs">
-                            {verificationQueue.slice(0, 3).map((row) => (
-                              <div key={row.id || row.user_id} className={cn('rounded-2xl border px-3 py-2', adminDark ? 'border-white/10 bg-slate-950/25' : 'border-slate-200 bg-white')}>
-                                <p className={cn('text-[11px] font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>{row.user_name || row.user_email || row.user_id}</p>
-                                <p className={cn('text-[10px]', adminDark ? 'text-slate-400' : 'text-slate-600')}>Doc: {row.doc_type || row.type || 'business'} · Status: {row.status || 'pending'}</p>
-                              </div>
-                            ))}
-                            {!verificationQueue.length ? (
-                              <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>
-                                {emptyCopy('verification.pending', 'No pending verifications in queue.')}
-                              </p>
-                            ) : null}
-                          </div>
-                        </div>
-                      </UltraSectionCard>
-
-                      <UltraSectionCard
-                        dark={adminDark}
-                        title="Dispute Radar"
-                        subtitle="Contracts with open issues."
-                        right={
-                          <button
-                            type="button"
-                            onClick={() => refreshDisputes()}
-                            className={cn(
-                              'inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm',
-                              adminDark ? 'border-white/10 bg-white/5 text-slate-200' : 'border-slate-200 bg-white text-slate-900'
-                            )}
-                          >
-                            <RefreshCw className="h-4 w-4" /> Sync
-                          </button>
-                        }
-                      >
-                        <div className={cn('rounded-2xl border p-4', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
-                          <div className="space-y-2 text-xs">
-                            {disputes.slice(0, 3).map((dispute) => (
-                              <div key={dispute.id} className={cn('rounded-2xl border px-3 py-2', adminDark ? 'border-white/10 bg-slate-950/25' : 'border-slate-200 bg-white')}>
-                                <p className={cn('text-[11px] font-semibold', adminDark ? 'text-white' : 'text-slate-900')}>{dispute.title || dispute.contract_id || 'Dispute'}</p>
-                                <p className={cn('text-[10px]', adminDark ? 'text-slate-400' : 'text-slate-600')}>Status: {dispute.status || 'open'} · Priority: {dispute.priority || 'normal'}</p>
-                              </div>
-                            ))}
-                            {!disputes.length ? (
-                              <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>{emptyCopy('disputes.none', 'No active disputes.')}</p>
-                            ) : null}
-                          </div>
-                        </div>
-                      </UltraSectionCard>
-
-                      <UltraSectionCard
-                        dark={adminDark}
-                        title="Audit Pulse"
-                        subtitle="Most recent admin actions."
-                        right={
-                          <button
-                            type="button"
-                            onClick={() => refreshAudit()}
-                            className={cn(
-                              'inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm',
-                              adminDark ? 'border-white/10 bg-white/5 text-slate-200' : 'border-slate-200 bg-white text-slate-900'
-                            )}
-                          >
-                            <RefreshCw className="h-4 w-4" /> Refresh
-                          </button>
-                        }
-                      >
-                        <div className="space-y-3">
-                          {audit.slice(0, 5).map((entry) => (
-                            <div key={entry.id || entry.at} className={cn('rounded-2xl border p-3', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50')}>
-                              <div className="flex items-start justify-between gap-4">
-                                <div>
-                                  <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{entry.path || entry.action || 'Admin action'}</p>
-                                  <p className={cn('mt-1 text-xs', adminDark ? 'text-slate-400' : 'text-slate-600')}>{entry.at ? new Date(entry.at).toLocaleString() : '--'} · system</p>
-                                </div>
-                                <ArrowUpRight className="h-4 w-4 text-cyan-300" />
-                              </div>
-                              <div className={cn('mt-3 text-xs', adminDark ? 'text-slate-400' : 'text-slate-600')}>
-                                Actor: {entry.actor_id || entry.actor || 'system'} / Status: {entry.status ?? 200}
-                                <br />
-                                IP: {entry.ip || '--'} / Device: {entry.device_id || '--'}
-                              </div>
-                            </div>
-                          ))}
-                          {!audit.length ? <p className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>No recent activity.</p> : null}
-                        </div>
-                      </UltraSectionCard>
-                    </div>
-                  </div>
-
-                  <section className={cn('mt-5 rounded-[32px] border p-6 backdrop-blur-xl', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white/80')}>
-                    <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
-                      <div>
-                        <h2 className={cn('text-xl font-semibold tracking-tight', adminDark ? 'text-white' : 'text-slate-900')}>Admin Audit Log</h2>
-                        <p className={cn('mt-2 text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>
-                          Immutable, tamper-evident audit trail for every admin action.
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <div className={cn('flex items-center gap-2 rounded-2xl border px-3 py-2', adminDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white')}>
-                          <Search className={cn('h-4 w-4', adminDark ? 'text-slate-400' : 'text-slate-500')} />
-                          <input
-                            value={ultraAuditQuery}
-                            onChange={(e) => setUltraAuditQuery(e.target.value)}
-                            placeholder="Search audit..."
-                            className={cn('w-44 bg-transparent text-sm outline-none', adminDark ? 'text-slate-100 placeholder:text-slate-500' : 'text-slate-900 placeholder:text-slate-400')}
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => refreshAudit()}
-                          className={cn(
-                            'inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium',
-                            adminDark ? 'border-white/10 bg-white/10 text-white' : 'border-slate-200 bg-white text-slate-900'
-                          )}
-                        >
-                          <RefreshCw className="h-4 w-4" /> Refresh log
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="grid gap-3">
-                      {filteredUltraAuditRows.slice(0, 10).map((entry) => (
-                        <div
-                          key={`${entry.id || entry.at}-${entry.path || entry.action}`}
-                          className={cn(
-                            'grid gap-2 rounded-2xl border p-4 md:grid-cols-[1.4fr_0.8fr_1fr] md:items-center',
-                            adminDark ? 'border-white/10 bg-slate-950/25' : 'border-slate-200 bg-slate-50'
-                          )}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="rounded-2xl bg-cyan-500/10 p-2 text-cyan-300">
-                              <ShieldAlert className="h-4 w-4" />
-                            </div>
-                            <div>
-                              <p className={cn('font-medium', adminDark ? 'text-white' : 'text-slate-900')}>{entry.path || entry.action || '--'}</p>
-                              <p className={cn('text-xs', adminDark ? 'text-slate-400' : 'text-slate-600')}>
-                                Actor: {entry.actor_id || entry.actor || 'system'} / Status: {entry.status ?? 200}
-                              </p>
-                            </div>
-                          </div>
-                          <div className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>
-                            {entry.at ? new Date(entry.at).toLocaleString() : '--'}
-                          </div>
-                          <div className="flex items-center justify-between gap-3">
-                            <div className={cn('text-sm', adminDark ? 'text-slate-400' : 'text-slate-600')}>
-                              IP: {entry.ip || '--'} / Device: {entry.device_id || '--'}
-                            </div>
-                            <ChevronRight className={cn('h-4 w-4', adminDark ? 'text-slate-500' : 'text-slate-400')} />
-                          </div>
-                        </div>
-                      ))}
-                      {filteredUltraAuditRows.length === 0 ? (
-                        <div className={cn('rounded-2xl border border-dashed p-5 text-sm', adminDark ? 'border-white/10 bg-white/[0.03] text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-600')}>
-                          No audit entries found.
-                        </div>
-                      ) : null}
-                    </div>
-                  </section>
-                </div>
-              </div>
-) : null}
-
-          {activeCategory === 'ultra-security' ? null : (
-          <aside className="space-y-4">
+          </div>
+        </main>
+      </div>
+    </>
+  )
+}
 
             {activeCategory === 'config' ? (
               <div className="admin-card admin-sweep rounded-3xl p-6">
@@ -8492,7 +6283,7 @@ useEffect(() => {
                 ) : null}
               </div>
             ) : null}
-          </div>
+          </aside>
         </main>
       </div>
     </>
