@@ -32,6 +32,7 @@ import {
   KeyRound,
   LockKeyhole,
   Loader2,
+  Menu,
   MoonStar,
   PanelLeftClose,
   RefreshCw,
@@ -1287,7 +1288,7 @@ function UltraTinyChart({ dark, points = DEFAULT_ULTRA_MINI_CHART_POINTS, kpis =
 }
 
 export default function AdminPanel() {
-  const user = getCurrentUser()
+const user = getCurrentUser()
   const userRole = normalizeRole(user?.role)
   const [adminDark, setAdminDark] = useState(() => {
     const stored = localStorage.getItem('admin_theme')
@@ -1295,6 +1296,7 @@ export default function AdminPanel() {
     if (stored === 'dark') return true
     return true
   })
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -2894,7 +2896,9 @@ useEffect(() => {
         <div className="admin-noise" />
         
         <aside
-          className={`relative z-20 h-full w-[320px] overflow-hidden border-r ${theme.panel} ${theme.glow} transition-all duration-300`}
+          className={`relative z-20 h-full w-[320px] overflow-hidden border-r ${theme.panel} ${theme.glow} transition-all duration-300 lg:w-[320px] lg:translate-x-0 md:w-[280px] md:translate-x-0 sm:absolute sm:left-0 sm:top-0 sm:z-50 sm:h-full sm:w-[280px] ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'
+          }`}
         >
           <div className="absolute inset-0 pointer-events-none">
             <div className={`absolute -top-20 -right-20 h-56 w-56 rounded-full blur-3xl ${adminDark ? "bg-cyan-500/18" : "bg-sky-300/35"}`} />
@@ -2986,8 +2990,15 @@ useEffect(() => {
           </div>
         </aside>
 
-        <main className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden px-6 py-6">
-          <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
+        <main className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden px-4 py-4 sm:px-6 sm:py-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-4">
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="sm:inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white p-2 text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 lg:hidden"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
             <div className="admin-panel admin-sweep flex min-w-[220px] flex-1 items-center gap-2 rounded-full px-4 py-2 text-xs text-slate-200 md:max-w-md">
               <Search className="h-4 w-4 text-sky-200/80" />
               <input
@@ -3004,6 +3015,14 @@ useEffect(() => {
               {adminDark ? 'Light' : 'Dark'}
             </button>
           </div>
+
+          {/* Mobile backdrop */}
+          {sidebarOpen && (
+            <div
+              className="fixed inset-0 z-40 bg-black/50 sm:hidden"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
 
           <div className="flex-1 overflow-y-auto pb-6 pr-2">
             <div className="space-y-8">
