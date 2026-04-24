@@ -2896,9 +2896,9 @@ useEffect(() => {
         <div className="admin-noise" />
         
         <aside
-          className={`relative z-20 h-full w-[320px] overflow-hidden border-r ${theme.panel} ${theme.glow} transition-all duration-300 lg:w-[320px] lg:translate-x-0 md:w-[280px] md:translate-x-0 sm:absolute sm:left-0 sm:top-0 sm:z-50 sm:h-full sm:w-[280px] ${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'
-          }`}
+          className={`relative z-20 h-full w-[320px] shrink-0 overflow-hidden border-r ${theme.panel} ${theme.glow} transition-all duration-300 sm:absolute sm:left-0 sm:top-0 sm:z-50 sm:h-full sm:w-[280px] ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          } sm:translate-x-0`}
         >
           <div className="absolute inset-0 pointer-events-none">
             <div className={`absolute -top-20 -right-20 h-56 w-56 rounded-full blur-3xl ${adminDark ? "bg-cyan-500/18" : "bg-sky-300/35"}`} />
@@ -2990,7 +2990,7 @@ useEffect(() => {
           </div>
         </aside>
 
-        <main className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden px-4 py-4 sm:px-6 sm:py-6">
+        <main className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden pl-0 lg:pl-0 px-4 py-4 sm:px-6 sm:py-6">
           <div className="flex flex-wrap items-center justify-between gap-3 pb-4">
             <button
               type="button"
