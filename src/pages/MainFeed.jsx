@@ -250,11 +250,11 @@ export default function MainFeed() {
   const uniqueKey = `gartexhub_unique:${userId}`
 
   const [user, setUser] = useState(sessionUser)
+  const [feedConfig, setFeedConfig] = useState(DEFAULT_FEED_CONFIG)
   const [activeType, setActiveType] = useState(feedConfig.tabs[0])
   const [activeCategory, setActiveCategory] = useState(feedConfig.labels.categories)
   const [unique, setUnique] = useLocalStorageState(uniqueKey, false) // eslint-disable-line no-unused-vars
   const [search, setSearch] = useState("")
-  const [feedConfig, setFeedConfig] = useState(DEFAULT_FEED_CONFIG)
 
   const [items, setItems] = useState([])
   const [tags, setTags] = useState([])

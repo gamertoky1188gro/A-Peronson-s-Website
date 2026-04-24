@@ -13114,5 +13114,21 @@
     "payload": {},
     "prev_hash": "76343229925ac4441dfc9a8c535301e3d4989aec7e1759345a3fe60c3121f436",
     "hash": "703e4d130ee5c7e66c2fff256593128d133b25d10d32da1c53aedf4270da9a0a"
+  },
+  {
+    "id": "44ee321a-a908-4c35-a222-3c9031acf63d",
+    "at": "2026-04-24T11:45:24.583Z",
+    "duration_ms": 1395,
+    "actor_id": "f2bf8fd5-eb7b-4bd8-916e-932910b070e7",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-7wym0yyg",
+    "method": "GET",
+    "path": "/api/admin/users",
+    "status": 200,
+    "action": "GET /api/admin/users",
+    "payload": {},
+    "prev_hash": "703e4d130ee5c7e66c2fff256593128d133b25d10d32da1c53aedf4270da9a0a",
+    "hash": "d09d1d820f4465fc723c5eb0d68cb25a8d76e1b93c48f31b89900cd1d2fd02a6"
   }
 ]
