@@ -46,6 +46,7 @@ import Footer from "./components/Footer";
 import AccessDenied from "./pages/AccessDenied";
 import VerificationPage from "./pages/VerificationPage";
 import FeedManagement from "./pages/FeedManagement";
+import TaskTracker from "./pages/TaskTracker";
 import { getCurrentUser } from "./lib/auth";
 import { trackClientEvent } from "./lib/events";
 
@@ -309,6 +310,7 @@ function AppRoutes() {
       />
 
       <Route path="/mvp" element={<MvpDashboard />} />
+      <Route path="/tasks" element={<TaskTracker />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

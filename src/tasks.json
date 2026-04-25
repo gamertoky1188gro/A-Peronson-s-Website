@@ -1,0 +1,349 @@
+{
+  "projectName": "GarTexHub B2B Marketplace",
+  "tasks": [
+    {
+      "id": "1",
+      "title": "Frontend Pages",
+      "description": "All public and protected frontend pages",
+      "isCompleted": true,
+      "children": [
+        {"id": "1.1", "title": "Landing Page (TexHub)", "description": "Public landing page for GarTexHub", "isCompleted": true, "link": "/"},
+        {"id": "1.2", "title": "Pricing/Subscription Page", "description": "Three pricing plans for Buyer, Factory, Buying House", "isCompleted": true, "link": "/pricing"},
+        {"id": "1.3", "title": "About Page", "description": "About GarTexHub platform", "isCompleted": true, "link": "/about"},
+        {"id": "1.4", "title": "Terms Page", "description": "Terms and conditions", "isCompleted": true, "link": "/terms"},
+        {"id": "1.5", "title": "Privacy Page", "description": "Privacy policy", "isCompleted": true, "link": "/privacy"},
+        {"id": "1.6", "title": "Help Center", "description": "Help and support page", "isCompleted": true, "link": "/help"},
+        {"id": "1.7", "title": "Login Page", "description": "User login with email/password", "isCompleted": true, "link": "/login", "issues": ["Dark mode highlighting issues", "Dropdown styling needs improvement"]},
+        {"id": "1.8", "title": "Signup Page", "description": "Account registration for Buyer, Factory, Buying House", "isCompleted": true, "link": "/signup", "issues": ["Country selector needs searchable dropdown", "Form validation for title/quantity fields"]},
+        {"id": "1.9", "title": "Access Denied Page", "description": "Page for unauthorized access", "isCompleted": true, "link": "/access-denied"},
+        {"id": "1.10", "title": "Main Feed (Homepage)", "description": "LinkedIn-style feed with Buyer Requests & Product Posts", "isCompleted": true, "link": "/feed"},
+        {"id": "1.11", "title": "Search Results Page", "description": "Search with advanced filters and algorithm-based results", "isCompleted": true, "link": "/search"},
+        {"id": "1.12", "title": "Buyer Profile", "description": "Profile page for Buyer accounts", "isCompleted": true, "link": "/buyer/:id"},
+        {"id": "1.13", "title": "Factory Profile", "description": "Profile page for Factory accounts with Video Gallery tab", "isCompleted": true, "link": "/factory/:id"},
+        {"id": "1.14", "title": "Buying House Profile", "description": "Profile page for Buying House accounts", "isCompleted": true, "link": "/buying-house/:id"},
+        {"id": "1.15", "title": "Contract Vault", "description": "Digital contracts with e-signatures and PDF storage", "isCompleted": true, "link": "/contracts"},
+        {"id": "1.16", "title": "Notifications Center", "description": "Search alerts and activity notifications", "isCompleted": true, "link": "/notifications"},
+        {"id": "1.17", "title": "Chat Interface", "description": "Messaging with AI summary and Express Interest feature", "isCompleted": true, "link": "/chat"},
+        {"id": "1.18", "title": "Call Interface", "description": "Video/audio calls with scheduling and recording", "isCompleted": true, "link": "/call"},
+        {"id": "1.19", "title": "Verification Page", "description": "Document upload for account verification", "isCompleted": true, "link": "/verification"},
+        {"id": "1.20", "title": "Verification Center", "description": "Same as verification page", "isCompleted": true, "link": "/verification-center"}
+      ]
+    },
+    {
+      "id": "2",
+      "title": "Role-Specific Protected Pages",
+      "description": "Pages requiring specific roles for access",
+      "isCompleted": true,
+      "children": [
+        {"id": "2.1", "title": "Partner Network", "description": "Connected factories list for Buying House", "isCompleted": true, "link": "/partner-network"},
+        {"id": "2.2", "title": "Product Management", "description": "Upload products, videos, reels", "isCompleted": true, "link": "/product-management"},
+        {"id": "2.3", "title": "Buyer Requests", "description": "Post and manage buyer requests", "isCompleted": true, "link": "/buyer-requests"},
+        {"id": "2.4", "title": "Member Management", "description": "Team management for Buying House/Factory", "isCompleted": true, "link": "/member-management"},
+        {"id": "2.5", "title": "Org Settings", "description": "Organization settings and profile", "isCompleted": true, "link": "/org-settings"},
+        {"id": "2.6", "title": "Insights/Analytics", "description": "Analytics dashboard for Enterprise users", "isCompleted": true, "link": "/insights"},
+        {"id": "2.7", "title": "Owner Dashboard", "description": "Main admin/owner panel with full access", "isCompleted": true, "link": "/owner"},
+        {"id": "2.8", "title": "Agent Dashboard", "description": "Limited panel for sub-account members", "isCompleted": true, "link": "/agent"},
+        {"id": "2.9", "title": "MVP Dashboard", "description": "Development test page", "isCompleted": true, "link": "/mvp"}
+      ]
+    },
+    {
+      "id": "3",
+      "title": "Backend Implementation",
+      "description": "Backend services and APIs",
+      "isCompleted": true,
+      "children": [
+        {"id": "3.1", "title": "Database Setup", "description": "PostgreSQL database configuration with Prisma", "isCompleted": true, "notes": "Prisma client in server/utils/prisma.js"},
+        {"id": "3.2", "title": "Authentication API", "description": "JWT-based authentication system", "isCompleted": true, "notes": "authController.js, auth middleware, passkeyService.js"},
+        {"id": "3.3", "title": "User Management API", "description": "User CRUD and role management", "isCompleted": true, "notes": "userController.js, userService.js"},
+        {"id": "3.4", "title": "Real-time Messaging", "description": "WebSocket-based chat system", "isCompleted": true, "notes": "messageController.js, messageService.js, realtimeBus.js"},
+        {"id": "3.5", "title": "Email System", "description": "SMTP or Gmail API integration", "isCompleted": true, "notes": "emailService.js exists"},
+        {"id": "3.6", "title": "File Upload System", "description": "Document and media upload handling", "isCompleted": true, "notes": "documentService.js, feedUploadController.js"},
+        {"id": "3.7", "title": "Content Moderation", "description": "Detect and block inappropriate content", "isCompleted": true, "notes": "communicationPolicyService.js, chatbotService.js"},
+        {"id": "3.8", "title": "Anti-Contact Sharing", "description": "Block phone/email/WhatsApp/FB/IG/URL sharing in messages", "isCompleted": true, "notes": "Policy enforcement in communicationPolicyService.js"},
+        {"id": "3.9", "title": "Violation System", "description": "Warning → 24h timeout → 48h → 1 week → ban", "isCompleted": true, "notes": "enforcementService.js, securityService.js"},
+        {"id": "3.10", "title": "User Tracking Analytics", "description": "Track clicks, page visits, time on site, user funnel", "isCompleted": true, "notes": "analyticsService.js, eventTrackingService.js - uses Prisma"},
+        {"id": "3.11", "title": "Call Recording System", "description": "Store and manage call recordings for dispute resolution", "isCompleted": true, "notes": "callSessionService.js, webrtcService.js"}
+      ]
+    },
+    {
+      "id": "4",
+      "title": "Special Features",
+      "description": "Unique platform features",
+      "isCompleted": false,
+      "children": [
+        {"id": "4.1", "title": "Unique Algorithm", "description": "Feed algorithm to show diverse content", "isCompleted": false, "notes": "Toggle button exists but algorithm not implemented"},
+        {"id": "4.2", "title": "$5 Credit System", "description": "Auto credit for new users", "isCompleted": false, "notes": "walletService.js exists but $5 credit not implemented"},
+        {"id": "4.3", "title": "Sample Order Flow", "description": "Sample Order -> Main Order conversion", "isCompleted": false},
+        {"id": "4.4", "title": "Premium Plans", "description": "Three account types with unique premium features", "isCompleted": true, "notes": "Pricing page exists with plans"},
+        {"id": "4.5", "title": "Floating AI Assistant", "description": "Help users understand platform settings", "isCompleted": true, "notes": "FloatingAssistant component exists"},
+        {"id": "4.6", "title": "Express Interest Feature", "description": "Lock conversation to first responder", "isCompleted": true, "notes": "Button exists in chat interface"},
+        {"id": "4.7", "title": "Draft Save for Buyer Requests", "description": "Save buyer request as draft if form is partially filled", "isCompleted": false},
+        {"id": "4.8", "title": "Duplicate Previous Request", "description": "Allow buyers to duplicate their previous requests", "isCompleted": false},
+        {"id": "4.9", "title": "Request Status Badge", "description": "Active / Reviewing Quotes / Closed status badges", "isCompleted": false},
+        {"id": "4.10", "title": "Early Adopter Coupon System", "description": "Coupon for 2 months free verification", "isCompleted": false, "notes": "couponService.js exists but specific coupon not implemented"},
+        {"id": "4.11", "title": "Halal Content Policy", "description": "Block revealing clothes, allow music in appropriate context", "isCompleted": false, "notes": "Spam detection exists, clothing filter not implemented"}
+      ]
+    },
+    {
+      "id": "5",
+      "title": "Analytics Implementation",
+      "description": "5 Key metrics for platform success",
+      "isCompleted": false,
+      "children": [
+        {"id": "5.1", "title": "Buyer-Supplier Match Rate", "description": "Track matching success rate", "isCompleted": false},
+        {"id": "5.2", "title": "Active Buyer vs Supplier Ratio", "description": "Monitor marketplace balance (1:3-5)", "isCompleted": false},
+        {"id": "5.3", "title": "Request to Contract Conversion", "description": "Track contracts generated from requests", "isCompleted": false},
+        {"id": "5.4", "title": "Time to First Response", "description": "Average response time for verified suppliers", "isCompleted": false},
+        {"id": "5.5", "title": "Repeat Buyer Rate", "description": "Track returning buyer percentage", "isCompleted": false},
+        {"id": "5.6", "title": "Buying House Analytics", "description": "Buyer Request Match Rate, Lead→Deal Conversion, Factory Response Speed, Buyer Demand Trend, Trusted Deal Score", "isCompleted": false},
+        {"id": "5.7", "title": "Lead Management", "description": "Lead status (New→Closed), assign to agent, internal notes, reminders/follow-ups", "isCompleted": true, "notes": "leadService.js exists"},
+        {"id": "5.8", "title": "Order Completion Certification", "description": "Rating after successful order completion", "isCompleted": true, "notes": "orderCertificationService.js exists"}
+      ]
+    },
+    {
+      "id": "6",
+      "title": "Admin Panel",
+      "description": "Complete admin oversight system",
+      "isCompleted": true,
+      "children": [
+        {"id": "6.1", "title": "User & Account Oversight", "description": "View all users, roles, verification status", "isCompleted": true, "notes": "AdminPanel.jsx exists"},
+        {"id": "6.2", "title": "Document Review System", "description": "Review verification documents", "isCompleted": true},
+        {"id": "6.3", "title": "Subscription Management", "description": "Track premium subscriptions", "isCompleted": true},
+        {"id": "6.4", "title": "Platform Analytics", "description": "Active users, growth, conversions", "isCompleted": true},
+        {"id": "6.5", "title": "Content Moderation", "description": "Review flagged content and violations", "isCompleted": true},
+        {"id": "6.6", "title": "Support Tickets", "description": "Handle bug reports and feedback", "isCompleted": true, "notes": "SupportReports.jsx exists"},
+        {"id": "6.7", "title": "Admin Audit Logs", "description": "Track all admin actions with timestamps", "isCompleted": true, "notes": "auditStore.js exists"},
+        {"id": "6.8", "title": "Rejection Reason System", "description": "Provide clear reasons when rejecting content/users", "isCompleted": false}
+      ]
+    },
+    {
+      "id": "7",
+      "title": "Verification System",
+      "description": "Document-based account verification",
+      "isCompleted": true,
+      "children": [
+        {"id": "7.1", "title": "Factory Verification (6 docs)", "description": "Company Registration, Trade License, TIN, NID, Bank Proof, ERC", "isCompleted": true, "notes": "UI exists, verificationService.js backend"},
+        {"id": "7.2", "title": "Buying House Verification (5 docs)", "description": "Company Registration, Trade License, TIN, NID, Bank Proof", "isCompleted": true, "notes": "UI exists"},
+        {"id": "7.3", "title": "EU Buyer Verification", "description": "Business Registration, VAT, EORI, Bank Proof", "isCompleted": false},
+        {"id": "7.4", "title": "USA Buyer Verification", "description": "Business Registration, EIN, IOR, Bank Proof", "isCompleted": false},
+        {"id": "7.5", "title": "Monthly Renewal", "description": "$6.99/month verification badge", "isCompleted": false, "notes": "subscriptionService.js exists"},
+        {"id": "7.6", "title": "Verification Badge Display", "description": "Show all verified documents with checkmarks", "isCompleted": true},
+        {"id": "7.7", "title": "Country List (EU Countries)", "description": "Full list of EU countries for buyer verification", "isCompleted": false}
+      ]
+    },
+    {
+      "id": "8",
+      "title": "UX/UI Fixes",
+      "description": "Outstanding UI/UX issues from buyer feedback",
+      "isCompleted": false,
+      "children": [
+        {"id": "8.1", "title": "Back Button Implementation", "description": "Add back button and arrow indicator on all pages", "isCompleted": true, "notes": "Fixed per 3/29/26 chat"},
+        {"id": "8.2", "title": "Dark Mode Text Highlighting", "description": "Form labels need highlighting in dark mode", "isCompleted": false},
+        {"id": "8.3", "title": "Profile Page Header", "description": "Add banner, profile picture upload, tabs layout", "isCompleted": false, "notes": "Requested on 4/20/26"},
+        {"id": "8.4", "title": "View Plan Button", "description": "Navigate to subscription page", "isCompleted": true, "notes": "Fixed per 3/31/26 chat"},
+        {"id": "8.5", "title": "Scroll Reset on Navigation", "description": "Clean page transitions without scroll retention", "isCompleted": true, "notes": "Fixed per 3/29/26 chat"},
+        {"id": "8.6", "title": "Login Redirect Fix", "description": "Redirect logged-in users away from /login", "isCompleted": true, "notes": "Fixed per 3/29/26 chat"},
+        {"id": "8.7", "title": "Team Management Option", "description": "Make team management functional", "isCompleted": true, "notes": "Page exists"},
+        {"id": "8.8", "title": "Legal/Docs Page", "description": "Make legal page accessible", "isCompleted": true},
+        {"id": "8.9", "title": "Blue Color System (GarTex Blue)", "description": "Consistent #0A66C2 blue color across all pages", "isCompleted": false},
+        {"id": "8.10", "title": "Role-Based Feed Visibility", "description": "Buyer accounts should see different feed content", "isCompleted": false},
+        {"id": "8.11", "title": "Demo Mode vs Production Mode", "description": "Server-side flag to toggle demo seeded data", "isCompleted": false},
+        {"id": "8.12", "title": "Pricing Role-Aware Display", "description": "Show only relevant pricing plan based on logged-in user's role", "isCompleted": false}
+      ]
+    },
+    {
+      "id": "9",
+      "title": "Payment & Contracts",
+      "description": "Payment workflows and contract management",
+      "isCompleted": true,
+      "children": [
+        {"id": "9.1", "title": "Bank Transfer Workflow", "description": "Transaction proof upload and verification", "isCompleted": true, "notes": "paymentProofService.js exists"},
+        {"id": "9.2", "title": "LC Workflow", "description": "Letter of Credit document handling", "isCompleted": true, "notes": "paymentProofService.js handles LC"},
+        {"id": "9.3", "title": "Seller Review System", "description": "Received/Pending/Not Received status", "isCompleted": true},
+        {"id": "9.4", "title": "Admin Dispute Review", "description": "Admin review for payment disputes", "isCompleted": true, "notes": "Admin governance exists"},
+        {"id": "9.5", "title": "Audit Trail", "description": "Complete record of all transactions", "isCompleted": true, "notes": "auditStore.js exists"}
+      ]
+    },
+    {
+      "id": "10",
+      "title": "Support & Feedback System",
+      "description": "User support and issue reporting",
+      "isCompleted": true,
+      "children": [
+        {"id": "10.1", "title": "Support Page", "description": "Bug report, feature request, account issues", "isCompleted": true, "notes": "SupportReports.jsx exists"},
+        {"id": "10.2", "title": "Category Options", "description": "Bug Report, Feature Request, Account Problem, Payment Issue, Report User, General Feedback", "isCompleted": true},
+        {"id": "10.3", "title": "Issue Tracking", "description": "Reference ID for submitted tickets", "isCompleted": true, "notes": "supportTicketService.js exists"}
+      ]
+    },
+    {
+      "id": "11",
+      "title": "Buyer Request Post System",
+      "description": "Structured buyer request posting with detailed fields",
+      "isCompleted": true,
+      "children": [
+        {"id": "11.1", "title": "Garments vs Textile Differentiation", "description": "Separate forms for Garments and Textile buyer requests", "isCompleted": true, "notes": "BuyerRequestManagement.jsx has both forms"},
+        {"id": "11.2", "title": "Garments Request Fields", "description": "Basic Info, Product Specification, Commercial Terms, Compliance", "isCompleted": true, "notes": "Form has all fields in BuyerRequestManagement.jsx"},
+        {"id": "11.3", "title": "Textile Request Fields", "description": "Basic Info, Technical Spec, Commercial Terms, Lab/Cert", "isCompleted": true},
+        {"id": "11.4", "title": "Quote Deadline Field", "description": "Buyer specifies how many days for response", "isCompleted": true},
+        {"id": "11.5", "title": "Request Validity/Expiry", "description": "How long the post remains active", "isCompleted": true},
+        {"id": "11.6", "title": "Max Suppliers to Contact", "description": "Limit number of suppliers who can respond", "isCompleted": true},
+        {"id": "11.7", "title": "Supplier Preference Filter", "description": "Location, Factory Size, Export Experience preferences", "isCompleted": true},
+        {"id": "11.8", "title": "Confidentiality Toggle", "description": "Allow hiding brand name from public", "isCompleted": true},
+        {"id": "11.9", "title": "Packaging & Labeling", "description": "Poly bag, Hanger, Flat pack options", "isCompleted": true},
+        {"id": "11.10", "title": "Shipment Details", "description": "Partial Shipment Allowed, Shipment Mode (Sea/Air)", "isCompleted": true},
+        {"id": "11.11", "title": "Tech Pack Upload", "description": "PDF/AI/ZIP upload for product specifications", "isCompleted": true, "notes": "documentService.js handles uploads"},
+        {"id": "11.12", "title": "Draft Save for Buyer Requests", "description": "Save buyer request as draft if form is partially filled", "isCompleted": false},
+        {"id": "11.13", "title": "Duplicate Previous Request", "description": "Allow buyers to duplicate their previous requests", "isCompleted": false},
+        {"id": "11.14", "title": "Request Status Badge", "description": "Active / Reviewing Quotes / Closed status badges", "isCompleted": false},
+        {"id": "11.15", "title": "More Fields Button", "description": "Optional expandable fields for additional customization", "isCompleted": true}
+      ]
+    },
+    {
+      "id": "12",
+      "title": "Premium Feature Comparison",
+      "description": "Detailed feature lists for each account type premium plans",
+      "isCompleted": true,
+      "children": [
+        {"id": "12.1", "title": "Buyer Premium Features", "description": "Advanced Search Filters, Priority Placement, Dedicated Support, etc.", "isCompleted": true, "notes": "Listed in pricing page"},
+        {"id": "12.2", "title": "Factory Premium Features", "description": "Profile/Product boost, Advanced analytics, Priority search, etc.", "isCompleted": true},
+        {"id": "12.3", "title": "Buying House Premium Features", "description": "Same as Factory plus unlimited Partner Network Access", "isCompleted": true}
+      ]
+    },
+    {
+      "id": "13",
+      "title": "DevOps & Hosting",
+      "description": "Deployment and infrastructure",
+      "isCompleted": false,
+      "children": [
+        {"id": "13.1", "title": "Hosting Setup", "description": "Deploy to Render/AWS/other cloud provider", "isCompleted": false, "notes": "Using local Cloudflare tunneling for testing"},
+        {"id": "13.2", "title": "Domain Setup", "description": "GarTexHub.com domain configuration", "isCompleted": false},
+        {"id": "13.3", "title": "Cloud Storage", "description": "S3 or similar for file/document storage", "isCompleted": false}
+      ]
+    },
+    {
+      "id": "14",
+      "title": "Wallet & Credit System",
+      "description": "New user credits and coupon system",
+      "isCompleted": false,
+      "children": [
+        {"id": "14.1", "title": "$5 Credit for New Users", "description": "Auto-credit $5 for new account registration", "isCompleted": false},
+        {"id": "14.2", "title": "Early Adopter Coupon", "description": "Coupon for 2 months free verification", "isCompleted": false},
+        {"id": "14.3", "title": "Coupon Code System", "description": "Kupon code use for discount", "isCompleted": true, "notes": "couponController.js, couponService.js exist"},
+        {"id": "14.4", "title": "Verification Subscription Renewal", "description": "$6.99/month verification badge auto-renewal", "isCompleted": false}
+      ]
+    },
+    {
+      "id": "15",
+      "title": "Halal Content Policy",
+      "description": "Content moderation for B2B marketplace",
+      "isCompleted": false,
+      "children": [
+        {"id": "15.1", "title": "Clothing Content Filter", "description": "Block revealing/immodest clothing posts", "isCompleted": false},
+        {"id": "15.2", "title": "Content Rejection Reason", "description": "Show clear reason when content is rejected", "isCompleted": false},
+        {"id": "15.3", "title": "User Appeal System", "description": "Users can report if content was wrongly blocked", "isCompleted": false},
+        {"id": "15.4", "title": "Admin Manual Review", "description": "Admin can review rejected items and approve if valid", "isCompleted": true}
+      ]
+    },
+    {
+      "id": "16",
+      "title": "Authentication & Security",
+      "description": "Advanced auth features",
+      "isCompleted": true,
+      "children": [
+        {"id": "16.1", "title": "Passkey/WebAuthn", "description": "Passwordless authentication option", "isCompleted": true, "notes": "passkeyService.js exists"},
+        {"id": "16.2", "title": "JWT Authentication", "description": "Token-based auth system", "isCompleted": true},
+        {"id": "16.3", "title": "Role-Based Access Control", "description": "Admin/Owner/Agent role permissions", "isCompleted": true}
+      ]
+    },
+    {
+      "id": "17",
+      "title": "Profile Enhancements",
+      "description": "Profile page improvements from chat feedback",
+      "isCompleted": false,
+      "children": [
+        {"id": "17.1", "title": "Industry Field Display", "description": "Show Industry field on all profile types", "isCompleted": false},
+        {"id": "17.2", "title": "Organization Field Display", "description": "Show Organization field", "isCompleted": false},
+        {"id": "17.3", "title": "Profile Banner Image", "description": "Add banner/cover image to profile pages", "isCompleted": false},
+        {"id": "17.4", "title": "Profile Picture Upload", "description": "Allow profile picture upload", "isCompleted": false},
+        {"id": "17.5", "title": "Work History/Portfolio", "description": "Show companies worked with", "isCompleted": false},
+        {"id": "17.6", "title": "Review/Rating Page", "description": "Separate review page per profile", "isCompleted": true, "notes": "RatingFeedback.jsx exists"}
+      ]
+    },
+    {
+      "id": "18",
+      "title": "Smart Notifications",
+      "description": "Intelligent notification system",
+      "isCompleted": false,
+      "children": [
+        {"id": "18.1", "title": "Search-Based Alerts", "description": "Notify users when matching products/requests are posted", "isCompleted": false},
+        {"id": "18.2", "title": "Similar Products Notification", "description": "Smart notifications after search", "isCompleted": false}
+      ]
+    },
+    {
+      "id": "19",
+      "title": "Lead Management System",
+      "description": "Enterprise lead workflow",
+      "isCompleted": true,
+      "children": [
+        {"id": "19.1", "title": "Lead Status Tracking", "description": "Status: New → Contacted → Negotiating → Sample Sent → Order Confirmed → Closed", "isCompleted": true, "notes": "leadService.js exists"},
+        {"id": "19.2", "title": "Assign to Agent", "description": "Assign leads to specific agents", "isCompleted": true},
+        {"id": "19.3", "title": "Internal Notes", "description": "Add internal notes to leads", "isCompleted": true},
+        {"id": "19.4", "title": "Reminders/Follow-ups", "description": "Set reminders and follow-up notifications", "isCompleted": true, "notes": "leadReminderService.js exists"}
+      ]
+    },
+    {
+      "id": "20",
+      "title": "Messaging & Anti-Spam",
+      "description": "Message hierarchy and spam control",
+      "isCompleted": true,
+      "children": [
+        {"id": "20.1", "title": "Messaging Hierarchy", "description": "Verified users → inbox, Unverified → message requests", "isCompleted": true, "notes": "messageService.js handles this"},
+        {"id": "20.2", "title": "Anti-Spam Controls", "description": "Detect spam, duplicate content, low quality posts", "isCompleted": true, "notes": "evaluateAntiAbuseSignals exists in backend"},
+        {"id": "20.3", "title": "Message Request Highlighting", "description": "Highlight new message requests visually", "isCompleted": false}
+      ]
+    },
+    {
+      "id": "21",
+      "title": "Digital Contracts",
+      "description": "E-signature and contract management",
+      "isCompleted": true,
+      "children": [
+        {"id": "21.1", "title": "E-Signature System", "description": "Digital signature for contracts", "isCompleted": true, "notes": "eSignService.js exists"},
+        {"id": "21.2", "title": "PDF Contract Generation", "description": "Generate PDF copies of contracts", "isCompleted": true},
+        {"id": "21.3", "title": "Contract Version History", "description": "Track contract version changes", "isCompleted": true},
+        {"id": "21.4", "title": "Contract Vault Storage", "description": "Secure storage of all contracts", "isCompleted": true, "notes": "ContractVault page exists"}
+      ]
+    },
+    {
+      "id": "22",
+      "title": "Onboarding & Account Setup",
+      "description": "New user onboarding flow",
+      "isCompleted": true,
+      "children": [
+        {"id": "22.1", "title": "Onboarding Wizard", "description": "3-step onboarding: Profile Image → Organization → Categories", "isCompleted": true, "notes": "OnboardingWizard.jsx exists"},
+        {"id": "22.2", "title": "Zero Complexity Signup", "description": "Simple account creation process", "isCompleted": true}
+      ]
+    },
+    {
+      "id": "23",
+      "title": "Feed & Content Management",
+      "description": "Feed system and content moderation",
+      "isCompleted": true,
+      "children": [
+        {"id": "23.1", "title": "Feed Management Page", "description": "Admin controls for feed content", "isCompleted": true, "notes": "FeedManagement.jsx exists"},
+        {"id": "23.2", "title": "Content Moderation Pipeline", "description": "Detect and block inappropriate content automatically", "isCompleted": true, "notes": "communicationPolicyService.js exists"},
+        {"id": "23.3", "title": "Spam Detection", "description": "Keyword spam, duplicate ratio, word variety checks", "isCompleted": true, "notes": "evaluateAntiAbuseSignals exists"}
+      ]
+    },
+    {
+      "id": "24",
+      "title": "Industry & Categories",
+      "description": "Industry selection and auto-reply",
+      "isCompleted": true,
+      "children": [
+        {"id": "24.1", "title": "Industry Selection", "description": "Select industry: Garments, Textile, Buying House", "isCompleted": true, "notes": "IndustryPage.jsx exists"},
+        {"id": "24.2", "title": "Industry Auto-Reply", "description": "Auto-reply using aggregated category stats", "isCompleted": false}
+      ]
+    }
+  ]
+}
