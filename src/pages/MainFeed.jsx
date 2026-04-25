@@ -547,8 +547,8 @@ export default function MainFeed() {
         setLoadingMore(false);
       }
     },
-    [activeCategory, activeType, token, unique, user?.role, feedConfig],
-  ); // eslint-disable-line react-hooks/exhaustive-deps
+    [activeCategory, activeType, token, unique, user?.role, feedConfig, nextCursor],
+  );  
 
   useEffect(() => {
     loadUser();
@@ -564,7 +564,8 @@ export default function MainFeed() {
     setItems([]);
     setNextCursor(0);
     loadFeedPage({ reset: true });
-  }, [activeType, activeCategory, unique, loadFeedPage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeType, activeCategory, unique]);
 
   useEffect(() => {
     const node = sentinelRef.current;

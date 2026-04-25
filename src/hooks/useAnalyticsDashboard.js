@@ -94,9 +94,9 @@ export default function useAnalyticsDashboard() {
     };
   }, []);
 
-  const isEnterprise = useMemo(
+const isEnterprise = useMemo(
     () => ENTERPRISE_PLANS.has(subscription?.plan),
-    [subscription?.plan],
+    [subscription?.plan]
   );
 
   return {

@@ -1,0 +1,1004 @@
+2/15/26, 9:16 PM - Messages and calls are end-to-end encrypted. Only people in this chat can read, listen to, or share them. *Learn more*
+2/15/26, 9:16 PM - Shakibul hasan Shaun created group "B2B"
+2/15/26, 9:16 PM - Shakibul hasan Shaun added you
+2/15/26, 9:17 PM - +60 17-726 0362: hi
+2/15/26, 9:17 PM - Shakibul hasan Shaun: Hi
+2/15/26, 9:17 PM - +60 17-726 0362: 
+2/15/26, 9:57 PM - +60 17-726 0362: I would like to know whether you have any specific tools, frameworks, or technical requirements that you prefer for building the website.
+If there are no specific restrictions, I plan to develop the website independently using my preferred technology stack. For the frontend, I will use React, and for the backend, I will use Express.js (Node.js).
+If the project requires additional advanced features in the future, I can also integrate other technologies such as C++, C#, or Python depending on performance, security, or system-level requirements.
+Please let me know if you have any preferred tools, hosting environments, or architectural guidelines so I can align the development process accordingly.)
+
+তিনি এই মেসেজ আমাকে দিয়েছেন!
+2/15/26, 9:57 PM - +60 17-726 0362: hi @⁨Cyber Code Master⁩
+2/15/26, 9:58 PM - +60 17-726 0362: We need figma design first
+Frontend:React
+Backend:Prisma
+we will use cloudfare/aws
+Ai integration and apis will check preferred best ones.
+2/15/26, 9:58 PM - +60 17-726 0362: first we need figma design
+2/16/26, 9:07 PM - Cyber Code Master: You deleted this message
+2/16/26, 9:07 PM - Cyber Code Master: বায়িং হাউজ   (1).pdf (file attached)
+বায়িং হাউজ   (1).pdf
+2/16/26, 9:08 PM - Cyber Code Master: Hero Section & Search: The document mentions that users will be notified based on what they search. Should the homepage prominently feature a large search bar with "Garments" and "Textile" as the primary filters?
+2/16/26, 9:08 PM - Cyber Code Master: Content Feed: Since the platform should be like a social media site , will the homepage feature a combined scrollable feed of "Buyer Requests" and "Company Product Posts"?
+2/16/26, 9:08 PM - Cyber Code Master: Video Integration: The document mentions a video upload option. Should there be a dedicated "Reels" or "Video Feed" tab on the homepage, or will videos simply appear in the main feed?
+2/16/26, 9:09 PM - Cyber Code Master: AI Assistant Placement: There is a requirement for an AI assistant to explain features. Should this be a floating chat bubble available on all pages, including the homepage?
+2/16/26, 9:12 PM - Shakibul hasan Shaun: এই ক্ষেত্রে আমার উভয় মন্তব্য আছে :  সার্চ অপশন সাধারণ রাখলেও চলবে , আবার আপনি যেটা বলছেন সেটা করলেও চলে , 
+
+ এক্ষেত্রে আপনি ইউনিকনেসটাকে বেশি প্রাধান্য দেন
+2/16/26, 9:15 PM - Shakibul hasan Shaun: সম্মিলিত একটা ফিড থাকবে এবং নিচে অনেকগুলো অপশন থাকবে  সেখানে আলাদা করে শুধুমাত্র buyer requests  এবং কোম্পানি প্রোডাক্ট  অপশন থাকবে , 
+
+কিন্তু এখানে এই দুইটির নাম যদি এত বড় করে লেখা থাকে তাহলে সমস্যা হবে এক্ষেত্রে ভিন্নধর্মী একটা উপায় অবলম্বন করবেন, এটা হতে পারে একটা চিহ্ন দ্বারা, 
+ 
+কিন্তু যখন সেই চিহ্নের উপর ক্লিক করা হবে তখন উপরে লেখা উঠবে বড় করে Buyer  requests, Company products
+2/16/26, 9:16 PM - +60 17-726 0362: make it floating
+2/16/26, 9:18 PM - Shakibul hasan Shaun: অর্থাৎ আপনি বুঝাতে চাচ্ছেন  ইউটিউবে যেমন নিচে অনেকগুলো অপশন আছে সেখানে rells  option আছে সেই রকম কিছু, 
+
+কিন্তু এখানে আলাদা করে দুইটি অপশন নিচে থাকার দরকার নেই,
+2/16/26, 9:18 PM - +60 17-726 0362: bro use language we understand
+2/16/26, 9:19 PM - +60 17-726 0362: which one better?
+2/16/26, 9:24 PM - Cyber Code Master: User Dashboards: Since there are three account types (Buyer, Factory, and Buying House), will each have a unique dashboard? Specifically:  
+Buying House Dashboard: Will this include a dedicated "Team Management" page to assign different IDs and permissions to members?  
+Factory Dashboard: Will this include a "Product Management" page for posting their items?
+2/16/26, 9:24 PM - Cyber Code Master: Meeting & Communication Hub: The document requires video/audio calling and call recording. Should there be a dedicated "Meeting Room" page where recorded calls and meeting schedules are stored?
+2/16/26, 9:24 PM - Cyber Code Master: Order & Contract Page: Since you mention digital signatures and PDF contract generation, will there be a "My Orders" or "Contracts" page where both parties can view and download these documents?
+2/16/26, 9:24 PM - Cyber Code Master: Subscription/Enterprise Page: You mentioned selling Enterprise subscriptions for Buying Houses. Will there be a "Pricing" or "Upgrade" page detailing the benefits of these plans?
+2/16/26, 9:27 PM - +60 17-726 0362: yeah unique
+2/16/26, 9:28 PM - +60 17-726 0362: @⁨Shakibul hasan Shaun⁩
+2/16/26, 9:46 PM - Shakibul hasan Shaun: There will be a Buyer dashboard: it will have a feed and notification system based on search.
+
+However, one common problem with current social media platforms is that once you start watching a certain type of video, similar content keeps appearing, and you rarely see anything unique or different.
+
+To solve this, there will be an option in the top corner to enable or disable a “Unique” button if needed.
+
+
+Buying House dashboard: There will be a management option where free users can, for now, create up to 10 IDs each with any name, but the same name cannot be used twice.
+
+A password can be set for each ID. Using these, agents working in the Buying House will be able to log in.
+
+These regular employees’ dashboards will not have a separate Team Management section or any similar buttons.
+
+(However, the “Unique” button will be available everywhere.)
+
+There will be a connected option through which they can choose which Buying House accounts they want to stay connected with.
+
+Factory accounts can send requests using their account ID numbers, and these requests can be accepted by the factories.
+
+A list of which factories are connected will be available within each Buying House account in a specific option. (It would be good if you could decide what name to give that option.)
+
+
+Factory: There will definitely be a Product Management page, from which users can post regular items, videos, or reels. However, the Terms and Conditions will specify that no music can be used, and prohibited instruments are not allowed.
+
+Requests from Buying House accounts, which will appear as notifications, can be accepted from there.
+2/16/26, 9:48 PM - Shakibul hasan Shaun: No, these are not necessary; the call buttons will be available directly on the chat interface.
+2/16/26, 9:48 PM - Shakibul hasan Shaun: Yes
+2/16/26, 9:49 PM - Shakibul hasan Shaun: Yeah
+2/16/26, 9:50 PM - Shakibul hasan Shaun: এখানে কি কি সুবিধা দিব আমরা সেটার লিস্ট পরবর্তীতে লেখেন আপাতত সাবস্ক্রিপশন  প্ল্যান বানালেই চলবে,  কোনটার মূল্য কত হবে সেটাও পরবর্তীতে সেট করা হবে
+2/16/26, 9:57 PM - Shakibul hasan Shaun: Try to make it a more unique, keeping in mind the perspective of business users.
+2/16/26, 10:09 PM - Cyber Code Master: Social Layout: You want the platform to look like a normal social media platform. Should the layout follow a specific style (e.g., like LinkedIn for professional networking or Instagram for product visuals)?
+2/16/26, 10:09 PM - Cyber Code Master: Onboarding Flow: Since you want "zero complexity" in account creation, do you want a multi-step onboarding wizard that helps users set up their "Organization" immediately after signing up?
+2/16/26, 10:09 PM - Cyber Code Master: Verified Badge Visuals: How should "Verified Users" be visually distinguished in the comment sections or search results to ensure they stand out to buyers?
+2/16/26, 10:11 PM - Shakibul hasan Shaun: Linkedin
+2/16/26, 10:12 PM - Shakibul hasan Shaun: এখানে যেটা সবচেয়ে ভালো হয় সেটাই করেন,
+2/16/26, 10:15 PM - Shakibul hasan Shaun: এখানে একটা বিষয় ভেরিফাইড ব্যবহারকারী একবার মেসেজ দিলে অন্যদের মেসেজ আটকে দেওয়ার কথা ছিল সেটা তেমন হবে না, 
+
+সেখানে ভেরিফাইড ইউজার'স সরাসরি মেসেজ করতে পারবে  unveryfied ব্যবহারকারীরা  মেসেজ করতে পারবে কিন্তু সেগুলো ফেসবুক লাইট এর মতন মেসেজের রিকুয়েস্ট হিসেবে থেকে যাবে 
+,
+
+দ্বিতীয় বিষয় হচ্ছে  আপনি যেটা বললেন সেটা ঠিক বুঝলাম না, কিন্তু এই ক্ষেত্রে ব্যাচগুলো স্পষ্ট হওয়াটাই তো কাম্য, এবং ভিন্ন কালারের ভেরিফাইড লেখা থাকবে
+2/17/26, 10:37 AM - Cyber Code Master: ফিড আইকন এবং লেবেলিং: আপনি জানিয়েছেন যে 'Buyer Requests' এবং 'Company Product Posts' এর জন্য বড় লেখা না রেখে ছোট চিহ্ন বা আইকন ব্যবহার করা ভালো। এই আইকনগুলোর ওপর ক্লিক করলে নাম দেখা যাবে। আপনি কি এই আইকনগুলোর জন্য বিশেষ কোনো প্রতীক (যেমন: বায়ারের জন্য 'ব্যাগ' এবং কোম্পানির জন্য 'ফ্যাক্টরি' আইকন) পছন্দ করে রেখেছেন?
+2/17/26, 10:38 AM - Cyber Code Master: ইউনিক (Unique) বাটন: হোমপেজের উপরের কোণায় 'Unique' বাটনটি চালু/বন্ধ করার অপশন থাকবে। এটি কি শুধুমাত্র সার্চ রেজাল্টের ওপর প্রভাব ফেলবে, নাকি এটি ফিডের অ্যালগরিদমকেও পরিবর্তন করবে?
+2/17/26, 10:38 AM - Cyber Code Master: ভিডিও/রিলস এর অবস্থান: ভিডিও বা রিলস কি আলাদা কোনো ট্যাব ছাড়াই সরাসরি প্রধান ফিডে (LinkedIn স্টাইলে) দেখা যাবে, নাকি ফ্যাক্টরি প্রোফাইলের ভেতরে আলাদা একটি সেকশন থাকবে?
+2/17/26, 10:46 AM - +60 17-726 0362: icon apni onno design theke nen
+2/17/26, 10:46 AM - +60 17-726 0362: amader figma design dorkar
+2/17/26, 10:46 AM - +60 17-726 0362: bujhlm na
+2/17/26, 10:46 AM - +60 17-726 0362: alada section
+2/17/26, 10:52 AM - Shakibul hasan Shaun: অ্যালগরিনিদম পরিবর্তন করবে,
+2/17/26, 10:54 AM - Shakibul hasan Shaun: এখানে আমি একটা বিষয় বলতেছি সেটা হচ্ছে :ইউটিউবে যেমন নিচে আলাদা করে সেকশন আছে তেমন সেকশন থাকার দরকার নেই, 
+কিন্তু  প্রোফাইলের ভিতর আলাদা সেকশন রাখা যেতে পারে,
+2/17/26, 11:27 AM - +60 17-726 0362: ha
+2/18/26, 11:18 AM - Cyber Code Master: ২. অ্যাকাউন্ট এবং ড্যাশবোর্ড (Account & Dashboard)
+বায়িং হাউজ কানেকশন অপশন: আপনি একটি অপশন রাখতে বলেছেন যেখানে বায়িং হাউজ কোন ফ্যাক্টরির সাথে যুক্ত থাকবে তার তালিকা থাকবে। আপনি কি এই সেকশনটির নাম "Connected Factories" বা "Partner Network" রাখতে চান?
+সাব-অ্যাকাউন্ট লিমিট: আপনি জানিয়েছেন ফ্রি ইউজাররা ১০টি আইডি তৈরি করতে পারবে। এই আইডিগুলো কি একই সাথে লগইন থাকতে পারবে, নাকি একটি বায়িং হাউজ অ্যাকাউন্টের আন্ডারে এগুলো আলাদা আলাদা মেম্বার প্রোফাইল হিসেবে কাজ করবে?
+অর্গানাইজেশন সেটআপ: "Zero complexity" বজায় রাখার জন্য, অ্যাকাউন্ট খোলার পরপরই কি আমরা একটি সংক্ষিপ্ত ৩-ধাপের সেটআপ প্রসেস (যেমন: ১. প্রোফাইল ছবি, ২. অর্গানাইজেশন নাম, ৩. ক্যাটাগরি নির্বাচন) রাখতে পারি?
+2/18/26, 12:34 PM - Shakibul hasan Shaun: ১)partner network 
+
+
+৩)হা
+2/18/26, 12:35 PM - Shakibul hasan Shaun: ২)Sub Accounts (Agents)
+তারা দেখতে পারবে:
+Assigned Buyer Requests
+Assigned Chats
+Connected Factories (View only)
+Own Performance
+AI Suggested Response
+তারা Member Management  দেখতে পারবে না, 
+
+
+Main Account (Owner / Admin)
+এখানে থাকবে:
+Organization Settings
+Member Management (Add / Remove / Permission)
+Partner Network (Connected Factories list)
+All Buyer Requests Overview
+All Deals / Contracts Overview
+Analytics
+Subscription / Upgrade
+Legal & Contract Vault
+Owner সবকিছু দেখতে পারবে।
+2/18/26, 12:37 PM - Shakibul hasan Shaun: Buyer Request দেখার পরে কীভাবে কাজ হবে?
+Step Flow:
+Agent Buyer Request খুলবে
+AI auto-summary দেখাবে
+Express Interest” বাটন থাকবে
+Express করলে:
+প্রথম মেসেজ সরাসরি যাবে
+Conversation lock হবে ঐ Agent এর নামে
+অন্য Agent তখন আর সরাসরি মেসেজ দিতে পারবে না
+এতে internal clash হবে না।(অর্থাৎ ওই Buying  house এর অন্য কোন মেম্বার আর মেসেজ করতে পারবে না যদি করার চেষ্টা করে তাহলে অভ্যন্তরীণ নোটিফিকেশন যাবে সেই ব্যক্তির কাছে যে প্রথমে মেসেজ করেছে তিনি পারমিশন দিলে দ্বিতীয় ব্যক্তিও মেসেজ করতে পারবে)
+2/18/26, 12:38 PM - Shakibul hasan Shaun: (Express interest) নামটি পরিবর্তন বা আরো সহজ নাম রাখা যেতে পারে!
+2/18/26, 1:49 PM - Cyber Code Master: ৩. কমিউনিকেশন এবং ভেরিফিকেশন (Communication & Verification)
+চ্যাটবট এবং কলিং: আপনি জানিয়েছেন যে চ্যাট ইন্টারফেস থেকেই সরাসরি ভিডিও/অডিও কল করা যাবে। চ্যাটবট কি বায়ারের পক্ষ থেকে প্রাথমিক তথ্য সংগ্রহ করার পর অটোমেটিক কল শিডিউল করার অপশন দিবে?
+ভেরিফাইড ব্যাজ: আন-ভেরিফাইড ইউজারদের মেসেজগুলো 'Message Requests' হিসেবে থাকবে। এই ব্যাজগুলো কি নামের পাশে ব্লু-টিক (LinkedIn এর মতো) নাকি গোল্ডেন কালারের কোনো বিশেষ চিহ্ন দ্বারা চিহ্নিত হবে যা সহজে চোখে পড়ে?
+2/18/26, 2:53 PM - Shakibul hasan Shaun: ৩) না
+
+তারা চাইলে কল করতে পারে তাদের ব্যক্তিগত বিষয় থাকবে এটা, 
+
+সিডিউল তৈরির অপশন দেওয়া যেতে পারে তাহলে এটা আরো বেশি সুন্দর দেখাবে 
+
+ ৪)চিহ্নের ক্ষেত্রে যেটা সবচেয়ে ভালো হয় সেটা করেন, এখানে কালার অনেক কিছু ম্যাটার করে :
+2/18/26, 2:55 PM - Shakibul hasan Shaun: ৩)চ্যাট বটে নির্দিষ্ট কমিউনিকেশন শেষ করে,  এজেন্ট এর কাছে নোটিফিকেশন পাঠাবে, 
+
+এখানে আরেকটি বিষয় হচ্ছে কাস্টমাইজ, কিছু কথাবার্তা  এবং নিজেদের বিষয়ে কিছু তথ্য ইনপুট করতে পারবে, factory and buying house গুলো, নিজেদের বিষয়ে অথবা যেই ফ্যাক্টরির আন্ডারে বাইং হাউজ কাজ করবে সেই ফ্যাক্টরি বিষয়ে যেন, সেখানে কোন পণ্যকে মার্ক করে  যদি মেসেজ দেয়া হয় তাহলে সেই কোম্পানির বিষয়ে থাকা তথ্য গুলোর উপর ভিত্তি করে কমিউনিকেশন চলতে থাকে, 
+
+তাহলে সাধারণ কমিউনিকেশনের চাইতেও এখানে প্রফেশনাল কমিউনিকেশন হচ্ছে, তাও আবার অটোমেশন
+2/18/26, 3:05 PM - +60 17-726 0362: automation bujhlm na?
+2/18/26, 3:05 PM - +60 17-726 0362: we are creating an agent?
+2/18/26, 3:21 PM - Shakibul hasan Shaun: Nope
+2/18/26, 3:21 PM - Shakibul hasan Shaun: We will build a normal bot that handles simple conversations.
+
+If we provide information about the company, it will respond only based on that information. If a question matches, it will give an answer; otherwise, it will say it is forwarding the query to an agent.
+
+There is no need for a language model or anything else. An algorithm will be enough—if the question matches, it returns an answer; otherwise, it does not. <This message was edited>
+2/18/26, 5:17 PM - +60 17-726 0362: then its just a faq bot. Have some fixed answers and it forwards it to an agent ? who is that agent?
+2/18/26, 5:18 PM - Shakibul hasan Shaun: Agent means: Buying house account owner and the other members under them; factory account owner.
+2/18/26, 5:19 PM - +60 17-726 0362: i mean whats the benfits of that chatbot ?
+2/18/26, 5:24 PM - Shakibul hasan Shaun: Firstly, there is a mistake here: the AI assistant we currently have is primarily being used to help users create accounts and understand all system account settings.
+
+Secondly, the point I wanted to add was about having an assistant that would help with marketing, but it is not really necessary.
+
+Therefore, the points I mentioned earlier regarding temporary user input are currently considered unnecessary.
+
+Thanks to Arnob for pointing out the mistake; I hadn’t noticed it.
+2/18/26, 5:25 PM - Shakibul hasan Shaun: Summaia Apu, please pay attention to this matter.
+2/18/26, 5:37 PM - Cyber Code Master: ৪. পেমেন্ট এবং সাবস্ক্রিপশন (Payment & Subscription)
+সাবস্ক্রিপশন প্ল্যান ডিজাইন: আপাতত আমরা প্রাইসিং ছাড়াই প্ল্যানগুলো ডিজাইন করব। এন্টারপ্রাইজ সাবস্ক্রিপশনে কি শুধুমাত্র আনলিমিটেড আইডি তৈরির সুবিধা থাকবে, নাকি সেখানে প্রোফাইল বুস্ট করার বাড়তি সুবিধাও যোগ করা হবে?
+2/18/26, 5:40 PM - Shakibul hasan Shaun: আপাতত বুস্ট এর ফিচার দেওয়ার দরকার নেই এটা ভবিষ্যতে বাস্তবায়িত করব,
+2/18/26, 5:41 PM - Cyber Code Master: ৫. ডিজাইন স্টাইল (Visual Style)
+LinkedIn থিম: যেহেতু আপনি প্রফেশনাল ব্যবহারের জন্য LinkedIn স্টাইল পছন্দ করেছেন, আমরা কি প্রাইমারি কালার হিসেবে ব্লু এবং হোয়াইট থিম ব্যবহার করব, নাকি আপনার কোম্পানির ব্র্যান্ডের জন্য নির্দিষ্ট কোনো কালার কোড আছে?
+2/18/26, 5:42 PM - Shakibul hasan Shaun: আমাদের বর্তমানে কোন কালার কোড নেই কিন্তু আমরা একটা ভালো ডিজাইন আশা করতেছি
+2/18/26, 5:57 PM - +60 17-726 0362: blue and white not grey
+2/19/26, 12:51 AM - Cyber Code Master: Subject: Final Page List & Verification for Project Design
+
+আমাদের আলোচনার ভিত্তিতে আমি প্ল্যাটফর্মের জন্য নিচের পেজগুলোর একটি তালিকা তৈরি করেছি। অনুগ্রহ করে যাচাই করে দেখুন যে আপনার পরিকল্পনা অনুযায়ী সব পেজ এখানে আছে কি না, নাকি নতুন কোনো কিছু যোগ করতে হবে?
+
+Platform Page List:
+
+1. Landing Page (Static) - সাধারণ ভিজিটরদের জন্য।
+2. Subscription/Pricing Plans (Static) - প্যাকেজ ডিটেইলস।
+3. Login/Sign-up/Onboarding (Dynamic) - অ্যাকাউন্ট খোলা ও ৩-ধাপের সেটআপ।
+4. Main Feed/Homepage (Dynamic) - LinkedIn স্টাইল ফিড (Buyer requests & Product posts)।
+5. Search Results Page (Dynamic) - ইউনিক ফিল্টার ও অ্যালগরিদম ভিত্তিক রেজাল্ট।
+6. User Profiles (Dynamic) - Buyer, Factory, এবং Buying House-এর আলাদা প্রোফাইল।
+7. Owner Dashboard (Dynamic) - মেইন অ্যাডমিন প্যানেল (সবকিছুর অ্যাক্সেস)।
+8. Agent Dashboard (Dynamic) - সাব-অ্যাকাউন্ট বা মেম্বারদের জন্য সীমিত প্যানেল।
+9. Member Management/Team (Dynamic) - বায়িং হাউজ মেম্বারদের আইডি তৈরি ও পারমিশন সেট করা।
+10. Partner Network (Dynamic) - কানেক্টেড ফ্যাক্টরিগুলোর তালিকা (View only/Manage)।
+11. Product Management/Upload (Dynamic) - পণ্য ও ভিডিও/রিলস আপলোড করার পেজ।
+12. Buyer Request Management (Dynamic) - বায়ারদের কাস্টমাইজ চাহিদা পোস্ট করার পেজ।
+13. Chat/Messaging Interface (Dynamic) - চ্যাট, AI সামারি এবং 'Express Interest' ফিচার।
+14. Video/Audio Call Interface (Dynamic) - সরাসরি কল এবং কল শিডিউলিং।
+15. Contract Vault/Legal PDF (Dynamic) - ডিজিটাল সিগনেচার ও চুক্তিনামা জমা রাখার জায়গা।
+16. Notifications Center (Dynamic) - সার্চ অ্যালার্ট এবং অ্যাক্টিভিটি নোটিফিকেশন।
+17. Settings/Organization Settings (Dynamic) - প্রোফাইল ও কোম্পানির তথ্য পরিবর্তন।
+18. Static Information Pages - About Us, Privacy Policy, Terms & Conditions।
+
+Verifying Questions:
+
+* আপনার কি মনে হয় লেনদেনের হিসেব রাখার জন্য আলাদা কোনো "Payment History" বা "Invoice" পেজ লাগবে?
+* ড্যাশবোর্ডের জন্য যে "Analytics" বা রিপোর্টের কথা বলেছিলেন, সেটি কি মেইন ড্যাশবোর্ডের ভেতরেই একটি অংশ হবে, নাকি তার জন্য আলাদা কোনো ডেডিকেটেড পেজ প্রয়োজন?
+* ফ্যাক্টরির ভিডিওগুলোর জন্য কি প্রোফাইলের ভেতরে আলাদা একটি "Video Gallery" ট্যাব থাকবে?
+
+এই তালিকাটি আপনি কনফার্ম করলেই আমি Figma-তে ডিজাইন বা প্রোটোটাইপ তৈরির কাজ শুরু করে দিব।
+2/19/26, 12:58 AM - +60 17-726 0362: can we have a meeting tomorrow after iftar?
+2/19/26, 12:58 AM - +60 17-726 0362: i will send you meet link.
+2/19/26, 6:19 AM - Shakibul hasan Shaun: ১)না,কারণ সরাসরি প্ল্যাটফর্মে কোন ধরনের লেনদেন হচ্ছে না, 
+
+২)Enterprise Buying House-এর জন্য আলাদা “Insights & Analytics” পেজ হওয়া উচিত।
+Free users → Dashboard-এর ভিতরে সীমিত ডাটা
+Enterprise → Dedicated Analytics Page
+এটা সাবস্ক্রিপশন বিক্রির জন্য দরকার  
+
+৩)হা
+2/19/26, 6:21 AM - Shakibul hasan Shaun: floating অস্থায়ী একটি ai assistant, যেটা তিন ধরনের ব্যবহারকারীকেই সিটিং বুঝতে সাহায্য করবে শুধুমাত্র এই কাজটি করবে,
+আবার হেল্প সেন্টারে সাথে ও কানেক্ট করতে পারবে, 
+একটা সাধারণ অ্যালগরি নিদম আর কি,
+এটা উল্লেখ করেননি  কিন্তু দরকার
+
+
+Floating  Assistant
+ সব পেজে থাকবে। <This message was edited>
+2/19/26, 7:18 AM - Shakibul hasan Shaun: (GarTexHub)আমাদের ডোমেইনের নাম হবে,
+2/19/26, 7:17 AM - Shakibul hasan Shaun changed the group name from "B2B" to "GarTexHub"
+2/19/26, 7:17 AM - Shakibul hasan Shaun changed the group name from "GarTexHub" to "GarTexHub B2B Marketplace"
+2/19/26, 9:20 PM - Shakibul hasan Shaun: কোন আপডেট তথ্য  আছে কি?
+2/20/26, 1:42 PM - +60 17-726 0362: @⁨Cyber Code Master⁩ So when will you finish ? Its okk you can take time.
+2/20/26, 7:19 PM - Cyber Code Master: meow-2.pdf (file attached)
+meow.pdf
+2/20/26, 7:29 PM - +60 17-726 0362: nice
+2/20/26, 7:41 PM - Cyber Code Master: meow-3.pdf (file attached)
+meow.pdf
+2/20/26, 7:42 PM - +60 17-726 0362: It would be better if you do it in figma .
+2/20/26, 7:42 PM - Cyber Code Master: meow-4.pdf (file attached)
+meow.pdf
+2/20/26, 7:53 PM - Cyber Code Master: @⁨Shakibul hasan Shaun⁩ how is it?
+2/20/26, 9:29 PM - Shakibul hasan Shaun: এখানে একাউন্ট তৈরির সময় ফিচারগুলো উল্লেখ করা মনে হচ্ছে ঠিক হবে না! 
+এটা সাধারণত কেউ করেও না
+
+তাছাড়া সবকিছু ঠিক আছে <This message was edited>
+2/20/26, 9:33 PM - Shakibul hasan Shaun: picture comparison খুবই সুন্দর হয়েছে কিন্তু, 
+
+প্ল্যানগুলোর ক্ষেত্রে একটু সমস্যা আছে!
+2/20/26, 9:36 PM - Shakibul hasan Shaun: এখানে প্রতিটি অ্যাকাউন্ট এর জন্য আলাদা করে নির্দিষ্ট ভাবে কোন ধরনের প্ল্যান দেখানোর দরকার নেই , 
+
+সবার জন্য একটি সাবস্ক্রিপশন প্যাকেজ ইন্টারফেস দেখাবেন, 
+
+একটি হচ্ছে ফ্রী এবং সেখানে কি কি সীমাবদ্ধতা আছে সেগুলো, 
+
+আরেকটি হচ্ছে প্রিমিয়াম! 
+
+এতোটুকুই তাছাড়া অন্য কিছু দেখানোর দরকার নেই আরেকটি বিষয় মাথায় রাখবেন একাধিক আইডি তৈরি এই ফিচারটি ফ্যাক্টরি একাউন্টেও থাকবে।
+2/20/26, 9:37 PM - Shakibul hasan Shaun: কিন্তু এখানে একটা কথা আছে!  যথেষ্ট পরিমাণ ফিচার লিস্ট বজায় রেখে যদি কোন ব্যক্তি একাউন্টে তৈরি করেছে অথবা লগইন করেছে তার উপর ভিত্তি করে যদি  সাবস্ক্রিপশন প্যাকেজ দেখানো যায় সেটা করবেন , 
+
+ এই ক্ষেত্রেও দুইটি অপশনে থাকবে একটি ফ্রি আরেকটি প্রিমিয়াম, 
+
+কিন্তু এখানে সুবিধা হচ্ছে আমি ফ্যাক্টরি আমার জন্য আলাদা লিস্ট আলাদা সিস্টেম দেখাতে পারবেন আবার অন্যান্যদের জন্য আলাদা আলাদা
+2/20/26, 9:42 PM - Shakibul hasan Shaun: আরেকটি বিষয় : কেউ যদি প্রিমিয়াম কিনে তাহলে আমরা তাদের একাউন্টের রিচ কিছুটা বৃদ্ধি করব, 
+উল্লেখ করবেন না কতটুকু
+2/21/26, 12:22 AM - Cyber Code Master: meow-5.pdf (file attached)
+meow.pdf
+2/21/26, 12:27 AM - Cyber Code Master: IMG-20260221-WA0000.jpg (file attached)
+Signup Page:
+2/21/26, 12:27 AM - Cyber Code Master: IMG-20260221-WA0001.jpg (file attached)
+2/21/26, 12:27 AM - Cyber Code Master: IMG-20260221-WA0002.jpg (file attached)
+2/21/26, 12:27 AM - Cyber Code Master: IMG-20260221-WA0003.jpg (file attached)
+Signup Page.
+
+also tell me in 
+Buyer Account which things ask in form
+Factory Account which things ask in form
+Buying House Which things ask in form
+2/21/26, 12:29 AM - Cyber Code Master: meow-6.pdf (file attached)
+meow.pdf
+2/21/26, 12:30 AM - Cyber Code Master: meow-7.pdf (file attached)
+meow.pdf
+2/21/26, 12:31 AM - Cyber Code Master: @⁨Shakibul hasan Shaun⁩ Pls Review All These 4 Pages <This message was edited>
+2/21/26, 5:53 AM - Cyber Code Master: meow-8.pdf (file attached)
+meow.pdf
+2/21/26, 5:56 AM - Cyber Code Master: IMG-20260221-WA0011.jpg (file attached)
+FactoryProfile Page
+2/21/26, 5:58 AM - Cyber Code Master: meow-9.pdf (file attached)
+meow.pdf
+2/21/26, 6:01 AM - Cyber Code Master: IMG-20260221-WA0012.jpg (file attached)
+2/21/26, 6:01 AM - Cyber Code Master: IMG-20260221-WA0013.jpg (file attached)
+2/21/26, 6:01 AM - Cyber Code Master: IMG-20260221-WA0014.jpg (file attached)
+2/21/26, 6:01 AM - Cyber Code Master: IMG-20260221-WA0015.jpg (file attached)
+2/21/26, 6:01 AM - Cyber Code Master: IMG-20260221-WA0016.jpg (file attached)
+2/21/26, 6:01 AM - Cyber Code Master: IMG-20260221-WA0017.jpg (file attached)
+Owner Page
+2/21/26, 6:02 AM - Cyber Code Master: IMG-20260221-WA0018.jpg (file attached)
+Agent Page
+2/21/26, 6:02 AM - Shakibul hasan Shaun: deadline option, এটা যেন ব্যবহারকারীরা অপশনাল ভাবে ব্যবহার করতে পারে, 5 star রেটিং তাও যেন এখানেই উল্লেখ থাকে, আপাতত দেখা যাচ্ছে না
+2/21/26, 6:07 AM - Shakibul hasan Shaun: পেজটা খুবই ভালো হয়েছে কিন্তু একটা বিষয় বুঝলাম না, কোম্পানির প্রোফাইল দেখালো এবং পাশেই দেখালো বিস্তারিত, 
+
+এর মানে এটাই  আমি বাইরে থেকে গিয়ে কি অর্ডার দিয়েছে সে বিষয়ে বিস্তারিত দেখতে পারবো, 
+
+এইটা তো মনে হচ্ছে ঠিক না এমনিতে কতজন অর্ডার দিয়েছে এটা উল্লেখ করা যেতে পারে,  অথবা এখন যতটুকু রেখেছেন ততটুকু রাখা সম্ভব এবং ভালো 
+
+কিন্তু ভিউ ডিটেলসে ক্লিক করলে সমস্যা বাইরের মানুষ সম্পূর্ণ তথ্য পাওয়াটা উচিত নয়
+2/21/26, 6:09 AM - Shakibul hasan Shaun: রিভিউ গুলো যেন যার প্রোফাইল সে চাইলেও ডিলিট করতে না পারে, শুধুমাত্র যে ব্যক্তি রিভিউ দিয়েছে সেই ব্যক্তি ডিলিট অথবা এডিট করতে পারবে,
+2/21/26, 6:11 AM - Shakibul hasan Shaun: যে কোম্পানিগুলোর জন্য কাজ করলে সেগুলোর নাম লোগো এগুলো যেন show করে অর্থাৎ নাম ঠিকানা যেন দেখা যায়  , মানে প্রোফাইল দেখা গেলেই হল , 
+
+গার্মেন্টসে যেমন আলাদা করে লেখা ছিল নিচে ইন্ডাস্ট্রি সাইটে লেখা ছিল গার্মেন্টস সিলেক্ট করা ছিল, 
+
+একইভাবে তিন ধরনের অ্যাকাউন্টেই যেন এই সিস্টেমটি থাকে
+2/21/26, 6:11 AM - Shakibul hasan Shaun: প্রতিটিতে রিভিউ পেইজ এবং রেটিং পেইজ থাকতে হবে
+2/21/26, 6:15 AM - Shakibul hasan Shaun: পাঁচটা স্ক্রিনশট একসাথে দিয়েছেন, সেখানে দ্বিতীয় স্ক্রিনশট এর কার্যকারিতা সম্পর্কে কিছুই বুঝিনি, 
+যেখানে লেখা ছিল বায়ার রিকুয়েস্ট, এবং সেখানে টাইটেল এবং অ্যাসাইন লেখা এটার কাজ কি
+2/21/26, 6:17 AM - Shakibul hasan Shaun: ওই স্ক্রিনশট পেইজের আরেকটা প্রশ্ন হচ্ছে সেখানে যেহেতু ম্যানেজমেন্ট অপশন দেখাচ্ছে সেহেতু সেখানে  ফ্যাক্টরি এ বি অপশনে তো এড অপশন থাকা দরকার, 
+অথবা রিকুয়েস্ট সেন্ড একসেপ্ট অপশন থাকা দরকার, 
+
+এখানে এটা নির্ভর করে কিন্তু এটার উপর যে শুধুমাত্র কেলিকোয়েস্ট পাঠাতে পারতেছে ফ্যাক্টরির সাথে কানেক্টেড হওয়ার জন্য, 
+এই ধারণাটা আমার মনে নেই, আপনি ডকুমেন্টেশন দেখে করে দেন
+2/21/26, 6:19 AM - Shakibul hasan Shaun: এসআইন রিকোয়েস্ট   এর বিষয়গুলো বুঝিনি যেখানে টেইক লিডসহ লেখা ছিল
+2/21/26, 6:20 AM - Shakibul hasan Shaun: ও, এটা যেহেতু এজেন্ট পেইজ তাহলে, 
+যে কোম্পানিকে মেসেজ দেওয়ার অথবা টেক লিড নেওয়ার অপশন তার কাছে আছে সেই কোম্পানির কমপক্ষে লোগো এবং নাম দেখা যাওয়া উচিত ,
+2/21/26, 7:46 AM - Shakibul hasan Shaun: রিভিউ পেইজে রেটিং এবং রিভিউ লিখলে লেখা যেতে পারে যেন দুটোকেই একসাথে দেখতে পারে এবং সাধারণত রেটিং দেওয়ার সময় মানুষের রিভিউ দেয়, যদিও আমাদের কোম্পানি থেকে রেটিং   দিয়ে দেওয়া হচ্ছে,
+
+এই ক্ষেত্রে আমরা কি করতে পারি ! ব্যবহারকারী কেউ রেটিং দেওয়ার অপশন দিব সে যদি না দেয় তাহলে কোম্পানি থেকে দিয়ে দিব এটা করব? 
+
+আপনি একটু ভেবে দেখেন কোনটা করলে ভালো হয় সেটাই করেন
+সেই সাথে  
+অর্ণব ভাই বিষয়টা একটু দেখেন
+@⁨~Arnob⁩ @⁨Cyber Code Master⁩  <This message was edited>
+2/21/26, 12:34 PM - Cyber Code Master: @⁨Shakibul hasan Shaun⁩ Checkout these urls in mobile and laptop both:
+https://liable-marketplace-looked-fda.trycloudflare.com/
+https://liable-marketplace-looked-fda.trycloudflare.com/pricing
+https://liable-marketplace-looked-fda.trycloudflare.com/login
+https://liable-marketplace-looked-fda.trycloudflare.com/signup
+https://liable-marketplace-looked-fda.trycloudflare.com/feed
+https://liable-marketplace-looked-fda.trycloudflare.com/search
+https://liable-marketplace-looked-fda.trycloudflare.com/buyer/profile
+https://liable-marketplace-looked-fda.trycloudflare.com/buyer/1
+https://liable-marketplace-looked-fda.trycloudflare.com/factory/1
+https://liable-marketplace-looked-fda.trycloudflare.com/buying-house/1
+https://liable-marketplace-looked-fda.trycloudflare.com/owner
+https://liable-marketplace-looked-fda.trycloudflare.com/agent
+2/21/26, 1:16 PM - Cyber Code Master: https://liable-marketplace-looked-fda.trycloudflare.com/member-management
+2/21/26, 1:17 PM - Cyber Code Master: https://liable-marketplace-looked-fda.trycloudflare.com/partner-network
+2/21/26, 1:18 PM - Cyber Code Master: https://liable-marketplace-looked-fda.trycloudflare.com/product-management
+2/21/26, 1:19 PM - Cyber Code Master: https://liable-marketplace-looked-fda.trycloudflare.com/buyer-requests
+2/21/26, 1:20 PM - Cyber Code Master: https://liable-marketplace-looked-fda.trycloudflare.com/chat
+2/21/26, 1:21 PM - Cyber Code Master: https://liable-marketplace-looked-fda.trycloudflare.com/call
+2/21/26, 2:12 PM - +60 17-726 0362: hey we wont use cloudfare
+2/21/26, 2:12 PM - +60 17-726 0362: too expensive to handle
+2/21/26, 2:26 PM - Shakibul hasan Shaun: সাধারণ শুধুমাত্র একাউন্ট তৈরি করার সময় কেন ইউনিক বাটন আর অন্যান্য কিছু দেখাচ্ছে! 
+
+এটা তো একটা মারাত্মক সমস্যা
+2/21/26, 2:29 PM - Shakibul hasan Shaun: একাউন্ট তৈরির জন্য ভিতরে প্রবেশ করলে, 
+
+সেটা একেবারে সাদামাটা ভাবে মরা করা করতেছে, শক্তভাবে সেটা একটু প্রফেশনাল  হওয়া দরকার
+2/21/26, 2:31 PM - Shakibul hasan Shaun: সবগুলো লিংক একবারে দেখা যাচ্ছে তাই একটু সমস্যাই হচ্ছে মোটামুটি, 
+কিছু অপ্রয়োজনীয় বাটন আছে ,
+2/21/26, 2:33 PM - Shakibul hasan Shaun: https://liable-marketplace-looked-fda.trycloudflare.com/buyer/1
+
+এখানে যা কিছু দেখাচ্ছেন সেগুলো আইডির ভিতরে গেলে দেখানো উচিত , বিভিন্ন সেকশনে সেকশনে ভাগ করে অথবা অন্য কোন সুন্দর পদ্ধতি অবলম্বন করে,
+2/21/26, 2:34 PM - Shakibul hasan Shaun: https://liable-marketplace-looked-fda.trycloudflare.com/factory/1
+
+এই আইডিগুলোর ক্ষেত্রে ইন্ডাস্ট্রি উল্লেখ করার বিষয়টি বলেছিলাম, garments, textile, buying house , buyer , 
+
+এই উল্লেখ করার কাজটি আপনি একটি পেইজে করেছেন
+2/21/26, 2:35 PM - Shakibul hasan Shaun: https://liable-marketplace-looked-fda.trycloudflare.com/buying-house/1
+
+অন্যান্য আইডির মত বিস্তৃত গুণাবলী থাকা উচিত
+2/21/26, 2:36 PM - Shakibul hasan Shaun: (Industry: Garments
+Organization: Direct Buyer
+Rating: 4.6 / 5)
+
+এই পদ্ধতিটা সবচেয়ে ঠিক আছে
+2/21/26, 2:36 PM - Shakibul hasan Shaun: অন্যান্য যা কিছু যুক্ত করেছেন আইডি অনুযায়ী সেগুলো অবশ্যই ঠিক আছে যেমন কিছু ক্ষেত্রে দিয়েছেন পার্টনার নেটওয়ার্ক এত কিছু ক্ষেত্রে এমপ্লয় এর সংখ্যা এত , 
+
+এই বিষয়গুলো ঠিক আছে সেগুলো থাকবে কিন্তু প্রধান এই তিনটা বিষয়কে অবশ্যই রাখবেন
+2/21/26, 2:37 PM - Shakibul hasan Shaun: ওকে
+2/21/26, 2:38 PM - Shakibul hasan Shaun: ওকে,
+2/21/26, 2:39 PM - Shakibul hasan Shaun: এনালাইসিস আবার এডিট কিভাবে করবে?
+2/21/26, 2:39 PM - Shakibul hasan Shaun: ঠিক আছে তবে আমি জিপিটির সাহায্য নিয়ে একটা সাধারণ সিস্টেম তৈরি করেছিলাম সেটা আমি আপনাকে দিব একটু বিবেচনা করবেন
+2/21/26, 2:41 PM - Shakibul hasan Shaun: কেউ মেসেজ রিকোয়েস্ট দিলে সেটার অপশন আসবে সেটা দেবেন, 
+কেউ মেসেজ দিলে সেখানে দুইটা মেসেজ আছে সেটা তো লিখবেনই,সেই সাথে যেন  একটু হাইলাইট হয়ে যায় সেই সময়, 
+
+অন্যান্য মেসেজিং প্লাট ফরম এর মতন, 
+
+আর কেউ যদি মেসেজ পূর্ণাঙ্গ দেখে ফেলে তখন যেন একটি কালার আসে, ইউনিক কালার টিক চিহ্নের ভিতর,
+2/21/26, 2:42 PM - Shakibul hasan Shaun: আপনার ডিজাইন সুন্দর হচ্ছে কালার সহ সবকিছু, 
+
+লিংকগুলো একটু আলাদা করে দেওয়ার চেষ্টা করবেন এবং এখন একটা পূর্ণাঙ্গ প্রেজেন্টেশন তৈরি দরকার, 
+অথবা কনফিডেন্স থাকলে কোড লেখা শুরু করেন
+2/21/26, 2:42 PM - Shakibul hasan Shaun: আরেকটা বিষয় অবশ্যই মাথায় রাখবেন যেই কোড এবং ইনভাইরনমেন্ট ব্যবহার করা সবচেয়ে বেশি ব্যয় কম  কিন্তু আবার মানে ভালো , 
+
+সেটাকেই ব্যবহার করেন
+2/21/26, 7:29 PM - Cyber Code Master: Ok
+2/21/26, 7:30 PM - Shakibul hasan Shaun: আমাদের সাইটের যেন রেসপন্সটাইম অনেক ফাস্ট হয় <This message was edited>
+2/21/26, 7:30 PM - Cyber Code Master: Ok
+2/22/26, 1:08 PM - +60 17-726 0362: Github ui up den - language jeta valo lage.
+2/22/26, 1:49 PM - Cyber Code Master: ok
+3/1/26, 12:15 PM - Shakibul hasan Shaun: ,
+3/3/26, 8:00 AM - Cyber Code Master: What is your website URL?
+3/3/26, 8:01 AM - Cyber Code Master: What is your website name?
+3/3/26, 8:02 AM - Cyber Code Master: Entity type:
+* I'm a Business
+      e.g. Corporation, Limited Liability Company, Non-profit, Partnership, Sole Proprietor
+* I'm an Individual
+3/3/26, 10:58 AM - Shakibul hasan Shaun: GarTexHub.com
+3/3/26, 10:59 AM - Shakibul hasan Shaun: GarTexHub
+3/3/26, 10:59 AM - Shakibul hasan Shaun: why?
+3/3/26, 11:11 AM - Shakibul hasan Shaun: Apadoto eta (soulwriteai.com) kina ase, 
+Amra use korar jonno etai connect korbo
+3/3/26, 11:13 AM - Cyber Code Master: f.pdf (file attached)
+f.pdf
+3/3/26, 11:13 AM - Cyber Code Master: https://github.com/gamertoky1188gro/A-Peronson-s-Website
+3/3/26, 11:13 AM - Cyber Code Master: Code FIles
+3/3/26, 11:15 AM - Shakibul hasan Shaun: IMG-20260303-WA0004.jpg (file attached)
+3/3/26, 11:15 AM - +60 17-726 0362: Its okk
+3/3/26, 11:15 AM - +60 17-726 0362: i got
+3/3/26, 11:18 AM - Cyber Code Master: apnare permission deya lagbe
+3/3/26, 11:18 AM - Cyber Code Master: github account er username den
+3/3/26, 11:19 AM - Shakibul hasan Shaun: tryit8
+3/3/26, 11:21 AM - Cyber Code Master: IMG-20260303-WA0005.jpg (file attached)
+invite accept koren then dhoken
+3/3/26, 11:24 AM - +60 17-726 0362: You use any db here ?
+3/3/26, 11:26 AM - Cyber Code Master: I'll add a DB later; for now, I'm using JSON as a temporary DB.
+3/3/26, 11:27 AM - Shakibul hasan Shaun: @⁨~Arnob⁩ vai taile firebase use korbo?
+3/3/26, 11:27 AM - Shakibul hasan Shaun: Taile onare access den
+3/3/26, 11:31 AM - +60 17-726 0362: no
+3/3/26, 11:31 AM - +60 17-726 0362: we will use nest
+3/3/26, 6:31 PM - Cyber Code Master: pages:
+*   `/` → Landing page (`TexHub`)
+*   `/pricing` → Pricing/Subscription page
+*   `/about` → About page
+*   `/terms` → Terms page
+*   `/privacy` → Privacy page
+*   `/help` → Help Center
+*   `/login` → Login page
+*   `/signup` → Signup page
+*   `/access-denied` → Access denied page
+* * *
+Protected pages (login required)
+--------------------------------
+### Available to all authenticated roles (`buyer`, `buying_house`, `factory`, `owner`, `admin`, `agent`)
+*   `/feed`
+*   `/search`
+*   `/buyer/:id`
+*   `/factory/:id`
+*   `/buying-house/:id`
+*   `/contracts`
+*   `/notifications`
+*   `/chat`
+*   `/call`
+*   `/verification`
+*   `/verification-center` (same page component as `/verification`)
+### Role-specific protected pages
+*   `/partner-network` → roles: `buying_house`, `admin`, `factory`, `agent`, `owner`
+*   `/product-management` → roles: `factory`, `buying_house`, `admin`
+*   `/buyer-requests` → roles: `buyer`, `buying_house`, `admin`
+*   `/member-management` → roles: `owner`, `admin`, `buying_house`, `factory`
+*   `/org-settings` → roles: `owner`, `admin`
+*   `/insights` → roles: `owner`, `admin`
+*   `/owner` → roles: `owner`, `admin`
+*   `/agent` → roles: `buying_house`, `owner`, `admin`, `agent`
+* * *
+Extra/dev route
+---------------
+*   `/mvp` → MVP dashboard/test page
+* * *
+Fallback behavior
+-----------------
+*   Any unknown route (`*`) redirects to `/`.
+3/3/26, 6:49 PM - Shakibul hasan Shaun: সবকিছু ঠিকঠাক মনে হচ্ছে । এভাবে দেখতে গেলে আসলে মাথা নষ্ট হয়ে যায়। 
+পেইজ দেখা ছাড়া মাথা খাটানোর উপায় নাই🫤
+3/3/26, 6:53 PM - +60 17-726 0362: she is sending backend routes and apis
+3/4/26, 12:16 AM - Cyber Code Master: This Is Frontend Routes
+3/4/26, 12:16 AM - Cyber Code Master: https://app.termsfeed.com/wizard/privacy-policy
+3/4/26, 12:16 AM - Cyber Code Master: fill this and give me generated html code
+3/4/26, 12:18 AM - Cyber Code Master: ## Key API Endpoints
+
+### Authentication (`/api/auth`)
+*   `POST /register`: Registers a new user (Buyer, Factory, Buying House, etc.).
+*   `POST /login`: Authenticates a user and returns a JWT token.
+*   `GET /me`: Returns the currently authenticated user's data.
+*   `POST /logout`: Placeholder for logout (handled on client by dropping the token).
+
+### User Management (`/api/users`)
+*   `GET /me`: Get profile details of the logged-in user.
+*   `PATCH /me/profile`: Updates profile fields (country, certifications, capacity, etc.).
+*   `GET /`: [Admin/Owner] List all registered users.
+*   `PATCH /:userId/verify`: [Admin/Owner] Manually toggle a user's "verified" status.
+*   `DELETE /:userId`: [Admin/Owner] Delete a user account.
+
+### Buyer Requirements (`/api/requirements`)
+*   `POST /`: [Buyer] Create a new buyer request (category, quantity, material, etc.).
+*   `GET /`: List requirements (buyers see their own; others see all).
+*   `GET /search`: Search requirements with support for advanced filters and daily search quotas.
+*   `GET /:requirementId`: Retrieve details of a specific requirement.
+*   `PATCH /:requirementId`: [Buyer/Admin] Update requirement details or status.
+*   `DELETE /:requirementId`: [Buyer/Admin] Remove a requirement.
+
+### Company Products (`/api/products`)
+*   `POST /`: [Factory/Buying House] Upload a new product to the marketplace.
+*   `GET /`: List all company products.
+*   `GET /search`: Search products with support for advanced filters and daily search quotas.
+
+### Combined Feed (`/api/feed`)
+*   `GET /`: Returns a ranked feed of buyer requests and products with anti-abuse and boost logic.
+
+### Document & Contract Management (`/api/documents`)
+*   `POST /`: Upload a document (PDF/Image) for verification or general storage.
+*   `GET /`: List documents associated with an entity.
+*   `DELETE /:documentId`: Remove a document.
+*   `POST /contracts/draft`: Create a draft B2B contract.
+*   `GET /contracts`: List contracts (scoped to the participating parties).
+*   `PATCH /contracts/:contractId/signatures`: Update signature status (Buyer/Factory).
+*   `PATCH /contracts/:contractId/artifact`: Manage contract artifact status (Draft/Generated/Locked).
+
+### Verification & Subscriptions (`/api/verification` & `/api/subscriptions`)
+*   `GET /verification/me`: Check own verification progress and missing documents.
+*   `POST /verification/me`: Submit/update verification documents.
+*   `POST /verification/admin/:userId/approve`: [Admin] Approve a user's verification.
+*   `GET /subscriptions/me`: View current plan (Free/Premium) and expiry date.
+*   `POST /subscriptions/me`: Upgrade/update subscription plan.
+*   `GET /subscriptions/me/remaining-days`: Check days left on premium access.
+
+### AI Assistant (`/api/assistant`)
+*   `POST /ask`: Send a question to the AI assistant for rule-based guidance.
+*   `GET /knowledge`: List organization-specific knowledge entries.
+*   `POST /knowledge`: [Admin] Add organization-specific knowledge.
+
+### Messaging & Collaboration (`/api/messages` & `/api/conversations`)
+*   `GET /messages/inbox`: Tiered inbox (Priority for verified/accepted; Request Pool for others).
+*   `POST /messages/:matchId`: Send a message in a specific match/thread.
+*   `POST /messages/requests/:threadId/accept`: Accept an incoming message request.
+*   `POST /conversations/:requestId/claim`: [Buying House] Claim a request to lock it for internal handling.
+
+### Partner Network (`/api/partners`)
+*   `GET /`: List your network (connected partners and pending requests).
+*   `POST /requests`: Send a partnership request to another account.
+*   `POST /requests/:requestId/accept`: Accept a partnership request.
+
+### Call Sessions (`/api/calls`)
+*   `POST /scheduled`: Schedule a video/audio call between parties.
+*   `GET /history`: View past call logs.
+*   `POST /:callId/start`: Initialize a call session.
+*   `PATCH /:callId/recording`: Update the status/URL of a call recording.
+
+### Analytics (`/api/analytics`)
+*   `GET /summary`: High-level engagement metrics for the user.
+*   `GET /dashboard`: [Admin] Comprehensive system-wide growth and activity metrics.
+
+### Ratings & Reviews (`/api/ratings`)
+*   `GET /profiles/:profileKey`: View ratings and aggregate score for a profile.
+*   `POST /profiles/:profileKey`: Submit a rating/review after an interaction.
+*   `POST /milestones`: Record business milestones (Contract Signed, Deal Completed) to qualify for ratings.
+
+### Organization & Member Management (`/api/members`)
+*   `GET /`: List sub-account members in the organization.
+*   `POST /`: Create a new sub-account member.
+*   `PATCH /:memberId/permissions`: Fine-tune specific access permissions for a member.
+
+### System (`/api/system`)
+*   `GET /meta`: Returns system version, modules, and design metadata.
+*   `GET /api/health`: Basic service health check.
+3/4/26, 12:19 AM - Cyber Code Master: This is backend routes and apis
+3/4/26, 12:20 AM - +60 17-726 0362: use ollama and qwen 2.5
+3/4/26, 12:20 AM - Cyber Code Master: for chatbot?
+3/4/26, 12:20 AM - +60 17-726 0362: opps i didn’t go through
+3/4/26, 12:21 AM - +60 17-726 0362: yeah but use nest.js
+3/4/26, 12:21 AM - +60 17-726 0362: you have cursor?
+3/4/26, 12:21 AM - Cyber Code Master: i use webstorn
+3/4/26, 12:22 AM - +60 17-726 0362: never heard of it
+3/4/26, 12:22 AM - Cyber Code Master: https://www.jetbrains.com/webstorm/
+3/4/26, 12:23 AM - +60 17-726 0362: good.
+3/4/26, 12:23 AM - +60 17-726 0362: but it wont support any cli
+3/4/26, 12:25 AM - Cyber Code Master: WebStorm fully supports CLI. It has a built-in terminal and runs NestJS CLI, npm, node, Docker, everything. 
+
+I can build the chatbot backend with NestJS and integrate Ollama with Qwen 2.5 without any issue. 
+
+Earlier I just shared frontend routes first, then backend APIs — maybe that caused confusion. But I’m handling full stack.
+3/4/26, 12:27 AM - Cyber Code Master: Hi,
+
+Please complete the privacy policy form at the following link and share the fully generated HTML code with me once it is ready:
+
+https://app.termsfeed.com/wizard/privacy-policy
+
+Make sure the output is the complete HTML version that can be directly integrated into the website.
+
+Thank you.
+3/4/26, 12:49 AM - +60 17-726 0362: nvm do it . I will pull saturday.
+3/4/26, 12:50 AM - +60 17-726 0362: dont integrate ollama ; you didn’t get. I will later integrate we have open ai api and fallback gemini api.
+3/4/26, 12:50 AM - +60 17-726 0362: ollama is huge😑
+3/4/26, 12:51 AM - +60 17-726 0362: @⁨Shakibul hasan Shaun⁩
+3/4/26, 6:24 AM - Shakibul hasan Shaun: If someone creates an account using a specific coupon code, they will receive $5. This amount can only be used within our platform; there is no option to withdraw it or use it elsewhere.
+
+The user can use this credit to purchase subscriptions or to verify their account.
+
+This method will be used to attract customers.
+
+Do you both agree with me on this? Otherwise, even if foreign customers can be brought in, it seems unlikely that Bengali users will join.
+3/4/26, 6:25 AM - Shakibul hasan Shaun: Here, we are not actually giving them real dollars; instead, our service is being offered to them at a strategically reduced value 🙃
+3/4/26, 12:16 PM - Cyber Code Master: Hi @⁨Shakibul hasan Shaun⁩ ,
+
+Please complete the privacy policy form at the following link and share the fully generated HTML code with me once it is ready:
+
+https://app.termsfeed.com/wizard/privacy-policy
+
+Make sure the output is the complete HTML version that can be directly integrated into the website.
+
+Thank you.
+3/4/26, 2:04 PM - Cyber Code Master: Public Pages
+/ → Landing page (TexHub)
+/pricing → Pricing/Subscription page
+/about → About page
+/terms → Terms page
+/privacy → Privacy page
+/help → Help Center
+/login → Login page
+/signup → Signup page
+/access-denied → Access denied page
+
+completed
+3/4/26, 2:04 PM - Cyber Code Master: GarTexHub.pdf (file attached)
+GarTexHub.pdf
+3/4/26, 2:05 PM - Cyber Code Master: GarTexHub-1.pdf (file attached)
+3/4/26, 2:07 PM - Cyber Code Master: GarTexHub-2.pdf (file attached)
+GarTexHub.pdf
+3/4/26, 2:10 PM - Cyber Code Master: GarTexHub-3.pdf (file attached)
+GarTexHub.pdf
+3/4/26, 2:11 PM - Cyber Code Master: GarTexHub-4.pdf (file attached)
+GarTexHub.pdf
+3/4/26, 2:12 PM - Cyber Code Master: GarTexHub-5.pdf (file attached)
+GarTexHub.pdf
+3/4/26, 2:13 PM - Cyber Code Master: GarTexHub-6.pdf (file attached)
+GarTexHub.pdf
+3/4/26, 2:14 PM - Cyber Code Master: GarTexHub-7.pdf (file attached)
+GarTexHub.pdf
+3/4/26, 2:16 PM - Cyber Code Master: GarTexHub-8.pdf (file attached)
+GarTexHub.pdf
+3/4/26, 2:21 PM - +60 17-726 0362: IMG-20260304-WA0002.jpg (file attached)
+3/4/26, 2:21 PM - +60 17-726 0362: hey dont use effect
+3/4/26, 2:21 PM - +60 17-726 0362: and also dont use grey colour change grey code to white .
+3/4/26, 2:35 PM - Cyber Code Master: IMG-20260304-WA0003.jpg (file attached)
+3/4/26, 2:46 PM - +60 17-726 0362: cool
+3/4/26, 3:01 PM - Shakibul hasan Shaun: Ami ektu por valo kore sob dekhe bolsi!
+3/4/26, 4:05 PM - Shakibul hasan Shaun: যদিও সবার নিচে একাউন্টে টাইপ দিয়ে রেখেছেন কিন্তু   অ্যাকাউন্ট রেজিস্ট্রেশনের জায়গায় তিন ধরনের অ্যাকাউন্ট এর অপশন দেখালেই মনে হচ্ছে ভালো হতো! 
+
+কারণ দুই ধরনের অ্যাকাউন্ট তৈরীর অপশন আমরা ডিরেক্টলি দেখাচ্ছি অন্য টাকে উজ্জ্ব রাখতেছি  এটাও ছোটখাটো প্রবলেম সৃষ্টি করে , 
+
+আমাদের প্রথম পেইজের একটা থ্রি লাইন অপশন থাকলে কি ভালো হতো? যদিও এখানে যেটা ভালো মনে হয় সেটা করেন
+3/4/26, 4:28 PM - Shakibul hasan Shaun: about,private policy and terms page valo hoise
+3/4/26, 4:30 PM - Shakibul hasan Shaun: তিন ধরনের অ্যাকাউন্টের জন্য আলাদা তিনটা পিসিং প্লেনের কথা হয়েছিল
+3/5/26, 2:00 PM - Shakibul hasan Shaun: সম্মানিত ইঞ্জিনিয়াররা আজকে তারিখ ৫ ই মার্চ  2026  🫤
+3/5/26, 9:37 PM - Shakibul hasan Shaun: Team any update!?
+3/15/26, 7:11 AM - Shakibul hasan Shaun: ,
+3/18/26, 8:16 AM - Shakibul hasan Shaun: আমি আপনাকে যেই  গুরুত্বপূর্ণ তথ্যগুলো দিয়েছিলাম স্ক্রিনশটের উপর ভিত্তি করে কিছু প্রশ্ন করেছিলাম এবং  ডকুমেন্টেশন আপডেট করতে বলেছিলাম আমার মন্তব্যের উপর ভিত্তি করে। 
+
+
+(দ্রুত বুঝার স্বার্থে স্ক্রিনশট দিয়ে দিচ্ছি) 
+
+সেই অংশটুকু বাস্তবায়িত হয়েছিল এবং সেই কমান্ডগুলো বাস্তবায়িত করেছিলেন ?
+3/18/26, 8:05 AM - Shakibul hasan Shaun removed +60 17-726 0362
+3/18/26, 8:16 AM - Shakibul hasan Shaun: IMG-20260318-WA0000.jpg (file attached)
+3/18/26, 1:59 PM - Cyber Code Master: yes
+3/19/26, 7:00 PM - Shakibul hasan Shaun: VID-20260319-WA0003.mp4 (file attached)
+3/19/26, 7:01 PM - Shakibul hasan Shaun: <Media omitted>
+3/22/26, 9:48 PM - Shakibul hasan Shaun: Buyer acvount ভেরিফিকেশন করতে গেলে, 
+এই তথ্যগুলো লাগবে যদি তারা ব্যাচ নিতে চায় তাহলে, 
+এক্ষেত্রে একটু কষ্ট করে EU এর অন্তর্ভুক্ত দেশগুলোর নামগুলোর লিস্ট বের কইরেন
+EU
+Business Registration (রেজিস্ট্রেশন)
+নিশ্চিত করে যে আপনার কোম্পানি আইনগতভাবে EU তে স্বীকৃত।
+নিরাপত্তা: আইনগত বৈধতা, কোম্পানির আইডেন্টিটি ও 
+করদায়িত্ব প্রমাণ।
+VAT Number
+EU তে মালবিক্রয়/সার্ভিস ট্যাক্সের জন্য স্বীকৃত আইডি।
+নিরাপত্তা: করদাতার বৈধতা যাচাই; EU ভ্যাট সিস্টেমে ট্রেড লেনদেনের নিরাপত্তা।
+EORI (Economic Operators Registration and Identification)
+কাস্টমস ট্রেড/ইমপোর্ট-এক্সপোর্টে ব্যবহৃত আইডি।
+নিরাপত্তা: কাস্টমস প্রসেসে কোম্পানির বৈধতা; আন্তর্জাতিক শিপমেন্টে অনুমোদন ও ট্র্যাকিং।
+Bank proof (ব্যাংক অ্যাকাউন্ট প্রমাণ)
+ব্যাংকে কোম্পানির বৈধ অ্যাকাউন্টের প্রমাণ।
+নিরাপত্তা: অর্থ লেনদেনের বৈধতা ও বিশ্বাসযোগ্যতা; পাইরেসি/ফ্রড কমানো।
+USA
+Business Registration
+কোম্পানির আইনগত বৈধতা নিশ্চিত করে।
+নিরাপত্তা: আইনগত স্বীকৃতি, কনট্র্যাক্ট বা লেনদেনে আইনি সুরক্ষা।
+EIN (Employer Identification Number)
+IRS দ্বারা প্রদত্ত ট্যাক্স আইডি।
+নিরাপত্তা: করদাতা স্বীকৃতি; ফেডারাল ট্যাক্স লেনদেনে বৈধতা।
+IOR (Importer of Record)
+কাস্টমস ট্রেড/ইমপোর্ট আইডেন্টিটি।
+নিরাপত্তা: আমদানি-রপ্তানিতে লিগ্যাল কনফার্মেশন; কাস্টমস ফাইন বা লেনদেনে ঝুঁকি কমানো।
+Bank proof
+অর্থ লেনদেনের স্বচ্ছতা ও বৈধতা প্রমাণ।
+নিরাপত্তা: ট্রানজেকশন ফ্রড রোধ; লেনদেনে বিশ্বাসযোগ্যতা।
+
+
+EU: Business Registration + VAT Number + EORI + Bank proof
+
+USA: Business Registration + EIN + IOR + Bank proof
+3/23/26, 8:56 PM - Shakibul hasan Shaun: Auto $5 Credit & Early Adopter Verification Plan (Final)
+
+১. সব ব্যবহারকারীর জন্য:
+
+নতুন account খুললেই $5 restricted credit automatically দেওয়া হবে।
+
+এটি ব্যবহার করা যাবে verification বা subscription এর জন্য।
+
+Coupon code দরকার নেই; auto credit default flow।
+
+
+২. প্রথম ১০০ বা early adopter factories / buying houses-এর জন্য:
+
+তারা সবার প্রথমে platform-এ যুক্ত হচ্ছে, তাই বিশেষ সুবিধা দেওয়া হবে।
+
+এই সুবিধার জন্য coupon code ব্যবহার করা হবে।
+
+সুবিধা: প্রথম দুই মাস ফ্রিতে verification enable, তবে credit card যুক্ত থাকতে হবে।
+
+$5 restricted credit ও coupon benefit একসাথে ব্যবহার করা যাবে verification বা subscription এ।
+
+
+৩. Implementation Note:
+
+Auto $5 credit সব user-এ স্বয়ংক্রিয়ভাবে চলে।
+
+Early adopter special campaign coupon code দিয়ে আলাদা handled হবে।
+
+ইঞ্জিনিয়ারদের বিভ্রান্তি এড়াতে: দুটি system সরাসরি একসাথে conflict করবে না।
+
+
+সংক্ষেপে:
+
+General users → auto $5 restricted credit
+
+Early adopters → coupon + 2 মাস free verification (credit card required)
+
+
+এই structure পরিষ্কার, scalable, এবং frictionless।
+3/23/26, 8:57 PM - Shakibul hasan Shaun: সব মেসেজ এক জায়গায় দিলে আপনার বুঝতে এবং খুঁজতে সমস্যা হবে তাই আলাদা আলাদা জায়গায় মেসেজ গুলো দিচ্ছি যেন সবার প্রথম থেকেই সকল তথ্য সংগ্রহ করতে পারেন। 
+
+ বর্তমানে এই পদ্ধতি অবলম্বন করার কারণ সবার প্রথমে ব্যবহারকারীদের আমার নিজের কথা বলে আনতে হবে তারপর মার্কেট আর নিয়োগ দিতে পারব
+3/23/26, 8:58 PM - Shakibul hasan Shaun: এখানে মার্কেটিং স্ট্রেটেজি অবলম্বন করা হয়েছে
+3/23/26, 10:02 PM - Shakibul hasan Shaun: Implement? Read full <This message was edited>
+3/23/26, 10:03 PM - Shakibul hasan Shaun: এখানে অটো ক্রেডিট অফ রাখলেও চলবে কুপন ভিত্তিক ক্রেডিট থাকলেও কোন সমস্যা নেই
+3/23/26, 10:28 PM - Shakibul hasan Shaun: এখানের বিষয়টি হয়তো বুঝেননি। 
+
+(এমন যদি করি তাদেরকে সবার প্রথমে আমরা আনতেছি এবং আমাদের কোম্পানির সবার প্রথম মেম্বার যেহেতু তারা হচ্ছে তাই আমরা তাদেরকে ৫ ডলার  দিচ্ছি  যেটা সে আমাদের সাবস্ক্রিপশন অথবা ভেরিফিকেশন কিনতে ব্যবহার করতে পারবে  এবং  যেহেতু সে প্রথমদিকে আমাদের সঙ্গে থাকতেছেন তাই তাকে আমরা প্রথম দুই মাস ফ্রিতে ভেরিফিকেশন এনাবেল করার সুযোগ দিব শুধুমাত্র ক্রেডিট কার্ড যুক্ত করে)
+আমার তৈরি মূল আইডিয়া এটা বোন আর ওইটা হচ্ছে পলিশ ভার্সন জিপিটি ধারা ।
+3/23/26, 10:29 PM - Shakibul hasan Shaun: আশা করি এখন বুঝতে পেরেছেন কেন এই পদ্ধতি অবলম্বন করেছি কারণ প্রথম দিকে মানুষকে আমাদের এভাবে একাউন্ট তৈরির জন্য অনুরোধ জানাতে হবে তাই প্রথম ১০০ জনকে অনেক সুযোগ সুবিধা দিতে হবে
+3/24/26, 11:12 AM - Shakibul hasan Shaun: Buyer (Premium):
+
+Advanced Search Filters
+
+Priority Buyer Request Placement
+
+Dedicated Support
+
+Contract History & Audit Trail
+
+Early Access to New verified   Factories
+
+ Buying Pattern Analysis 
+
+Order Completion Certification
+
+AI auto-reply customization
+
+Smart Supplier Matching
+
+Request Performance Insights
+
+Profile, products boost & increased reach
+
+
+
+
+
+
+Factory (Premium):
+
+Profile, products boost & increased reach
+
+Advanced analytics (who viewed, inquiry rate)
+
+Priority in search results and filter 
+
+AI auto-reply customization
+
+Dedicated account manager
+
+Custom branding on profile
+
+Enterprise analytics dashboard
+
+Unlimited agent/sub-ID creation
+
+Buying Pattern Analysis 
+
+Order Completion Certification 
+
+ Dedicated Support
+
+Contract history & audit trail
+
+Multi- agent management
+
+Multiple team/agent access management
+
+Request factory Performance Insights 
+
+factory Performance Insights
+
+Buyer interest analytics
+
+Agent performance analytics and reporting  
+
+More product/video posting capacity
+
+Lead distribution across agents
+
+Buyer communication insights
+
+Buyer Request Priority Access
+
+Buyer Conversion Insights
+
+unlimited Partner Network request accept
+
+
+
+
+
+
+
+buying house (Premium):
+
+Profile, products boost & increased reach
+
+Advanced analytics (who viewed, inquiry rate)
+
+Priority in search results and filter 
+
+AI auto-reply customization
+
+Dedicated account manager
+
+Custom branding on profile
+
+Enterprise analytics dashboard
+
+Unlimited agent/sub-ID creation
+
+Buying Pattern Analysis 
+
+Order Completion Certification 
+
+ Dedicated Support
+
+Contract history & audit trail
+
+Multi- agent management
+
+Multiple team/agent access management
+
+Request Buying house Performance Insights 
+
+Buyer interest analytics
+
+Agent performance analytics and reporting  
+
+More product/video posting capacity
+
+Lead distribution across agents
+
+Buyer communication insights
+
+Buyer Request Priority Access
+
+Buyer Conversion Insights
+
+unlimited Partner Network Access
+3/24/26, 11:13 AM - Shakibul hasan Shaun: আপনি চাইলে প্রতিটি ফিচারের অল্প বিস্তার ব্যাখ্যা দিতে পারি সেটার ডকুমেন্টেশনও আছে আমার কাছে
+3/24/26, 1:52 PM - Shakibul hasan Shaun: Eta implement kora foroj
+3/27/26, 9:56 PM - Shakibul hasan Shaun: Ei gular implement  plan ase to? <This message was edited>
+3/29/26, 11:38 AM - Shakibul hasan Shaun: উত্তর দেন
+3/31/26, 9:50 AM - Shakibul hasan Shaun: 
+3/31/26, 9:50 AM - Shakibul hasan Shaun: IMG-20260331-WA0000.jpg (file attached)
+3/31/26, 9:50 AM - Shakibul hasan Shaun: IMG-20260331-WA0001.jpg (file attached)
+3/31/26, 9:50 AM - Shakibul hasan Shaun: IMG-20260331-WA0002.jpg (file attached)
+3/31/26, 9:50 AM - Shakibul hasan Shaun: এই মেলগুলো কিভাবে পাঠাচ্ছেন?
+3/31/26, 9:50 AM - Shakibul hasan Shaun: এরকম প্রোফেশনাল ইমেইল কোথায় পেলেন?
+3/31/26, 9:50 AM - Shakibul hasan Shaun: এই সার্ভিস এই সিস্টেম কবে চালু করলেন কিভাবে চালু করলেন?
+3/31/26, 9:51 AM - Shakibul hasan Shaun: আমি যে ইমেইল দিয়ে একাউন্ট তৈরি করেছিলাম আমাদের ওয়েবসাইটে সেখানে এই মেইলগুলো এসেছে
+3/31/26, 10:34 AM - Cyber Code Master: Web ea Ami eakhono Kono mail system add kori nei
+3/31/26, 10:53 AM - Shakibul hasan Shaun: এইটা তাইলে কেমনে কোথা থেকে এলো ?
+3/31/26, 10:55 AM - Cyber Code Master: IMG-20260331-WA0003.jpg (file attached)
+ei ta https://www.termsfeed.com/ ei web theke eashese
+3/31/26, 10:56 AM - Shakibul hasan Shaun: ও
+3/31/26, 10:56 AM - Shakibul hasan Shaun: বুজসি
+3/31/26, 10:56 AM - Cyber Code Master: web ea mail system lagbe?
+3/31/26, 10:56 AM - Shakibul hasan Shaun: এটা অনেক ব্যয়বহুল আমি যতদূর জানি
+3/31/26, 10:56 AM - Shakibul hasan Shaun: যদি ফ্রি সম্ভব হয় তাহলে থাকা যেতে পারে
+3/31/26, 10:57 AM - Cyber Code Master: free er jonno google cloud panel use kora jay <This message was edited>
+3/31/26, 10:58 AM - Shakibul hasan Shaun: bujlam na
+3/31/26, 10:58 AM - Shakibul hasan Shaun: আমাদের মূল প্ল্যানের কতটুকু অংশ বাকি আছে?
+
+এখানে কিছু বলেন না কেন🥲
+3/31/26, 11:06 AM - Cyber Code Master: admin panel baki ase
+3/31/26, 11:06 AM - Cyber Code Master: https://developers.google.com/workspace/gmail/api/guides
+3/31/26, 11:09 AM - Shakibul hasan Shaun: সংক্ষেপে সরাসরি তুলনা:
+
+Gmail API vs SMTP
+
+বিষয়	Gmail API	SMTP
+
+Setup complexity	জটিল (OAuth লাগে)	সহজ
+Control & flexibility	কম (Google rules)	বেশি
+Security	বেশি	মাঝারি
+Speed / performance	ভালো	নির্ভর করে server এর উপর
+Bulk sending	❌ খারাপ	✔️ ভালো
+Reliability	খুব stable	provider এর উপর depend
+Spam risk control	Google নিজে control করে	নিজে manage করতে হয়
+
+
+
+---
+
+সিদ্ধান্ত (ব্যবহার অনুযায়ী)
+
+1. App / SaaS / Automation (OTP, alerts)
+
+➡️ Gmail API ভালো
+
+2. Bulk email / outreach / marketing
+
+➡️ SMTP ভালো (বিশেষ করে dedicated email service দিয়ে)
+
+
+---
+
+গুরুত্বপূর্ণ বাস্তব কথা
+
+তুমি যদি mass outreach (LinkedIn + email scraping) করতে চাও
+👉 Gmail API ব্যবহার করা ভুল হবে (account ঝুঁকিতে যাবে)
+
+SMTP + proper email service (যেমন SendGrid, Mailgun টাইপ)
+👉 scalable + safer
+
+
+
+---
+
+Final verdict
+
+Control + scale চাই → SMTP
+
+Security + Google ecosystem → Gmail API
+
+
+
+---
+
+তোমার use-case যদি বলো (exact কী করতে চাও), আমি সরাসরি best architecture বলে দিতে পারব।
+3/31/26, 11:10 AM - Shakibul hasan Shaun: যেটা ভালো হয় সেটা ব্যবহার করেন সিদ্ধান্ত আপনার
+3/31/26, 11:10 AM - Cyber Code Master: ok
+4/1/26, 4:35 PM - Shakibul hasan Shaun: This message was deleted
+4/1/26, 4:35 PM - Shakibul hasan Shaun: এইটা আবার জানতে পারলাম
+4/1/26, 4:40 PM - Shakibul hasan Shaun: ভাইয়ার যখন  অর্ডার করে তখন প্রথমে ছোট একটা অর্ডার করে যেটাকে sample বলা হয় এটার মাধ্যমে প্রথমে দেখে কোন মানের পণ্য তারা দিয়ে থাকে 
+
+এরপর তারা বড় অর্ডারে যায়
+4/1/26, 4:40 PM - Shakibul hasan Shaun: তাই অত্যন্ত সাধারণভাবে অর্ডার করুন এর জায়গায় আমরা দুইটা অপশন রাখতে পারি
+4/1/26, 4:40 PM - Shakibul hasan Shaun: ১. Order Type:
+Sample Order
+Main Order
+২. Status-এ add করো:
+Sample order হলে:
+Sample Requested
+Sample Sent
+Sample Approved / Rejected
+৩. Convert option:
+👉 “Convert to Main Order” button (must)
+4/1/26, 4:41 PM - Shakibul hasan Shaun: মানে সবকিছু আগের মতনই থাকবে  শুধুমাত্র এই দুইটা জায়গায় একটু যুক্ত করতে হবে
+4/1/26, 4:41 PM - Shakibul hasan Shaun: কেউ যদি চায় তাহলে সরাসরি মেইন অর্ডার করতে পারে সমস্যা নেই ,
+4/1/26, 4:42 PM - Shakibul hasan Shaun: এখানে পূর্ণ ফ্লু টা  দেওয়াটা ঠিক হলো না আপনি হয়তো বিভ্রান্ত হবেন, 
+
+order type এর ওখানে দুইটা অপশন এবং দুইটা অপশন  এর মধ্যে একটা সিলেক্ট করার পর পরবর্তীটাতে ফ্লোটা   একই থাকবে একটু নামের পরিবর্তন হতে পারে এতটুকুই, <This message was edited>
+4/1/26, 4:43 PM - Shakibul hasan Shaun: এবং সিম্পল অর্ডারের ক্ষেত্রে সবার শেষে শুধুমাত্র,
+
+ কনভার্ট টু মেইন অর্ডার বাটন অতিরিক্ত থাকতেছে এতোটুকুই
+4/2/26, 7:48 PM - Shakibul hasan Shaun: Ok?dane?
+4/4/26, 12:09 PM - Shakibul hasan Shaun: This message was deleted
+4/7/26, 10:30 PM - Shakibul hasan Shaun: ,
+4/7/26, 10:33 PM - Shakibul hasan Shaun changed this group's icon
+4/14/26, 8:32 PM - Shakibul hasan Shaun: !
+4/14/26, 8:35 PM - Shakibul hasan Shaun: EU: Business Registration + VAT Number + EORI + Bank proof
+
+USA: Business Registration + EIN + IOR + Bank proof
