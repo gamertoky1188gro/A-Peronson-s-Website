@@ -1,549 +1,781 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Film, ImagePlus, Trash2, UploadCloud } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import MarkdownMessage from "../components/chat/MarkdownMessage";
-import { apiRequest, getToken } from "../lib/auth";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+// Inline icon components (to avoid CDN/import issues)
+const Icon = {
+  ArrowLeft: (p:any)=> (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>),
+  Check: (p:any)=> (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6L9 17l-5-5"/></svg>),
+  Upload: (p:any)=> (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 16V4"/><path d="M8 8l4-4 4 4"/><path d="M4 20h16"/></svg>),
+  Image: (p:any)=> (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>),
+  Loader: (p:any)=> (<svg {...p} className={p.className+" animate-spin"} viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" opacity="0.2"/><path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="4"/></svg>),
+  Plus: (p:any)=> (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>),
+  Play: (p:any)=> (<svg {...p} viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>),
+  Refresh: (p:any)=> (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>),
+  Sparkles: (p:any)=> (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/></svg>),
+  Trash: (p:any)=> (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></svg>),
+  X: (p:any)=> (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 6l12 12M6 18L18 6"/></svg>)
+};
 
-function cn(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
 
-const Field = ({ label, hint, children }) => (
-  <div className="space-y-2">
-    <div className="flex items-end justify-between gap-3">
-      <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
-        {label}
-      </label>
-      {hint ? (
-        <span className="text-xs text-slate-500 dark:text-slate-400">
-          {hint}
-        </span>
-      ) : null}
-    </div>
-    {children}
-  </div>
-);
+type MediaRow = {
+  id: string;
+  file: File;
+  name: string;
+  type: string;
+  url: string;
+};
 
-const Input = ({ className = "", ...props }) => (
-  <input
-    {...props}
-    className={cn(
-      "h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition",
-      "placeholder:text-slate-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10",
-      "dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/10",
-      className,
-    )}
-  />
-);
+type FeedPost = {
+  id: string;
+  title: string;
+  category?: string;
+  caption?: string;
+  createdAt?: string;
+};
 
-const Textarea = ({ className = "", ...props }) => (
-  <textarea
-    {...props}
-    className={cn(
-      "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition",
-      "placeholder:text-slate-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10",
-      "dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/10",
-      className,
-    )}
-  />
-);
+type FormState = {
+  title: string;
+  category: string;
+  caption: string;
+  readme: string;
+  ctaText: string;
+  ctaUrl: string;
+  hashtags: string;
+  mentions: string;
+  links: string;
+  productTags: string;
+  location: string;
+};
 
-const SectionCard = ({ title, subtitle, children }) => (
-  <section className="rounded-[28px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_16px_60px_-28px_rgba(15,23,42,0.25)] backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/80 dark:shadow-[0_16px_60px_-28px_rgba(0,0,0,0.55)]">
-    <div className="mb-5">
-      <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-        {title}
-      </h2>
-      {subtitle ? (
-        <p className="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">
-          {subtitle}
-        </p>
-      ) : null}
-    </div>
-    {children}
-  </section>
-);
+const initialForm: FormState = {
+  title: "",
+  category: "",
+  caption: "",
+  readme: "",
+  ctaText: "",
+  ctaUrl: "",
+  hashtags: "",
+  mentions: "",
+  links: "",
+  productTags: "",
+  location: "",
+};
 
-function splitCsv(value = "") {
-  return String(value)
+function splitCommaList(value: string) {
+  return value
     .split(",")
-    .map((entry) => entry.trim())
+    .map((item) => item.trim())
     .filter(Boolean);
 }
 
-function mapApiToPost(row = {}) {
-  return {
-    id: row.id,
-    title: row.title || "Untitled Post",
-    category: row.category || "General",
-    createdAt: new Date(row.created_at || Date.now()).toLocaleString(),
-    caption: row.caption || "No caption provided.",
-  };
+function formatDate(value?: string) {
+  if (!value) return "Just now";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
-const API_BASE = import.meta.env.VITE_API_URL || "/api";
+function cn(...classes: Array<string | false | null | undefined>) {
+  return classes.filter(Boolean).join(" ");
+}
 
-export default function FeedManageProPage() {
-  const navigate = useNavigate();
-  const token = useMemo(() => getToken(), []);
-
-  const [posts, setPosts] = useState([]);
-  const [saving, setSaving] = useState(false);
+export default function FeedManagementPage() {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [form, setForm] = useState<FormState>(initialForm);
+  const [mediaRows, setMediaRows] = useState<MediaRow[]>([]);
+  const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [loadingPosts, setLoadingPosts] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState("");
-  const [mediaRows, setMediaRows] = useState([]);
-  const [form, setForm] = useState({
-    title: "",
-    category: "",
-    caption: "",
-    readme: "",
-    ctaText: "",
-    ctaUrl: "",
-    hashtags: "",
-    mentions: "",
-    links: "",
-    tags: "",
-    location: "",
-  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    let alive = true;
-    if (!token) return undefined;
+    const storedTheme = window.localStorage.getItem("feed-theme");
+    if (storedTheme === "light" || storedTheme === "dark") {
+      setTheme(storedTheme);
+      return;
+    }
+    const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches;
+    setTheme(prefersDark ? "dark" : "light");
+  }, []);
 
-    apiRequest("/feed/posts/mine", { token })
-      .then((rows) => {
-        if (!alive) return;
-        const mapped = Array.isArray(rows) ? rows.map(mapApiToPost) : [];
-        setPosts(mapped);
-      })
-      .catch(() => {
-        if (!alive) return;
-        setPosts([]);
-      });
+  useEffect(() => {
+    window.localStorage.setItem("feed-theme", theme);
+    document.documentElement.classList.toggle("dark", theme === "dark");
+  }, [theme]);
 
-    return () => {
-      alive = false;
-    };
-  }, [token]);
-
-  const handleChange = (key) => (e) =>
-    setForm((prev) => ({ ...prev, [key]: e.target.value }));
-
-  const uploadFeedMedia = useCallback(
-    async (file) => {
-      if (!token) throw new Error("Not signed in");
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch(`${API_BASE}/feed/posts/upload`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        const err = new Error(data?.error || "Upload failed");
-        err.status = res.status;
-        err.details = data;
-        throw err;
-      }
-
-      return data;
-    },
-    [token],
-  );
-
-  const handleUploadFiles = useCallback(
-    async (files) => {
-      const list = Array.from(files || []);
-      if (!list.length || uploading) return;
+  useEffect(() => {
+    const loadMine = async () => {
+      setLoadingPosts(true);
       setError("");
-      setUploading(true);
       try {
-        for (const file of list) {
-          const result = await uploadFeedMedia(file);
-          const nextType =
-            String(result?.type || "").toLowerCase() === "video"
-              ? "video"
-              : "image";
-          const nextUrl = String(result?.url || "").trim();
-          if (!nextUrl) continue;
-          setMediaRows((prev) => [
-            ...prev,
-            { type: nextType, url: nextUrl, alt: file?.name || "" },
-          ]);
+        const token = localStorage.getItem("token");
+        const res = await fetch("/api/feed/posts/mine", {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to load your posts");
         }
+
+        const data = await res.json();
+        const rows: FeedPost[] = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.posts)
+            ? data.posts
+            : [];
+        setPosts(rows);
       } catch (err) {
-        setError(err?.message || "Upload failed");
+        const message = err instanceof Error ? err.message : "Failed to load your posts";
+        setError(message);
       } finally {
-        setUploading(false);
+        setLoadingPosts(false);
       }
-    },
-    [uploadFeedMedia, uploading],
+    };
+
+    loadMine();
+  }, []);
+
+  const previewCtaVisible = form.ctaText.trim().length > 0;
+  const previewHasText = form.readme.trim().length > 0;
+
+  const previewMeta = useMemo(
+    () => ({
+      hashtags: splitCommaList(form.hashtags),
+      mentions: splitCommaList(form.mentions),
+      links: splitCommaList(form.links),
+      productTags: splitCommaList(form.productTags),
+    }),
+    [form.hashtags, form.mentions, form.links, form.productTags],
   );
 
-  const createPost = useCallback(async () => {
-    if (!token || saving) return;
+  const updateField = (key: keyof FormState, value: string) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const openPicker = () => fileInputRef.current?.click();
+
+  const handleFiles = async (files: FileList | null) => {
+    if (!files?.length) return;
+    setUploading(true);
+    setError("");
+
+    try {
+      const nextRows: MediaRow[] = Array.from(files).map((file) => ({
+        id: `${file.name}-${file.lastModified}-${Math.random().toString(36).slice(2, 8)}`,
+        file,
+        name: file.name,
+        type: file.type || "application/octet-stream",
+        url: URL.createObjectURL(file),
+      }));
+
+      setMediaRows((prev) => [...prev, ...nextRows]);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Upload failed";
+      setError(message);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const clearForm = () => {
+    setForm(initialForm);
+    setMediaRows([]);
+    setError("");
+  };
+
+  const createPost = async () => {
+    if (!form.title.trim()) {
+      setError("Title is required.");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("Please log in again. Token missing.");
+      return;
+    }
+
     setSaving(true);
     setError("");
+
+    const payload = {
+      title: form.title,
+      category: form.category,
+      caption: form.caption,
+      description_markdown: form.readme,
+      cta_text: form.ctaText,
+      cta_url: form.ctaUrl,
+      hashtags: splitCommaList(form.hashtags),
+      mentions: splitCommaList(form.mentions),
+      links: splitCommaList(form.links),
+      product_tags: splitCommaList(form.productTags),
+      location_tag: form.location,
+      status: "published",
+      media: mediaRows.map((item) => ({
+        name: item.name,
+        type: item.type,
+        url: item.url,
+      })),
+    };
+
     try {
-      const payload = {
-        title: form.title || "Untitled Post",
-        category: form.category || "General",
-        caption: form.caption || "No caption provided.",
-        description_markdown: form.readme || "",
-        cta_text: form.ctaText || "",
-        cta_url: form.ctaUrl || "",
-        hashtags: splitCsv(form.hashtags),
-        mentions: splitCsv(form.mentions),
-        links: splitCsv(form.links),
-        product_tags: splitCsv(form.tags),
-        location_tag: form.location || "",
-        status: "published",
-        media: mediaRows
-          .map((entry) => ({
-            type:
-              String(entry.type || "image").toLowerCase() === "video"
-                ? "video"
-                : "image",
-            url: String(entry.url || "").trim(),
-            alt: String(entry.alt || "").trim(),
-          }))
-          .filter((entry) => entry.url),
+      const res = await fetch("/feed/posts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error("Save failed");
+      }
+
+      const data = await res.json();
+      const created: FeedPost = data?.post ?? {
+        id: String(Date.now()),
+        title: form.title,
+        category: form.category,
+        caption: form.caption,
+        createdAt: new Date().toISOString(),
       };
 
-      const created = await apiRequest("/feed/posts", {
-        method: "POST",
-        token,
-        body: payload,
-      });
-      const newPost = mapApiToPost(created);
-      setPosts((prev) => [newPost, ...prev]);
-      setForm((prev) => ({
-        ...prev,
-        title: "",
-        category: "",
-        caption: "",
-        readme: "",
-      }));
-      setMediaRows([]);
+      setPosts((prev) => [created, ...prev]);
+      clearForm();
     } catch (err) {
-      setError(err?.message || "Save failed");
+      const message = err instanceof Error ? err.message : "Save failed";
+      setError(message);
     } finally {
       setSaving(false);
     }
-  }, [form, mediaRows, saving, token]);
+  };
 
-  const deletePost = useCallback(
-    async (postId) => {
-      if (!token || !postId) return;
-      setError("");
-      try {
-        await apiRequest(`/feed/posts/${postId}`, { method: "DELETE", token });
-        setPosts((prev) => prev.filter((p) => p.id !== postId));
-      } catch (err) {
-        setError(err?.message || "Delete failed");
+  const deletePost = async (postId: string) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("Please log in again. Token missing.");
+      return;
+    }
+
+    const snapshot = posts;
+    setError("");
+    setPosts((prev) => prev.filter((post) => post.id !== postId));
+
+    try {
+      const res = await fetch(`/feed/posts/${postId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error("Delete failed");
       }
-    },
-    [token],
-  );
+    } catch (err) {
+      setPosts(snapshot);
+      const message = err instanceof Error ? err.message : "Delete failed";
+      setError(message);
+    }
+  };
+
+  const removeMedia = (id: string) => {
+    setMediaRows((prev) => {
+      const target = prev.find((item) => item.id === id);
+      if (target) URL.revokeObjectURL(target.url);
+      return prev.filter((item) => item.id !== id);
+    });
+  };
+
+  const pageBg = theme === "dark"
+    ? "bg-slate-950 text-slate-100"
+    : "bg-slate-50 text-slate-900";
+
+  const panelBg = theme === "dark"
+    ? "bg-white/5 border-white/10 shadow-[0_20px_80px_-30px_rgba(56,189,248,0.25)]"
+    : "bg-white border-slate-200 shadow-[0_20px_80px_-30px_rgba(14,165,233,0.18)]";
+
+  const subtleText = theme === "dark" ? "text-slate-400" : "text-slate-500";
+  const mutedBorder = theme === "dark" ? "border-white/10" : "border-slate-200";
+  const inputBase = theme === "dark"
+    ? "bg-slate-900/60 text-slate-100 placeholder:text-slate-500 border-white/10 focus:border-sky-400"
+    : "bg-white text-slate-900 placeholder:text-slate-400 border-slate-200 focus:border-sky-500";
+  const softGradient =
+    theme === "dark"
+      ? "from-sky-500/25 via-cyan-400/10 to-transparent"
+      : "from-sky-100 via-cyan-50 to-transparent";
 
   return (
-    <div className="min-h-screen bg-[#f5f7fb] text-slate-900 transition-colors duration-300 dark:bg-[#060816] dark:text-slate-100">
-      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-        <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-              Feed Management
-            </h1>
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-              Create and manage your feed posts.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => navigate("/feed")}
-            className="inline-flex h-11 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-slate-700 dark:hover:bg-slate-900"
-          >
-            <ArrowLeft className="h-4 w-4" /> Back to Feed
-          </button>
-        </header>
+    <div className={cn("min-h-screen transition-colors duration-300", pageBg)}>
+      <div className={cn("border-b backdrop-blur-xl", theme === "dark" ? "border-white/10 bg-slate-950/70" : "border-slate-200 bg-white/80")}> 
+        <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium tracking-wide uppercase text-sky-400 border-sky-400/20 bg-sky-400/10">
+                <Icon.Sparkles className="h-3.5 w-3.5" />
+                Premium feed studio
+              </div>
+              <div>
+                <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+                  Feed Management
+                </h1>
+                <p className={cn("mt-1 text-sm sm:text-base", subtleText)}>
+                  Create and manage your feed posts.
+                </p>
+              </div>
+            </div>
 
+            <div className="flex flex-wrap items-center gap-3">
+              <a
+                href="/feed"
+                className="inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5 hover:shadow-lg"
+              >
+                <Icon.ArrowLeft className="h-4 w-4" />
+                Back to Feed
+              </a>
+              <button
+                type="button"
+                onClick={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5 hover:shadow-lg",
+                  panelBg,
+                )}
+              >
+                {theme === "dark" ? "Light mode" : "Dark mode"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         {error ? (
-          <div className="mb-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-200">
-            {error}
+          <div className="mb-6 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200 shadow-lg">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 rounded-full bg-red-500/20 p-1.5 text-red-300">
+                <Icon.X className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="font-medium text-red-100">Something went wrong</p>
+                <p className="mt-1 text-red-200/90">{error}</p>
+              </div>
+            </div>
           </div>
         ) : null}
 
-        <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
-          <SectionCard
-            title="Post editor"
-            subtitle="Advanced markdown + live preview (no extra toggles)."
-          >
-            <div className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <Field label="Title">
-                  <Input
-                    value={form.title}
-                    onChange={handleChange("title")}
-                    placeholder="Title..."
-                  />
-                </Field>
-                <Field label="Category">
-                  <Input
-                    value={form.category}
-                    onChange={handleChange("category")}
-                    placeholder="Announcements"
-                  />
-                </Field>
-              </div>
-
-              <Field label="Caption">
-                <Textarea
-                  value={form.caption}
-                  onChange={handleChange("caption")}
-                  placeholder="Short feed caption..."
-                  className="min-h-28"
-                />
-              </Field>
-
-              <Field label="README / Longform (Markdown)">
-                <Textarea
-                  value={form.readme}
-                  onChange={handleChange("readme")}
-                  placeholder="Write markdown here..."
-                  className="min-h-56"
-                />
-              </Field>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <Field label="CTA Text">
-                  <Input
-                    value={form.ctaText}
-                    onChange={handleChange("ctaText")}
-                    placeholder="Optional"
-                  />
-                </Field>
-                <Field label="CTA URL">
-                  <Input
-                    value={form.ctaUrl}
-                    onChange={handleChange("ctaUrl")}
-                    placeholder="https://..."
-                  />
-                </Field>
-                <Field label="Hashtags (comma-separated)">
-                  <Input
-                    value={form.hashtags}
-                    onChange={handleChange("hashtags")}
-                    placeholder="#launch, #update"
-                  />
-                </Field>
-                <Field label="Mentions (comma-separated)">
-                  <Input
-                    value={form.mentions}
-                    onChange={handleChange("mentions")}
-                    placeholder="@buyer, @factory"
-                  />
-                </Field>
-                <Field label="Links (comma-separated)">
-                  <Input
-                    value={form.links}
-                    onChange={handleChange("links")}
-                    placeholder="https://..."
-                  />
-                </Field>
-                <Field label="Product tags (comma-separated)">
-                  <Input
-                    value={form.tags}
-                    onChange={handleChange("tags")}
-                    placeholder="cotton, denim, etc"
-                  />
-                </Field>
-                <Field label="Location tag">
-                  <Input
-                    value={form.location}
-                    onChange={handleChange("location")}
-                    placeholder="Dhaka, Bangladesh"
-                  />
-                </Field>
-              </div>
-
-              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/40">
-                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
-                    <ImagePlus className="h-4 w-4 text-indigo-500" /> Media
-                    (images / videos)
+        <div className="grid gap-6 lg:grid-cols-5">
+          <div className="lg:col-span-3 space-y-6">
+            <section className={cn("overflow-hidden rounded-3xl border backdrop-blur-xl", panelBg)}>
+              <div className={cn("border-b px-5 py-4", mutedBorder)}>
+                <div className="flex items-center gap-3">
+                  <div className="rounded-2xl bg-sky-500/15 p-2 text-sky-400">
+                    <Icon.Plus className="h-5 w-5" />
                   </div>
-                  <label
+                  <div>
+                    <h2 className="text-lg font-semibold">Post Editor</h2>
+                    <p className={cn("text-sm", subtleText)}>Compose, enrich, and publish your feed post.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-5 p-5 sm:grid-cols-2">
+                <Field label="Title" required>
+                  <input
+                    value={form.title}
+                    onChange={(e) => updateField("title", e.target.value)}
+                    placeholder="Title..."
                     className={cn(
-                      "inline-flex h-11 cursor-pointer items-center gap-2 rounded-2xl bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800",
-                      "dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200",
-                      uploading && "pointer-events-none opacity-70",
+                      "w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
+                      inputBase,
                     )}
+                  />
+                </Field>
+
+                <Field label="Category">
+                  <input
+                    value={form.category}
+                    onChange={(e) => updateField("category", e.target.value)}
+                    placeholder="Announcements"
+                    className={cn(
+                      "w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
+                      inputBase,
+                    )}
+                  />
+                </Field>
+
+                <Field label="Caption" className="sm:col-span-2">
+                  <textarea
+                    value={form.caption}
+                    onChange={(e) => updateField("caption", e.target.value)}
+                    placeholder="Short feed caption..."
+                    rows={3}
+                    className={cn(
+                      "w-full resize-none rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
+                      inputBase,
+                    )}
+                  />
+                </Field>
+
+                <Field label="README / Longform" className="sm:col-span-2">
+                  <textarea
+                    value={form.readme}
+                    onChange={(e) => updateField("readme", e.target.value)}
+                    placeholder="Write markdown here..."
+                    rows={8}
+                    className={cn(
+                      "w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
+                      inputBase,
+                      "min-h-[220px]",
+                    )}
+                  />
+                </Field>
+
+                <Field label="CTA Text">
+                  <input
+                    value={form.ctaText}
+                    onChange={(e) => updateField("ctaText", e.target.value)}
+                    placeholder="Optional"
+                    className={cn(
+                      "w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
+                      inputBase,
+                    )}
+                  />
+                </Field>
+
+                <Field label="CTA URL">
+                  <input
+                    value={form.ctaUrl}
+                    onChange={(e) => updateField("ctaUrl", e.target.value)}
+                    placeholder="https://..."
+                    className={cn(
+                      "w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
+                      inputBase,
+                    )}
+                  />
+                </Field>
+
+                <Field label="Hashtags">
+                  <input
+                    value={form.hashtags}
+                    onChange={(e) => updateField("hashtags", e.target.value)}
+                    placeholder="#launch, #update"
+                    className={cn(
+                      "w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
+                      inputBase,
+                    )}
+                  />
+                </Field>
+
+                <Field label="Mentions">
+                  <input
+                    value={form.mentions}
+                    onChange={(e) => updateField("mentions", e.target.value)}
+                    placeholder="@buyer, @factory"
+                    className={cn(
+                      "w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
+                      inputBase,
+                    )}
+                  />
+                </Field>
+
+                <Field label="Links">
+                  <input
+                    value={form.links}
+                    onChange={(e) => updateField("links", e.target.value)}
+                    placeholder="https://..."
+                    className={cn(
+                      "w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
+                      inputBase,
+                    )}
+                  />
+                </Field>
+
+                <Field label="Product Tags">
+                  <input
+                    value={form.productTags}
+                    onChange={(e) => updateField("productTags", e.target.value)}
+                    placeholder="cotton, denim, etc"
+                    className={cn(
+                      "w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
+                      inputBase,
+                    )}
+                  />
+                </Field>
+
+                <Field label="Location Tag" className="sm:col-span-2">
+                  <input
+                    value={form.location}
+                    onChange={(e) => updateField("location", e.target.value)}
+                    placeholder="Dhaka, Bangladesh"
+                    className={cn(
+                      "w-full rounded-2xl border px-4 py-3 outline-none transition focus:ring-2 focus:ring-sky-400/20",
+                      inputBase,
+                    )}
+                  />
+                </Field>
+              </div>
+
+              <div className={cn("border-t px-5 py-5", mutedBorder)}>
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-sky-400">
+                      Media (images / videos)
+                    </h3>
+                    <p className={cn("mt-1 text-sm", subtleText)}>
+                      Add product shots, announcements, or campaign videos.
+                    </p>
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept="image/*,video/*"
+                    className="hidden"
+                    onChange={(e) => handleFiles(e.target.files)}
+                  />
+                  <button
+                    type="button"
+                    onClick={openPicker}
+                    disabled={uploading}
+                    className="inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:translate-y-[-1px] hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-70"
                   >
-                    <UploadCloud
-                      className={cn("h-4 w-4", uploading && "animate-pulse")}
-                    />
+                    {uploading ? <Icon.Loader className="h-4 w-4 animate-spin" /> : <Icon.Upload className="h-4 w-4" />}
                     {uploading ? "Uploading..." : "Upload"}
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept="image/*,video/*"
-                      multiple
-                      onChange={(e) => handleUploadFiles(e.target.files)}
-                    />
-                  </label>
+                  </button>
                 </div>
 
-                {!mediaRows.length ? (
-                  <div className="flex min-h-24 items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
-                    No media uploaded yet.
-                  </div>
-                ) : (
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {mediaRows.map((entry, idx) => (
-                      <div
-                        key={`${entry.url}-${idx}`}
-                        className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
-                      >
-                        <div className="relative aspect-video bg-slate-100 dark:bg-slate-900">
-                          {entry.type === "video" ? (
-                            <video
-                              className="h-full w-full object-cover"
-                              src={entry.url}
-                              controls
-                              preload="metadata"
-                            />
-                          ) : (
-                            <img
-                              className="h-full w-full object-cover"
-                              src={entry.url}
-                              alt={entry.alt || ""}
-                            />
-                          )}
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setMediaRows((prev) =>
-                                prev.filter((_v, i) => i !== idx),
-                              )
-                            }
-                            className="absolute right-2 top-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-black/75"
-                            aria-label="Remove media"
+                <div className="mt-5">
+                  {mediaRows.length === 0 ? (
+                    <div className={cn("rounded-2xl border border-dashed px-5 py-8 text-center", theme === "dark" ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-slate-50/70")}>
+                      <Icon.Image className={cn("mx-auto h-10 w-10", subtleText)} />
+                      <p className="mt-3 text-sm font-medium">No media uploaded yet</p>
+                      <p className={cn("mt-1 text-sm", subtleText)}>
+                        Choose one or more images/videos to build a richer post.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                      {mediaRows.map((media) => {
+                        const isVideo = media.type.startsWith("video");
+                        return (
+                          <div
+                            key={media.id}
+                            className={cn(
+                              "group overflow-hidden rounded-3xl border transition hover:-translate-y-1",
+                              theme === "dark" ? "border-white/10 bg-slate-950/40" : "border-slate-200 bg-white",
+                            )}
                           >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                        <div className="flex items-center justify-between gap-2 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
-                          <span className="inline-flex items-center gap-1">
-                            <Film className="h-3.5 w-3.5" /> {entry.type}
-                          </span>
-                          <span className="truncate">
-                            {entry.url.replace("/uploads/", "")}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                            <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-sky-500/20 via-cyan-400/10 to-transparent">
+                              {isVideo ? (
+                                <>
+                                  <video src={media.url} className="h-full w-full object-cover" muted playsInline />
+                                  <div className="absolute inset-0 grid place-items-center bg-black/20">
+                                    <div className="rounded-full bg-black/40 p-3 text-white backdrop-blur-sm">
+                                      <Icon.Play className="h-6 w-6 fill-white" />
+                                    </div>
+                                  </div>
+                                </>
+                              ) : (
+                                <img src={media.url} alt={media.name} className="h-full w-full object-cover" />
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => removeMedia(media.id)}
+                                className="absolute right-3 top-3 rounded-full bg-black/60 p-2 text-white opacity-100 transition hover:bg-black"
+                                aria-label="Remove media"
+                              >
+                                <Icon.X className="h-4 w-4" />
+                              </button>
+                            </div>
+                            <div className="space-y-1 p-3">
+                              <div className="text-xs font-medium uppercase tracking-wide text-sky-400">
+                                {isVideo ? "Video" : "Image"}
+                              </div>
+                              <p className="truncate text-sm font-medium">{media.name}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className="flex flex-wrap items-center justify-end gap-3">
+              <div className={cn("flex flex-col gap-3 border-t px-5 py-5 sm:flex-row sm:items-center sm:justify-between", mutedBorder)}>
                 <button
                   type="button"
-                  onClick={() => {
-                    setError("");
-                    setForm((prev) => ({
-                      ...prev,
-                      title: "",
-                      category: "",
-                      caption: "",
-                      readme: "",
-                    }));
-                    setMediaRows([]);
-                  }}
-                  className="inline-flex h-11 items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
+                  onClick={clearForm}
+                  className={cn(
+                    "inline-flex items-center justify-center gap-2 rounded-2xl border px-5 py-3 text-sm font-semibold transition hover:-translate-y-0.5 hover:shadow-lg",
+                    panelBg,
+                  )}
                 >
+                  <Icon.Refresh className="h-4 w-4" />
                   Clear
                 </button>
+
                 <button
                   type="button"
                   onClick={createPost}
                   disabled={saving}
-                  className="inline-flex h-11 items-center justify-center rounded-2xl bg-indigo-600 px-5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-indigo-500 disabled:opacity-60"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-500 to-blue-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:translate-y-[-1px] hover:shadow-xl hover:shadow-sky-500/30 disabled:cursor-not-allowed disabled:opacity-70"
                 >
+                  {saving ? <Icon.Loader className="h-4 w-4 animate-spin" /> : <Icon.Check className="h-4 w-4" />}
                   {saving ? "Saving..." : "Save post"}
                 </button>
               </div>
-            </div>
-          </SectionCard>
+            </section>
+          </div>
 
-          <div className="space-y-5">
-            <SectionCard
-              title="Live preview"
-              subtitle="Preview is empty when README textarea is empty."
-            >
-              <div className="rounded-2xl border border-slate-200 bg-white p-4 text-slate-800 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100">
-                {String(form.readme || "").trim() ? (
-                  <MarkdownMessage text={form.readme} />
+          <div className="lg:col-span-2 space-y-6">
+            <section className={cn("overflow-hidden rounded-3xl border backdrop-blur-xl", panelBg)}>
+              <div className={cn("border-b px-5 py-4", mutedBorder)}>
+                <h2 className="text-lg font-semibold">Live Preview</h2>
+                <p className={cn("text-sm", subtleText)}>Rendered markdown from your README field.</p>
+              </div>
+
+              <div className="px-5 py-5">
+                {previewHasText ? (
+                  <article className={cn("prose max-w-none", theme === "dark" ? "prose-invert prose-headings:text-white prose-a:text-sky-400" : "prose-slate prose-headings:text-slate-900 prose-a:text-sky-600") }>
+                    <ReactMarkdown>{form.readme}</ReactMarkdown>
+                  </article>
                 ) : (
-                  <div className="text-sm text-slate-500 dark:text-slate-400">
-                    Nothing to preview.
+                  <div className={cn("rounded-2xl border border-dashed px-5 py-10 text-center", theme === "dark" ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-slate-50") }>
+                    <Icon.Sparkles className={cn("mx-auto h-10 w-10", subtleText)} />
+                    <p className="mt-3 text-sm font-medium">No preview content yet</p>
+                    <p className={cn("mt-1 text-sm", subtleText)}>
+                      Start writing markdown to see it rendered instantly.
+                    </p>
                   </div>
                 )}
               </div>
-            </SectionCard>
 
-            <SectionCard
-              title="Your posts"
-              subtitle="From /api/feed/posts/mine"
-            >
-              {!posts.length ? (
-                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-400">
-                  No posts yet.
+              <div className={cn("border-t px-5 py-5", mutedBorder)}>
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-sky-400">
+                    Content summary
+                  </h3>
+                  <div className="rounded-full border px-3 py-1 text-xs font-medium text-sky-400 border-sky-400/20 bg-sky-400/10">
+                    {mediaRows.length} media
+                  </div>
                 </div>
-              ) : (
-                <div className="grid gap-3">
-                  {posts.map((post) => (
-                    <article
-                      key={post.id}
-                      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <h3 className="font-semibold text-slate-900 dark:text-slate-50">
-                            {post.title}
-                          </h3>
-                          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                            {post.category}
-                          </p>
+                <div className="mt-4 grid gap-3 text-sm">
+                  <InfoRow label="CTA" value={previewCtaVisible ? `${form.ctaText}${form.ctaUrl ? ` → ${form.ctaUrl}` : ""}` : "None"} />
+                  <InfoRow label="Hashtags" value={previewMeta.hashtags.length ? previewMeta.hashtags.join(", ") : "None"} />
+                  <InfoRow label="Mentions" value={previewMeta.mentions.length ? previewMeta.mentions.join(", ") : "None"} />
+                  <InfoRow label="Links" value={previewMeta.links.length ? previewMeta.links.join(", ") : "None"} />
+                  <InfoRow label="Product tags" value={previewMeta.productTags.length ? previewMeta.productTags.join(", ") : "None"} />
+                  <InfoRow label="Location" value={form.location || "None"} />
+                </div>
+              </div>
+            </section>
+
+            <section className={cn("overflow-hidden rounded-3xl border backdrop-blur-xl", panelBg)}>
+              <div className={cn("border-b px-5 py-4", mutedBorder)}>
+                <h2 className="text-lg font-semibold">Your posts</h2>
+                <p className={cn("text-sm", subtleText)}>Fetched from /api/feed/posts/mine</p>
+              </div>
+
+              <div className="p-5">
+                {loadingPosts ? (
+                  <div className="flex items-center justify-center py-10 text-sm text-sky-400">
+                    <Icon.Loader className="mr-2 h-4 w-4 animate-spin" />
+                    Loading posts...
+                  </div>
+                ) : posts.length === 0 ? (
+                  <div className={cn("rounded-2xl border border-dashed px-5 py-10 text-center", theme === "dark" ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-slate-50") }>
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-sky-500/10 text-sky-400">
+                      <Icon.Image className="h-6 w-6" />
+                    </div>
+                    <p className="mt-3 text-sm font-medium">No posts yet</p>
+                    <p className={cn("mt-1 text-sm", subtleText)}>
+                      Create your first post to populate this list.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {posts.map((post) => (
+                      <article
+                        key={post.id}
+                        className={cn(
+                          "rounded-3xl border p-4 transition hover:-translate-y-0.5 hover:shadow-xl",
+                          theme === "dark" ? "border-white/10 bg-slate-950/40" : "border-slate-200 bg-white",
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <h3 className="truncate text-base font-semibold">{post.title}</h3>
+                            <p className="mt-0.5 text-xs uppercase tracking-wide text-slate-400">
+                              {post.category || "Uncategorized"}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => deletePost(post.id)}
+                            className="inline-flex shrink-0 items-center gap-2 rounded-2xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-200 transition hover:bg-red-500/15"
+                          >
+                            <Icon.Trash className="h-4 w-4" />
+                            Delete
+                          </button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => deletePost(post.id)}
-                          className="inline-flex h-9 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" /> Delete
-                        </button>
-                      </div>
-                      <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                        {post.caption}
-                      </p>
-                      <div className="mt-3 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                        <span>Created</span>
-                        <span>{post.createdAt}</span>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              )}
-            </SectionCard>
+
+                        <p className={cn("mt-3 line-clamp-3 text-sm leading-6", subtleText)}>
+                          {post.caption || "No caption provided."}
+                        </p>
+
+                        <div className="mt-4 flex items-center justify-between gap-3 text-xs">
+                          <div className={cn("inline-flex items-center gap-2 rounded-full border px-3 py-1.5", theme === "dark" ? "border-white/10 bg-white/5 text-slate-300" : "border-slate-200 bg-slate-50 text-slate-600")}>
+                            <span className="h-2 w-2 rounded-full bg-sky-400" />
+                            Created {formatDate(post.createdAt)}
+                          </div>
+                          <div className="text-sky-400/90">Published</div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  required,
+  className,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={className}>
+      <label className="mb-2 block text-sm font-medium">
+        {label} {required ? <span className="text-sky-400">*</span> : null}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-col gap-1 rounded-2xl border border-white/5 bg-white/5 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+      <span className="text-xs font-semibold uppercase tracking-wide text-sky-400">{label}</span>
+      <span className="text-sm text-slate-300 sm:text-right">{value}</span>
     </div>
   );
 }
