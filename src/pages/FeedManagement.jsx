@@ -194,7 +194,7 @@ const token = localStorage.getItem("jwt") || localStorage.getItem("token");
     };
 
     try {
-      const res = await fetch("/feed/posts", {
+      const res = await fetch("/api/feed/posts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -238,7 +238,7 @@ const token = localStorage.getItem("jwt") || localStorage.getItem("token");
     setPosts((prev) => prev.filter((post) => post.id !== postId));
 
     try {
-      const res = await fetch(`/feed/posts/${postId}`, {
+      const res = await fetch(`/api/feed/posts/${postId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
