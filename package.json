@@ -63,7 +63,8 @@
     "unzipper": "^0.12.3",
     "webodf": "^0.5.10",
     "ws": "^8.19.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "@vitejs/plugin-react": "^5.1.1"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
@@ -76,7 +77,6 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.1",
     "babel-jest": "^29.7.0",
     "babel-plugin-react-compiler": "^1.0.0",
     "babel-plugin-transform-vite-meta-env": "^1.0.3",
