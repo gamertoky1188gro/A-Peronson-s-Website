@@ -1,0 +1,57 @@
+# Render Blueprint for GartexHub
+# Import this file in Render dashboard or connect via GitHub
+
+services:
+  - type: web
+    name: gartexhub
+    runtime: node
+    repo: https://github.com/gamertoky1188gro/A-Peronson-s-Website
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: DATABASE_URL
+        value: "postgresql://avnadmin:AVNS_WWLEH0jf7S331y7y7R8@gartexhub-shakibul0715-aec3.a.aivencloud.com:17598/defaultdb?sslmode=require"
+      - key: PGSSLMODE
+        value: require
+      - key: ADMIN_MFA_CODE
+        value: "123456"
+      - key: ADMIN_IP_ALLOWLIST
+        value: "0.0.0.0/0"
+      - key: ADMIN_DEVICE_ALLOWLIST
+        value: ""
+      - key: ADMIN_STEPUP_CODE
+        value: "stepup-7890"
+      - key: ADMIN_STEPUP_MAX_MINUTES
+        value: "30"
+      - key: ADMIN_EXPORT_CODE_PRIMARY
+        value: "export-primary"
+      - key: ADMIN_EXPORT_CODE_SECONDARY
+        value: "export-secondary"
+      - key: ADMIN_EXEC_ENABLED
+        value: "false"
+      - key: ADMIN_EXEC_ALLOW_ANY
+        value: "false"
+      - key: ADMIN_EXEC_ALLOWLIST
+        value: "echo,ping,tracert,traceroute,ip,tail,df,ps,kill,uptime,free,memory,disk,cp,mv,cat,head,wc,sort,uniq"
+      - key: ADMIN_EXEC_TIMEOUT_MS
+        value: "5000"
+      - key: ADMIN_OWNER_EMAILS
+        value: "admin@gmail.com"
+      - key: AI_HANDOFF_THRESHOLD
+        value: "0.65"
+      - key: AI_HALLUCINATION_THRESHOLD
+        value: "0.7"
+      - key: SERVE_DIST
+        value: "true"
+      - key: VITE_API_PROXY
+        value: "http://localhost:10000"
+    buildCommand: |
+      npm install
+      npm run build
+      npx prisma migrate deploy
+      npm run db:generate
+    startCommand: |
+      SKIP_BUILD=true ./scripts/run.sh --dev-or-preview=preview --localrunning-or-incloud=false --iwanttorunrunfrontendby=backend --port-backend=10000
