@@ -48,6 +48,8 @@ services:
         value: "0.7"
       - key: SERVE_DIST
         value: "true"
+      - key: VITE_BASE_URL
+        value: "/"
       - key: VITE_API_PROXY
         value: "http://localhost:10000"
     buildCommand: npm install && npm run build && npx prisma migrate deploy && npm run db:generate
