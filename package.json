@@ -64,7 +64,8 @@
     "webodf": "^0.5.10",
     "ws": "^8.19.0",
     "xlsx": "^0.18.5",
-    "@vitejs/plugin-react": "^5.1.1"
+    "@vitejs/plugin-react": "^5.1.1",
+    "babel-plugin-react-compiler": "^1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
@@ -78,7 +79,6 @@
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "babel-jest": "^29.7.0",
-    "babel-plugin-react-compiler": "^1.0.0",
     "babel-plugin-transform-vite-meta-env": "^1.0.3",
     "electron": "^32.2.0",
     "eslint": "^9.39.1",
