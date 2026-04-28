@@ -1,12 +1,14 @@
 # Render Blueprint for GartexHub
 # Import this file in Render dashboard or connect via GitHub
 
+version: "1"
 services:
   - type: web
     name: gartexhub
     runtime: node
     repo: https://github.com/gamertoky1188gro/A-Peronson-s-Website
     plan: free
+    autoDeployTrigger: commit
     envVars:
       - key: NODE_ENV
         value: production
