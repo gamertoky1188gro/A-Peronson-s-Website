@@ -1,52 +1,21 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-// Inline icon components (to avoid CDN/import issues)
+
 const Icon = {
-  ArrowLeft: (p:any)=> (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>),
-  Check: (p:any)=> (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6L9 17l-5-5"/></svg>),
-  Upload: (p:any)=> (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 16V4"/><path d="M8 8l4-4 4 4"/><path d="M4 20h16"/></svg>),
-  Image: (p:any)=> (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>),
-  Loader: (p:any)=> (<svg {...p} className={p.className+" animate-spin"} viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" opacity="0.2"/><path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="4"/></svg>),
-  Plus: (p:any)=> (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>),
-  Play: (p:any)=> (<svg {...p} viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>),
-  Refresh: (p:any)=> (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>),
-  Sparkles: (p:any)=> (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/></svg>),
-  Trash: (p:any)=> (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></svg>),
-  X: (p:any)=> (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 6l12 12M6 18L18 6"/></svg>)
+  ArrowLeft: (p) => (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>),
+  Check: (p) => (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6L9 17l-5-5"/></svg>),
+  Upload: (p) => (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 16V4"/><path d="M8 8l4-4 4 4"/><path d="M4 20h16"/></svg>),
+  Image: (p) => (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>),
+  Loader: (p) => (<svg {...p} className={p.className+" animate-spin"} viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" opacity="0.2"/><path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="4"/></svg>),
+  Plus: (p) => (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>),
+  Play: (p) => (<svg {...p} viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>),
+  Refresh: (p) => (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>),
+  Sparkles: (p) => (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/></svg>),
+  Trash: (p) => (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></svg>),
+  X: (p) => (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 6l12 12M6 18L18 6"/></svg>)
 };
 
-
-type MediaRow = {
-  id: string;
-  file: File;
-  name: string;
-  type: string;
-  url: string;
-};
-
-type FeedPost = {
-  id: string;
-  title: string;
-  category?: string;
-  caption?: string;
-  createdAt?: string;
-};
-
-type FormState = {
-  title: string;
-  category: string;
-  caption: string;
-  readme: string;
-  ctaText: string;
-  ctaUrl: string;
-  hashtags: string;
-  mentions: string;
-  links: string;
-  productTags: string;
-  location: string;
-};
-
-const initialForm: FormState = {
+const initialForm = {
   title: "",
   category: "",
   caption: "",
@@ -60,14 +29,14 @@ const initialForm: FormState = {
   location: "",
 };
 
-function splitCommaList(value: string) {
+function splitCommaList(value) {
   return value
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
 }
 
-function formatDate(value?: string) {
+function formatDate(value) {
   if (!value) return "Just now";
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return value;
@@ -78,20 +47,20 @@ function formatDate(value?: string) {
   });
 }
 
-function cn(...classes: Array<string | false | null | undefined>) {
+function cn(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
 export default function FeedManagementPage() {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
-  const [form, setForm] = useState<FormState>(initialForm);
-  const [mediaRows, setMediaRows] = useState<MediaRow[]>([]);
-  const [posts, setPosts] = useState<FeedPost[]>([]);
+  const fileInputRef = useRef(null);
+  const [theme, setTheme] = useState("dark");
+  const [form, setForm] = useState(initialForm);
+  const [mediaRows, setMediaRows] = useState([]);
+  const [posts, setPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const storedTheme = window.localStorage.getItem("feed-theme");
@@ -123,7 +92,7 @@ export default function FeedManagementPage() {
         }
 
         const data = await res.json();
-        const rows: FeedPost[] = Array.isArray(data)
+        const rows = Array.isArray(data)
           ? data
           : Array.isArray(data?.posts)
             ? data.posts
@@ -153,19 +122,19 @@ export default function FeedManagementPage() {
     [form.hashtags, form.mentions, form.links, form.productTags],
   );
 
-  const updateField = (key: keyof FormState, value: string) => {
+  const updateField = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
   const openPicker = () => fileInputRef.current?.click();
 
-  const handleFiles = async (files: FileList | null) => {
+  const handleFiles = async (files) => {
     if (!files?.length) return;
     setUploading(true);
     setError("");
 
     try {
-      const nextRows: MediaRow[] = Array.from(files).map((file) => ({
+      const nextRows = Array.from(files).map((file) => ({
         id: `${file.name}-${file.lastModified}-${Math.random().toString(36).slice(2, 8)}`,
         file,
         name: file.name,
@@ -239,7 +208,7 @@ export default function FeedManagementPage() {
       }
 
       const data = await res.json();
-      const created: FeedPost = data?.post ?? {
+      const created = data?.post ?? {
         id: String(Date.now()),
         title: form.title,
         category: form.category,
@@ -257,7 +226,7 @@ export default function FeedManagementPage() {
     }
   };
 
-  const deletePost = async (postId: string) => {
+  const deletePost = async (postId) => {
     const token = localStorage.getItem("token");
     if (!token) {
       setError("Please log in again. Token missing.");
@@ -286,7 +255,7 @@ export default function FeedManagementPage() {
     }
   };
 
-  const removeMedia = (id: string) => {
+  const removeMedia = (id) => {
     setMediaRows((prev) => {
       const target = prev.find((item) => item.id === id);
       if (target) URL.revokeObjectURL(target.url);
@@ -307,10 +276,6 @@ export default function FeedManagementPage() {
   const inputBase = theme === "dark"
     ? "bg-slate-900/60 text-slate-100 placeholder:text-slate-500 border-white/10 focus:border-sky-400"
     : "bg-white text-slate-900 placeholder:text-slate-400 border-slate-200 focus:border-sky-500";
-  const softGradient =
-    theme === "dark"
-      ? "from-sky-500/25 via-cyan-400/10 to-transparent"
-      : "from-sky-100 via-cyan-50 to-transparent";
 
   return (
     <div className={cn("min-h-screen transition-colors duration-300", pageBg)}>
@@ -750,17 +715,7 @@ export default function FeedManagementPage() {
   );
 }
 
-function Field({
-  label,
-  required,
-  className,
-  children,
-}: {
-  label: string;
-  required?: boolean;
-  className?: string;
-  children: React.ReactNode;
-}) {
+function Field({ label, required, className, children }) {
   return (
     <div className={className}>
       <label className="mb-2 block text-sm font-medium">
@@ -771,7 +726,7 @@ function Field({
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function InfoRow({ label, value }) {
   return (
     <div className="flex flex-col gap-1 rounded-2xl border border-white/5 bg-white/5 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
       <span className="text-xs font-semibold uppercase tracking-wide text-sky-400">{label}</span>
