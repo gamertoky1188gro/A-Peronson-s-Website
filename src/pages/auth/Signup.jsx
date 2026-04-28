@@ -161,7 +161,7 @@ export default function Signup() {
       window.removeEventListener("storage", handleStorage);
       clearInterval(interval);
     };
-  }, [existingUser?.role, navigate]);
+  }, [existingUser?.role, navigate, theme]);
 
   useEffect(() => {
     const root = document.documentElement;

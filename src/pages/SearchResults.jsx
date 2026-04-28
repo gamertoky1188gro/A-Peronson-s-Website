@@ -27,7 +27,7 @@
     - Skeleton shimmer while loading.
     - Optional premium-locked overlays for advanced filters.
 */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   Search,
@@ -57,8 +57,7 @@ import {
   Building2,
   LayoutGrid,
 } from 'lucide-react';
-import { apiRequest, getCurrentUser, hasEntitlement } from '../lib/auth';
-import { trackClientEvent } from '../lib/events';
+import { apiRequest } from '../lib/auth';
 
 const CATEGORY_OPTIONS = [
   { key: 'all', label: 'All categories' },
@@ -193,7 +192,6 @@ export default function SearchResults() {
     const raw = localStorage.getItem('sessionToken');
     return raw || null;
   }, []);
-  const sessionUser = getCurrentUser();
 
   const [dark, setDark] = useState(true);
   const [query, setQuery] = useState(() => searchParams.get('q') || '');
@@ -202,7 +200,6 @@ export default function SearchResults() {
   const [estimating, setEstimating] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
   const [viewMode, setViewMode] = useState('all');
-  const [currentCategory, setCurrentCategory] = useState('all');
   const [filters, setFilters] = useState(initialFilters);
   const [locationSuggestions, setLocationSuggestions] = useState([]);
   const [roleSeatText, setRoleSeatText] = useState('');
@@ -262,7 +259,7 @@ export default function SearchResults() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [searchModalOpen, query, filters, loading]);
+  }, [searchModalOpen, query, filters, loading, executeSearch]);
 
   useEffect(() => {
     async function fetchRecentViews() {
@@ -279,13 +276,13 @@ export default function SearchResults() {
     fetchRecentViews();
   }, [token]);
 
-  const addToast = (title, message, kind = 'success') => {
+  const addToast = useCallback((title, message, kind = 'success') => {
     const id = Math.random().toString(36).slice(2, 10);
     setToasts((prev) => [...prev, { id, title, message, kind }]);
     setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3800);
-  };
+  }, []);
 
-  const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id)));
+  const removeToast = useCallback((id) => setToasts((prev) => prev.filter((t) => t.id !== id)), []);
 
   const activeFilterChips = useMemo(() => {
     const chips = [];
@@ -316,11 +313,9 @@ export default function SearchResults() {
 
   function toggleCategory(value) {
     if (value === 'all') {
-      setCurrentCategory('all');
       setFilters((prev) => ({ ...prev, allCategories: true, selectedCategories: [] }));
       return;
     }
-    setCurrentCategory(value);
     setFilters((prev) => {
       const exists = prev.selectedCategories.includes(value);
       const next = exists ? prev.selectedCategories.filter((v) => v !== value) : [...prev.selectedCategories, value];
@@ -328,7 +323,7 @@ export default function SearchResults() {
     });
   }
 
-  async function executeSearch() {
+  const executeSearch = useCallback(async () => {
     setLoading(true);
     addToast('Searching', 'Applying your query and selected filters...', 'success');
 
@@ -359,7 +354,7 @@ export default function SearchResults() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [query, filters, token, activeTab, setSearchParams, addToast, setRequests, setCompanies]);
 
   async function saveSearch() {
     const hasFilters = query.trim() || filters.industry !== 'Any' || filters.country || filters.companyType.length || filters.incoterms.length;
@@ -422,7 +417,6 @@ export default function SearchResults() {
 
   function clearAll() {
     setQuery('');
-    setCurrentCategory('all');
     setFilters({ ...initialFilters });
     setSelectedLocation(null);
     setLocationSuggestions([]);
