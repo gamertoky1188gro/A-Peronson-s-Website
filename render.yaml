@@ -50,10 +50,5 @@ services:
         value: "true"
       - key: VITE_API_PROXY
         value: "http://localhost:10000"
-    buildCommand: |
-      npm install
-      npm run build
-      npx prisma migrate deploy
-      npm run db:generate
-    startCommand: |
-      SKIP_BUILD=true ./scripts/run.sh --dev-or-preview=preview --localrunning-or-incloud=false --iwanttorunrunfrontendby=backend --port-backend=10000
+    buildCommand: npm install && npm run build && npx prisma migrate deploy && npm run db:generate
+    startCommand: SKIP_BUILD=true ./scripts/run.sh --dev-or-preview=preview --localrunning-or-incloud=false --iwanttorunrunfrontendby=backend --port-backend=10000
