@@ -20,13 +20,20 @@ function toSerializable(value) {
 async function ensureStateRow(key, fallback) {
   const existing = await prisma.appState.findUnique({ where: { key } });
   if (existing) return existing;
-  const created = await prisma.appState.create({
-    data: {
-      key,
-      data: toSerializable(fallback),
-    },
-  });
-  return created;
+  try {
+    const created = await prisma.appState.create({
+      data: {
+        key,
+        data: toSerializable(fallback),
+      },
+    });
+    return created;
+  } catch (e) {
+    if (e.code === 'P2002') {
+      return await prisma.appState.findUnique({ where: { key } });
+    }
+    throw e;
+  }
 }
 
 export async function readLocalJson(fileName, fallback = []) {
