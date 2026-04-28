@@ -82,7 +82,7 @@ export default function FeedManagementPage() {
       setLoadingPosts(true);
       setError("");
       try {
-        const token = localStorage.getItem("token");
+const token = localStorage.getItem("jwt") || localStorage.getItem("token");
         const res = await fetch("/api/feed/posts/mine", {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
@@ -164,7 +164,7 @@ export default function FeedManagementPage() {
       return;
     }
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("jwt") || localStorage.getItem("token");
     if (!token) {
       setError("Please log in again. Token missing.");
       return;
@@ -227,7 +227,7 @@ export default function FeedManagementPage() {
   };
 
   const deletePost = async (postId) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("jwt") || localStorage.getItem("token");
     if (!token) {
       setError("Please log in again. Token missing.");
       return;
