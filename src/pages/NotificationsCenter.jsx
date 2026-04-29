@@ -140,13 +140,6 @@ export default function NotificationsCenter() {
   const [livePulse, setLivePulse] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem("theme");
-    if (stored) {
-      setTheme(stored);
-    }
-  }, []);
-
-  useEffect(() => {
     const handler = () => {
       const stored = localStorage.getItem("theme");
       if (stored) {
@@ -155,11 +148,18 @@ export default function NotificationsCenter() {
     };
     window.addEventListener("storage", handler);
     window.addEventListener("theme-change", handler);
+    const interval = setInterval(() => {
+      const stored = localStorage.getItem("theme");
+      if (stored !== theme) {
+        setTheme(stored);
+      }
+    }, 500);
     return () => {
       window.removeEventListener("storage", handler);
       window.removeEventListener("theme-change", handler);
+      clearInterval(interval);
     };
-  }, []);
+  }, [theme]);
 
   useEffect(() => {
     const root = document.documentElement;
