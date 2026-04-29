@@ -219,10 +219,6 @@ export default function SearchResults() {
   const executeSearchRef = useRef(null);
 
   useEffect(() => {
-    executeSearchRef.current = executeSearch;
-  }, [executeSearch]);
-
-  useEffect(() => {
     const root = document.documentElement;
     root.classList.toggle('dark', dark);
   }, [dark]);
@@ -360,6 +356,10 @@ export default function SearchResults() {
       setLoading(false);
     }
   }, [query, filters, token, activeTab, setSearchParams, addToast]);
+
+  useEffect(() => {
+    executeSearchRef.current = executeSearch;
+  }, [executeSearch]);
 
   async function saveSearch() {
     const hasFilters = query.trim() || filters.industry !== 'Any' || filters.country || filters.companyType.length || filters.incoterms.length;

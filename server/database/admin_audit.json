@@ -14135,5 +14135,74 @@
     },
     "prev_hash": "d326d99cf472bc88d042825f0733767c6cfccca955b2f357492d99e2fa8c7ae3",
     "hash": "772fea59cbe7e77eec3576e5270ddf9ca3741b066482845bad56dfea9e3283de"
+  },
+  {
+    "id": "authz:1777436887287:2iz5dnqg",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-04-29T04:28:07.288Z",
+    "prev_hash": "772fea59cbe7e77eec3576e5270ddf9ca3741b066482845bad56dfea9e3283de",
+    "hash": "d9228758d681f368481d1df37fc93e2ce7d3251cf8d9bb3470fb2b22e6e00bf3"
+  },
+  {
+    "id": "authz:1777436887329:gb0md7ya",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-04-29T04:28:07.330Z",
+    "prev_hash": "d9228758d681f368481d1df37fc93e2ce7d3251cf8d9bb3470fb2b22e6e00bf3",
+    "hash": "639171082dcf6c0734591792af43801e4b75a171a4bf915203f4735b1e379d28"
+  },
+  {
+    "id": "authz:1777436887521:rdnu3g99",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-04-29T04:28:07.521Z",
+    "prev_hash": "639171082dcf6c0734591792af43801e4b75a171a4bf915203f4735b1e379d28",
+    "hash": "cc81c778337575ccbc135503950d5a0060e2568c4b0615b0cee71374c368ce5d"
+  },
+  {
+    "id": "c0a7f7f4-1b49-4949-b442-d95bef795296",
+    "at": "2026-04-29T04:28:07.983Z",
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "cc81c778337575ccbc135503950d5a0060e2568c4b0615b0cee71374c368ce5d",
+    "hash": "becf73dcd36e041341d12728a3971f3fc3eed0e19f04ad5d63afff0eee603107"
   }
 ]
