@@ -69,24 +69,26 @@ const CATEGORY_OPTIONS = [
   { key: 'dyes', label: 'Dyes & Chemicals' },
 ];
 
-const INDUSTRIES = ['Any', 'Apparel', 'Textile', 'Accessories', 'Home Textiles'];
-const INCOTERMS = ['FOB', 'CIF', 'EXW', 'CFR', 'DAP', 'DDP'];
-const COMPANY_TYPES = ['Factory', 'Trading Company', 'Agent', 'Buying House'];
-const EXPORT_MARKETS = ['EU', 'USA', 'Canada', 'UK', 'Japan', 'Middle East'];
-const CERTIFICATIONS = ['ISO 9001', 'SA8000', 'BSCI', 'WRAP', 'OEKO-TEX', 'GOTS'];
-const PAYMENT_TERMS = ['LC', 'TT', 'DP', 'Advance', 'Credit 30 days'];
-const CUSTOMIZATION = ['OEM', 'ODM', 'Private Label', 'Design Service', 'Sample Making'];
-const CURRENCIES = ['USD', 'EUR', 'GBP', 'BDT', 'INR'];
-const SAMPLE_LOCATIONS = [
-  { name: 'Dhaka, Bangladesh', lat: 23.8103, lng: 90.4125 },
-  { name: 'Chattogram, Bangladesh', lat: 22.3569, lng: 91.7832 },
-  { name: 'Hanoi, Vietnam', lat: 21.0278, lng: 105.8342 },
-  { name: 'Istanbul, Turkey', lat: 41.0082, lng: 28.9784 },
-  { name: 'Lahore, Pakistan', lat: 31.5204, lng: 74.3587 },
-  { name: 'Karachi, Pakistan', lat: 24.8607, lng: 67.0011 },
-  { name: 'Guangzhou, China', lat: 23.1291, lng: 113.2644 },
-  { name: 'Delhi, India', lat: 28.6139, lng: 77.209 },
-];
+const DEFAULT_FILTERS = {
+  industries: ['Any', 'Apparel', 'Textile', 'Accessories', 'Home Textiles'],
+  incoterms: ['FOB', 'CIF', 'EXW', 'CFR', 'DAP', 'DDP'],
+  companyTypes: ['Factory', 'Trading Company', 'Agent', 'Buying House'],
+  exportMarkets: ['EU', 'USA', 'Canada', 'UK', 'Japan', 'Middle East'],
+  certifications: ['ISO 9001', 'SA8000', 'BSCI', 'WRAP', 'OEKO-TEX', 'GOTS'],
+  paymentTerms: ['LC', 'TT', 'DP', 'Advance', 'Credit 30 days'],
+  customization: ['OEM', 'ODM', 'Private Label', 'Design Service', 'Sample Making'],
+  currencies: ['USD', 'EUR', 'GBP', 'BDT', 'INR'],
+  locations: [
+    { name: 'Dhaka, Bangladesh', lat: 23.8103, lng: 90.4125 },
+    { name: 'Chattogram, Bangladesh', lat: 22.3569, lng: 91.7832 },
+    { name: 'Hanoi, Vietnam', lat: 21.0278, lng: 105.8342 },
+    { name: 'Istanbul, Turkey', lat: 41.0082, lng: 28.9784 },
+    { name: 'Lahore, Pakistan', lat: 31.5204, lng: 74.3587 },
+    { name: 'Karachi, Pakistan', lat: 24.8607, lng: 67.0011 },
+    { name: 'Guangzhou, China', lat: 23.1291, lng: 113.2644 },
+    { name: 'Delhi, India', lat: 28.6139, lng: 77.209 },
+  ],
+};
 
 function fmtNumber(n) {
   return new Intl.NumberFormat().format(n);
@@ -208,10 +210,31 @@ export default function SearchResults() {
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [requests, setRequests] = useState([]);
   const [companies, setCompanies] = useState([]);
+  const [filterOptions, setFilterOptions] = useState({
+    industries: DEFAULT_FILTERS.industries,
+    incoterms: DEFAULT_FILTERS.incoterms,
+    companyTypes: DEFAULT_FILTERS.companyTypes,
+    exportMarkets: DEFAULT_FILTERS.exportMarkets,
+    certifications: DEFAULT_FILTERS.certifications,
+    paymentTerms: DEFAULT_FILTERS.paymentTerms,
+    customization: DEFAULT_FILTERS.customization,
+    currencies: DEFAULT_FILTERS.currencies,
+    locations: DEFAULT_FILTERS.locations,
+  });
   const locationInputRef = useRef(null);
   const searchInputRef = useRef(null);
   const locationDebounceRef = useRef(null);
   const executeSearchRef = useRef(null);
+
+  const INDUSTRIES = filterOptions.industries;
+  const INCOTERMS = filterOptions.incoterms;
+  const COMPANY_TYPES = filterOptions.companyTypes;
+  const EXPORT_MARKETS = filterOptions.exportMarkets;
+  const CERTIFICATIONS = filterOptions.certifications;
+  const PAYMENT_TERMS = filterOptions.paymentTerms;
+  const CUSTOMIZATION = filterOptions.customization;
+  const CURRENCIES = filterOptions.currencies;
+  const SAMPLE_LOCATIONS = filterOptions.locations;
 
   useEffect(() => {
     const root = document.documentElement;
@@ -281,6 +304,31 @@ export default function SearchResults() {
       }
     }
     fetchQuota();
+  }, [token]);
+
+  useEffect(() => {
+    async function fetchFilterOptions() {
+      if (!token) return;
+      try {
+        const data = await apiRequest('/filters/options', { token });
+        if (data) {
+          setFilterOptions(prev => ({
+            industries: Array.isArray(data.industries) && data.industries.length > 0 ? data.industries : prev.industries,
+            incoterms: Array.isArray(data.incoterms) && data.incoterms.length > 0 ? data.incoterms : prev.incoterms,
+            companyTypes: Array.isArray(data.companyTypes) && data.companyTypes.length > 0 ? data.companyTypes : prev.companyTypes,
+            exportMarkets: Array.isArray(data.exportMarkets) && data.exportMarkets.length > 0 ? data.exportMarkets : prev.exportMarkets,
+            certifications: Array.isArray(data.certifications) && data.certifications.length > 0 ? data.certifications : prev.certifications,
+            paymentTerms: Array.isArray(data.paymentTerms) && data.paymentTerms.length > 0 ? data.paymentTerms : prev.paymentTerms,
+            customization: Array.isArray(data.customization) && data.customization.length > 0 ? data.customization : prev.customization,
+            currencies: Array.isArray(data.currencies) && data.currencies.length > 0 ? data.currencies : prev.currencies,
+            locations: Array.isArray(data.locations) && data.locations.length > 0 ? data.locations : prev.locations,
+          }));
+        }
+      } catch (err) {
+        console.warn('Unable to load filter options', err);
+      }
+    }
+    fetchFilterOptions();
   }, [token]);
 
   const addToast = useCallback((title, message, kind = 'success') => {
