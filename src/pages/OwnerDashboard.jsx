@@ -600,6 +600,31 @@ export default function OwnerDashboard() {
               <LeadManager title="Leads (CRM)" allowAssign showOperations />
             </div>
           )}
+          {active === "members" && (
+            <div className="space-y-4">
+              <div className="bg-white rounded-xl shadow-md p-5 dark:bg-white/5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-lg">Team Members</h3>
+                  <Link
+                    to="/member-management"
+                    className="px-4 py-2 bg-gtBlue text-white rounded-lg text-sm hover:bg-gtBlue/90 transition-colors"
+                  >
+                    Manage Members →
+                  </Link>
+                </div>
+                <div className="text-center py-12 text-slate-400 dark:text-slate-500">
+                  <p className="text-4xl mb-2">👥</p>
+                  <p className="mb-4">Manage your team members and agents</p>
+                  <Link
+                    to="/member-management"
+                    className="inline-block px-4 py-2 bg-gtBlue text-white rounded-lg text-sm hover:bg-gtBlue/90"
+                  >
+                    Go to Member Management →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
           {active === "contracts" && (
             <div className="space-y-4">
               <div className="bg-white rounded-xl shadow-md p-4 dark:bg-white/5">
