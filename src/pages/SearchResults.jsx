@@ -183,14 +183,14 @@ function ToastStack({ toasts, onDismiss }) {
 }
 
 export default function SearchResults() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [, setSearchParams] = useSearchParams();
   const token = useMemo(() => {
     const raw = localStorage.getItem('sessionToken');
     return raw || null;
   }, []);
 
   const [dark, setDark] = useState(true);
-  const [query, setQuery] = useState(() => searchParams.get('q') || '');
+  const [query, setQuery] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
@@ -217,6 +217,12 @@ export default function SearchResults() {
     const root = document.documentElement;
     root.classList.toggle('dark', dark);
   }, [dark]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('q');
+    if (q) setQuery(q);
+  }, []);
 
   useEffect(() => {
     const onKeyDown = (e) => {
