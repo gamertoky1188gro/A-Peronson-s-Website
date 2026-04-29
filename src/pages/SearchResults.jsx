@@ -88,10 +88,6 @@ const SAMPLE_LOCATIONS = [
   { name: 'Delhi, India', lat: 28.6139, lng: 77.209 },
 ];
 
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
-
 function fmtNumber(n) {
   return new Intl.NumberFormat().format(n);
 }
@@ -197,7 +193,6 @@ export default function SearchResults() {
   const [query, setQuery] = useState(() => searchParams.get('q') || '');
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [estimating, setEstimating] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
   const [viewMode, setViewMode] = useState('all');
   const [filters, setFilters] = useState(initialFilters);
@@ -205,11 +200,11 @@ export default function SearchResults() {
   const [roleSeatText, setRoleSeatText] = useState('');
   const [colorText, setColorText] = useState('PMS 185C');
   const [searchModalOpen, setSearchModalOpen] = useState(false);
-  const [alertsQuota, setAlertsQuota] = useState(3);
+  const [alertsQuota, setAlertsQuota] = useState(0);
   const [toasts, setToasts] = useState([]);
   const [recentViews, setRecentViews] = useState([]);
   const [expandedMore, setExpandedMore] = useState(false);
-  const [estimatedCounts, setEstimatedCounts] = useState({ buyerRequests: 45, companies: 120, total: 165 });
+  const [estimatedCounts, setEstimatedCounts] = useState({ buyerRequests: 0, companies: 0, total: 0 });
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [requests, setRequests] = useState([]);
   const [companies, setCompanies] = useState([]);
@@ -222,18 +217,6 @@ export default function SearchResults() {
     const root = document.documentElement;
     root.classList.toggle('dark', dark);
   }, [dark]);
-
-  useEffect(() => {
-    setEstimating(true);
-    const t = setTimeout(() => {
-      const base = query.trim().length * 7 + filters.selectedCategories.length * 13 + filters.incoterms.length * 5 + filters.companyType.length * 9;
-      const requests = clamp(45 + base, 10, 999);
-      const companies = clamp(120 + base * 2, 20, 2500);
-      setEstimatedCounts({ buyerRequests: requests, companies, total: requests + companies });
-      setEstimating(false);
-    }, 250);
-    return () => clearTimeout(t);
-  }, [query, filters]);
 
   useEffect(() => {
     const onKeyDown = (e) => {
@@ -275,6 +258,23 @@ export default function SearchResults() {
       }
     }
     fetchRecentViews();
+  }, [token]);
+
+  useEffect(() => {
+    async function fetchQuota() {
+      if (!token) return;
+      try {
+        const data = await apiRequest('/search/alerts/quota', { token });
+        if (data?.quota?.remaining !== undefined) {
+          setAlertsQuota(Number(data.quota.remaining) || 0);
+        } else if (data?.remaining !== undefined) {
+          setAlertsQuota(Number(data.remaining) || 0);
+        }
+      } catch (err) {
+        console.warn('Unable to load quota', err);
+      }
+    }
+    fetchQuota();
   }, [token]);
 
   const addToast = useCallback((title, message, kind = 'success') => {
@@ -346,6 +346,10 @@ export default function SearchResults() {
 
       setRequests(Array.isArray(reqRes?.items) ? reqRes.items : []);
       setCompanies(Array.isArray(prodRes?.items) ? prodRes.items : []);
+
+      const reqTotal = Number.isFinite(Number(reqRes?.total)) ? Number(reqRes.total) : reqRes?.items?.length || 0;
+      const prodTotal = Number.isFinite(Number(prodRes?.total)) ? Number(prodRes.total) : prodRes?.items?.length || 0;
+      setEstimatedCounts({ buyerRequests: reqTotal, companies: prodTotal, total: reqTotal + prodTotal });
 
       const nextParams = new URLSearchParams(params);
       nextParams.set('tab', activeTab);
@@ -567,57 +571,75 @@ export default function SearchResults() {
 
   const ResultCards = () => {
     if (activeTab === 'requests' || activeTab === 'all') {
-      const items = requests.length > 0 ? requests : [1, 2, 3, 4];
+      const items = requests;
+      if (items.length === 0 && !loading) {
+        return (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <Search className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+            <p className="mt-4 text-lg font-medium text-slate-900 dark:text-white">No buyer requests found</p>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Try adjusting your search or filters</p>
+          </div>
+        );
+      }
       return (
         <div className="space-y-4">
           <div className="grid gap-4 xl:grid-cols-2">
-            {items.map((item, i) => (
-              <article key={item.id || `req-${i}`} className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]">
+            {items.map((item) => (
+              <article key={item.id} className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <a href={`/buyer/${item.id || 100 + i}`} className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400">
-                      {item.title || `Global Apparel Buyer #${100 + i}`}
+                    <a href={`/buyer/${item.id}`} className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400">
+                      {item.title || item.name || 'Untitled Request'}
                     </a>
                     <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                      <span>{item.location || 'Dhaka, Bangladesh'}</span>
-                      <span>•</span>
-                      <span>Buyer profile</span>
+                      <span>{item.location || item.country || 'N/A'}</span>
+                      {item.category && <><span>•</span><span>{item.category}</span></>}
                     </div>
                   </div>
                   <div className="flex flex-wrap justify-end gap-2">
-                    <Badge tone="blue">garments</Badge>
-                    <Badge tone="green">verified</Badge>
-                    <Badge tone="violet">priority</Badge>
+                    {item.status === 'verified' && <Badge tone="green">verified</Badge>}
+                    {item.isPriority && <Badge tone="violet">priority</Badge>}
+                    {item.status === 'active' && <Badge tone="blue">active</Badge>}
                   </div>
                 </div>
 
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <Badge tone="default">Gender: Men</Badge>
-                  <Badge tone="default">Season: Summer</Badge>
-                  <Badge tone="default">Material: Cotton</Badge>
-                  <Badge tone="amber">Quote by 4/15/2026</Badge>
-                  <Badge tone="red">Expires 4/20/2026</Badge>
-                  <Badge tone="default">Max suppliers: 12</Badge>
-                </div>
+                {(item.gender || item.season || item.material) && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {item.gender && <Badge tone="default">Gender: {item.gender}</Badge>}
+                    {item.season && <Badge tone="default">Season: {item.season}</Badge>}
+                    {item.material && <Badge tone="default">Material: {item.material}</Badge>}
+                    {item.quoteDate && <Badge tone="amber">Quote by {item.quoteDate}</Badge>}
+                    {item.expiryDate && <Badge tone="red">Expires {item.expiryDate}</Badge>}
+                    {item.maxSuppliers && <Badge tone="default">Max suppliers: {item.maxSuppliers}</Badge>}
+                  </div>
+                )}
 
-                <p className="mt-4 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                  {item.description || 'Premium private-label run for modern knitwear. Looking for verified factories with fast sampling, strong QC, and flexible MOQs. Preferred brands and supply-chain teams are welcome.'}
-                </p>
+                {item.description && (
+                  <p className="mt-4 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                    {item.description}
+                  </p>
+                )}
 
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Quantity</div>
-                    <div className="mt-1 font-semibold text-slate-900 dark:text-white">{item.quantity || '50,000 pcs'}</div>
+                {(item.quantity || item.targetPrice) && (
+                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                    {item.quantity && (
+                      <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
+                        <div className="text-xs text-slate-500 dark:text-slate-400">Quantity</div>
+                        <div className="mt-1 font-semibold text-slate-900 dark:text-white">{item.quantity}</div>
+                      </div>
+                    )}
+                    {item.targetPrice && (
+                      <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
+                        <div className="text-xs text-slate-500 dark:text-slate-400">Target price</div>
+                        <div className="mt-1 font-semibold text-slate-900 dark:text-white">{item.targetPrice}</div>
+                      </div>
+                    )}
+                    <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
+                      <div className="text-xs text-slate-500 dark:text-slate-400">Discussion</div>
+                      <div className="mt-1 font-semibold text-slate-900 dark:text-white">{item.discussions?.length > 0 ? 'Active' : 'None'}</div>
+                    </div>
                   </div>
-                  <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Target price</div>
-                    <div className="mt-1 font-semibold text-slate-900 dark:text-white">{item.price || '$3.20 / unit'}</div>
-                  </div>
-                  <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Discussion</div>
-                    <div className="mt-1 font-semibold text-slate-900 dark:text-white">Active</div>
-                  </div>
-                </div>
+                )}
 
                 <div className="mt-5 flex flex-wrap gap-2">
                   <button className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-sky-500/20 hover:bg-sky-500">
@@ -638,42 +660,58 @@ export default function SearchResults() {
     }
 
     if (activeTab === 'companies') {
-      const items = companies.length > 0 ? companies : [1, 2, 3, 4];
+      const items = companies;
+      if (items.length === 0 && !loading) {
+        return (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <Factory className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+            <p className="mt-4 text-lg font-medium text-slate-900 dark:text-white">No companies found</p>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Try adjusting your search or filters</p>
+          </div>
+        );
+      }
       return (
         <div className="grid gap-4 xl:grid-cols-2">
-          {items.map((item, i) => (
-            <article key={item.id || `co-${i}`} className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]">
+          {items.map((item) => (
+            <article key={item.id} className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <a href={`/factory/${item.id || 200 + i}`} className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400">
-                    {item.name || `Textile Factory #${200 + i}`}
+                  <a href={`/factory/${item.id}`} className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400">
+                    {item.name || item.title || 'Untitled Company'}
                   </a>
                   <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                    <span>{item.location || 'Dhaka, Bangladesh'}</span>
-                    <span>•</span>
-                    <span>Factory</span>
+                    <span>{item.location || item.country || 'N/A'}</span>
+                    {item.type && <><span>•</span><span>{item.type}</span></>}
                   </div>
                 </div>
                 <div className="flex flex-wrap justify-end gap-2">
-                  <Badge tone="green">verified</Badge>
-                  <Badge tone="blue">export</Badge>
+                  {item.isVerified && <Badge tone="green">verified</Badge>}
+                  {item.exportsTo?.length > 0 && <Badge tone="blue">export</Badge>}
                 </div>
               </div>
 
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-                  <div className="text-xs text-slate-500 dark:text-slate-400">MOQ</div>
-                  <div className="mt-1 font-semibold text-slate-900 dark:text-white">500 pcs</div>
+              {(item.moq || item.workerCount || item.capacity) && (
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  {item.moq && (
+                    <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
+                      <div className="text-xs text-slate-500 dark:text-slate-400">MOQ</div>
+                      <div className="mt-1 font-semibold text-slate-900 dark:text-white">{item.moq}</div>
+                    </div>
+                  )}
+                  {item.workerCount && (
+                    <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
+                      <div className="text-xs text-slate-500 dark:text-slate-400">Workers</div>
+                      <div className="mt-1 font-semibold text-slate-900 dark:text-white">{fmtNumber(item.workerCount)}</div>
+                    </div>
+                  )}
+                  {item.capacity && (
+                    <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
+                      <div className="text-xs text-slate-500 dark:text-slate-400">Capacity</div>
+                      <div className="mt-1 font-semibold text-slate-900 dark:text-white">{item.capacity}</div>
+                    </div>
+                  )}
                 </div>
-                <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-                  <div className="text-xs text-slate-500 dark:text-slate-400">Workers</div>
-                  <div className="mt-1 font-semibold text-slate-900 dark:text-white">1,200</div>
-                </div>
-                <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-                  <div className="text-xs text-slate-500 dark:text-slate-400">Capacity</div>
-                  <div className="mt-1 font-semibold text-slate-900 dark:text-white">150K/mo</div>
-                </div>
-              </div>
+              )}
 
               <div className="mt-5 flex flex-wrap gap-2">
                 <button className="inline-flex items-center gap-2 rounded-2xl bg-sky-600 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-sky-500/20 hover:bg-sky-500">
@@ -776,7 +814,7 @@ export default function SearchResults() {
               <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                 <ResultTabs />
                 <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                  <Badge tone="blue">{estimating ? 'Estimating results...' : `Estimated: ${fmtNumber(estimatedCounts.buyerRequests)} buyer requests · ${fmtNumber(estimatedCounts.companies)} companies (${fmtNumber(estimatedCounts.total)} total)`}</Badge>
+                  <Badge tone="blue">{loading ? 'Loading...' : `Estimated: ${fmtNumber(estimatedCounts.buyerRequests)} buyer requests · ${fmtNumber(estimatedCounts.companies)} companies (${fmtNumber(estimatedCounts.total)} total)`}</Badge>
                 </div>
               </div>
 
