@@ -182,6 +182,49 @@ export default function OwnerDashboard() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
+                  <h3 className="font-semibold mb-3">Quick Actions</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link
+                      to="/buyer-requests"
+                      className="p-2 rounded-lg bg-gtBlue/10 text-gtBlue text-center text-sm hover:bg-gtBlue/20 dark:bg-gtBlue/20"
+                    >
+                      View Requests
+                    </Link>
+                    <Link
+                      to="/partner-network"
+                      className="p-2 rounded-lg bg-gtBlue/10 text-gtBlue text-center text-sm hover:bg-gtBlue/20 dark:bg-gtBlue/20"
+                    >
+                      Partner Network
+                    </Link>
+                    <Link
+                      to="/member-management"
+                      className="p-2 rounded-lg bg-gtBlue/10 text-gtBlue text-center text-sm hover:bg-gtBlue/20 dark:bg-gtBlue/20"
+                    >
+                      Add Member
+                    </Link>
+                    <Link
+                      to="/contracts"
+                      className="p-2 rounded-lg bg-gtBlue/10 text-gtBlue text-center text-sm hover:bg-gtBlue/20 dark:bg-gtBlue/20"
+                    >
+                      Contracts
+                    </Link>
+                  </div>
+                </div>
+                <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
+                  <div className="text-sm text-slate-600 dark:text-slate-300">
+                    Subscription
+                  </div>
+                  <div className="font-semibold">Plan: {subscription?.plan || "free"}</div>
+                  <div className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    {isEnterprise
+                      ? "Enterprise analytics enabled."
+                      : "Free plan: limited features."}
+                  </div>
+                </div>
+              </div>
+
               <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
                 <h3 className="font-semibold mb-2">Subscription & Access</h3>
                 <div className="text-sm text-slate-600 dark:text-slate-300">
@@ -197,12 +240,25 @@ export default function OwnerDashboard() {
           )}
 
           {active === "requests" && (
-            <div className="bg-white rounded-xl shadow-md p-4">
-              <h3 className="font-semibold mb-2">Buyer Requests</h3>
-              <p className="text-sm text-[#5A5A5A]">
-                Total: {totals.buyer_requests ?? 0} | Open:{" "}
-                {totals.open_buyer_requests ?? 0}
-              </p>
+            <div className="space-y-4">
+              <div className="bg-white rounded-xl shadow-md p-4 dark:bg-white/5">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold">All Buyer Requests</h3>
+                  <Link
+                    to="/buyer-requests"
+                    className="text-sm text-gtBlue hover:underline"
+                  >
+                    View All →
+                  </Link>
+                </div>
+                <p className="text-sm text-[#5A5A5A] dark:text-slate-300">
+                  Total: {totals.buyer_requests ?? 0} | Open:{" "}
+                  {totals.open_buyer_requests ?? 0}
+                </p>
+                <p className="text-sm text-[#5A5A5A] dark:text-slate-300 mt-1">
+                  Assigned to your agents: {totals.assigned_requests ?? 0}
+                </p>
+              </div>
             </div>
           )}
           {active === "chats" && (
@@ -279,12 +335,39 @@ export default function OwnerDashboard() {
             </div>
           )}
           {active === "contracts" && (
-            <div className="bg-white rounded-xl shadow-md p-4">
-              <h3 className="font-semibold mb-2">Contracts Vault</h3>
-              <p className="text-sm text-[#5A5A5A]">
-                Contracts uploaded: {totals.contracts ?? 0}. Total documents:{" "}
-                {totals.documents ?? 0}.
-              </p>
+            <div className="space-y-4">
+              <div className="bg-white rounded-xl shadow-md p-4 dark:bg-white/5">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold">Contracts Vault</h3>
+                  <Link
+                    to="/contracts"
+                    className="text-sm text-gtBlue hover:underline"
+                  >
+                    View All →
+                  </Link>
+                </div>
+                <p className="text-sm text-[#5A5A5A] dark:text-slate-300">
+                  Active contracts: {totals.contracts ?? 0} | Total documents:{" "}
+                  {totals.documents ?? 0}
+                </p>
+              </div>
+              <div className="bg-white rounded-xl shadow-md p-4 dark:bg-white/5">
+                <h4 className="font-medium mb-2">Quick Actions</h4>
+                <div className="flex gap-2">
+                  <Link
+                    to="/contracts?action=new"
+                    className="px-4 py-2 rounded-lg bg-gtBlue text-white text-sm hover:bg-gtBlue/90"
+                  >
+                    + New Contract
+                  </Link>
+                  <Link
+                    to="/contracts"
+                    className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm hover:bg-slate-50 dark:hover:bg-white/8"
+                  >
+                    View All Contracts
+                  </Link>
+                </div>
+              </div>
             </div>
           )}
 
@@ -310,6 +393,69 @@ export default function OwnerDashboard() {
                   title="Documents / Month"
                   items={dashboard?.series?.documents || []}
                 />
+              </div>
+            </div>
+          )}
+
+          {active === "subscription" && (
+            <div className="space-y-4">
+              <div className="bg-white rounded-xl shadow-md p-4 dark:bg-white/5">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold">Subscription & Billing</h3>
+                </div>
+                <div className="space-y-3">
+                  <div className="p-3 rounded-lg bg-slate-50 dark:bg-white/5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="font-medium">Current Plan</span>
+                        <p className="text-sm text-slate-600 dark:text-slate-300">
+                          {subscription?.plan?.toUpperCase() || "FREE"}
+                        </p>
+                      </div>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs ${
+                          subscription?.plan?.toLowerCase() === "premium" ||
+                          subscription?.plan?.toLowerCase() === "enterprise"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        {subscription?.plan?.toLowerCase() === "premium" ||
+                        subscription?.plan?.toLowerCase() === "enterprise"
+                          ? "Active"
+                          : "Free"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link
+                      to="/org-settings?tab=billing"
+                      className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-center text-sm hover:bg-slate-50 dark:hover:bg-white/5"
+                    >
+                      Billing Settings
+                    </Link>
+                    <Link
+                      to="/pricing"
+                      className="p-2 rounded-lg bg-gtBlue/10 text-gtBlue text-center text-sm hover:bg-gtBlue/20"
+                    >
+                      View Plans
+                    </Link>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white rounded-xl shadow-md p-4 dark:bg-white/5">
+                <h4 className="font-medium mb-2">Plan Features</h4>
+                <div className="text-sm text-slate-600 dark:text-slate-300 space-y-1">
+                  <p>Agent seats: {subscription?.member_limit || 10}</p>
+                  <p>
+                    Analytics:{" "}
+                    {isEnterprise ? "Enterprise" : "Basic"}
+                  </p>
+                  <p>
+                    Partner Network:{" "}
+                    {subscription?.partner_network_unlimited ? "Unlimited" : "Limited"}
+                  </p>
+                </div>
               </div>
             </div>
           )}
