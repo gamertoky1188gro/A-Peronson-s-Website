@@ -14273,5 +14273,1457 @@
     },
     "prev_hash": "5c93b66f06ed3270abb08b2a1feb38be63dca1c616ad63a7433879cd7b6ae286",
     "hash": "cad35256b07e35c6bd41694f42809d6040ba579ddfe1534a96df6aad7573b493"
+  },
+  {
+    "id": "authz:1777462154532:477uh9ot",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-04-29T11:29:14.533Z",
+    "prev_hash": "cad35256b07e35c6bd41694f42809d6040ba579ddfe1534a96df6aad7573b493",
+    "hash": "a3285851ec93809936400d48b1e2f38ea123538ebb95544212c56f8b3b9d7179"
+  },
+  {
+    "id": "authz:1777462154542:g5phob42",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-04-29T11:29:14.542Z",
+    "prev_hash": "a3285851ec93809936400d48b1e2f38ea123538ebb95544212c56f8b3b9d7179",
+    "hash": "2c29ba8d7bcd2d624a2bf1e1b553c0d89a6236668f01d1712389e7ad07e01638"
+  },
+  {
+    "id": "authz:1777462154555:yc2uxlv4",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-04-29T11:29:14.555Z",
+    "prev_hash": "2c29ba8d7bcd2d624a2bf1e1b553c0d89a6236668f01d1712389e7ad07e01638",
+    "hash": "9402b1794cb669a80fc42d4093a3d2923cb14aeb9fd8700a9719710c294d5459"
+  },
+  {
+    "id": "868b2164-480c-47f3-aa96-bd1fbb552894",
+    "at": "2026-04-29T11:29:15.111Z",
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "9402b1794cb669a80fc42d4093a3d2923cb14aeb9fd8700a9719710c294d5459",
+    "hash": "6948f2e2c0fe7ed6cca5d6e12bd886db5a6392ce2b5208bec7765af40097cff9"
+  },
+  {
+    "id": "authz:1777462582501:0ytst4cb",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-04-29T11:36:22.504Z",
+    "prev_hash": "6948f2e2c0fe7ed6cca5d6e12bd886db5a6392ce2b5208bec7765af40097cff9",
+    "hash": "ba682cc4d4261e939f74a7c87b7bfcfb0de1e2925d17fe843308ca83ddb53e5d"
+  },
+  {
+    "id": "authz:1777462582508:a2urjbdk",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-04-29T11:36:22.508Z",
+    "prev_hash": "ba682cc4d4261e939f74a7c87b7bfcfb0de1e2925d17fe843308ca83ddb53e5d",
+    "hash": "2f8b77c77a3943ef2e31043a737d5f22348ca279d52f6ba3c0b46d237ac397fc"
+  },
+  {
+    "id": "authz:1777462582568:domkpmrx",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-04-29T11:36:22.568Z",
+    "prev_hash": "2f8b77c77a3943ef2e31043a737d5f22348ca279d52f6ba3c0b46d237ac397fc",
+    "hash": "62550dd1f62e88e147d0a9fd8e038d541faa6cb978b202885b3cb50dcbefbb1f"
+  },
+  {
+    "id": "7394de45-26a4-4e09-a347-1c56b55afdce",
+    "at": "2026-04-29T11:36:23.151Z",
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "62550dd1f62e88e147d0a9fd8e038d541faa6cb978b202885b3cb50dcbefbb1f",
+    "hash": "e64a30e42a7e6e6af6d3971614566aaf06a2da8a0c1cd89204ace18b313f8954"
+  },
+  {
+    "id": "authz:1777464525614:vaphqh0b",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-04-29T12:08:45.615Z",
+    "prev_hash": "e64a30e42a7e6e6af6d3971614566aaf06a2da8a0c1cd89204ace18b313f8954",
+    "hash": "56d6a419385d85c2f12c4f11aee60798d7f7c08a3e2c7b5c51469c07e01bd598"
+  },
+  {
+    "id": "authz:1777464525725:smz1hs7r",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-04-29T12:08:45.725Z",
+    "prev_hash": "56d6a419385d85c2f12c4f11aee60798d7f7c08a3e2c7b5c51469c07e01bd598",
+    "hash": "66c831ac23d0d53501d8f2020af894bc26d0f8190b505a8c9e598aa2b012526f"
+  },
+  {
+    "id": "authz:1777464525733:2odm3068",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-04-29T12:08:45.733Z",
+    "prev_hash": "66c831ac23d0d53501d8f2020af894bc26d0f8190b505a8c9e598aa2b012526f",
+    "hash": "4a9f8bb3a1cbc2faeded85a44cc21333969f682245e96c2d083eadb31d8caad9"
+  },
+  {
+    "id": "9778473a-cac0-45ae-bf57-e649a8478ed9",
+    "at": "2026-04-29T12:08:46.355Z",
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "4a9f8bb3a1cbc2faeded85a44cc21333969f682245e96c2d083eadb31d8caad9",
+    "hash": "60bd89b9bf54ac1b13655ecb099b6ccac38df5a04c18993e8370688dbb469c03"
+  },
+  {
+    "id": "authz:1777466068503:ia5em803",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-04-29T12:34:28.505Z",
+    "prev_hash": "60bd89b9bf54ac1b13655ecb099b6ccac38df5a04c18993e8370688dbb469c03",
+    "hash": "3088d01aa836e1cfd481ac7537706989fd9d8e798f13b654a2935773d59c6978"
+  },
+  {
+    "id": "authz:1777466068578:ifvxtgu2",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-04-29T12:34:28.578Z",
+    "prev_hash": "3088d01aa836e1cfd481ac7537706989fd9d8e798f13b654a2935773d59c6978",
+    "hash": "4aa73fccf94b2b86e6aa064b2a171f2380ba85e312beba21e71fa9087744c5f9"
+  },
+  {
+    "id": "authz:1777466068604:5l44ekth",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-04-29T12:34:28.604Z",
+    "prev_hash": "4aa73fccf94b2b86e6aa064b2a171f2380ba85e312beba21e71fa9087744c5f9",
+    "hash": "297d26e28ed63a93035f076c5bd0c8ee5b0ec5d9e540f869063fd8ba8af3a23c"
+  },
+  {
+    "id": "f34d4ebf-a0f0-425a-ac0d-01038345af18",
+    "at": "2026-04-29T12:34:29.250Z",
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "297d26e28ed63a93035f076c5bd0c8ee5b0ec5d9e540f869063fd8ba8af3a23c",
+    "hash": "bde6f3e37d81cfcf41a8354fde55dbeb83a76a8348d15b9f136e37895a56d91e"
+  },
+  {
+    "id": "authz:1777466461336:p55cp5vd",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-04-29T12:41:01.337Z",
+    "prev_hash": "bde6f3e37d81cfcf41a8354fde55dbeb83a76a8348d15b9f136e37895a56d91e",
+    "hash": "1660ed1e8e36f5ecfa15db8ca1d3a5fc4318dc075d6070a9d319fc10faad5964"
+  },
+  {
+    "id": "authz:1777466461841:fjj931t1",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-04-29T12:41:01.841Z",
+    "prev_hash": "1660ed1e8e36f5ecfa15db8ca1d3a5fc4318dc075d6070a9d319fc10faad5964",
+    "hash": "70b696fe5dade0c7a5219a6d57fb857f7350086afe0174ed1a8c62ed5babf731"
+  },
+  {
+    "id": "authz:1777466467064:g2cvxsds",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-04-29T12:41:07.064Z",
+    "prev_hash": "70b696fe5dade0c7a5219a6d57fb857f7350086afe0174ed1a8c62ed5babf731",
+    "hash": "1aa16f719d1805e12ff796b0a7571d93e04b0cf97fdbd5ce7426bdee3d7f0a41"
+  },
+  {
+    "id": "authz:1777466467064:bmgij836",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-04-29T12:41:07.064Z",
+    "prev_hash": "1aa16f719d1805e12ff796b0a7571d93e04b0cf97fdbd5ce7426bdee3d7f0a41",
+    "hash": "01cfee2d58cd05d129149fe6faec6110c870e38f926b12e0c93a46901be2f2b2"
+  },
+  {
+    "id": "authz:1777466467119:4iw4wlfa",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-04-29T12:41:07.119Z",
+    "prev_hash": "01cfee2d58cd05d129149fe6faec6110c870e38f926b12e0c93a46901be2f2b2",
+    "hash": "8b4fbd9d3fde7a127a6a2e1913fbef970138b4124e034521021db680999325db"
+  },
+  {
+    "id": "186682ac-9ae8-4661-983a-76ed121be1ea",
+    "at": "2026-04-29T12:41:07.497Z",
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "8b4fbd9d3fde7a127a6a2e1913fbef970138b4124e034521021db680999325db",
+    "hash": "fc9d62050b9623d3dce86b20a635393a25b49d1b8abbcb0dca094b23108fc866"
+  },
+  {
+    "id": "authz:1777471159283:vaya8dky",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-04-29T13:59:19.286Z",
+    "prev_hash": "fc9d62050b9623d3dce86b20a635393a25b49d1b8abbcb0dca094b23108fc866",
+    "hash": "06249cf0767f80e79eee88f3b64162cb253319e6afaafafb3a6b36966bd51c9c"
+  },
+  {
+    "id": "authz:1777471159293:18wa7wc5",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-04-29T13:59:19.293Z",
+    "prev_hash": "06249cf0767f80e79eee88f3b64162cb253319e6afaafafb3a6b36966bd51c9c",
+    "hash": "8e07e4e1c1180e4d72503085a42c2ed292d7a3a60c65dc6e1c36403f03387e65"
+  },
+  {
+    "id": "authz:1777471159786:epjo02kd",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-04-29T13:59:19.786Z",
+    "prev_hash": "8e07e4e1c1180e4d72503085a42c2ed292d7a3a60c65dc6e1c36403f03387e65",
+    "hash": "c3df263c64714ecee6bd46e03e2f3bdcaa416753d978f74130b5a546e6c24a6f"
+  },
+  {
+    "id": "e274621d-24e4-4e89-9134-1d8ea94e3478",
+    "at": "2026-04-29T13:59:20.477Z",
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "c3df263c64714ecee6bd46e03e2f3bdcaa416753d978f74130b5a546e6c24a6f",
+    "hash": "4a6e0902832dfa0ea01741c95d4489976830ca6db002dec2ed9d7c4874f65d10"
+  },
+  {
+    "id": "authz:1777471880985:02a6a0m2",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-04-29T14:11:20.986Z",
+    "prev_hash": "4a6e0902832dfa0ea01741c95d4489976830ca6db002dec2ed9d7c4874f65d10",
+    "hash": "3b596264fc47a998498a58324b308ce80428287c1916abf65346063c31465e32"
+  },
+  {
+    "id": "authz:1777471880994:ug6r6t1t",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-04-29T14:11:20.994Z",
+    "prev_hash": "3b596264fc47a998498a58324b308ce80428287c1916abf65346063c31465e32",
+    "hash": "5104d91a0e80c2f6a22e53586fe5e888e737c609479f7bc4b2ec970f3a3f1e9d"
+  },
+  {
+    "id": "authz:1777471881029:kflnwo9a",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-04-29T14:11:21.029Z",
+    "prev_hash": "5104d91a0e80c2f6a22e53586fe5e888e737c609479f7bc4b2ec970f3a3f1e9d",
+    "hash": "7c6e251ccada08b9cc9d0b069005b63acc55f94da8c2c5dd2e7ba7bf7e38ed12"
+  },
+  {
+    "id": "a2eee2cc-8170-4b35-9022-7f9fb159650f",
+    "at": "2026-04-29T14:11:21.637Z",
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "7c6e251ccada08b9cc9d0b069005b63acc55f94da8c2c5dd2e7ba7bf7e38ed12",
+    "hash": "767112c2081f465b5407aed7465964d1e368045f0cc60485e070f7b355fc47b9"
+  },
+  {
+    "id": "authz:1777471886613:i40q8enw",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-04-29T14:11:26.613Z",
+    "prev_hash": "767112c2081f465b5407aed7465964d1e368045f0cc60485e070f7b355fc47b9",
+    "hash": "598d69ca4f8c5d1fe4da9ab4940ba6d525b7beaf84d116b929f1d0ca78d16e1c"
+  },
+  {
+    "id": "authz:1777471886623:4u1o8z0s",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-04-29T14:11:26.623Z",
+    "prev_hash": "598d69ca4f8c5d1fe4da9ab4940ba6d525b7beaf84d116b929f1d0ca78d16e1c",
+    "hash": "bbd301f9690299d2554fc719545c1a316ed50b05a37dba78d21864101e6620b8"
+  },
+  {
+    "id": "authz:1777471886623:7pl09n0c",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-04-29T14:11:26.623Z",
+    "prev_hash": "bbd301f9690299d2554fc719545c1a316ed50b05a37dba78d21864101e6620b8",
+    "hash": "9c2596dde5a08ebc48c37d5c611ca58c15d2f3a1d16d5742ca133bdf37525814"
+  },
+  {
+    "id": "1c37b9c0-2b04-4686-9f71-4b92afa2e10e",
+    "at": "2026-04-29T14:11:27.321Z",
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "9c2596dde5a08ebc48c37d5c611ca58c15d2f3a1d16d5742ca133bdf37525814",
+    "hash": "378b40928fae2e46f49d32e295327e213b1499bb01805312b36f5dcf2b885aab"
+  },
+  {
+    "id": "authz:1777472451812:j1bcgkfa",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-04-29T14:20:51.813Z",
+    "prev_hash": "378b40928fae2e46f49d32e295327e213b1499bb01805312b36f5dcf2b885aab",
+    "hash": "2fb456df4d8bd6e8e6bb33f298358b671a3fd35019d714f289daa4475ec8d436"
+  },
+  {
+    "id": "authz:1777472451818:bhrddoy7",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-04-29T14:20:51.818Z",
+    "prev_hash": "2fb456df4d8bd6e8e6bb33f298358b671a3fd35019d714f289daa4475ec8d436",
+    "hash": "6af893dd18728013e355c23b5a5d4bc0a07304d9099076fa5ecfb6be252ea695"
+  },
+  {
+    "id": "authz:1777472452428:hnauz0fv",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-04-29T14:20:52.428Z",
+    "prev_hash": "6af893dd18728013e355c23b5a5d4bc0a07304d9099076fa5ecfb6be252ea695",
+    "hash": "dd17bf6ccf0d341375610c2a07bdbb6661de0554e6ebde933acd82f92b74b611"
+  },
+  {
+    "id": "91aab310-372c-4cee-aeb8-6132aee45ecd",
+    "at": "2026-04-29T14:20:52.854Z",
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "dd17bf6ccf0d341375610c2a07bdbb6661de0554e6ebde933acd82f92b74b611",
+    "hash": "0133d63fb6f9ae414b3ae96f4061b007fcaade97f0ff55ff0b8b793ff11cbdc9"
+  },
+  {
+    "id": "authz:1777472506373:4ivpapck",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-04-29T14:21:46.373Z",
+    "prev_hash": "0133d63fb6f9ae414b3ae96f4061b007fcaade97f0ff55ff0b8b793ff11cbdc9",
+    "hash": "a0c478b2e9dc989e4aaae11048a3f447ab57ed1b5f368f0f809013ee456580cc"
+  },
+  {
+    "id": "authz:1777472506378:yacufi8s",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-04-29T14:21:46.378Z",
+    "prev_hash": "a0c478b2e9dc989e4aaae11048a3f447ab57ed1b5f368f0f809013ee456580cc",
+    "hash": "4ef4f9ea919c3fbbcdf7665ed4d5b32f179642a47f9d6afd2b3f762b7a15e34e"
+  },
+  {
+    "id": "authz:1777472506445:0el4hgyl",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-04-29T14:21:46.445Z",
+    "prev_hash": "4ef4f9ea919c3fbbcdf7665ed4d5b32f179642a47f9d6afd2b3f762b7a15e34e",
+    "hash": "7924b1db523fb4d7cea3a5ebda6946eb237a37db77fd9ae94ece4e93ed70c572"
+  },
+  {
+    "id": "979b461d-d239-4d08-aac5-56d6a6d5a749",
+    "at": "2026-04-29T14:21:46.774Z",
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "7924b1db523fb4d7cea3a5ebda6946eb237a37db77fd9ae94ece4e93ed70c572",
+    "hash": "2a1d2ce60479729562e935f0bb6795a7353bdabf9c5cd7eace16cdace02fdfb0"
+  },
+  {
+    "id": "authz:1777472895488:6rl37gjv",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001",
+      "member_id": "counts"
+    },
+    "created_at": "2026-04-29T14:28:15.489Z",
+    "prev_hash": "2a1d2ce60479729562e935f0bb6795a7353bdabf9c5cd7eace16cdace02fdfb0",
+    "hash": "7154962c7513307f58259a7e4322fdb8a7f1905fc78da2558d9cbb0e2fb299f6"
+  },
+  {
+    "id": "authz:1777472896594:b18qcw0a",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-04-29T14:28:16.594Z",
+    "prev_hash": "7154962c7513307f58259a7e4322fdb8a7f1905fc78da2558d9cbb0e2fb299f6",
+    "hash": "6d4060260b9181eda59ca6d3e14deaaf66b922ec288a748aa8d42d9db19cdefd"
+  },
+  {
+    "id": "authz:1777472896681:9jyaevjv",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-04-29T14:28:16.681Z",
+    "prev_hash": "6d4060260b9181eda59ca6d3e14deaaf66b922ec288a748aa8d42d9db19cdefd",
+    "hash": "35deec65bd127b44df1321cd279d197dc1f789b6193fc07d1145c3016f9080bd"
+  },
+  {
+    "id": "authz:1777472896681:jkn4wg9v",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-04-29T14:28:16.681Z",
+    "prev_hash": "35deec65bd127b44df1321cd279d197dc1f789b6193fc07d1145c3016f9080bd",
+    "hash": "19e885588ee21e5714a215d5422731a86c3dac600b1384826a149a894d2310b4"
+  },
+  {
+    "id": "046e7a53-4c13-4b5f-a67d-1972f207c46a",
+    "at": "2026-04-29T14:28:17.278Z",
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "19e885588ee21e5714a215d5422731a86c3dac600b1384826a149a894d2310b4",
+    "hash": "2e11850da7db6db8b785dd0d7d649fafd0ae7a799a5c63f6835f037c95f66159"
+  },
+  {
+    "id": "authz:1777472907205:mj77mx0l",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001",
+      "member_id": "counts"
+    },
+    "created_at": "2026-04-29T14:28:27.205Z",
+    "prev_hash": "2e11850da7db6db8b785dd0d7d649fafd0ae7a799a5c63f6835f037c95f66159",
+    "hash": "e969cb8e9c5b30173bcc10dfea1c94898b892f1ec767a52974e5c7185ebcce6f"
+  },
+  {
+    "id": "authz:1777472907609:8s8lgzpq",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-04-29T14:28:27.609Z",
+    "prev_hash": "e969cb8e9c5b30173bcc10dfea1c94898b892f1ec767a52974e5c7185ebcce6f",
+    "hash": "41565b704c039f1d5166f96259a6acfef6829e7b11bb09d88760f7f707bb02e6"
+  },
+  {
+    "id": "authz:1777472907612:28curv1p",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-04-29T14:28:27.612Z",
+    "prev_hash": "41565b704c039f1d5166f96259a6acfef6829e7b11bb09d88760f7f707bb02e6",
+    "hash": "972b3be7102f89d0638d045e8051dfece9b62defb835996bbc50ff039ecad865"
+  },
+  {
+    "id": "authz:1777472907662:kkhcpmbx",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-04-29T14:28:27.662Z",
+    "prev_hash": "972b3be7102f89d0638d045e8051dfece9b62defb835996bbc50ff039ecad865",
+    "hash": "6e5908ddd3e9482669231153aba44549162cc32d1c653faf65cb296f8715070e"
+  },
+  {
+    "id": "839ac29d-8c44-4e97-b3b3-6ae7fd13fbd0",
+    "at": "2026-04-29T14:28:28.172Z",
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "6e5908ddd3e9482669231153aba44549162cc32d1c653faf65cb296f8715070e",
+    "hash": "bae3e559d49823a88ddfecddee3e74b5e926ec1c3c9df49470f7ac526c748c6b"
+  },
+  {
+    "id": "authz:1777472914131:o6ztsp59",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001",
+      "member_id": "counts"
+    },
+    "created_at": "2026-04-29T14:28:34.131Z",
+    "prev_hash": "bae3e559d49823a88ddfecddee3e74b5e926ec1c3c9df49470f7ac526c748c6b",
+    "hash": "fa76506d9d50340ba8d0b4854c29c84b83ca1ac905514b7ddddbd4dc08bdbbc6"
+  },
+  {
+    "id": "authz:1777472914565:0yoeqfcg",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-04-29T14:28:34.565Z",
+    "prev_hash": "fa76506d9d50340ba8d0b4854c29c84b83ca1ac905514b7ddddbd4dc08bdbbc6",
+    "hash": "0a5b67faa46142d5aaf9e8c21b0933cb3b158fc9eef058946d29b932d8ad6f5c"
+  },
+  {
+    "id": "authz:1777472914575:wg0t6w1y",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-04-29T14:28:34.575Z",
+    "prev_hash": "0a5b67faa46142d5aaf9e8c21b0933cb3b158fc9eef058946d29b932d8ad6f5c",
+    "hash": "c2f8a79e35891c345e4346ef97b3780acd92e7c400260c49fa4843eccf54ae94"
+  },
+  {
+    "id": "authz:1777472914588:gsldo4dv",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-04-29T14:28:34.588Z",
+    "prev_hash": "c2f8a79e35891c345e4346ef97b3780acd92e7c400260c49fa4843eccf54ae94",
+    "hash": "d6d4150584acef9f1e0594b2e48d63ca7c1665b2356f40100dc5c1f7c4272106"
+  },
+  {
+    "id": "bb61e878-8374-4559-8db2-dec4ecdd80ec",
+    "at": "2026-04-29T14:28:35.053Z",
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "d6d4150584acef9f1e0594b2e48d63ca7c1665b2356f40100dc5c1f7c4272106",
+    "hash": "c9b0e20b94bb87d9fd16b68972c0fe293a1c62fece6ba549a02a63307d6c07ab"
+  },
+  {
+    "id": "authz:1777474552844:n3jh4n3y",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-04-29T14:55:52.845Z",
+    "prev_hash": "c9b0e20b94bb87d9fd16b68972c0fe293a1c62fece6ba549a02a63307d6c07ab",
+    "hash": "2b96ca58f9dee914ccada4197206d12d198c1c686ae45452ef37727c9ae715b3"
+  },
+  {
+    "id": "authz:1777474552852:3y17djj0",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-04-29T14:55:52.852Z",
+    "prev_hash": "2b96ca58f9dee914ccada4197206d12d198c1c686ae45452ef37727c9ae715b3",
+    "hash": "d9cd8128fe57b18808032243bc981bd500e1310884a565352c09a7a139adf122"
+  },
+  {
+    "id": "authz:1777474552864:l2e272so",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-04-29T14:55:52.864Z",
+    "prev_hash": "d9cd8128fe57b18808032243bc981bd500e1310884a565352c09a7a139adf122",
+    "hash": "b20957639d364aed7cc44ca405ea5dfc66ef16999f9f921572c6b4aaf2e243c8"
+  },
+  {
+    "id": "69802ddf-c93b-4319-bce7-4c6d864ce713",
+    "at": "2026-04-29T14:55:53.547Z",
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "b20957639d364aed7cc44ca405ea5dfc66ef16999f9f921572c6b4aaf2e243c8",
+    "hash": "ba9d78ef8ea3bc70ecb14b1fbc69a97d9762e959d78e2ba478e0f590283b7eb4"
+  },
+  {
+    "id": "authz:1777474559382:zlepyo6u",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001",
+      "member_id": "counts"
+    },
+    "created_at": "2026-04-29T14:55:59.382Z",
+    "prev_hash": "ba9d78ef8ea3bc70ecb14b1fbc69a97d9762e959d78e2ba478e0f590283b7eb4",
+    "hash": "d1a4b867ccd71c7acd8dbedd86f831d169ec81dabe304778c059439f79db2f89"
+  },
+  {
+    "id": "authz:1777474560257:3pzb4sjb",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001",
+      "member_id": "counts"
+    },
+    "created_at": "2026-04-29T14:56:00.257Z",
+    "prev_hash": "d1a4b867ccd71c7acd8dbedd86f831d169ec81dabe304778c059439f79db2f89",
+    "hash": "b9957ac826f21c49dfd77f81d43ecca7f42adc4c6a2803af05a7a6f83762eb43"
+  },
+  {
+    "id": "authz:1777474560541:3g93tnve",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-04-29T14:56:00.541Z",
+    "prev_hash": "b9957ac826f21c49dfd77f81d43ecca7f42adc4c6a2803af05a7a6f83762eb43",
+    "hash": "180f1f67fc36b0458038c5b544217693908d17d89c2e08eaf61c382ca5f1c9c3"
+  },
+  {
+    "id": "authz:1777474560550:3heoxlb5",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-04-29T14:56:00.550Z",
+    "prev_hash": "180f1f67fc36b0458038c5b544217693908d17d89c2e08eaf61c382ca5f1c9c3",
+    "hash": "a56a4adac0ed45ce1a6b0a09298e8ed1c01bea8b3573938945de920a0050436a"
+  },
+  {
+    "id": "authz:1777474560700:n29zd99j",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-04-29T14:56:00.700Z",
+    "prev_hash": "a56a4adac0ed45ce1a6b0a09298e8ed1c01bea8b3573938945de920a0050436a",
+    "hash": "42c3fc30bb215912923072533d40e0c0966a90a5aa8101cccea190baffd19b45"
+  },
+  {
+    "id": "5ab53dea-15c9-4819-af0d-4724c9a6aacf",
+    "at": "2026-04-29T14:56:01.217Z",
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "42c3fc30bb215912923072533d40e0c0966a90a5aa8101cccea190baffd19b45",
+    "hash": "6002bbf737aa0bdb365bcac860a376887d73dad62104951edbd3f18211d195cb"
+  },
+  {
+    "id": "authz:1777483027785:2g00v5ov",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001",
+      "member_id": "counts"
+    },
+    "created_at": "2026-04-29T17:17:07.789Z",
+    "prev_hash": "6002bbf737aa0bdb365bcac860a376887d73dad62104951edbd3f18211d195cb",
+    "hash": "7cf9b2d0ccbbd1db0175ea443c3167e6e05862defc94109a6249033ee799ea31"
+  },
+  {
+    "id": "authz:1777483028279:my79p9zq",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001",
+      "member_id": "counts"
+    },
+    "created_at": "2026-04-29T17:17:08.279Z",
+    "prev_hash": "7cf9b2d0ccbbd1db0175ea443c3167e6e05862defc94109a6249033ee799ea31",
+    "hash": "3108a31c51ee4db0a6c6a2622224ed2d20a90fbdc44776be99e50a7369f908c4"
+  },
+  {
+    "id": "authz:1777483028659:k1gzfyjn",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-04-29T17:17:08.659Z",
+    "prev_hash": "3108a31c51ee4db0a6c6a2622224ed2d20a90fbdc44776be99e50a7369f908c4",
+    "hash": "017b2ddca6312ff2e8b4cab1dc54e813e2c37909e4509439a794f271380c378d"
+  },
+  {
+    "id": "authz:1777483028681:uewhubtw",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-04-29T17:17:08.681Z",
+    "prev_hash": "017b2ddca6312ff2e8b4cab1dc54e813e2c37909e4509439a794f271380c378d",
+    "hash": "82c07284c11e18ab94f38e82cee4043710dbfcb221515a347dab7edb5cb221f2"
+  },
+  {
+    "id": "authz:1777483028682:3hga1d7n",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-04-29T17:17:08.682Z",
+    "prev_hash": "82c07284c11e18ab94f38e82cee4043710dbfcb221515a347dab7edb5cb221f2",
+    "hash": "15ec6854f4db780c345d63e566f21ad2f66f4413b208cfbdee802fad9ea316f3"
+  },
+  {
+    "id": "138784e0-144e-4dcd-9aac-9d71bedc005f",
+    "at": "2026-04-29T17:17:09.453Z",
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "15ec6854f4db780c345d63e566f21ad2f66f4413b208cfbdee802fad9ea316f3",
+    "hash": "163fd1ed4022d19d857c43b08213f34c91201a0df2d7cd94a816b4993ca28713"
+  },
+  {
+    "id": "authz:1777483036811:dayy1r0n",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-04-29T17:17:16.811Z",
+    "prev_hash": "163fd1ed4022d19d857c43b08213f34c91201a0df2d7cd94a816b4993ca28713",
+    "hash": "f2b097471dab3d5af7a782d13f59e2ec295d3183916c582802e25f65185efeff"
+  },
+  {
+    "id": "authz:1777483038159:u9ziksmn",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-04-29T17:17:18.159Z",
+    "prev_hash": "f2b097471dab3d5af7a782d13f59e2ec295d3183916c582802e25f65185efeff",
+    "hash": "0ec2fbd8e925a971b6b52c7d77670684df3d81871f21a3f01eb380bd59353c91"
+  },
+  {
+    "id": "authz:1777483050217:70xgghfn",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-04-29T17:17:30.217Z",
+    "prev_hash": "0ec2fbd8e925a971b6b52c7d77670684df3d81871f21a3f01eb380bd59353c91",
+    "hash": "c57269c66f2a3197b9087344b9fc4fa31636396756dae49fb4f84e9dfee9ca86"
+  },
+  {
+    "id": "authz:1777483449351:nzst9c8n",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001",
+      "member_id": "counts"
+    },
+    "created_at": "2026-04-29T17:24:09.352Z",
+    "prev_hash": "c57269c66f2a3197b9087344b9fc4fa31636396756dae49fb4f84e9dfee9ca86",
+    "hash": "b338211bd0aca73e89395e4f15c23cd193e930839d38ec711a0d32987d6505c2"
+  },
+  {
+    "id": "authz:1777483450130:cxsefq1x",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001",
+      "member_id": "counts"
+    },
+    "created_at": "2026-04-29T17:24:10.130Z",
+    "prev_hash": "b338211bd0aca73e89395e4f15c23cd193e930839d38ec711a0d32987d6505c2",
+    "hash": "c073a152256df5278d7ac983616086c5a6a23d19aa9f8f97c57f701e4abe8223"
+  },
+  {
+    "id": "authz:1777483450313:f4rx8izk",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-04-29T17:24:10.313Z",
+    "prev_hash": "c073a152256df5278d7ac983616086c5a6a23d19aa9f8f97c57f701e4abe8223",
+    "hash": "9842e1fc757995c994a55331f3daeb099ef2e57dbe1835899757e5f95ad60f86"
+  },
+  {
+    "id": "authz:1777483450315:nwq52jyg",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-04-29T17:24:10.315Z",
+    "prev_hash": "9842e1fc757995c994a55331f3daeb099ef2e57dbe1835899757e5f95ad60f86",
+    "hash": "b65c59350a03002ea16734747e58f0d007c084aa1eb0bca43e1bb536fe4b5911"
+  },
+  {
+    "id": "authz:1777483450503:b4tisutl",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-04-29T17:24:10.503Z",
+    "prev_hash": "b65c59350a03002ea16734747e58f0d007c084aa1eb0bca43e1bb536fe4b5911",
+    "hash": "302a7d242b33539b88e5ff256dd6d1f7152c651cb1837b608012f81b7e87c6be"
+  },
+  {
+    "id": "3f05c825-262f-42d9-b31b-d1c635161950",
+    "at": "2026-04-29T17:24:11.760Z",
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "302a7d242b33539b88e5ff256dd6d1f7152c651cb1837b608012f81b7e87c6be",
+    "hash": "7eec24168217f8a48f9ca519f9ba137960e5f27fdbaabb0e7f21e5f5d6550bcd"
+  },
+  {
+    "id": "authz:1777485337557:hcmykoi0",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-04-29T17:55:37.558Z",
+    "prev_hash": "7eec24168217f8a48f9ca519f9ba137960e5f27fdbaabb0e7f21e5f5d6550bcd",
+    "hash": "a986fd5eb8c38fb9411f6cd3379a0720a21792c8e8644d0d5fcaf367e1e747b0"
+  },
+  {
+    "id": "authz:1777485338958:zstmv8v2",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-04-29T17:55:38.958Z",
+    "prev_hash": "a986fd5eb8c38fb9411f6cd3379a0720a21792c8e8644d0d5fcaf367e1e747b0",
+    "hash": "6dfe0ade68cceae9baf97e1684760418623d3f137c46bd44343485f4751659f7"
+  },
+  {
+    "id": "authz:1777485392924:azeexdt1",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-04-29T17:56:32.924Z",
+    "prev_hash": "6dfe0ade68cceae9baf97e1684760418623d3f137c46bd44343485f4751659f7",
+    "hash": "aec983ed42d45ddd70ab9d3f263c74f213fcc61df0b013aa1d0af176234305fb"
+  },
+  {
+    "id": "authz:1777485463919:h54o175b",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001"
+    },
+    "created_at": "2026-04-29T17:57:43.920Z",
+    "prev_hash": "aec983ed42d45ddd70ab9d3f263c74f213fcc61df0b013aa1d0af176234305fb",
+    "hash": "d57afce4fb1b73a665c134ffc68645e00bc828e655255579f4140d9d6b8b2495"
   }
 ]

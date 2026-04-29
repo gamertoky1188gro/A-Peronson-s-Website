@@ -60,7 +60,7 @@ const TYPE_LABELS = {
   system: "System",
 };
 
-function typeAccent(type = "") {
+function _typeAccent(type = "") {
   const key = String(type || "").toLowerCase();
   if (key === "partner_request") return "bg-[#0A66C2]";
   if (key === "smart_search_match") return "bg-emerald-500";

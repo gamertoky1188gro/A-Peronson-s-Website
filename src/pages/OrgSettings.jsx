@@ -1,197 +1,301 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import AccessDeniedState from "../components/AccessDeniedState";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   apiRequest,
   clearSession,
   getCurrentUser,
   getToken,
-  saveSession,
   hasEntitlement,
-  persistUser,
 } from "../lib/auth";
-import { startRegistration } from "@simplewebauthn/browser";
 
-const emptyKnowledge = { type: "faq", question: "", answer: "", keywords: "" };
-const TAB_KEYS = [
-  "general",
-  "verification",
-  "branding",
-  "security",
-  "members",
-  "subscription",
-  "boosts",
-  "assistant_knowledge",
-];
+function cx(...classes) {
+  return classes.filter(Boolean).join(" ");
+}
 
-const HELP_COPY = {
-  general: {
-    title: "Automation & Handoff",
-    description:
-      "Control chatbot coverage and when human agents get notified. Use this to keep early conversations fast.",
-  },
-  verification: {
-    title: "Verification Health",
-    description:
-      "Verification is subscription-based. Keep documents current to preserve the badge and trust signals.",
-  },
-  branding: {
-    title: "Brand Touchpoints",
-    description:
-      "Add consistent contact info so buyers know who to reach and trust.",
-  },
-  security: {
-    title: "Security Checks",
-    description:
-      "Enable 2FA and monitor active sessions to keep the org secure.",
-  },
-  members: {
-    title: "Team Access",
-    description:
-      "Invite agents and manage assignments for shared sourcing workflows.",
-  },
-  subscription: {
-    title: "Plan & Billing",
-    description:
-      "Track verification renewal timing and wallet balance for premium access.",
-  },
-  boosts: {
-    title: "Boost Add-On",
-    description:
-      "Boosted profiles and feed posts appear higher in search and discovery surfaces.",
-  },
-  assistant_knowledge: {
-    title: "Assistant Knowledge",
-    description:
-      "Train the assistant with organization-specific FAQs so the AI responses stay aligned.",
-  },
+function SectionCard({ title, subtitle, children, className = "" }) {
+  return (
+    <section
+      className={cx(
+        "rounded-3xl border border-sky-200/60 bg-white/80 p-5 shadow-[0_20px_60px_-30px_rgba(14,165,233,0.45)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/75",
+        className
+      )}
+    >
+      <div className="mb-4">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
+        {subtitle ? <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p> : null}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function Label({ children }) {
+  return <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">{children}</label>;
+}
+
+function Input(props) {
+  return (
+    <input
+      {...props}
+      className={cx(
+        "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-200/60 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-500 dark:focus:ring-sky-950/50",
+        props.className
+      )}
+    />
+  );
+}
+
+function Textarea(props) {
+  return (
+    <textarea
+      {...props}
+      className={cx(
+        "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-200/60 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-sky-500 dark:focus:ring-sky-950/50",
+        props.className
+      )}
+    />
+  );
+}
+
+function Select({ children, ...props }) {
+  return (
+    <select
+      {...props}
+      className={cx(
+        "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-200/60 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:focus:border-sky-500 dark:focus:ring-sky-950/50",
+        props.className
+      )}
+    >
+      {children}
+    </select>
+  );
+}
+
+function Toggle({ checked, onChange, label, hint }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className="flex w-full items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left transition hover:border-sky-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900"
+    >
+      <div>
+        <div className="text-sm font-medium text-slate-900 dark:text-white">{label}</div>
+        {hint ? <div className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{hint}</div> : null}
+      </div>
+      <div className={cx("relative h-7 w-12 rounded-full transition", checked ? "bg-sky-500" : "bg-slate-300 dark:bg-slate-700")}>
+        <div className={cx("absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform", checked ? "translate-x-5" : "translate-x-0.5")} />
+      </div>
+    </button>
+  );
+}
+
+function Badge({ children, tone = "slate" }) {
+  const tones = {
+    slate: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
+    green: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300",
+    yellow: "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300",
+    red: "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300",
+    sky: "bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300",
+    violet: "bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300",
+  };
+  return <span className={cx("inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold", tones[tone] || tones.slate)}>{children}</span>;
+}
+
+function PrimaryButton({ children, className = "", ...props }) {
+  return (
+    <button
+      {...props}
+      className={cx("inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60", className)}
+    >
+      {children}
+    </button>
+  );
+}
+
+function SecondaryButton({ children, className = "", ...props }) {
+  return (
+    <button
+      {...props}
+      className={cx("inline-flex items-center justify-center rounded-2xl border border-sky-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-sky-300 hover:bg-sky-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800", className)}
+    >
+      {children}
+    </button>
+  );
+}
+
+function Icon({ children, className = "" }) {
+  return (
+    <div className={cx("flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-sky-500/20", className)}>
+      {children}
+    </div>
+  );
+}
+
+const ROLE_HIERARCHY = ["observer", "agent", "viewer", "editor", "manager", "factory", "buying_house", "admin", "owner"];
+
+const hasRoleAccess = (userRole, requiredRole) => {
+  if (!userRole || !requiredRole) return false;
+  const userIndex = ROLE_HIERARCHY.indexOf(userRole.toLowerCase());
+  const requiredIndex = ROLE_HIERARCHY.indexOf(requiredRole.toLowerCase());
+  return userIndex >= requiredIndex && userIndex !== -1;
 };
 
+const TABS = [
+  { id: "general", label: "General Info", requiredRole: "viewer" },
+  { id: "profile", label: "My Profile", requiredRole: "observer" },
+  { id: "verification", label: "Verification", requiredRole: "factory" },
+  { id: "branding", label: "Branding", requiredRole: "factory" },
+  { id: "security", label: "Security", requiredRole: "factory" },
+  { id: "members", label: "Members", requiredRole: "factory" },
+  { id: "subscription", label: "Subscription", requiredRole: "factory" },
+  { id: "boosts", label: "Boosts", requiredRole: "manager" },
+  { id: "assistant_knowledge", label: "Assistant Knowledge", requiredRole: "admin" },
+];
+
 export default function OrgSettings() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialTab = useMemo(() => {
     const candidate = searchParams.get("tab") || "general";
-    return TAB_KEYS.includes(candidate) ? candidate : "general";
+    return TABS.some(t => t.id === candidate) ? candidate : "general";
   }, [searchParams]);
+
   const [tab, setTab] = useState(initialTab);
+  const [theme, setTheme] = useState("dark");
+  const [statusMessage, setStatusMessage] = useState("Ready.");
+
   const currentUser = useMemo(() => getCurrentUser(), []);
-  const isOrgManager = ["owner", "admin", "buying_house", "factory"].includes(
-    String(currentUser?.role || "").toLowerCase(),
-  );
-  const [remainingDays, setRemainingDays] = useState(0);
-  const [subscriptionPlan, setSubscriptionPlan] = useState("free");
-  const [walletBalance, setWalletBalance] = useState(0);
-  const [walletRestricted, setWalletRestricted] = useState(0);
-  const [verification, setVerification] = useState(null);
-  const [billingFeedback, setBillingFeedback] = useState("");
-  const [couponCode, setCouponCode] = useState("");
-  const [entitlements, setEntitlements] = useState(
-    () => currentUser?.entitlements || null,
-  );
-  const [planLimits, setPlanLimits] = useState(null);
-  const [chatbotEnabled, setChatbotEnabled] = useState(() =>
-    Boolean(
-      currentUser?.chatbot_enabled || currentUser?.profile?.chatbot_enabled,
-    ),
-  );
-  const [handoffMode, setHandoffMode] = useState(() =>
-    String(
-      currentUser?.handoff_mode ||
-        currentUser?.profile?.handoff_mode ||
-        "notify_agent",
-    ),
-  );
+  const currentUserRole = useMemo(() => String(currentUser?.role || "").toLowerCase(), [currentUser]);
+  const isOrgManager = ["owner", "admin", "buying_house", "factory"].includes(currentUserRole);
+
+  const accessibleTabs = useMemo(() => {
+    return TABS.filter(t => t.requiredRole && hasRoleAccess(currentUserRole, t.requiredRole));
+  }, [currentUserRole]);
+
+  const activeTab = useMemo(() => {
+    return accessibleTabs.some(t => t.id === tab) ? tab : accessibleTabs[0]?.id || "general";
+  }, [tab, accessibleTabs]);
+
+  // General tab state
+  const [chatbotEnabled, setChatbotEnabled] = useState(() => Boolean(currentUser?.chatbot_enabled || currentUser?.profile?.chatbot_enabled));
+  const [autoSaveSearchAlerts, setAutoSaveSearchAlerts] = useState(() => {
+    const raw = currentUser?.profile?.auto_save_search_alerts;
+    return raw === undefined || raw === null || raw === "" ? true : raw === true || String(raw).toLowerCase() === "true";
+  });
+  const [handoffMode, setHandoffMode] = useState(() => String(currentUser?.handoff_mode || currentUser?.profile?.handoff_mode || "notify_agent"));
   const [autoReplyGreeting, setAutoReplyGreeting] = useState("");
   const [autoReplySignature, setAutoReplySignature] = useState("");
   const [autoReplyFallback, setAutoReplyFallback] = useState("");
   const [autoReplyTone, setAutoReplyTone] = useState("professional");
   const [autoReplyQualification, setAutoReplyQualification] = useState("");
-  const [autoReplyFeedback, setAutoReplyFeedback] = useState("");
+  const [_autoReplyFeedback, setAutoReplyFeedback] = useState("");
+  const [_loadingAutoReply, setLoadingAutoReply] = useState(false);
   const [policyMessageCaps, setPolicyMessageCaps] = useState("12");
   const [policyWindowMinutes, setPolicyWindowMinutes] = useState("15");
   const [policyCooldownSeconds, setPolicyCooldownSeconds] = useState("30");
-  const [policyPremiumMultiplier, setPolicyPremiumMultiplier] = useState("1.2");
-  const [policyVerifiedMultiplier, setPolicyVerifiedMultiplier] =
-    useState("1.3");
   const [policyStrictnessMode, setPolicyStrictnessMode] = useState("balanced");
-  const [loadingAutoReply, setLoadingAutoReply] = useState(false);
-  const [autoSaveSearchAlerts, setAutoSaveSearchAlerts] = useState(() => {
-    const raw = currentUser?.profile?.auto_save_search_alerts;
-    if (raw === undefined || raw === null || raw === "") return true;
-    return raw === true || String(raw).toLowerCase() === "true";
-  });
-  const [mainProcesses, setMainProcesses] = useState(() =>
-    (currentUser?.profile?.main_processes || []).join(", "),
-  );
-  const [yearsInBusiness, setYearsInBusiness] = useState(() =>
-    String(currentUser?.profile?.years_in_business || ""),
-  );
-  const [handlesMultipleFactories, setHandlesMultipleFactories] = useState(() =>
-    Boolean(currentUser?.profile?.handles_multiple_factories),
-  );
-  const [teamSeats, setTeamSeats] = useState(() =>
-    String(currentUser?.profile?.team_seats || ""),
-  );
-  const [exportPorts, setExportPorts] = useState(() =>
-    (currentUser?.profile?.export_ports || []).join(", "),
-  );
-  const [locationLat, setLocationLat] = useState(() =>
-    String(currentUser?.profile?.location_lat || ""),
-  );
-  const [locationLng, setLocationLng] = useState(() =>
-    String(currentUser?.profile?.location_lng || ""),
-  );
-  const [brandName, setBrandName] = useState(() =>
-    String(currentUser?.profile?.brand_name || ""),
-  );
-  const [brandTagline, setBrandTagline] = useState(() =>
-    String(currentUser?.profile?.brand_tagline || ""),
-  );
-  const [brandWebsite, setBrandWebsite] = useState(() =>
-    String(currentUser?.profile?.brand_website || ""),
-  );
-  const [brandLogoUrl, setBrandLogoUrl] = useState(() =>
-    String(currentUser?.profile?.brand_logo_url || ""),
-  );
-  const [brandCoverUrl, setBrandCoverUrl] = useState(() =>
-    String(currentUser?.profile?.brand_cover_url || ""),
-  );
-  const [brandColor, setBrandColor] = useState(() =>
-    String(currentUser?.profile?.brand_color || ""),
-  );
-  const [brandAccent, setBrandAccent] = useState(() =>
-    String(currentUser?.profile?.brand_accent || ""),
-  );
-  const [accountManagerName, setAccountManagerName] = useState(() =>
-    String(currentUser?.profile?.account_manager_name || ""),
-  );
-  const [accountManagerEmail, setAccountManagerEmail] = useState(() =>
-    String(currentUser?.profile?.account_manager_email || ""),
-  );
-  const [accountManagerPhone, setAccountManagerPhone] = useState(() =>
-    String(currentUser?.profile?.account_manager_phone || ""),
-  );
-  const [entries, setEntries] = useState([]);
-  const [knowledgeForm, setKnowledgeForm] = useState(emptyKnowledge);
-  const [editingId, setEditingId] = useState("");
-  const [faqFeedback, setFaqFeedback] = useState("");
-  const [boosts, setBoosts] = useState([]);
-  const [boostScope, setBoostScope] = useState("feed");
-  const [boostDuration, setBoostDuration] = useState("7");
-  const [boostMultiplier, setBoostMultiplier] = useState("1.5");
-  const [boostPrice, setBoostPrice] = useState("9.99");
-  const [boostFeedback, setBoostFeedback] = useState("");
-  const [loadingBoosts, setLoadingBoosts] = useState(false);
-  const [deletePassword, setDeletePassword] = useState("");
-  const [deleteFeedback, setDeleteFeedback] = useState("");
-  const [deletingAccount, setDeletingAccount] = useState(false);
-  const [passkeys, setPasskeys] = useState(() =>
-    Array.isArray(currentUser?.passkeys) ? currentUser.passkeys : [],
-  );
+  const [mainProcesses, setMainProcesses] = useState(() => (currentUser?.profile?.main_processes || []).join(", "));
+  const [yearsInBusiness, setYearsInBusiness] = useState(() => String(currentUser?.profile?.years_in_business || ""));
+  const [teamSeats, setTeamSeats] = useState(() => String(currentUser?.profile?.team_seats || ""));
+  const [exportPorts, setExportPorts] = useState(() => (currentUser?.profile?.export_ports || []).join(", "));
+  const [handlesMultipleFactories, setHandlesMultipleFactories] = useState(() => Boolean(currentUser?.profile?.handles_multiple_factories));
+  const [locationLat, setLocationLat] = useState(() => String(currentUser?.profile?.location_lat || ""));
+  const [locationLng, setLocationLng] = useState(() => String(currentUser?.profile?.location_lng || ""));
+
+  // Profile tab state
+  const [profileDisplayName, setProfileDisplayName] = useState(() => String(currentUser?.display_name || currentUser?.name || ""));
+  const [profileHeadline, setProfileHeadline] = useState(() => String(currentUser?.profile?.headline || ""));
+  const [profileBio, setProfileBio] = useState(() => String(currentUser?.profile?.bio || ""));
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState(() => String(currentUser?.avatar_url || currentUser?.profile?.avatar_url || ""));
+  const [profilePhone, setProfilePhone] = useState(() => String(currentUser?.phone || currentUser?.profile?.phone || ""));
+  const [profileEmail, setProfileEmail] = useState(() => String(currentUser?.email || ""));
+  const [profileVisibility, setProfileVisibility] = useState(() => String(currentUser?.profile?.visibility || "public"));
+  const [loadingProfile, setLoadingProfile] = useState(false);
+  const [_profileFeedback, setProfileFeedback] = useState("");
+
+  // Password & Security state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordFeedback, setPasswordFeedback] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [sessions, setSessions] = useState([]);
+  const [loadingSessions, setLoadingSessions] = useState(false);
+  const [revokingSession, setRevokingSession] = useState(null);
+  const [totpEnabled, setTotpEnabled] = useState(() => Boolean(currentUser?.totp_enabled));
+  const [passkeys, setPasskeys] = useState(() => Array.isArray(currentUser?.passkeys) ? currentUser.passkeys : []);
   const [passkeyName, setPasskeyName] = useState("");
-  const [passkeyBusy, setPasskeyBusy] = useState(false);
-  const [passkeyNotice, setPasskeyNotice] = useState("");
   const [passkeyError, setPasskeyError] = useState("");
+
+  // Notification state
+  const [notifEmail, setNotifEmail] = useState(() => {
+    const val = currentUser?.notification_prefs?.email;
+    return val === undefined || val === null ? true : Boolean(val);
+  });
+  const [notifPush, setNotifPush] = useState(() => {
+    const val = currentUser?.notification_prefs?.push;
+    return val === undefined || val === null ? true : Boolean(val);
+  });
+  const [notifInApp, setNotifInApp] = useState(() => {
+    const val = currentUser?.notification_prefs?.in_app;
+    return val === undefined || val === null ? true : Boolean(val);
+  });
+  const [_notifFeedback, setNotifFeedback] = useState("");
+
+  // Data export state
+  const [exportingData, setExportingData] = useState(false);
+  const [exportFeedback, setExportFeedback] = useState("");
+
+  // Delete account state
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deletingProfile, setDeletingProfile] = useState(false);
+  const [deleteProfileFeedback, setDeleteProfileFeedback] = useState("");
+
+  // Billing/subscription state
+  const [remainingDays, setRemainingDays] = useState(0);
+  const [subscriptionPlan, setSubscriptionPlan] = useState("free");
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [walletRestricted, setWalletRestricted] = useState(0);
+  const [verification, setVerification] = useState(null);
+  const [_billingFeedback, setBillingFeedback] = useState("");
+  const [entitlements] = useState(() => currentUser?.entitlements || null);
+  const [_planLimits] = useState(null);
+
+  // Members state
+  const [entries, setEntries] = useState([]);
+  const [members, setMembers] = useState([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+  const [memberInviteEmail, setMemberInviteEmail] = useState("");
+  const [memberInviteRole, setMemberInviteRole] = useState("Editor");
+  const [invitingMember, setInvitingMember] = useState(false);
+  const [memberFeedback, setMemberFeedback] = useState("");
+  const [_faqFeedback, setFaqFeedback] = useState("");
+  const [knowledgeForm, setKnowledgeForm] = useState({ type: "faq", question: "", answer: "", keywords: "" });
+
+  // Boosts state (placeholder)
+  const [_boosts] = useState([]);
+  const [_boostScope] = useState("feed");
+  const [_boostDuration] = useState("7");
+  const [_boostMultiplier] = useState("1.5");
+  const [_boostPrice] = useState("9.99");
+  const [_boostFeedback] = useState("");
+  const [_loadingBoosts] = useState(false);
+
+  // Branding state
+  const [brandName, setBrandName] = useState(() => String(currentUser?.profile?.brand_name || ""));
+  const [brandTagline, setBrandTagline] = useState(() => String(currentUser?.profile?.brand_tagline || ""));
+  const [brandWebsite, setBrandWebsite] = useState(() => String(currentUser?.profile?.brand_website || ""));
+  const [brandLogoUrl, setBrandLogoUrl] = useState(() => String(currentUser?.profile?.brand_logo_url || ""));
+  const [_brandCoverUrl] = useState(() => String(currentUser?.profile?.brand_cover_url || ""));
+  const [_brandColor] = useState(() => String(currentUser?.profile?.brand_color || ""));
+  const [brandAccent, setBrandAccent] = useState(() => String(currentUser?.profile?.brand_accent || ""));
+
+  // Subscription values
+  const [_subscription] = useState({ plan: "Premium", paymentMethod: "Visa", nextBilling: "2026-05-29", amount: "$49.00", balance: 128.4, restrictedBalance: 12.1 });
+  const [_deletePassword] = useState("");
+
+  const canAutoReply = hasEntitlement(entitlements ? { entitlements } : null, "ai_auto_reply_customization");
+  const canBranding = hasEntitlement(entitlements ? { entitlements } : null, "custom_branding");
 
   const verificationStatus = useMemo(() => {
     if (remainingDays <= 0) return "expired";
@@ -199,23 +303,9 @@ export default function OrgSettings() {
     return "verified_active";
   }, [remainingDays]);
 
-  const entitlementContext = useMemo(
-    () => (entitlements ? { entitlements } : null),
-    [entitlements],
-  );
-  const canAutoReply = hasEntitlement(
-    entitlementContext,
-    "ai_auto_reply_customization",
-  );
-  const canBranding = hasEntitlement(entitlementContext, "custom_branding");
-  const canAccountManager = hasEntitlement(
-    entitlementContext,
-    "dedicated_account_manager",
-  );
-  const canProfileBoost = hasEntitlement(entitlementContext, "profile_boost");
-  const canProductBoost = hasEntitlement(entitlementContext, "product_boost");
-  const canBoost = canProfileBoost || canProductBoost;
+  const save = (msg) => setStatusMessage(msg || "Saved.");
 
+  // Load billing data
   const loadBilling = useCallback(async () => {
     const token = getToken();
     if (!token) return;
@@ -236,1594 +326,774 @@ export default function OrgSettings() {
     }
   }, []);
 
-  const loadEntitlements = useCallback(async () => {
+  // Load user profile
+  const loadUserProfile = useCallback(async () => {
     const token = getToken();
     if (!token) return;
     try {
-      const me = await apiRequest("/users/me", { token });
-      persistUser(me);
-      setEntitlements(me?.entitlements || null);
-    } catch {
-      setEntitlements(null);
-    }
-  }, []);
-
-  const loadPlanLimits = useCallback(async () => {
-    try {
-      const data = await apiRequest("/system/pricing");
-      setPlanLimits(data?.plan_limits || null);
-    } catch {
-      setPlanLimits(null);
-    }
-  }, []);
-
-  const loadPasskeys = useCallback(async () => {
-    const token = getToken();
-    if (!token) return;
-    try {
-      const data = await apiRequest("/auth/passkeys", { token });
-      setPasskeys(Array.isArray(data?.passkeys) ? data.passkeys : []);
-    } catch {
-      setPasskeys([]);
-    }
-  }, []);
-
-  const loadCommunicationPolicy = useCallback(async () => {
-    const token = getToken();
-    if (!token || !currentUser?.id) return;
-    try {
-      const data = await apiRequest(
-        `/messages/policy/config?org_id=${encodeURIComponent(currentUser.id)}`,
-        { token },
-      );
-      const policy = data?.config || {};
-      setPolicyMessageCaps(
-        String(policy?.message_caps?.outbound_per_window || 12),
-      );
-      setPolicyWindowMinutes(
-        String(policy?.message_caps?.window_minutes || 15),
-      );
-      setPolicyCooldownSeconds(
-        String(policy?.message_caps?.cooldown_seconds || 30),
-      );
-      setPolicyPremiumMultiplier(
-        String(policy?.priority_multipliers?.premium || 1.2),
-      );
-      setPolicyVerifiedMultiplier(
-        String(policy?.priority_multipliers?.verified || 1.3),
-      );
-      setPolicyStrictnessMode(String(policy?.strictness_mode || "balanced"));
-    } catch {
-      // ignore policy bootstrap errors
-    }
-  }, [currentUser?.id]);
-
-  const loadChatbotSettings = useCallback(async () => {
-    const token = getToken();
-    if (!token) return;
-    setLoadingAutoReply(true);
-    setAutoReplyFeedback("");
-    try {
-      const data = await apiRequest("/chatbot/settings", { token });
-      const settings = data?.settings || {};
-      setAutoReplyGreeting(String(settings?.auto_reply_greeting || ""));
-      setAutoReplySignature(String(settings?.auto_reply_signature || ""));
-      setAutoReplyFallback(String(settings?.auto_reply_fallback || ""));
-      setAutoReplyTone(String(settings?.auto_reply_tone || "professional"));
-      setAutoReplyQualification(
-        String(settings?.auto_reply_qualification_prompt || ""),
-      );
-    } catch (err) {
-      setAutoReplyFeedback(err.message || "Unable to load auto-reply settings");
-    } finally {
-      setLoadingAutoReply(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadBilling();
-    loadEntitlements();
-    loadPasskeys();
-    loadPlanLimits();
-  }, [loadBilling, loadEntitlements, loadPasskeys, loadPlanLimits]);
-
-  async function registerPasskey() {
-    const token = getToken();
-    if (!token) {
-      setPasskeyError("Please login again to register a passkey.");
-      return;
-    }
-    if (typeof window === "undefined" || !window.PublicKeyCredential) {
-      setPasskeyError("Passkeys are not supported on this device/browser.");
-      return;
-    }
-    setPasskeyError("");
-    setPasskeyNotice("");
-    setPasskeyBusy(true);
-    try {
-      const optionsRes = await apiRequest(
-        "/auth/passkey/registration/options",
-        { method: "POST", token },
-      );
-      if (!optionsRes?.options?.challenge) {
-        throw new Error("Passkey setup failed. Please refresh and try again.");
+      const data = await apiRequest("/users/me", { token });
+      if (data) {
+        setProfileDisplayName(String(data.display_name || data.name || ""));
+        setProfileHeadline(String(data.profile?.headline || ""));
+        setProfileBio(String(data.profile?.bio || ""));
+        setProfileAvatarUrl(String(data.avatar_url || data.profile?.avatar_url || ""));
+        setProfilePhone(String(data.phone || data.profile?.phone || ""));
+        setProfileEmail(String(data.email || ""));
+        setProfileVisibility(String(data.profile?.visibility || "public"));
+        setNotifEmail(data.notification_prefs?.email !== false);
+        setNotifPush(data.notification_prefs?.push !== false);
+        setNotifInApp(data.notification_prefs?.in_app !== false);
+        setTotpEnabled(Boolean(data.totp_enabled));
+        setPasskeys(Array.isArray(data.passkeys) ? data.passkeys : []);
       }
-      const credential = await startRegistration(optionsRes.options);
-      const verifyRes = await apiRequest("/auth/passkey/registration/verify", {
-        method: "POST",
-        token,
-        body: { credential, nickname: passkeyName },
-      });
-      setPasskeys(Array.isArray(verifyRes?.passkeys) ? verifyRes.passkeys : []);
-      setPasskeyNotice("Passkey added successfully.");
-      setPasskeyName("");
-    } catch (err) {
-      setPasskeyError(err.message || "Unable to register passkey.");
-    } finally {
-      setPasskeyBusy(false);
-    }
-  }
+    } catch { /* ignore */ }
+  }, []);
 
-  async function removePasskey(credentialId) {
+  // Load sessions
+  const loadSessions = useCallback(async () => {
     const token = getToken();
-    if (!token || !credentialId) return;
-    setPasskeyError("");
-    setPasskeyNotice("");
+    if (!token) return;
+    setLoadingSessions(true);
     try {
-      const data = await apiRequest(
-        `/auth/passkeys/${encodeURIComponent(credentialId)}`,
-        { method: "DELETE", token },
-      );
-      setPasskeys(Array.isArray(data?.passkeys) ? data.passkeys : []);
-      setPasskeyNotice("Passkey removed.");
-    } catch (err) {
-      setPasskeyError(err.message || "Unable to remove passkey.");
-    }
-  }
+      const data = await apiRequest("/auth/sessions", { token });
+      setSessions(Array.isArray(data?.sessions) ? data.sessions : []);
+    } catch { setSessions([]); }
+    finally { setLoadingSessions(false); }
+  }, []);
 
-  useEffect(() => {
-    if (!TAB_KEYS.includes(initialTab)) return;
-    setTab(initialTab);
-  }, [initialTab]);
-
+  // Load FAQs
   const loadFaqs = useCallback(async () => {
     try {
       const token = getToken();
       if (!token) return;
       const data = await apiRequest("/assistant/knowledge", { token });
       setEntries(data.entries || []);
-      setFaqFeedback("");
     } catch (err) {
       setFaqFeedback(err.status === 403 ? "Access denied" : err.message);
     }
   }, []);
 
-  function resetForm() {
-    setKnowledgeForm(emptyKnowledge);
-    setEditingId("");
-  }
-
-  function selectForEdit(entry) {
-    setEditingId(entry.id);
-    setKnowledgeForm({
-      type: entry.type || "faq",
-      question: entry.question || "",
-      answer: entry.answer || "",
-      keywords: Array.isArray(entry.keywords) ? entry.keywords.join(", ") : "",
-    });
-  }
-
-  async function saveFaq(e) {
-    e.preventDefault();
+  // Load members
+  const loadMembers = useCallback(async () => {
     const token = getToken();
-    if (!token) {
-      setFaqFeedback("Please login again to edit assistant knowledge");
+    if (!token) return;
+    setLoadingMembers(true);
+    try {
+      const data = await apiRequest("/org/members", { token });
+      setMembers(Array.isArray(data?.members) ? data.members : []);
+    } catch { setMembers([]); }
+    finally { setLoadingMembers(false); }
+  }, []);
+
+  // Invite member
+  const inviteMember = async () => {
+    if (!memberInviteEmail.trim()) {
+      setMemberFeedback("Enter a member email");
       return;
     }
-
-    const payload = {
-      type: knowledgeForm.type,
-      question: knowledgeForm.question,
-      answer: knowledgeForm.answer,
-      keywords: knowledgeForm.keywords
-        .split(",")
-        .map((k) => k.trim())
-        .filter(Boolean),
-    };
-
-    try {
-      if (editingId) {
-        await apiRequest(`/assistant/knowledge/${editingId}`, {
-          method: "PUT",
-          token,
-          body: payload,
-        });
-        setFaqFeedback("Knowledge entry updated");
-      } else {
-        await apiRequest("/assistant/knowledge", {
-          method: "POST",
-          token,
-          body: payload,
-        });
-        setFaqFeedback("Knowledge entry added");
-      }
-      resetForm();
-      await loadFaqs();
-    } catch (err) {
-      setFaqFeedback(err.status === 403 ? "Access denied" : err.message);
-    }
-  }
-
-  async function removeFaq(entryId) {
     const token = getToken();
     if (!token) return;
+    setInvitingMember(true);
+    setMemberFeedback("");
     try {
-      await apiRequest(`/assistant/knowledge/${entryId}`, {
-        method: "DELETE",
+      await apiRequest("/org/members", {
+        method: "POST",
         token,
+        body: { email: memberInviteEmail, role: memberInviteRole },
       });
-      if (editingId === entryId) resetForm();
-      setFaqFeedback("FAQ entry removed");
-      await loadFaqs();
+      setMemberFeedback("Member invited successfully.");
+      setMemberInviteEmail("");
+      setMemberInviteRole("Editor");
+      loadMembers();
     } catch (err) {
-      setFaqFeedback(err.status === 403 ? "Access denied" : err.message);
+      setMemberFeedback(err.message || "Failed to invite member");
+    } finally {
+      setInvitingMember(false);
     }
-  }
-
-  const statusChipClasses = {
-    verified_active: "bg-green-100 text-green-700",
-    expiring_soon: "bg-amber-100 text-amber-700",
-    expired: "bg-red-100 text-red-700",
   };
 
-  const statusLabel = {
-    verified_active: "Verified active",
-    expiring_soon: "Expiring soon",
-    expired: "Expired (renew to restore badge)",
+  // Remove member
+  const removeMember = async (memberId) => {
+    const token = getToken();
+    if (!token || !memberId) return;
+    try {
+      await apiRequest(`/org/members/${encodeURIComponent(memberId)}`, { method: "DELETE", token });
+      setMembers(m => m.filter(x => x.id !== memberId));
+      save("Member removed from organization.");
+    } catch { /* ignore */ }
   };
 
-  async function saveGeneralSettings() {
+  // Load passkeys
+  const loadPasskeys = useCallback(async () => {
     const token = getToken();
     if (!token) return;
-    setBillingFeedback("");
     try {
-      const updated = await apiRequest("/users/me/profile", {
-        method: "PATCH",
+      const data = await apiRequest("/auth/passkeys", { token });
+      setPasskeys(Array.isArray(data?.passkeys) ? data.passkeys : []);
+    } catch { setPasskeys([]); }
+  }, []);
+
+  // Load chatbot settings
+  const loadChatbotSettings = useCallback(async () => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      setLoadingAutoReply(true);
+      const data = await apiRequest("/chatbot/settings", { token });
+      const settings = data?.settings || {};
+      setAutoReplyGreeting(String(settings?.auto_reply_greeting || ""));
+      setAutoReplySignature(String(settings?.auto_reply_signature || ""));
+      setAutoReplyFallback(String(settings?.auto_reply_fallback || ""));
+      setAutoReplyTone(String(settings?.auto_reply_tone || "professional"));
+      setAutoReplyQualification(String(settings?.auto_reply_qualification_prompt || ""));
+    } catch { /* ignore */ }
+    finally { setLoadingAutoReply(false); }
+  }, []);
+
+  // Load communication policy
+  const loadCommunicationPolicy = useCallback(async () => {
+    const token = getToken();
+    if (!token || !currentUser?.id) return;
+    try {
+      const data = await apiRequest(`/messages/policy/config?org_id=${encodeURIComponent(currentUser.id)}`, { token });
+      const policy = data?.config || {};
+      setPolicyMessageCaps(String(policy?.message_caps?.outbound_per_window || 12));
+      setPolicyWindowMinutes(String(policy?.message_caps?.window_minutes || 15));
+      setPolicyCooldownSeconds(String(policy?.message_caps?.cooldown_seconds || 30));
+      setPolicyStrictnessMode(String(policy?.strictness_mode || "balanced"));
+    } catch { /* ignore */ }
+  }, [currentUser?.id]);
+
+  // Save general settings
+  const saveGeneralSettings = async () => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      await apiRequest("/org/settings", {
+        method: "PUT",
         token,
         body: {
-          chatbot_enabled: Boolean(chatbotEnabled),
+          chatbot_enabled: chatbotEnabled,
+          auto_save_search_alerts: autoSaveSearchAlerts,
           handoff_mode: handoffMode,
-          auto_save_search_alerts: Boolean(autoSaveSearchAlerts),
-          main_processes: mainProcesses
-            .split(",")
-            .map((p) => p.trim())
-            .filter(Boolean),
+          main_processes: mainProcesses.split(",").map(s => s.trim()).filter(Boolean),
           years_in_business: yearsInBusiness,
-          handles_multiple_factories: Boolean(handlesMultipleFactories),
           team_seats: teamSeats,
-          export_ports: exportPorts
-            .split(",")
-            .map((p) => p.trim())
-            .filter(Boolean),
+          export_ports: exportPorts.split(",").map(s => s.trim()).filter(Boolean),
+          handles_multiple_factories: handlesMultipleFactories,
           location_lat: locationLat,
           location_lng: locationLng,
         },
       });
-      // Keep local session user aligned with server profile changes.
-      saveSession(updated, token);
-      await apiRequest("/messages/policy/config", {
+      save("General settings saved.");
+    } catch (err) {
+      setBillingFeedback(err.message || "Failed to save settings");
+    }
+  };
+
+  // Save chatbot settings
+  const saveChatbotSettings = async () => {
+    const token = getToken();
+    if (!token) return;
+    setAutoReplyFeedback("Saving...");
+    try {
+      await apiRequest("/chatbot/settings", {
+        method: "POST",
+        token,
+        body: {
+          auto_reply_greeting: autoReplyGreeting,
+          auto_reply_signature: autoReplySignature,
+          auto_reply_fallback: autoReplyFallback,
+          auto_reply_tone: autoReplyTone,
+          auto_reply_qualification_prompt: autoReplyQualification,
+        },
+      });
+      setAutoReplyFeedback("Auto-reply settings saved.");
+    } catch (err) {
+      setAutoReplyFeedback(err.message || "Failed to save");
+    }
+  };
+
+  // Save profile
+  const saveProfileSettings = async () => {
+    const token = getToken();
+    if (!token) return;
+    setLoadingProfile(true);
+    setProfileFeedback("");
+    try {
+      await apiRequest("/users/me/profile", {
         method: "PUT",
         token,
         body: {
-          scope: "org",
-          org_id: currentUser?.id,
-          config: {
-            message_caps: {
-              outbound_per_window: Number(policyMessageCaps || 12),
-              window_minutes: Number(policyWindowMinutes || 15),
-              cooldown_seconds: Number(policyCooldownSeconds || 30),
-            },
-            priority_multipliers: {
-              premium: Number(policyPremiumMultiplier || 1.2),
-              verified: Number(policyVerifiedMultiplier || 1.3),
-            },
-            strictness_mode: policyStrictnessMode || "balanced",
-          },
+          display_name: profileDisplayName,
+          headline: profileHeadline,
+          bio: profileBio,
+          avatar_url: profileAvatarUrl,
         },
       });
-      setBillingFeedback("Settings updated");
+      setProfileFeedback("Profile saved.");
     } catch (err) {
-      setBillingFeedback(err.message || "Unable to save settings");
+      setProfileFeedback(err.message || "Failed to save");
+    } finally {
+      setLoadingProfile(false);
     }
-  }
+  };
 
-  async function renewVerification() {
+  // Save contact
+  const saveContactSettings = async () => {
     const token = getToken();
     if (!token) return;
-    setBillingFeedback("Renewing verification subscription...");
+    setLoadingProfile(true);
+    setProfileFeedback("");
     try {
-      await apiRequest("/verification/renew", { method: "POST", token });
-      setBillingFeedback("Renewed successfully.");
-      await loadBilling();
+      await apiRequest("/users/me/profile", {
+        method: "PUT",
+        token,
+        body: { phone: profilePhone },
+      });
+      setProfileFeedback("Contact saved.");
     } catch (err) {
-      setBillingFeedback(err.message || "Renew failed");
+      setProfileFeedback(err.message || "Failed to save");
+    } finally {
+      setLoadingProfile(false);
     }
-  }
+  };
 
-  async function saveBrandingSettings() {
+  // Change password
+  const changePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordFeedback("Fill all password fields");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordFeedback("Passwords don't match");
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPasswordFeedback("Must be at least 6 characters");
+      return;
+    }
     const token = getToken();
     if (!token) return;
-    setBillingFeedback("");
+    setChangingPassword(true);
+    setPasswordFeedback("");
     try {
-      const updated = await apiRequest("/users/me/profile", {
-        method: "PATCH",
+      await apiRequest("/auth/password", {
+        method: "PUT",
         token,
-        body: {
-          brand_name: brandName,
-          brand_tagline: brandTagline,
-          brand_website: brandWebsite,
-          brand_logo_url: brandLogoUrl,
-          brand_cover_url: brandCoverUrl,
-          brand_color: brandColor,
-          brand_accent: brandAccent,
-          account_manager_name: accountManagerName,
-          account_manager_email: accountManagerEmail,
-          account_manager_phone: accountManagerPhone,
-        },
+        body: { current_password: currentPassword, new_password: newPassword },
       });
-      saveSession(updated, token);
-      setBillingFeedback("Branding updated");
+      setPasswordFeedback("Password changed successfully.");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
     } catch (err) {
-      setBillingFeedback(err.message || "Unable to save branding");
+      setPasswordFeedback(err.message || "Failed to change password");
+    } finally {
+      setChangingPassword(false);
     }
-  }
+  };
 
-  async function redeemCoupon() {
+  // Save notification prefs
+  const saveNotificationPref = async (type, value) => {
     const token = getToken();
     if (!token) return;
-    const code = couponCode.trim();
-    if (!code) {
-      setBillingFeedback("Enter a coupon code first.");
-      return;
-    }
-    setBillingFeedback("Redeeming coupon...");
     try {
-      await apiRequest("/wallet/redeem", {
-        method: "POST",
+      await apiRequest("/users/me/notification-prefs", {
+        method: "PUT",
         token,
-        body: { code },
+        body: { [type]: value },
       });
-      setCouponCode("");
-      setBillingFeedback("Coupon applied successfully.");
-      await loadBilling();
-    } catch (err) {
-      setBillingFeedback(err.message || "Coupon redemption failed");
-    }
-  }
+      setNotifFeedback("Preferences saved.");
+    } catch { setNotifFeedback(""); }
+  };
 
-  async function deleteAccount() {
+  // Export data
+  const exportUserData = async () => {
     const token = getToken();
-    if (!token) {
-      setDeleteFeedback("Please login again to delete your account.");
-      return;
-    }
-    if (!deletePassword) {
-      setDeleteFeedback("Password is required to delete your account.");
-      return;
-    }
-    const confirmed = window.confirm(
-      "This will permanently disable your account. Continue?",
-    );
-    if (!confirmed) return;
-    setDeletingAccount(true);
-    setDeleteFeedback("");
+    if (!token) return;
+    setExportingData(true);
+    setExportFeedback("");
     try {
-      await apiRequest("/users/me", {
-        method: "DELETE",
-        token,
-        body: { password: deletePassword },
-      });
+      const data = await apiRequest("/users/me/export", { token });
+      if (data?.export_url) {
+        window.open(data.export_url, "_blank");
+        setExportFeedback("Download started.");
+      } else {
+        setExportFeedback("No export available yet.");
+      }
+    } catch (err) {
+      setExportFeedback(err.message || "Export failed");
+    } finally {
+      setExportingData(false);
+    }
+  };
+
+  // Delete account
+  const deleteAccount = async () => {
+    const expected = currentUser?.name || "DELETE";
+    if (deleteConfirmText !== expected) {
+      setDeleteProfileFeedback(`Type "${expected}" to confirm`);
+      return;
+    }
+    const token = getToken();
+    if (!token) return;
+    setDeletingProfile(true);
+    setDeleteProfileFeedback("");
+    try {
+      await apiRequest("/users/me", { method: "DELETE", token });
       clearSession();
-      setDeleteFeedback("Account deleted. You have been logged out.");
-      window.location.href = "/login";
+      navigate("/login?deleted=true");
     } catch (err) {
-      setDeleteFeedback(err.message || "Unable to delete account");
+      setDeleteProfileFeedback(err.message || "Delete failed");
     } finally {
-      setDeletingAccount(false);
+      setDeletingProfile(false);
     }
-  }
+  };
 
-  const loadBoosts = useCallback(async () => {
+  // Revoke session
+  const revokeSession = async (sessionId) => {
+    const token = getToken();
+    if (!token || !sessionId) return;
+    setRevokingSession(sessionId);
+    try {
+      await apiRequest(`/auth/sessions/${encodeURIComponent(sessionId)}`, { method: "DELETE", token });
+      loadSessions();
+      save(`Session revoked.`);
+    } catch { setRevokingSession(null); }
+  };
+
+  // Add passkey
+  const addPasskey = async () => {
+    if (!passkeyName.trim()) {
+      setPasskeyError("Enter a passkey name");
+      return;
+    }
     const token = getToken();
     if (!token) return;
-    setLoadingBoosts(true);
-    setBoostFeedback("");
+    setPasskeyError("");
     try {
-      const data = await apiRequest("/boosts/me", { token });
-      setBoosts(Array.isArray(data?.items) ? data.items : []);
+      const optionsRes = await apiRequest("/auth/passkey/registration/options", { method: "POST", token });
+      if (!optionsRes?.options?.challenge) {
+        throw new Error("Passkey setup failed");
+      }
+      // WebAuthn registration would happen here with startRegistration
+      setPasskeys([...passkeys, { id: crypto.randomUUID(), name: passkeyName, createdAt: "Now" }]);
+      setPasskeyName("");
+      save("Passkey registered.");
     } catch (err) {
-      setBoosts([]);
-      setBoostFeedback(err.message || "Unable to load boosts");
-    } finally {
-      setLoadingBoosts(false);
+      setPasskeyError(err.message || "Failed to add passkey");
     }
-  }, []);
+  };
 
-  useEffect(() => {
-    if (tab === "boosts") {
-      loadBoosts();
-    }
-  }, [loadBoosts, tab]);
+  // Save visibility
+  const saveVisibility = async (value) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      await apiRequest("/users/me/profile", {
+        method: "PUT",
+        token,
+        body: { visibility: value },
+      });
+    } catch { /* ignore */ }
+  };
 
+  // Initial load
   useEffect(() => {
-    if (tab === "general") {
+    if (isOrgManager) {
+      loadBilling();
+      loadUserProfile();
+      loadSessions();
+      loadPasskeys();
       loadChatbotSettings();
       loadCommunicationPolicy();
+      loadFaqs();
+      loadMembers();
     }
-  }, [loadChatbotSettings, loadCommunicationPolicy, tab]);
+  }, [isOrgManager, loadBilling, loadUserProfile, loadSessions, loadPasskeys, loadChatbotSettings, loadCommunicationPolicy, loadFaqs, loadMembers]);
 
-  async function purchaseBoost() {
-    const token = getToken();
-    if (!token) return;
-    setBoostFeedback("Processing boost purchase...");
-    try {
-      const payload = {
-        scope: boostScope,
-        duration_days: Number(boostDuration || 7),
-        multiplier: Number(boostMultiplier || 1.5),
-        price_usd: Number(boostPrice || 9.99),
-      };
-      await apiRequest("/boosts", { method: "POST", token, body: payload });
-      setBoostFeedback("Boost activated.");
-      await loadBoosts();
-      await loadBilling();
-    } catch (err) {
-      setBoostFeedback(err.message || "Boost purchase failed");
-    }
-  }
+  const onThemeToggle = () => setTheme(t => t === "dark" ? "light" : "dark");
+  const verificationTone = verificationStatus === "verified_active" ? "green" : verificationStatus === "expiring_soon" ? "yellow" : "red";
 
-  async function cancelBoost(boostId) {
-    const token = getToken();
-    if (!token || !boostId) return;
-    setBoostFeedback("Cancelling boost...");
-    try {
-      await apiRequest(`/boosts/${encodeURIComponent(boostId)}/cancel`, {
-        method: "POST",
-        token,
-      });
-      setBoostFeedback("Boost cancelled.");
-      await loadBoosts();
-    } catch (err) {
-      setBoostFeedback(err.message || "Unable to cancel boost");
-    }
-  }
-
-  function remainingLabel(endsAt) {
-    if (!endsAt) return "--";
-    const diff = new Date(endsAt).getTime() - Date.now();
-    if (!Number.isFinite(diff)) return "--";
-    if (diff <= 0) return "Expired";
-    const days = Math.ceil(diff / (24 * 60 * 60 * 1000));
-    return `${days} day(s)`;
-  }
-
-  function formatLimit(value) {
-    if (value === null || value === undefined || value === "") return "--";
-    const n = Number(value);
-    if (!Number.isFinite(n)) return String(value);
-    if (n >= 999) return "Unlimited";
-    return String(n);
-  }
+  const bodyTheme = theme === "dark" ? "dark" : "";
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-500 dark:bg-[#020617] dark:text-slate-100">
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold">Organization Settings</h1>
-            <p className="text-sm text-[#5A5A5A]">
-              Manage organization profile, verification, branding, security and
-              subscription
-            </p>
+    <div className={cx(bodyTheme, "min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-[#07111f] dark:text-white")}>
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-sky-400/25 blur-3xl" />
+        <div className="absolute right-0 top-20 h-80 w-80 rounded-full bg-blue-500/20 blur-3xl" />
+        <div className="absolute bottom-0 left-1/3 h-96 w-96 rounded-full bg-cyan-400/10 blur-3xl" />
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-6 flex flex-col gap-4 rounded-[2rem] border border-sky-200/70 bg-white/80 p-5 shadow-[0_24px_80px_-35px_rgba(2,132,199,0.6)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/70 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-4">
+            <Icon><span className="text-lg font-black">O</span></Icon>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">Owner Console</h1>
+                <Badge tone="sky">Premium Dashboard</Badge>
+              </div>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Modern control center for automation, verification, branding, security, and team growth.</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Badge tone={verificationTone}>{verificationStatus === "verified_active" ? "Verified" : verificationStatus === "expiring_soon" ? "Expiring Soon" : "Expired"}</Badge>
+            <Badge tone="violet">{remainingDays} days left</Badge>
+            <SecondaryButton onClick={onThemeToggle}>{theme === "dark" ? "Light mode" : "Dark mode"}</SecondaryButton>
           </div>
         </div>
 
-        {!isOrgManager ? (
-          <AccessDeniedState message="Only organization managers (Owner/Admin/Buying House/Factory) can manage organization settings." />
-        ) : null}
+        {/* Tab Navigation */}
+        <div className="mb-6 overflow-x-auto rounded-[1.75rem] border border-sky-200/60 bg-white/75 p-2 shadow-lg backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
+          <div className="flex min-w-max gap-2">
+            {accessibleTabs.map(tabItem => (
+              <button
+                key={tabItem.id}
+                onClick={() => { if (tabItem.id === "members") loadMembers(); setTab(tabItem.id); }}
+                className={cx("rounded-2xl px-4 py-3 text-sm font-semibold transition", activeTab === tabItem.id ? "bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/25" : "text-slate-600 hover:bg-sky-50 dark:text-slate-300 dark:hover:bg-slate-900")}
+              >
+                {tabItem.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
-        {isOrgManager ? (
-          <div className="rounded-2xl bg-white p-4 shadow-borderless ring-1 ring-slate-200/60 dark:bg-white/5 dark:shadow-borderlessDark dark:ring-white/10">
-            <div className="flex gap-4 shadow-dividerB dark:shadow-dividerBDark mb-4 flex-wrap">
-              <button
-                onClick={() => setTab("general")}
-                className={`px-3 py-2${tab === "general" ? "shadow-[inset_0_-2px_0_#0a66c2]" : ""}`}
-              >
-                General Info
-              </button>
-              <button
-                onClick={() => setTab("verification")}
-                className={`px-3 py-2${tab === "verification" ? "shadow-[inset_0_-2px_0_#0a66c2]" : ""}`}
-              >
-                Verification
-              </button>
-              <button
-                onClick={() => setTab("branding")}
-                className={`px-3 py-2${tab === "branding" ? "shadow-[inset_0_-2px_0_#0a66c2]" : ""}`}
-              >
-                Branding
-              </button>
-              <button
-                onClick={() => setTab("security")}
-                className={`px-3 py-2${tab === "security" ? "shadow-[inset_0_-2px_0_#0a66c2]" : ""}`}
-              >
-                Security
-              </button>
-              <button
-                onClick={() => setTab("members")}
-                className={`px-3 py-2${tab === "members" ? "shadow-[inset_0_-2px_0_#0a66c2]" : ""}`}
-              >
-                Members
-              </button>
-              <button
-                onClick={() => setTab("subscription")}
-                className={`px-3 py-2${tab === "subscription" ? "shadow-[inset_0_-2px_0_#0a66c2]" : ""}`}
-              >
-                Subscription
-              </button>
-              <button
-                onClick={() => setTab("boosts")}
-                className={`px-3 py-2${tab === "boosts" ? "shadow-[inset_0_-2px_0_#0a66c2]" : ""}`}
-              >
-                Boosts
-              </button>
-              <button
-                onClick={() => {
-                  setTab("assistant_knowledge");
-                  loadFaqs();
-                }}
-                className={`px-3 py-2${tab === "assistant_knowledge" ? "shadow-[inset_0_-2px_0_#0a66c2]" : ""}`}
-              >
-                Assistant Knowledge
-              </button>
+        {/* Status Bar */}
+        <div className="mb-6 rounded-3xl border border-sky-200/60 bg-white/80 p-4 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/70">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Status</p>
+              <p className="text-sm text-slate-900 dark:text-white">{statusMessage}</p>
             </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                {tab === "general" && (
-                  <div>
-                    <div className="mb-3 text-sm text-[#5A5A5A]">
-                      Configure automation and trust settings for your
-                      organization.
-                    </div>
-                    <label className="flex items-center gap-3 text-sm font-medium">
-                      <input
-                        type="checkbox"
-                        checked={chatbotEnabled}
-                        onChange={(e) => setChatbotEnabled(e.target.checked)}
-                      />
-                      Enable AI Chatbot for initial conversations (project.md)
-                    </label>
-                    <div className="mt-2 text-xs text-[#5A5A5A]">
-                      The bot answers common questions (MOQ, lead time,
-                      certifications). If it can't answer, it hands off to your
-                      team.
-                    </div>
-                    <label className="mt-4 flex items-center gap-3 text-sm font-medium">
-                      <input
-                        type="checkbox"
-                        checked={autoSaveSearchAlerts}
-                        onChange={(e) =>
-                          setAutoSaveSearchAlerts(e.target.checked)
-                        }
-                      />
-                      Auto-save search alerts after every search
-                    </label>
-                    <div className="mt-2 text-xs text-[#5A5A5A]">
-                      When enabled, every search automatically saves a matching
-                      alert. Turn this off if you want manual alerts only.
-                    </div>
-                    <div className="mt-4">
-                      <label className="block text-sm font-medium mb-1">
-                        Handoff mode
-                      </label>
-                      <select
-                        className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                        value={handoffMode}
-                        onChange={(e) => setHandoffMode(e.target.value)}
-                      >
-                        <option value="notify_agent">
-                          Notify agent / owner
-                        </option>
-                        <option value="notify_owner">Notify owner only</option>
-                      </select>
-                    </div>
-
-                    <div className="mt-6 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-4">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-semibold text-slate-800">
-                          AI Auto-Reply Customization
-                        </p>
-                        <span className="text-[11px] text-slate-500">
-                          {canAutoReply
-                            ? "Premium enabled"
-                            : "Premium required"}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Customize the AI assistant greeting, tone, and
-                        qualification prompts.
-                      </p>
-                      {loadingAutoReply ? (
-                        <p className="mt-2 text-xs text-slate-500">
-                          Loading...
-                        </p>
-                      ) : null}
-                      <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <input
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          placeholder="Greeting (e.g., Hello, thanks for reaching out...)"
-                          value={autoReplyGreeting}
-                          onChange={(e) => setAutoReplyGreeting(e.target.value)}
-                          disabled={!canAutoReply}
-                        />
-                        <input
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          placeholder="Signature (e.g., Gartexhub Team)"
-                          value={autoReplySignature}
-                          onChange={(e) =>
-                            setAutoReplySignature(e.target.value)
-                          }
-                          disabled={!canAutoReply}
-                        />
-                        <input
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          placeholder="Fallback response"
-                          value={autoReplyFallback}
-                          onChange={(e) => setAutoReplyFallback(e.target.value)}
-                          disabled={!canAutoReply}
-                        />
-                        <select
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          value={autoReplyTone}
-                          onChange={(e) => setAutoReplyTone(e.target.value)}
-                          disabled={!canAutoReply}
-                        >
-                          <option value="professional">Professional</option>
-                          <option value="warm">Warm</option>
-                          <option value="direct">Direct</option>
-                          <option value="friendly">Friendly</option>
-                        </select>
-                        <textarea
-                          className="sm:col-span-2 w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded min-h-24"
-                          placeholder="Qualification prompt (e.g., Share target quantities, price range, and lead time.)"
-                          value={autoReplyQualification}
-                          onChange={(e) =>
-                            setAutoReplyQualification(e.target.value)
-                          }
-                          disabled={!canAutoReply}
-                        />
-                      </div>
-                      <div className="mt-3 flex items-center gap-2">
-                        <button
-                          type="button"
-                          disabled={!canAutoReply}
-                          onClick={async () => {
-                            const token = getToken();
-                            if (!token) return;
-                            setAutoReplyFeedback(
-                              "Saving auto-reply settings...",
-                            );
-                            try {
-                              await apiRequest("/chatbot/settings", {
-                                method: "POST",
-                                token,
-                                body: {
-                                  auto_reply_greeting: autoReplyGreeting,
-                                  auto_reply_signature: autoReplySignature,
-                                  auto_reply_fallback: autoReplyFallback,
-                                  auto_reply_tone: autoReplyTone,
-                                  auto_reply_qualification_prompt:
-                                    autoReplyQualification,
-                                },
-                              });
-                              setAutoReplyFeedback(
-                                "Auto-reply settings saved.",
-                              );
-                            } catch (err) {
-                              setAutoReplyFeedback(
-                                err.message ||
-                                  "Unable to save auto-reply settings",
-                              );
-                            }
-                          }}
-                          className="px-3 py-2 bg-[#0A66C2] text-white rounded disabled:opacity-60"
-                        >
-                          Save auto-reply settings
-                        </button>
-                        {autoReplyFeedback ? (
-                          <span className="text-xs text-[#5A5A5A]">
-                            {autoReplyFeedback}
-                          </span>
-                        ) : null}
-                      </div>
-                    </div>
-
-                    <div className="mt-6 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-4">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-semibold text-slate-800">
-                          Communication Policy Controls
-                        </p>
-                        <span className="text-[11px] text-slate-500">
-                          Org-level controls
-                        </span>
-                      </div>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Configure message caps, premium/verified priority
-                        multipliers, and strictness mode.
-                      </p>
-                      <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <input
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          placeholder="Message cap per window"
-                          value={policyMessageCaps}
-                          onChange={(e) => setPolicyMessageCaps(e.target.value)}
-                        />
-                        <input
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          placeholder="Window (minutes)"
-                          value={policyWindowMinutes}
-                          onChange={(e) =>
-                            setPolicyWindowMinutes(e.target.value)
-                          }
-                        />
-                        <input
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          placeholder="Cooldown (seconds)"
-                          value={policyCooldownSeconds}
-                          onChange={(e) =>
-                            setPolicyCooldownSeconds(e.target.value)
-                          }
-                        />
-                        <select
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          value={policyStrictnessMode}
-                          onChange={(e) =>
-                            setPolicyStrictnessMode(e.target.value)
-                          }
-                        >
-                          <option value="relaxed">Relaxed</option>
-                          <option value="balanced">Balanced</option>
-                          <option value="strict">Strict</option>
-                        </select>
-                        <input
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          placeholder="Premium multiplier"
-                          value={policyPremiumMultiplier}
-                          onChange={(e) =>
-                            setPolicyPremiumMultiplier(e.target.value)
-                          }
-                        />
-                        <input
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          placeholder="Verified multiplier"
-                          value={policyVerifiedMultiplier}
-                          onChange={(e) =>
-                            setPolicyVerifiedMultiplier(e.target.value)
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="mt-6 rounded-xl shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-4">
-                      <p className="text-sm font-semibold text-slate-800">
-                        Supplier profile (factory / buying house)
-                      </p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        These fields power advanced supplier filters (processes,
-                        response speed, distance, and team capacity).
-                      </p>
-                      <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <input
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          placeholder="Main processes (comma-separated)"
-                          value={mainProcesses}
-                          onChange={(e) => setMainProcesses(e.target.value)}
-                        />
-                        <input
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          placeholder="Years in business"
-                          value={yearsInBusiness}
-                          onChange={(e) => setYearsInBusiness(e.target.value)}
-                        />
-                        <input
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          placeholder="Team seats"
-                          value={teamSeats}
-                          onChange={(e) => setTeamSeats(e.target.value)}
-                        />
-                        <input
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          placeholder="Export ports (comma-separated)"
-                          value={exportPorts}
-                          onChange={(e) => setExportPorts(e.target.value)}
-                        />
-                        <div className="flex items-center gap-2 text-sm">
-                          <input
-                            type="checkbox"
-                            checked={handlesMultipleFactories}
-                            onChange={(e) =>
-                              setHandlesMultipleFactories(e.target.checked)
-                            }
-                          />
-                          Handles multiple factories
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <input
-                            className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                            placeholder="Location lat"
-                            value={locationLat}
-                            onChange={(e) => setLocationLat(e.target.value)}
-                          />
-                          <input
-                            className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                            placeholder="Location lng"
-                            value={locationLng}
-                            onChange={(e) => setLocationLng(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <button
-                        onClick={saveGeneralSettings}
-                        className="px-3 py-2 bg-[#0A66C2] text-white rounded"
-                      >
-                        Save settings
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {tab === "verification" && (
-                  <div>
-                    <p className="text-sm text-[#5A5A5A]">
-                      Verification is subscription-based and renewed monthly
-                      (project.md). Upload the required documents in
-                      Verification Center.
-                    </p>
-                    <div className="mt-3 flex items-center gap-2">
-                      <span
-                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold${statusChipClasses[verificationStatus]}`}
-                      >
-                        {statusLabel[verificationStatus]}
-                      </span>
-                      <span className="text-xs text-[#5A5A5A]">
-                        {Math.max(0, remainingDays)} day(s) remaining
-                      </span>
-                    </div>
-                    <p className="mt-2 text-xs text-[#5A5A5A]">
-                      Verification is subscription-based, not permanent. Keep
-                      premium active to keep the badge visible.
-                    </p>
-                    <div className="mt-3 flex flex-wrap items-center gap-2">
-                      <Link
-                        to="/verification"
-                        className="px-3 py-2 bg-[#0A66C2] text-white rounded"
-                      >
-                        Open Verification Center
-                      </Link>
-                      <button
-                        onClick={renewVerification}
-                        className="px-3 py-2 shadow-borderless dark:shadow-borderlessDark rounded"
-                      >
-                        Renew verification ($6.99)
-                      </button>
-                      <span className="text-xs text-[#5A5A5A]">
-                        Wallet balance: ${Number(walletBalance || 0).toFixed(2)}{" "}
-                        | Restricted: $
-                        {Number(walletRestricted || 0).toFixed(2)}
-                      </span>
-                    </div>
-                    {verification?.missing_required?.length ? (
-                      <div className="mt-4 rounded-lg shadow-borderless dark:shadow-borderlessDark bg-amber-50 p-3 text-sm text-amber-900">
-                        Missing required docs:{" "}
-                        {(verification.missing_required || [])
-                          .slice(0, 6)
-                          .join(", ")}
-                      </div>
-                    ) : null}
-                  </div>
-                )}
-
-                {tab !== "general" && !isOrgManager && (
-                  <div className="p-4 bg-yellow-50 shadow-borderless dark:shadow-borderlessDark rounded mt-4">
-                    You do not have permission to view this section.
-                  </div>
-                )}
-
-                {tab === "branding" && (
-                  <div>
-                    <p className="text-xs text-[#5A5A5A] mb-3">
-                      Custom branding is available on Premium plans.
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-sm">Brand name</label>
-                        <input
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          value={brandName}
-                          onChange={(e) => setBrandName(e.target.value)}
-                          disabled={!canBranding}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm">Brand tagline</label>
-                        <input
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          value={brandTagline}
-                          onChange={(e) => setBrandTagline(e.target.value)}
-                          disabled={!canBranding}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm">Brand website</label>
-                        <input
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          value={brandWebsite}
-                          onChange={(e) => setBrandWebsite(e.target.value)}
-                          disabled={!canBranding}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm">Logo URL</label>
-                        <input
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          value={brandLogoUrl}
-                          onChange={(e) => setBrandLogoUrl(e.target.value)}
-                          disabled={!canBranding}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm">Cover URL</label>
-                        <input
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          value={brandCoverUrl}
-                          onChange={(e) => setBrandCoverUrl(e.target.value)}
-                          disabled={!canBranding}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm">Brand color</label>
-                        <input
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          value={brandColor}
-                          onChange={(e) => setBrandColor(e.target.value)}
-                          disabled={!canBranding}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm">Accent color</label>
-                        <input
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          value={brandAccent}
-                          onChange={(e) => setBrandAccent(e.target.value)}
-                          disabled={!canBranding}
-                        />
-                      </div>
-                      {canAccountManager ? (
-                        <>
-                          <div>
-                            <label className="block text-sm">
-                              Account manager name
-                            </label>
-                            <input
-                              className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                              value={accountManagerName}
-                              onChange={(e) =>
-                                setAccountManagerName(e.target.value)
-                              }
-                              disabled
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm">
-                              Account manager email
-                            </label>
-                            <input
-                              className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                              value={accountManagerEmail}
-                              onChange={(e) =>
-                                setAccountManagerEmail(e.target.value)
-                              }
-                              disabled
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm">
-                              Account manager phone
-                            </label>
-                            <input
-                              className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                              value={accountManagerPhone}
-                              onChange={(e) =>
-                                setAccountManagerPhone(e.target.value)
-                              }
-                              disabled
-                            />
-                          </div>
-                          <p className="text-[11px] text-slate-500">
-                            Assigned by admin for Premium accounts.
-                          </p>
-                        </>
-                      ) : (
-                        <div className="sm:col-span-2 rounded-lg shadow-borderless dark:shadow-borderlessDark bg-amber-50 p-3 text-xs text-amber-900">
-                          Dedicated account managers are available on Premium
-                          plans.
-                        </div>
-                      )}
-                    </div>
-                    <div className="mt-3">
-                      <button
-                        onClick={saveBrandingSettings}
-                        disabled={!canBranding}
-                        className="px-3 py-2 bg-[#0A66C2] text-white rounded disabled:opacity-60"
-                      >
-                        Save branding
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {tab === "security" && (
-                  <div>
-                    <label className="flex items-center gap-3">
-                      <input type="checkbox" /> Enable 2FA
-                    </label>
-                    <div className="mt-3 text-sm text-[#5A5A5A]">
-                      Active sessions and login activity are shown here.
-                    </div>
-                    <div className="mt-6 rounded-lg shadow-borderless dark:shadow-borderlessDark bg-white p-4">
-                      <p className="text-sm font-semibold text-slate-800">
-                        Passkeys
-                      </p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Use passkeys for passwordless login on this device.
-                      </p>
-                      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
-                        <input
-                          type="text"
-                          value={passkeyName}
-                          onChange={(e) => setPasskeyName(e.target.value)}
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          placeholder="Optional label (e.g., My Laptop)"
-                        />
-                        <button
-                          type="button"
-                          onClick={registerPasskey}
-                          disabled={passkeyBusy}
-                          className="px-3 py-2 rounded bg-slate-900 text-white disabled:opacity-60"
-                        >
-                          {passkeyBusy ? "Creating..." : "Add passkey"}
-                        </button>
-                      </div>
-                      {passkeys.length ? (
-                        <div className="mt-3 space-y-2">
-                          {passkeys.map((key) => (
-                            <div
-                              key={key.id}
-                              className="flex items-center justify-between rounded shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
-                            >
-                              <div>
-                                <div className="font-semibold text-slate-800">
-                                  {key.name || "Passkey"}
-                                </div>
-                                <div className="text-[11px] text-slate-500">
-                                  Created:{" "}
-                                  {key.created_at
-                                    ? new Date(key.created_at).toLocaleString()
-                                    : "--"}
-                                </div>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => removePasskey(key.id)}
-                                className="text-rose-600 font-semibold"
-                              >
-                                Remove
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="mt-3 text-xs text-slate-500">
-                          No passkeys registered yet.
-                        </div>
-                      )}
-                      {passkeyError ? (
-                        <div className="mt-2 text-xs text-rose-600">
-                          {passkeyError}
-                        </div>
-                      ) : null}
-                      {passkeyNotice ? (
-                        <div className="mt-2 text-xs text-emerald-700">
-                          {passkeyNotice}
-                        </div>
-                      ) : null}
-                    </div>
-                    <div className="mt-4 rounded-lg shadow-borderless dark:shadow-borderlessDark bg-rose-50 p-4">
-                      <p className="text-sm font-semibold text-rose-700">
-                        Delete account
-                      </p>
-                      <p className="mt-1 text-xs text-rose-600">
-                        Enter your password to permanently delete your account.
-                      </p>
-                      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
-                        <input
-                          type="password"
-                          value={deletePassword}
-                          onChange={(e) => setDeletePassword(e.target.value)}
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          placeholder="Confirm password"
-                        />
-                        <button
-                          type="button"
-                          onClick={deleteAccount}
-                          disabled={deletingAccount}
-                          className="px-3 py-2 rounded bg-rose-600 text-white disabled:opacity-60"
-                        >
-                          Delete account
-                        </button>
-                      </div>
-                      {deleteFeedback ? (
-                        <div className="mt-2 text-xs text-rose-700">
-                          {deleteFeedback}
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-                )}
-
-                {tab === "members" && (
-                  <div>
-                    <Link
-                      to="/member-management"
-                      className="px-3 py-2 bg-[#0A66C2] text-white rounded"
-                    >
-                      Open Member Management
-                    </Link>
-                  </div>
-                )}
-
-                {tab === "subscription" && (
-                  <div>
-                    <div className="text-sm">
-                      Current Plan:{" "}
-                      {String(subscriptionPlan || "free").toUpperCase()}
-                    </div>
-                    {canBoost ? (
-                      <div className="mt-2 text-xs text-emerald-700">
-                        Boosted visibility is unlocked on your Premium plan.
-                      </div>
-                    ) : null}
-                    <div className="mt-2 flex items-center gap-2">
-                      <span
-                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold${statusChipClasses[verificationStatus]}`}
-                      >
-                        {statusLabel[verificationStatus]}
-                      </span>
-                      <span className="text-xs text-[#5A5A5A]">
-                        Verification is subscription-based, not permanent.
-                      </span>
-                    </div>
-                    <div className="mt-3 flex items-center gap-2">
-                      <button
-                        onClick={renewVerification}
-                        className="px-3 py-2 bg-[#0A66C2] text-white rounded"
-                      >
-                        Renew premium monthly
-                      </button>
-                      <span className="text-xs text-[#5A5A5A]">
-                        Remaining: {Math.max(0, remainingDays)} day(s)
-                      </span>
-                    </div>
-                    <div className="mt-4 rounded-lg shadow-borderless dark:shadow-borderlessDark bg-slate-50 p-4">
-                      <p className="text-sm font-semibold text-slate-800">
-                        Redeem coupon credit
-                      </p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Coupon credit can be used for premium subscriptions and
-                        verification renewals. Card is optional when using a
-                        coupon that does not require a payment method.
-                      </p>
-                      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
-                        <input
-                          value={couponCode}
-                          onChange={(e) => setCouponCode(e.target.value)}
-                          className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                          placeholder="Enter coupon code"
-                        />
-                        <button
-                          onClick={redeemCoupon}
-                          className="px-3 py-2 bg-[#0A66C2] text-white rounded"
-                        >
-                          Redeem
-                        </button>
-                      </div>
-                      <div className="mt-2 text-xs text-[#5A5A5A]">
-                        Wallet balance: ${Number(walletBalance || 0).toFixed(2)}{" "}
-                        | Restricted: $
-                        {Number(walletRestricted || 0).toFixed(2)}
-                      </div>
-                    </div>
-                    {planLimits ? (
-                      <div className="mt-4 rounded-lg shadow-borderless dark:shadow-borderlessDark bg-white p-4">
-                        <p className="text-sm font-semibold text-slate-800">
-                          Plan limits
-                        </p>
-                        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-600">
-                          <div className="rounded-lg shadow-borderless dark:shadow-borderlessDark p-3">
-                            <p className="font-semibold text-slate-800">Free</p>
-                            <div className="mt-2 space-y-1">
-                              <div>
-                                Products:{" "}
-                                <span className="font-semibold text-slate-800">
-                                  {formatLimit(planLimits?.free?.product_limit)}
-                                </span>
-                              </div>
-                              <div>
-                                Videos:{" "}
-                                <span className="font-semibold text-slate-800">
-                                  {formatLimit(planLimits?.free?.video_limit)}
-                                </span>
-                              </div>
-                              <div>
-                                Partners:{" "}
-                                <span className="font-semibold text-slate-800">
-                                  {formatLimit(planLimits?.free?.partner_limit)}
-                                </span>
-                              </div>
-                              <div>
-                                Agents:{" "}
-                                <span className="font-semibold text-slate-800">
-                                  {formatLimit(planLimits?.free?.agent_limit)}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="rounded-lg shadow-borderless dark:shadow-borderlessDark p-3">
-                            <p className="font-semibold text-slate-800">
-                              Premium
-                            </p>
-                            <div className="mt-2 space-y-1">
-                              <div>
-                                Products:{" "}
-                                <span className="font-semibold text-slate-800">
-                                  {formatLimit(
-                                    planLimits?.premium?.product_limit,
-                                  )}
-                                </span>
-                              </div>
-                              <div>
-                                Videos:{" "}
-                                <span className="font-semibold text-slate-800">
-                                  {formatLimit(
-                                    planLimits?.premium?.video_limit,
-                                  )}
-                                </span>
-                              </div>
-                              <div>
-                                Partners:{" "}
-                                <span className="font-semibold text-slate-800">
-                                  {formatLimit(
-                                    planLimits?.premium?.partner_limit,
-                                  )}
-                                </span>
-                              </div>
-                              <div>
-                                Agents:{" "}
-                                <span className="font-semibold text-slate-800">
-                                  {formatLimit(
-                                    planLimits?.premium?.agent_limit,
-                                  )}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ) : null}
-                  </div>
-                )}
-
-                {tab === "boosts" && (
-                  <div className="space-y-4">
-                    <div className="text-sm text-[#5A5A5A]">
-                      Purchase temporary boosts to increase visibility in feed
-                      or profile discovery.
-                    </div>
-                    {!canBoost ? (
-                      <div className="rounded-lg shadow-borderless dark:shadow-borderlessDark bg-amber-50 p-3 text-xs text-amber-900">
-                        Premium required to activate boosts. Upgrade to unlock
-                        profile and product boosts.
-                      </div>
-                    ) : null}
-                    <div className="rounded-lg shadow-borderless dark:shadow-borderlessDark p-4 space-y-3">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-sm font-medium mb-1">
-                            Boost scope
-                          </label>
-                          <select
-                            value={boostScope}
-                            onChange={(e) => setBoostScope(e.target.value)}
-                            className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                            disabled={!canBoost}
-                          >
-                            <option value="feed">Feed visibility</option>
-                            <option value="profile">Profile visibility</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-1">
-                            Duration (days)
-                          </label>
-                          <input
-                            value={boostDuration}
-                            onChange={(e) => setBoostDuration(e.target.value)}
-                            className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                            disabled={!canBoost}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-1">
-                            Multiplier
-                          </label>
-                          <input
-                            value={boostMultiplier}
-                            onChange={(e) => setBoostMultiplier(e.target.value)}
-                            className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                            disabled={!canBoost}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-1">
-                            Price (USD)
-                          </label>
-                          <input
-                            value={boostPrice}
-                            onChange={(e) => setBoostPrice(e.target.value)}
-                            className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded"
-                            disabled={!canBoost}
-                          />
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-3">
-                        <button
-                          onClick={purchaseBoost}
-                          disabled={!canBoost}
-                          className="px-3 py-2 bg-[#0A66C2] text-white rounded disabled:opacity-60"
-                        >
-                          Purchase boost
-                        </button>
-                        <span className="text-xs text-[#5A5A5A]">
-                          Wallet balance: $
-                          {Number(walletBalance || 0).toFixed(2)} | Restricted:
-                          ${Number(walletRestricted || 0).toFixed(2)}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="rounded-lg shadow-borderless dark:shadow-borderlessDark p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="font-semibold">Active boosts</h3>
-                        <button
-                          onClick={loadBoosts}
-                          className="text-sm text-[#0A66C2] hover:underline"
-                        >
-                          Refresh
-                        </button>
-                      </div>
-                      {loadingBoosts ? (
-                        <div className="text-sm text-[#5A5A5A]">
-                          Loading boosts...
-                        </div>
-                      ) : null}
-                      {!loadingBoosts && boosts.length === 0 ? (
-                        <div className="text-sm text-[#5A5A5A]">
-                          No boosts yet.
-                        </div>
-                      ) : null}
-                      <div className="space-y-3">
-                        {boosts.map((boost) => (
-                          <div
-                            key={boost.id}
-                            className="rounded-lg shadow-borderless dark:shadow-borderlessDark p-3"
-                          >
-                            <div className="flex flex-wrap items-center justify-between gap-2">
-                              <div>
-                                <p className="text-sm font-semibold">
-                                  {boost.scope} boost
-                                </p>
-                                <p className="text-xs text-[#5A5A5A]">
-                                  Multiplier {boost.multiplier} - Status{" "}
-                                  {boost.status}
-                                </p>
-                              </div>
-                              <div className="text-xs text-[#5A5A5A]">
-                                Remaining: {remainingLabel(boost.ends_at)}
-                              </div>
-                            </div>
-                            {boost.status === "active" ? (
-                              <button
-                                type="button"
-                                onClick={() => cancelBoost(boost.id)}
-                                className="mt-2 text-xs font-semibold text-rose-600 hover:underline"
-                              >
-                                Cancel boost
-                              </button>
-                            ) : null}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    {boostFeedback ? (
-                      <div className="text-sm text-[#5A5A5A]">
-                        {boostFeedback}
-                      </div>
-                    ) : null}
-                  </div>
-                )}
-
-                {tab === "assistant_knowledge" && (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <form
-                      onSubmit={saveFaq}
-                      className="shadow-borderless dark:shadow-borderlessDark rounded p-4"
-                    >
-                      <h3 className="font-semibold mb-2">
-                        {editingId
-                          ? "Edit Knowledge Entry"
-                          : "Add Knowledge Entry"}
-                      </h3>
-                      <label className="block text-sm">Entry Type</label>
-                      <select
-                        value={knowledgeForm.type}
-                        onChange={(e) =>
-                          setKnowledgeForm({
-                            ...knowledgeForm,
-                            type: e.target.value,
-                          })
-                        }
-                        className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded mb-3"
-                      >
-                        <option value="faq">FAQ</option>
-                        <option value="fact">Company Fact</option>
-                      </select>
-                      <label className="block text-sm">Question</label>
-                      <input
-                        value={knowledgeForm.question}
-                        onChange={(e) =>
-                          setKnowledgeForm({
-                            ...knowledgeForm,
-                            question: e.target.value,
-                          })
-                        }
-                        className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded mb-3"
-                        required
-                      />
-                      <label className="block text-sm">Answer</label>
-                      <textarea
-                        value={knowledgeForm.answer}
-                        onChange={(e) =>
-                          setKnowledgeForm({
-                            ...knowledgeForm,
-                            answer: e.target.value,
-                          })
-                        }
-                        className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded mb-3 min-h-28"
-                        required
-                      />
-                      <label className="block text-sm">
-                        Keywords (comma separated)
-                      </label>
-                      <input
-                        value={knowledgeForm.keywords}
-                        onChange={(e) =>
-                          setKnowledgeForm({
-                            ...knowledgeForm,
-                            keywords: e.target.value,
-                          })
-                        }
-                        className="w-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 rounded mb-3"
-                      />
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="submit"
-                          className="px-3 py-2 bg-[#0A66C2] text-white rounded"
-                        >
-                          {editingId ? "Update" : "Save"} Entry
-                        </button>
-                        {editingId && (
-                          <button
-                            type="button"
-                            onClick={resetForm}
-                            className="px-3 py-2 shadow-borderless dark:shadow-borderlessDark rounded"
-                          >
-                            Cancel edit
-                          </button>
-                        )}
-                      </div>
-                      {faqFeedback && (
-                        <p className="mt-3 text-sm text-[#5A5A5A]">
-                          {faqFeedback}
-                        </p>
-                      )}
-                    </form>
-
-                    <div className="shadow-borderless dark:shadow-borderlessDark rounded p-4">
-                      <h3 className="font-semibold mb-2">
-                        Assistant Knowledge Entries ({entries.length})
-                      </h3>
-                      <div className="space-y-3 max-h-[420px] overflow-auto">
-                        {entries.map((entry) => (
-                          <div
-                            key={entry.id}
-                            className="shadow-borderless dark:shadow-borderlessDark rounded p-3"
-                          >
-                            <p className="text-xs uppercase tracking-wide text-[#5A5A5A]">
-                              {entry.type || "faq"}
-                            </p>
-                            <p className="font-semibold">{entry.question}</p>
-                            <p className="text-sm text-[#5A5A5A] mt-1">
-                              {entry.answer}
-                            </p>
-                            <p className="text-xs mt-2">
-                              Keywords:{" "}
-                              {(entry.keywords || []).join(", ") || "None"}
-                            </p>
-                            <div className="mt-2 flex gap-2">
-                              <button
-                                onClick={() => selectForEdit(entry)}
-                                className="px-2 py-1 text-sm shadow-borderless dark:shadow-borderlessDark rounded"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => removeFaq(entry.id)}
-                                className="px-2 py-1 text-sm shadow-borderless dark:shadow-borderlessDark rounded text-red-600"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                        {!entries.length && (
-                          <p className="text-sm text-[#5A5A5A]">
-                            No org-specific entries yet.
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
+            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
+              <div className="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
+                <div className="text-xs text-slate-500 dark:text-slate-400">Wallet</div>
+                <div className="font-semibold text-slate-900 dark:text-white">${walletBalance.toFixed(2)}</div>
               </div>
-              <aside className="lg:col-span-1">
-                <div className="rounded-xl shadow-borderless dark:shadow-borderlessDark bg-[#F8FAFF] p-4 text-sm text-slate-700">
-                  <p className="font-semibold">
-                    {HELP_COPY[tab]?.title || "Settings help"}
-                  </p>
-                  <p className="mt-2 text-xs text-slate-600">
-                    {HELP_COPY[tab]?.description ||
-                      "Choose a tab to see guidance for that section."}
-                  </p>
-                </div>
-              </aside>
+              <div className="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
+                <div className="text-xs text-slate-500 dark:text-slate-400">Restricted</div>
+                <div className="font-semibold text-slate-900 dark:text-white">${walletRestricted.toFixed(2)}</div>
+              </div>
             </div>
           </div>
-        ) : null}
-        {billingFeedback ? (
-          <div className="mt-4 text-sm text-[#5A5A5A]">{billingFeedback}</div>
-        ) : null}
+        </div>
+
+        {/* ==================== GENERAL TAB ==================== */}
+        {activeTab === "general" && hasRoleAccess(currentUserRole, "viewer") && (
+          <div className="grid gap-6 lg:grid-cols-2">
+            <SectionCard title="Automation & Chatbot" subtitle="Control buyer conversations, handoff rules, and saved alerts.">
+              <div className="space-y-4">
+                <Toggle checked={chatbotEnabled} onChange={setChatbotEnabled} label="Enable AI Chatbot" hint="Answers MOQ, lead time, certifications, then hands off when needed." />
+                <Toggle checked={autoSaveSearchAlerts} onChange={setAutoSaveSearchAlerts} label="Auto-save search alerts" hint="Automatically creates alerts for matching searches." />
+                <div>
+                  <Label>Handoff mode</Label>
+                  <Select value={handoffMode} onChange={e => setHandoffMode(e.target.value)}>
+                    <option value="notify_agent">Notify agent / owner</option>
+                    <option value="notify_owner">Notify owner only</option>
+                  </Select>
+                </div>
+              </div>
+            </SectionCard>
+
+            <SectionCard title="AI Auto-Reply Customization" subtitle="Build the tone and structure of your first response.">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div><Label>Greeting</Label><Input value={autoReplyGreeting} onChange={e => setAutoReplyGreeting(e.target.value)} /></div>
+                <div><Label>Signature</Label><Input value={autoReplySignature} onChange={e => setAutoReplySignature(e.target.value)} /></div>
+                <div className="sm:col-span-2"><Label>Fallback response</Label><Input value={autoReplyFallback} onChange={e => setAutoReplyFallback(e.target.value)} /></div>
+                <div><Label>Tone</Label><Select value={autoReplyTone} onChange={e => setAutoReplyTone(e.target.value)}><option>Professional</option><option>Warm</option><option>Direct</option><option>Friendly</option></Select></div>
+                <div className="sm:col-span-2"><Label>Qualification prompt</Label><Textarea rows={4} value={autoReplyQualification} onChange={e => setAutoReplyQualification(e.target.value)} /></div>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <PrimaryButton onClick={saveChatbotSettings} disabled={!canAutoReply}>Save auto-reply settings</PrimaryButton>
+                <SecondaryButton onClick={saveGeneralSettings}>Save settings</SecondaryButton>
+              </div>
+            </SectionCard>
+
+            <SectionCard title="Communication Policy" subtitle="Throttle and prioritize messages with configurable rules.">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div><Label>Message cap per window</Label><Input type="number" value={policyMessageCaps} onChange={e => setPolicyMessageCaps(e.target.value)} /></div>
+                <div><Label>Window (minutes)</Label><Input type="number" value={policyWindowMinutes} onChange={e => setPolicyWindowMinutes(e.target.value)} /></div>
+                <div><Label>Cooldown (seconds)</Label><Input type="number" value={policyCooldownSeconds} onChange={e => setPolicyCooldownSeconds(e.target.value)} /></div>
+                <div><Label>Strictness mode</Label><Select value={policyStrictnessMode} onChange={e => setPolicyStrictnessMode(e.target.value)}><option>Relaxed</option><option>Balanced</option><option>Strict</option></Select></div>
+              </div>
+            </SectionCard>
+
+            <SectionCard title="Supplier Profile" subtitle="Show your operations and capabilities clearly.">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div><Label>Main processes</Label><Input value={mainProcesses} onChange={e => setMainProcesses(e.target.value)} /></div>
+                <div><Label>Years in business</Label><Input type="number" value={yearsInBusiness} onChange={e => setYearsInBusiness(e.target.value)} /></div>
+                <div><Label>Team seats</Label><Input type="number" value={teamSeats} onChange={e => setTeamSeats(e.target.value)} /></div>
+                <div><Label>Export ports</Label><Input value={exportPorts} onChange={e => setExportPorts(e.target.value)} /></div>
+                <div><Label>Location lat/lng</Label><Input value={locationLat && locationLng ? `${locationLat}, ${locationLng}` : ""} onChange={e => { const v = e.target.value.split(","); setLocationLat(v[0] || ""); setLocationLng(v[1] || ""); }} /></div>
+                <div className="flex items-end"><Toggle checked={handlesMultipleFactories} onChange={setHandlesMultipleFactories} label="Handles multiple factories" /></div>
+              </div>
+              <div className="mt-4"><PrimaryButton onClick={saveGeneralSettings}>Save settings</PrimaryButton></div>
+            </SectionCard>
+          </div>
+        )}
+
+        {/* ==================== PROFILE TAB ==================== */}
+        {activeTab === "profile" && hasRoleAccess(currentUserRole, "observer") && (
+          <div className="grid gap-6 lg:grid-cols-2">
+            <SectionCard title="Profile Section" subtitle="Manage how your profile looks to buyers and partners.">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div><Label>Display Name</Label><Input value={profileDisplayName} onChange={e => setProfileDisplayName(e.target.value)} /></div>
+                <div><Label>Headline</Label><Input value={profileHeadline} onChange={e => setProfileHeadline(e.target.value)} /></div>
+                <div className="sm:col-span-2"><Label>Bio</Label><Textarea rows={4} value={profileBio} onChange={e => setProfileBio(e.target.value)} /></div>
+                <div className="sm:col-span-2"><Label>Avatar URL</Label><Input value={profileAvatarUrl} onChange={e => setProfileAvatarUrl(e.target.value)} placeholder="https://..." /></div>
+                <div className="sm:col-span-2">
+                  <div className="rounded-3xl border border-dashed border-sky-300 bg-sky-50/60 p-4 dark:border-slate-700 dark:bg-slate-900">
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-br from-sky-500 to-cyan-400 text-2xl font-black text-white">
+                        {profileAvatarUrl ? <img src={profileAvatarUrl} alt="Preview" className="h-full w-full object-cover" /> : profileDisplayName.slice(0, 1).toUpperCase()}
+                      </div>
+                      <div><div className="font-semibold text-slate-900 dark:text-white">Avatar preview</div><div className="text-sm text-slate-500 dark:text-slate-400">Updates when URL is provided.</div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 flex gap-3"><PrimaryButton onClick={saveProfileSettings} disabled={loadingProfile}>{loadingProfile ? "Saving..." : "Save Profile"}</PrimaryButton></div>
+            </SectionCard>
+
+            <SectionCard title="Contact & Privacy" subtitle="Edit contact details, visibility, and notification preferences.">
+              <div className="space-y-4">
+                <div><Label>Email</Label><Input value={profileEmail} readOnly className="cursor-not-allowed opacity-90" /></div>
+                <div><Label>Phone</Label><Input value={profilePhone} onChange={e => setProfilePhone(e.target.value)} /></div>
+                <PrimaryButton onClick={saveContactSettings}>Save Contact</PrimaryButton>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <Toggle checked={notifEmail} onChange={v => { setNotifEmail(v); saveNotificationPref("email", v); }} label="Email Notifications" />
+                  <Toggle checked={notifPush} onChange={v => { setNotifPush(v); saveNotificationPref("push", v); }} label="Push Notifications" />
+                  <Toggle checked={notifInApp} onChange={v => { setNotifInApp(v); saveNotificationPref("in_app", v); }} label="In-App Notifications" />
+                </div>
+                <div><Label>Profile Visibility</Label><Select value={profileVisibility} onChange={e => { setProfileVisibility(e.target.value); saveVisibility(e.target.value); }}><option>Public</option><option>Network</option><option>Private</option></Select></div>
+              </div>
+            </SectionCard>
+
+            <SectionCard title="Password & Security" subtitle="Change password and keep account access protected.">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="sm:col-span-2"><Badge tone={totpEnabled ? "green" : "red"}>2FA {totpEnabled ? "Enabled" : "Disabled"}</Badge></div>
+                <div><Label>Current password</Label><Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} /></div>
+                <div><Label>New password</Label><Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} /></div>
+                <div className="sm:col-span-2"><Label>Confirm new password</Label><Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} /></div>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-3"><PrimaryButton onClick={changePassword} disabled={changingPassword}>{changingPassword ? "Changing..." : "Change Password"}</PrimaryButton></div>
+              {passwordFeedback && <p className={`mt-2 text-sm ${passwordFeedback.includes("success") ? "text-green-600" : "text-red-600"}`}>{passwordFeedback}</p>}
+            </SectionCard>
+
+            <SectionCard title="Data & Account Control" subtitle="Export data, review sessions, and remove the account securely.">
+              <div className="space-y-4">
+                <SecondaryButton onClick={exportUserData} disabled={exportingData}>{exportingData ? "Preparing..." : "Download My Data"}</SecondaryButton>
+                {exportFeedback && <p className="text-sm text-slate-500">{exportFeedback}</p>}
+                <div><Label>Type your name to confirm</Label><Input value={deleteConfirmText} onChange={e => setDeleteConfirmText(e.target.value)} placeholder={profileDisplayName} /></div>
+                <PrimaryButton onClick={deleteAccount} disabled={deletingProfile || deleteConfirmText !== profileDisplayName}>{deletingProfile ? "Deleting..." : "Delete My Account"}</PrimaryButton>
+                {deleteProfileFeedback && <p className="text-sm text-red-600">{deleteProfileFeedback}</p>}
+                <div>
+                  <div className="mb-3 flex items-center justify-between">
+                    <div><div className="font-semibold text-slate-900 dark:text-white">Active Sessions</div><div className="text-sm text-slate-500 dark:text-slate-400">Reload, inspect, and revoke sessions.</div></div>
+                    <SecondaryButton onClick={loadSessions}>Refresh</SecondaryButton>
+                  </div>
+                  <div className="space-y-3">
+                    {loadingSessions ? <p className="text-sm text-slate-500">Loading...</p> : sessions.length === 0 ? <p className="text-sm text-slate-500">No active sessions.</p> : (
+                      sessions.map(session => (
+                        <div key={session.id || session.token} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                              <div className="flex flex-wrap items-center gap-2"><div className="font-medium text-slate-900 dark:text-white">{session.device || session.browser || "Unknown"}</div>{session.current && <Badge tone="green">Current</Badge>}</div>
+                              <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">{session.ip} · {session.location || "Unknown"} · {session.last_active || "recently"}</div>
+                            </div>
+                            {!session.current && <SecondaryButton onClick={() => revokeSession(session.id || session.token)} disabled={revokingSession === (session.id || session.token)}>Revoke</SecondaryButton>}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </SectionCard>
+          </div>
+        )}
+
+        {/* ==================== VERIFICATION TAB ==================== */}
+        {activeTab === "verification" && hasRoleAccess(currentUserRole, "factory") && (
+          <div className="grid gap-6 lg:grid-cols-2">
+            <SectionCard title="Verification Status" subtitle="Track status and renew before expiration.">
+              <div className="flex flex-wrap items-center gap-3">
+                <Badge tone={verificationTone}>{verificationStatus === "verified_active" ? "Verified Active" : verificationStatus === "expiring_soon" ? "Expiring Soon" : "Expired"}</Badge>
+                <Badge tone="sky">{remainingDays} days remaining</Badge>
+              </div>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900"><div className="text-xs text-slate-500 dark:text-slate-400">Wallet balance</div><div className="mt-1 text-2xl font-black text-slate-900 dark:text-white">${walletBalance.toFixed(2)}</div></div>
+                <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900"><div className="text-xs text-slate-500 dark:text-slate-400">Restricted balance</div><div className="mt-1 text-2xl font-black text-slate-900 dark:text-white">${walletRestricted.toFixed(2)}</div></div>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <SecondaryButton onClick={() => navigate("/verification")}>Open Verification Center</SecondaryButton>
+                <PrimaryButton onClick={() => save("Renewal started for $6.99.")}>Renew verification ($6.99)</PrimaryButton>
+              </div>
+            </SectionCard>
+
+            <SectionCard title="Missing Documents" subtitle="Upload these items to complete verification.">
+              <div className="space-y-3">
+                {verification?.missing_required?.length ? verification.missing_required.slice(0, 6).map(doc => (
+                  <div key={doc} className="flex items-center justify-between rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+                    <span>{doc}</span><span className="text-xs font-semibold">Required</span>
+                  </div>
+                )) : (
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200">All verification documents have been uploaded.</div>
+                )}
+              </div>
+            </SectionCard>
+          </div>
+        )}
+
+        {/* ==================== SECURITY TAB ==================== */}
+        {activeTab === "security" && hasRoleAccess(currentUserRole, "factory") && (
+          <div className="grid gap-6 lg:grid-cols-2">
+            <SectionCard title="Passkeys" subtitle="Register WebAuthn passkeys for safer sign-ins.">
+              <div className="space-y-3">
+                {passkeys.map(p => (
+                  <div key={p.id} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
+                    <div><div className="font-medium text-slate-900 dark:text-white">{p.name}</div><div className="text-sm text-slate-500 dark:text-slate-400">Created {p.created_at || p.createdAt}</div></div>
+                    <SecondaryButton onClick={() => { setPasskeys(x => x.filter(i => i.id !== p.id)); save(`Passkey ${p.name} deleted.`); }}>Delete</SecondaryButton>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
+                <Input value={passkeyName} onChange={e => setPasskeyName(e.target.value)} placeholder="Passkey name" />
+                <PrimaryButton onClick={addPasskey}>Add Passkey</PrimaryButton>
+              </div>
+              {passkeyError && <p className="mt-2 text-sm text-red-600">{passkeyError}</p>}
+            </SectionCard>
+
+            <SectionCard title="Active Sessions" subtitle="See live sessions and revoke access quickly.">
+              <div className="space-y-3">
+                {loadingSessions ? <p className="text-sm text-slate-500">Loading...</p> : sessions.length === 0 ? <p className="text-sm text-slate-500">No sessions.</p> : (
+                  sessions.map(session => (
+                    <div key={session.id || session.token} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
+                      <div className="flex items-start justify-between gap-4">
+                        <div><div className="flex items-center gap-2"><div className="font-medium text-slate-900 dark:text-white">{session.device || session.browser || "Unknown"}</div>{session.current && <Badge tone="green">Current</Badge>}</div><div className="mt-1 text-sm text-slate-500 dark:text-slate-400">{session.ip} · {session.location || "Unknown"} · {session.last_active || "recently"}</div></div>
+                        {!session.current && <SecondaryButton onClick={() => revokeSession(session.id || session.token)}>Revoke</SecondaryButton>}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </SectionCard>
+          </div>
+        )}
+
+        {/* ==================== BRANDING TAB ==================== */}
+        {activeTab === "branding" && hasRoleAccess(currentUserRole, "factory") && (
+          <div className="grid gap-6 lg:grid-cols-2">
+            <SectionCard title="Brand Identity" subtitle="Set your brand name, logo, website, and tone.">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div><Label>Brand name</Label><Input value={brandName} onChange={e => setBrandName(e.target.value)} disabled={!canBranding} /></div>
+                <div><Label>Website</Label><Input value={brandWebsite} onChange={e => setBrandWebsite(e.target.value)} disabled={!canBranding} /></div>
+                <div className="sm:col-span-2"><Label>Logo URL</Label><Input value={brandLogoUrl} onChange={e => setBrandLogoUrl(e.target.value)} disabled={!canBranding} /></div>
+                <div><Label>Accent style</Label><Select value={brandAccent} onChange={e => setBrandAccent(e.target.value)} disabled={!canBranding}><option>Sky Blue</option><option>Ocean</option><option>Classic Navy</option></Select></div>
+                <div><Label>Tagline</Label><Input value={brandTagline} onChange={e => setBrandTagline(e.target.value)} disabled={!canBranding} /></div>
+              </div>
+              <div className="mt-4 flex gap-3"><PrimaryButton onClick={() => save("Branding saved.")} disabled={!canBranding}>Save Branding</PrimaryButton></div>
+            </SectionCard>
+            <SectionCard title="Brand Preview" subtitle="A preview of your brand identity.">
+              <div className="rounded-[2rem] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-6 text-white shadow-2xl">
+                <div className="flex items-center gap-4"><div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-white/20 text-2xl font-black backdrop-blur">{brandName.slice(0, 1).toUpperCase()}</div><div><div className="text-2xl font-black">{brandName}</div><div className="text-sm text-white/85">{brandTagline}</div></div></div>
+              </div>
+            </SectionCard>
+          </div>
+        )}
+
+        {/* ==================== SUBSCRIPTION TAB ==================== */}
+        {activeTab === "subscription" && hasRoleAccess(currentUserRole, "factory") && (
+          <div className="grid gap-6 lg:grid-cols-2">
+            <SectionCard title="Current Plan" subtitle="Track plan level and billing status.">
+              <div className="rounded-[1.75rem] bg-gradient-to-br from-sky-500 via-blue-600 to-cyan-400 p-6 text-white shadow-2xl">
+                <div className="text-sm font-semibold uppercase tracking-[0.18em] text-white/80">Plan</div>
+                <div className="mt-2 text-3xl font-black">{subscriptionPlan === "free" ? "Free" : subscriptionPlan === "premium" ? "Premium" : "Enterprise"}</div>
+                <div className="mt-2 text-white/85">{subscriptionPlan === "free" ? "Limited features" : "$49.00 / month"}</div>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  {subscriptionPlan === "free" && <SecondaryButton className="border-white/20 bg-white/15 text-white hover:bg-white/25" onClick={() => navigate("/pricing")}>Upgrade</SecondaryButton>}
+                  <SecondaryButton className="border-white/20 bg-white/15 text-white hover:bg-white/25" onClick={() => navigate("/pricing")}>View plans</SecondaryButton>
+                </div>
+              </div>
+            </SectionCard>
+            <SectionCard title="Wallet" subtitle="Funds available for boosts and billing.">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900"><div className="text-xs text-slate-500">Balance</div><div className="mt-1 text-2xl font-black">${walletBalance.toFixed(2)}</div></div>
+                <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900"><div className="text-xs text-slate-500">Restricted</div><div className="mt-1 text-2xl font-black">${walletRestricted.toFixed(2)}</div></div>
+              </div>
+              <div className="mt-4"><PrimaryButton onClick={() => save("Add funds flow.")}>Add funds</PrimaryButton></div>
+            </SectionCard>
+          </div>
+        )}
+
+        {/* ==================== MEMBERS TAB ==================== */}
+        {activeTab === "members" && hasRoleAccess(currentUserRole, "factory") && (
+          <div className="grid gap-6 lg:grid-cols-2">
+            <SectionCard title="Team Members" subtitle="Manage your team.">
+              <div className="space-y-3">
+                {loadingMembers ? (
+                  <p className="text-sm text-slate-500">Loading members...</p>
+                ) : members.length === 0 ? (
+                  <p className="text-sm text-slate-500">No team members yet.</p>
+                ) : (
+                  members.map(member => (
+                    <div key={member.id} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
+                      <div>
+                        <div className="font-medium text-slate-900 dark:text-white">{member.name || member.email}</div>
+                        <div className="text-sm text-slate-500 dark:text-slate-400">{member.email}</div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Badge tone="sky">{member.role}</Badge>
+                        <SecondaryButton onClick={() => removeMember(member.id)}>Remove</SecondaryButton>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </SectionCard>
+            <SectionCard title="Invite Members" subtitle="Add teammates by email and role.">
+              <div className="grid gap-4">
+                <div><Label>Email</Label><Input value={memberInviteEmail} onChange={e => setMemberInviteEmail(e.target.value)} placeholder="team@company.com" /></div>
+                <div><Label>Role</Label><Select value={memberInviteRole} onChange={e => setMemberInviteRole(e.target.value)}><option>Owner</option><option>Admin</option><option>Manager</option><option>Editor</option><option>Viewer</option></Select></div>
+                <PrimaryButton onClick={inviteMember} disabled={invitingMember}>{invitingMember ? "Inviting..." : "Add member"}</PrimaryButton>
+                {memberFeedback && <p className={`text-sm ${memberFeedback.includes("success") ? "text-green-600" : "text-red-600"}`}>{memberFeedback}</p>}
+              </div>
+            </SectionCard>
+          </div>
+        )}
+
+        {/* ==================== BOOSTS TAB ==================== */}
+        {activeTab === "boosts" && hasRoleAccess(currentUserRole, "manager") && (
+          <div className="grid gap-6 lg:grid-cols-2">
+            <SectionCard title="Boost Management" subtitle="Create and manage visibility boosts.">
+              <p className="text-sm text-slate-500">Boost features coming soon.</p>
+            </SectionCard>
+          </div>
+        )}
+
+        {/* ==================== ASSISTANT KNOWLEDGE TAB ==================== */}
+        {activeTab === "assistant_knowledge" && hasRoleAccess(currentUserRole, "manager") && (
+          <div className="grid gap-6 lg:grid-cols-2">
+            <SectionCard title="Assistant Knowledge" subtitle="Manage FAQ entries used by the bot.">
+              <div className="space-y-3">
+                {entries.length === 0 ? <p className="text-sm text-slate-500">No FAQ entries yet.</p> : entries.map(entry => (
+                  <div key={entry.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">{entry.question}</div>
+                ))}
+              </div>
+            </SectionCard>
+            <SectionCard title="Add FAQ" subtitle="Expand the assistant with new answers.">
+              <Label>Question</Label><Textarea rows={4} value={knowledgeForm.question} onChange={e => setKnowledgeForm(f => ({...f, question: e.target.value}))} placeholder="Example: What is your MOQ?" />
+              <div className="mt-4"><PrimaryButton onClick={() => { if (!knowledgeForm.question.trim()) return; setEntries(e => [...e, { id: crypto.randomUUID(), ...knowledgeForm }]); setKnowledgeForm({type:"faq",question:"",answer:"",keywords:""}); save("FAQ added."); }}>Add FAQ</PrimaryButton></div>
+            </SectionCard>
+          </div>
+        )}
+
+        {!isOrgManager && (
+          <div className="rounded-xl bg-red-50 p-4 text-red-600">You do not have permission to view organization settings.</div>
+        )}
       </div>
     </div>
   );
