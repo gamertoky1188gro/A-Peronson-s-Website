@@ -127,7 +127,12 @@ export default function NotificationsCenter() {
   const token = useMemo(() => getToken(), []);
   const user = useMemo(() => getCurrentUser(), []);
   const reduceMotion = useReducedMotion();
-  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("theme") || "dark";
+    }
+    return "dark";
+  });
   const [tab, setTab] = useState("all");
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -136,9 +141,20 @@ export default function NotificationsCenter() {
 
   useEffect(() => {
     const stored = localStorage.getItem("theme");
-    if (stored && stored !== theme) {
+    if (stored) {
       setTheme(stored);
     }
+  }, []);
+
+  useEffect(() => {
+    const handler = () => {
+      const stored = localStorage.getItem("theme");
+      if (stored) {
+        setTheme(stored);
+      }
+    };
+    window.addEventListener("storage", handler);
+    return () => window.removeEventListener("storage", handler);
   }, []);
 
   useEffect(() => {
