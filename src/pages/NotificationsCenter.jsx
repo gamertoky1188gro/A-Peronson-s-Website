@@ -1,589 +1,746 @@
-/*
-  Route: /notifications
-  Access: Protected (login required)
-  Allowed roles: buyer, buying_house, factory, owner, admin, agent
-
-  Public Pages:
-    /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
-  Protected Pages (login required):
-    /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
-    /notifications, /chat, /call, /verification, /verification-center
-
-  Primary responsibilities:
-    - Display system + workflow notifications (search matches, conversation locks, rating requests, etc.).
-    - Provide tabbed filtering with animated active pill indicator.
-    - Support actions like mark-as-read and manage search alerts.
-
-  Key API endpoints:
-    - GET /api/notifications
-    - PATCH /api/notifications/:id/read
-    - GET /api/notifications/search-alerts
-    - DELETE /api/notifications/search-alerts/:id
-    - GET /api/products/views/me (for the "Viewed Products" tab)
-*/
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import {
-  Bell,
-  Factory,
-  History,
-  ShieldAlert,
-  Sparkles,
-  Trash2,
-} from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
-import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
-import ProductQuickViewModal from "../components/products/ProductQuickViewModal";
-import {
-  connectNotificationsRealtime,
-  subscribeNotificationsRealtime,
-} from "../lib/notificationsRealtime";
-
-const Motion = motion;
+import React, { useMemo, useState } from "react";
 
 const TABS = [
-  // Notification types supported by backend; used to filter the list on the client.
-  { id: "all", label: "All", icon: Bell },
-  { id: "smart_search_match", label: "Search Matches", icon: Sparkles },
-  { id: "partner_request", label: "Partner Requests", icon: Factory },
-  { id: "conversation_lock", label: "Conversation Locks", icon: ShieldAlert },
-  {
-    id: "rating_feedback_request",
-    label: "Rating Requests",
-    icon: ShieldAlert,
-  },
-  { id: "system", label: "System", icon: Bell },
-  { id: "viewed", label: "Viewed Products", icon: History },
+  { key: "all", label: "All" },
+  { key: "search", label: "Search Matches" },
+  { key: "partner", label: "Partner Requests" },
+  { key: "locks", label: "Conversation Locks" },
+  { key: "ratings", label: "Rating Requests" },
+  { key: "system", label: "System" },
+  { key: "viewed", label: "Viewed Products" },
 ];
 
-const TYPE_LABELS = {
-  smart_search_match: "Search Match",
-  partner_request: "Connection Request",
-  conversation_lock: "Conversation Lock",
-  rating_feedback_request: "Rating Request",
-  monthly_summary: "Monthly Summary",
-  system: "System",
-};
+const notificationsSeed = [
+  {
+    id: 1,
+    type: "search",
+    label: "Search Match",
+    title: "New buyer request matches your alert: 'denim jacket supplier'.",
+    message: "A new buyer request matches your saved keywords and looks relevant to your profile.",
+    timestamp: "2026-04-29 09:12",
+    unread: true,
+    accent: "emerald",
+  },
+  {
+    id: 2,
+    type: "partner",
+    label: "Connection Request",
+    title: "Factory NovaTex sent a partnership request.",
+    message: "A verified factory is requesting to connect for sourcing and quotation updates.",
+    timestamp: "2026-04-29 08:48",
+    unread: true,
+    requestId: "PR-48291",
+    accent: "blue",
+    canModerate: true,
+  },
+  {
+    id: 3,
+    type: "locks",
+    label: "Conversation Lock",
+    title: "A conversation was locked after an important update.",
+    message: "The thread is now locked so you can review the latest confirmed information safely.",
+    timestamp: "2026-04-28 22:31",
+    unread: false,
+    accent: "rose",
+  },
+  {
+    id: 4,
+    type: "ratings",
+    label: "Rating Request",
+    title: "Please rate your recent supplier experience.",
+    message: "Your feedback helps improve supplier visibility and credibility for the marketplace.",
+    timestamp: "2026-04-28 19:06",
+    unread: true,
+    accent: "amber",
+  },
+  {
+    id: 5,
+    type: "system",
+    label: "System",
+    title: "Your monthly activity summary is ready.",
+    message: "You viewed 24 products, saved 3 alerts, and received 8 matched notifications this month.",
+    timestamp: "2026-04-28 17:45",
+    unread: false,
+    accent: "slate",
+  },
+  {
+    id: 6,
+    type: "viewed",
+    label: "Viewed Product",
+    title: "Premium brushed fleece hoodie",
+    message: "Quick View history saved from your previous browsing session.",
+    timestamp: "2026-04-28 15:20",
+    unread: false,
+    companyName: "SkyLine Apparel Ltd.",
+    viewedDate: "2026-04-28",
+    category: "Knitwear",
+    moq: "500 pcs",
+    leadTime: "18 days",
+    accent: "sky",
+  },
+  {
+    id: 7,
+    type: "search",
+    label: "Search Match",
+    title: "New product listing matches your alert: 'organic cotton t-shirt'.",
+    message: "A new listing now fits your saved search and may be a strong sourcing option.",
+    timestamp: "2026-04-28 10:09",
+    unread: false,
+    accent: "emerald",
+  },
+  {
+    id: 8,
+    type: "partner",
+    label: "Connection Request",
+    title: "Admin request from Orion Sourcing has been received.",
+    message: "This partner request is awaiting review. Accept or reject based on your workflow.",
+    timestamp: "2026-04-27 21:14",
+    unread: false,
+    requestId: "PR-47905",
+    accent: "blue",
+    canModerate: true,
+  },
+];
 
-function typeAccent(type = "") {
-  const key = String(type || "").toLowerCase();
-  if (key === "partner_request") return "bg-[#0A66C2]";
-  if (key === "smart_search_match") return "bg-emerald-500";
-  if (key === "rating_feedback_request") return "bg-amber-500";
-  if (key === "monthly_summary") return "bg-indigo-500";
-  if (key === "conversation_lock") return "bg-rose-500";
-  return "bg-slate-400";
+const savedAlertsSeed = [
+  { id: 1, query: '"denim jacket supplier"', updated: "2026-04-29" },
+  { id: 2, query: '"organic cotton t-shirt"', updated: "2026-04-28" },
+  { id: 3, query: '"private label hoodie"', updated: "2026-04-26" },
+];
+
+const viewedProductsSeed = [
+  {
+    id: 1,
+    title: "Premium brushed fleece hoodie",
+    company: "SkyLine Apparel Ltd.",
+    viewedDate: "2026-04-28",
+    category: "Knitwear",
+    moq: "500 pcs",
+    leadTime: "18 days",
+    description:
+      "Soft heavyweight hoodie with brushed interior, custom labels, and export-ready finishing.",
+  },
+  {
+    id: 2,
+    title: "Slim-fit denim jacket",
+    company: "BluePeak Manufacturing",
+    viewedDate: "2026-04-27",
+    category: "Outerwear",
+    moq: "300 pcs",
+    leadTime: "22 days",
+    description:
+      "Mid-wash denim jacket with premium stitching, metal buttons, and low-MOQ production.",
+  },
+  {
+    id: 3,
+    title: "Organic cotton jersey tee",
+    company: "NovaTex Apparel",
+    viewedDate: "2026-04-25",
+    category: "T-Shirts",
+    moq: "1000 pcs",
+    leadTime: "12 days",
+    description:
+      "Smooth combed jersey, eco-conscious fabrication, and scalable OEM/ODM support.",
+  },
+];
+
+function cn(...classes) {
+  return classes.filter(Boolean).join(" ");
 }
 
-function feedLinkForEntity(entityType, entityId) {
-  // Build a deep-link to the feed filtered to a specific entity.
-  if (!entityType || !entityId) return "/feed";
-  return `/feed?item=${encodeURIComponent(`${entityType}:${entityId}`)}`;
-}
-
-export default function NotificationsCenter() {
-  const token = useMemo(() => getToken(), []);
-  const user = useMemo(() => getCurrentUser(), []);
-  const reduceMotion = useReducedMotion();
-  const [tab, setTab] = useState("all");
-  const [unreadOnly, setUnreadOnly] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const [items, setItems] = useState([]);
-  const [alerts, setAlerts] = useState([]);
-
-  const [views, setViews] = useState([]);
-  const [viewsCursor, setViewsCursor] = useState(0);
-  const [viewsNext, setViewsNext] = useState(null);
-  const [loadingViews, setLoadingViews] = useState(false);
-  const [quickViewItem, setQuickViewItem] = useState(null);
-
-  const loadNotifications = useCallback(async () => {
-    if (!token) return;
-    setLoading(true);
-    setError("");
-    try {
-      const data = await apiRequest("/notifications", { token });
-      setItems(Array.isArray(data) ? data : []);
-    } catch (err) {
-      setError(err.message || "Failed to load notifications");
-      setItems([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [token]);
-
-  const loadAlerts = useCallback(async () => {
-    if (!token) return;
-    try {
-      const data = await apiRequest("/notifications/search-alerts", { token });
-      setAlerts(Array.isArray(data) ? data : []);
-    } catch {
-      setAlerts([]);
-    }
-  }, [token]);
-
-  const loadViews = useCallback(
-    async ({ reset }) => {
-      if (!token) return;
-      const cursor = reset ? 0 : viewsCursor;
-      setLoadingViews(true);
-      try {
-        const data = await apiRequest(
-          `/products/views/me?cursor=${cursor}&limit=10`,
-          { token },
-        );
-        const rows = Array.isArray(data?.items) ? data.items : [];
-        setViews((prev) => (reset ? rows : [...prev, ...rows]));
-        setViewsCursor(reset ? 10 : cursor + 10);
-        setViewsNext(data?.next_cursor ?? null);
-      } catch {
-        if (reset) setViews([]);
-        setViewsNext(null);
-      } finally {
-        setLoadingViews(false);
-      }
-    },
-    [token, viewsCursor],
+function Icon({ children, className = "" }) {
+  return (
+    <span className={cn("inline-flex items-center justify-center", className)}>
+      {children}
+    </span>
   );
+}
 
-  useEffect(() => {
-    loadNotifications();
-    loadAlerts();
-  }, [loadAlerts, loadNotifications]);
+function Badge({ children, tone = "slate" }) {
+  const tones = {
+    emerald: "bg-emerald-500/10 text-emerald-300 ring-emerald-400/20",
+    blue: "bg-sky-500/10 text-sky-300 ring-sky-400/20",
+    rose: "bg-rose-500/10 text-rose-300 ring-rose-400/20",
+    amber: "bg-amber-500/10 text-amber-300 ring-amber-400/20",
+    slate: "bg-slate-500/10 text-slate-300 ring-slate-400/20",
+    sky: "bg-cyan-500/10 text-cyan-300 ring-cyan-400/20",
+  };
+  return (
+    <span className={cn("inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1", tones[tone] || tones.slate)}>
+      {children}
+    </span>
+  );
+}
 
-  useEffect(() => {
-    if (!token) return undefined;
-    connectNotificationsRealtime(token);
-    const unsubscribe = subscribeNotificationsRealtime((msg) => {
-      if (!msg) return;
-      if (msg.type === "notification_created" && msg.notification?.id) {
-        setItems((prev) => {
-          const exists = prev.some(
-            (n) => String(n?.id) === String(msg.notification.id),
-          );
-          if (exists) return prev;
-          return [msg.notification, ...prev];
-        });
-      }
-      if (msg.type === "notification_read" && msg.id) {
-        setItems((prev) =>
-          prev.map((n) =>
-            String(n?.id) === String(msg.id) ? { ...n, read: true } : n,
-          ),
-        );
-      }
+function ActionButton({ children, variant = "primary", onClick }) {
+  const styles = {
+    primary:
+      "bg-sky-500 text-white shadow-lg shadow-sky-500/20 hover:bg-sky-400",
+    ghost:
+      "bg-white/5 text-slate-200 ring-1 ring-white/10 hover:bg-white/10",
+    danger:
+      "bg-rose-500/10 text-rose-200 ring-1 ring-rose-500/20 hover:bg-rose-500/15",
+    success:
+      "bg-emerald-500/10 text-emerald-200 ring-1 ring-emerald-500/20 hover:bg-emerald-500/15",
+  };
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all duration-200 active:scale-[0.98]",
+        styles[variant]
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function getRelativeTone(type) {
+  switch (type) {
+    case "search":
+      return "emerald";
+    case "partner":
+      return "blue";
+    case "locks":
+      return "rose";
+    case "ratings":
+      return "amber";
+    case "viewed":
+      return "sky";
+    default:
+      return "slate";
+  }
+}
+
+function NotificationPage() {
+  const [theme, setTheme] = useState("dark");
+  const [unreadOnly, setUnreadOnly] = useState(false);
+  const [tab, setTab] = useState("all");
+  const [notifications, setNotifications] = useState(notificationsSeed);
+  const [alerts, setAlerts] = useState(savedAlertsSeed);
+  const [viewedProducts, setViewedProducts] = useState(viewedProductsSeed);
+  const [quickView, setQuickView] = useState(null);
+  const [loadedCount, setLoadedCount] = useState(2);
+  const [livePulse, setLivePulse] = useState(true);
+
+  const visibleNotifications = useMemo(() => {
+    return notifications.filter((item) => {
+      const passTab =
+        tab === "all"
+          ? item.type !== "viewed"
+          : tab === "viewed"
+            ? item.type === "viewed"
+            : item.type === tab;
+      const passUnread = unreadOnly ? item.unread : true;
+      return passTab && passUnread;
     });
-    return unsubscribe;
-  }, [token]);
+  }, [notifications, tab, unreadOnly]);
 
-  useEffect(() => {
-    if (tab !== "viewed") return;
-    if (views.length) return;
-    loadViews({ reset: true });
-  }, [loadViews, tab, views.length]);
+  const visibleViewed = viewedProducts.slice(0, loadedCount);
+  const remainingViewed = Math.max(0, viewedProducts.length - loadedCount);
 
-  async function markRead(id) {
-    if (!token || !id) return;
-    await apiRequest(`/notifications/${encodeURIComponent(id)}/read`, {
-      method: "PATCH",
-      token,
-    });
-    setItems((prev) =>
+  const unreadCount = notifications.filter((n) => n.unread).length;
+
+  const markRead = (id) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, unread: false } : n))
+    );
+  };
+
+  const acceptRequest = (id) => {
+    setNotifications((prev) =>
       prev.map((n) =>
-        String(n?.id) === String(id) ? { ...n, read: true } : n,
-      ),
+        n.id === id
+          ? { ...n, unread: false, title: `${n.title} Accepted`, message: "The partner request was accepted and the conversation has been opened." }
+          : n
+      )
     );
-  }
+  };
 
-  async function respondPartnerRequest(requestId, action, notificationId) {
-    if (!token || !requestId) return;
-    await apiRequest(
-      `/partners/requests/${encodeURIComponent(requestId)}/${action}`,
-      { method: "POST", token },
-    );
-    if (notificationId) {
-      await apiRequest(
-        `/notifications/${encodeURIComponent(notificationId)}/read`,
-        { method: "PATCH", token },
-      );
-      setItems((prev) =>
-        prev.map((n) =>
-          String(n?.id) === String(notificationId) ? { ...n, read: true } : n,
-        ),
-      );
-    }
-  }
+  const rejectRequest = (id) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  };
 
-  async function deleteAlert(id) {
-    if (!token || !id) return;
-    await apiRequest(`/notifications/search-alerts/${encodeURIComponent(id)}`, {
-      method: "DELETE",
-      token,
-    });
-    await loadAlerts();
-  }
+  const deleteAlert = (id) => setAlerts((prev) => prev.filter((a) => a.id !== id));
 
-  const filteredItems = useMemo(() => {
-    const base = items.filter((it) => {
-      if (unreadOnly && it.read) return false;
-      if (tab === "all") return it.type !== "viewed";
-      if (tab === "viewed") return false;
-      return it.type === tab;
-    });
-    return base;
-  }, [items, tab, unreadOnly]);
+  const loadMoreViewed = () => setLoadedCount((c) => Math.min(viewedProducts.length, c + 2));
+
+  const refreshViewed = () => {
+    setViewedProducts((prev) => [...prev]);
+    setLivePulse(true);
+    window.setTimeout(() => setLivePulse(false), 1200);
+  };
+
+  const openQuickView = (product) => setQuickView(product);
+
+  const pageBg =
+    theme === "dark"
+      ? "bg-[#07111f] text-slate-100"
+      : "bg-gradient-to-br from-sky-50 via-white to-cyan-50 text-slate-900";
+  const cardBg =
+    theme === "dark"
+      ? "bg-white/5 border-white/10 shadow-2xl shadow-black/20"
+      : "bg-white/75 border-sky-100 shadow-xl shadow-sky-100/50 backdrop-blur";
+  const softBg = theme === "dark" ? "bg-white/5" : "bg-slate-900/5";
+  const subtleText = theme === "dark" ? "text-slate-400" : "text-slate-600";
+  const mutedText = theme === "dark" ? "text-slate-300" : "text-slate-700";
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
-      <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-12 gap-4">
-        <main className="col-span-12 lg:col-span-8 space-y-4">
-          <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-lg font-bold text-slate-900">
-                  Notifications
-                </p>
-                <p className="text-[11px] text-slate-500">
-                  Smart search matches, system alerts, and your viewed history.
-                </p>
+    <div className={cn("min-h-screen transition-colors duration-500", pageBg)}>
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-sky-500/20 via-cyan-400/10 to-transparent blur-3xl" />
+
+        <div className={cn("overflow-hidden rounded-[28px] border p-5 sm:p-6 lg:p-8", cardBg)}>
+          <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+            <div className="flex-1">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400 text-white shadow-lg shadow-sky-500/30">
+                  <svg viewBox="0 0 24 24" className="h-6 w-6 fill-none stroke-current stroke-[2]">
+                    <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 0 0-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5" />
+                    <path d="M9 17a3 3 0 0 0 6 0" />
+                  </svg>
+                </div>
+                <div>
+                  <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
+                    Notifications
+                  </h1>
+                  <p className={cn("mt-1 text-sm sm:text-base", subtleText)}>
+                    Smart search matches, system alerts, and your viewed history.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-500/10 px-3 py-1.5 text-xs font-semibold text-sky-200">
+                  <span className={cn("h-2 w-2 rounded-full", livePulse ? "animate-pulse bg-emerald-400" : "bg-sky-400")} />
+                  Live updates enabled
+                </div>
               </div>
-              <label className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700">
-                <input
-                  type="checkbox"
-                  checked={unreadOnly}
-                  onChange={(e) => setUnreadOnly(e.target.checked)}
-                  className="h-4 w-4"
-                />
-                Unread only
-              </label>
+
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <label className={cn("inline-flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium", softBg, theme === "dark" ? "border-white/10" : "border-sky-100") }>
+                  <input
+                    type="checkbox"
+                    checked={unreadOnly}
+                    onChange={(e) => setUnreadOnly(e.target.checked)}
+                    className="h-4 w-4 rounded border-sky-400 text-sky-500 focus:ring-sky-400"
+                  />
+                  <span>Unread only</span>
+                  <span className="rounded-full bg-sky-500/10 px-2 py-0.5 text-xs text-sky-300">
+                    {unreadCount}
+                  </span>
+                </label>
+
+                <div className="ml-auto flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-1 shadow-lg shadow-black/10">
+                  <button
+                    onClick={() => setTheme("dark")}
+                    className={cn(
+                      "rounded-xl px-4 py-2 text-sm font-semibold transition",
+                      theme === "dark" ? "bg-sky-500 text-white" : "text-slate-400 hover:text-slate-200"
+                    )}
+                  >
+                    Dark
+                  </button>
+                  <button
+                    onClick={() => setTheme("light")}
+                    className={cn(
+                      "rounded-xl px-4 py-2 text-sm font-semibold transition",
+                      theme === "light" ? "bg-sky-500 text-white" : "text-slate-400 hover:text-slate-200"
+                    )}
+                  >
+                    Light
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-2">
+                {TABS.map((item) => {
+                  const active = tab === item.key;
+                  return (
+                    <button
+                      key={item.key}
+                      onClick={() => setTab(item.key)}
+                      className={cn(
+                        "rounded-2xl border px-4 py-2.5 text-sm font-semibold transition-all duration-200",
+                        active
+                          ? "border-sky-400/40 bg-sky-500 text-white shadow-lg shadow-sky-500/20"
+                          : cn("border-white/10", softBg, "hover:bg-white/10", mutedText)
+                      )}
+                    >
+                      {item.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              {TABS.map((t) => {
-                const Icon = t.icon;
-                const active = tab === t.id;
-                return (
-                  <motion.button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setTab(t.id)}
-                    whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-                    className={`relative inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ring-1${
-                      active
-                        ? "bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35"
-                        : "bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8"
-                    }`}
-                  >
-                    {active ? (
-                      <motion.span
-                        layoutId="notif-tab"
-                        className="absolute inset-0 rounded-full bg-indigo-500/10 dark:bg-white/10"
-                        transition={{
-                          type: "spring",
-                          stiffness: 420,
-                          damping: 34,
-                        }}
-                      />
-                    ) : null}
-                    <span className="relative inline-flex items-center gap-2">
-                      <Icon size={16} />
-                      {t.label}
-                    </span>
-                  </motion.button>
-                );
-              })}
+            <div className={cn("w-full max-w-sm rounded-3xl border p-5", softBg, theme === "dark" ? "border-white/10" : "border-sky-100") }>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-semibold text-sky-300">Real-time feed</div>
+                  <div className={cn("mt-1 text-xs", subtleText)}>WebSocket updates appear instantly at the top.</div>
+                </div>
+                <div className="rounded-2xl bg-sky-500/10 p-3 text-sky-300 ring-1 ring-sky-400/20">
+                  <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current stroke-[2]">
+                    <path d="M5 12h14" />
+                    <path d="M13 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+              <div className="mt-4 grid grid-cols-3 gap-3">
+                <Stat label="Unread" value={String(unreadCount)} />
+                <Stat label="Alerts" value={String(alerts.length)} />
+                <Stat label="Viewed" value={String(viewedProducts.length)} />
+              </div>
             </div>
           </div>
 
-          {tab !== "viewed" ? (
-            <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-              {loading ? (
+          <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+            <div className="space-y-6">
+              <section className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}>
+                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold">Notifications feed</h2>
+                    <p className={cn("mt-1 text-sm", subtleText)}>
+                      {tab === "viewed"
+                        ? "Showing viewed products history from Quick View."
+                        : "All notification types except Viewed Products are grouped here."}
+                    </p>
+                  </div>
+                  <div className={cn("rounded-2xl px-4 py-2 text-sm", softBg, subtleText)}>
+                    Showing {visibleNotifications.length} item{visibleNotifications.length === 1 ? "" : "s"}
+                  </div>
+                </div>
+
                 <div className="space-y-3">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div
-                      key={`notif-skel-${i}`}
-                      className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-950/30 dark:ring-white/10"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0 flex-1 space-y-2">
-                          <div className="h-3 w-1/3 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
-                          <div className="h-3 w-2/3 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
-                          <div className="h-3 w-1/2 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
-                        </div>
-                        <div className="h-8 w-20 rounded-full relative overflow-hidden bg-slate-200/80 dark:bg-white/5 after:content-[''] after:absolute after:inset-0 after:translate-x-[-140%] after:pointer-events-none after:opacity-70 dark:after:opacity-90 after:animate-skeleton after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.28)_45%,transparent_70%)] dark:after:bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.16)_45%,transparent_70%)]" />
+                  {visibleNotifications.length === 0 ? (
+                    <EmptyState title="No notifications found" description="Try changing the tab or turning off the unread-only filter." />
+                  ) : (
+                    visibleNotifications.map((item) => (
+                      <NotificationCard
+                        key={item.id}
+                        item={item}
+                        theme={theme}
+                        onMarkRead={() => markRead(item.id)}
+                        onAccept={() => acceptRequest(item.id)}
+                        onReject={() => rejectRequest(item.id)}
+                      />
+                    ))
+                  )}
+                </div>
+              </section>
+
+              {tab === "viewed" && (
+                <section className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}>
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <h2 className="text-xl font-bold">Viewed Products</h2>
+                        <Badge tone="sky">Private to you</Badge>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : null}
-              {!loading && error ? (
-                <div className="text-sm text-rose-700 dark:text-rose-200">
-                  {error}
-                </div>
-              ) : null}
-              {!loading && !error && !filteredItems.length ? (
-                <div className="text-sm text-slate-600">
-                  No notifications for this tab.
-                </div>
-              ) : null}
-
-              <div className="space-y-3">
-                {filteredItems.map((i) => (
-                  <div
-                    key={i.id}
-                    className="relative overflow-hidden rounded-2xl bg-[#ffffff] p-4 ring-1 ring-slate-200/60 shadow-sm transition hover:bg-slate-50/70 dark:bg-slate-950/30 dark:ring-white/10 dark:hover:bg-white/5"
-                  >
-                    <div
-                      className={`absolute left-0 top-0 h-full w-1${typeAccent(i.type)}`}
-                    />
-                    <div className="flex items-start justify-between gap-4 pl-3">
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">
-                            {TYPE_LABELS[i.type] || "Update"}
-                          </span>
-                          {!i.read ? (
-                            <span className="text-[10px] font-semibold text-emerald-600">
-                              New
-                            </span>
-                          ) : null}
-                        </div>
-                        <p className="mt-2 text-sm font-semibold text-slate-900">
-                          {i.message || i.title || "Notification"}
-                        </p>
-                        <p className="mt-1 text-[11px] text-slate-500">
-                          {new Date(i.created_at).toLocaleString()}
-                        </p>
-                        {i.type === "partner_request" ? (
-                          <p className="mt-1 text-[11px] text-slate-500">
-                            Request ID: {i?.meta?.request_id || i.entity_id}
-                          </p>
-                        ) : null}
-                      </div>
-                      <div className="flex flex-col gap-2 shrink-0">
-                        {i.type === "partner_request" &&
-                        (user?.role === "factory" ||
-                          user?.role === "admin" ||
-                          user?.role === "owner") ? (
-                          <div className="flex flex-col gap-2">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                respondPartnerRequest(
-                                  i?.meta?.request_id || i.entity_id,
-                                  "accept",
-                                  i.id,
-                                )
-                              }
-                              className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center"
-                            >
-                              Accept
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                respondPartnerRequest(
-                                  i?.meta?.request_id || i.entity_id,
-                                  "reject",
-                                  i.id,
-                                )
-                              }
-                              className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 text-center"
-                            >
-                              Reject
-                            </button>
-                          </div>
-                        ) : i.type === "rating_feedback_request" ? (
-                          <Link
-                            to={`/ratings/feedback?profile_key=${encodeURIComponent(i?.entity_id || i?.meta?.profile_key || "")}`}
-                            className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center"
-                          >
-                            Rate now
-                          </Link>
-                        ) : i.entity_type ? (
-                          <Link
-                            to={feedLinkForEntity(i.entity_type, i.entity_id)}
-                            className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center"
-                          >
-                            View
-                          </Link>
-                        ) : null}
-                        {!i.read ? (
-                          <button
-                            onClick={() => markRead(i.id)}
-                            className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                          >
-                            Mark read
-                          </button>
-                        ) : null}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-              <div className="flex items-center justify-between gap-3 mb-3">
-                <div>
-                  <p className="text-sm font-bold text-slate-900">
-                    Viewed Products
-                  </p>
-                  <p className="text-[11px] text-slate-500">
-                    Private to you - Recorded on Quick View
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => loadViews({ reset: true })}
-                  className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                >
-                  Refresh
-                </button>
-              </div>
-
-              <div className="space-y-3">
-                {views.map((row) => (
-                  <div
-                    key={row.id}
-                    className="rounded-2xl bg-[#ffffff] p-4 ring-1 ring-slate-200/60 shadow-sm transition hover:bg-slate-50/70 dark:bg-slate-950/30 dark:ring-white/10 dark:hover:bg-white/5 flex items-start justify-between gap-3"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-slate-900 truncate">
-                        {row.product?.title || "Product"}
-                      </p>
-                      <p className="mt-1 text-[11px] text-slate-500 truncate">
-                        {row.author?.name || "Company"} -{" "}
-                        {new Date(row.viewed_at).toLocaleString()}
-                      </p>
-                      <p className="mt-2 text-xs text-slate-600">
-                        {row.product?.category || "--"} - MOQ{" "}
-                        {row.product?.moq || "--"} - Lead time{" "}
-                        {row.product?.lead_time_days || "--"}
-                      </p>
-                    </div>
-                    <div className="flex flex-col gap-2 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setQuickViewItem({
-                            ...row.product,
-                            author: row.author,
-                          })
-                        }
-                        className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                      >
-                        Quick view
-                      </button>
-                      {row.author?.id ? (
-                        <Link
-                          to={
-                            row.author.role === "buying_house"
-                              ? `/buying-house/${row.author.id}`
-                              : `/factory/${row.author.id}`
-                          }
-                          className="rounded-full bg-[#0A66C2] px-3 py-2 text-xs font-semibold text-white hover:bg-[#004182] text-center"
-                        >
-                          Company
-                        </Link>
-                      ) : null}
-                    </div>
-                  </div>
-                ))}
-
-                {loadingViews ? (
-                  <div className="text-sm text-slate-600">Loading...</div>
-                ) : null}
-                {!views.length && !loadingViews ? (
-                  <div className="text-sm text-slate-600">
-                    No viewed products yet.
-                  </div>
-                ) : null}
-              </div>
-
-              {viewsNext !== null && !loadingViews ? (
-                <button
-                  type="button"
-                  onClick={() => loadViews({ reset: false })}
-                  className="mt-4 rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8"
-                >
-                  Load more
-                </button>
-              ) : null}
-            </div>
-          )}
-        </main>
-
-        <aside className="col-span-12 lg:col-span-4 space-y-4">
-          <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-            <p className="text-sm font-bold text-slate-900">
-              Saved Search Alerts
-            </p>
-            <p className="mt-1 text-[11px] text-slate-500">
-              These power smart notifications for new matching posts.
-            </p>
-            <div className="mt-3 space-y-2">
-              {alerts.length ? (
-                alerts.map((a) => (
-                  <div
-                    key={a.id}
-                    className="rounded-xl bg-white p-3 ring-1 ring-slate-200/70 shadow-sm dark:bg-white/5 dark:ring-white/10 flex items-start justify-between gap-2"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold text-slate-900 truncate">
-                        {a.query}
-                      </p>
-                      <p className="text-[11px] text-slate-500">
-                        Updated:{" "}
-                        {new Date(
-                          a.updated_at || a.created_at,
-                        ).toLocaleString()}
+                      <p className={cn("mt-1 text-sm", subtleText)}>
+                        Recorded on Quick View. This history helps you revisit products quickly.
                       </p>
                     </div>
                     <button
-                      type="button"
-                      onClick={() => deleteAlert(a.id)}
-                      className="rounded-full shadow-borderless dark:shadow-borderlessDark p-2 hover:bg-rose-50"
-                      aria-label="Delete alert"
-                      title="Delete alert"
+                      onClick={refreshViewed}
+                      className="inline-flex items-center gap-2 rounded-2xl border border-sky-400/20 bg-sky-500/10 px-4 py-2.5 text-sm font-semibold text-sky-200 transition hover:bg-sky-500/15"
                     >
-                      <Trash2 size={16} className="text-rose-600" />
+                      <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-[2]">
+                        <path d="M20 12a8 8 0 1 1-2.34-5.66" />
+                        <path d="M20 4v6h-6" />
+                      </svg>
+                      Refresh
                     </button>
                   </div>
-                ))
-              ) : (
-                <div className="text-xs text-slate-500">
-                  No saved alerts yet. Save an alert from the search page.
-                </div>
+
+                  <div className="mt-5 space-y-3">
+                    {visibleViewed.map((product) => (
+                      <ViewedCard key={product.id} product={product} theme={theme} onQuickView={() => openQuickView(product)} />
+                    ))}
+                  </div>
+
+                  {remainingViewed > 0 && (
+                    <div className="mt-5 flex justify-center">
+                      <button
+                        onClick={loadMoreViewed}
+                        className="rounded-2xl bg-sky-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-400"
+                      >
+                        Load more ({remainingViewed})
+                      </button>
+                    </div>
+                  )}
+                </section>
               )}
             </div>
-          </div>
 
-          <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
-            <p className="text-sm font-bold text-slate-900">Tips</p>
-            <ul className="mt-2 text-xs text-slate-600 space-y-1">
-              <li>
-                - Smart matches trigger when new buyer requests or products
-                match your saved alert keywords.
-              </li>
-              <li>- Use verification and credibility to reduce fraud risk.</li>
-              <li>
-                - Viewed history is private and helps you revisit products
-                quickly.
-              </li>
-            </ul>
+            <aside className="space-y-6">
+              <section className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-bold">Saved Search Alerts</h3>
+                    <p className={cn("mt-1 text-sm", subtleText)}>
+                      These power smart notifications for new matching posts.
+                    </p>
+                  </div>
+                  <Badge tone="blue">Active</Badge>
+                </div>
+
+                <div className="mt-4 space-y-3">
+                  {alerts.length === 0 ? (
+                    <EmptyState title="No saved alerts yet." description="Save an alert from the search page." compact />
+                  ) : (
+                    alerts.map((alert) => (
+                      <div
+                        key={alert.id}
+                        className={cn(
+                          "flex items-center justify-between gap-4 rounded-2xl border p-4",
+                          theme === "dark" ? "border-white/10 bg-white/5" : "border-sky-100 bg-white/80"
+                        )}
+                      >
+                        <div>
+                          <div className="font-semibold text-slate-100 dark:text-slate-900">{alert.query}</div>
+                          <div className={cn("mt-1 text-xs", subtleText)}>Updated {alert.updated}</div>
+                        </div>
+                        <button
+                          onClick={() => deleteAlert(alert.id)}
+                          className="rounded-xl p-2 text-slate-400 transition hover:bg-rose-500/10 hover:text-rose-300"
+                          aria-label="Delete alert"
+                        >
+                          <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-[2]">
+                            <path d="M3 6h18" />
+                            <path d="M8 6V4h8v2" />
+                            <path d="M6 6l1 14h10l1-14" />
+                            <path d="M10 11v5" />
+                            <path d="M14 11v5" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </section>
+
+              <section className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}>
+                <h3 className="text-lg font-bold">Tips</h3>
+                <div className="mt-4 space-y-3 text-sm leading-6">
+                  <TipItem
+                    tone="emerald"
+                    text="Smart matches trigger when new buyer requests or products match your saved alert keywords."
+                  />
+                  <TipItem
+                    tone="blue"
+                    text="Use verification and credibility signals to reduce fraud risk before accepting requests."
+                  />
+                  <TipItem
+                    tone="sky"
+                    text="Viewed history is private and helps you revisit products quickly without losing context."
+                  />
+                </div>
+              </section>
+
+              <section className={cn("rounded-[28px] border p-4 sm:p-5", cardBg)}>
+                <h3 className="text-lg font-bold">API endpoints</h3>
+                <div className="mt-4 space-y-3 text-sm">
+                  <ApiChip method="GET" path="/notifications" />
+                  <ApiChip method="PATCH" path="/notifications/:id/read" />
+                  <ApiChip method="DELETE" path="/notifications/search-alerts/:id" />
+                  <ApiChip method="GET" path="/products/views/me" />
+                </div>
+              </section>
+            </aside>
           </div>
-        </aside>
+        </div>
       </div>
 
-      <ProductQuickViewModal
-        open={Boolean(quickViewItem)}
-        item={quickViewItem}
-        onClose={() => setQuickViewItem(null)}
-        onViewed={() => loadViews({ reset: true })}
-      />
+      {quickView && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/70 p-4 backdrop-blur-sm sm:items-center">
+          <div className={cn("w-full max-w-2xl rounded-[28px] border p-5 shadow-2xl", theme === "dark" ? "border-white/10 bg-[#0b1324]" : "border-sky-100 bg-white") }>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-2xl font-black">Quick View</h3>
+                <p className={cn("mt-1 text-sm", subtleText)}>Full product details preview.</p>
+              </div>
+              <button
+                onClick={() => setQuickView(null)}
+                className="rounded-2xl bg-white/5 px-3 py-2 text-sm font-semibold text-slate-300 hover:bg-white/10"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className={cn("mt-5 grid gap-4 rounded-3xl border p-5 sm:grid-cols-[1.6fr_1fr]", theme === "dark" ? "border-white/10 bg-white/5" : "border-sky-100 bg-sky-50/50")}>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge tone="sky">Product</Badge>
+                  <Badge tone="blue">Company profile</Badge>
+                </div>
+                <h4 className="mt-3 text-xl font-bold">{quickView.title}</h4>
+                <p className={cn("mt-2 text-sm leading-6", mutedText)}>{quickView.description}</p>
+                <div className="mt-4 flex gap-3">
+                  <ActionButton variant="primary">Quick view</ActionButton>
+                  <ActionButton variant="ghost">Company page</ActionButton>
+                </div>
+              </div>
+              <div className={cn("rounded-3xl border p-4", theme === "dark" ? "border-white/10 bg-black/20" : "border-sky-100 bg-white") }>
+                <DetailRow label="Company" value={quickView.company} />
+                <DetailRow label="Viewed" value={quickView.viewedDate} />
+                <DetailRow label="Category" value={quickView.category} />
+                <DetailRow label="MOQ" value={quickView.moq} />
+                <DetailRow label="Lead time" value={quickView.leadTime} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+function Stat({ label, value }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-center">
+      <div className="text-xl font-black text-sky-300">{value}</div>
+      <div className="mt-1 text-[11px] uppercase tracking-[0.2em] text-slate-400">{label}</div>
+    </div>
+  );
+}
+
+function TipItem({ tone, text }) {
+  const dot = {
+    emerald: "bg-emerald-400",
+    blue: "bg-sky-400",
+    sky: "bg-cyan-400",
+  };
+  return (
+    <div className="flex gap-3">
+      <span className={cn("mt-2 h-2.5 w-2.5 rounded-full shrink-0", dot[tone] || dot.sky)} />
+      <p className="text-slate-300 dark:text-slate-700">{text}</p>
+    </div>
+  );
+}
+
+function ApiChip({ method, path }) {
+  return (
+    <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-3 py-2.5">
+      <span className="rounded-lg bg-sky-500/10 px-2.5 py-1 text-xs font-bold text-sky-300">
+        {method}
+      </span>
+      <code className="text-xs text-slate-300">{path}</code>
+    </div>
+  );
+}
+
+function EmptyState({ title, description, compact = false }) {
+  return (
+    <div className={cn("rounded-3xl border border-dashed border-white/10 bg-white/5 text-center", compact ? "p-5" : "p-8") }>
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-300">
+        <svg viewBox="0 0 24 24" className="h-6 w-6 fill-none stroke-current stroke-[2]">
+          <path d="M12 4v16" />
+          <path d="M4 12h16" />
+        </svg>
+      </div>
+      <h4 className="mt-4 text-base font-bold">{title}</h4>
+      <p className="mt-2 text-sm text-slate-400">{description}</p>
+    </div>
+  );
+}
+
+function NotificationCard({ item, theme, onMarkRead, onAccept, onReject }) {
+  const tone = getRelativeTone(item.type);
+  const borderClass =
+    theme === "dark" ? "border-white/10 bg-white/5" : "border-sky-100 bg-white/80";
+
+  return (
+    <div
+      className={cn(
+        "group rounded-3xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl",
+        borderClass,
+        item.unread ? "ring-1 ring-sky-400/20" : ""
+      )}
+    >
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge tone={tone}>{item.label}</Badge>
+            {item.unread && <Badge tone="emerald">New</Badge>}
+            {item.requestId && (
+              <span className="rounded-full bg-slate-500/10 px-2.5 py-1 text-xs font-semibold text-slate-300 ring-1 ring-white/10">
+                {item.requestId}
+              </span>
+            )}
+          </div>
+          <h3 className="mt-3 text-lg font-bold leading-7">{item.title}</h3>
+          <p className={cn("mt-2 text-sm leading-6", theme === "dark" ? "text-slate-300" : "text-slate-700")}>{item.message}</p>
+          <div className={cn("mt-3 flex flex-wrap items-center gap-2 text-xs", theme === "dark" ? "text-slate-400" : "text-slate-600") }>
+            <span>{item.timestamp}</span>
+            {item.type === "viewed" && <span>• View history</span>}
+          </div>
+        </div>
+
+        <div className="flex shrink-0 flex-col gap-2 sm:flex-row md:flex-col lg:flex-row">
+          {item.type === "partner" && item.canModerate && (
+            <>
+              <ActionButton variant="success" onClick={onAccept}>
+                Accept
+              </ActionButton>
+              <ActionButton variant="danger" onClick={onReject}>
+                Reject
+              </ActionButton>
+            </>
+          )}
+
+          {item.type === "ratings" ? (
+            <ActionButton variant="primary">Rate now</ActionButton>
+          ) : item.type !== "partner" ? (
+            <ActionButton variant="ghost">View</ActionButton>
+          ) : null}
+
+          {item.unread && (
+            <ActionButton variant="ghost" onClick={onMarkRead}>
+              Mark read
+            </ActionButton>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ViewedCard({ product, theme, onQuickView }) {
+  return (
+    <div className={cn("rounded-3xl border p-4", theme === "dark" ? "border-white/10 bg-white/5" : "border-sky-100 bg-white/85")}>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge tone="sky">Viewed</Badge>
+            <Badge tone="blue">{product.category}</Badge>
+          </div>
+          <h3 className="mt-3 text-lg font-bold">{product.title}</h3>
+          <div className={cn("mt-1 text-sm", theme === "dark" ? "text-slate-300" : "text-slate-700")}>
+            {product.company} · Viewed {product.viewedDate}
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-400">
+            <span className="rounded-full bg-white/5 px-2.5 py-1 ring-1 ring-white/10">MOQ {product.moq}</span>
+            <span className="rounded-full bg-white/5 px-2.5 py-1 ring-1 ring-white/10">Lead time {product.leadTime}</span>
+          </div>
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row lg:flex-col xl:flex-row">
+          <ActionButton variant="primary" onClick={onQuickView}>
+            Quick view
+          </ActionButton>
+          <ActionButton variant="ghost">Company</ActionButton>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DetailRow({ label, value }) {
+  return (
+    <div className="mb-3 flex items-center justify-between gap-4 border-b border-white/10 pb-3 last:mb-0 last:border-0 last:pb-0">
+      <span className="text-xs uppercase tracking-[0.2em] text-slate-400">{label}</span>
+      <span className="text-sm font-semibold text-slate-100 dark:text-slate-900">{value}</span>
+    </div>
+  );
+}
+
+export default NotificationPage;
