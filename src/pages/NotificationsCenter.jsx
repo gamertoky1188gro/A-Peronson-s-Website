@@ -127,12 +127,22 @@ export default function NotificationsCenter() {
   const token = useMemo(() => getToken(), []);
   const user = useMemo(() => getCurrentUser(), []);
   const reduceMotion = useReducedMotion();
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
   const [tab, setTab] = useState("all");
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [livePulse, setLivePulse] = useState(true);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   const [items, setItems] = useState([]);
   const [alerts, setAlerts] = useState([]);
