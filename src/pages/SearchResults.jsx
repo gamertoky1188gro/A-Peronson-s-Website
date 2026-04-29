@@ -216,6 +216,11 @@ export default function SearchResults() {
   const locationInputRef = useRef(null);
   const searchInputRef = useRef(null);
   const locationDebounceRef = useRef(null);
+  const executeSearchRef = useRef(null);
+
+  useEffect(() => {
+    executeSearchRef.current = executeSearch;
+  }, [executeSearch]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -254,12 +259,12 @@ export default function SearchResults() {
     const onKey = (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
-        executeSearch();
+        executeSearchRef.current?.();
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [searchModalOpen, query, filters, loading, executeSearch]);
+  }, [searchModalOpen]);
 
   useEffect(() => {
     async function fetchRecentViews() {
