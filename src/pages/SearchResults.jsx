@@ -519,7 +519,7 @@ export default function SearchResults() {
                 onClick={() => {
                   setQuery(item);
                   setSearchModalOpen(false);
-                  executeSearch();
+                  executeSearchRef.current?.();
                 }}
                 className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 p-4 text-left hover:border-sky-300 dark:hover:border-sky-700"
               >
@@ -801,7 +801,6 @@ export default function SearchResults() {
                   <input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    onFocus={() => setSearchModalOpen(true)}
                     placeholder="Search requests, factories, products..."
                     className="w-full rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 py-4 pl-12 pr-28 text-base outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10"
                   />
