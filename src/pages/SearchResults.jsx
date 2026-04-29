@@ -1178,9 +1178,9 @@ export default function SearchResults() {
             <SectionCard title="Shortcuts & Actions" icon={WandSparkles}>
               <div className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
                 <div className="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3"><span>Open search modal</span><Badge tone="blue">Ctrl K / ⌘K</Badge></div>
-                <div className="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3"><span>Save search alert</span><Badge tone="blue">POST /api/search/alerts</Badge></div>
-                <div className="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3"><span>Location search</span><Badge tone="blue">GET /api/geo/search</Badge></div>
-                <div className="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3"><span>Recent ratings</span><Badge tone="blue">GET /api/ratings/search</Badge></div>
+                <div className="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3"><span>Save search</span><Badge tone="blue">Click Save</Badge></div>
+                <div className="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3"><span>Share search</span><Badge tone="blue">Click Share</Badge></div>
+                <div className="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3"><span>Toggle dark mode</span><Badge tone="blue">Click icon</Badge></div>
               </div>
             </SectionCard>
           </aside>
