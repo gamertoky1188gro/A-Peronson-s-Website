@@ -154,7 +154,11 @@ export default function NotificationsCenter() {
       }
     };
     window.addEventListener("storage", handler);
-    return () => window.removeEventListener("storage", handler);
+    window.addEventListener("theme-change", handler);
+    return () => {
+      window.removeEventListener("storage", handler);
+      window.removeEventListener("theme-change", handler);
+    };
   }, []);
 
   useEffect(() => {
