@@ -135,6 +135,13 @@ export default function NotificationsCenter() {
   const [livePulse, setLivePulse] = useState(true);
 
   useEffect(() => {
+    const stored = localStorage.getItem("theme");
+    if (stored && stored !== theme) {
+      setTheme(stored);
+    }
+  }, []);
+
+  useEffect(() => {
     const root = document.documentElement;
     if (theme === "dark") {
       root.classList.add("dark");
