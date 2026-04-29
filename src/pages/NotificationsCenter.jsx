@@ -325,9 +325,6 @@ export default function NotificationsCenter() {
                       whileTap={reduceMotion ? undefined : { scale: 0.98 }}
                       className={cn("inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-semibold transition-all duration-200", active ? "border-sky-400/40 bg-sky-500 text-white shadow-lg shadow-sky-500/20" : cn("border-white/10", softBg, "hover:bg-white/10", mutedText))}
                     >
-                      {active ? (
-                        <motion.span layoutId="notif-tab" className="absolute inset-0 rounded-2xl bg-sky-500/20" transition={{ type: "spring", stiffness: 420, damping: 34 }} />
-                      ) : null}
                       <span className="relative inline-flex items-center gap-2"><Icon size={16} />{item.label}</span>
                     </motion.button>
                   );
