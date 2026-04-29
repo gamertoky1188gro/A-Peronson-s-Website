@@ -354,7 +354,7 @@ export default function SearchResults() {
     } finally {
       setLoading(false);
     }
-  }, [query, filters, token, activeTab, setSearchParams, addToast, setRequests, setCompanies]);
+  }, [query, filters, token, activeTab, setSearchParams, addToast]);
 
   async function saveSearch() {
     const hasFilters = query.trim() || filters.industry !== 'Any' || filters.country || filters.companyType.length || filters.incoterms.length;
