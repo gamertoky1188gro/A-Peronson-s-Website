@@ -5,6 +5,7 @@
 ## 1) Purpose
 
 Admin governance console for policy management, trust scoring, and enforcement actions.
+
 - Create and manage governance policies
 - Policy version control with role/plan/region scopes
 - Trust signal evaluation for users
@@ -13,6 +14,7 @@ Admin governance console for policy management, trust scoring, and enforcement a
 - Monthly compliance reports
 
 **Backend interactions:**
+
 - GET `/admin/governance/policies` - List policies
 - POST `/admin/governance/policies` - Create policy
 - POST `/admin/governance/policy-versions` - Create policy version
@@ -27,9 +29,11 @@ Admin governance console for policy management, trust scoring, and enforcement a
 ## 2) Page Structure (Components + Sections)
 
 ### 2.1 Imported Components
+
 - `../lib/auth` - apiRequest
 
 ### 2.2 Structural Sections
+
 - `<div className="min-h-screen bg-slate-950 p-6 text-slate-100">` - Main container
 - Policy Editor section
 - Policy Version Creator section
@@ -41,6 +45,7 @@ Admin governance console for policy management, trust scoring, and enforcement a
 ## 3) Styling (className blocks)
 
 ### 3.1 Tailwind utilities used
+
 - Layout: `flex`, `grid`, `min-h-screen`, `max-w-6xl`
 - Colors: `bg-slate-950`, `text-slate-100`, `bg-indigo-600`, `border-slate-800`
 - Spacing: `p-6`, `p-4`, `gap-2`, `mt-3`
@@ -48,18 +53,18 @@ Admin governance console for policy management, trust scoring, and enforcement a
 
 ## 4) API Map
 
-| Frontend Call | Backend Route | Purpose |
-|---------------|---------------|---------|
-| GET /admin/governance/policies | `/admin/governance/policies` | List all policies |
-| POST /admin/governance/policies | `/admin/governance/policies` | Create new policy |
-| POST /admin/governance/policy-versions | `/admin/governance/policy-versions` | Create version |
-| POST /admin/governance/simulate | `/admin/governance/simulate` | Simulate policy |
-| GET /admin/governance/trust/signals | `/admin/governance/trust/signals` | Get user trust data |
-| POST /admin/governance/trust/evaluate | `/admin/governance/trust/evaluate` | Evaluate trust |
-| POST /admin/governance/enforcement/apply | `/admin/governance/enforcement/apply` | Apply action |
-| GET /admin/governance/templates | `/admin/governance/templates` | List templates |
-| POST /admin/governance/templates | `/admin/governance/templates` | Create template |
-| POST /admin/governance/reports/monthly | `/admin/governance/reports/monthly` | Monthly report |
+| Frontend Call                            | Backend Route                         | Purpose             |
+| ---------------------------------------- | ------------------------------------- | ------------------- |
+| GET /admin/governance/policies           | `/admin/governance/policies`          | List all policies   |
+| POST /admin/governance/policies          | `/admin/governance/policies`          | Create new policy   |
+| POST /admin/governance/policy-versions   | `/admin/governance/policy-versions`   | Create version      |
+| POST /admin/governance/simulate          | `/admin/governance/simulate`          | Simulate policy     |
+| GET /admin/governance/trust/signals      | `/admin/governance/trust/signals`     | Get user trust data |
+| POST /admin/governance/trust/evaluate    | `/admin/governance/trust/evaluate`    | Evaluate trust      |
+| POST /admin/governance/enforcement/apply | `/admin/governance/enforcement/apply` | Apply action        |
+| GET /admin/governance/templates          | `/admin/governance/templates`         | List templates      |
+| POST /admin/governance/templates         | `/admin/governance/templates`         | Create template     |
+| POST /admin/governance/reports/monthly   | `/admin/governance/reports/monthly`   | Monthly report      |
 
 ## 5) Component Inventory
 
@@ -174,4 +179,4 @@ Admin governance console for policy management, trust scoring, and enforcement a
 
 ---
 
-*Generated from source: src/pages/AdminGovernance.jsx*
+_Generated from source: src/pages/AdminGovernance.jsx_

@@ -6,19 +6,20 @@
 ## 1) Purpose
 
 Modal for admin rejection workflow:
+
 - Display rejection reason options
 - Allow custom reason input
 - Confirm rejection action
 
 ## 2) Props
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `open` | boolean | Modal visibility |
-| `onClose` | function | Close modal callback |
-| `onConfirm` | function | Confirm rejection callback |
-| `itemTitle` | string | Item being rejected (default: "this item") |
-| `customReasons` | array | Custom rejection reasons |
+| Prop            | Type     | Description                                |
+| --------------- | -------- | ------------------------------------------ |
+| `open`          | boolean  | Modal visibility                           |
+| `onClose`       | function | Close modal callback                       |
+| `onConfirm`     | function | Confirm rejection callback                 |
+| `itemTitle`     | string   | Item being rejected (default: "this item") |
+| `customReasons` | array    | Custom rejection reasons                   |
 
 ## 3) Default Reasons
 
@@ -42,4 +43,4 @@ Modal for admin rejection workflow:
 
 ---
 
-*Generated from source: src/components/admin/RejectionReasonModal.jsx*
+_Generated from source: src/components/admin/RejectionReasonModal.jsx_

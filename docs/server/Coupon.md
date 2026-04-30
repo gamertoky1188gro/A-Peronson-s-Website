@@ -54,4 +54,4 @@ router.post("/", requireAuth, requireAdminSecurity, createCoupon);
 
 ---
 
-*Generated from source: server/routes/couponRoutes.js*
+_Generated from source: server/routes/couponRoutes.js_

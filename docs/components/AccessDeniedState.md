@@ -6,16 +6,17 @@
 ## 1) Purpose
 
 Displayed when user lacks permissions to access a route:
+
 - Shows appropriate message based on context
 - Provides navigation back to accessible areas
 - Used by route guards
 
 ## 2) Props
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `message` | string | Custom message (optional) |
-| `roleRequired` | string | Required role (optional) |
+| Prop           | Type   | Description               |
+| -------------- | ------ | ------------------------- |
+| `message`      | string | Custom message (optional) |
+| `roleRequired` | string | Required role (optional)  |
 
 ## 3) Dependencies
 
@@ -30,4 +31,4 @@ Displayed when user lacks permissions to access a route:
 
 ---
 
-*Generated from source: src/components/AccessDeniedState.jsx*
+_Generated from source: src/components/AccessDeniedState.jsx_

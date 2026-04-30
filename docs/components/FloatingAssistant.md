@@ -7,6 +7,7 @@
 ## 1) Purpose
 
 Persistent AI/help assistant UI as a slide-in panel:
+
 - Floating button to toggle the panel
 - WebSocket connection for real-time AI responses
 - Typewriter effect for assistant messages
@@ -26,9 +27,11 @@ Persistent AI/help assistant UI as a slide-in panel:
 ## 4) Dependencies
 
 ### External Libraries
+
 - `react` - useState, useRef, useEffect
 
 ### Local Imports
+
 - `../lib/auth` - API_BASE, getToken
 - `./ui/BotLogo` - Bot logo component
 
@@ -51,9 +54,11 @@ Persistent AI/help assistant UI as a slide-in panel:
 ## 7) Styling
 
 ### Custom CSS Classes
+
 - `.assistant-orb-btn` - Orb styling on /help
 
 ### Tailwind Utilities
+
 - Layout: `fixed`, `bottom-*`, `right-*`
 - Colors: `bg-slate-*`, `text-slate-*`
 - Transitions: `transition-all`
@@ -77,4 +82,4 @@ Persistent AI/help assistant UI as a slide-in panel:
 
 ---
 
-*Generated from source: src/components/FloatingAssistant.jsx*
+_Generated from source: src/components/FloatingAssistant.jsx_

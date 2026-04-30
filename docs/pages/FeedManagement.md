@@ -5,6 +5,7 @@
 ## 1) Purpose
 
 Admin/owner page for managing feed posts. Allows:
+
 - Creating new feed posts with rich content
 - Adding media (images/videos)
 - Setting categories, hashtags, mentions, product tags
@@ -13,6 +14,7 @@ Admin/owner page for managing feed posts. Allows:
 - Deleting posts
 
 **Backend interactions:**
+
 - GET `/api/feed/posts/mine` - Fetch user's posts
 - POST `/api/feed/posts` - Create new post
 - DELETE `/api/feed/posts/:id` - Delete post
@@ -20,9 +22,11 @@ Admin/owner page for managing feed posts. Allows:
 ## 2) Page Structure (Components + Sections)
 
 ### 2.1 Imported Components
+
 - `react-markdown` - Markdown rendering for readme/preview
 
 ### 2.2 Structural Sections
+
 - Theme toggle (dark/light mode)
 - Post creation form with fields:
   - Title, Category, Caption
@@ -37,22 +41,24 @@ Admin/owner page for managing feed posts. Allows:
 ## 3) Styling (className blocks)
 
 ### 3.1 Tailwind utilities used
+
 - Layout: `flex`, `grid`, `min-h-screen`, `w-full`, `max-w-*`
 - Colors: `bg-slate-*`, `text-slate-*`, `bg-white`, `text-black`
 - Spacing: `p-*`, `m-*`, `gap-*`
 - Dark mode: `dark` class on document
 
 ### 3.2 Custom CSS
+
 - Inline SVG icons (no external library)
 - `animate-spin` for loader
 
 ## 4) API Map
 
-| Frontend Call | Backend Route | Purpose |
-|---------------|---------------|---------|
-| GET /api/feed/posts/mine | `/api/feed/posts/mine` | List user's posts |
-| POST /api/feed/posts | `/api/feed/posts` | Create new post |
-| DELETE /api/feed/posts/:id | `/api/feed/posts/:id` | Delete post |
+| Frontend Call              | Backend Route          | Purpose           |
+| -------------------------- | ---------------------- | ----------------- |
+| GET /api/feed/posts/mine   | `/api/feed/posts/mine` | List user's posts |
+| POST /api/feed/posts       | `/api/feed/posts`      | Create new post   |
+| DELETE /api/feed/posts/:id | `/api/feed/posts/:id`  | Delete post       |
 
 ## 5) Component Inventory
 
@@ -175,4 +181,4 @@ Admin/owner page for managing feed posts. Allows:
 
 ---
 
-*Generated from source: src/pages/FeedManagement.jsx*
+_Generated from source: src/pages/FeedManagement.jsx_

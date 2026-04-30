@@ -4,21 +4,21 @@
 
 ## Complete Utils List (13 files)
 
-| # | Utils | Purpose | Status |
-|---|-------|---------|--------|
-| 1 | prisma.js | Prisma client singleton | ✅ |
-| 2 | db.js | Database connection | ✅ |
-| 3 | logger.js | Logging utility | ✅ |
-| 4 | validators.js | Input validation | ✅ |
-| 5 | permissions.js | Permission checking | ✅ |
-| 6 | localStore.js | Local JSON store | ✅ |
-| 7 | jsonStore.js | JSON file storage | ✅ |
-| 8 | metrics.js | Metrics collection | ✅ |
-| 9 | pendingInvites.js | Invite tracking | ✅ |
-| 10 | hallucinationDetector.js | AI hallucination detection | ✅ |
-| 11 | dotenv.js | Env variable loading | ✅ |
-| 12 | crmFallbackStore.js | CRM fallback | ✅ |
-| 13 | auditStore.js | Audit log storage | ✅ |
+| #   | Utils                    | Purpose                    | Status |
+| --- | ------------------------ | -------------------------- | ------ |
+| 1   | prisma.js                | Prisma client singleton    | ✅     |
+| 2   | db.js                    | Database connection        | ✅     |
+| 3   | logger.js                | Logging utility            | ✅     |
+| 4   | validators.js            | Input validation           | ✅     |
+| 5   | permissions.js           | Permission checking        | ✅     |
+| 6   | localStore.js            | Local JSON store           | ✅     |
+| 7   | jsonStore.js             | JSON file storage          | ✅     |
+| 8   | metrics.js               | Metrics collection         | ✅     |
+| 9   | pendingInvites.js        | Invite tracking            | ✅     |
+| 10  | hallucinationDetector.js | AI hallucination detection | ✅     |
+| 11  | dotenv.js                | Env variable loading       | ✅     |
+| 12  | crmFallbackStore.js      | CRM fallback               | ✅     |
+| 13  | auditStore.js            | Audit log storage          | ✅     |
 
 ---
 
@@ -28,13 +28,14 @@
 
 ### Functions
 
-| Function | Returns | Description |
-|----------|---------|-------------|
+| Function | Returns      | Description                      |
+| -------- | ------------ | -------------------------------- |
 | `prisma` | PrismaClient | Singleton Prisma client instance |
 
 ### Usage
+
 ```javascript
-import { prisma } from '../utils/prisma.js';
+import { prisma } from "../utils/prisma.js";
 const users = await prisma.user.findMany();
 ```
 
@@ -46,11 +47,11 @@ const users = await prisma.user.findMany();
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `getDbConnection()` | - | connection | Get database connection |
-| `testConnection()` | - | boolean | Test connection |
-| `closeConnection()` | - | void | Close connection |
+| Function            | Parameters | Returns    | Description             |
+| ------------------- | ---------- | ---------- | ----------------------- |
+| `getDbConnection()` | -          | connection | Get database connection |
+| `testConnection()`  | -          | boolean    | Test connection         |
+| `closeConnection()` | -          | void       | Close connection        |
 
 ---
 
@@ -60,14 +61,15 @@ const users = await prisma.user.findMany();
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `info(message, meta)` | message, meta | void | Log info |
-| `warn(message, meta)` | message, meta | void | Log warning |
-| `error(message, meta)` | message, meta | void | Log error |
-| `debug(message, meta)` | message, meta | void | Log debug |
+| Function               | Parameters    | Returns | Description |
+| ---------------------- | ------------- | ------- | ----------- |
+| `info(message, meta)`  | message, meta | void    | Log info    |
+| `warn(message, meta)`  | message, meta | void    | Log warning |
+| `error(message, meta)` | message, meta | void    | Log error   |
+| `debug(message, meta)` | message, meta | void    | Log debug   |
 
 ### Log Levels
+
 - `info` - General info
 - `warn` - Warnings
 - `error` - Errors
@@ -82,18 +84,19 @@ const users = await prisma.user.findMany();
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `requireFields(obj, fields)` | obj, fields | string[] | Check required fields |
-| `validateEmail(email)` | email: string | boolean | Validate email format |
-| `validateRole(role)` | role: string | boolean | Validate role |
-| `validatePassword(password)` | password: string | boolean | Validate password strength |
-| `validateUrl(url)` | url: string | boolean | Validate URL |
-| `validateDate(date)` | date: string | boolean | Validate ISO date |
-| `validateNumber(value)` | value: any | boolean | Validate number |
-| `sanitizeHtml(html)` | html: string | string | Sanitize HTML |
+| Function                     | Parameters       | Returns  | Description                |
+| ---------------------------- | ---------------- | -------- | -------------------------- |
+| `requireFields(obj, fields)` | obj, fields      | string[] | Check required fields      |
+| `validateEmail(email)`       | email: string    | boolean  | Validate email format      |
+| `validateRole(role)`         | role: string     | boolean  | Validate role              |
+| `validatePassword(password)` | password: string | boolean  | Validate password strength |
+| `validateUrl(url)`           | url: string      | boolean  | Validate URL               |
+| `validateDate(date)`         | date: string     | boolean  | Validate ISO date          |
+| `validateNumber(value)`      | value: any       | boolean  | Validate number            |
+| `sanitizeHtml(html)`         | html: string     | string   | Sanitize HTML              |
 
 ### Validation Rules
+
 - Email: RFC 5322 format
 - Password: min 8 chars
 - Role: enum of valid roles
@@ -106,14 +109,15 @@ const users = await prisma.user.findMany();
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `hasPermission(user, permission)` | user, permission | boolean | Check permission |
-| `hasRole(user, role)` | user, role | boolean | Check role |
-| `canAccessResource(user, resource)` | user, resource | boolean | Check resource access |
-| `checkPermissionMatrix(user, action)` | user, action | boolean | Check permission matrix |
+| Function                              | Parameters       | Returns | Description             |
+| ------------------------------------- | ---------------- | ------- | ----------------------- |
+| `hasPermission(user, permission)`     | user, permission | boolean | Check permission        |
+| `hasRole(user, role)`                 | user, role       | boolean | Check role              |
+| `canAccessResource(user, resource)`   | user, resource   | boolean | Check resource access   |
+| `checkPermissionMatrix(user, action)` | user, action     | boolean | Check permission matrix |
 
 ### Permission Categories
+
 - `users.read` - View users
 - `users.write` - Modify users
 - `users.delete` - Delete users
@@ -129,19 +133,20 @@ const users = await prisma.user.findMany();
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `getStore(name)` | name: string | Store | Get/create store |
-| `get(key)` | key: string | any | Get value |
-| `set(key, value)` | key, value | void | Set value |
-| `delete(key)` | key: string | void | Delete value |
-| `clear()` | - | void | Clear store |
+| Function          | Parameters   | Returns | Description      |
+| ----------------- | ------------ | ------- | ---------------- |
+| `getStore(name)`  | name: string | Store   | Get/create store |
+| `get(key)`        | key: string  | any     | Get value        |
+| `set(key, value)` | key, value   | void    | Set value        |
+| `delete(key)`     | key: string  | void    | Delete value     |
+| `clear()`         | -            | void    | Clear store      |
 
 ### Usage
+
 ```javascript
-import { getStore } from './localStore.js';
-const store = getStore('users');
-store.set('user1', { name: 'John' });
+import { getStore } from "./localStore.js";
+const store = getStore("users");
+store.set("user1", { name: "John" });
 ```
 
 ---
@@ -152,11 +157,11 @@ store.set('user1', { name: 'John' });
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `load(filePath)` | filePath: string | object | Load JSON file |
-| `save(filePath, data)` | filePath, data | void | Save JSON file |
-| `update(filePath, updater)` | filePath, updater | object | Update JSON |
+| Function                    | Parameters        | Returns | Description    |
+| --------------------------- | ----------------- | ------- | -------------- |
+| `load(filePath)`            | filePath: string  | object  | Load JSON file |
+| `save(filePath, data)`      | filePath, data    | void    | Save JSON file |
+| `update(filePath, updater)` | filePath, updater | object  | Update JSON    |
 
 ---
 
@@ -166,14 +171,15 @@ store.set('user1', { name: 'John' });
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `incrementCounter(name, labels)` | name, labels | void | Increment counter |
-| `recordHistogram(name, value, labels)` | name, value, labels | void | Record histogram |
-| `recordGauge(name, value, labels)` | name, value, labels | void | Record gauge |
-| `getMetrics()` | - | object | Get all metrics |
+| Function                               | Parameters          | Returns | Description       |
+| -------------------------------------- | ------------------- | ------- | ----------------- |
+| `incrementCounter(name, labels)`       | name, labels        | void    | Increment counter |
+| `recordHistogram(name, value, labels)` | name, value, labels | void    | Record histogram  |
+| `recordGauge(name, value, labels)`     | name, value, labels | void    | Record gauge      |
+| `getMetrics()`                         | -                   | object  | Get all metrics   |
 
 ### Metric Types
+
 - Counters - Cumulative counts
 - Histograms - Value distributions
 - Gauges - Current values
@@ -186,12 +192,12 @@ store.set('user1', { name: 'John' });
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `createInvite(invite)` | invite: object | Invite | Create invite |
-| `getInvite(token)` | token: string | Invite | Get invite |
-| `consumeInvite(token)` | token: string | Invite | Consume invite |
-| `expireOldInvites()` | - | number | Expire old invites |
+| Function               | Parameters     | Returns | Description        |
+| ---------------------- | -------------- | ------- | ------------------ |
+| `createInvite(invite)` | invite: object | Invite  | Create invite      |
+| `getInvite(token)`     | token: string  | Invite  | Get invite         |
+| `consumeInvite(token)` | token: string  | Invite  | Consume invite     |
+| `expireOldInvites()`   | -              | number  | Expire old invites |
 
 ---
 
@@ -201,13 +207,14 @@ store.set('user1', { name: 'John' });
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
+| Function                               | Parameters      | Returns         | Description          |
+| -------------------------------------- | --------------- | --------------- | -------------------- |
 | `detectHallucination(text, threshold)` | text, threshold | DetectionResult | Detect hallucination |
-| `calculateConfidence(text)` | text: string | number | Confidence score |
-| `isFactualClaim(text)` | text: string | boolean | Check factual claim |
+| `calculateConfidence(text)`            | text: string    | number          | Confidence score     |
+| `isFactualClaim(text)`                 | text: string    | boolean         | Check factual claim  |
 
 ### Detection Methods
+
 - Self-consistency checking
 - Source verification
 - Confidence scoring
@@ -220,11 +227,11 @@ store.set('user1', { name: 'John' });
 
 ### Functions
 
-| Function | Returns | Description |
-|----------|---------|-------------|
-| `loadEnv()` | void | Load environment variables |
-| `getRequired(key)` | string | Get required env var |
-| `getOptional(key, default)` | string | Get optional env var |
+| Function                    | Returns | Description                |
+| --------------------------- | ------- | -------------------------- |
+| `loadEnv()`                 | void    | Load environment variables |
+| `getRequired(key)`          | string  | Get required env var       |
+| `getOptional(key, default)` | string  | Get optional env var       |
 
 ---
 
@@ -234,11 +241,11 @@ store.set('user1', { name: 'John' });
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `getFallback(key)` | key: string | object | Get fallback data |
-| `setFallback(key, data)` | key, data | void | Set fallback |
-| `syncFromPrimary()` | - | void | Sync from primary |
+| Function                 | Parameters  | Returns | Description       |
+| ------------------------ | ----------- | ------- | ----------------- |
+| `getFallback(key)`       | key: string | object  | Get fallback data |
+| `setFallback(key, data)` | key, data   | void    | Set fallback      |
+| `syncFromPrimary()`      | -           | void    | Sync from primary |
 
 ---
 
@@ -248,12 +255,12 @@ store.set('user1', { name: 'John' });
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `logEntry(entry)` | entry: object | AuditEntry | Log audit entry |
-| `queryEntries(filters)` | filters: object | AuditEntry[] | Query audit logs |
-| `exportLogs(start, end)` | start, end | Log[] | Export logs |
+| Function                 | Parameters      | Returns      | Description      |
+| ------------------------ | --------------- | ------------ | ---------------- |
+| `logEntry(entry)`        | entry: object   | AuditEntry   | Log audit entry  |
+| `queryEntries(filters)`  | filters: object | AuditEntry[] | Query audit logs |
+| `exportLogs(start, end)` | start, end      | Log[]        | Export logs      |
 
 ---
 
-*Generated from source: server/utils/*
+_Generated from source: server/utils/_

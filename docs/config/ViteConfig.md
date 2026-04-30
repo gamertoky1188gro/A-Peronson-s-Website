@@ -4,10 +4,10 @@
 
 ## Configuration
 
-| Setting | Value |
-|---------|-------|
-| Base URL | `./` (configurable via VITE_BASE_URL) |
-| Server Port | Default (Vite auto) |
+| Setting     | Value                                 |
+| ----------- | ------------------------------------- |
+| Base URL    | `./` (configurable via VITE_BASE_URL) |
+| Server Port | Default (Vite auto)                   |
 
 ## Plugins
 
@@ -16,11 +16,11 @@
 
 ## Server Proxies
 
-| Path | Target | Purpose |
-|------|--------|---------|
-| `/api` | localhost:4000 | API requests |
-| `/uploads` | localhost:4000 | File uploads |
-| `/ws` | localhost:4000 (ws: true) | WebSocket |
+| Path       | Target                    | Purpose      |
+| ---------- | ------------------------- | ------------ |
+| `/api`     | localhost:4000            | API requests |
+| `/uploads` | localhost:4000            | File uploads |
+| `/ws`      | localhost:4000 (ws: true) | WebSocket    |
 
 ## Watch Options
 
@@ -28,4 +28,4 @@
 
 ---
 
-*Generated from source: vite.config.js*
+_Generated from source: vite.config.js_

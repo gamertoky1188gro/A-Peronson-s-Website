@@ -5,21 +5,25 @@
 ## 1) Purpose
 
 3-step onboarding wizard for new users after signup:
+
 - Step 1: Profile image upload (URL)
 - Step 2: Organization name
 - Step 3: Industry/category selection
 
 **Backend interactions:**
+
 - POST `/api/onboarding` - Submit onboarding data
 - Updates user session with `saveSession`
 
 ## 2) Page Structure (Components + Sections)
 
 ### 2.1 Imported Components
+
 - `../../components/ui/BackButton` - Navigation back button
 - `react-router-dom` - useNavigate
 
 ### 2.2 Structural Sections
+
 - Step indicator (1/3, 2/3, 3/3)
 - Step 1: Profile image URL input
 - Step 2: Organization name input (min 3 chars)
@@ -29,19 +33,21 @@
 ## 3) Styling (className blocks)
 
 ### 3.1 Custom CSS classes
+
 - `bg-[rgba(10,102,194,0.10)]` - Brand accent background
 - `text-gtBlue` - Custom brand color
 - `shadow-borderless`, `shadow-borderlessDark`
 
 ### 3.2 Tailwind utilities used
+
 - Layout: `flex`, `inline-flex`, `min-h-screen`
 - Colors: `bg-slate-*`, `text-slate-*`, `dark:`
 - Spacing: `p-4`, `py-6`, `mt-4`, `gap-2`
 
 ## 4) API Map
 
-| Frontend Call | Backend Route | Purpose |
-|---------------|---------------|---------|
+| Frontend Call        | Backend Route | Purpose                |
+| -------------------- | ------------- | ---------------------- |
 | POST /api/onboarding | `/onboarding` | Submit onboarding data |
 
 ## 5) Component Inventory
@@ -150,4 +156,4 @@
 
 ---
 
-*Generated from source: src/pages/auth/OnboardingWizard.jsx*
+_Generated from source: src/pages/auth/OnboardingWizard.jsx_

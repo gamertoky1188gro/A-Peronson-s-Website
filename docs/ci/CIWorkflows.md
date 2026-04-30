@@ -9,6 +9,7 @@
 **Triggers:** Push and Pull Requests
 
 **Jobs:**
+
 1. **test** - Ubuntu latest
    - Node.js 18 setup
    - Install dependencies (`npm ci`)
@@ -25,6 +26,7 @@
 **Triggers:** Push to main, PRs
 
 **Jobs:**
+
 1. **test** - Multiple Node versions
    - Tests on Node.js 18, 20, 22
    - Full test suite
@@ -37,6 +39,7 @@
 **Triggers:** Manual + Push to main
 
 **Jobs:**
+
 1. **opensearch-tests**
    - OpenSearch integration tests
    - Search functionality tests
@@ -65,4 +68,4 @@ npm run test:e2e
 
 ---
 
-*Generated from source: .github/workflows/*
+_Generated from source: .github/workflows/_

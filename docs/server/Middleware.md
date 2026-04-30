@@ -4,17 +4,17 @@
 
 ## Complete Middleware List (9 files)
 
-| # | Middleware | Purpose | Status |
-|---|------------|---------|--------|
-| 1 | auth.js | Authentication, JWT, passkeys | ✅ |
-| 2 | errorHandler.js | Error handling | ✅ |
-| 3 | requestLogger.js | Request logging | ✅ |
-| 4 | validateSearchFilters.js | Search filter validation | ✅ |
-| 5 | entitlements.js | Feature entitlements | ✅ |
-| 6 | adminSecurity.js | Admin security layer | ✅ |
-| 7 | adminStepUp.js | Admin step-up auth | ✅ |
-| 8 | adminDualConfirm.js | Admin dual confirmation | ✅ |
-| 9 | adminAudit.js | Admin audit logging | ✅ |
+| #   | Middleware               | Purpose                       | Status |
+| --- | ------------------------ | ----------------------------- | ------ |
+| 1   | auth.js                  | Authentication, JWT, passkeys | ✅     |
+| 2   | errorHandler.js          | Error handling                | ✅     |
+| 3   | requestLogger.js         | Request logging               | ✅     |
+| 4   | validateSearchFilters.js | Search filter validation      | ✅     |
+| 5   | entitlements.js          | Feature entitlements          | ✅     |
+| 6   | adminSecurity.js         | Admin security layer          | ✅     |
+| 7   | adminStepUp.js           | Admin step-up auth            | ✅     |
+| 8   | adminDualConfirm.js      | Admin dual confirmation       | ✅     |
+| 9   | adminAudit.js            | Admin audit logging           | ✅     |
 
 ---
 
@@ -24,20 +24,22 @@
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `requireAuth(req, res, next)` | req, res, next | void | Require authentication |
-| `optionalAuth(req, res, next)` | req, res, next | void | Optional auth |
-| `allowRoles(...roles)` | ...roles | middleware | Role-based access |
-| `signToken(user)` | user: object | string | Generate JWT |
-| `verifyToken(token)` | token: string | payload | Verify JWT |
+| Function                       | Parameters     | Returns    | Description            |
+| ------------------------------ | -------------- | ---------- | ---------------------- |
+| `requireAuth(req, res, next)`  | req, res, next | void       | Require authentication |
+| `optionalAuth(req, res, next)` | req, res, next | void       | Optional auth          |
+| `allowRoles(...roles)`         | ...roles       | middleware | Role-based access      |
+| `signToken(user)`              | user: object   | string     | Generate JWT           |
+| `verifyToken(token)`           | token: string  | payload    | Verify JWT             |
 
 ### JWT Configuration
+
 - Algorithm: HS256
 - Expiry: 7 days (default)
 - Claims: user.id, user.role, user.email
 
 ### Exports
+
 - `requireAuth` - Protected routes
 - `optionalAuth` - Public routes with optional auth
 - `allowRoles` - Role-based middleware factory
@@ -50,13 +52,14 @@
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `errorHandler(err, req, res, next)` | err, req, res, next | void | Global error handler |
-| `ApiError(status, message)` | status, message | Error | Custom error class |
-| `notFound(req, res, next)` | req, res, next | void | 404 handler |
+| Function                            | Parameters          | Returns | Description          |
+| ----------------------------------- | ------------------- | ------- | -------------------- |
+| `errorHandler(err, req, res, next)` | err, req, res, next | void    | Global error handler |
+| `ApiError(status, message)`         | status, message     | Error   | Custom error class   |
+| `notFound(req, res, next)`          | req, res, next      | void    | 404 handler          |
 
 ### Error Types
+
 - `400` - Bad Request
 - `401` - Unauthorized
 - `403` - Forbidden
@@ -72,11 +75,12 @@
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `requestLogger(req, res, next)` | req, res, next | void | Log HTTP requests |
+| Function                        | Parameters     | Returns | Description       |
+| ------------------------------- | -------------- | ------- | ----------------- |
+| `requestLogger(req, res, next)` | req, res, next | void    | Log HTTP requests |
 
 ### Logged Data
+
 - Timestamp
 - HTTP method
 - URL path
@@ -92,11 +96,12 @@
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `validateSearchFilters(req, res, next)` | req, res, next | void | Validate search params |
+| Function                                | Parameters     | Returns | Description            |
+| --------------------------------------- | -------------- | ------- | ---------------------- |
+| `validateSearchFilters(req, res, next)` | req, res, next | void    | Validate search params |
 
 ### Validates
+
 - Filter field names
 - Date ranges
 - Numeric bounds
@@ -110,12 +115,13 @@
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `requireEntitlement(entitlement)` | entitlement: string | middleware | Check entitlement |
-| `getEntitlements(user)` | user: object | string[] | Get user entitlements |
+| Function                          | Parameters          | Returns    | Description           |
+| --------------------------------- | ------------------- | ---------- | --------------------- |
+| `requireEntitlement(entitlement)` | entitlement: string | middleware | Check entitlement     |
+| `getEntitlements(user)`           | user: object        | string[]   | Get user entitlements |
 
 ### Common Entitlements
+
 - `premium` - Premium features
 - `dedicated_support` - Priority support
 - `dedicated_account_manager` - Account manager
@@ -130,11 +136,12 @@
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `requireAdminSecurity(req, res, next)` | req, res, next | void | Verify admin security |
+| Function                               | Parameters     | Returns | Description           |
+| -------------------------------------- | -------------- | ------- | --------------------- |
+| `requireAdminSecurity(req, res, next)` | req, res, next | void    | Verify admin security |
 
 ### Security Checks
+
 - IP allowlist verification
 - Device fingerprint validation
 - Admin role verification
@@ -147,11 +154,12 @@
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `requireAdminStepUp(req, res, next)` | req, res, next | void | Require step-up auth |
+| Function                             | Parameters     | Returns | Description          |
+| ------------------------------------ | -------------- | ------- | -------------------- |
+| `requireAdminStepUp(req, res, next)` | req, res, next | void    | Require step-up auth |
 
 ### Step-Up Requirements
+
 - Second factor verification
 - Session timeout check
 - Re-authentication for sensitive ops
@@ -164,11 +172,12 @@
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `requireDualConfirm(req, res, next)` | req, res, next | void | Require double confirm |
+| Function                             | Parameters     | Returns | Description            |
+| ------------------------------------ | -------------- | ------- | ---------------------- |
+| `requireDualConfirm(req, res, next)` | req, res, next | void    | Require double confirm |
 
 ### Confirmation Types
+
 - Confirmation code via header
 - Secondary admin approval
 
@@ -180,11 +189,12 @@
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
+| Function                    | Parameters      | Returns    | Description       |
+| --------------------------- | --------------- | ---------- | ----------------- |
 | `adminAuditLogger(options)` | options: object | middleware | Log admin actions |
 
 ### Logged Data
+
 - Admin user ID
 - Action type
 - Target entity
@@ -194,4 +204,4 @@
 
 ---
 
-*Generated from source: server/middleware/*
+_Generated from source: server/middleware/_

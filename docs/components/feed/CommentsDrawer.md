@@ -6,6 +6,7 @@
 ## 1) Purpose
 
 Slide-in drawer for viewing and posting comments:
+
 - Load comments for feed items
 - Post new comments
 - Reply to existing comments
@@ -14,19 +15,19 @@ Slide-in drawer for viewing and posting comments:
 
 ## 2) Props
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `open` | boolean | Drawer visibility |
-| `onClose` | function | Close callback |
-| `item` | object | Feed item (id, entityType) |
+| Prop      | Type     | Description                |
+| --------- | -------- | -------------------------- |
+| `open`    | boolean  | Drawer visibility          |
+| `onClose` | function | Close callback             |
+| `item`    | object   | Feed item (id, entityType) |
 
 ## 3) API Calls
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/social/:type/:id` | GET | Load comments |
-| `/api/social/:type/:id/comment` | POST | Post comment |
-| `/api/social/:type/:id/comment/:parentId/reply` | POST | Reply to comment |
+| Endpoint                                        | Method | Purpose          |
+| ----------------------------------------------- | ------ | ---------------- |
+| `/api/social/:type/:id`                         | GET    | Load comments    |
+| `/api/social/:type/:id/comment`                 | POST   | Post comment     |
+| `/api/social/:type/:id/comment/:parentId/reply` | POST   | Reply to comment |
 
 ## 4) Dependencies
 
@@ -51,4 +52,4 @@ Slide-in drawer for viewing and posting comments:
 
 ---
 
-*Generated from source: src/components/feed/CommentsDrawer.jsx*
+_Generated from source: src/components/feed/CommentsDrawer.jsx_

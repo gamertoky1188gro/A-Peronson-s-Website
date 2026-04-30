@@ -5,6 +5,7 @@
 ## 1) Purpose
 
 Project task management interface:
+
 - Tree-view display of project tasks
 - Checkbox completion toggle
 - Nested task hierarchy
@@ -12,15 +13,18 @@ Project task management interface:
 - Save to backend or download as JSON
 
 **Backend interactions:**
+
 - PUT `/api/tasks` - Save task state to server
 
 ## 2) Page Structure (Components + Sections)
 
 ### 2.1 Imported Components
+
 - `lucide-react` - ChevronRight, ChevronDown, Check, X icons
 - `../tasks.json` - Task data import
 
 ### 2.2 Structural Sections
+
 - Header with project name
 - Filter tabs (All, Active, Completed)
 - Tree view with recursive `TreeNode` components
@@ -29,6 +33,7 @@ Project task management interface:
 ## 3) Styling (className blocks)
 
 ### 3.1 Tailwind utilities used
+
 - Layout: `flex`, `min-h-screen`, `max-w-4xl`
 - Colors: `bg-slate-50`, `bg-blue-600`, `text-slate-*`, `dark:bg-slate-900`
 - Spacing: `p-6`, `py-6`, `gap-2`, `px-3`
@@ -36,9 +41,9 @@ Project task management interface:
 
 ## 4) API Map
 
-| Frontend Call | Backend Route | Purpose |
-|---------------|---------------|---------|
-| PUT /api/tasks | `/tasks` | Save task state |
+| Frontend Call  | Backend Route | Purpose         |
+| -------------- | ------------- | --------------- |
+| PUT /api/tasks | `/tasks`      | Save task state |
 
 ## 5) Component Inventory
 
@@ -140,4 +145,4 @@ Project task management interface:
 
 ---
 
-*Generated from source: src/pages/TaskTracker.jsx*
+_Generated from source: src/pages/TaskTracker.jsx_

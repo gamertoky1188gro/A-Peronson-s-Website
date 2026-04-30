@@ -6,18 +6,19 @@
 ## 1) Purpose
 
 Modal for reporting inappropriate content:
+
 - Select report reason
 - Add details (optional)
 - Submit report
 
 ## 2) Props
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `open` | boolean | Modal visibility |
-| `onClose` | function | Close callback |
+| Prop       | Type     | Description            |
+| ---------- | -------- | ---------------------- |
+| `open`     | boolean  | Modal visibility       |
+| `onClose`  | function | Close callback         |
 | `onSubmit` | function | Submit report callback |
-| `item` | object | Item being reported |
+| `item`     | object   | Item being reported    |
 
 ## 3) Report Reasons
 
@@ -33,4 +34,4 @@ Modal for reporting inappropriate content:
 
 ---
 
-*Generated from source: src/components/feed/ReportModal.jsx*
+_Generated from source: src/components/feed/ReportModal.jsx_

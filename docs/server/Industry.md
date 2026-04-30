@@ -30,4 +30,4 @@ This doc is generated from source snapshots with `path:line` references.
 
 ---
 
-*Generated from source: server/routes/industryRoutes.js*
+_Generated from source: server/routes/industryRoutes.js_

@@ -5,6 +5,7 @@
 ## Purpose
 
 Parse and view Codex CLI JSONL session transcripts with:
+
 - JSONL parsing
 - Conversation extraction
 - Markdown rendering
@@ -30,12 +31,12 @@ codex-transcript-viewer/
 
 ### parser.py
 
-| Function | Description |
-|----------|-------------|
-| `parse_jsonl(path)` | Read JSONL file, return list of parsed JSON |
+| Function                        | Description                                      |
+| ------------------------------- | ------------------------------------------------ |
+| `parse_jsonl(path)`             | Read JSONL file, return list of parsed JSON      |
 | `extract_conversation(entries)` | Extract session metadata and conversation events |
-| `_as_text(value)` | Normalize payload fields to text |
-| `_has_positive_usage(total)` | Check for positive token usage |
+| `_as_text(value)`               | Normalize payload fields to text                 |
+| `_has_positive_usage(total)`    | Check for positive token usage                   |
 
 ### formatting.py
 
@@ -67,4 +68,4 @@ codex-transcript-viewer render input.jsonl -o output.html
 
 ---
 
-*Generated from source: codex-transcript-viewer/*
+_Generated from source: codex-transcript-viewer/_

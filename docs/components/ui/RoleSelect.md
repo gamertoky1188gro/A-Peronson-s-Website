@@ -6,6 +6,7 @@
 ## 1) Purpose
 
 Custom role dropdown selector:
+
 - Keyboard navigation support
 - Outside click to close
 - Focus management
@@ -13,12 +14,12 @@ Custom role dropdown selector:
 
 ## 2) Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `value` | string | - | Selected value |
-| `onChange` | function | - | Change callback |
-| `options` | array | [] | Role options |
-| `className` | string | "" | Additional classes |
+| Prop        | Type     | Default | Description        |
+| ----------- | -------- | ------- | ------------------ |
+| `value`     | string   | -       | Selected value     |
+| `onChange`  | function | -       | Change callback    |
+| `options`   | array    | []      | Role options       |
+| `className` | string   | ""      | Additional classes |
 
 ## 3) Features
 
@@ -34,4 +35,4 @@ Custom role dropdown selector:
 
 ---
 
-*Generated from source: src/components/ui/RoleSelect.jsx*
+_Generated from source: src/components/ui/RoleSelect.jsx_

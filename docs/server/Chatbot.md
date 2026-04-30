@@ -83,4 +83,4 @@ router.post("/settings", requireAuth, updateChatbotSettingsController);
 
 ---
 
-*Generated from source: server/routes/chatbotRoutes.js*
+_Generated from source: server/routes/chatbotRoutes.js_

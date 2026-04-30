@@ -6,6 +6,7 @@
 ## 1) Purpose
 
 Site-wide footer with:
+
 - Company info and branding
 - Navigation links (public)
 - Social/legal links (terms, privacy, contact)
@@ -28,4 +29,4 @@ Site-wide footer with:
 
 ---
 
-*Generated from source: src/components/Footer.jsx*
+_Generated from source: src/components/Footer.jsx_

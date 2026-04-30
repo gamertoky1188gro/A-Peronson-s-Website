@@ -80,4 +80,4 @@ router.post("/:journeyId/rollback", requireAuth, rollbackJourney);
 
 ---
 
-*Generated from source: server/routes/dealJourneyRoutes.js*
+_Generated from source: server/routes/dealJourneyRoutes.js_

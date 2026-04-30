@@ -7,14 +7,15 @@
     7 |   listSupportTicketMessagesController,
     8 |   postSupportTicketMessageController,
     9 | } from '../controllers/supportController.js'
-   10 | 
-   11 | const router = Router()
-   12 | 
-   13 | router.post('/reports', requireAuth, createSupportReport)
-   14 | router.get('/tickets', requireAuth, listMySupportTicketsController)
-   15 | router.post('/tickets', requireAuth, createSupportTicketController)
-   16 | router.get('/tickets/:ticketId/messages', requireAuth, listSupportTicketMessagesController)
-   17 | router.post('/tickets/:ticketId/messages', requireAuth, postSupportTicketMessageController)
-   18 | 
-   19 | export default router
-   20 | 
+
+10 |
+11 | const router = Router()
+12 |
+13 | router.post('/reports', requireAuth, createSupportReport)
+14 | router.get('/tickets', requireAuth, listMySupportTicketsController)
+15 | router.post('/tickets', requireAuth, createSupportTicketController)
+16 | router.get('/tickets/:ticketId/messages', requireAuth, listSupportTicketMessagesController)
+17 | router.post('/tickets/:ticketId/messages', requireAuth, postSupportTicketMessageController)
+18 |
+19 | export default router
+20 |

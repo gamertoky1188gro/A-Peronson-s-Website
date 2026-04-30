@@ -5,91 +5,92 @@
     5 | import { getSubscription } from './subscriptionService.js'
     6 | import { getAdminConfig } from './adminConfigService.js'
     7 | import { getPlanForUser } from './entitlementService.js'
-    8 | 
+    8 |
     9 | /**
-   10 |  * Member/Team system (Phase 2)
-   11 |  * - "Members" are stored as real user rows in `users.json` with `role: "agent"`.
-   12 |  * - This enables single-field Agent login: Email OR Agent ID (member_id).
-   13 |  * - Legacy support: if `members.json` exists with old rows, we migrate them into users.json on demand.
-   14 |  */
-   15 | 
-   16 | const USERS_FILE = 'users.json'
-   17 | const LEGACY_MEMBERS_FILE = 'members.json'
-   18 | 
-   19 | const DEFAULT_FREE_MEMBER_LIMIT = 10
-   20 | 
-   21 | // Legacy permissions are still supported for UI compatibility (checkbox list).
-   22 | const VALID_PERMISSIONS = new Set(['view_requests', 'assign_requests', 'manage_members', 'reports_only'])
-   23 | const PERMISSION_CONFLICTS = [['manage_members', 'reports_only']]
-   24 | 
-   25 | // Permission matrix is the longer-term, role-safe permission model.
-   26 | const MATRIX_SECTIONS = ['requests', 'products', 'analytics', 'members', 'documents']
-   27 | 
-   28 | function sanitizePermissions(permissions) {
-   29 |   if (!Array.isArray(permissions)) return []
-   30 |   return [...new Set(permissions.map((p) => sanitizeString(String(p), 64)).filter((p) => VALID_PERMISSIONS.has(p)))]
-   31 | }
-   32 | 
-   33 | function sanitizePermissionMatrix(rawMatrix) {
-   34 |   const input = rawMatrix && typeof rawMatrix === 'object' ? rawMatrix : {}
-   35 |   const matrix = {}
-   36 | 
-   37 |   for (const section of MATRIX_SECTIONS) {
-   38 |     const sectionValue = input?.[section] && typeof input[section] === 'object' ? input[section] : {}
-   39 |     matrix[section] = {
-   40 |       view: Boolean(sectionValue.view),
-   41 |       edit: Boolean(sectionValue.edit),
-   42 |     }
-   43 |   }
-   44 | 
-   45 |   // Hard rule: agents can never manage members from the UI/API.
-   46 |   matrix.members = { view: false, edit: false }
-   47 | 
-   48 |   return matrix
-   49 | }
-   50 | 
-   51 | function hasPermissionConflict(permissions) {
-   52 |   return PERMISSION_CONFLICTS.find(([a, b]) => permissions.includes(a) && permissions.includes(b)) || null
-   53 | }
-   54 | 
-   55 | function cleanAgent(user) {
-   56 |   const { password_hash: _passwordHash, ...safe } = user
-   57 |   return safe
-   58 | }
-   59 | 
-   60 | function normalizeAgent(orgOwnerId, payload = {}, current = null) {
-   61 |   const name = sanitizeString(payload.name ?? current?.name, 120)
-   62 |   const username = sanitizeString(payload.username ?? current?.username, 64)
-   63 |   const memberId = sanitizeString(payload.member_id ?? payload.account_id ?? current?.member_id, 64)
-   64 | 
-   65 |   // Force role to agent (this endpoint is "member management", i.e. sub-accounts).
-   66 |   const role = 'agent'
-   67 |   const status = sanitizeString(payload.status ?? current?.status ?? 'active', 32) || 'active'
-   68 | 
-   69 |   const permissions = payload.permissions === undefined
-   70 |     ? (Array.isArray(current?.permissions) ? current.permissions : [])
-   71 |     : sanitizePermissions(payload.permissions)
-   72 | 
-   73 |   const permissionMatrix = payload.permission_matrix === undefined
-   74 |     ? sanitizePermissionMatrix(current?.permission_matrix || {})
-   75 |     : sanitizePermissionMatrix(payload.permission_matrix)
-   76 | 
-   77 |   // Use a synthetic email so agents remain valid "users" but are not discoverable via search suggestions.
-   78 |   const email = sanitizeString(payload.email ?? current?.email, 160) || `agent-${memberId}@gartexhub.local`
-   79 | 
-   80 |   const messagingRestricted = sanitizeString(payload.messaging_restricted_until ?? current?.messaging_restricted_until ?? '', 64).trim()
-   81 | 
-   82 |   return {
-   83 |     id: current?.id || crypto.randomUUID(),
-   84 |     org_owner_id: orgOwnerId,
-   85 |     name,
-   86 |     username,
-   87 |     member_id: memberId,
-   88 |     account_id: memberId,
-   89 |     email: email.toLowerCase(),
-   90 |     role,
-   91 |     status,
-   92 |     // Agents are internal sub-accounts; they do not receive the public $5 wallet credit.
+
+10 | _ Member/Team system (Phase 2)
+11 | _ - "Members" are stored as real user rows in `users.json` with `role: "agent"`.
+12 | _ - This enables single-field Agent login: Email OR Agent ID (member_id).
+13 | _ - Legacy support: if `members.json` exists with old rows, we migrate them into users.json on demand.
+14 | \*/
+15 |
+16 | const USERS_FILE = 'users.json'
+17 | const LEGACY_MEMBERS_FILE = 'members.json'
+18 |
+19 | const DEFAULT_FREE_MEMBER_LIMIT = 10
+20 |
+21 | // Legacy permissions are still supported for UI compatibility (checkbox list).
+22 | const VALID_PERMISSIONS = new Set(['view_requests', 'assign_requests', 'manage_members', 'reports_only'])
+23 | const PERMISSION_CONFLICTS = [['manage_members', 'reports_only']]
+24 |
+25 | // Permission matrix is the longer-term, role-safe permission model.
+26 | const MATRIX_SECTIONS = ['requests', 'products', 'analytics', 'members', 'documents']
+27 |
+28 | function sanitizePermissions(permissions) {
+29 | if (!Array.isArray(permissions)) return []
+30 | return [...new Set(permissions.map((p) => sanitizeString(String(p), 64)).filter((p) => VALID_PERMISSIONS.has(p)))]
+31 | }
+32 |
+33 | function sanitizePermissionMatrix(rawMatrix) {
+34 | const input = rawMatrix && typeof rawMatrix === 'object' ? rawMatrix : {}
+35 | const matrix = {}
+36 |
+37 | for (const section of MATRIX_SECTIONS) {
+38 | const sectionValue = input?.[section] && typeof input[section] === 'object' ? input[section] : {}
+39 | matrix[section] = {
+40 | view: Boolean(sectionValue.view),
+41 | edit: Boolean(sectionValue.edit),
+42 | }
+43 | }
+44 |
+45 | // Hard rule: agents can never manage members from the UI/API.
+46 | matrix.members = { view: false, edit: false }
+47 |
+48 | return matrix
+49 | }
+50 |
+51 | function hasPermissionConflict(permissions) {
+52 | return PERMISSION_CONFLICTS.find(([a, b]) => permissions.includes(a) && permissions.includes(b)) || null
+53 | }
+54 |
+55 | function cleanAgent(user) {
+56 | const { password_hash: \_passwordHash, ...safe } = user
+57 | return safe
+58 | }
+59 |
+60 | function normalizeAgent(orgOwnerId, payload = {}, current = null) {
+61 | const name = sanitizeString(payload.name ?? current?.name, 120)
+62 | const username = sanitizeString(payload.username ?? current?.username, 64)
+63 | const memberId = sanitizeString(payload.member_id ?? payload.account_id ?? current?.member_id, 64)
+64 |
+65 | // Force role to agent (this endpoint is "member management", i.e. sub-accounts).
+66 | const role = 'agent'
+67 | const status = sanitizeString(payload.status ?? current?.status ?? 'active', 32) || 'active'
+68 |
+69 | const permissions = payload.permissions === undefined
+70 | ? (Array.isArray(current?.permissions) ? current.permissions : [])
+71 | : sanitizePermissions(payload.permissions)
+72 |
+73 | const permissionMatrix = payload.permission_matrix === undefined
+74 | ? sanitizePermissionMatrix(current?.permission_matrix || {})
+75 | : sanitizePermissionMatrix(payload.permission_matrix)
+76 |
+77 | // Use a synthetic email so agents remain valid "users" but are not discoverable via search suggestions.
+78 | const email = sanitizeString(payload.email ?? current?.email, 160) || `agent-${memberId}@gartexhub.local`
+79 |
+80 | const messagingRestricted = sanitizeString(payload.messaging_restricted_until ?? current?.messaging_restricted_until ?? '', 64).trim()
+81 |
+82 | return {
+83 | id: current?.id || crypto.randomUUID(),
+84 | org_owner_id: orgOwnerId,
+85 | name,
+86 | username,
+87 | member_id: memberId,
+88 | account_id: memberId,
+89 | email: email.toLowerCase(),
+90 | role,
+91 | status,
+92 | // Agents are internal sub-accounts; they do not receive the public $5 wallet credit.
    93 |     wallet_balance_usd: Number(current?.wallet_balance_usd ?? 0),
    94 |     policy_strikes: Number(current?.policy_strikes ?? 0),
    95 |     messaging_restricted_until: messagingRestricted || null,
@@ -278,82 +279,82 @@
   278 |   const conflict = hasPermissionConflict(next.permissions)
   279 |   if (conflict) {
   280 |     const error = new Error(`Permission conflict: ${conflict[0]} cannot be combined with ${conflict[1]}`)
-  281 |     error.status = 400
-  282 |     throw error
-  283 |   }
-  284 | 
-  285 |   const orgAgents = users
-  286 |     .filter((u) => String(u.role || '').toLowerCase() === 'agent')
-  287 |     .filter((u) => String(u.org_owner_id) === String(orgOwnerId))
-  288 | 
-  289 |   const orgOwner = users.find((u) => String(u.id) === String(orgOwnerId)) || null
-  290 |   await assertFreePlanMemberLimit(orgOwnerId, orgAgents, current, next.status, orgOwner)
-  291 | 
-  292 |   users[idx] = {
-  293 |     ...current,
-  294 |     ...next,
-  295 |     password_hash: current.password_hash,
-  296 |   }
-  297 | 
-  298 |   await writeAllUsersRaw(users)
-  299 |   return cleanAgent(users[idx])
-  300 | }
-  301 | 
-  302 | export async function updateMemberPermissions(orgOwnerId, memberId, permissionsPayload, permissionMatrixPayload) {
-  303 |   return updateMember(orgOwnerId, memberId, { permissions: permissionsPayload, permission_matrix: permissionMatrixPayload })
-  304 | }
-  305 | 
-  306 | export async function resetMemberPassword(orgOwnerId, memberId) {
-  307 |   await migrateLegacyMembersIfNeeded()
-  308 |   const users = await readAllUsersRaw()
-  309 |   const idx = users.findIndex((u) => String(u.id) === String(memberId) && String(u.org_owner_id) === String(orgOwnerId) && String(u.role || '').toLowerCase() === 'agent')
-  310 |   if (idx < 0) return null
-  311 | 
-  312 |   const tempPassword = crypto.randomBytes(6).toString('base64url')
-  313 |   users[idx] = {
-  314 |     ...users[idx],
-  315 |     password_hash: await bcrypt.hash(tempPassword, 10),
-  316 |     password_reset_at: new Date().toISOString(),
-  317 |     updated_at: new Date().toISOString(),
-  318 |   }
-  319 | 
-  320 |   await writeAllUsersRaw(users)
-  321 |   return { member: cleanAgent(users[idx]), temporary_password: tempPassword }
-  322 | }
-  323 | 
-  324 | export async function deactivateOrRemoveMember(orgOwnerId, memberId, mode = 'deactivate') {
-  325 |   await migrateLegacyMembersIfNeeded()
-  326 |   const users = await readAllUsersRaw()
-  327 |   const idx = users.findIndex((u) => String(u.id) === String(memberId) && String(u.org_owner_id) === String(orgOwnerId) && String(u.role || '').toLowerCase() === 'agent')
-  328 |   if (idx < 0) return null
-  329 | 
-  330 |   if (mode === 'remove') {
-  331 |     const [removed] = users.splice(idx, 1)
-  332 |     await writeAllUsersRaw(users)
-  333 |     return { removed: cleanAgent(removed), mode: 'remove' }
-  334 |   }
-  335 | 
-  336 |   users[idx] = {
-  337 |     ...users[idx],
-  338 |     status: 'inactive',
-  339 |     updated_at: new Date().toISOString(),
-  340 |   }
-  341 |   await writeAllUsersRaw(users)
-  342 |   return { member: cleanAgent(users[idx]), mode: 'deactivate' }
-  343 | }
-  344 | 
-  345 | export async function getMemberConstraints(orgOwnerRecord = null) {
-  346 |   const config = await getAdminConfig()
-  347 |   const freeLimit = Number(config?.plan_limits?.free?.agent_limit ?? DEFAULT_FREE_MEMBER_LIMIT)
-  348 |   const premiumLimit = Number(config?.plan_limits?.premium?.agent_limit ?? 999)
-  349 |   const plan = orgOwnerRecord ? await getPlanForUser(orgOwnerRecord) : 'free'
-  350 |   return {
-  351 |     plan,
-  352 |     free_member_limit: freeLimit,
-  353 |     premium_member_limit: premiumLimit,
-  354 |     valid_permissions: [...VALID_PERMISSIONS],
-  355 |     permission_conflicts: PERMISSION_CONFLICTS,
-  356 |     permission_matrix_sections: MATRIX_SECTIONS,
-  357 |   }
-  358 | }
-  359 | 
+281 | error.status = 400
+282 | throw error
+283 | }
+284 |
+285 | const orgAgents = users
+286 | .filter((u) => String(u.role || '').toLowerCase() === 'agent')
+287 | .filter((u) => String(u.org_owner_id) === String(orgOwnerId))
+288 |
+289 | const orgOwner = users.find((u) => String(u.id) === String(orgOwnerId)) || null
+290 | await assertFreePlanMemberLimit(orgOwnerId, orgAgents, current, next.status, orgOwner)
+291 |
+292 | users[idx] = {
+293 | ...current,
+294 | ...next,
+295 | password_hash: current.password_hash,
+296 | }
+297 |
+298 | await writeAllUsersRaw(users)
+299 | return cleanAgent(users[idx])
+300 | }
+301 |
+302 | export async function updateMemberPermissions(orgOwnerId, memberId, permissionsPayload, permissionMatrixPayload) {
+303 | return updateMember(orgOwnerId, memberId, { permissions: permissionsPayload, permission_matrix: permissionMatrixPayload })
+304 | }
+305 |
+306 | export async function resetMemberPassword(orgOwnerId, memberId) {
+307 | await migrateLegacyMembersIfNeeded()
+308 | const users = await readAllUsersRaw()
+309 | const idx = users.findIndex((u) => String(u.id) === String(memberId) && String(u.org_owner_id) === String(orgOwnerId) && String(u.role || '').toLowerCase() === 'agent')
+310 | if (idx < 0) return null
+311 |
+312 | const tempPassword = crypto.randomBytes(6).toString('base64url')
+313 | users[idx] = {
+314 | ...users[idx],
+315 | password_hash: await bcrypt.hash(tempPassword, 10),
+316 | password_reset_at: new Date().toISOString(),
+317 | updated_at: new Date().toISOString(),
+318 | }
+319 |
+320 | await writeAllUsersRaw(users)
+321 | return { member: cleanAgent(users[idx]), temporary_password: tempPassword }
+322 | }
+323 |
+324 | export async function deactivateOrRemoveMember(orgOwnerId, memberId, mode = 'deactivate') {
+325 | await migrateLegacyMembersIfNeeded()
+326 | const users = await readAllUsersRaw()
+327 | const idx = users.findIndex((u) => String(u.id) === String(memberId) && String(u.org_owner_id) === String(orgOwnerId) && String(u.role || '').toLowerCase() === 'agent')
+328 | if (idx < 0) return null
+329 |
+330 | if (mode === 'remove') {
+331 | const [removed] = users.splice(idx, 1)
+332 | await writeAllUsersRaw(users)
+333 | return { removed: cleanAgent(removed), mode: 'remove' }
+334 | }
+335 |
+336 | users[idx] = {
+337 | ...users[idx],
+338 | status: 'inactive',
+339 | updated_at: new Date().toISOString(),
+340 | }
+341 | await writeAllUsersRaw(users)
+342 | return { member: cleanAgent(users[idx]), mode: 'deactivate' }
+343 | }
+344 |
+345 | export async function getMemberConstraints(orgOwnerRecord = null) {
+346 | const config = await getAdminConfig()
+347 | const freeLimit = Number(config?.plan_limits?.free?.agent_limit ?? DEFAULT_FREE_MEMBER_LIMIT)
+348 | const premiumLimit = Number(config?.plan_limits?.premium?.agent_limit ?? 999)
+349 | const plan = orgOwnerRecord ? await getPlanForUser(orgOwnerRecord) : 'free'
+350 | return {
+351 | plan,
+352 | free_member_limit: freeLimit,
+353 | premium_member_limit: premiumLimit,
+354 | valid_permissions: [...VALID_PERMISSIONS],
+355 | permission_conflicts: PERMISSION_CONFLICTS,
+356 | permission_matrix_sections: MATRIX_SECTIONS,
+357 | }
+358 | }
+359 |

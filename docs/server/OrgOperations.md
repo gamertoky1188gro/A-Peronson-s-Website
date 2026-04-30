@@ -58,4 +58,4 @@ All routes require auth + roles: owner, admin, buying_house, factory, agent
 
 ---
 
-*Generated from source: server/routes/orgOperationsRoutes.js*
+_Generated from source: server/routes/orgOperationsRoutes.js_

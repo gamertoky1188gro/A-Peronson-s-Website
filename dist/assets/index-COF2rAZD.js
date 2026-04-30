@@ -47275,31 +47275,29 @@ function hA(e) {
         f && Array.isArray(n.media) && n.media.length
           ? (0, U.jsx)(`div`, {
               className: `mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2`,
-              children: n.media
-                .slice(0, 4)
-                .map((e, t) =>
-                  (0, U.jsx)(
-                    `div`,
-                    {
-                      className: `overflow-hidden rounded-xl ring-1 ring-slate-200/70 bg-slate-100 dark:bg-slate-900 dark:ring-white/10`,
-                      children:
-                        e.type === `video`
-                          ? (0, U.jsx)(`video`, {
-                              className: `h-44 w-full object-cover`,
-                              src: e.url,
-                              controls: !0,
-                              preload: `metadata`,
-                            })
-                          : (0, U.jsx)(`img`, {
-                              className: `h-44 w-full object-cover`,
-                              src: e.url,
-                              alt: e.alt || n.title || `Feed media`,
-                              loading: `lazy`,
-                            }),
-                    },
-                    `${n.id}-media-${t}`,
-                  ),
+              children: n.media.slice(0, 4).map((e, t) =>
+                (0, U.jsx)(
+                  `div`,
+                  {
+                    className: `overflow-hidden rounded-xl ring-1 ring-slate-200/70 bg-slate-100 dark:bg-slate-900 dark:ring-white/10`,
+                    children:
+                      e.type === `video`
+                        ? (0, U.jsx)(`video`, {
+                            className: `h-44 w-full object-cover`,
+                            src: e.url,
+                            controls: !0,
+                            preload: `metadata`,
+                          })
+                        : (0, U.jsx)(`img`, {
+                            className: `h-44 w-full object-cover`,
+                            src: e.url,
+                            alt: e.alt || n.title || `Feed media`,
+                            loading: `lazy`,
+                          }),
+                  },
+                  `${n.id}-media-${t}`,
                 ),
+              ),
             })
           : null),
       (t[57] = f),
@@ -47413,21 +47411,19 @@ function hA(e) {
         f && Array.isArray(n.links) && n.links.length
           ? (0, U.jsx)(`div`, {
               className: `mt-2 flex flex-col gap-1`,
-              children: n.links
-                .slice(0, 4)
-                .map((e, t) =>
-                  (0, U.jsx)(
-                    `a`,
-                    {
-                      href: e,
-                      target: `_blank`,
-                      rel: `noreferrer`,
-                      className: `text-xs text-gtBlue hover:underline break-all`,
-                      children: e,
-                    },
-                    `${n.id}-url-${t}`,
-                  ),
+              children: n.links.slice(0, 4).map((e, t) =>
+                (0, U.jsx)(
+                  `a`,
+                  {
+                    href: e,
+                    target: `_blank`,
+                    rel: `noreferrer`,
+                    className: `text-xs text-gtBlue hover:underline break-all`,
+                    children: e,
+                  },
+                  `${n.id}-url-${t}`,
                 ),
+              ),
             })
           : null),
       (t[79] = f),
@@ -51486,42 +51482,40 @@ function XA() {
                     className: `space-y-3`,
                     children:
                       k.length > 0
-                        ? k
-                            .slice(0, 5)
-                            .map((e) =>
-                              (0, U.jsxs)(
-                                `a`,
-                                {
-                                  href: `/product/${e.id}`,
-                                  className: `flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-3 hover:border-sky-300 dark:hover:border-sky-700`,
-                                  children: [
-                                    (0, U.jsx)(`div`, {
-                                      className: `flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/20`,
-                                      children: (0, U.jsx)(Qn, {
-                                        className: `h-5 w-5`,
+                        ? k.slice(0, 5).map((e) =>
+                            (0, U.jsxs)(
+                              `a`,
+                              {
+                                href: `/product/${e.id}`,
+                                className: `flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-3 hover:border-sky-300 dark:hover:border-sky-700`,
+                                children: [
+                                  (0, U.jsx)(`div`, {
+                                    className: `flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/20`,
+                                    children: (0, U.jsx)(Qn, {
+                                      className: `h-5 w-5`,
+                                    }),
+                                  }),
+                                  (0, U.jsxs)(`div`, {
+                                    className: `min-w-0 flex-1`,
+                                    children: [
+                                      (0, U.jsx)(`div`, {
+                                        className: `truncate text-sm font-medium text-slate-900 dark:text-white`,
+                                        children: e.title || e.name,
                                       }),
-                                    }),
-                                    (0, U.jsxs)(`div`, {
-                                      className: `min-w-0 flex-1`,
-                                      children: [
-                                        (0, U.jsx)(`div`, {
-                                          className: `truncate text-sm font-medium text-slate-900 dark:text-white`,
-                                          children: e.title || e.name,
-                                        }),
-                                        (0, U.jsx)(`div`, {
-                                          className: `truncate text-xs text-slate-500 dark:text-slate-400`,
-                                          children: e.subtitle || e.description,
-                                        }),
-                                      ],
-                                    }),
-                                    (0, U.jsx)(Jn, {
-                                      className: `h-4 w-4 text-slate-400`,
-                                    }),
-                                  ],
-                                },
-                                e.id,
-                              ),
-                            )
+                                      (0, U.jsx)(`div`, {
+                                        className: `truncate text-xs text-slate-500 dark:text-slate-400`,
+                                        children: e.subtitle || e.description,
+                                      }),
+                                    ],
+                                  }),
+                                  (0, U.jsx)(Jn, {
+                                    className: `h-4 w-4 text-slate-400`,
+                                  }),
+                                ],
+                              },
+                              e.id,
+                            ),
+                          )
                         : (0, U.jsx)(`div`, {
                             className: `text-sm text-slate-500 dark:text-slate-400`,
                             children: `No recent views`,
@@ -68076,24 +68070,22 @@ function lN() {
                   children: (0, U.jsx)(`div`, {
                     className: `space-y-3`,
                     children: kt?.missing_required?.length
-                      ? kt.missing_required
-                          .slice(0, 6)
-                          .map((e) =>
-                            (0, U.jsxs)(
-                              `div`,
-                              {
-                                className: `flex items-center justify-between rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200`,
-                                children: [
-                                  (0, U.jsx)(`span`, { children: e }),
-                                  (0, U.jsx)(`span`, {
-                                    className: `text-xs font-semibold`,
-                                    children: `Required`,
-                                  }),
-                                ],
-                              },
-                              e,
-                            ),
-                          )
+                      ? kt.missing_required.slice(0, 6).map((e) =>
+                          (0, U.jsxs)(
+                            `div`,
+                            {
+                              className: `flex items-center justify-between rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200`,
+                              children: [
+                                (0, U.jsx)(`span`, { children: e }),
+                                (0, U.jsx)(`span`, {
+                                  className: `text-xs font-semibold`,
+                                  children: `Required`,
+                                }),
+                              ],
+                            },
+                            e,
+                          ),
+                        )
                       : (0, U.jsx)(`div`, {
                           className: `rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200`,
                           children: `All verification documents have been uploaded.`,
@@ -83781,42 +83773,40 @@ function oie() {
                 (0, U.jsxs)(`div`, {
                   className: `mt-3 space-y-3`,
                   children: [
-                    (c || [])
-                      .slice(0, 6)
-                      .map((e) =>
-                        (0, U.jsxs)(
-                          `div`,
-                          {
-                            className: `rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white p-4 dark:bg-slate-900/60`,
-                            children: [
-                              (0, U.jsx)(`p`, {
-                                className: `text-sm font-semibold text-slate-900 dark:text-slate-100`,
-                                children:
-                                  e.title || e.category || `Buyer request`,
-                              }),
-                              (0, U.jsxs)(`p`, {
-                                className: `mt-1 text-xs text-slate-500`,
-                                children: [
-                                  e.category || `--`,
-                                  ` - MOQ `,
-                                  e.moq || `--`,
-                                  ` - Price`,
-                                  ` `,
-                                  e.price_range || `--`,
-                                ],
-                              }),
-                              (0, U.jsxs)(`p`, {
-                                className: `mt-2 text-xs text-slate-500`,
-                                children: [
-                                  `Buyer: `,
-                                  e.author?.name || e.buyer_name || `Buyer`,
-                                ],
-                              }),
-                            ],
-                          },
-                          e.id,
-                        ),
+                    (c || []).slice(0, 6).map((e) =>
+                      (0, U.jsxs)(
+                        `div`,
+                        {
+                          className: `rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white p-4 dark:bg-slate-900/60`,
+                          children: [
+                            (0, U.jsx)(`p`, {
+                              className: `text-sm font-semibold text-slate-900 dark:text-slate-100`,
+                              children:
+                                e.title || e.category || `Buyer request`,
+                            }),
+                            (0, U.jsxs)(`p`, {
+                              className: `mt-1 text-xs text-slate-500`,
+                              children: [
+                                e.category || `--`,
+                                ` - MOQ `,
+                                e.moq || `--`,
+                                ` - Price`,
+                                ` `,
+                                e.price_range || `--`,
+                              ],
+                            }),
+                            (0, U.jsxs)(`p`, {
+                              className: `mt-2 text-xs text-slate-500`,
+                              children: [
+                                `Buyer: `,
+                                e.author?.name || e.buyer_name || `Buyer`,
+                              ],
+                            }),
+                          ],
+                        },
+                        e.id,
                       ),
+                    ),
                     c.length
                       ? null
                       : (0, U.jsx)(`div`, {
@@ -83837,41 +83827,39 @@ function oie() {
                 (0, U.jsxs)(`div`, {
                   className: `mt-3 space-y-3`,
                   children: [
-                    (u || [])
-                      .slice(0, 6)
-                      .map((e) =>
-                        (0, U.jsxs)(
-                          `div`,
-                          {
-                            className: `rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white p-4 dark:bg-slate-900/60`,
-                            children: [
-                              (0, U.jsx)(`p`, {
-                                className: `text-sm font-semibold text-slate-900 dark:text-slate-100`,
-                                children: e.title || `Product`,
-                              }),
-                              (0, U.jsxs)(`p`, {
-                                className: `mt-1 text-xs text-slate-500`,
-                                children: [
-                                  e.category || `--`,
-                                  ` - MOQ `,
-                                  e.moq || `--`,
-                                  ` - Lead time `,
-                                  e.lead_time_days || `--`,
-                                ],
-                              }),
-                              (0, U.jsxs)(`p`, {
-                                className: `mt-2 text-xs text-slate-500`,
-                                children: [
-                                  `Company:`,
-                                  ` `,
-                                  e.author?.name || e.company_name || `Company`,
-                                ],
-                              }),
-                            ],
-                          },
-                          e.id,
-                        ),
+                    (u || []).slice(0, 6).map((e) =>
+                      (0, U.jsxs)(
+                        `div`,
+                        {
+                          className: `rounded-2xl shadow-borderless dark:shadow-borderlessDark bg-white p-4 dark:bg-slate-900/60`,
+                          children: [
+                            (0, U.jsx)(`p`, {
+                              className: `text-sm font-semibold text-slate-900 dark:text-slate-100`,
+                              children: e.title || `Product`,
+                            }),
+                            (0, U.jsxs)(`p`, {
+                              className: `mt-1 text-xs text-slate-500`,
+                              children: [
+                                e.category || `--`,
+                                ` - MOQ `,
+                                e.moq || `--`,
+                                ` - Lead time `,
+                                e.lead_time_days || `--`,
+                              ],
+                            }),
+                            (0, U.jsxs)(`p`, {
+                              className: `mt-2 text-xs text-slate-500`,
+                              children: [
+                                `Company:`,
+                                ` `,
+                                e.author?.name || e.company_name || `Company`,
+                              ],
+                            }),
+                          ],
+                        },
+                        e.id,
                       ),
+                    ),
                     u.length
                       ? null
                       : (0, U.jsx)(`div`, {
@@ -119339,30 +119327,26 @@ function yle() {
                                                   (0, U.jsxs)(`div`, {
                                                     className: `mt-3 space-y-2 text-[11px] text-slate-600 dark:text-slate-300`,
                                                     children: [
-                                                      se
-                                                        .slice(0, 4)
-                                                        .map((e) =>
-                                                          (0, U.jsxs)(
-                                                            `div`,
-                                                            {
-                                                              className: `rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1`,
-                                                              children: [
-                                                                e.entry_type ||
-                                                                  e.type,
-                                                                ` · $`,
-                                                                e.amount_usd ||
-                                                                  0,
-                                                                ` ·`,
-                                                                ` `,
-                                                                e.reason ||
-                                                                  e.note ||
-                                                                  `--`,
-                                                              ],
-                                                            },
-                                                            e.id ||
-                                                              e.created_at,
-                                                          ),
+                                                      se.slice(0, 4).map((e) =>
+                                                        (0, U.jsxs)(
+                                                          `div`,
+                                                          {
+                                                            className: `rounded-xl shadow-borderless dark:shadow-borderlessDark px-2 py-1`,
+                                                            children: [
+                                                              e.entry_type ||
+                                                                e.type,
+                                                              ` · $`,
+                                                              e.amount_usd || 0,
+                                                              ` ·`,
+                                                              ` `,
+                                                              e.reason ||
+                                                                e.note ||
+                                                                `--`,
+                                                            ],
+                                                          },
+                                                          e.id || e.created_at,
                                                         ),
+                                                      ),
                                                       se.length === 0
                                                         ? (0, U.jsx)(`div`, {
                                                             className: `text-[11px] text-slate-400`,

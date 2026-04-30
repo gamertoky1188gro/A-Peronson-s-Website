@@ -5,12 +5,14 @@
 ## 1) Purpose
 
 Feedback/rating submission page:
+
 - Display pending feedback requests
 - Submit ratings (1-5 stars) with optional comments
 - View user profiles via lookup
 - Track interaction types
 
 **Backend interactions:**
+
 - GET `/api/ratings/feedback-requests` - Fetch pending feedback requests
 - POST `/api/users/lookup` - Lookup user profiles by IDs
 - POST `/api/ratings/profiles/:profile_key` - Submit rating
@@ -18,9 +20,11 @@ Feedback/rating submission page:
 ## 2) Page Structure (Components + Sections)
 
 ### 2.1 Imported Components
+
 - `react-router-dom` - useSearchParams
 
 ### 2.2 Structural Sections
+
 - Header with description
 - Feedback message banner
 - Feedback requests list with:
@@ -32,6 +36,7 @@ Feedback/rating submission page:
 ## 3) Styling (className blocks)
 
 ### 3.1 Tailwind utilities used
+
 - Layout: `flex`, `min-h-screen`, `max-w-5xl`
 - Colors: `bg-slate-50`, `bg-amber-400`, `text-slate-*`, `dark:bg-[#020617]`
 - Spacing: `p-6`, `py-6`, `space-y-4`, `gap-1`
@@ -39,11 +44,11 @@ Feedback/rating submission page:
 
 ## 4) API Map
 
-| Frontend Call | Backend Route | Purpose |
-|---------------|---------------|---------|
-| GET /api/ratings/feedback-requests | `/ratings/feedback-requests` | Get pending requests |
-| POST /api/users/lookup | `/users/lookup` | Lookup user profiles |
-| POST /api/ratings/profiles/:profile_key | `/ratings/profiles/:profile_key` | Submit rating |
+| Frontend Call                           | Backend Route                    | Purpose              |
+| --------------------------------------- | -------------------------------- | -------------------- |
+| GET /api/ratings/feedback-requests      | `/ratings/feedback-requests`     | Get pending requests |
+| POST /api/users/lookup                  | `/users/lookup`                  | Lookup user profiles |
+| POST /api/ratings/profiles/:profile_key | `/ratings/profiles/:profile_key` | Submit rating        |
 
 ## 5) Component Inventory
 
@@ -144,4 +149,4 @@ Feedback/rating submission page:
 
 ---
 
-*Generated from source: src/pages/RatingFeedback.jsx*
+_Generated from source: src/pages/RatingFeedback.jsx_

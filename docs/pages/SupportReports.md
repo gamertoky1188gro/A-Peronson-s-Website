@@ -5,6 +5,7 @@
 ## 1) Purpose
 
 Support ticket system:
+
 - Submit bug reports, feature requests, account issues
 - Category and priority selection
 - File attachment support
@@ -12,6 +13,7 @@ Support ticket system:
 - Reply to ticket threads
 
 **Backend interactions:**
+
 - GET `/api/support/tickets` - List user's tickets
 - POST `/api/support/tickets` - Create new ticket
 - GET `/api/support/tickets/:id/messages` - Get ticket messages
@@ -20,9 +22,11 @@ Support ticket system:
 ## 2) Page Structure (Components + Sections)
 
 ### 2.1 Imported Components
+
 - `../lib/auth` - apiRequest, API_BASE, getCurrentUser, getToken, hasEntitlement
 
 ### 2.2 Structural Sections
+
 - Account manager info (if entitled)
 - New ticket form:
   - Subject, Category dropdown
@@ -37,6 +41,7 @@ Support ticket system:
 ## 3) Styling (className blocks)
 
 ### 3.1 Tailwind utilities used
+
 - Layout: `flex`, `grid`, `min-h-screen`, `max-w-3xl`
 - Colors: `bg-slate-50`, `text-slate-*`, `dark:bg-[#020617]`
 - Spacing: `p-6`, `py-6`, `gap-4`, `space-y-4`
@@ -44,12 +49,12 @@ Support ticket system:
 
 ## 4) API Map
 
-| Frontend Call | Backend Route | Purpose |
-|---------------|---------------|---------|
-| GET /api/support/tickets | `/support/tickets` | List tickets |
-| POST /api/support/tickets | `/support/tickets` | Create ticket |
-| GET /api/support/tickets/:id/messages | `/support/tickets/:id/messages` | Get messages |
-| POST /api/documents | `/documents` | Upload attachment |
+| Frontend Call                         | Backend Route                   | Purpose           |
+| ------------------------------------- | ------------------------------- | ----------------- |
+| GET /api/support/tickets              | `/support/tickets`              | List tickets      |
+| POST /api/support/tickets             | `/support/tickets`              | Create ticket     |
+| GET /api/support/tickets/:id/messages | `/support/tickets/:id/messages` | Get messages      |
+| POST /api/documents                   | `/documents`                    | Upload attachment |
 
 ## 5) Component Inventory
 
@@ -153,4 +158,4 @@ Support ticket system:
 
 ---
 
-*Generated from source: src/pages/SupportReports.jsx*
+_Generated from source: src/pages/SupportReports.jsx_

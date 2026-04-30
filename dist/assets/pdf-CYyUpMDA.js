@@ -12950,15 +12950,13 @@ var Er = class e {
     getMetadata() {
       let e = `GetMetadata`;
       return this.#t.getOrInsertComputed(e, () =>
-        this.messageHandler
-          .sendWithPromise(e, null)
-          .then((e) => ({
-            info: e[0],
-            metadata: e[1] ? new Ln(e[1]) : null,
-            contentDispositionFilename: this.#e?.filename ?? null,
-            contentLength: this.#e?.contentLength ?? null,
-            hasStructTree: e[2],
-          })),
+        this.messageHandler.sendWithPromise(e, null).then((e) => ({
+          info: e[0],
+          metadata: e[1] ? new Ln(e[1]) : null,
+          contentDispositionFilename: this.#e?.filename ?? null,
+          contentLength: this.#e?.contentLength ?? null,
+          hasStructTree: e[2],
+        })),
       );
     }
     getMarkInfo() {

@@ -5,12 +5,14 @@
 ## 1) Purpose
 
 Primary admin dashboard for platform-wide management. Provides:
+
 - Platform metrics dashboard (users, orgs, verification, finance, wallet)
 - Action center for bulk admin operations
 - Configurable UI sections via `useAdminConfig` hook
 - Infrastructure, network, server-admin, CMS, and ultra-security management tabs
 
 **Backend interactions:**
+
 - GET `/admin/config` - Load admin panel configuration
 - POST `/admin/actions` - Execute admin actions (users, orgs, verification, finance, etc.)
 - POST `/infra/actions` - Infrastructure management actions
@@ -22,12 +24,14 @@ Primary admin dashboard for platform-wide management. Provides:
 ## 2) Page Structure (Components + Sections)
 
 ### 2.1 Imported Components
+
 - `../components/AccessDeniedState` - Access denied fallback
 - `../components/admin/RejectionReasonModal` - Rejection reason modal
 - `../lib/auth` - apiRequest, getCurrentUser, getToken, saveSession
 - `../hooks/useAdminConfig` - useInventory, useUiConfig, useCapabilities, useActions, useActionGroups
 
 ### 2.2 Structural Sections
+
 - `<main className="min-h-screen bg-slate-950 text-slate-100">` - Main container (line ~12800)
 - Dashboard metrics grid with pie charts, line charts, area charts (recharts)
 - Action center with categorized action groups
@@ -37,6 +41,7 @@ Primary admin dashboard for platform-wide management. Provides:
 ## 3) Styling (className blocks)
 
 ### 3.1 Custom CSS utilities referenced
+
 - `.nav-glass` - Navigation glass effect
 - `.spotlight-card` - Card with spotlight effect
 - `.skeleton` - Loading skeleton
@@ -46,6 +51,7 @@ Primary admin dashboard for platform-wide management. Provides:
 - `.conic-beam` - Gradient beam effect
 
 ### 3.2 Tailwind utilities used
+
 - Layout: `flex`, `grid`, `min-h-screen`, `w-full`, `max-w-*`
 - Colors: `bg-slate-*`, `text-slate-*`, `text-emerald-*`, `bg-indigo-*`
 - Spacing: `p-*`, `m-*`, `gap-*`
@@ -53,15 +59,15 @@ Primary admin dashboard for platform-wide management. Provides:
 
 ## 4) API Map
 
-| Frontend Call | Backend Route | Controller |
-|---------------|---------------|------------|
-| GET /admin/config | `/admin/config` | adminController.getConfig |
-| POST /admin/actions | `/admin/actions` | adminController.executeAction |
-| POST /infra/actions | `/infra/actions` | infraController.executeAction |
-| POST /network/actions | `/network/actions` | networkController.executeAction |
+| Frontend Call                    | Backend Route                 | Controller                          |
+| -------------------------------- | ----------------------------- | ----------------------------------- |
+| GET /admin/config                | `/admin/config`               | adminController.getConfig           |
+| POST /admin/actions              | `/admin/actions`              | adminController.executeAction       |
+| POST /infra/actions              | `/infra/actions`              | infraController.executeAction       |
+| POST /network/actions            | `/network/actions`            | networkController.executeAction     |
 | POST /admin/server-admin/actions | `/admin/server-admin/actions` | serverAdminController.executeAction |
-| POST /admin/cms/actions | `/admin/cms/actions` | cmsController.executeAction |
-| POST /admin/security/actions | `/admin/security/actions` | securityController.executeAction |
+| POST /admin/cms/actions          | `/admin/cms/actions`          | cmsController.executeAction         |
+| POST /admin/security/actions     | `/admin/security/actions`     | securityController.executeAction    |
 
 ## 5) Component Inventory
 
@@ -196,4 +202,4 @@ Primary admin dashboard for platform-wide management. Provides:
 
 ---
 
-*Generated from source: src/pages/AdminPanel.jsx*
+_Generated from source: src/pages/AdminPanel.jsx_

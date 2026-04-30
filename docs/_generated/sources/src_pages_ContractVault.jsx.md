@@ -2,69 +2,69 @@
     2 |   Route: /contracts
     3 |   Access: Protected (login required)
     4 |   Allowed roles: buyer, buying_house, factory, owner, admin, agent
-    5 | 
+    5 |
     6 |   Public Pages:
     7 |     /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
     8 |   Protected Pages (login required):
     9 |     /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
-   10 |     /notifications, /chat, /call, /verification, /verification-center
-   11 | 
-   12 |   Primary responsibilities:
-   13 |     - Provide the "Contract Vault" experience (secure documents + signing workflow visibility).
-   14 |     - Filter contracts by state (All/Draft/Pending/Signed/Archived) with animated tab indicator.
-   15 |     - Show contract details, signature status, and downloadable artifacts.
-   16 | 
-   17 |   Key API endpoints (high level):
-   18 |     - GET /api/contracts (list)
-   19 |     - GET /api/contracts/:id (details)
-   20 |     - POST/PATCH for signing/finalizing/archiving (actions depend on role)
-   21 | 
-   22 |   Major UI/UX patterns:
-   23 |     - Secure grid background inside the vault area (visual cue for confidentiality).
-   24 |     - Shortcut hint on search (Ctrl/⌘ + K style) where applicable.
-   25 |     - Skeleton shimmer for list/detail while loading.
-   26 | */
-   27 | import React, { useEffect, useMemo, useRef, useState } from 'react'
-   28 | import { Link, useLocation } from 'react-router-dom'
-   29 | import { motion, useReducedMotion } from 'framer-motion'
-   30 | import AccessDeniedState from '../components/AccessDeniedState'
-   31 | import { API_BASE, apiRequest, getCurrentUser, getToken } from '../lib/auth'
-   32 | import { trackClientEvent } from '../lib/events'
-   33 | import JourneyTimeline from '../components/JourneyTimeline'
-   34 | 
-   35 | const Motion = motion
-   36 | 
-   37 | function toLabel(status) {
-   38 |   // Map backend status -> readable label for UI chips.
-   39 |   switch (status) {
-   40 |     case 'draft':
-   41 |       return 'Draft'
-   42 |     case 'pending_signature':
-   43 |       return 'Pending signatures'
-   44 |     case 'signed':
-   45 |       return 'Signed'
-   46 |     case 'archived':
-   47 |       return 'Archived'
-   48 |     default:
-   49 |       return 'Pending signatures'
-   50 |   }
-   51 | }
-   52 | 
-   53 | function statusClass(status) {
-   54 |   // Chip styling for contract status pills (light mode defaults; dark mode handled by parent surfaces).
-   55 |   if (status === 'signed') return 'bg-emerald-50 text-emerald-700 ring-emerald-200'
-   56 |   if (status === 'draft') return 'bg-slate-50 text-slate-700 ring-slate-200'
-   57 |   if (status === 'archived') return 'bg-slate-100 text-slate-700 ring-slate-300'
-   58 |   return 'bg-amber-50 text-amber-700 ring-amber-200'
-   59 | }
-   60 | 
-   61 | function resolveDownloadUrl(pdfPath) {
-   62 |   // Normalize relative file paths returned by the backend into an absolute URL.
-   63 |   if (!pdfPath) return ''
-   64 |   if (pdfPath.startsWith('http://') || pdfPath.startsWith('https://')) return pdfPath
-   65 |   const baseOrigin = API_BASE.replace(/\/api\/*$/, '')
-   66 |   return `${baseOrigin}${pdfPath.startsWith('/') ? '' : '/'}${pdfPath}`
-   67 | }
+
+10 | /notifications, /chat, /call, /verification, /verification-center
+11 |
+12 | Primary responsibilities:
+13 | - Provide the "Contract Vault" experience (secure documents + signing workflow visibility).
+14 | - Filter contracts by state (All/Draft/Pending/Signed/Archived) with animated tab indicator.
+15 | - Show contract details, signature status, and downloadable artifacts.
+16 |
+17 | Key API endpoints (high level):
+18 | - GET /api/contracts (list)
+19 | - GET /api/contracts/:id (details)
+20 | - POST/PATCH for signing/finalizing/archiving (actions depend on role)
+21 |
+22 | Major UI/UX patterns:
+23 | - Secure grid background inside the vault area (visual cue for confidentiality).
+24 | - Shortcut hint on search (Ctrl/⌘ + K style) where applicable.
+25 | - Skeleton shimmer for list/detail while loading.
+26 | _/
+27 | import React, { useEffect, useMemo, useRef, useState } from 'react'
+28 | import { Link, useLocation } from 'react-router-dom'
+29 | import { motion, useReducedMotion } from 'framer-motion'
+30 | import AccessDeniedState from '../components/AccessDeniedState'
+31 | import { API_BASE, apiRequest, getCurrentUser, getToken } from '../lib/auth'
+32 | import { trackClientEvent } from '../lib/events'
+33 | import JourneyTimeline from '../components/JourneyTimeline'
+34 |
+35 | const Motion = motion
+36 |
+37 | function toLabel(status) {
+38 | // Map backend status -> readable label for UI chips.
+39 | switch (status) {
+40 | case 'draft':
+41 | return 'Draft'
+42 | case 'pending_signature':
+43 | return 'Pending signatures'
+44 | case 'signed':
+45 | return 'Signed'
+46 | case 'archived':
+47 | return 'Archived'
+48 | default:
+49 | return 'Pending signatures'
+50 | }
+51 | }
+52 |
+53 | function statusClass(status) {
+54 | // Chip styling for contract status pills (light mode defaults; dark mode handled by parent surfaces).
+55 | if (status === 'signed') return 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+56 | if (status === 'draft') return 'bg-slate-50 text-slate-700 ring-slate-200'
+57 | if (status === 'archived') return 'bg-slate-100 text-slate-700 ring-slate-300'
+58 | return 'bg-amber-50 text-amber-700 ring-amber-200'
+59 | }
+60 |
+61 | function resolveDownloadUrl(pdfPath) {
+62 | // Normalize relative file paths returned by the backend into an absolute URL.
+63 | if (!pdfPath) return ''
+64 | if (pdfPath.startsWith('http://') || pdfPath.startsWith('https://')) return pdfPath
+65 | const baseOrigin = API_BASE.replace(/\/api\/_$/, '')
+   66 |   return `${baseOrigin}${pdfPath.startsWith('/') ? '' : '/'}${pdfPath}`   67 | }
    68 | 
    69 | function isOwnerLevel(user) {
    70 |   return user?.role === 'owner' || user?.role === 'admin'
@@ -91,7 +91,7 @@
    91 |   const text = String(value || '').trim()
    92 |   if (!text) return '\u2014'
    93 |   if (text.length <= 4) return '\u2022\u2022\u2022\u2022'
-   94 |   return `${text.slice(0, 2)}\u2022\u2022\u2022\u2022${text.slice(-2)}`
+   94 |   return`${text.slice(0, 2)}\u2022\u2022\u2022\u2022${text.slice(-2)}`
    95 | }
    96 | 
    97 | function computeFlow(contract) {
@@ -370,7 +370,7 @@
   370 |     }
   371 |     setPaymentLoading(true)
   372 |     try {
-  373 |       const data = await apiRequest(`/payment-proofs?contract_id=${encodeURIComponent(contractId)}`, { token })
+  373 |       const data = await apiRequest(`/payment-proofs?contract*id=${encodeURIComponent(contractId)}`, { token })
   374 |       setPaymentProofs(Array.isArray(data) ? data : [])
   375 |     } catch {
   376 |       setPaymentProofs([])
@@ -784,504 +784,504 @@
   784 |               type="button"
   785 |               disabled={Boolean(selectedActionBlockers.archive) || saving}
   786 |               onClick={() => runStepAction(async (token) => apiRequest(`/documents/contracts/${selected.id}/artifact`, {
-  787 |                 method: 'PATCH',
-  788 |                 token,
-  789 |                 body: { status: 'archived' },
-  790 |               }), { type: 'contract_archived' })}
-  791 |               className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-200 disabled:text-slate-500"
-  792 |             >
-  793 |               Archive
-  794 |             </button>
-  795 |             {selectedActionBlockers.archive ? <div className="text-xs text-amber-700">{selectedActionBlockers.archive}</div> : null}
-  796 | 
-  797 |             {canDownload
-  798 |               ? <a href={downloadUrl} target="_blank" rel="noreferrer" className="rounded-xl bg-[#0A66C2] px-4 py-2 text-center text-sm font-semibold text-white hover:bg-[#0959A8]">Download PDF</a>
-  799 |               : <button type="button" disabled className="rounded-xl bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-500">Download (not ready)</button>}
-  800 |           </div>
-  801 |         </div>
-  802 |       </div>
-  803 | 
-  804 |       <div className="mt-5 rounded-2xl borderless-shadow bg-white p-4 dark:bg-slate-900/50">
-  805 |         <div className="flex items-start justify-between gap-4">
-  806 |           <div>
-  807 |             <div className="text-sm font-semibold text-slate-900">Banking references (optional)</div>
-  808 |             <div className="mt-1 text-xs text-slate-500">For fraud prevention only. No direct payments are processed on-platform.</div>
-  809 |           </div>
-  810 |           <div className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-  811 |             {canViewBankingReferences(currentUser, selected) ? 'Visible' : 'Masked'}
-  812 |           </div>
-  813 |         </div>
-  814 | 
-  815 |         <div className="mt-3 grid grid-cols-1 gap-2 text-sm text-slate-700">
-  816 |           <div>Bank name: {canViewBankingReferences(currentUser, selected) ? safeDash(selected.bank_name) : maskValue(selected.bank_name)}</div>
-  817 |           <div>Beneficiary: {canViewBankingReferences(currentUser, selected) ? safeDash(selected.beneficiary_name) : maskValue(selected.beneficiary_name)}</div>
-  818 |           <div>Transaction reference: {canViewBankingReferences(currentUser, selected) ? safeDash(selected.transaction_reference) : maskValue(selected.transaction_reference)}</div>
-  819 |         </div>
-  820 |       </div>
-  821 | 
-  822 |       <div className="mt-5 rounded-2xl borderless-shadow bg-white p-4 dark:bg-slate-900/50">
-  823 |         <div className="flex items-start justify-between gap-4">
-  824 |           <div>
-  825 |             <div className="text-sm font-semibold text-slate-900">Payment proof workflow</div>
-  826 |             <div className="mt-1 text-xs text-slate-500">Submit bank transfer or LC documents. Seller review sets status, disputes trigger internal admin review.</div>
-  827 |           </div>
-  828 |           <button type="button" onClick={() => loadPaymentProofs(selected.id)} className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700">
-  829 |             Refresh
-  830 |           </button>
-  831 |         </div>
-  832 | 
-  833 |         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-  834 |           <label className="text-xs font-semibold text-slate-600">Proof type</label>
-  835 |           <div />
-  836 |           <select
-  837 |             value={paymentForm.type}
-  838 |             onChange={(e) => setPaymentForm((prev) => ({ ...prev, type: e.target.value }))}
-  839 |             className="rounded-xl borderless-shadow px-3 py-2 text-sm"
-  840 |           >
-  841 |             <option value="bank_transfer">Bank transfer</option>
-  842 |             <option value="lc">Letter of credit (LC)</option>
-  843 |           </select>
-  844 |           <div />
-  845 | 
-  846 |           {paymentForm.type === 'bank_transfer' ? (
-  847 |             <>
-  848 |               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Transaction reference" value={paymentForm.transaction_reference} onChange={(e) => setPaymentForm((p) => ({ ...p, transaction_reference: e.target.value }))} />
-  849 |               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Bank name" value={paymentForm.bank_name} onChange={(e) => setPaymentForm((p) => ({ ...p, bank_name: e.target.value }))} />
-  850 |               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Sender account name" value={paymentForm.sender_account_name} onChange={(e) => setPaymentForm((p) => ({ ...p, sender_account_name: e.target.value }))} />
-  851 |               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Receiver/company account name" value={paymentForm.receiver_account_name} onChange={(e) => setPaymentForm((p) => ({ ...p, receiver_account_name: e.target.value }))} />
-  852 |               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" type="date" value={paymentForm.transaction_date} onChange={(e) => setPaymentForm((p) => ({ ...p, transaction_date: e.target.value }))} />
-  853 |               <div className="flex gap-2">
-  854 |                 <input className="flex-1 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))} />
-  855 |                 <input className="w-24 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Currency" value={paymentForm.currency} onChange={(e) => setPaymentForm((p) => ({ ...p, currency: e.target.value }))} />
-  856 |               </div>
-  857 |             </>
-  858 |           ) : (
-  859 |             <>
-  860 |               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="LC number" value={paymentForm.lc_number} onChange={(e) => setPaymentForm((p) => ({ ...p, lc_number: e.target.value }))} />
-  861 |               <div className="flex flex-wrap gap-2">
-  862 |                 <select
-  863 |                   value={paymentForm.lc_type}
-  864 |                   onChange={(e) => setPaymentForm((p) => ({ ...p, lc_type: e.target.value }))}
-  865 |                   className="rounded-xl borderless-shadow px-3 py-2 text-sm"
-  866 |                 >
-  867 |                   <option value="sight">Sight LC</option>
-  868 |                   <option value="usance">Usance LC</option>
-  869 |                 </select>
-  870 |                 {paymentForm.lc_type === 'usance' ? (
-  871 |                   <>
-  872 |                     <select
-  873 |                       value={paymentForm.usance_days}
-  874 |                       onChange={(e) => setPaymentForm((p) => ({ ...p, usance_days: e.target.value }))}
-  875 |                       className="rounded-xl borderless-shadow px-3 py-2 text-sm"
-  876 |                     >
-  877 |                       <option value="30">30 days</option>
-  878 |                       <option value="60">60 days</option>
-  879 |                       <option value="90">90 days</option>
-  880 |                       <option value="180">180 days</option>
-  881 |                       <option value="custom">Custom</option>
-  882 |                     </select>
-  883 |                     {String(paymentForm.usance_days) === 'custom' ? (
-  884 |                       <input
-  885 |                         className="w-32 rounded-xl borderless-shadow px-3 py-2 text-sm"
-  886 |                         placeholder="Days"
-  887 |                         value={paymentForm.usance_custom_days}
-  888 |                         onChange={(e) => setPaymentForm((p) => ({ ...p, usance_custom_days: e.target.value }))}
-  889 |                       />
-  890 |                     ) : null}
-  891 |                   </>
-  892 |                 ) : null}
-  893 |               </div>
-  894 |               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Issuing bank" value={paymentForm.issuing_bank} onChange={(e) => setPaymentForm((p) => ({ ...p, issuing_bank: e.target.value }))} />
-  895 |               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Advising bank" value={paymentForm.advising_bank} onChange={(e) => setPaymentForm((p) => ({ ...p, advising_bank: e.target.value }))} />
-  896 |               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Applicant name" value={paymentForm.applicant_name} onChange={(e) => setPaymentForm((p) => ({ ...p, applicant_name: e.target.value }))} />
-  897 |               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Beneficiary name" value={paymentForm.beneficiary_name} onChange={(e) => setPaymentForm((p) => ({ ...p, beneficiary_name: e.target.value }))} />
-  898 |               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" type="date" value={paymentForm.issue_date} onChange={(e) => setPaymentForm((p) => ({ ...p, issue_date: e.target.value }))} />
-  899 |               <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" type="date" value={paymentForm.expiry_date} onChange={(e) => setPaymentForm((p) => ({ ...p, expiry_date: e.target.value }))} />
-  900 |               <div className="flex gap-2">
-  901 |                 <input className="flex-1 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))} />
-  902 |                 <input className="w-24 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Currency" value={paymentForm.currency} onChange={(e) => setPaymentForm((p) => ({ ...p, currency: e.target.value }))} />
-  903 |               </div>
-  904 |             </>
-  905 |           )}
-  906 | 
-  907 |           <div className="sm:col-span-2">
-  908 |             <label className="text-xs font-semibold text-slate-600">Upload proof document</label>
-  909 |             <input
-  910 |               type="file"
-  911 |               className="mt-2 text-xs"
-  912 |               onChange={(e) => setPaymentForm((p) => ({ ...p, document_file: e.target.files?.[0] || null }))}
-  913 |             />
-  914 |           </div>
-  915 |         </div>
-  916 | 
-  917 |         <div className="mt-4 flex flex-wrap items-center gap-2">
-  918 |           <button
-  919 |             type="button"
-  920 |             onClick={submitPaymentProof}
-  921 |             disabled={saving}
-  922 |             className="rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
-  923 |           >
-  924 |             Submit proof
-  925 |           </button>
-  926 |           {paymentNotice ? <span className="text-xs text-slate-500">{paymentNotice}</span> : null}
-  927 |         </div>
-  928 | 
-  929 |         <div className="mt-4 space-y-2">
-  930 |           {paymentLoading ? <div className="text-xs text-slate-500">Loading proofs...</div> : null}
-  931 |           {!paymentLoading && paymentProofs.length === 0 ? <div className="text-xs text-slate-500">No proofs submitted yet.</div> : null}
-  932 |           {paymentProofs.map((proof) => {
-  933 |             const proofDocUrl = resolveDownloadUrl(proof.document_url || '')
-  934 |             return (
-  935 |             <div key={proof.id} className="rounded-xl borderless-shadow bg-slate-50 p-3 text-xs text-slate-700">
-  936 |               <div className="flex flex-wrap items-center justify-between gap-2">
-  937 |                 <div className="font-semibold">{String(proof.type || '').replace('_', ' ').toUpperCase()}</div>
-  938 |                 <div className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-slate-600 ring-1 ring-slate-200">
-  939 |                   {proof.status || 'pending'}
-  940 |                 </div>
-  941 |               </div>
-  942 |               <div className="mt-2 grid grid-cols-1 gap-1">
-  943 |                 {proof.transaction_reference ? <div>Ref: {proof.transaction_reference}</div> : null}
-  944 |                 {proof.lc_number ? <div>LC: {proof.lc_number}</div> : null}
-  945 |                 {proof.lc_type ? (
-  946 |                   <div>
-  947 |                     LC Type: {String(proof.lc_type).toUpperCase()}
-  948 |                     {proof.lc_type === 'usance' && proof.usance_days ? ` (${proof.usance_days} days)` : ''}
-  949 |                   </div>
-  950 |                 ) : null}
-  951 |                 {proof.amount ? <div>Amount: {proof.amount} {proof.currency || ''}</div> : null}
-  952 |               </div>
-  953 |               {proofDocUrl || proof.document_id ? (
-  954 |                 <div className="mt-2">
-  955 |                   {proofDocUrl ? (
-  956 |                     <a href={proofDocUrl} target="_blank" rel="noreferrer" className="text-[10px] font-semibold text-[#0A66C2] hover:underline">Open proof document</a>
-  957 |                   ) : (
-  958 |                     <span className="text-[10px] text-slate-500">Document linked</span>
-  959 |                   )}
-  960 |                 </div>
-  961 |               ) : null}
-  962 |               {canReviewPayment ? (
-  963 |                 <div className="mt-2 flex flex-wrap gap-2">
-  964 |                   {proof.type === 'bank_transfer' ? (
-  965 |                     <>
-  966 |                       <button type="button" onClick={() => updatePaymentStatus(proof.id, 'received')} className="rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-semibold text-white">Mark received</button>
-  967 |                       <button type="button" onClick={() => updatePaymentStatus(proof.id, 'pending_check')} className="rounded-full bg-amber-600 px-3 py-1 text-[10px] font-semibold text-white">Pending check</button>
-  968 |                       <button type="button" onClick={() => updatePaymentStatus(proof.id, 'not_received')} className="rounded-full bg-rose-600 px-3 py-1 text-[10px] font-semibold text-white">Not received</button>
-  969 |                     </>
-  970 |                   ) : (
-  971 |                     <>
-  972 |                       <button type="button" onClick={() => updatePaymentStatus(proof.id, 'accepted')} className="rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-semibold text-white">Accept</button>
-  973 |                       <button type="button" onClick={() => updatePaymentStatus(proof.id, 'pending_review')} className="rounded-full bg-amber-600 px-3 py-1 text-[10px] font-semibold text-white">Pending review</button>
-  974 |                       <button type="button" onClick={() => updatePaymentStatus(proof.id, 'rejected')} className="rounded-full bg-rose-600 px-3 py-1 text-[10px] font-semibold text-white">Reject</button>
-  975 |                     </>
-  976 |                   )}
-  977 |                 </div>
-  978 |               ) : null}
-  979 |             </div>
-  980 |           )})}
-  981 |         </div>
-  982 |       </div>
-  983 | 
-  984 |       <div className="mt-5 rounded-2xl borderless-shadow bg-white p-4">
-  985 |         <div className="flex items-start justify-between gap-4">
-  986 |           <div>
-  987 |             <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Call recordings</div>
-  988 |             <div className="mt-1 text-xs text-slate-500 dark:text-slate-300">Recorded calls are stored for dispute resolution and security (project.md).</div>
-  989 |           </div>
-  990 |           <div className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 dark:bg-white/5 dark:text-slate-200">
-  991 |             {callsLoading ? 'Loading...' : `${callItems.filter((c) => c.recording_url).length} available`}
-  992 |           </div>
-  993 |         </div>
-  994 | 
-  995 |         <div className="mt-3 space-y-3">
-  996 |           {callItems.map((call) => {
-  997 |             const url = resolveDownloadUrl(call.recording_url)
-  998 |             const canPlay = Boolean(call.recording_status === 'available' && url)
-  999 |             return (
- 1000 |               <div key={call.id} className="rounded-xl borderless-shadow bg-slate-50 p-3 dark:bg-black/20">
- 1001 |                 <div className="flex items-start justify-between gap-3">
- 1002 |                   <div className="min-w-0">
- 1003 |                     <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{safeDash(call.title) || 'Call session'}</div>
- 1004 |                     <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">
- 1005 |                       {safeDash(call.status)} - {call.created_at ? new Date(call.created_at).toLocaleString() : '\u2014'}
- 1006 |                     </div>
- 1007 |                   </div>
- 1008 |                   <div className="shrink-0 text-xs font-semibold text-slate-600 dark:text-slate-200">
- 1009 |                     {String(call.recording_status || 'pending')}
- 1010 |                   </div>
- 1011 |                 </div>
- 1012 | 
- 1013 |                 {canPlay ? (
- 1014 |                   <div className="mt-3">
- 1015 |                     <video
- 1016 |                       src={url}
- 1017 |                       controls
- 1018 |                       className="w-full rounded-lg bg-black/5 dark:bg-black/30"
- 1019 |                       onPlay={async () => {
- 1020 |                         try {
- 1021 |                           const token = getToken()
- 1022 |                           if (!token) return
- 1023 |                           await apiRequest(`/calls/${encodeURIComponent(call.id)}/recording/viewed`, { method: 'POST', token })
- 1024 |                         } catch {
- 1025 |                           // silent
- 1026 |                         }
- 1027 |                       }}
- 1028 |                     />
- 1029 |                   </div>
- 1030 |                 ) : (
- 1031 |                   <div className="mt-3 text-xs text-slate-600 dark:text-slate-300">Recording not available yet.</div>
- 1032 |                 )}
- 1033 |               </div>
- 1034 |             )
- 1035 |           })}
- 1036 |           {!callsLoading && callItems.length === 0 ? (
- 1037 |             <div className="text-sm text-slate-600 dark:text-slate-300">No calls linked to this contract yet.</div>
- 1038 |           ) : null}
- 1039 |         </div>
- 1040 |       </div>
- 1041 | 
- 1042 |       <div className="mt-5 rounded-2xl borderless-shadow bg-white p-4">
- 1043 |         <div className="text-sm font-semibold text-slate-900">Artifact audit</div>
- 1044 |         <div className="mt-3 grid grid-cols-1 gap-2 text-sm text-slate-700">
- 1045 |           <div>Status: {safeDash(selected.artifact?.status)}</div>
- 1046 |           <div>Generated at: {safeDash(selected.artifact?.generated_at)}</div>
- 1047 |           <div>Version: {selected.artifact?.version ?? 0}</div>
- 1048 |           <div className="break-all text-xs text-slate-600">Hash: {safeDash(selected.artifact?.pdf_hash)}</div>
- 1049 |           <div className="text-xs text-slate-600">
- 1050 |             Signer IDs: Buyer {safeDash(selected.artifact?.signer_ids?.buyer_id)} <span className="mx-1">-</span> Factory {safeDash(selected.artifact?.signer_ids?.factory_id)}
- 1051 |           </div>
- 1052 |           <div className="text-xs text-slate-600">
- 1053 |             Signature timestamps: Buyer {safeDash(selected.artifact?.signature_timestamps?.buyer_signed_at)} <span className="mx-1">-</span> Factory {safeDash(selected.artifact?.signature_timestamps?.factory_signed_at)}
- 1054 |           </div>
- 1055 |         </div>
- 1056 |       </div>
- 1057 | 
- 1058 |       <div className="mt-5 rounded-2xl borderless-shadow bg-white p-4">
- 1059 |         <div className="flex items-center justify-between gap-4">
- 1060 |           <div className="text-sm font-semibold text-slate-900">Contract Audit Trail</div>
- 1061 |           <div className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600">Premium</div>
- 1062 |         </div>
- 1063 |         {auditLoading ? (
- 1064 |           <div className="mt-3 text-sm text-slate-600">Loading audit trail...</div>
- 1065 |         ) : auditError ? (
- 1066 |           <div className="mt-3 rounded-lg borderless-shadow bg-amber-50 p-3 text-xs text-amber-800">
- 1067 |             {auditError}
- 1068 |           </div>
- 1069 |         ) : auditLog.length ? (
- 1070 |           <div className="mt-3 space-y-2 text-xs text-slate-600">
- 1071 |             {auditLog.map((entry) => (
- 1072 |               <div key={entry.id || `${entry.timestamp}-${entry.note}`} className="rounded-lg borderless-shadow bg-slate-50 p-3">
- 1073 |                 <div className="flex items-center justify-between gap-3">
- 1074 |                   <span className="font-semibold text-slate-900">{entry.action || 'update'}</span>
- 1075 |                   <span>{entry.timestamp ? new Date(entry.timestamp).toLocaleString() : '\u2014'}</span>
- 1076 |                 </div>
- 1077 |                 <div className="mt-1 text-slate-600">{entry.note || 'Audit entry recorded.'}</div>
- 1078 |                 {entry.actor_name || entry.actor_id ? (
- 1079 |                   <div className="mt-2 text-[11px] text-slate-500">By {entry.actor_name || entry.actor_id}</div>
- 1080 |                 ) : null}
- 1081 |               </div>
- 1082 |             ))}
- 1083 |           </div>
- 1084 |         ) : (
- 1085 |           <div className="mt-3 text-sm text-slate-600">No audit entries yet.</div>
- 1086 |         )}
- 1087 |       </div>
- 1088 |     </div>
- 1089 |   ) : (
- 1090 |     <div className="rounded-2xl borderless-shadow bg-white p-10 text-center text-sm text-slate-600">
- 1091 |       Select a contract to see details.
- 1092 |     </div>
- 1093 |   )
- 1094 | 
- 1095 |   return (
- 1096 |     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
- 1097 |       <div className="mx-auto max-w-7xl p-4 sm:p-6">
- 1098 |         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
- 1099 |           <div>
- 1100 |             <div className="text-xs font-semibold text-[var(--gt-blue)]">Vault</div>
- 1101 |             <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">Contract Vault</h1>
- 1102 |             <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Draft → Sign → PDF artifact → Lock → Archive</p>
- 1103 |           </div>
- 1104 |           <div className="flex flex-wrap items-center gap-2">
- 1105 |             <Link to="/owner" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8">Dashboard</Link>
- 1106 |             <Link to="/notifications" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8">Notifications</Link>
- 1107 |             <button
- 1108 |               type="button"
- 1109 |               disabled={!canCreateDraft(currentUser)}
- 1110 |               onClick={() => setDraftOpen(true)}
- 1111 |               className="rounded-full bg-[var(--gt-blue)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95 disabled:bg-slate-200 disabled:text-slate-500"
- 1112 |             >
- 1113 |               New draft
- 1114 |             </button>
- 1115 |           </div>
- 1116 |         </div>
- 1117 | 
- 1118 |         {forbidden ? <AccessDeniedState message={error || 'Access denied.'} /> : null}
- 1119 |         {!forbidden && error ? <div className="mb-4 rounded-2xl borderless-shadow bg-rose-50 p-4 text-sm font-semibold text-rose-700">{error}</div> : null}
- 1120 | 
- 1121 |         {!forbidden ? (
- 1122 |           <div className="secure-grid grid grid-cols-1 gap-6 lg:grid-cols-12">
- 1123 |             <div className="lg:col-span-5">
- 1124 |               <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
- 1125 |                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
- 1126 |                   <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Contracts</div>
- 1127 |                   <button type="button" onClick={loadContracts} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 active:scale-95 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/8">Refresh</button>
- 1128 |                 </div>
- 1129 | 
- 1130 |                 <div className="mt-4 grid gap-3">
- 1131 |                   <div className="relative">
- 1132 |                     <input
- 1133 |                       ref={searchRef}
- 1134 |                       value={query}
- 1135 |                       onChange={(e) => setQuery(e.target.value)}
- 1136 |                       placeholder="Search by number, buyer, factory, title..."
- 1137 |                       className="w-full rounded-xl bg-white px-3 py-2 pr-16 text-sm text-slate-800 shadow-inner ring-1 ring-slate-200/70 transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
- 1138 |                     />
- 1139 |                     <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-semibold tracking-widest text-slate-500 ring-1 ring-slate-200/70 dark:bg-slate-950/40 dark:text-slate-400 dark:ring-white/10">
- 1140 |                       {isMac ? '⌘ K' : 'Ctrl K'}
- 1141 |                     </span>
- 1142 |                   </div>
- 1143 | 
- 1144 |                   <div className="flex flex-wrap items-center gap-2">
- 1145 |                     {[
- 1146 |                       { key: 'all', label: 'All' },
- 1147 |                       { key: 'draft', label: 'Draft' },
- 1148 |                       { key: 'pending_signature', label: 'Pending' },
- 1149 |                       { key: 'signed', label: 'Signed' },
- 1150 |                       { key: 'archived', label: 'Archived' },
- 1151 |                     ].map((chip) => (
- 1152 |                       <motion.button
- 1153 |                         key={chip.key}
- 1154 |                         type="button"
- 1155 |                         onClick={() => setStatusFilter(chip.key)}
- 1156 |                         whileTap={reduceMotion ? undefined : { scale: 0.98 }}
- 1157 |                         className={`relative rounded-full px-3 py-1 text-xs font-semibold transition ring-1${
+787 | method: 'PATCH',
+788 | token,
+789 | body: { status: 'archived' },
+790 | }), { type: 'contract_archived' })}
+791 | className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-200 disabled:text-slate-500"
+792 | >
+793 | Archive
+794 | </button>
+795 | {selectedActionBlockers.archive ? <div className="text-xs text-amber-700">{selectedActionBlockers.archive}</div> : null}
+796 |
+797 | {canDownload
+798 | ? <a href={downloadUrl} target="_blank" rel="noreferrer" className="rounded-xl bg-[#0A66C2] px-4 py-2 text-center text-sm font-semibold text-white hover:bg-[#0959A8]">Download PDF</a>
+799 | : <button type="button" disabled className="rounded-xl bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-500">Download (not ready)</button>}
+800 | </div>
+801 | </div>
+802 | </div>
+803 |
+804 | <div className="mt-5 rounded-2xl borderless-shadow bg-white p-4 dark:bg-slate-900/50">
+805 | <div className="flex items-start justify-between gap-4">
+806 | <div>
+807 | <div className="text-sm font-semibold text-slate-900">Banking references (optional)</div>
+808 | <div className="mt-1 text-xs text-slate-500">For fraud prevention only. No direct payments are processed on-platform.</div>
+809 | </div>
+810 | <div className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+811 | {canViewBankingReferences(currentUser, selected) ? 'Visible' : 'Masked'}
+812 | </div>
+813 | </div>
+814 |
+815 | <div className="mt-3 grid grid-cols-1 gap-2 text-sm text-slate-700">
+816 | <div>Bank name: {canViewBankingReferences(currentUser, selected) ? safeDash(selected.bank_name) : maskValue(selected.bank_name)}</div>
+817 | <div>Beneficiary: {canViewBankingReferences(currentUser, selected) ? safeDash(selected.beneficiary_name) : maskValue(selected.beneficiary_name)}</div>
+818 | <div>Transaction reference: {canViewBankingReferences(currentUser, selected) ? safeDash(selected.transaction_reference) : maskValue(selected.transaction_reference)}</div>
+819 | </div>
+820 | </div>
+821 |
+822 | <div className="mt-5 rounded-2xl borderless-shadow bg-white p-4 dark:bg-slate-900/50">
+823 | <div className="flex items-start justify-between gap-4">
+824 | <div>
+825 | <div className="text-sm font-semibold text-slate-900">Payment proof workflow</div>
+826 | <div className="mt-1 text-xs text-slate-500">Submit bank transfer or LC documents. Seller review sets status, disputes trigger internal admin review.</div>
+827 | </div>
+828 | <button type="button" onClick={() => loadPaymentProofs(selected.id)} className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700">
+829 | Refresh
+830 | </button>
+831 | </div>
+832 |
+833 | <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+834 | <label className="text-xs font-semibold text-slate-600">Proof type</label>
+835 | <div />
+836 | <select
+837 | value={paymentForm.type}
+838 | onChange={(e) => setPaymentForm((prev) => ({ ...prev, type: e.target.value }))}
+839 | className="rounded-xl borderless-shadow px-3 py-2 text-sm"
+840 | >
+841 | <option value="bank_transfer">Bank transfer</option>
+842 | <option value="lc">Letter of credit (LC)</option>
+843 | </select>
+844 | <div />
+845 |
+846 | {paymentForm.type === 'bank_transfer' ? (
+847 | <>
+848 | <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Transaction reference" value={paymentForm.transaction_reference} onChange={(e) => setPaymentForm((p) => ({ ...p, transaction_reference: e.target.value }))} />
+849 | <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Bank name" value={paymentForm.bank_name} onChange={(e) => setPaymentForm((p) => ({ ...p, bank_name: e.target.value }))} />
+850 | <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Sender account name" value={paymentForm.sender_account_name} onChange={(e) => setPaymentForm((p) => ({ ...p, sender_account_name: e.target.value }))} />
+851 | <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Receiver/company account name" value={paymentForm.receiver_account_name} onChange={(e) => setPaymentForm((p) => ({ ...p, receiver_account_name: e.target.value }))} />
+852 | <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" type="date" value={paymentForm.transaction_date} onChange={(e) => setPaymentForm((p) => ({ ...p, transaction_date: e.target.value }))} />
+853 | <div className="flex gap-2">
+854 | <input className="flex-1 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))} />
+855 | <input className="w-24 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Currency" value={paymentForm.currency} onChange={(e) => setPaymentForm((p) => ({ ...p, currency: e.target.value }))} />
+856 | </div>
+857 | </>
+858 | ) : (
+859 | <>
+860 | <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="LC number" value={paymentForm.lc_number} onChange={(e) => setPaymentForm((p) => ({ ...p, lc_number: e.target.value }))} />
+861 | <div className="flex flex-wrap gap-2">
+862 | <select
+863 | value={paymentForm.lc_type}
+864 | onChange={(e) => setPaymentForm((p) => ({ ...p, lc_type: e.target.value }))}
+865 | className="rounded-xl borderless-shadow px-3 py-2 text-sm"
+866 | >
+867 | <option value="sight">Sight LC</option>
+868 | <option value="usance">Usance LC</option>
+869 | </select>
+870 | {paymentForm.lc_type === 'usance' ? (
+871 | <>
+872 | <select
+873 | value={paymentForm.usance_days}
+874 | onChange={(e) => setPaymentForm((p) => ({ ...p, usance_days: e.target.value }))}
+875 | className="rounded-xl borderless-shadow px-3 py-2 text-sm"
+876 | >
+877 | <option value="30">30 days</option>
+878 | <option value="60">60 days</option>
+879 | <option value="90">90 days</option>
+880 | <option value="180">180 days</option>
+881 | <option value="custom">Custom</option>
+882 | </select>
+883 | {String(paymentForm.usance_days) === 'custom' ? (
+884 | <input
+885 | className="w-32 rounded-xl borderless-shadow px-3 py-2 text-sm"
+886 | placeholder="Days"
+887 | value={paymentForm.usance_custom_days}
+888 | onChange={(e) => setPaymentForm((p) => ({ ...p, usance_custom_days: e.target.value }))}
+889 | />
+890 | ) : null}
+891 | </>
+892 | ) : null}
+893 | </div>
+894 | <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Issuing bank" value={paymentForm.issuing_bank} onChange={(e) => setPaymentForm((p) => ({ ...p, issuing_bank: e.target.value }))} />
+895 | <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Advising bank" value={paymentForm.advising_bank} onChange={(e) => setPaymentForm((p) => ({ ...p, advising_bank: e.target.value }))} />
+896 | <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Applicant name" value={paymentForm.applicant_name} onChange={(e) => setPaymentForm((p) => ({ ...p, applicant_name: e.target.value }))} />
+897 | <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Beneficiary name" value={paymentForm.beneficiary_name} onChange={(e) => setPaymentForm((p) => ({ ...p, beneficiary_name: e.target.value }))} />
+898 | <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" type="date" value={paymentForm.issue_date} onChange={(e) => setPaymentForm((p) => ({ ...p, issue_date: e.target.value }))} />
+899 | <input className="rounded-xl borderless-shadow px-3 py-2 text-sm" type="date" value={paymentForm.expiry_date} onChange={(e) => setPaymentForm((p) => ({ ...p, expiry_date: e.target.value }))} />
+900 | <div className="flex gap-2">
+901 | <input className="flex-1 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Amount" value={paymentForm.amount} onChange={(e) => setPaymentForm((p) => ({ ...p, amount: e.target.value }))} />
+902 | <input className="w-24 rounded-xl borderless-shadow px-3 py-2 text-sm" placeholder="Currency" value={paymentForm.currency} onChange={(e) => setPaymentForm((p) => ({ ...p, currency: e.target.value }))} />
+903 | </div>
+904 | </>
+905 | )}
+906 |
+907 | <div className="sm:col-span-2">
+908 | <label className="text-xs font-semibold text-slate-600">Upload proof document</label>
+909 | <input
+910 | type="file"
+911 | className="mt-2 text-xs"
+912 | onChange={(e) => setPaymentForm((p) => ({ ...p, document_file: e.target.files?.[0] || null }))}
+913 | />
+914 | </div>
+915 | </div>
+916 |
+917 | <div className="mt-4 flex flex-wrap items-center gap-2">
+918 | <button
+919 | type="button"
+920 | onClick={submitPaymentProof}
+921 | disabled={saving}
+922 | className="rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
+923 | >
+924 | Submit proof
+925 | </button>
+926 | {paymentNotice ? <span className="text-xs text-slate-500">{paymentNotice}</span> : null}
+927 | </div>
+928 |
+929 | <div className="mt-4 space-y-2">
+930 | {paymentLoading ? <div className="text-xs text-slate-500">Loading proofs...</div> : null}
+931 | {!paymentLoading && paymentProofs.length === 0 ? <div className="text-xs text-slate-500">No proofs submitted yet.</div> : null}
+932 | {paymentProofs.map((proof) => {
+933 | const proofDocUrl = resolveDownloadUrl(proof.document_url || '')
+934 | return (
+935 | <div key={proof.id} className="rounded-xl borderless-shadow bg-slate-50 p-3 text-xs text-slate-700">
+936 | <div className="flex flex-wrap items-center justify-between gap-2">
+937 | <div className="font-semibold">{String(proof.type || '').replace('*', ' ').toUpperCase()}</div>
+938 | <div className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold text-slate-600 ring-1 ring-slate-200">
+939 | {proof.status || 'pending'}
+940 | </div>
+941 | </div>
+942 | <div className="mt-2 grid grid-cols-1 gap-1">
+943 | {proof.transaction*reference ? <div>Ref: {proof.transaction_reference}</div> : null}
+944 | {proof.lc_number ? <div>LC: {proof.lc_number}</div> : null}
+945 | {proof.lc_type ? (
+946 | <div>
+947 | LC Type: {String(proof.lc_type).toUpperCase()}
+948 | {proof.lc_type === 'usance' && proof.usance_days ? ` (${proof.usance_days} days)` : ''}
+949 | </div>
+950 | ) : null}
+951 | {proof.amount ? <div>Amount: {proof.amount} {proof.currency || ''}</div> : null}
+952 | </div>
+953 | {proofDocUrl || proof.document_id ? (
+954 | <div className="mt-2">
+955 | {proofDocUrl ? (
+956 | <a href={proofDocUrl} target="_blank" rel="noreferrer" className="text-[10px] font-semibold text-[#0A66C2] hover:underline">Open proof document</a>
+957 | ) : (
+958 | <span className="text-[10px] text-slate-500">Document linked</span>
+959 | )}
+960 | </div>
+961 | ) : null}
+962 | {canReviewPayment ? (
+963 | <div className="mt-2 flex flex-wrap gap-2">
+964 | {proof.type === 'bank_transfer' ? (
+965 | <>
+966 | <button type="button" onClick={() => updatePaymentStatus(proof.id, 'received')} className="rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-semibold text-white">Mark received</button>
+967 | <button type="button" onClick={() => updatePaymentStatus(proof.id, 'pending_check')} className="rounded-full bg-amber-600 px-3 py-1 text-[10px] font-semibold text-white">Pending check</button>
+968 | <button type="button" onClick={() => updatePaymentStatus(proof.id, 'not_received')} className="rounded-full bg-rose-600 px-3 py-1 text-[10px] font-semibold text-white">Not received</button>
+969 | </>
+970 | ) : (
+971 | <>
+972 | <button type="button" onClick={() => updatePaymentStatus(proof.id, 'accepted')} className="rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-semibold text-white">Accept</button>
+973 | <button type="button" onClick={() => updatePaymentStatus(proof.id, 'pending_review')} className="rounded-full bg-amber-600 px-3 py-1 text-[10px] font-semibold text-white">Pending review</button>
+974 | <button type="button" onClick={() => updatePaymentStatus(proof.id, 'rejected')} className="rounded-full bg-rose-600 px-3 py-1 text-[10px] font-semibold text-white">Reject</button>
+975 | </>
+976 | )}
+977 | </div>
+978 | ) : null}
+979 | </div>
+980 | )})}
+981 | </div>
+982 | </div>
+983 |
+984 | <div className="mt-5 rounded-2xl borderless-shadow bg-white p-4">
+985 | <div className="flex items-start justify-between gap-4">
+986 | <div>
+987 | <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Call recordings</div>
+988 | <div className="mt-1 text-xs text-slate-500 dark:text-slate-300">Recorded calls are stored for dispute resolution and security (project.md).</div>
+989 | </div>
+990 | <div className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 dark:bg-white/5 dark:text-slate-200">
+991 | {callsLoading ? 'Loading...' : `${callItems.filter((c) => c.recording_url).length} available`}
+992 | </div>
+993 | </div>
+994 |
+995 | <div className="mt-3 space-y-3">
+996 | {callItems.map((call) => {
+997 | const url = resolveDownloadUrl(call.recording_url)
+998 | const canPlay = Boolean(call.recording_status === 'available' && url)
+999 | return (
+1000 | <div key={call.id} className="rounded-xl borderless-shadow bg-slate-50 p-3 dark:bg-black/20">
+1001 | <div className="flex items-start justify-between gap-3">
+1002 | <div className="min-w-0">
+1003 | <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{safeDash(call.title) || 'Call session'}</div>
+1004 | <div className="mt-1 text-xs text-slate-600 dark:text-slate-300">
+1005 | {safeDash(call.status)} - {call.created_at ? new Date(call.created_at).toLocaleString() : '\u2014'}
+1006 | </div>
+1007 | </div>
+1008 | <div className="shrink-0 text-xs font-semibold text-slate-600 dark:text-slate-200">
+1009 | {String(call.recording_status || 'pending')}
+1010 | </div>
+1011 | </div>
+1012 |
+1013 | {canPlay ? (
+1014 | <div className="mt-3">
+1015 | <video
+1016 | src={url}
+1017 | controls
+1018 | className="w-full rounded-lg bg-black/5 dark:bg-black/30"
+1019 | onPlay={async () => {
+1020 | try {
+1021 | const token = getToken()
+1022 | if (!token) return
+1023 | await apiRequest(`/calls/${encodeURIComponent(call.id)}/recording/viewed`, { method: 'POST', token })
+1024 | } catch {
+1025 | // silent
+1026 | }
+1027 | }}
+1028 | />
+1029 | </div>
+1030 | ) : (
+1031 | <div className="mt-3 text-xs text-slate-600 dark:text-slate-300">Recording not available yet.</div>
+1032 | )}
+1033 | </div>
+1034 | )
+1035 | })}
+1036 | {!callsLoading && callItems.length === 0 ? (
+1037 | <div className="text-sm text-slate-600 dark:text-slate-300">No calls linked to this contract yet.</div>
+1038 | ) : null}
+1039 | </div>
+1040 | </div>
+1041 |
+1042 | <div className="mt-5 rounded-2xl borderless-shadow bg-white p-4">
+1043 | <div className="text-sm font-semibold text-slate-900">Artifact audit</div>
+1044 | <div className="mt-3 grid grid-cols-1 gap-2 text-sm text-slate-700">
+1045 | <div>Status: {safeDash(selected.artifact?.status)}</div>
+1046 | <div>Generated at: {safeDash(selected.artifact?.generated_at)}</div>
+1047 | <div>Version: {selected.artifact?.version ?? 0}</div>
+1048 | <div className="break-all text-xs text-slate-600">Hash: {safeDash(selected.artifact?.pdf_hash)}</div>
+1049 | <div className="text-xs text-slate-600">
+1050 | Signer IDs: Buyer {safeDash(selected.artifact?.signer_ids?.buyer_id)} <span className="mx-1">-</span> Factory {safeDash(selected.artifact?.signer_ids?.factory_id)}
+1051 | </div>
+1052 | <div className="text-xs text-slate-600">
+1053 | Signature timestamps: Buyer {safeDash(selected.artifact?.signature_timestamps?.buyer_signed_at)} <span className="mx-1">-</span> Factory {safeDash(selected.artifact?.signature_timestamps?.factory_signed_at)}
+1054 | </div>
+1055 | </div>
+1056 | </div>
+1057 |
+1058 | <div className="mt-5 rounded-2xl borderless-shadow bg-white p-4">
+1059 | <div className="flex items-center justify-between gap-4">
+1060 | <div className="text-sm font-semibold text-slate-900">Contract Audit Trail</div>
+1061 | <div className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-semibold text-slate-600">Premium</div>
+1062 | </div>
+1063 | {auditLoading ? (
+1064 | <div className="mt-3 text-sm text-slate-600">Loading audit trail...</div>
+1065 | ) : auditError ? (
+1066 | <div className="mt-3 rounded-lg borderless-shadow bg-amber-50 p-3 text-xs text-amber-800">
+1067 | {auditError}
+1068 | </div>
+1069 | ) : auditLog.length ? (
+1070 | <div className="mt-3 space-y-2 text-xs text-slate-600">
+1071 | {auditLog.map((entry) => (
+1072 | <div key={entry.id || `${entry.timestamp}-${entry.note}`} className="rounded-lg borderless-shadow bg-slate-50 p-3">
+1073 | <div className="flex items-center justify-between gap-3">
+1074 | <span className="font-semibold text-slate-900">{entry.action || 'update'}</span>
+1075 | <span>{entry.timestamp ? new Date(entry.timestamp).toLocaleString() : '\u2014'}</span>
+1076 | </div>
+1077 | <div className="mt-1 text-slate-600">{entry.note || 'Audit entry recorded.'}</div>
+1078 | {entry.actor_name || entry.actor_id ? (
+1079 | <div className="mt-2 text-[11px] text-slate-500">By {entry.actor_name || entry.actor_id}</div>
+1080 | ) : null}
+1081 | </div>
+1082 | ))}
+1083 | </div>
+1084 | ) : (
+1085 | <div className="mt-3 text-sm text-slate-600">No audit entries yet.</div>
+1086 | )}
+1087 | </div>
+1088 | </div>
+1089 | ) : (
+1090 | <div className="rounded-2xl borderless-shadow bg-white p-10 text-center text-sm text-slate-600">
+1091 | Select a contract to see details.
+1092 | </div>
+1093 | )
+1094 |
+1095 | return (
+1096 | <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
+1097 | <div className="mx-auto max-w-7xl p-4 sm:p-6">
+1098 | <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+1099 | <div>
+1100 | <div className="text-xs font-semibold text-[var(--gt-blue)]">Vault</div>
+1101 | <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">Contract Vault</h1>
+1102 | <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Draft → Sign → PDF artifact → Lock → Archive</p>
+1103 | </div>
+1104 | <div className="flex flex-wrap items-center gap-2">
+1105 | <Link to="/owner" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8">Dashboard</Link>
+1106 | <Link to="/notifications" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-95 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/8">Notifications</Link>
+1107 | <button
+1108 | type="button"
+1109 | disabled={!canCreateDraft(currentUser)}
+1110 | onClick={() => setDraftOpen(true)}
+1111 | className="rounded-full bg-[var(--gt-blue)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95 disabled:bg-slate-200 disabled:text-slate-500"
+1112 | >
+1113 | New draft
+1114 | </button>
+1115 | </div>
+1116 | </div>
+1117 |
+1118 | {forbidden ? <AccessDeniedState message={error || 'Access denied.'} /> : null}
+1119 | {!forbidden && error ? <div className="mb-4 rounded-2xl borderless-shadow bg-rose-50 p-4 text-sm font-semibold text-rose-700">{error}</div> : null}
+1120 |
+1121 | {!forbidden ? (
+1122 | <div className="secure-grid grid grid-cols-1 gap-6 lg:grid-cols-12">
+1123 | <div className="lg:col-span-5">
+1124 | <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+1125 | <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+1126 | <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">Contracts</div>
+1127 | <button type="button" onClick={loadContracts} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 active:scale-95 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/8">Refresh</button>
+1128 | </div>
+1129 |
+1130 | <div className="mt-4 grid gap-3">
+1131 | <div className="relative">
+1132 | <input
+1133 | ref={searchRef}
+1134 | value={query}
+1135 | onChange={(e) => setQuery(e.target.value)}
+1136 | placeholder="Search by number, buyer, factory, title..."
+1137 | className="w-full rounded-xl bg-white px-3 py-2 pr-16 text-sm text-slate-800 shadow-inner ring-1 ring-slate-200/70 transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40 dark:bg-white/5 dark:text-slate-100 dark:ring-white/10"
+1138 | />
+1139 | <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-semibold tracking-widest text-slate-500 ring-1 ring-slate-200/70 dark:bg-slate-950/40 dark:text-slate-400 dark:ring-white/10">
+1140 | {isMac ? '⌘ K' : 'Ctrl K'}
+1141 | </span>
+1142 | </div>
+1143 |
+1144 | <div className="flex flex-wrap items-center gap-2">
+1145 | {[
+1146 | { key: 'all', label: 'All' },
+1147 | { key: 'draft', label: 'Draft' },
+1148 | { key: 'pending_signature', label: 'Pending' },
+1149 | { key: 'signed', label: 'Signed' },
+1150 | { key: 'archived', label: 'Archived' },
+1151 | ].map((chip) => (
+1152 | <motion.button
+1153 | key={chip.key}
+1154 | type="button"
+1155 | onClick={() => setStatusFilter(chip.key)}
+1156 | whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+1157 | className={`relative rounded-full px-3 py-1 text-xs font-semibold transition ring-1${
  1158 |                           statusFilter === chip.key
  1159 |                             ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
  1160 |                             : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
  1161 |                         }`}
- 1162 |                       >
- 1163 |                         {statusFilter === chip.key ? (
- 1164 |                           <motion.span
- 1165 |                             layoutId="contract-filter"
- 1166 |                             className="absolute inset-0 rounded-full bg-indigo-500/10 dark:bg-white/10"
- 1167 |                             transition={{ type: 'spring', stiffness: 420, damping: 34 }}
- 1168 |                           />
- 1169 |                         ) : null}
- 1170 |                         <span className="relative">{chip.label}</span>
- 1171 |                       </motion.button>
- 1172 |                     ))}
- 1173 |                   </div>
- 1174 |                 </div>
- 1175 |               </div>
- 1176 | 
- 1177 |               <div className="mt-4 grid gap-3">
- 1178 |                 {loadingContracts ? (
- 1179 |                   <div className="grid gap-3">
- 1180 |                     {Array.from({ length: 5 }).map((_, i) => (
- 1181 |                       <div key={`contract-skel-${i}`} className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
- 1182 |                         <div className="flex items-start justify-between gap-3">
- 1183 |                           <div className="min-w-0 flex-1 space-y-2">
- 1184 |                             <div className="h-3 w-1/3 rounded-full skeleton" />
- 1185 |                             <div className="h-3 w-2/3 rounded-full skeleton" />
- 1186 |                             <div className="h-3 w-1/2 rounded-full skeleton" />
- 1187 |                           </div>
- 1188 |                           <div className="h-7 w-20 rounded-full skeleton" />
- 1189 |                         </div>
- 1190 |                         <div className="mt-3 flex flex-wrap gap-2">
- 1191 |                           <div className="h-6 w-24 rounded-full skeleton" />
- 1192 |                           <div className="h-6 w-24 rounded-full skeleton" />
- 1193 |                           <div className="h-6 w-20 rounded-full skeleton" />
- 1194 |                         </div>
- 1195 |                       </div>
- 1196 |                     ))}
- 1197 |                   </div>
- 1198 |                 ) : visibleContracts.length ? visibleContracts.map((c, idx) => (
- 1199 |                   <motion.div
- 1200 |                     key={c.id}
- 1201 |                     initial={reduceMotion ? false : { opacity: 0, y: 14 }}
- 1202 |                     animate={reduceMotion ? false : { opacity: 1, y: 0 }}
- 1203 |                     transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: idx * 0.04 }}
- 1204 |                     className="hidden lg:block"
- 1205 |                   >
- 1206 |                     <ContractRow
- 1207 |                       contract={c}
- 1208 |                       active={String(c.id) === String(selectedId)}
- 1209 |                       onSelect={() => setSelectedId(String(c.id))}
- 1210 |                     />
- 1211 |                   </motion.div>
- 1212 |                 )) : (
- 1213 |                   <div className="rounded-2xl bg-[#ffffff] p-8 text-center text-sm text-slate-600 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:text-slate-300 dark:ring-slate-800">
- 1214 |                     No contracts found.
- 1215 |                   </div>
- 1216 |                 )}
- 1217 | 
- 1218 |                 {visibleContracts.length ? (
- 1219 |                   <div className="grid gap-3 lg:hidden">
- 1220 |                     {visibleContracts.map((c) => (
- 1221 |                       <ContractRow
- 1222 |                         key={c.id}
- 1223 |                         contract={c}
- 1224 |                         active={String(c.id) === String(selectedId)}
- 1225 |                         onSelect={() => openDetails(c.id)}
- 1226 |                       />
- 1227 |                     ))}
- 1228 |                   </div>
- 1229 |                 ) : null}
- 1230 |               </div>
- 1231 |             </div>
- 1232 | 
- 1233 |             <div className="hidden lg:col-span-7 lg:block">
- 1234 |               {detailPanel}
- 1235 |             </div>
- 1236 |           </div>
- 1237 |         ) : null}
- 1238 | 
- 1239 |         <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
- 1240 |           {detailPanel}
- 1241 |         </Drawer>
- 1242 | 
- 1243 |         {draftOpen ? (
- 1244 |           <div className="fixed inset-0 z-50">
- 1245 |             <div className="absolute inset-0 bg-slate-900/30" onClick={() => setDraftOpen(false)} />
- 1246 |             <div className="absolute left-1/2 top-10 w-[min(40rem,92vw)] -translate-x-1/2 rounded-3xl bg-white p-6 shadow-2xl">
- 1247 |               <div className="flex items-start justify-between gap-4">
- 1248 |                 <div>
- 1249 |                   <div className="text-xs font-semibold text-[#0A66C2]">New</div>
- 1250 |                   <div className="mt-1 text-lg font-bold text-slate-900">Create contract draft</div>
- 1251 |                   <div className="mt-1 text-xs text-slate-600">Banking references are optional and should be used only for fraud prevention.</div>
- 1252 |                 </div>
- 1253 |                 <button type="button" onClick={() => setDraftOpen(false)} className="rounded-full px-3 py-1 text-sm font-semibold text-slate-700 hover:bg-slate-100">Close</button>
- 1254 |               </div>
- 1255 | 
- 1256 |               <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
- 1257 |                 <input value={draftForm.title} onChange={(e) => setDraftForm((p) => ({ ...p, title: e.target.value }))} placeholder="Title" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
- 1258 |                 <input value={draftForm.buyer_name} onChange={(e) => setDraftForm((p) => ({ ...p, buyer_name: e.target.value }))} placeholder="Buyer name" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
- 1259 |                 <input value={draftForm.factory_name} onChange={(e) => setDraftForm((p) => ({ ...p, factory_name: e.target.value }))} placeholder="Factory name" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
- 1260 |                 <input value={draftForm.buyer_id} onChange={(e) => setDraftForm((p) => ({ ...p, buyer_id: e.target.value }))} placeholder="Buyer user ID" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
- 1261 |                 <input value={draftForm.factory_id} onChange={(e) => setDraftForm((p) => ({ ...p, factory_id: e.target.value }))} placeholder="Factory user ID" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
- 1262 |                 <div className="hidden sm:block" />
- 1263 | 
- 1264 |                 <input value={draftForm.bank_name} onChange={(e) => setDraftForm((p) => ({ ...p, bank_name: e.target.value }))} placeholder="Bank name (optional)" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
- 1265 |                 <input value={draftForm.beneficiary_name} onChange={(e) => setDraftForm((p) => ({ ...p, beneficiary_name: e.target.value }))} placeholder="Beneficiary name (optional)" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
- 1266 |                 <input value={draftForm.transaction_reference} onChange={(e) => setDraftForm((p) => ({ ...p, transaction_reference: e.target.value }))} placeholder="Transaction reference (optional)" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none sm:col-span-2" />
- 1267 |               </div>
- 1268 | 
- 1269 |               <div className="mt-6 flex items-center justify-end gap-2">
- 1270 |                 <button type="button" onClick={() => setDraftOpen(false)} className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50">Cancel</button>
- 1271 |                 <button
- 1272 |                   type="button"
- 1273 |                   disabled={!canCreateDraft(currentUser) || saving}
- 1274 |                   onClick={handleCreateDraft}
- 1275 |                   className="rounded-full bg-[#0A66C2] px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-200 disabled:text-slate-500"
- 1276 |                 >
- 1277 |                   Create draft
- 1278 |                 </button>
- 1279 |               </div>
- 1280 |             </div>
- 1281 |           </div>
- 1282 |         ) : null}
- 1283 |       </div>
- 1284 |     </div>
- 1285 |   )
- 1286 | }
- 1287 | 
+1162 | >
+1163 | {statusFilter === chip.key ? (
+1164 | <motion.span
+1165 | layoutId="contract-filter"
+1166 | className="absolute inset-0 rounded-full bg-indigo-500/10 dark:bg-white/10"
+1167 | transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+1168 | />
+1169 | ) : null}
+1170 | <span className="relative">{chip.label}</span>
+1171 | </motion.button>
+1172 | ))}
+1173 | </div>
+1174 | </div>
+1175 | </div>
+1176 |
+1177 | <div className="mt-4 grid gap-3">
+1178 | {loadingContracts ? (
+1179 | <div className="grid gap-3">
+1180 | {Array.from({ length: 5 }).map((*, i) => (
+1181 | <div key={`contract-skel-${i}`} className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+1182 | <div className="flex items-start justify-between gap-3">
+1183 | <div className="min-w-0 flex-1 space-y-2">
+1184 | <div className="h-3 w-1/3 rounded-full skeleton" />
+1185 | <div className="h-3 w-2/3 rounded-full skeleton" />
+1186 | <div className="h-3 w-1/2 rounded-full skeleton" />
+1187 | </div>
+1188 | <div className="h-7 w-20 rounded-full skeleton" />
+1189 | </div>
+1190 | <div className="mt-3 flex flex-wrap gap-2">
+1191 | <div className="h-6 w-24 rounded-full skeleton" />
+1192 | <div className="h-6 w-24 rounded-full skeleton" />
+1193 | <div className="h-6 w-20 rounded-full skeleton" />
+1194 | </div>
+1195 | </div>
+1196 | ))}
+1197 | </div>
+1198 | ) : visibleContracts.length ? visibleContracts.map((c, idx) => (
+1199 | <motion.div
+1200 | key={c.id}
+1201 | initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+1202 | animate={reduceMotion ? false : { opacity: 1, y: 0 }}
+1203 | transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: idx * 0.04 }}
+1204 | className="hidden lg:block"
+1205 | >
+1206 | <ContractRow
+1207 | contract={c}
+1208 | active={String(c.id) === String(selectedId)}
+1209 | onSelect={() => setSelectedId(String(c.id))}
+1210 | />
+1211 | </motion.div>
+1212 | )) : (
+1213 | <div className="rounded-2xl bg-[#ffffff] p-8 text-center text-sm text-slate-600 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:text-slate-300 dark:ring-slate-800">
+1214 | No contracts found.
+1215 | </div>
+1216 | )}
+1217 |
+1218 | {visibleContracts.length ? (
+1219 | <div className="grid gap-3 lg:hidden">
+1220 | {visibleContracts.map((c) => (
+1221 | <ContractRow
+1222 | key={c.id}
+1223 | contract={c}
+1224 | active={String(c.id) === String(selectedId)}
+1225 | onSelect={() => openDetails(c.id)}
+1226 | />
+1227 | ))}
+1228 | </div>
+1229 | ) : null}
+1230 | </div>
+1231 | </div>
+1232 |
+1233 | <div className="hidden lg:col-span-7 lg:block">
+1234 | {detailPanel}
+1235 | </div>
+1236 | </div>
+1237 | ) : null}
+1238 |
+1239 | <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+1240 | {detailPanel}
+1241 | </Drawer>
+1242 |
+1243 | {draftOpen ? (
+1244 | <div className="fixed inset-0 z-50">
+1245 | <div className="absolute inset-0 bg-slate-900/30" onClick={() => setDraftOpen(false)} />
+1246 | <div className="absolute left-1/2 top-10 w-[min(40rem,92vw)] -translate-x-1/2 rounded-3xl bg-white p-6 shadow-2xl">
+1247 | <div className="flex items-start justify-between gap-4">
+1248 | <div>
+1249 | <div className="text-xs font-semibold text-[#0A66C2]">New</div>
+1250 | <div className="mt-1 text-lg font-bold text-slate-900">Create contract draft</div>
+1251 | <div className="mt-1 text-xs text-slate-600">Banking references are optional and should be used only for fraud prevention.</div>
+1252 | </div>
+1253 | <button type="button" onClick={() => setDraftOpen(false)} className="rounded-full px-3 py-1 text-sm font-semibold text-slate-700 hover:bg-slate-100">Close</button>
+1254 | </div>
+1255 |
+1256 | <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+1257 | <input value={draftForm.title} onChange={(e) => setDraftForm((p) => ({ ...p, title: e.target.value }))} placeholder="Title" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
+1258 | <input value={draftForm.buyer_name} onChange={(e) => setDraftForm((p) => ({ ...p, buyer_name: e.target.value }))} placeholder="Buyer name" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
+1259 | <input value={draftForm.factory_name} onChange={(e) => setDraftForm((p) => ({ ...p, factory_name: e.target.value }))} placeholder="Factory name" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
+1260 | <input value={draftForm.buyer_id} onChange={(e) => setDraftForm((p) => ({ ...p, buyer_id: e.target.value }))} placeholder="Buyer user ID" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
+1261 | <input value={draftForm.factory_id} onChange={(e) => setDraftForm((p) => ({ ...p, factory_id: e.target.value }))} placeholder="Factory user ID" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
+1262 | <div className="hidden sm:block" />
+1263 |
+1264 | <input value={draftForm.bank_name} onChange={(e) => setDraftForm((p) => ({ ...p, bank_name: e.target.value }))} placeholder="Bank name (optional)" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
+1265 | <input value={draftForm.beneficiary_name} onChange={(e) => setDraftForm((p) => ({ ...p, beneficiary_name: e.target.value }))} placeholder="Beneficiary name (optional)" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none" />
+1266 | <input value={draftForm.transaction_reference} onChange={(e) => setDraftForm((p) => ({ ...p, transaction_reference: e.target.value }))} placeholder="Transaction reference (optional)" className="rounded-xl borderless-shadow px-3 py-2 text-sm outline-none sm:col-span-2" />
+1267 | </div>
+1268 |
+1269 | <div className="mt-6 flex items-center justify-end gap-2">
+1270 | <button type="button" onClick={() => setDraftOpen(false)} className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-50">Cancel</button>
+1271 | <button
+1272 | type="button"
+1273 | disabled={!canCreateDraft(currentUser) || saving}
+1274 | onClick={handleCreateDraft}
+1275 | className="rounded-full bg-[#0A66C2] px-4 py-2 text-sm font-semibold text-white disabled:bg-slate-200 disabled:text-slate-500"
+1276 | >
+1277 | Create draft
+1278 | </button>
+1279 | </div>
+1280 | </div>
+1281 | </div>
+1282 | ) : null}
+1283 | </div>
+1284 | </div>
+1285 | )
+1286 | }
+1287 |

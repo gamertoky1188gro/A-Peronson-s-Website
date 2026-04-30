@@ -6,6 +6,7 @@
 ## 1) Purpose
 
 Renders chat messages with Markdown support:
+
 - Parses and displays Markdown content
 - Code block syntax highlighting
 - Link detection and rendering
@@ -13,11 +14,11 @@ Renders chat messages with Markdown support:
 
 ## 2) Props
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `content` | string | Message content (Markdown) |
-| `sender` | string | Message sender name |
-| `timestamp` | string | Message timestamp |
+| Prop        | Type   | Description                |
+| ----------- | ------ | -------------------------- |
+| `content`   | string | Message content (Markdown) |
+| `sender`    | string | Message sender name        |
+| `timestamp` | string | Message timestamp          |
 
 ## 3) Dependencies
 
@@ -33,4 +34,4 @@ Renders chat messages with Markdown support:
 
 ---
 
-*Generated from source: src/components/chat/MarkdownMessage.jsx*
+_Generated from source: src/components/chat/MarkdownMessage.jsx_

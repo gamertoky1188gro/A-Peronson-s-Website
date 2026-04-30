@@ -6,14 +6,15 @@
 ## 1) Purpose
 
 Renders Markdown content with:
+
 - GitHub Flavored Markdown (GFM) support
 - Raw HTML rendering
 - Sanitized output
 
 ## 2) Props
 
-| Prop | Type | Description |
-|------|------|-------------|
+| Prop      | Type   | Description                |
+| --------- | ------ | -------------------------- |
 | `content` | string | Markdown content to render |
 
 ## 3) Dependencies
@@ -31,4 +32,4 @@ Renders Markdown content with:
 
 ---
 
-*Generated from source: src/components/feed/MarkdownReadme.jsx*
+_Generated from source: src/components/feed/MarkdownReadme.jsx_

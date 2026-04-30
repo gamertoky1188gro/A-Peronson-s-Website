@@ -6,6 +6,7 @@
 ## 1) Purpose
 
 Country autocomplete dropdown:
+
 - Search/filter countries
 - Keyboard navigation
 - Exclude certain countries
@@ -13,16 +14,16 @@ Country autocomplete dropdown:
 
 ## 2) Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `value` | string | - | Selected value |
-| `onChange` | function | - | Change callback |
-| `options` | array | [] | Country options |
-| `placeholder` | string | "" | Input placeholder |
-| `required` | boolean | false | Required field |
-| `id` | string | "country-autocomplete" | Element ID |
-| `maxResults` | number | 8 | Max suggestions |
-| `exclude` | array | [] | Excluded countries |
+| Prop          | Type     | Default                | Description        |
+| ------------- | -------- | ---------------------- | ------------------ |
+| `value`       | string   | -                      | Selected value     |
+| `onChange`    | function | -                      | Change callback    |
+| `options`     | array    | []                     | Country options    |
+| `placeholder` | string   | ""                     | Input placeholder  |
+| `required`    | boolean  | false                  | Required field     |
+| `id`          | string   | "country-autocomplete" | Element ID         |
+| `maxResults`  | number   | 8                      | Max suggestions    |
+| `exclude`     | array    | []                     | Excluded countries |
 
 ## 3) Features
 
@@ -32,4 +33,4 @@ Country autocomplete dropdown:
 
 ---
 
-*Generated from source: src/components/ui/CountryAutocomplete.jsx*
+_Generated from source: src/components/ui/CountryAutocomplete.jsx_

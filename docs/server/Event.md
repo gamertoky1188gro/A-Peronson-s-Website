@@ -36,4 +36,4 @@ router.post("/", optionalAuth, postEvent);
 
 ---
 
-*Generated from source: server/routes/eventRoutes.js*
+_Generated from source: server/routes/eventRoutes.js_

@@ -4,13 +4,13 @@
 
 ## Lib Files
 
-| # | File | Purpose | Status |
-|---|------|---------|--------|
-| 1 | auth.js | Authentication, JWT, API requests | ✅ |
-| 2 | events.js | Analytics event tracking | ✅ |
-| 3 | aiPrefill.js | AI content prefill | ✅ |
-| 4 | leadSource.js | Lead source tracking | ✅ |
-| 5 | notificationsRealtime.js | Real-time notifications | ✅ |
+| #   | File                     | Purpose                           | Status |
+| --- | ------------------------ | --------------------------------- | ------ |
+| 1   | auth.js                  | Authentication, JWT, API requests | ✅     |
+| 2   | events.js                | Analytics event tracking          | ✅     |
+| 3   | aiPrefill.js             | AI content prefill                | ✅     |
+| 4   | leadSource.js            | Lead source tracking              | ✅     |
+| 5   | notificationsRealtime.js | Real-time notifications           | ✅     |
 
 ---
 
@@ -20,17 +20,18 @@
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `apiRequest(url, options)` | url, options | Promise | Make authenticated API request |
-| `getToken()` | - | string | Get JWT token from storage |
-| `getCurrentUser()` | - | User object | Get current user |
-| `saveSession(user, token)` | user, token | void | Save session to storage |
-| `clearSession()` | - | void | Clear session |
-| `getRoleHome(role)` | role: string | string | Get home route for role |
-| `hasEntitlement(user, entitlement)` | user, ent | boolean | Check entitlement |
+| Function                            | Parameters   | Returns     | Description                    |
+| ----------------------------------- | ------------ | ----------- | ------------------------------ |
+| `apiRequest(url, options)`          | url, options | Promise     | Make authenticated API request |
+| `getToken()`                        | -            | string      | Get JWT token from storage     |
+| `getCurrentUser()`                  | -            | User object | Get current user               |
+| `saveSession(user, token)`          | user, token  | void        | Save session to storage        |
+| `clearSession()`                    | -            | void        | Clear session                  |
+| `getRoleHome(role)`                 | role: string | string      | Get home route for role        |
+| `hasEntitlement(user, entitlement)` | user, ent    | boolean     | Check entitlement              |
 
 ### Storage
+
 - `localStorage` - jwt, user data
 
 ---
@@ -41,11 +42,11 @@
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `trackClientEvent(event, data)` | event, data | void | Track client-side event |
-| `trackPageView(page, data)` | page, data | void | Track page view |
-| `identifyUser(userId, traits)` | userId, traits | void | Identify user |
+| Function                        | Parameters     | Returns | Description             |
+| ------------------------------- | -------------- | ------- | ----------------------- |
+| `trackClientEvent(event, data)` | event, data    | void    | Track client-side event |
+| `trackPageView(page, data)`     | page, data     | void    | Track page view         |
+| `identifyUser(userId, traits)`  | userId, traits | void    | Identify user           |
 
 ---
 
@@ -55,10 +56,10 @@
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `getPrefillData(type, context)` | type, context | Promise | Get AI prefill data |
-| `prefillForm(formType, data)` | formType, data | void | Prefill form fields |
+| Function                        | Parameters     | Returns | Description         |
+| ------------------------------- | -------------- | ------- | ------------------- |
+| `getPrefillData(type, context)` | type, context  | Promise | Get AI prefill data |
+| `prefillForm(formType, data)`   | formType, data | void    | Prefill form fields |
 
 ---
 
@@ -68,12 +69,13 @@
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `trackLeadSource(source, metadata)` | source, metadata | void | Track lead source |
-| `getLeadSource()` | - | object | Get current lead source |
+| Function                            | Parameters       | Returns | Description             |
+| ----------------------------------- | ---------------- | ------- | ----------------------- |
+| `trackLeadSource(source, metadata)` | source, metadata | void    | Track lead source       |
+| `getLeadSource()`                   | -                | object  | Get current lead source |
 
 ### Sources
+
 - organic
 - referral
 - paid
@@ -87,11 +89,11 @@
 
 ### Functions
 
-| Function | Parameters | Returns | Description |
-|----------|------------|---------|-------------|
-| `connectNotificationsRealtime(userId)` | userId | WebSocket | Connect to realtime |
-| `subscribeNotificationsRealtime(callback)` | callback | unsubscribe | Subscribe to updates |
+| Function                                   | Parameters | Returns     | Description          |
+| ------------------------------------------ | ---------- | ----------- | -------------------- |
+| `connectNotificationsRealtime(userId)`     | userId     | WebSocket   | Connect to realtime  |
+| `subscribeNotificationsRealtime(callback)` | callback   | unsubscribe | Subscribe to updates |
 
 ---
 
-*Generated from source: src/lib/*
+_Generated from source: src/lib/_

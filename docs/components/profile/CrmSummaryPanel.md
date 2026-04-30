@@ -6,6 +6,7 @@
 ## 1) Purpose
 
 CRM summary panel for profiles:
+
 - Show relationship data
 - Filter by type, match, date range
 - Expand conversation threads
@@ -13,8 +14,8 @@ CRM summary panel for profiles:
 
 ## 2) Props
 
-| Prop | Type | Description |
-|------|------|-------------|
+| Prop       | Type   | Description        |
+| ---------- | ------ | ------------------ |
 | `targetId` | string | Target user/org ID |
 
 ## 3) API
@@ -35,4 +36,4 @@ CRM summary panel for profiles:
 
 ---
 
-*Generated from source: src/components/profile/CrmSummaryPanel.jsx*
+_Generated from source: src/components/profile/CrmSummaryPanel.jsx_

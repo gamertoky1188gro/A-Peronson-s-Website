@@ -4,13 +4,13 @@
 
 ## Configuration
 
-| Setting | Value |
-|---------|-------|
-| testEnvironment | jsdom |
-| testMatch | **/tests/**/*.test.js, **/tests/**/*.spec.js |
-| transform | babel-jest |
-| setupFilesAfterEnv | tests/setupTests.js |
-| testTimeout | 20000ms |
+| Setting            | Value                                        |
+| ------------------ | -------------------------------------------- |
+| testEnvironment    | jsdom                                        |
+| testMatch          | **/tests/**/_.test.js, **/tests/**/_.spec.js |
+| transform          | babel-jest                                   |
+| setupFilesAfterEnv | tests/setupTests.js                          |
+| testTimeout        | 20000ms                                      |
 
 ## Module Mocks
 
@@ -22,4 +22,4 @@
 
 ---
 
-*Generated from source: jest.config.cjs*
+_Generated from source: jest.config.cjs_

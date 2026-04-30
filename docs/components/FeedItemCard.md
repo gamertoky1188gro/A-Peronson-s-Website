@@ -7,6 +7,7 @@
 ## 1) Purpose
 
 Displays a feed item (buyer request or user feed post) in the main feed:
+
 - Shows item details (title, status, author, fields)
 - Express interest button
 - Comments, share, report, message actions
@@ -15,25 +16,27 @@ Displays a feed item (buyer request or user feed post) in the main feed:
 
 ## 2) Props
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `item` | object | Feed item data |
-| `canExpressInterest` | boolean | Show interest button |
-| `expressInterestDisabled` | boolean | Disable interest button |
-| `onExpressInterest` | function | Callback for interest |
-| `onOpenComments` | function | Open comments |
-| `onShare` | function | Share item |
-| `onReport` | function | Report item |
-| `onMessage` | function | Message author |
-| `highlight` | boolean | Highlight item |
+| Prop                      | Type     | Description             |
+| ------------------------- | -------- | ----------------------- |
+| `item`                    | object   | Feed item data          |
+| `canExpressInterest`      | boolean  | Show interest button    |
+| `expressInterestDisabled` | boolean  | Disable interest button |
+| `onExpressInterest`       | function | Callback for interest   |
+| `onOpenComments`          | function | Open comments           |
+| `onShare`                 | function | Share item              |
+| `onReport`                | function | Report item             |
+| `onMessage`               | function | Message author          |
+| `highlight`               | boolean  | Highlight item          |
 
 ## 3) Dependencies
 
 ### External Libraries
+
 - `lucide-react` - Icons (BadgeCheck, MessageCircle, etc.)
 - `react-router-dom` - Link
 
 ### Local Imports
+
 - `./MarkdownReadme` - Markdown rendering
 
 ## 4) State Management
@@ -61,4 +64,4 @@ Displays a feed item (buyer request or user feed post) in the main feed:
 
 ---
 
-*Generated from source: src/components/feed/FeedItemCard.jsx*
+_Generated from source: src/components/feed/FeedItemCard.jsx_

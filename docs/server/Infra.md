@@ -59,4 +59,4 @@ This doc is generated from source snapshots with `path:line` references.
 
 ---
 
-*Generated from source: server/routes/infraRoutes.js*
+_Generated from source: server/routes/infraRoutes.js_

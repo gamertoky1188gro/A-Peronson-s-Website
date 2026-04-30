@@ -2,41 +2,42 @@
     2 | import fs from 'fs/promises'
     3 | import path from 'path'
     4 | import { readLocalJson, updateLocalJson } from '../utils/localStore.js'
-    5 | 
+    5 |
     6 | const STATE_FILE = 'cms_state.json'
     7 | const DEFAULT_STATE = {
     8 |   articles: [],
     9 |   pages: [],
-   10 |   media: [],
-   11 |   versions: [],
-   12 |   theme: {
-   13 |     active: '',
-   14 |     options: [],
-   15 |   },
-   16 |   seo: {
-   17 |     default_title: '',
-   18 |     meta_description: '',
-   19 |     social_image: '',
-   20 |   },
-   21 |   cache: {
-   22 |     last_cleared_at: '',
-   23 |   },
-   24 |   env: {
-   25 |     vars: {},
-   26 |   },
-   27 |   deployments: [],
-   28 |   backups: [],
-   29 |   cron_scripts: [],
-   30 | }
-   31 | 
-   32 | const CONTENT_DIR = path.join(process.cwd(), 'server', 'content')
-   33 | const MEDIA_DIR = path.join(process.cwd(), 'server', 'uploads')
-   34 | 
-   35 | function entryIdFromTitle(title = '') {
-   36 |   return String(title || 'content')
-   37 |     .toLowerCase()
-   38 |     .replace(/[^a-z0-9]+/g, '-')
-   39 |     .replace(/^-+|-+$/g, '')
+
+10 | media: [],
+11 | versions: [],
+12 | theme: {
+13 | active: '',
+14 | options: [],
+15 | },
+16 | seo: {
+17 | default_title: '',
+18 | meta_description: '',
+19 | social_image: '',
+20 | },
+21 | cache: {
+22 | last_cleared_at: '',
+23 | },
+24 | env: {
+25 | vars: {},
+26 | },
+27 | deployments: [],
+28 | backups: [],
+29 | cron_scripts: [],
+30 | }
+31 |
+32 | const CONTENT_DIR = path.join(process.cwd(), 'server', 'content')
+33 | const MEDIA_DIR = path.join(process.cwd(), 'server', 'uploads')
+34 |
+35 | function entryIdFromTitle(title = '') {
+36 | return String(title || 'content')
+37 | .toLowerCase()
+38 | .replace(/[^a-z0-9]+/g, '-')
+39 | .replace(/^-+|-+$/g, '')
    40 |     .slice(0, 40) || 'content'
    41 | }
    42 | 
@@ -138,82 +139,82 @@
   138 |     if (payload?.content) {
   139 |       await fs.mkdir(CONTENT_DIR, { recursive: true }).catch(() => {})
   140 |       await fs.writeFile(path.join(CONTENT_DIR, `page-${payload.slug || actionId}.md`), String(payload.content), 'utf8').catch(() => {})
-  141 |     }
-  142 |   } else if (action === 'cms.media.upload') {
-  143 |     updated = await updateState((state) => {
-  144 |       const entry = { id: actionId, name: payload.name || 'media', type: payload.type || 'image', url: payload.url || '', uploaded_at: now }
-  145 |       state.media = [...(state.media || []), entry]
-  146 |       return state
-  147 |     })
-  148 |   } else if (action === 'cms.version.rollback') {
-  149 |     updated = await updateState((state) => {
-  150 |       state.versions = [
-  151 |         { id: actionId, content_id: payload.content_id || '', version: payload.version || 'latest', created_at: now, note: 'rollback' },
-  152 |         ...(state.versions || []),
-  153 |       ]
-  154 |       return state
-  155 |     })
-  156 |   } else if (action === 'cms.theme.switch') {
-  157 |     updated = await updateState((state) => {
-  158 |       state.theme = { ...state.theme, active: payload.theme || state.theme.active }
-  159 |       return state
-  160 |     })
-  161 |   } else if (action === 'cms.seo.update') {
-  162 |     updated = await updateState((state) => {
-  163 |       state.seo = {
-  164 |         ...state.seo,
-  165 |         default_title: payload.default_title ?? state.seo.default_title,
-  166 |         meta_description: payload.meta_description ?? state.seo.meta_description,
-  167 |         social_image: payload.social_image ?? state.seo.social_image,
-  168 |       }
-  169 |       return state
-  170 |     })
-  171 |   } else if (action === 'cms.cache.clear') {
-  172 |     updated = await updateState((state) => {
-  173 |       state.cache = { ...state.cache, last_cleared_at: now }
-  174 |       return state
-  175 |     })
-  176 |   } else if (action === 'cms.env.update') {
-  177 |     let vars = payload.vars
-  178 |     if (typeof vars === 'string') {
-  179 |       try {
-  180 |         vars = JSON.parse(vars)
-  181 |       } catch {
-  182 |         vars = {}
-  183 |       }
-  184 |     }
-  185 |     updated = await updateState((state) => {
-  186 |       state.env = { ...state.env, vars: { ...(state.env?.vars || {}), ...(vars || {}) } }
-  187 |       return state
-  188 |     })
-  189 |   } else if (action === 'cms.deploy.run') {
-  190 |     updated = await updateState((state) => {
-  191 |       const entry = { id: actionId, status: 'running', branch: payload.branch || 'main', started_at: now }
-  192 |       state.deployments = [entry, ...(state.deployments || [])].slice(0, 20)
-  193 |       return state
-  194 |     })
-  195 |   } else if (action === 'cms.backup.run') {
-  196 |     updated = await updateState((state) => {
-  197 |       const entry = { id: actionId, status: 'completed', provider: payload.provider || 'local', created_at: now }
-  198 |       state.backups = [entry, ...(state.backups || [])].slice(0, 20)
-  199 |       return state
-  200 |     })
-  201 |   } else if (action === 'cms.cron.add') {
-  202 |     updated = await updateState((state) => {
-  203 |       const entry = { id: actionId, schedule: payload.schedule || '0 2 * * *', command: payload.command || 'backup', status: 'active' }
-  204 |       state.cron_scripts = [...(state.cron_scripts || []), entry]
-  205 |       return state
-  206 |     })
-  207 |   } else if (action === 'cms.cron.remove') {
-  208 |     updated = await updateState((state) => {
-  209 |       state.cron_scripts = (state.cron_scripts || []).filter((script) => String(script.id) !== String(payload.id))
-  210 |       return state
-  211 |     })
-  212 |   }
-  213 | 
-  214 |   if (!updated) {
-  215 |     return { ok: false, error: 'Unsupported action' }
-  216 |   }
-  217 |   return { ok: true, state: updated }
-  218 | }
-  219 | 
+141 | }
+142 | } else if (action === 'cms.media.upload') {
+143 | updated = await updateState((state) => {
+144 | const entry = { id: actionId, name: payload.name || 'media', type: payload.type || 'image', url: payload.url || '', uploaded_at: now }
+145 | state.media = [...(state.media || []), entry]
+146 | return state
+147 | })
+148 | } else if (action === 'cms.version.rollback') {
+149 | updated = await updateState((state) => {
+150 | state.versions = [
+151 | { id: actionId, content_id: payload.content_id || '', version: payload.version || 'latest', created_at: now, note: 'rollback' },
+152 | ...(state.versions || []),
+153 | ]
+154 | return state
+155 | })
+156 | } else if (action === 'cms.theme.switch') {
+157 | updated = await updateState((state) => {
+158 | state.theme = { ...state.theme, active: payload.theme || state.theme.active }
+159 | return state
+160 | })
+161 | } else if (action === 'cms.seo.update') {
+162 | updated = await updateState((state) => {
+163 | state.seo = {
+164 | ...state.seo,
+165 | default_title: payload.default_title ?? state.seo.default_title,
+166 | meta_description: payload.meta_description ?? state.seo.meta_description,
+167 | social_image: payload.social_image ?? state.seo.social_image,
+168 | }
+169 | return state
+170 | })
+171 | } else if (action === 'cms.cache.clear') {
+172 | updated = await updateState((state) => {
+173 | state.cache = { ...state.cache, last_cleared_at: now }
+174 | return state
+175 | })
+176 | } else if (action === 'cms.env.update') {
+177 | let vars = payload.vars
+178 | if (typeof vars === 'string') {
+179 | try {
+180 | vars = JSON.parse(vars)
+181 | } catch {
+182 | vars = {}
+183 | }
+184 | }
+185 | updated = await updateState((state) => {
+186 | state.env = { ...state.env, vars: { ...(state.env?.vars || {}), ...(vars || {}) } }
+187 | return state
+188 | })
+189 | } else if (action === 'cms.deploy.run') {
+190 | updated = await updateState((state) => {
+191 | const entry = { id: actionId, status: 'running', branch: payload.branch || 'main', started_at: now }
+192 | state.deployments = [entry, ...(state.deployments || [])].slice(0, 20)
+193 | return state
+194 | })
+195 | } else if (action === 'cms.backup.run') {
+196 | updated = await updateState((state) => {
+197 | const entry = { id: actionId, status: 'completed', provider: payload.provider || 'local', created_at: now }
+198 | state.backups = [entry, ...(state.backups || [])].slice(0, 20)
+199 | return state
+200 | })
+201 | } else if (action === 'cms.cron.add') {
+202 | updated = await updateState((state) => {
+203 | const entry = { id: actionId, schedule: payload.schedule || '0 2 \* \* \*', command: payload.command || 'backup', status: 'active' }
+204 | state.cron_scripts = [...(state.cron_scripts || []), entry]
+205 | return state
+206 | })
+207 | } else if (action === 'cms.cron.remove') {
+208 | updated = await updateState((state) => {
+209 | state.cron_scripts = (state.cron_scripts || []).filter((script) => String(script.id) !== String(payload.id))
+210 | return state
+211 | })
+212 | }
+213 |
+214 | if (!updated) {
+215 | return { ok: false, error: 'Unsupported action' }
+216 | }
+217 | return { ok: true, state: updated }
+218 | }
+219 |

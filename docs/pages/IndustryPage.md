@@ -5,12 +5,14 @@
 ## 1) Purpose
 
 Industry/category landing page with:
+
 - Pre-filtered search results for specific industry
 - Industry statistics (top countries, buyer/factory counts)
 - AI auto-reply widget for quick outreach
 - Shows requests and products for the industry
 
 **Backend interactions:**
+
 - GET `/industry/:slug` - Fetch industry data and stats
 - GET `/requirements/search?category=X` - Search buyer requests
 - GET `/products/search?category=X` - Search products
@@ -19,12 +21,14 @@ Industry/category landing page with:
 ## 2) Page Structure (Components + Sections)
 
 ### 2.1 Imported Components
+
 - `react-router-dom` - Link, useParams
 - `lucide-react` - Sparkles, ArrowUpRight icons
 - `../lib/auth` - apiRequest, getToken
 - `../lib/events` - trackClientEvent
 
 ### 2.2 Structural Sections
+
 - Header with category info and stats
 - Statistics grid (top countries, buyer/factory counts)
 - Two columns: Buyer Requests + Factory Products
@@ -34,6 +38,7 @@ Industry/category landing page with:
 ## 3) Styling (className blocks)
 
 ### 3.1 Tailwind utilities used
+
 - Layout: `flex`, `grid`, `min-h-screen`, `max-w-7xl`
 - Colors: `bg-slate-50`, `text-slate-900`, `dark:bg-[#020617]`
 - Spacing: `p-6`, `py-6`, `space-y-6`
@@ -41,12 +46,12 @@ Industry/category landing page with:
 
 ## 4) API Map
 
-| Frontend Call | Backend Route | Purpose |
-|---------------|---------------|---------|
-| GET /industry/:slug | `/industry/:slug` | Get industry data |
-| GET /requirements/search | `/requirements/search` | Search buyer requests |
-| GET /products/search | `/products/search` | Search products |
-| POST /industry/:slug/auto-reply | `/industry/:slug/auto-reply` | AI auto-reply |
+| Frontend Call                   | Backend Route                | Purpose               |
+| ------------------------------- | ---------------------------- | --------------------- |
+| GET /industry/:slug             | `/industry/:slug`            | Get industry data     |
+| GET /requirements/search        | `/requirements/search`       | Search buyer requests |
+| GET /products/search            | `/products/search`           | Search products       |
+| POST /industry/:slug/auto-reply | `/industry/:slug/auto-reply` | AI auto-reply         |
 
 ## 5) Component Inventory
 
@@ -160,4 +165,4 @@ Industry/category landing page with:
 
 ---
 
-*Generated from source: src/pages/IndustryPage.jsx*
+_Generated from source: src/pages/IndustryPage.jsx_

@@ -7,6 +7,7 @@
 ## 1) Purpose
 
 Global navigation bar used across most authenticated pages:
+
 - Provides navigation links (public + authenticated)
 - Theme toggle (light/dark mode)
 - User search suggestions dropdown
@@ -22,23 +23,25 @@ Global navigation bar used across most authenticated pages:
 
 ## 3) Key APIs Used
 
-| API | Purpose |
-|-----|---------|
-| GET `/api/notifications` | Unread count |
-| GET `/api/users/search?q=...` | User search suggestions |
-| POST `/api/users/:id/friend-request` | Connect user |
-| POST `/api/users/:id/follow` | Follow user |
-| POST `/api/chat/rooms` | Start conversation |
-| POST `/api/calls` | Start call |
+| API                                  | Purpose                 |
+| ------------------------------------ | ----------------------- |
+| GET `/api/notifications`             | Unread count            |
+| GET `/api/users/search?q=...`        | User search suggestions |
+| POST `/api/users/:id/friend-request` | Connect user            |
+| POST `/api/users/:id/follow`         | Follow user             |
+| POST `/api/chat/rooms`               | Start conversation      |
+| POST `/api/calls`                    | Start call              |
 
 ## 4) Dependencies
 
 ### External Libraries
+
 - `framer-motion` - Animations (magnetic hover, active indicator slide)
 - `lucide-react` - Icons (Bell, DollarSign, FileText, etc.)
 - `react-router-dom` - Link, useLocation, useNavigate
 
 ### Local Imports
+
 - `../lib/auth` - apiRequest, clearSession, getCurrentUser, getRoleHome, getToken
 - `../lib/notificationsRealtime` - connectNotificationsRealtime, subscribeNotificationsRealtime
 
@@ -66,10 +69,12 @@ Global navigation bar used across most authenticated pages:
 ## 7) Styling
 
 ### Custom CSS Classes (App.css)
+
 - `.nav-glass` - Glassmorphism effect (semi-transparent + blur)
 - `.text-gtBlue` - Brand color
 
 ### Tailwind Utilities
+
 - Layout: `flex`, `fixed`, `relative`
 - Colors: `bg-white`, `dark:bg-slate-900`, `text-slate-*`
 - Spacing: `p-*`, `gap-*`, `px-*`
@@ -105,4 +110,4 @@ Global navigation bar used across most authenticated pages:
 
 ---
 
-*Generated from source: src/components/NavBar.jsx*
+_Generated from source: src/components/NavBar.jsx_

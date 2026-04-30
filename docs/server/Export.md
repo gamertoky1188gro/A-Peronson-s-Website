@@ -34,4 +34,4 @@ router.post("/analytics", requireAuth, exportAnalytics);
 
 ---
 
-*Generated from source: server/routes/exportRoutes.js*
+_Generated from source: server/routes/exportRoutes.js_

@@ -5,16 +5,18 @@
 **File:** `server/server.js`
 
 ### Purpose
+
 Express server initialization and configuration.
 
 ### Key Functions
 
-| Function | Description |
-|----------|-------------|
-| `createApp()` | Create Express app with middleware |
-| `startServer(port)` | Start HTTP server |
+| Function            | Description                        |
+| ------------------- | ---------------------------------- |
+| `createApp()`       | Create Express app with middleware |
+| `startServer(port)` | Start HTTP server                  |
 
 ### Middleware Stack
+
 - CORS
 - Body parsing (JSON, URL-encoded)
 - Request logging
@@ -23,6 +25,7 @@ Express server initialization and configuration.
 - Error handling
 
 ### Routes Mounted
+
 - `/api/*` - API routes
 - `/admin/*` - Admin routes
 - `/ws` - WebSocket
@@ -34,9 +37,11 @@ Express server initialization and configuration.
 **File:** `server/setupLlama.js`
 
 ### Purpose
+
 Initialize Llama AI model configuration.
 
 ### Functions
+
 - `initLlama()` - Initialize Llama
 - `getLlamaConfig()` - Get config
 - `loadModel(modelPath)` - Load AI model
@@ -48,9 +53,11 @@ Initialize Llama AI model configuration.
 **File:** `server/config/searchAccessConfig.js`
 
 ### Purpose
+
 OpenSearch access configuration and permissions.
 
 ### Config
+
 - Index names
 - Field mappings
 - Access policies
@@ -62,17 +69,19 @@ OpenSearch access configuration and permissions.
 **File:** `server/workers/leadRemindersWorker.js`
 
 ### Purpose
+
 Background worker for lead reminder scheduling.
 
 ### Functions
 
-| Function | Description |
-|----------|-------------|
-| `checkReminders()` | Check and send reminders |
-| `processReminder(reminder)` | Process single reminder |
-| `sendNotification(userId, message)` | Send notification |
+| Function                            | Description              |
+| ----------------------------------- | ------------------------ |
+| `checkReminders()`                  | Check and send reminders |
+| `processReminder(reminder)`         | Process single reminder  |
+| `sendNotification(userId, message)` | Send notification        |
 
 ### Schedule
+
 - Runs every 5 minutes
 - Checks `lead_reminders` table
 - Sends notifications for due reminders
@@ -84,18 +93,20 @@ Background worker for lead reminder scheduling.
 **File:** `server/realtime/realtimeBus.js`
 
 ### Purpose
+
 WebSocket connection management for real-time features.
 
 ### Functions
 
-| Function | Description |
-|----------|-------------|
-| `addClient(ws, userId)` | Add WebSocket client |
-| `removeClient(ws)` | Remove client |
-| `broadcast(message)` | Broadcast to all |
+| Function                      | Description           |
+| ----------------------------- | --------------------- |
+| `addClient(ws, userId)`       | Add WebSocket client  |
+| `removeClient(ws)`            | Remove client         |
+| `broadcast(message)`          | Broadcast to all      |
 | `sendToUser(userId, message)` | Send to specific user |
 
 ### Events
+
 - `notification` - User notifications
 - `message` - Chat messages
 - `presence` - Online status
@@ -107,21 +118,23 @@ WebSocket connection management for real-time features.
 **File:** `server/services/providers/dropboxSign.js`
 
 ### Purpose
+
 E-signature provider integration (Dropbox Sign).
 
 ### Functions
 
-| Function | Description |
-|----------|-------------|
-| `createSignatureRequest(templateId, signers)` | Create request |
-| `getSignatureStatus(signatureId)` | Get status |
-| `cancelSignature(signatureId)` | Cancel request |
-| `downloadSignedPdf(signatureId)` | Download signed PDF |
+| Function                                      | Description         |
+| --------------------------------------------- | ------------------- |
+| `createSignatureRequest(templateId, signers)` | Create request      |
+| `getSignatureStatus(signatureId)`             | Get status          |
+| `cancelSignature(signatureId)`                | Cancel request      |
+| `downloadSignedPdf(signatureId)`              | Download signed PDF |
 
 ### API
+
 - Dropbox Sign REST API
 - Webhook callbacks
 
 ---
 
-*Generated from source: server/*
+_Generated from source: server/_

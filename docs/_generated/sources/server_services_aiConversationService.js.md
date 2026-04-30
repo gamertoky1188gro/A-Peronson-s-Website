@@ -3,38 +3,39 @@
     3 | import { assistantReply } from './assistantService.js'
     4 | import { addLeadNoteForMatch } from './leadService.js'
     5 | import { getRequirementById } from './requirementService.js'
-    6 | 
+    6 |
     7 | const USERS_FILE = 'users.json'
     8 | const MESSAGES_FILE = 'messages.json'
     9 | const LEADS_FILE = 'leads.json'
-   10 | const LEAD_NOTES_FILE = 'lead_notes.json'
-   11 | 
-   12 | const SUMMARY_PREFIX = 'AI Summary:'
-   13 | const NEGOTIATION_PREFIX = 'AI Negotiation:'
-   14 | 
-   15 | function parseMarketplaceMatchId(matchId = '') {
-   16 |   const parts = String(matchId || '').split(':')
-   17 |   if (parts.length !== 2) return null
-   18 |   const requirementId = sanitizeString(parts[0], 120)
-   19 |   const supplierId = sanitizeString(parts[1], 120)
-   20 |   if (!requirementId || !supplierId) return null
-   21 |   return { requirementId, supplierId }
-   22 | }
-   23 | 
-   24 | function resolveOrgOwnerIdForUser(user) {
-   25 |   if (!user) return ''
-   26 |   if (String(user.role || '').toLowerCase() === 'agent') {
-   27 |     return sanitizeString(String(user.org_owner_id || ''), 120)
-   28 |   }
-   29 |   return sanitizeString(String(user.id || ''), 120)
-   30 | }
-   31 | 
-   32 | function normalizeMessageLine(message, usersById) {
-   33 |   const sender = usersById.get(String(message.sender_id || ''))
-   34 |   const name = sanitizeString(sender?.name || sender?.email || 'User', 80)
-   35 |   const role = sanitizeString(sender?.role || '', 40)
-   36 |   const body = sanitizeString(message.message || '', 400)
-   37 |   return `${name}${role ? ` (${role})` : ''}: ${body}`
+
+10 | const LEAD*NOTES_FILE = 'lead_notes.json'
+11 |
+12 | const SUMMARY_PREFIX = 'AI Summary:'
+13 | const NEGOTIATION_PREFIX = 'AI Negotiation:'
+14 |
+15 | function parseMarketplaceMatchId(matchId = '') {
+16 | const parts = String(matchId || '').split(':')
+17 | if (parts.length !== 2) return null
+18 | const requirementId = sanitizeString(parts[0], 120)
+19 | const supplierId = sanitizeString(parts[1], 120)
+20 | if (!requirementId || !supplierId) return null
+21 | return { requirementId, supplierId }
+22 | }
+23 |
+24 | function resolveOrgOwnerIdForUser(user) {
+25 | if (!user) return ''
+26 | if (String(user.role || '').toLowerCase() === 'agent') {
+27 | return sanitizeString(String(user.org_owner_id || ''), 120)
+28 | }
+29 | return sanitizeString(String(user.id || ''), 120)
+30 | }
+31 |
+32 | function normalizeMessageLine(message, usersById) {
+33 | const sender = usersById.get(String(message.sender_id || ''))
+34 | const name = sanitizeString(sender?.name || sender?.email || 'User', 80)
+35 | const role = sanitizeString(sender?.role || '', 40)
+36 | const body = sanitizeString(message.message || '', 400)
+37 | return `${name}${role ? ` (${role})` : ''}: ${body}`
    38 | }
    39 | 
    40 | function pickRecentMessages(messages = [], limit = 18) {
@@ -81,7 +82,7 @@
    81 | 
    82 | function extractSection(text, label) {
    83 |   const safeLabel = String(label || '').replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')
-   84 |   const pattern = new RegExp(`${safeLabel}\\s*:\\s*([\\s\\S]*?)(?=\\n[A-Za-z\\s]+\\s*:|$)`, 'i')
+   84 |   const pattern = new RegExp(`${safeLabel}\\s*:\\s*([\\s\\S]*?)(?=\\n[A-Za-z\\s]+\\s\_:|$)`, 'i')
    85 |   const match = String(text || '').match(pattern)
    86 |   return match ? sanitizeString(match[1].trim(), 600) : ''
    87 | }
@@ -183,8 +184,7 @@
   183 |   const summary = await generateConversationSummary(safeMatchId)
   184 |   if (!summary?.summary) return null
   185 | 
-  186 |   const note = `${SUMMARY_PREFIX} ${summary.summary}${summary.suggested_reply ? `\nSuggested reply: ${summary.suggested_reply}` : ''}`
-  187 |   await addLeadNoteForMatch({ matchId: safeMatchId, orgOwnerId: safeOrgId, note, authorId: 'system' })
+  186 |   const note = `${SUMMARY_PREFIX} ${summary.summary}${summary.suggested_reply ? `\nSuggested reply: ${summary.suggested_reply}` : ''}`  187 |   await addLeadNoteForMatch({ matchId: safeMatchId, orgOwnerId: safeOrgId, note, authorId: 'system' })
   188 |   return summary
   189 | }
   190 | 
@@ -211,7 +211,7 @@
   211 |   const prompt = [
   212 |     'You are a negotiation assistant for B2B textile sourcing.',
   213 |     'Give negotiation guidance based on the chat. Provide: Key risks, Missing info, Suggested reply.',
-  214 |     summaryContext ? `Buyer request: ${summaryContext}` : '',
+  214 |     summaryContext ?`Buyer request: ${summaryContext}` : '',
   215 |     'Conversation:',
   216 |     lines.join('\n'),
   217 |     'Return format:',
@@ -253,8 +253,7 @@
   253 |   const safeOrgId = sanitizeString(String(orgOwnerId || ''), 120)
   254 |   if (!safeMatchId || !safeOrgId || !helper?.guidance) return null
   255 | 
-  256 |   const note = `${NEGOTIATION_PREFIX} ${helper.guidance}${helper.suggested_reply ? `\nSuggested reply: ${helper.suggested_reply}` : ''}`
-  257 |   await addLeadNoteForMatch({ matchId: safeMatchId, orgOwnerId: safeOrgId, note, authorId: 'system' })
+  256 |   const note = `${NEGOTIATION_PREFIX} ${helper.guidance}${helper.suggested_reply ? `\nSuggested reply: ${helper.suggested_reply}` : ''}`  257 |   await addLeadNoteForMatch({ matchId: safeMatchId, orgOwnerId: safeOrgId, note, authorId: 'system' })
   258 |   return note
   259 | }
   260 | 
@@ -263,35 +262,35 @@
   263 |   const safeOrgId = sanitizeString(String(orgOwnerId || ''), 120)
   264 |   if (!safeMatchId || !safeOrgId || !summary?.summary) return null
   265 | 
-  266 |   const note = `${SUMMARY_PREFIX} ${summary.summary}${summary.suggested_reply ? `\\nSuggested reply: ${summary.suggested_reply}` : ''}`
-  267 |   await addLeadNoteForMatch({ matchId: safeMatchId, orgOwnerId: safeOrgId, note, authorId: 'system' })
-  268 |   return note
-  269 | }
-  270 | 
-  271 | export async function resolveOrgOwnerFromMatch(matchId, senderId) {
-  272 |   const users = await readJson(USERS_FILE)
-  273 |   const usersById = new Map((Array.isArray(users) ? users : []).map((u) => [String(u.id), u]))
-  274 |   if (senderId) {
-  275 |     const sender = usersById.get(String(senderId))
-  276 |     const orgOwnerId = resolveOrgOwnerIdForUser(sender)
-  277 |     if (orgOwnerId) return orgOwnerId
-  278 |   }
-  279 | 
-  280 |   const marketplace = parseMarketplaceMatchId(matchId)
-  281 |   if (marketplace) {
-  282 |     const supplierUser = usersById.get(String(marketplace.supplierId))
-  283 |     const orgOwnerId = resolveOrgOwnerIdForUser(supplierUser)
-  284 |     if (orgOwnerId) return orgOwnerId
-  285 |   }
-  286 | 
-  287 |   return ''
-  288 | }
-  289 | 
-  290 | export function pickLatestAiSummary(notes = []) {
-  291 |   return pickLatestNote(notes, SUMMARY_PREFIX)
-  292 | }
-  293 | 
-  294 | export function pickLatestNegotiationNote(notes = []) {
-  295 |   return pickLatestNote(notes, NEGOTIATION_PREFIX)
-  296 | }
-  297 | 
+  266 |   const note =`${SUMMARY_PREFIX} ${summary.summary}${summary.suggested_reply ? `\\nSuggested reply: ${summary.suggested_reply}` : ''}`
+267 | await addLeadNoteForMatch({ matchId: safeMatchId, orgOwnerId: safeOrgId, note, authorId: 'system' })
+268 | return note
+269 | }
+270 |
+271 | export async function resolveOrgOwnerFromMatch(matchId, senderId) {
+272 | const users = await readJson(USERS_FILE)
+273 | const usersById = new Map((Array.isArray(users) ? users : []).map((u) => [String(u.id), u]))
+274 | if (senderId) {
+275 | const sender = usersById.get(String(senderId))
+276 | const orgOwnerId = resolveOrgOwnerIdForUser(sender)
+277 | if (orgOwnerId) return orgOwnerId
+278 | }
+279 |
+280 | const marketplace = parseMarketplaceMatchId(matchId)
+281 | if (marketplace) {
+282 | const supplierUser = usersById.get(String(marketplace.supplierId))
+283 | const orgOwnerId = resolveOrgOwnerIdForUser(supplierUser)
+284 | if (orgOwnerId) return orgOwnerId
+285 | }
+286 |
+287 | return ''
+288 | }
+289 |
+290 | export function pickLatestAiSummary(notes = []) {
+291 | return pickLatestNote(notes, SUMMARY_PREFIX)
+292 | }
+293 |
+294 | export function pickLatestNegotiationNote(notes = []) {
+295 | return pickLatestNote(notes, NEGOTIATION_PREFIX)
+296 | }
+297 |

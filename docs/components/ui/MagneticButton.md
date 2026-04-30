@@ -6,17 +6,18 @@
 ## 1) Purpose
 
 Button with magnetic hover effect:
+
 - Mouse position tracking
 - Spring animation
 - Framer Motion integration
 
 ## 2) Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `children` | node | - | Button content |
-| `onClick` | function | - | Click handler |
-| `className` | string | "" | Additional classes |
+| Prop        | Type     | Default | Description        |
+| ----------- | -------- | ------- | ------------------ |
+| `children`  | node     | -       | Button content     |
+| `onClick`   | function | -       | Click handler      |
+| `className` | string   | ""      | Additional classes |
 
 ## 3) Features
 
@@ -30,4 +31,4 @@ Button with magnetic hover effect:
 
 ---
 
-*Generated from source: src/components/ui/MagneticButton.jsx*
+_Generated from source: src/components/ui/MagneticButton.jsx_

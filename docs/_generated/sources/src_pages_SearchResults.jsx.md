@@ -2,1176 +2,1177 @@
     2 |   Route: /search
     3 |   Access: Protected (login required)
     4 |   Allowed roles: buyer, buying_house, factory, owner, admin, agent
-    5 | 
+    5 |
     6 |   Public Pages:
     7 |     /, /pricing, /about, /terms, /privacy, /help, /login, /signup, /access-denied
     8 |   Protected Pages (login required):
     9 |     /feed, /search, /buyer/:id, /factory/:id, /buying-house/:id, /contracts,
-   10 |     /notifications, /chat, /call, /verification, /verification-center
-   11 | 
-   12 |   Primary responsibilities:
-   13 |     - Run marketplace search across Buyer Requests and Companies/Products.
-   14 |     - Provide basic filters for free tier and advanced filters for premium tier.
-   15 |     - Support quick view modals and recent views rail.
-   16 | 
-   17 |   Key API endpoints:
-   18 |     - GET /api/requirements/search?... (buyer requests)
-   19 |     - GET /api/products/search?... (companies/products)
-   20 |     - GET /api/ratings/search?profile_keys=...
-   21 |     - GET /api/products/views/me?cursor=...
-   22 |     - POST /api/search/alerts (save alerts)
-   23 | 
-   24 |   Major UI/UX patterns:
-   25 |     - Glass + glow search bar with shortcut hint (Ctrl/Cmd + K).
-   26 |     - layoutId animated tabs for "All / Buyer Requests / Companies".
-   27 |     - Skeleton shimmer while loading.
-   28 |     - Optional premium-locked overlays for advanced filters.
-   29 | */
-   30 | import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-   31 | import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-   32 | import { Briefcase, Building2, Filter, LayoutGrid, Bell, Share2, Search as SearchIcon } from 'lucide-react'
-   33 | import { motion, useReducedMotion } from 'framer-motion'
-   34 | import { apiRequest, getCurrentUser, getToken, hasEntitlement } from '../lib/auth'
-   35 | import ProductQuickViewModal from '../components/products/ProductQuickViewModal'
-   36 | import { trackClientEvent } from '../lib/events'
-   37 | import { recordLeadSource } from '../lib/leadSource'
-   38 | import L from 'leaflet'
-   39 | import { ADVANCED_FILTER_KEYS, DEFAULT_CORE_FILTER_KEYS, validateCoreFilterRenderKeys } from './searchFiltersConfig'
-   40 | 
-   41 | const Motion = motion
-   42 | 
-   43 | const TAB_OPTIONS = [
-   44 |   { id: 'all', label: 'All', icon: LayoutGrid },
-   45 |   { id: 'requests', label: 'Buyer Requests', icon: Briefcase },
-   46 |   { id: 'companies', label: 'Companies', icon: Building2 },
-   47 | ]
-   48 | 
-   49 | const INDUSTRY_OPTIONS = [
-   50 |   { value: 'garments', label: 'Garments' },
-   51 |   { value: 'textile', label: 'Textile' },
-   52 | ]
-   53 | 
-   54 | const GARMENT_CATEGORIES = ['Shirts', 'Pants', 'Jackets', 'Knitwear', 'Denim', 'Women', 'Kids']
-   55 | const TEXTILE_CATEGORIES = ['Woven', 'Knit', 'Denim', 'Non-woven', 'Yarn', 'Trim', 'Accessories']
-   56 | const FABRIC_TYPE_OPTIONS = ['Cotton', 'Polyester', 'Blend', 'Denim', 'Linen', 'Wool']
-   57 | const CERTIFICATION_OPTIONS = ['GOTS', 'OEKO-TEX', 'BSCI', 'WRAP', 'Sedex']
-   58 | const PROCESS_OPTIONS = ['Knit', 'Woven', 'Dyeing', 'Finishing', 'Embroidery', 'Printing']
-   59 | const LANGUAGE_OPTIONS = ['English', 'Bangla', 'Chinese', 'Spanish']
-   60 | const INCOTERM_OPTIONS = ['FOB', 'CIF', 'EXW', 'DDP']
-   61 | const PAYMENT_OPTIONS = ['LC', 'TT', 'Escrow', 'Bank Guarantee']
-   62 | const DOCUMENT_READY_OPTIONS = ['Export Docs', 'Lab Reports', 'Techpacks']
-   63 | const CUSTOMIZATION_OPTIONS = ['Techpack Accepted', 'Pattern Making', 'Embroidery']
-   64 | const SIZE_RANGE_OPTIONS = ['XS-XL', 'S-XXL', 'Custom']
-   65 | const EXPORT_PORT_OPTIONS = ['Chittagong', 'Dhaka', 'Shanghai', 'Shenzhen', 'Singapore']
-   66 | const YEARS_IN_BUSINESS_MIN_BUCKETS = [
-   67 |   { value: '', label: 'Any' },
-   68 |   { value: '1', label: '1+ yr' },
-   69 |   { value: '3', label: '3+ yr' },
-   70 |   { value: '5', label: '5+ yr' },
-   71 |   { value: '10', label: '10+ yr' },
-   72 | ]
-   73 | const RESPONSE_TIME_MAX_BUCKETS = [
-   74 |   { value: '', label: 'Any' },
-   75 |   { value: '1', label: '≤ 1h' },
-   76 |   { value: '4', label: '≤ 4h' },
-   77 |   { value: '12', label: '≤ 12h' },
-   78 |   { value: '24', label: '≤ 24h' },
-   79 |   { value: '48', label: '≤ 48h' },
-   80 | ]
-   81 | const TEAM_SEATS_MIN_BUCKETS = [
-   82 |   { value: '', label: 'Any' },
-   83 |   { value: '2', label: '2+' },
-   84 |   { value: '5', label: '5+' },
-   85 |   { value: '10', label: '10+' },
-   86 |   { value: '25', label: '25+' },
-   87 | ]
-   88 | const SAMPLE_LEAD_TIME_MAX_DAYS = 45
-   89 | const MOQ_BUCKETS = [
-   90 |   { value: '', label: 'Any' },
-   91 |   { value: '1-100', label: '1–100' },
-   92 |   { value: '101-1000', label: '101–1,000' },
-   93 |   { value: '1001-', label: '1001+' },
-   94 | ]
-   95 | const CURRENCY_OPTIONS = ['USD', 'EUR', 'CNY', 'BDT', 'GBP']
-   96 | const PRESET_STORAGE_KEY = 'gt_search_selected_preset'
-   97 | const PRESET_KEYS = ['buyer', 'buying_house', 'factory']
-   98 | 
-   99 | function normalizePresetKey(value) {
-  100 |   const normalized = String(value || '').toLowerCase()
-  101 |   return PRESET_KEYS.includes(normalized) ? normalized : ''
-  102 | }
-  103 | 
-  104 | function createDefaultFilters(searchParams) {
-  105 |   return {
-  106 |     industry: searchParams.get('industry') || '',
-  107 |     moqRange: searchParams.get('moqRange') || '',
-  108 |     priceRange: searchParams.get('priceRange') || '',
-  109 |     priceCurrency: searchParams.get('priceCurrency') || '',
-  110 |     country: searchParams.get('country') || '',
-  111 |     verifiedOnly: searchParams.get('verifiedOnly') === 'true',
-  112 |     orgType: searchParams.get('orgType') || '',
-  113 |     priorityOnly: searchParams.get('priorityOnly') === 'true',
-  114 |     leadTimeMax: searchParams.get('leadTimeMax') || '',
-  115 |     fabricType: parseCsvParam(searchParams.get('fabricType')),
-  116 |     gsmMin: searchParams.get('gsmMin') || '',
-  117 |     gsmMax: searchParams.get('gsmMax') || '',
-  118 |     sizeRange: searchParams.get('sizeRange') || '',
-  119 |     sizeRangeCustom: searchParams.get('sizeRangeCustom') || '',
-  120 |     colorPantone: parseCsvParam(searchParams.get('colorPantone')),
-  121 |     customization: parseCsvParam(searchParams.get('customization')),
-  122 |     sampleAvailable: searchParams.get('sampleAvailable') === 'true',
-  123 |     sampleLeadTime: searchParams.get('sampleLeadTime') || '',
-  124 |     certifications: parseCsvParam(searchParams.get('certifications')),
-  125 |     incoterms: parseCsvParam(searchParams.get('incoterms')),
-  126 |     paymentTerms: parseCsvParam(searchParams.get('paymentTerms')),
-  127 |     documentReady: parseCsvParam(searchParams.get('documentReady')),
-  128 |     auditDate: searchParams.get('auditDate') || '',
-  129 |       auditScoreMin: searchParams.get('auditScoreMin') || '',
-  130 |       hasPermissionMatrix: searchParams.get('hasPermissionMatrix') === 'true',
-  131 |       permissionSection: searchParams.get('permissionSection') || '',
-  132 |         permissionSectionEdit: searchParams.get('permissionSectionEdit') === 'true',
-  133 |         roleSeats: parseRoleSeatsParam(searchParams.get('roleSeats')),
-  134 |     languageSupport: parseCsvParam(searchParams.get('languageSupport')),
-  135 |     capacityMin: searchParams.get('capacityMin') || '',
-  136 |     processes: parseCsvParam(searchParams.get('processes')),
-  137 |     yearsInBusinessMin: searchParams.get('yearsInBusinessMin') || '',
-  138 |     responseTimeMax: searchParams.get('responseTimeMax') || '',
-  139 |     teamSeatsMin: searchParams.get('teamSeatsMin') || '',
-  140 |     handlesMultipleFactories: searchParams.get('handlesMultipleFactories') === 'true',
-  141 |     exportPort: parseCsvParam(searchParams.get('exportPort')),
-  142 |     distanceKm: searchParams.get('distanceKm') || '',
-  143 |     locationLat: searchParams.get('locationLat') || '',
-  144 |     locationLng: searchParams.get('locationLng') || '',
-  145 |   }
-  146 | }
-  147 | 
-  148 | function parseCsvParam(value) {
-  149 |   return String(value || '')
-  150 |     .split(',')
-  151 |     .map((entry) => entry.trim())
-  152 |     .filter(Boolean)
-  153 | }
-  154 | 
-  155 | function parseRoleSeatsParam(value) {
-  156 |   const raw = String(value || '').trim()
-  157 |   if (!raw) return []
-  158 |   return raw
-  159 |     .split(',')
-  160 |     .map((part) => {
-  161 |       const [roleRaw, seatsRaw] = String(part || '').split(':').map((s) => (s || '').trim())
-  162 |       if (!roleRaw) return null
-  163 |       return { role: roleRaw, seats: seatsRaw || '' }
-  164 |     })
-  165 |     .filter(Boolean)
-  166 | }
-  167 | 
-  168 | function serializeRoleSeats(entries) {
-  169 |   if (!Array.isArray(entries) || !entries.length) return ''
-  170 |   return entries
-  171 |     .filter((e) => e && e.role)
-  172 |     .map((e) => `${e.role}:${String(e.seats || '')}`)
-  173 |     .join(',')
-  174 | }
-  175 | 
-  176 | function toCsv(value) {
-  177 |   if (!value) return ''
-  178 |   if (Array.isArray(value)) return value.filter(Boolean).join(',')
-  179 |   return String(value || '')
-  180 | }
-  181 | 
-  182 | function hasFilterValue(value) {
-  183 |   if (Array.isArray(value)) return value.length > 0
-  184 |   if (typeof value === 'boolean') return value
-  185 |   return String(value || '').trim().length > 0
-  186 | }
-  187 | 
-  188 | function parseRangeValue(value) {
-  189 |   const raw = String(value || '').trim()
-  190 |   if (!raw || !raw.includes('-')) return { min: '', max: '' }
-  191 |   const [min, max] = raw.split('-').map((part) => part.trim())
-  192 |   return { min, max }
-  193 | }
-  194 | 
-  195 | function rangeToString(min, max) {
-  196 |   const minVal = String(min || '').trim()
-  197 |   const maxVal = String(max || '').trim()
-  198 |   if (!minVal && !maxVal) return ''
-  199 |   if (!maxVal) return `${minVal}-`
-  200 |   if (!minVal) return `0-${maxVal}`
-  201 |   return `${minVal}-${maxVal}`
-  202 | }
-  203 | 
-  204 | function mergeFacetCounts(a = {}, b = {}) {
-  205 |   const out = { ...(a || {}) }
-  206 |   Object.entries(b || {}).forEach(([key, counts]) => {
-  207 |     const bucket = out[key] || {}
-  208 |     Object.entries(counts || {}).forEach(([label, count]) => {
-  209 |       bucket[label] = (bucket[label] || 0) + Number(count || 0)
-  210 |     })
-  211 |     out[key] = bucket
-  212 |   })
-  213 |   return out
-  214 | }
-  215 | 
-  216 | function getFacetCount(counts = {}, label = '') {
-  217 |   if (!counts || !label) return undefined
-  218 |   if (counts[label] !== undefined) return counts[label]
-  219 |   const lower = label.toLowerCase()
-  220 |   if (counts[lower] !== undefined) return counts[lower]
-  221 |   const matchKey = Object.keys(counts).find((key) => String(key).toLowerCase() === lower)
-  222 |   return matchKey ? counts[matchKey] : undefined
-  223 | }
-  224 | 
-  225 | function hashString(value) {
-  226 |   let hash = 0
-  227 |   const text = String(value || '')
-  228 |   for (let i = 0; i < text.length; i += 1) {
-  229 |     hash = ((hash << 5) - hash) + text.charCodeAt(i)
-  230 |     hash |= 0
-  231 |   }
-  232 |   return Math.abs(hash).toString(36)
-  233 | }
-  234 | 
-  235 | function roleToProfileRoute(role, id) {
-  236 |   // Convert a company role -> correct profile route.
-  237 |   // Used when clicking a search result card to navigate to the right profile page.
-  238 |   if (!id) return ''
-  239 |   const normalized = String(role || '').toLowerCase()
-  240 |   if (normalized === 'buyer') return `/buyer/${encodeURIComponent(id)}`
-  241 |   if (normalized === 'buying_house') return `/buying-house/${encodeURIComponent(id)}`
-  242 |   return `/factory/${encodeURIComponent(id)}`
-  243 | }
-  244 | 
-  245 | 
-  246 | function buildQueryString({ q, category, filters, includeAdvanced, includePriority = false }) {
-  247 |   // Build URLSearchParams from UI state.
-  248 |   // Core filters are always free; advanced filters require premium.
-  249 |   const params = new URLSearchParams()
-  250 |   if (q) params.set('q', q)
-  251 |   if (Array.isArray(category) ? category.length : category) params.set('category', toCsv(category))
-  252 |   if (filters.industry) params.set('industry', filters.industry)
-  253 | 
-  254 |   // Core filters (always included if set)
-  255 |   if (filters.moqRange) params.set('moqRange', filters.moqRange)
-  256 |   if (filters.priceRange) params.set('priceRange', filters.priceRange)
-  257 |   if (filters.priceCurrency) params.set('priceCurrency', filters.priceCurrency)
-  258 |   if (filters.country) params.set('country', filters.country)
-  259 |   if (filters.verifiedOnly) params.set('verifiedOnly', 'true')
-  260 |   if (filters.orgType) params.set('orgType', filters.orgType)
-  261 |   if (filters.leadTimeMax) params.set('leadTimeMax', filters.leadTimeMax)
-  262 |   if (includePriority && filters.priorityOnly) params.set('priorityOnly', 'true')
-  263 | 
-  264 |   // Advanced filters (premium only)
-  265 |   if (includeAdvanced) {
-  266 |     if (hasFilterValue(filters.fabricType)) params.set('fabricType', toCsv(filters.fabricType))
-  267 |     if (filters.gsmMin) params.set('gsmMin', filters.gsmMin)
-  268 |     if (filters.gsmMax) params.set('gsmMax', filters.gsmMax)
-  269 |     if (filters.sizeRange) params.set('sizeRange', filters.sizeRange)
-  270 |     if (filters.sizeRange === 'Custom' && filters.sizeRangeCustom) params.set('sizeRangeCustom', filters.sizeRangeCustom)
-  271 |     if (hasFilterValue(filters.colorPantone)) params.set('colorPantone', toCsv(filters.colorPantone))
-  272 |     if (hasFilterValue(filters.customization)) params.set('customization', toCsv(filters.customization))
-  273 |     if (filters.sampleAvailable) params.set('sampleAvailable', 'true')
-  274 |     if (filters.sampleLeadTime) params.set('sampleLeadTime', filters.sampleLeadTime)
-  275 |     if (hasFilterValue(filters.certifications)) params.set('certifications', toCsv(filters.certifications))
-  276 |     if (hasFilterValue(filters.incoterms)) params.set('incoterms', toCsv(filters.incoterms))
-  277 |     if (hasFilterValue(filters.paymentTerms)) params.set('paymentTerms', toCsv(filters.paymentTerms))
-  278 |     if (hasFilterValue(filters.documentReady)) params.set('documentReady', toCsv(filters.documentReady))
-  279 |     if (filters.auditScoreMin) params.set('auditScoreMin', filters.auditScoreMin)
-  280 |     if (filters.auditDate) params.set('auditDate', filters.auditDate)
-  281 |     if (filters.hasPermissionMatrix) params.set('hasPermissionMatrix', 'true')
-  282 |       if (filters.permissionSection) params.set('permissionSection', filters.permissionSection)
-  283 |       if (filters.permissionSectionEdit) params.set('permissionSectionEdit', 'true')
-  284 |     if (hasFilterValue(filters.languageSupport)) params.set('languageSupport', toCsv(filters.languageSupport))
-  285 |     if (filters.capacityMin) params.set('capacityMin', filters.capacityMin)
-  286 |     if (hasFilterValue(filters.processes)) params.set('processes', toCsv(filters.processes))
-  287 |     if (filters.yearsInBusinessMin) params.set('yearsInBusinessMin', filters.yearsInBusinessMin)
-  288 |     if (filters.responseTimeMax) params.set('responseTimeMax', filters.responseTimeMax)
-  289 |     if (filters.teamSeatsMin) params.set('teamSeatsMin', filters.teamSeatsMin)
-  290 |     if (filters.roleSeats && Array.isArray(filters.roleSeats) && filters.roleSeats.length) {
-  291 |       const rs = serializeRoleSeats(filters.roleSeats)
-  292 |       if (rs) params.set('roleSeats', rs)
-  293 |     }
-  294 |     if (filters.handlesMultipleFactories) params.set('handlesMultipleFactories', 'true')
-  295 |     if (hasFilterValue(filters.exportPort)) params.set('exportPort', toCsv(filters.exportPort))
-  296 |     if (filters.distanceKm) params.set('distanceKm', filters.distanceKm)
-  297 |     if (filters.locationLat) params.set('locationLat', filters.locationLat)
-  298 |     if (filters.locationLng) params.set('locationLng', filters.locationLng)
-  299 |   }
-  300 | 
-  301 |   return params.toString()
-  302 | }
-  303 | 
-  304 | function ResultSkeletonCard({ index }) {
-  305 |   return (
-  306 |     <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800" aria-hidden="true">
-  307 |       <div className="flex items-start justify-between gap-3">
-  308 |         <div className="min-w-0 flex-1">
-  309 |           <div className="h-3 w-1/3 rounded-full skeleton" />
-  310 |           <div className="mt-3 h-3 w-3/4 rounded-full skeleton" />
-  311 |           <div className="mt-2 h-3 w-2/3 rounded-full skeleton" />
-  312 |           <div className="mt-4 grid grid-cols-2 gap-2">
-  313 |             <div className="h-3 rounded-full skeleton" />
-  314 |             <div className="h-3 rounded-full skeleton" />
-  315 |             <div className="h-3 rounded-full skeleton" />
-  316 |             <div className="h-3 rounded-full skeleton" />
-  317 |           </div>
-  318 |         </div>
-  319 |         <div className="flex flex-col gap-2">
-  320 |           <div className="h-9 w-28 rounded-full skeleton" />
-  321 |           <div className="h-9 w-28 rounded-full skeleton" />
-  322 |         </div>
-  323 |       </div>
-  324 |       <span className="sr-only">Loading result {index + 1}</span>
-  325 |     </div>
-  326 |   )
-  327 | }
-  328 | 
-  329 | function ChipGroup({ options = [], values = [], onChange, disabled, counts = {} }) {
-  330 |   return (
-  331 |     <div className="flex flex-wrap gap-2">
-  332 |       {options.map((option) => {
-  333 |         const selected = values.includes(option)
-  334 |         const count = getFacetCount(counts, option)
-  335 |         return (
-  336 |           <button
-  337 |             key={option}
-  338 |             type="button"
-  339 |             disabled={disabled}
-  340 |             onClick={() => {
-  341 |               if (disabled) return
-  342 |               if (selected) onChange(values.filter((entry) => entry !== option))
-  343 |               else onChange([...values, option])
-  344 |             }}
-  345 |             className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${
+
+10 | /notifications, /chat, /call, /verification, /verification-center
+11 |
+12 | Primary responsibilities:
+13 | - Run marketplace search across Buyer Requests and Companies/Products.
+14 | - Provide basic filters for free tier and advanced filters for premium tier.
+15 | - Support quick view modals and recent views rail.
+16 |
+17 | Key API endpoints:
+18 | - GET /api/requirements/search?... (buyer requests)
+19 | - GET /api/products/search?... (companies/products)
+20 | - GET /api/ratings/search?profile*keys=...
+21 | - GET /api/products/views/me?cursor=...
+22 | - POST /api/search/alerts (save alerts)
+23 |
+24 | Major UI/UX patterns:
+25 | - Glass + glow search bar with shortcut hint (Ctrl/Cmd + K).
+26 | - layoutId animated tabs for "All / Buyer Requests / Companies".
+27 | - Skeleton shimmer while loading.
+28 | - Optional premium-locked overlays for advanced filters.
+29 | \*/
+30 | import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+31 | import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+32 | import { Briefcase, Building2, Filter, LayoutGrid, Bell, Share2, Search as SearchIcon } from 'lucide-react'
+33 | import { motion, useReducedMotion } from 'framer-motion'
+34 | import { apiRequest, getCurrentUser, getToken, hasEntitlement } from '../lib/auth'
+35 | import ProductQuickViewModal from '../components/products/ProductQuickViewModal'
+36 | import { trackClientEvent } from '../lib/events'
+37 | import { recordLeadSource } from '../lib/leadSource'
+38 | import L from 'leaflet'
+39 | import { ADVANCED_FILTER_KEYS, DEFAULT_CORE_FILTER_KEYS, validateCoreFilterRenderKeys } from './searchFiltersConfig'
+40 |
+41 | const Motion = motion
+42 |
+43 | const TAB_OPTIONS = [
+44 | { id: 'all', label: 'All', icon: LayoutGrid },
+45 | { id: 'requests', label: 'Buyer Requests', icon: Briefcase },
+46 | { id: 'companies', label: 'Companies', icon: Building2 },
+47 | ]
+48 |
+49 | const INDUSTRY_OPTIONS = [
+50 | { value: 'garments', label: 'Garments' },
+51 | { value: 'textile', label: 'Textile' },
+52 | ]
+53 |
+54 | const GARMENT_CATEGORIES = ['Shirts', 'Pants', 'Jackets', 'Knitwear', 'Denim', 'Women', 'Kids']
+55 | const TEXTILE_CATEGORIES = ['Woven', 'Knit', 'Denim', 'Non-woven', 'Yarn', 'Trim', 'Accessories']
+56 | const FABRIC_TYPE_OPTIONS = ['Cotton', 'Polyester', 'Blend', 'Denim', 'Linen', 'Wool']
+57 | const CERTIFICATION_OPTIONS = ['GOTS', 'OEKO-TEX', 'BSCI', 'WRAP', 'Sedex']
+58 | const PROCESS_OPTIONS = ['Knit', 'Woven', 'Dyeing', 'Finishing', 'Embroidery', 'Printing']
+59 | const LANGUAGE_OPTIONS = ['English', 'Bangla', 'Chinese', 'Spanish']
+60 | const INCOTERM_OPTIONS = ['FOB', 'CIF', 'EXW', 'DDP']
+61 | const PAYMENT_OPTIONS = ['LC', 'TT', 'Escrow', 'Bank Guarantee']
+62 | const DOCUMENT_READY_OPTIONS = ['Export Docs', 'Lab Reports', 'Techpacks']
+63 | const CUSTOMIZATION_OPTIONS = ['Techpack Accepted', 'Pattern Making', 'Embroidery']
+64 | const SIZE_RANGE_OPTIONS = ['XS-XL', 'S-XXL', 'Custom']
+65 | const EXPORT_PORT_OPTIONS = ['Chittagong', 'Dhaka', 'Shanghai', 'Shenzhen', 'Singapore']
+66 | const YEARS_IN_BUSINESS_MIN_BUCKETS = [
+67 | { value: '', label: 'Any' },
+68 | { value: '1', label: '1+ yr' },
+69 | { value: '3', label: '3+ yr' },
+70 | { value: '5', label: '5+ yr' },
+71 | { value: '10', label: '10+ yr' },
+72 | ]
+73 | const RESPONSE_TIME_MAX_BUCKETS = [
+74 | { value: '', label: 'Any' },
+75 | { value: '1', label: '≤ 1h' },
+76 | { value: '4', label: '≤ 4h' },
+77 | { value: '12', label: '≤ 12h' },
+78 | { value: '24', label: '≤ 24h' },
+79 | { value: '48', label: '≤ 48h' },
+80 | ]
+81 | const TEAM_SEATS_MIN_BUCKETS = [
+82 | { value: '', label: 'Any' },
+83 | { value: '2', label: '2+' },
+84 | { value: '5', label: '5+' },
+85 | { value: '10', label: '10+' },
+86 | { value: '25', label: '25+' },
+87 | ]
+88 | const SAMPLE_LEAD_TIME_MAX_DAYS = 45
+89 | const MOQ_BUCKETS = [
+90 | { value: '', label: 'Any' },
+91 | { value: '1-100', label: '1–100' },
+92 | { value: '101-1000', label: '101–1,000' },
+93 | { value: '1001-', label: '1001+' },
+94 | ]
+95 | const CURRENCY_OPTIONS = ['USD', 'EUR', 'CNY', 'BDT', 'GBP']
+96 | const PRESET_STORAGE_KEY = 'gt_search_selected_preset'
+97 | const PRESET_KEYS = ['buyer', 'buying_house', 'factory']
+98 |
+99 | function normalizePresetKey(value) {
+100 | const normalized = String(value || '').toLowerCase()
+101 | return PRESET_KEYS.includes(normalized) ? normalized : ''
+102 | }
+103 |
+104 | function createDefaultFilters(searchParams) {
+105 | return {
+106 | industry: searchParams.get('industry') || '',
+107 | moqRange: searchParams.get('moqRange') || '',
+108 | priceRange: searchParams.get('priceRange') || '',
+109 | priceCurrency: searchParams.get('priceCurrency') || '',
+110 | country: searchParams.get('country') || '',
+111 | verifiedOnly: searchParams.get('verifiedOnly') === 'true',
+112 | orgType: searchParams.get('orgType') || '',
+113 | priorityOnly: searchParams.get('priorityOnly') === 'true',
+114 | leadTimeMax: searchParams.get('leadTimeMax') || '',
+115 | fabricType: parseCsvParam(searchParams.get('fabricType')),
+116 | gsmMin: searchParams.get('gsmMin') || '',
+117 | gsmMax: searchParams.get('gsmMax') || '',
+118 | sizeRange: searchParams.get('sizeRange') || '',
+119 | sizeRangeCustom: searchParams.get('sizeRangeCustom') || '',
+120 | colorPantone: parseCsvParam(searchParams.get('colorPantone')),
+121 | customization: parseCsvParam(searchParams.get('customization')),
+122 | sampleAvailable: searchParams.get('sampleAvailable') === 'true',
+123 | sampleLeadTime: searchParams.get('sampleLeadTime') || '',
+124 | certifications: parseCsvParam(searchParams.get('certifications')),
+125 | incoterms: parseCsvParam(searchParams.get('incoterms')),
+126 | paymentTerms: parseCsvParam(searchParams.get('paymentTerms')),
+127 | documentReady: parseCsvParam(searchParams.get('documentReady')),
+128 | auditDate: searchParams.get('auditDate') || '',
+129 | auditScoreMin: searchParams.get('auditScoreMin') || '',
+130 | hasPermissionMatrix: searchParams.get('hasPermissionMatrix') === 'true',
+131 | permissionSection: searchParams.get('permissionSection') || '',
+132 | permissionSectionEdit: searchParams.get('permissionSectionEdit') === 'true',
+133 | roleSeats: parseRoleSeatsParam(searchParams.get('roleSeats')),
+134 | languageSupport: parseCsvParam(searchParams.get('languageSupport')),
+135 | capacityMin: searchParams.get('capacityMin') || '',
+136 | processes: parseCsvParam(searchParams.get('processes')),
+137 | yearsInBusinessMin: searchParams.get('yearsInBusinessMin') || '',
+138 | responseTimeMax: searchParams.get('responseTimeMax') || '',
+139 | teamSeatsMin: searchParams.get('teamSeatsMin') || '',
+140 | handlesMultipleFactories: searchParams.get('handlesMultipleFactories') === 'true',
+141 | exportPort: parseCsvParam(searchParams.get('exportPort')),
+142 | distanceKm: searchParams.get('distanceKm') || '',
+143 | locationLat: searchParams.get('locationLat') || '',
+144 | locationLng: searchParams.get('locationLng') || '',
+145 | }
+146 | }
+147 |
+148 | function parseCsvParam(value) {
+149 | return String(value || '')
+150 | .split(',')
+151 | .map((entry) => entry.trim())
+152 | .filter(Boolean)
+153 | }
+154 |
+155 | function parseRoleSeatsParam(value) {
+156 | const raw = String(value || '').trim()
+157 | if (!raw) return []
+158 | return raw
+159 | .split(',')
+160 | .map((part) => {
+161 | const [roleRaw, seatsRaw] = String(part || '').split(':').map((s) => (s || '').trim())
+162 | if (!roleRaw) return null
+163 | return { role: roleRaw, seats: seatsRaw || '' }
+164 | })
+165 | .filter(Boolean)
+166 | }
+167 |
+168 | function serializeRoleSeats(entries) {
+169 | if (!Array.isArray(entries) || !entries.length) return ''
+170 | return entries
+171 | .filter((e) => e && e.role)
+172 | .map((e) => `${e.role}:${String(e.seats || '')}`)
+173 | .join(',')
+174 | }
+175 |
+176 | function toCsv(value) {
+177 | if (!value) return ''
+178 | if (Array.isArray(value)) return value.filter(Boolean).join(',')
+179 | return String(value || '')
+180 | }
+181 |
+182 | function hasFilterValue(value) {
+183 | if (Array.isArray(value)) return value.length > 0
+184 | if (typeof value === 'boolean') return value
+185 | return String(value || '').trim().length > 0
+186 | }
+187 |
+188 | function parseRangeValue(value) {
+189 | const raw = String(value || '').trim()
+190 | if (!raw || !raw.includes('-')) return { min: '', max: '' }
+191 | const [min, max] = raw.split('-').map((part) => part.trim())
+192 | return { min, max }
+193 | }
+194 |
+195 | function rangeToString(min, max) {
+196 | const minVal = String(min || '').trim()
+197 | const maxVal = String(max || '').trim()
+198 | if (!minVal && !maxVal) return ''
+199 | if (!maxVal) return `${minVal}-`
+200 | if (!minVal) return `0-${maxVal}`
+201 | return `${minVal}-${maxVal}`
+202 | }
+203 |
+204 | function mergeFacetCounts(a = {}, b = {}) {
+205 | const out = { ...(a || {}) }
+206 | Object.entries(b || {}).forEach(([key, counts]) => {
+207 | const bucket = out[key] || {}
+208 | Object.entries(counts || {}).forEach(([label, count]) => {
+209 | bucket[label] = (bucket[label] || 0) + Number(count || 0)
+210 | })
+211 | out[key] = bucket
+212 | })
+213 | return out
+214 | }
+215 |
+216 | function getFacetCount(counts = {}, label = '') {
+217 | if (!counts || !label) return undefined
+218 | if (counts[label] !== undefined) return counts[label]
+219 | const lower = label.toLowerCase()
+220 | if (counts[lower] !== undefined) return counts[lower]
+221 | const matchKey = Object.keys(counts).find((key) => String(key).toLowerCase() === lower)
+222 | return matchKey ? counts[matchKey] : undefined
+223 | }
+224 |
+225 | function hashString(value) {
+226 | let hash = 0
+227 | const text = String(value || '')
+228 | for (let i = 0; i < text.length; i += 1) {
+229 | hash = ((hash << 5) - hash) + text.charCodeAt(i)
+230 | hash |= 0
+231 | }
+232 | return Math.abs(hash).toString(36)
+233 | }
+234 |
+235 | function roleToProfileRoute(role, id) {
+236 | // Convert a company role -> correct profile route.
+237 | // Used when clicking a search result card to navigate to the right profile page.
+238 | if (!id) return ''
+239 | const normalized = String(role || '').toLowerCase()
+240 | if (normalized === 'buyer') return `/buyer/${encodeURIComponent(id)}`
+241 | if (normalized === 'buying_house') return `/buying-house/${encodeURIComponent(id)}`
+242 | return `/factory/${encodeURIComponent(id)}`
+243 | }
+244 |
+245 |
+246 | function buildQueryString({ q, category, filters, includeAdvanced, includePriority = false }) {
+247 | // Build URLSearchParams from UI state.
+248 | // Core filters are always free; advanced filters require premium.
+249 | const params = new URLSearchParams()
+250 | if (q) params.set('q', q)
+251 | if (Array.isArray(category) ? category.length : category) params.set('category', toCsv(category))
+252 | if (filters.industry) params.set('industry', filters.industry)
+253 |
+254 | // Core filters (always included if set)
+255 | if (filters.moqRange) params.set('moqRange', filters.moqRange)
+256 | if (filters.priceRange) params.set('priceRange', filters.priceRange)
+257 | if (filters.priceCurrency) params.set('priceCurrency', filters.priceCurrency)
+258 | if (filters.country) params.set('country', filters.country)
+259 | if (filters.verifiedOnly) params.set('verifiedOnly', 'true')
+260 | if (filters.orgType) params.set('orgType', filters.orgType)
+261 | if (filters.leadTimeMax) params.set('leadTimeMax', filters.leadTimeMax)
+262 | if (includePriority && filters.priorityOnly) params.set('priorityOnly', 'true')
+263 |
+264 | // Advanced filters (premium only)
+265 | if (includeAdvanced) {
+266 | if (hasFilterValue(filters.fabricType)) params.set('fabricType', toCsv(filters.fabricType))
+267 | if (filters.gsmMin) params.set('gsmMin', filters.gsmMin)
+268 | if (filters.gsmMax) params.set('gsmMax', filters.gsmMax)
+269 | if (filters.sizeRange) params.set('sizeRange', filters.sizeRange)
+270 | if (filters.sizeRange === 'Custom' && filters.sizeRangeCustom) params.set('sizeRangeCustom', filters.sizeRangeCustom)
+271 | if (hasFilterValue(filters.colorPantone)) params.set('colorPantone', toCsv(filters.colorPantone))
+272 | if (hasFilterValue(filters.customization)) params.set('customization', toCsv(filters.customization))
+273 | if (filters.sampleAvailable) params.set('sampleAvailable', 'true')
+274 | if (filters.sampleLeadTime) params.set('sampleLeadTime', filters.sampleLeadTime)
+275 | if (hasFilterValue(filters.certifications)) params.set('certifications', toCsv(filters.certifications))
+276 | if (hasFilterValue(filters.incoterms)) params.set('incoterms', toCsv(filters.incoterms))
+277 | if (hasFilterValue(filters.paymentTerms)) params.set('paymentTerms', toCsv(filters.paymentTerms))
+278 | if (hasFilterValue(filters.documentReady)) params.set('documentReady', toCsv(filters.documentReady))
+279 | if (filters.auditScoreMin) params.set('auditScoreMin', filters.auditScoreMin)
+280 | if (filters.auditDate) params.set('auditDate', filters.auditDate)
+281 | if (filters.hasPermissionMatrix) params.set('hasPermissionMatrix', 'true')
+282 | if (filters.permissionSection) params.set('permissionSection', filters.permissionSection)
+283 | if (filters.permissionSectionEdit) params.set('permissionSectionEdit', 'true')
+284 | if (hasFilterValue(filters.languageSupport)) params.set('languageSupport', toCsv(filters.languageSupport))
+285 | if (filters.capacityMin) params.set('capacityMin', filters.capacityMin)
+286 | if (hasFilterValue(filters.processes)) params.set('processes', toCsv(filters.processes))
+287 | if (filters.yearsInBusinessMin) params.set('yearsInBusinessMin', filters.yearsInBusinessMin)
+288 | if (filters.responseTimeMax) params.set('responseTimeMax', filters.responseTimeMax)
+289 | if (filters.teamSeatsMin) params.set('teamSeatsMin', filters.teamSeatsMin)
+290 | if (filters.roleSeats && Array.isArray(filters.roleSeats) && filters.roleSeats.length) {
+291 | const rs = serializeRoleSeats(filters.roleSeats)
+292 | if (rs) params.set('roleSeats', rs)
+293 | }
+294 | if (filters.handlesMultipleFactories) params.set('handlesMultipleFactories', 'true')
+295 | if (hasFilterValue(filters.exportPort)) params.set('exportPort', toCsv(filters.exportPort))
+296 | if (filters.distanceKm) params.set('distanceKm', filters.distanceKm)
+297 | if (filters.locationLat) params.set('locationLat', filters.locationLat)
+298 | if (filters.locationLng) params.set('locationLng', filters.locationLng)
+299 | }
+300 |
+301 | return params.toString()
+302 | }
+303 |
+304 | function ResultSkeletonCard({ index }) {
+305 | return (
+306 | <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800" aria-hidden="true">
+307 | <div className="flex items-start justify-between gap-3">
+308 | <div className="min-w-0 flex-1">
+309 | <div className="h-3 w-1/3 rounded-full skeleton" />
+310 | <div className="mt-3 h-3 w-3/4 rounded-full skeleton" />
+311 | <div className="mt-2 h-3 w-2/3 rounded-full skeleton" />
+312 | <div className="mt-4 grid grid-cols-2 gap-2">
+313 | <div className="h-3 rounded-full skeleton" />
+314 | <div className="h-3 rounded-full skeleton" />
+315 | <div className="h-3 rounded-full skeleton" />
+316 | <div className="h-3 rounded-full skeleton" />
+317 | </div>
+318 | </div>
+319 | <div className="flex flex-col gap-2">
+320 | <div className="h-9 w-28 rounded-full skeleton" />
+321 | <div className="h-9 w-28 rounded-full skeleton" />
+322 | </div>
+323 | </div>
+324 | <span className="sr-only">Loading result {index + 1}</span>
+325 | </div>
+326 | )
+327 | }
+328 |
+329 | function ChipGroup({ options = [], values = [], onChange, disabled, counts = {} }) {
+330 | return (
+331 | <div className="flex flex-wrap gap-2">
+332 | {options.map((option) => {
+333 | const selected = values.includes(option)
+334 | const count = getFacetCount(counts, option)
+335 | return (
+336 | <button
+337 | key={option}
+338 | type="button"
+339 | disabled={disabled}
+340 | onClick={() => {
+341 | if (disabled) return
+342 | if (selected) onChange(values.filter((entry) => entry !== option))
+343 | else onChange([...values, option])
+344 | }}
+345 | className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${
   346 |               selected
   347 |                 ? ' bg-[var(--gt-blue)] text-white ring-transparent dark:bg-[var(--gt-blue)] dark:text-white'
   348 |                 : ' bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10'
   349 |             } ${disabled ? 'opacity-50' : ''}`}
-  350 |           >
-  351 |             {option}
-  352 |             {Number.isFinite(Number(count)) ? (
-  353 |               <span className={`ml-1 text-[10px] ${selected ? 'text-white/80' : 'text-slate-400'}`}>({count})</span>
-  354 |             ) : null}
-  355 |           </button>
-  356 |         )
-  357 |       })}
-  358 |     </div>
-  359 |   )
-  360 | }
-  361 | 
-  362 | function BucketChips({ options = [], value = '', onChange, disabled }) {
-  363 |   const selectedValue = String(value || '')
-  364 |   return (
-  365 |     <div className="flex flex-wrap gap-2">
-  366 |       {options.map((option) => {
-  367 |         const optValue = String(option?.value ?? '')
-  368 |         const selected = selectedValue === optValue || (!selectedValue && !optValue)
-  369 |         return (
-  370 |           <button
-  371 |             key={`${optValue || 'any'}-${option.label}`}
-  372 |             type="button"
-  373 |             disabled={disabled}
-  374 |             onClick={() => {
-  375 |               if (disabled) return
-  376 |               const next = selected && optValue ? '' : optValue
-  377 |               onChange(next)
-  378 |             }}
-  379 |             className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${
+350 | >
+351 | {option}
+352 | {Number.isFinite(Number(count)) ? (
+353 | <span className={`ml-1 text-[10px] ${selected ? 'text-white/80' : 'text-slate-400'}`}>({count})</span>
+354 | ) : null}
+355 | </button>
+356 | )
+357 | })}
+358 | </div>
+359 | )
+360 | }
+361 |
+362 | function BucketChips({ options = [], value = '', onChange, disabled }) {
+363 | const selectedValue = String(value || '')
+364 | return (
+365 | <div className="flex flex-wrap gap-2">
+366 | {options.map((option) => {
+367 | const optValue = String(option?.value ?? '')
+368 | const selected = selectedValue === optValue || (!selectedValue && !optValue)
+369 | return (
+370 | <button
+371 | key={`${optValue || 'any'}-${option.label}`}
+372 | type="button"
+373 | disabled={disabled}
+374 | onClick={() => {
+375 | if (disabled) return
+376 | const next = selected && optValue ? '' : optValue
+377 | onChange(next)
+378 | }}
+379 | className={`rounded-full px-3 py-1 text-[11px] font-semibold ring-1 transition${
   380 |               selected
   381 |                 ? ' bg-[var(--gt-blue)] text-white ring-transparent dark:bg-[var(--gt-blue)] dark:text-white'
   382 |                 : ' bg-white text-slate-600 ring-slate-200/70 hover:bg-slate-50 dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/10'
   383 |             } ${disabled ? 'opacity-50' : ''}`}
-  384 |           >
-  385 |             {option.label}
-  386 |           </button>
-  387 |         )
-  388 |       })}
-  389 |     </div>
-  390 |   )
-  391 | }
-  392 | 
-  393 | function RangeSlider({ min = 0, max = 100, step = 1, valueMin = '', valueMax = '', onChange, suffix = '', disabled = false, formatValue }) {
-  394 |   const minValue = valueMin === '' ? min : Number(valueMin)
-  395 |   const maxValue = valueMax === '' ? max : Number(valueMax)
-  396 |   const format = typeof formatValue === 'function'
-  397 |     ? formatValue
-  398 |     : (v) => `${v}${suffix}`
-  399 |   return (
-  400 |     <div className="space-y-2">
-  401 |       <div className="flex items-center gap-2 text-[11px] text-slate-500">
-  402 |         <span>{Number.isFinite(minValue) ? format(minValue) : format(min)}</span>
-  403 |         <div className="h-px flex-1 bg-slate-200" />
-  404 |         <span>{Number.isFinite(maxValue) ? format(maxValue) : format(max)}</span>
-  405 |       </div>
-  406 |       <div className="flex items-center gap-3">
-  407 |         <input
-  408 |           type="range"
-  409 |           min={min}
-  410 |           max={max}
-  411 |           step={step}
-  412 |           value={Number.isFinite(minValue) ? minValue : min}
-  413 |           onChange={(event) => onChange(String(event.target.value || ''), valueMax)}
-  414 |           disabled={disabled}
-  415 |           className="w-full"
-  416 |         />
-  417 |         <input
-  418 |           type="range"
-  419 |           min={min}
-  420 |           max={max}
-  421 |           step={step}
-  422 |           value={Number.isFinite(maxValue) ? maxValue : max}
-  423 |           onChange={(event) => onChange(valueMin, String(event.target.value || ''))}
-  424 |           disabled={disabled}
-  425 |           className="w-full"
-  426 |         />
-  427 |       </div>
-  428 |     </div>
-  429 |   )
-  430 | }
-  431 | 
-  432 | export default function SearchResults() {
-  433 |   const navigate = useNavigate()
-  434 |   const [searchParams, setSearchParams] = useSearchParams()
-  435 |   const token = useMemo(() => getToken(), [])
-  436 |   const sessionUser = getCurrentUser()
-  437 |   const isBuyer = String(sessionUser?.role || '').toLowerCase() === 'buyer'
-  438 |   const canAdvancedFilters = hasEntitlement(sessionUser, 'advanced_search_filters')
-  439 |   const canEarlyAccess = hasEntitlement(sessionUser, 'early_access_verified_factories')
-  440 |   const canPriorityAccessRequests = hasEntitlement(sessionUser, 'buyer_request_priority_access')
-  441 |   const canPriorityAccessCompanies = hasEntitlement(sessionUser, 'priority_search_ranking')
-  442 |   const reduceMotion = useReducedMotion()
-  443 |   const queryInputRef = useRef(null)
-  444 |   const isMac = useMemo(() => (typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)), [])
-  445 | 
-  446 |   // URL-serializable search state (project.md): allows sharing/saving searches.
-  447 |   const [query, setQuery] = useState(() => searchParams.get('q') || '')
-  448 |   const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'all')
-  449 |   const [category, setCategory] = useState(() => parseCsvParam(searchParams.get('category')))
-  450 |   const [filtersOpen, setFiltersOpen] = useState(false)
-  451 |   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false)
-  452 |   const [productMoreOpen, setProductMoreOpen] = useState(false)
-  453 |   const [supplierMoreOpen, setSupplierMoreOpen] = useState(false)
-  454 |   const [productAdvancedOpen, setProductAdvancedOpen] = useState(false)
-  455 |   const [supplierAdvancedOpen, setSupplierAdvancedOpen] = useState(false)
-  456 |   const [filterMode, setFilterMode] = useState('product')
-  457 |   const [activePreset, setActivePreset] = useState(() => normalizePresetKey(localStorage.getItem(PRESET_STORAGE_KEY)))
-  458 |   const renderedDefaultCoreFilterKeys = useMemo(() => [...DEFAULT_CORE_FILTER_KEYS], [])
-  459 |   const [upgradePrompt, setUpgradePrompt] = useState('')
-  460 |   const [alertFeedback, setAlertFeedback] = useState('')
-  461 |   const [autoSaveCandidate, setAutoSaveCandidate] = useState(null)
-  462 |   const [managePresetsOpen, setManagePresetsOpen] = useState(false)
-  463 |   const [serverPresets, setServerPresets] = useState([])
-  464 |   const [serverPresetsLoading, setServerPresetsLoading] = useState(false)
-  465 |   const [earlyVerifiedFactories, setEarlyVerifiedFactories] = useState([])
-  466 |   const [earlyVerifiedError, setEarlyVerifiedError] = useState('')
-  467 |   const [pantoneDraft, setPantoneDraft] = useState('')
-  468 |   const [roleSeatDraftRole, setRoleSeatDraftRole] = useState('')
-  469 |   const [roleSeatDraftSeats, setRoleSeatDraftSeats] = useState('')
-  470 |   const [locationLabel, setLocationLabel] = useState('')
-  471 |   const [geoQuery, setGeoQuery] = useState('')
-  472 |   const [geoResults, setGeoResults] = useState([])
-  473 |   const [geoLoading, setGeoLoading] = useState(false)
-  474 |   const [geoError, setGeoError] = useState('')
-  475 |   const [showMapPreview, setShowMapPreview] = useState(false)
-  476 |   const mapRef = useRef(null)
-  477 |   const mapInstanceRef = useRef(null)
-  478 |   const [autoSaveAlertsEnabled] = useState(() => {
-  479 |     const raw = sessionUser?.profile?.auto_save_search_alerts
-  480 |     if (raw === undefined || raw === null || raw === '') return true
-  481 |     return raw === true || String(raw).toLowerCase() === 'true'
-  482 |   })
-  483 | 
-  484 |   const [filters, setFilters] = useState(() => createDefaultFilters(searchParams))
-  485 |   const hasAdvancedFiltersFromUrl = useMemo(() => (
-  486 |     ADVANCED_FILTER_KEYS.some((key) => key !== 'priorityOnly' && hasFilterValue(searchParams.get(key)))
-  487 |   ), [searchParams])
-  488 | 
-  489 |   useEffect(() => {
-  490 |     const inDev = !import.meta.env.PROD
-  491 |     if (!inDev) return
-  492 |     const validation = validateCoreFilterRenderKeys(renderedDefaultCoreFilterKeys)
-  493 |     if (!validation.isValid) {
-  494 |       console.warn('[SearchResults] Invalid default core filter configuration.', validation)
-  495 |     }
-  496 |   }, [renderedDefaultCoreFilterKeys])
-  497 | 
-  498 |   useEffect(() => {
-  499 |     let alive = true
-  500 |     const loadEarlyVerified = async () => {
-  501 |       if (!token) return
-  502 |       if (!isBuyer || !canEarlyAccess) {
-  503 |         setEarlyVerifiedFactories([])
-  504 |         return
-  505 |       }
-  506 |       try {
-  507 |         const data = await apiRequest('/users/verified/early', { token })
-  508 |         if (!alive) return
-  509 |         setEarlyVerifiedFactories(Array.isArray(data?.items) ? data.items : [])
-  510 |         setEarlyVerifiedError('')
-  511 |       } catch (err) {
-  512 |         if (!alive) return
-  513 |         setEarlyVerifiedFactories([])
-  514 |         setEarlyVerifiedError(err.message || 'Unable to load early verified factories')
-  515 |       }
-  516 |     }
-  517 |     loadEarlyVerified()
-  518 |     return () => {
-  519 |       alive = false
-  520 |     }
-  521 |   }, [canEarlyAccess, isBuyer, sessionUser, token])
-  522 | 
-  523 |   const [capabilities, setCapabilities] = useState(() => ({
-  524 |     filters: { advanced: canAdvancedFilters },
-  525 |   }))
-  526 |   const hasAdvancedAccess = Boolean(capabilities?.filters?.advanced)
-  527 |   const premiumLocked = !hasAdvancedAccess
-  528 |   const priorityAllowedForTab = useMemo(() => {
-  529 |     if (activeTab === 'requests') return canPriorityAccessRequests
-  530 |     if (activeTab === 'companies') return canPriorityAccessCompanies
-  531 |     return canPriorityAccessRequests && canPriorityAccessCompanies
-  532 |   }, [activeTab, canPriorityAccessRequests, canPriorityAccessCompanies])
-  533 | 
-  534 |   useEffect(() => {
-  535 |     const storedPreset = normalizePresetKey(localStorage.getItem(PRESET_STORAGE_KEY))
-  536 |     if (storedPreset) {
-  537 |       setActivePreset(storedPreset)
-  538 |       return
-  539 |     }
-  540 |     const rolePreset = normalizePresetKey(String(sessionUser?.role || '').toLowerCase())
-  541 |     if (rolePreset) {
-  542 |       localStorage.setItem(PRESET_STORAGE_KEY, rolePreset)
-  543 |       setActivePreset(rolePreset)
-  544 |     }
-  545 |   }, [sessionUser?.role])
-  546 | 
-  547 |   const categoryOptions = useMemo(() => {
-  548 |     const industry = String(filters.industry || '').toLowerCase()
-  549 |     if (industry === 'textile') return TEXTILE_CATEGORIES
-  550 |     if (industry === 'garments') return GARMENT_CATEGORIES
-  551 |     return [...new Set([...GARMENT_CATEGORIES, ...TEXTILE_CATEGORIES])]
-  552 |   }, [filters.industry])
-  553 | 
-  554 |   const facetCounts = useMemo(() => ({
-  555 |     category: facets?.category || {},
-  556 |     fabricType: facets?.fabricType || facets?.fabric_type || {},
-  557 |     certifications: facets?.certifications || {},
-  558 |     processes: facets?.processes || {},
-  559 |     languageSupport: facets?.languageSupport || facets?.language_support || {},
-  560 |     incoterms: facets?.incoterms || {},
-  561 |     paymentTerms: facets?.paymentTerms || facets?.payment_terms || {},
-  562 |     documentReady: facets?.documentReady || facets?.document_ready || {},
-  563 |     exportPort: facets?.exportPort || facets?.export_ports || {},
-  564 |   }), [facets])
-  565 | 
-  566 |   const moqRangeValues = useMemo(() => parseRangeValue(filters.moqRange), [filters.moqRange])
-  567 |   const priceRangeValues = useMemo(() => parseRangeValue(filters.priceRange), [filters.priceRange])
-  568 | 
-  569 |   const priceFormatter = useMemo(() => {
-  570 |     const curr = String(filters.priceCurrency || 'USD')
-  571 |     try {
-  572 |       const nf = new Intl.NumberFormat(undefined, { style: 'currency', currency: curr, maximumFractionDigits: 2 })
-  573 |       return (v) => nf.format(Number(v || 0))
-  574 |     } catch {
-  575 |       return (v) => `${curr} ${v}`
-  576 |     }
-  577 |   }, [filters.priceCurrency])
-  578 | 
-  579 |   const [loading, setLoading] = useState(false)
-  580 |   const [error, setError] = useState('')
-  581 |   const [quotaMessage, setQuotaMessage] = useState('')
-  582 | 
-  583 |   const [requests, setRequests] = useState([])
-  584 |   const [companies, setCompanies] = useState([])
-  585 |   const [requestsTotal, setRequestsTotal] = useState(0)
-  586 |   const [companiesTotal, setCompaniesTotal] = useState(0)
-  587 |   const [facets, setFacets] = useState({})
-  588 |   const [ratingsByProfileKey, setRatingsByProfileKey] = useState({})
-  589 |   const [recentViews, setRecentViews] = useState([])
-  590 |   const [quickViewItem, setQuickViewItem] = useState(null)
-  591 | 
-  592 |   const [estimateTotals, setEstimateTotals] = useState({ requests: null, companies: null })
-  593 |   const [estimateLoading, setEstimateLoading] = useState(false)
-  594 |   const [estimateError, setEstimateError] = useState('')
-  595 |   const estimateSeqRef = useRef(0)
-  596 |   const skipEstimateRef = useRef(false)
-  597 | 
-  598 |   const totalResults = (Number(requestsTotal) || 0) + (Number(companiesTotal) || 0)
-  599 | 
-  600 |   const autoSearchRef = useRef(false)
-  601 |   const filterTrackRef = useRef({ key: '', initialized: false })
-  602 |   const autoSaveKeyRef = useRef('')
-  603 |   const lastSearchMetadataRef = useRef({ searched: false, preset: '' })
-  604 |   const dirtyFilterSinceSearchRef = useRef(false)
-  605 | 
-  606 |   const autoSaveAlert = useCallback(async (candidate) => {
-  607 |     if (!autoSaveAlertsEnabled) return
-  608 |     if (!candidate) return
-  609 |     const key = JSON.stringify(candidate)
-  610 |     if (autoSaveKeyRef.current === key) return
-  611 |     autoSaveKeyRef.current = key
-  612 |     try {
-  613 |       await apiRequest('/search/alerts', {
-  614 |         method: 'POST',
-  615 |         token,
-  616 |         body: { query: candidate.query || 'saved-search', filters: { category: toCsv(candidate.category), ...candidate.filters, auto: true } },
-  617 |       })
-  618 |     } catch (err) {
-  619 |       if (err?.status === 429) {
-  620 |         setAlertFeedback('Daily auto-alert quota reached. Search still ran normally.')
-  621 |       } else if (err?.message) {
-  622 |         setAlertFeedback(err.message)
-  623 |       }
-  624 |     }
-  625 |   }, [autoSaveAlertsEnabled, token])
-  626 | 
-  627 |   const runSearch = useCallback(async () => {
-  628 |     const q = query.trim()
-  629 |     setLoading(true)
-  630 |     setError('')
-  631 |     setQuotaMessage('')
-  632 |     setUpgradePrompt('')
-  633 |     setAlertFeedback('')
-  634 | 
-  635 |     try {
-  636 |       const qsUrl = buildQueryString({
-  637 |         q,
-  638 |         category,
-  639 |         filters,
-  640 |         includeAdvanced: hasAdvancedAccess,
-  641 |         includePriority: Boolean(filters.priorityOnly),
-  642 |       })
-  643 |       const includePriorityRequests = Boolean(filters.priorityOnly) && activeTab !== 'companies' && canPriorityAccessRequests
-  644 |       const includePriorityCompanies = Boolean(filters.priorityOnly) && activeTab !== 'requests' && canPriorityAccessCompanies
-  645 |       const qsRequests = buildQueryString({
-  646 |         q,
-  647 |         category,
-  648 |         filters,
-  649 |         includeAdvanced: hasAdvancedAccess,
-  650 |         includePriority: includePriorityRequests,
-  651 |       })
-  652 |       const qsProducts = buildQueryString({
-  653 |         q,
-  654 |         category,
-  655 |         filters,
-  656 |         includeAdvanced: hasAdvancedAccess,
-  657 |         includePriority: includePriorityCompanies,
-  658 |       })
-  659 | 
-  660 |       // Keep URL in sync so searches are shareable/bookmarkable (project.md).
-  661 |       const nextParams = new URLSearchParams(qsUrl)
-  662 |       if (activeTab) nextParams.set('tab', activeTab)
-  663 |       setSearchParams(nextParams, { replace: true })
-  664 | 
-  665 |       const [reqRes, prodRes] = await Promise.all([
-  666 |         apiRequest(`/requirements/search?${qsRequests}`, { token }),
-  667 |         apiRequest(`/products/search?${qsProducts}`, { token }),
-  668 |       ])
-  669 | 
-  670 |       const reqItems = Array.isArray(reqRes?.items) ? reqRes.items : []
-  671 |       const prodItems = Array.isArray(prodRes?.items) ? prodRes.items : []
-  672 |       const reqTotal = Number.isFinite(Number(reqRes?.total)) ? Number(reqRes.total) : reqItems.length
-  673 |       const prodTotal = Number.isFinite(Number(prodRes?.total)) ? Number(prodRes.total) : prodItems.length
-  674 |       lastSearchMetadataRef.current = { searched: true, preset: activePreset || '' }
-  675 |       dirtyFilterSinceSearchRef.current = false
-  676 | 
-  677 |       setRequests(reqItems)
-  678 |       setCompanies(prodItems)
-  679 |       setRequestsTotal(reqTotal)
-  680 |       setCompaniesTotal(prodTotal)
-  681 | 
-  682 |       const reqFacets = reqRes?.facets || {}
-  683 |       const prodFacets = prodRes?.facets || {}
-  684 |       const mergedFacets = activeTab === 'requests'
-  685 |         ? reqFacets
-  686 |         : (activeTab === 'companies' ? prodFacets : mergeFacetCounts(reqFacets, prodFacets))
-  687 |       setFacets(mergedFacets || {})
-  688 | 
-  689 |       const mergedCapabilities = reqRes?.capabilities || prodRes?.capabilities || { filters: { advanced: false } }
-  690 |       setCapabilities(mergedCapabilities)
-  691 | 
-  692 |       const hasActiveFilters = Boolean(q) || category.length > 0 || Object.values(filters || {}).some((v) => hasFilterValue(v))
-  693 |       const candidate = hasActiveFilters ? { query: q, category, filters } : null
-  694 |       setAutoSaveCandidate(candidate)
-  695 |       await autoSaveAlert(candidate)
-  696 | 
-  697 |       if (reqRes?.quota) {
-  698 |         if (reqRes.quota.unlimited) {
-  699 |           setQuotaMessage('Core searches are unlimited on your plan.')
-  700 |         } else if (reqRes.quota.remaining !== undefined) {
-  701 |           setQuotaMessage(`Search quota remaining today: ${reqRes.quota.remaining}`)
-  702 |         }
-  703 |       }
-  704 | 
-  705 |       trackClientEvent('search_run', {
-  706 |         entityType: 'search',
-  707 |         entityId: activeTab,
-  708 |         metadata: {
-  709 |           query: q,
-  710 |           categories: category,
-  711 |           category_primary: category[0] || '',
-  712 |           industry: filters.industry || '',
-  713 |           tab: activeTab,
-  714 |           advanced: hasAdvancedAccess,
-  715 |           preset: activePreset || 'none',
-  716 |           total_results: reqTotal + prodTotal,
-  717 |         },
-  718 |       })
-  719 |       trackClientEvent('search_preset_conversion', {
-  720 |         entityType: 'search',
-  721 |         entityId: activeTab,
-  722 |         metadata: {
-  723 |           preset: activePreset || 'none',
-  724 |           total_results: reqTotal + prodTotal,
-  725 |         },
-  726 |       })
-  727 | 
-  728 |       if (q || category.length > 0 || Object.values(filters || {}).some((v) => hasFilterValue(v))) {
-  729 |         const fingerprint = hashString(JSON.stringify({ q, category, filters, tab: activeTab }))
-  730 |         recordLeadSource({
-  731 |           type: 'search',
-  732 |           id: fingerprint,
-  733 |           label: q || category.join(', ') || 'Search',
-  734 |         })
-  735 |       }
-  736 |     } catch (err) {
-  737 |       setError(err.message || 'Search failed')
-  738 |       setRequests([])
-  739 |       setCompanies([])
-  740 |       setRequestsTotal(0)
-  741 |       setCompaniesTotal(0)
-  742 |       if (err?.quota?.unlimited) {
-  743 |         setQuotaMessage('Core searches are unlimited on your plan.')
-  744 |       } else if (err?.quota?.remaining !== undefined) {
-  745 |         setQuotaMessage(`Remaining today: ${err.quota.remaining}`)
-  746 |       }
-  747 |     } finally {
-  748 |       setLoading(false)
-  749 |     }
-  750 |   }, [activePreset, activeTab, autoSaveAlert, category, filters, hasAdvancedAccess, query, setSearchParams, token, canPriorityAccessCompanies, canPriorityAccessRequests])
-  751 | 
-  752 |   useEffect(() => {
-  753 |     const handler = (e) => {
-  754 |       const key = String(e.key || '').toLowerCase()
-  755 |       if (key !== 'k') return
-  756 |       if (!(e.ctrlKey || e.metaKey)) return
-  757 |       e.preventDefault()
-  758 |       queryInputRef.current?.focus?.()
-  759 |     }
-  760 |     window.addEventListener('keydown', handler)
-  761 |     return () => window.removeEventListener('keydown', handler)
-  762 |   }, [])
-  763 | 
-  764 |   useEffect(() => {
-  765 |     // Auto-run when landing on /search with URL params (shared/bookmarked search).
-  766 |     if (autoSearchRef.current) return
-  767 |     autoSearchRef.current = true
-  768 | 
-  769 |     const hasUrlQuery = Boolean(
-  770 |       (query && query.trim()) ||
-  771 |       category.length > 0 ||
-  772 |       Object.values(filters || {}).some((v) => hasFilterValue(v)),
-  773 |     )
-  774 | 
-  775 |     if (hasUrlQuery) {
-  776 |       skipEstimateRef.current = true
-  777 |       runSearch()
-  778 |     }
-  779 |   }, [category, filters, query, runSearch])
-  780 | 
-  781 |   useEffect(() => {
-  782 |     if (!activePreset) return
-  783 |     if (autoSearchRef.current) return
-  784 |     const hasUrlQuery = Boolean(
-  785 |       (query && query.trim()) ||
-  786 |       category.length > 0 ||
-  787 |       Object.values(filters || {}).some((v) => hasFilterValue(v)),
-  788 |     )
-  789 |     if (hasUrlQuery) return
-  790 |     applyPreset(activePreset)
-  791 |   // eslint-disable-next-line react-hooks/exhaustive-deps
-  792 |   }, [activePreset])
-  793 | 
-  794 |   useEffect(() => {
-  795 |     if (!filters.priorityOnly) return
-  796 |     if (priorityAllowedForTab) return
-  797 |     setFilters((prev) => ({ ...prev, priorityOnly: false }))
-  798 |     setUpgradePrompt('Priority-only filter requires a Premium plan.')
-  799 |   }, [filters.priorityOnly, priorityAllowedForTab])
-  800 | 
-  801 |   useEffect(() => {
-  802 |     if (!token) return
-  803 |     if (skipEstimateRef.current) {
-  804 |       skipEstimateRef.current = false
-  805 |       return
-  806 |     }
-  807 | 
-  808 |     const q = query.trim()
-  809 |     const hasActiveFilters = Boolean(
-  810 |       q ||
-  811 |       category.length > 0 ||
-  812 |       Object.values(filters || {}).some((v) => hasFilterValue(v)),
-  813 |     )
-  814 | 
-  815 |     if (!hasActiveFilters) {
-  816 |       setEstimateTotals({ requests: null, companies: null })
-  817 |       setEstimateError('')
-  818 |       setEstimateLoading(false)
-  819 |       return
-  820 |     }
-  821 | 
-  822 |     const seq = (estimateSeqRef.current += 1)
-  823 |     const includePriorityRequests = Boolean(filters.priorityOnly) && activeTab !== 'companies' && canPriorityAccessRequests
-  824 |     const includePriorityCompanies = Boolean(filters.priorityOnly) && activeTab !== 'requests' && canPriorityAccessCompanies
-  825 | 
-  826 |     const timer = window.setTimeout(async () => {
-  827 |       setEstimateLoading(true)
-  828 |       setEstimateError('')
-  829 |       try {
-  830 |         const qsRequestsBase = buildQueryString({
-  831 |           q,
-  832 |           category,
-  833 |           filters,
-  834 |           includeAdvanced: hasAdvancedAccess,
-  835 |           includePriority: includePriorityRequests,
-  836 |         })
-  837 |         const qsProductsBase = buildQueryString({
-  838 |           q,
-  839 |           category,
-  840 |           filters,
-  841 |           includeAdvanced: hasAdvancedAccess,
-  842 |           includePriority: includePriorityCompanies,
-  843 |         })
-  844 | 
-  845 |         const qsRequests = `${qsRequestsBase}${qsRequestsBase ? '&' : ''}estimateOnly=true`
-  846 |         const qsProducts = `${qsProductsBase}${qsProductsBase ? '&' : ''}estimateOnly=true`
-  847 |         const [reqRes, prodRes] = await Promise.all([
-  848 |           apiRequest(`/requirements/search?${qsRequests}`, { token }),
-  849 |           apiRequest(`/products/search?${qsProducts}`, { token }),
-  850 |         ])
-  851 | 
-  852 |         if (estimateSeqRef.current !== seq) return
-  853 | 
-  854 |         const reqTotal = Number.isFinite(Number(reqRes?.total)) ? Number(reqRes.total) : 0
-  855 |         const prodTotal = Number.isFinite(Number(prodRes?.total)) ? Number(prodRes.total) : 0
-  856 |         setEstimateTotals({ requests: reqTotal, companies: prodTotal })
-  857 |         const reqFacets = reqRes?.facets || {}
-  858 |         const prodFacets = prodRes?.facets || {}
-  859 |         const mergedFacets = activeTab === 'requests'
-  860 |           ? reqFacets
-  861 |           : (activeTab === 'companies' ? prodFacets : mergeFacetCounts(reqFacets, prodFacets))
-  862 |         if (Object.keys(mergedFacets || {}).length) setFacets(mergedFacets)
-  863 | 
-  864 |         const mergedCapabilities = reqRes?.capabilities || prodRes?.capabilities
-  865 |         if (mergedCapabilities) setCapabilities(mergedCapabilities)
-  866 |       } catch (err) {
-  867 |         if (estimateSeqRef.current !== seq) return
-  868 |         setEstimateTotals({ requests: null, companies: null })
-  869 |         setEstimateError(err.message || 'Unable to estimate results.')
-  870 |       } finally {
-  871 |         if (estimateSeqRef.current === seq) {
-  872 |           setEstimateLoading(false)
-  873 |         }
-  874 |       }
-  875 |     }, 450)
-  876 | 
-  877 |     return () => window.clearTimeout(timer)
-  878 |   }, [activeTab, canPriorityAccessCompanies, canPriorityAccessRequests, category, filters, hasAdvancedAccess, query, token])
-  879 | 
-  880 |   useEffect(() => {
-  881 |     const activeAdvancedKeys = hasAdvancedAccess
-  882 |       ? ADVANCED_FILTER_KEYS.filter((key) => hasFilterValue(filters[key]))
-  883 |       : []
-  884 |     const activeCoreKeys = DEFAULT_CORE_FILTER_KEYS.filter((key) => (key === 'category' ? category.length > 0 : hasFilterValue(filters[key])))
-  885 |     const payload = {
-  886 |       query: query.trim(),
-  887 |       categories: category,
-  888 |       category_primary: category[0] || '',
-  889 |       industry: filters.industry || '',
-  890 |       tab: activeTab,
-  891 |       advanced: hasAdvancedAccess,
-  892 |       active_filter_keys: [...activeCoreKeys, ...activeAdvancedKeys],
-  893 |     }
-  894 |     const key = JSON.stringify(payload)
-  895 |     if (!filterTrackRef.current.initialized) {
-  896 |       filterTrackRef.current = { key, initialized: true }
-  897 |       return
-  898 |     }
-  899 |     if (filterTrackRef.current.key === key) return
-  900 |     filterTrackRef.current.key = key
-  901 |     const timer = window.setTimeout(() => {
-  902 |       trackClientEvent('search_filters_changed', {
-  903 |         entityType: 'search',
-  904 |         entityId: activeTab,
-  905 |         metadata: payload,
-  906 |       })
-  907 |     }, 600)
-  908 |     return () => window.clearTimeout(timer)
-  909 |   }, [activeTab, category, filters, hasAdvancedAccess, query])
-  910 | 
-  911 |   useEffect(() => {
-  912 |     const depth = supplierAdvancedOpen || productAdvancedOpen
-  913 |       ? 3
-  914 |       : (productMoreOpen || supplierMoreOpen || advancedFiltersOpen ? 2 : (filtersOpen ? 1 : 0))
-  915 |     trackClientEvent('search_filter_depth_opened', {
-  916 |       entityType: 'search',
-  917 |       entityId: activeTab,
-  918 |       metadata: {
-  919 |         depth,
-  920 |         preset: activePreset || 'none',
-  921 |       },
-  922 |     })
-  923 |   }, [activePreset, activeTab, advancedFiltersOpen, filtersOpen, productAdvancedOpen, productMoreOpen, supplierAdvancedOpen, supplierMoreOpen])
-  924 | 
-  925 |   useEffect(() => {
-  926 |     const hasChanges = Boolean(query.trim() || category.length > 0 || Object.values(filters || {}).some((v) => hasFilterValue(v)))
-  927 |     if (hasChanges) dirtyFilterSinceSearchRef.current = true
-  928 |   }, [category, filters, query])
-  929 | 
-  930 |   useEffect(() => () => {
-  931 |     if (dirtyFilterSinceSearchRef.current && !lastSearchMetadataRef.current.searched) {
-  932 |       trackClientEvent('search_filter_abandonment', {
-  933 |         entityType: 'search',
-  934 |         entityId: activeTab,
-  935 |         metadata: {
-  936 |           preset: activePreset || 'none',
-  937 |         },
-  938 |       })
-  939 |     }
-  940 |   }, [activePreset, activeTab])
-  941 | 
-  942 |   useEffect(() => {
-  943 |     if (!geoQuery) {
-  944 |       setGeoResults([])
-  945 |       return
-  946 |     }
-  947 |     const timer = window.setTimeout(() => {
-  948 |       runGeoSearch(geoQuery)
-  949 |     }, 450)
-  950 |     return () => window.clearTimeout(timer)
-  951 |   }, [geoQuery])
-  952 | 
-  953 |   useEffect(() => {
-  954 |     const lat = Number(filters.locationLat)
-  955 |     const lng = Number(filters.locationLng)
-  956 |     if (!showMapPreview) return
-  957 |     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return
-  958 |     if (!mapRef.current) return
-  959 | 
-  960 |     if (!mapInstanceRef.current) {
-  961 |       mapInstanceRef.current = L.map(mapRef.current, {
-  962 |         center: [lat, lng],
-  963 |         zoom: 10,
-  964 |         zoomControl: false,
-  965 |         attributionControl: false,
-  966 |       })
-  967 |       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  968 |         maxZoom: 19,
-  969 |       }).addTo(mapInstanceRef.current)
-  970 |     }
-  971 | 
-  972 |     mapInstanceRef.current.setView([lat, lng], 10)
-  973 |     const marker = L.marker([lat, lng])
-  974 |     marker.addTo(mapInstanceRef.current)
-  975 |     return () => {
-  976 |       if (mapInstanceRef.current && marker) {
-  977 |         mapInstanceRef.current.removeLayer(marker)
-  978 |       }
-  979 |     }
-  980 |   }, [filters.locationLat, filters.locationLng, showMapPreview])
-  981 | 
-  982 |   const loadRecentViews = useCallback(async () => {
-  983 |     try {
-  984 |       const data = await apiRequest('/products/views/me?cursor=0&limit=5', { token })
-  985 |       setRecentViews(Array.isArray(data?.items) ? data.items : [])
-  986 |     } catch {
-  987 |       setRecentViews([])
-  988 |     }
-  989 |   }, [token])
-  990 | 
-  991 |   useEffect(() => {
-  992 |     const keys = [...new Set(companies.map((c) => String(c.profile_key || '')).filter(Boolean))]
-  993 |     if (!keys.length) {
-  994 |       setRatingsByProfileKey({})
-  995 |       return
-  996 |     }
-  997 | 
-  998 |     apiRequest(`/ratings/search?profile_keys=${encodeURIComponent(keys.join(','))}`, { token })
-  999 |       .then((data) => setRatingsByProfileKey(data || {}))
- 1000 |       .catch(() => setRatingsByProfileKey({}))
- 1001 |   }, [companies, token])
- 1002 | 
- 1003 |   useEffect(() => {
- 1004 |     loadRecentViews()
- 1005 |   }, [loadRecentViews])
- 1006 | 
- 1007 |   function updateAdvancedFilter(key, value) {
- 1008 |     if (!hasAdvancedAccess) {
- 1009 |       setUpgradePrompt('Advanced filters require a Premium plan. Upgrade to unlock these filters.')
- 1010 |       return
- 1011 |     }
- 1012 |     setFilters((prev) => ({ ...prev, [key]: value }))
- 1013 |   }
- 1014 | 
- 1015 |   function toggleCategory(option) {
- 1016 |     setCategory((prev) => {
- 1017 |       if (prev.includes(option)) return prev.filter((entry) => entry !== option)
- 1018 |       return [...prev, option]
- 1019 |     })
- 1020 |   }
- 1021 | 
- 1022 |   function clearCategories() {
- 1023 |     setCategory([])
- 1024 |   }
- 1025 | 
- 1026 |   function updateCoreFilter(key, value) {
- 1027 |     setFilters((prev) => ({ ...prev, [key]: value }))
- 1028 |   }
- 1029 | 
- 1030 |   function updateRangeFilter(key, min, max) {
- 1031 |     setFilters((prev) => ({ ...prev, [key]: rangeToString(min, max) }))
- 1032 |   }
- 1033 | 
- 1034 |   function addPantone(value) {
- 1035 |     const cleaned = String(value || '').trim()
- 1036 |     if (!cleaned) return
- 1037 |     updateAdvancedFilter('colorPantone', [...new Set([...(filters.colorPantone || []), cleaned])])
- 1038 |     setPantoneDraft('')
- 1039 |   }
- 1040 | 
- 1041 |   function addRoleSeat() {
- 1042 |     const role = String(roleSeatDraftRole || '').trim()
- 1043 |     if (!role) return
- 1044 |     const seats = String(roleSeatDraftSeats || '').trim()
- 1045 |     const existing = Array.isArray(filters.roleSeats) ? (filters.roleSeats || []) : []
- 1046 |     const next = existing.filter((e) => String(e?.role || '').toLowerCase() !== role.toLowerCase())
- 1047 |     next.push({ role, seats })
- 1048 |     updateAdvancedFilter('roleSeats', next)
- 1049 |     setRoleSeatDraftRole('')
- 1050 |     setRoleSeatDraftSeats('')
- 1051 |   }
- 1052 | 
- 1053 |   function removePantone(value) {
- 1054 |     updateAdvancedFilter('colorPantone', (filters.colorPantone || []).filter((entry) => entry !== value))
- 1055 |   }
- 1056 | 
- 1057 |   async function runGeoSearch(term) {
- 1058 |     const q = String(term || '').trim()
- 1059 |     if (!q) {
- 1060 |       setGeoResults([])
- 1061 |       return
- 1062 |     }
- 1063 |     setGeoLoading(true)
- 1064 |     setGeoError('')
- 1065 |     try {
- 1066 |       const data = await apiRequest(`/geo/search?q=${encodeURIComponent(q)}`)
- 1067 |       setGeoResults(Array.isArray(data?.items) ? data.items : [])
- 1068 |     } catch (err) {
- 1069 |       setGeoResults([])
- 1070 |       setGeoError(err.message || 'Unable to search location')
- 1071 |     } finally {
- 1072 |       setGeoLoading(false)
- 1073 |     }
- 1074 |   }
- 1075 | 
- 1076 |   function selectGeoResult(result) {
- 1077 |     if (!result) return
- 1078 |     updateAdvancedFilter('locationLat', String(result.lat))
- 1079 |     updateAdvancedFilter('locationLng', String(result.lng))
- 1080 |     setLocationLabel(result.label || '')
- 1081 |     setGeoQuery(result.label || '')
- 1082 |     setGeoResults([])
- 1083 |   }
- 1084 | 
- 1085 |   function useCurrentLocation() {
- 1086 |     if (!navigator.geolocation) {
- 1087 |       setAlertFeedback('Geolocation is not available in this browser.')
- 1088 |       return
- 1089 |     }
- 1090 |     navigator.geolocation.getCurrentPosition((position) => {
- 1091 |       const lat = position.coords.latitude.toFixed(6)
- 1092 |       const lng = position.coords.longitude.toFixed(6)
- 1093 |       updateAdvancedFilter('locationLat', lat)
- 1094 |       updateAdvancedFilter('locationLng', lng)
- 1095 |       setLocationLabel('Current location')
- 1096 |       setGeoQuery('Current location')
- 1097 |     }, () => {
- 1098 |       setAlertFeedback('Unable to access your location.')
- 1099 |     })
- 1100 |   }
- 1101 | 
- 1102 |   function updatePriorityFilter(value) {
- 1103 |     if (!priorityAllowedForTab) {
- 1104 |       setUpgradePrompt('Priority-only filter requires a Premium plan.')
- 1105 |       return
- 1106 |     }
- 1107 |     setFilters((prev) => ({ ...prev, priorityOnly: value }))
- 1108 |   }
- 1109 | 
- 1110 |   function clearAllFilters() {
- 1111 |     setQuery('')
- 1112 |     setCategory([])
- 1113 |     setFilters(createDefaultFilters(new URLSearchParams()))
- 1114 |     setGeoQuery('')
- 1115 |     setGeoResults([])
- 1116 |     setLocationLabel('')
- 1117 |   }
- 1118 | 
- 1119 |   async function saveAlert(presetLabel = '') {
- 1120 |     setAlertFeedback('')
- 1121 |     const q = query.trim()
- 1122 |     const hasFilters = Object.values(filters || {}).some((v) => hasFilterValue(v))
- 1123 |     if (!q && category.length === 0 && !hasFilters) {
- 1124 |       setAlertFeedback('Enter a query or select filters before saving.')
- 1125 |       return
- 1126 |     }
- 1127 |     try {
- 1128 |       const result = await apiRequest('/search/alerts', {
- 1129 |         method: 'POST',
- 1130 |         token,
- 1131 |         body: { query: q || 'saved-search', filters: { category: toCsv(category), ...filters, preset: presetLabel } },
- 1132 |       })
- 1133 |       setAlertFeedback(`Search saved. Remaining alert quota today: ${result?.quota?.remaining ?? '-'}`)
- 1134 |     } catch (err) {
- 1135 |       setAlertFeedback(err.message || 'Failed to save alert.')
- 1136 |     }
- 1137 |   }
- 1138 | 
- 1139 |   function getShareUrl() {
- 1140 |     try {
- 1141 |       const qs = buildQueryString({
- 1142 |         q: query.trim(),
- 1143 |         category,
- 1144 |         filters,
- 1145 |         includeAdvanced: hasAdvancedAccess,
- 1146 |         includePriority: Boolean(filters.priorityOnly),
- 1147 |       })
- 1148 |       const params = new URLSearchParams(qs)
- 1149 |       if (activeTab) params.set('tab', activeTab)
- 1150 |       return `${window.location.origin}/search?${params.toString()}`
- 1151 |     } catch {
- 1152 |       return `${window.location.origin}/search`
- 1153 |     }
- 1154 |   }
- 1155 | 
- 1156 |   async function handleShareClick() {
- 1157 |     const url = getShareUrl()
- 1158 |     try {
- 1159 |       if (navigator?.clipboard?.writeText) {
- 1160 |         await navigator.clipboard.writeText(url)
- 1161 |         setAlertFeedback('Share link copied to clipboard.')
- 1162 |       } else {
- 1163 |         // fallback
- 1164 |         window.prompt('Copy this link', url)
- 1165 |       }
- 1166 |     } catch {
- 1167 |       setAlertFeedback(`Unable to copy link. ${url}`)
- 1168 |     }
- 1169 |   }
- 1170 | 
- 1171 |   function listLocalPresets() {
- 1172 |     try {
- 1173 |       return PRESET_KEYS.map((k) => {
- 1174 |         const raw = localStorage.getItem(`gt_search_preset_${k}`)
+384 | >
+385 | {option.label}
+386 | </button>
+387 | )
+388 | })}
+389 | </div>
+390 | )
+391 | }
+392 |
+393 | function RangeSlider({ min = 0, max = 100, step = 1, valueMin = '', valueMax = '', onChange, suffix = '', disabled = false, formatValue }) {
+394 | const minValue = valueMin === '' ? min : Number(valueMin)
+395 | const maxValue = valueMax === '' ? max : Number(valueMax)
+396 | const format = typeof formatValue === 'function'
+397 | ? formatValue
+398 | : (v) => `${v}${suffix}`
+399 | return (
+400 | <div className="space-y-2">
+401 | <div className="flex items-center gap-2 text-[11px] text-slate-500">
+402 | <span>{Number.isFinite(minValue) ? format(minValue) : format(min)}</span>
+403 | <div className="h-px flex-1 bg-slate-200" />
+404 | <span>{Number.isFinite(maxValue) ? format(maxValue) : format(max)}</span>
+405 | </div>
+406 | <div className="flex items-center gap-3">
+407 | <input
+408 | type="range"
+409 | min={min}
+410 | max={max}
+411 | step={step}
+412 | value={Number.isFinite(minValue) ? minValue : min}
+413 | onChange={(event) => onChange(String(event.target.value || ''), valueMax)}
+414 | disabled={disabled}
+415 | className="w-full"
+416 | />
+417 | <input
+418 | type="range"
+419 | min={min}
+420 | max={max}
+421 | step={step}
+422 | value={Number.isFinite(maxValue) ? maxValue : max}
+423 | onChange={(event) => onChange(valueMin, String(event.target.value || ''))}
+424 | disabled={disabled}
+425 | className="w-full"
+426 | />
+427 | </div>
+428 | </div>
+429 | )
+430 | }
+431 |
+432 | export default function SearchResults() {
+433 | const navigate = useNavigate()
+434 | const [searchParams, setSearchParams] = useSearchParams()
+435 | const token = useMemo(() => getToken(), [])
+436 | const sessionUser = getCurrentUser()
+437 | const isBuyer = String(sessionUser?.role || '').toLowerCase() === 'buyer'
+438 | const canAdvancedFilters = hasEntitlement(sessionUser, 'advanced_search_filters')
+439 | const canEarlyAccess = hasEntitlement(sessionUser, 'early_access_verified_factories')
+440 | const canPriorityAccessRequests = hasEntitlement(sessionUser, 'buyer_request_priority_access')
+441 | const canPriorityAccessCompanies = hasEntitlement(sessionUser, 'priority_search_ranking')
+442 | const reduceMotion = useReducedMotion()
+443 | const queryInputRef = useRef(null)
+444 | const isMac = useMemo(() => (typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)), [])
+445 |
+446 | // URL-serializable search state (project.md): allows sharing/saving searches.
+447 | const [query, setQuery] = useState(() => searchParams.get('q') || '')
+448 | const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'all')
+449 | const [category, setCategory] = useState(() => parseCsvParam(searchParams.get('category')))
+450 | const [filtersOpen, setFiltersOpen] = useState(false)
+451 | const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false)
+452 | const [productMoreOpen, setProductMoreOpen] = useState(false)
+453 | const [supplierMoreOpen, setSupplierMoreOpen] = useState(false)
+454 | const [productAdvancedOpen, setProductAdvancedOpen] = useState(false)
+455 | const [supplierAdvancedOpen, setSupplierAdvancedOpen] = useState(false)
+456 | const [filterMode, setFilterMode] = useState('product')
+457 | const [activePreset, setActivePreset] = useState(() => normalizePresetKey(localStorage.getItem(PRESET_STORAGE_KEY)))
+458 | const renderedDefaultCoreFilterKeys = useMemo(() => [...DEFAULT_CORE_FILTER_KEYS], [])
+459 | const [upgradePrompt, setUpgradePrompt] = useState('')
+460 | const [alertFeedback, setAlertFeedback] = useState('')
+461 | const [autoSaveCandidate, setAutoSaveCandidate] = useState(null)
+462 | const [managePresetsOpen, setManagePresetsOpen] = useState(false)
+463 | const [serverPresets, setServerPresets] = useState([])
+464 | const [serverPresetsLoading, setServerPresetsLoading] = useState(false)
+465 | const [earlyVerifiedFactories, setEarlyVerifiedFactories] = useState([])
+466 | const [earlyVerifiedError, setEarlyVerifiedError] = useState('')
+467 | const [pantoneDraft, setPantoneDraft] = useState('')
+468 | const [roleSeatDraftRole, setRoleSeatDraftRole] = useState('')
+469 | const [roleSeatDraftSeats, setRoleSeatDraftSeats] = useState('')
+470 | const [locationLabel, setLocationLabel] = useState('')
+471 | const [geoQuery, setGeoQuery] = useState('')
+472 | const [geoResults, setGeoResults] = useState([])
+473 | const [geoLoading, setGeoLoading] = useState(false)
+474 | const [geoError, setGeoError] = useState('')
+475 | const [showMapPreview, setShowMapPreview] = useState(false)
+476 | const mapRef = useRef(null)
+477 | const mapInstanceRef = useRef(null)
+478 | const [autoSaveAlertsEnabled] = useState(() => {
+479 | const raw = sessionUser?.profile?.auto_save_search_alerts
+480 | if (raw === undefined || raw === null || raw === '') return true
+481 | return raw === true || String(raw).toLowerCase() === 'true'
+482 | })
+483 |
+484 | const [filters, setFilters] = useState(() => createDefaultFilters(searchParams))
+485 | const hasAdvancedFiltersFromUrl = useMemo(() => (
+486 | ADVANCED_FILTER_KEYS.some((key) => key !== 'priorityOnly' && hasFilterValue(searchParams.get(key)))
+487 | ), [searchParams])
+488 |
+489 | useEffect(() => {
+490 | const inDev = !import.meta.env.PROD
+491 | if (!inDev) return
+492 | const validation = validateCoreFilterRenderKeys(renderedDefaultCoreFilterKeys)
+493 | if (!validation.isValid) {
+494 | console.warn('[SearchResults] Invalid default core filter configuration.', validation)
+495 | }
+496 | }, [renderedDefaultCoreFilterKeys])
+497 |
+498 | useEffect(() => {
+499 | let alive = true
+500 | const loadEarlyVerified = async () => {
+501 | if (!token) return
+502 | if (!isBuyer || !canEarlyAccess) {
+503 | setEarlyVerifiedFactories([])
+504 | return
+505 | }
+506 | try {
+507 | const data = await apiRequest('/users/verified/early', { token })
+508 | if (!alive) return
+509 | setEarlyVerifiedFactories(Array.isArray(data?.items) ? data.items : [])
+510 | setEarlyVerifiedError('')
+511 | } catch (err) {
+512 | if (!alive) return
+513 | setEarlyVerifiedFactories([])
+514 | setEarlyVerifiedError(err.message || 'Unable to load early verified factories')
+515 | }
+516 | }
+517 | loadEarlyVerified()
+518 | return () => {
+519 | alive = false
+520 | }
+521 | }, [canEarlyAccess, isBuyer, sessionUser, token])
+522 |
+523 | const [capabilities, setCapabilities] = useState(() => ({
+524 | filters: { advanced: canAdvancedFilters },
+525 | }))
+526 | const hasAdvancedAccess = Boolean(capabilities?.filters?.advanced)
+527 | const premiumLocked = !hasAdvancedAccess
+528 | const priorityAllowedForTab = useMemo(() => {
+529 | if (activeTab === 'requests') return canPriorityAccessRequests
+530 | if (activeTab === 'companies') return canPriorityAccessCompanies
+531 | return canPriorityAccessRequests && canPriorityAccessCompanies
+532 | }, [activeTab, canPriorityAccessRequests, canPriorityAccessCompanies])
+533 |
+534 | useEffect(() => {
+535 | const storedPreset = normalizePresetKey(localStorage.getItem(PRESET_STORAGE_KEY))
+536 | if (storedPreset) {
+537 | setActivePreset(storedPreset)
+538 | return
+539 | }
+540 | const rolePreset = normalizePresetKey(String(sessionUser?.role || '').toLowerCase())
+541 | if (rolePreset) {
+542 | localStorage.setItem(PRESET_STORAGE_KEY, rolePreset)
+543 | setActivePreset(rolePreset)
+544 | }
+545 | }, [sessionUser?.role])
+546 |
+547 | const categoryOptions = useMemo(() => {
+548 | const industry = String(filters.industry || '').toLowerCase()
+549 | if (industry === 'textile') return TEXTILE_CATEGORIES
+550 | if (industry === 'garments') return GARMENT_CATEGORIES
+551 | return [...new Set([...GARMENT_CATEGORIES, ...TEXTILE_CATEGORIES])]
+552 | }, [filters.industry])
+553 |
+554 | const facetCounts = useMemo(() => ({
+555 | category: facets?.category || {},
+556 | fabricType: facets?.fabricType || facets?.fabric_type || {},
+557 | certifications: facets?.certifications || {},
+558 | processes: facets?.processes || {},
+559 | languageSupport: facets?.languageSupport || facets?.language_support || {},
+560 | incoterms: facets?.incoterms || {},
+561 | paymentTerms: facets?.paymentTerms || facets?.payment_terms || {},
+562 | documentReady: facets?.documentReady || facets?.document_ready || {},
+563 | exportPort: facets?.exportPort || facets?.export_ports || {},
+564 | }), [facets])
+565 |
+566 | const moqRangeValues = useMemo(() => parseRangeValue(filters.moqRange), [filters.moqRange])
+567 | const priceRangeValues = useMemo(() => parseRangeValue(filters.priceRange), [filters.priceRange])
+568 |
+569 | const priceFormatter = useMemo(() => {
+570 | const curr = String(filters.priceCurrency || 'USD')
+571 | try {
+572 | const nf = new Intl.NumberFormat(undefined, { style: 'currency', currency: curr, maximumFractionDigits: 2 })
+573 | return (v) => nf.format(Number(v || 0))
+574 | } catch {
+575 | return (v) => `${curr} ${v}`
+576 | }
+577 | }, [filters.priceCurrency])
+578 |
+579 | const [loading, setLoading] = useState(false)
+580 | const [error, setError] = useState('')
+581 | const [quotaMessage, setQuotaMessage] = useState('')
+582 |
+583 | const [requests, setRequests] = useState([])
+584 | const [companies, setCompanies] = useState([])
+585 | const [requestsTotal, setRequestsTotal] = useState(0)
+586 | const [companiesTotal, setCompaniesTotal] = useState(0)
+587 | const [facets, setFacets] = useState({})
+588 | const [ratingsByProfileKey, setRatingsByProfileKey] = useState({})
+589 | const [recentViews, setRecentViews] = useState([])
+590 | const [quickViewItem, setQuickViewItem] = useState(null)
+591 |
+592 | const [estimateTotals, setEstimateTotals] = useState({ requests: null, companies: null })
+593 | const [estimateLoading, setEstimateLoading] = useState(false)
+594 | const [estimateError, setEstimateError] = useState('')
+595 | const estimateSeqRef = useRef(0)
+596 | const skipEstimateRef = useRef(false)
+597 |
+598 | const totalResults = (Number(requestsTotal) || 0) + (Number(companiesTotal) || 0)
+599 |
+600 | const autoSearchRef = useRef(false)
+601 | const filterTrackRef = useRef({ key: '', initialized: false })
+602 | const autoSaveKeyRef = useRef('')
+603 | const lastSearchMetadataRef = useRef({ searched: false, preset: '' })
+604 | const dirtyFilterSinceSearchRef = useRef(false)
+605 |
+606 | const autoSaveAlert = useCallback(async (candidate) => {
+607 | if (!autoSaveAlertsEnabled) return
+608 | if (!candidate) return
+609 | const key = JSON.stringify(candidate)
+610 | if (autoSaveKeyRef.current === key) return
+611 | autoSaveKeyRef.current = key
+612 | try {
+613 | await apiRequest('/search/alerts', {
+614 | method: 'POST',
+615 | token,
+616 | body: { query: candidate.query || 'saved-search', filters: { category: toCsv(candidate.category), ...candidate.filters, auto: true } },
+617 | })
+618 | } catch (err) {
+619 | if (err?.status === 429) {
+620 | setAlertFeedback('Daily auto-alert quota reached. Search still ran normally.')
+621 | } else if (err?.message) {
+622 | setAlertFeedback(err.message)
+623 | }
+624 | }
+625 | }, [autoSaveAlertsEnabled, token])
+626 |
+627 | const runSearch = useCallback(async () => {
+628 | const q = query.trim()
+629 | setLoading(true)
+630 | setError('')
+631 | setQuotaMessage('')
+632 | setUpgradePrompt('')
+633 | setAlertFeedback('')
+634 |
+635 | try {
+636 | const qsUrl = buildQueryString({
+637 | q,
+638 | category,
+639 | filters,
+640 | includeAdvanced: hasAdvancedAccess,
+641 | includePriority: Boolean(filters.priorityOnly),
+642 | })
+643 | const includePriorityRequests = Boolean(filters.priorityOnly) && activeTab !== 'companies' && canPriorityAccessRequests
+644 | const includePriorityCompanies = Boolean(filters.priorityOnly) && activeTab !== 'requests' && canPriorityAccessCompanies
+645 | const qsRequests = buildQueryString({
+646 | q,
+647 | category,
+648 | filters,
+649 | includeAdvanced: hasAdvancedAccess,
+650 | includePriority: includePriorityRequests,
+651 | })
+652 | const qsProducts = buildQueryString({
+653 | q,
+654 | category,
+655 | filters,
+656 | includeAdvanced: hasAdvancedAccess,
+657 | includePriority: includePriorityCompanies,
+658 | })
+659 |
+660 | // Keep URL in sync so searches are shareable/bookmarkable (project.md).
+661 | const nextParams = new URLSearchParams(qsUrl)
+662 | if (activeTab) nextParams.set('tab', activeTab)
+663 | setSearchParams(nextParams, { replace: true })
+664 |
+665 | const [reqRes, prodRes] = await Promise.all([
+666 | apiRequest(`/requirements/search?${qsRequests}`, { token }),
+667 | apiRequest(`/products/search?${qsProducts}`, { token }),
+668 | ])
+669 |
+670 | const reqItems = Array.isArray(reqRes?.items) ? reqRes.items : []
+671 | const prodItems = Array.isArray(prodRes?.items) ? prodRes.items : []
+672 | const reqTotal = Number.isFinite(Number(reqRes?.total)) ? Number(reqRes.total) : reqItems.length
+673 | const prodTotal = Number.isFinite(Number(prodRes?.total)) ? Number(prodRes.total) : prodItems.length
+674 | lastSearchMetadataRef.current = { searched: true, preset: activePreset || '' }
+675 | dirtyFilterSinceSearchRef.current = false
+676 |
+677 | setRequests(reqItems)
+678 | setCompanies(prodItems)
+679 | setRequestsTotal(reqTotal)
+680 | setCompaniesTotal(prodTotal)
+681 |
+682 | const reqFacets = reqRes?.facets || {}
+683 | const prodFacets = prodRes?.facets || {}
+684 | const mergedFacets = activeTab === 'requests'
+685 | ? reqFacets
+686 | : (activeTab === 'companies' ? prodFacets : mergeFacetCounts(reqFacets, prodFacets))
+687 | setFacets(mergedFacets || {})
+688 |
+689 | const mergedCapabilities = reqRes?.capabilities || prodRes?.capabilities || { filters: { advanced: false } }
+690 | setCapabilities(mergedCapabilities)
+691 |
+692 | const hasActiveFilters = Boolean(q) || category.length > 0 || Object.values(filters || {}).some((v) => hasFilterValue(v))
+693 | const candidate = hasActiveFilters ? { query: q, category, filters } : null
+694 | setAutoSaveCandidate(candidate)
+695 | await autoSaveAlert(candidate)
+696 |
+697 | if (reqRes?.quota) {
+698 | if (reqRes.quota.unlimited) {
+699 | setQuotaMessage('Core searches are unlimited on your plan.')
+700 | } else if (reqRes.quota.remaining !== undefined) {
+701 | setQuotaMessage(`Search quota remaining today: ${reqRes.quota.remaining}`)
+702 | }
+703 | }
+704 |
+705 | trackClientEvent('search_run', {
+706 | entityType: 'search',
+707 | entityId: activeTab,
+708 | metadata: {
+709 | query: q,
+710 | categories: category,
+711 | category_primary: category[0] || '',
+712 | industry: filters.industry || '',
+713 | tab: activeTab,
+714 | advanced: hasAdvancedAccess,
+715 | preset: activePreset || 'none',
+716 | total_results: reqTotal + prodTotal,
+717 | },
+718 | })
+719 | trackClientEvent('search_preset_conversion', {
+720 | entityType: 'search',
+721 | entityId: activeTab,
+722 | metadata: {
+723 | preset: activePreset || 'none',
+724 | total_results: reqTotal + prodTotal,
+725 | },
+726 | })
+727 |
+728 | if (q || category.length > 0 || Object.values(filters || {}).some((v) => hasFilterValue(v))) {
+729 | const fingerprint = hashString(JSON.stringify({ q, category, filters, tab: activeTab }))
+730 | recordLeadSource({
+731 | type: 'search',
+732 | id: fingerprint,
+733 | label: q || category.join(', ') || 'Search',
+734 | })
+735 | }
+736 | } catch (err) {
+737 | setError(err.message || 'Search failed')
+738 | setRequests([])
+739 | setCompanies([])
+740 | setRequestsTotal(0)
+741 | setCompaniesTotal(0)
+742 | if (err?.quota?.unlimited) {
+743 | setQuotaMessage('Core searches are unlimited on your plan.')
+744 | } else if (err?.quota?.remaining !== undefined) {
+745 | setQuotaMessage(`Remaining today: ${err.quota.remaining}`)
+746 | }
+747 | } finally {
+748 | setLoading(false)
+749 | }
+750 | }, [activePreset, activeTab, autoSaveAlert, category, filters, hasAdvancedAccess, query, setSearchParams, token, canPriorityAccessCompanies, canPriorityAccessRequests])
+751 |
+752 | useEffect(() => {
+753 | const handler = (e) => {
+754 | const key = String(e.key || '').toLowerCase()
+755 | if (key !== 'k') return
+756 | if (!(e.ctrlKey || e.metaKey)) return
+757 | e.preventDefault()
+758 | queryInputRef.current?.focus?.()
+759 | }
+760 | window.addEventListener('keydown', handler)
+761 | return () => window.removeEventListener('keydown', handler)
+762 | }, [])
+763 |
+764 | useEffect(() => {
+765 | // Auto-run when landing on /search with URL params (shared/bookmarked search).
+766 | if (autoSearchRef.current) return
+767 | autoSearchRef.current = true
+768 |
+769 | const hasUrlQuery = Boolean(
+770 | (query && query.trim()) ||
+771 | category.length > 0 ||
+772 | Object.values(filters || {}).some((v) => hasFilterValue(v)),
+773 | )
+774 |
+775 | if (hasUrlQuery) {
+776 | skipEstimateRef.current = true
+777 | runSearch()
+778 | }
+779 | }, [category, filters, query, runSearch])
+780 |
+781 | useEffect(() => {
+782 | if (!activePreset) return
+783 | if (autoSearchRef.current) return
+784 | const hasUrlQuery = Boolean(
+785 | (query && query.trim()) ||
+786 | category.length > 0 ||
+787 | Object.values(filters || {}).some((v) => hasFilterValue(v)),
+788 | )
+789 | if (hasUrlQuery) return
+790 | applyPreset(activePreset)
+791 | // eslint-disable-next-line react-hooks/exhaustive-deps
+792 | }, [activePreset])
+793 |
+794 | useEffect(() => {
+795 | if (!filters.priorityOnly) return
+796 | if (priorityAllowedForTab) return
+797 | setFilters((prev) => ({ ...prev, priorityOnly: false }))
+798 | setUpgradePrompt('Priority-only filter requires a Premium plan.')
+799 | }, [filters.priorityOnly, priorityAllowedForTab])
+800 |
+801 | useEffect(() => {
+802 | if (!token) return
+803 | if (skipEstimateRef.current) {
+804 | skipEstimateRef.current = false
+805 | return
+806 | }
+807 |
+808 | const q = query.trim()
+809 | const hasActiveFilters = Boolean(
+810 | q ||
+811 | category.length > 0 ||
+812 | Object.values(filters || {}).some((v) => hasFilterValue(v)),
+813 | )
+814 |
+815 | if (!hasActiveFilters) {
+816 | setEstimateTotals({ requests: null, companies: null })
+817 | setEstimateError('')
+818 | setEstimateLoading(false)
+819 | return
+820 | }
+821 |
+822 | const seq = (estimateSeqRef.current += 1)
+823 | const includePriorityRequests = Boolean(filters.priorityOnly) && activeTab !== 'companies' && canPriorityAccessRequests
+824 | const includePriorityCompanies = Boolean(filters.priorityOnly) && activeTab !== 'requests' && canPriorityAccessCompanies
+825 |
+826 | const timer = window.setTimeout(async () => {
+827 | setEstimateLoading(true)
+828 | setEstimateError('')
+829 | try {
+830 | const qsRequestsBase = buildQueryString({
+831 | q,
+832 | category,
+833 | filters,
+834 | includeAdvanced: hasAdvancedAccess,
+835 | includePriority: includePriorityRequests,
+836 | })
+837 | const qsProductsBase = buildQueryString({
+838 | q,
+839 | category,
+840 | filters,
+841 | includeAdvanced: hasAdvancedAccess,
+842 | includePriority: includePriorityCompanies,
+843 | })
+844 |
+845 | const qsRequests = `${qsRequestsBase}${qsRequestsBase ? '&' : ''}estimateOnly=true`
+846 | const qsProducts = `${qsProductsBase}${qsProductsBase ? '&' : ''}estimateOnly=true`
+847 | const [reqRes, prodRes] = await Promise.all([
+848 | apiRequest(`/requirements/search?${qsRequests}`, { token }),
+849 | apiRequest(`/products/search?${qsProducts}`, { token }),
+850 | ])
+851 |
+852 | if (estimateSeqRef.current !== seq) return
+853 |
+854 | const reqTotal = Number.isFinite(Number(reqRes?.total)) ? Number(reqRes.total) : 0
+855 | const prodTotal = Number.isFinite(Number(prodRes?.total)) ? Number(prodRes.total) : 0
+856 | setEstimateTotals({ requests: reqTotal, companies: prodTotal })
+857 | const reqFacets = reqRes?.facets || {}
+858 | const prodFacets = prodRes?.facets || {}
+859 | const mergedFacets = activeTab === 'requests'
+860 | ? reqFacets
+861 | : (activeTab === 'companies' ? prodFacets : mergeFacetCounts(reqFacets, prodFacets))
+862 | if (Object.keys(mergedFacets || {}).length) setFacets(mergedFacets)
+863 |
+864 | const mergedCapabilities = reqRes?.capabilities || prodRes?.capabilities
+865 | if (mergedCapabilities) setCapabilities(mergedCapabilities)
+866 | } catch (err) {
+867 | if (estimateSeqRef.current !== seq) return
+868 | setEstimateTotals({ requests: null, companies: null })
+869 | setEstimateError(err.message || 'Unable to estimate results.')
+870 | } finally {
+871 | if (estimateSeqRef.current === seq) {
+872 | setEstimateLoading(false)
+873 | }
+874 | }
+875 | }, 450)
+876 |
+877 | return () => window.clearTimeout(timer)
+878 | }, [activeTab, canPriorityAccessCompanies, canPriorityAccessRequests, category, filters, hasAdvancedAccess, query, token])
+879 |
+880 | useEffect(() => {
+881 | const activeAdvancedKeys = hasAdvancedAccess
+882 | ? ADVANCED_FILTER_KEYS.filter((key) => hasFilterValue(filters[key]))
+883 | : []
+884 | const activeCoreKeys = DEFAULT_CORE_FILTER_KEYS.filter((key) => (key === 'category' ? category.length > 0 : hasFilterValue(filters[key])))
+885 | const payload = {
+886 | query: query.trim(),
+887 | categories: category,
+888 | category_primary: category[0] || '',
+889 | industry: filters.industry || '',
+890 | tab: activeTab,
+891 | advanced: hasAdvancedAccess,
+892 | active_filter_keys: [...activeCoreKeys, ...activeAdvancedKeys],
+893 | }
+894 | const key = JSON.stringify(payload)
+895 | if (!filterTrackRef.current.initialized) {
+896 | filterTrackRef.current = { key, initialized: true }
+897 | return
+898 | }
+899 | if (filterTrackRef.current.key === key) return
+900 | filterTrackRef.current.key = key
+901 | const timer = window.setTimeout(() => {
+902 | trackClientEvent('search_filters_changed', {
+903 | entityType: 'search',
+904 | entityId: activeTab,
+905 | metadata: payload,
+906 | })
+907 | }, 600)
+908 | return () => window.clearTimeout(timer)
+909 | }, [activeTab, category, filters, hasAdvancedAccess, query])
+910 |
+911 | useEffect(() => {
+912 | const depth = supplierAdvancedOpen || productAdvancedOpen
+913 | ? 3
+914 | : (productMoreOpen || supplierMoreOpen || advancedFiltersOpen ? 2 : (filtersOpen ? 1 : 0))
+915 | trackClientEvent('search_filter_depth_opened', {
+916 | entityType: 'search',
+917 | entityId: activeTab,
+918 | metadata: {
+919 | depth,
+920 | preset: activePreset || 'none',
+921 | },
+922 | })
+923 | }, [activePreset, activeTab, advancedFiltersOpen, filtersOpen, productAdvancedOpen, productMoreOpen, supplierAdvancedOpen, supplierMoreOpen])
+924 |
+925 | useEffect(() => {
+926 | const hasChanges = Boolean(query.trim() || category.length > 0 || Object.values(filters || {}).some((v) => hasFilterValue(v)))
+927 | if (hasChanges) dirtyFilterSinceSearchRef.current = true
+928 | }, [category, filters, query])
+929 |
+930 | useEffect(() => () => {
+931 | if (dirtyFilterSinceSearchRef.current && !lastSearchMetadataRef.current.searched) {
+932 | trackClientEvent('search_filter_abandonment', {
+933 | entityType: 'search',
+934 | entityId: activeTab,
+935 | metadata: {
+936 | preset: activePreset || 'none',
+937 | },
+938 | })
+939 | }
+940 | }, [activePreset, activeTab])
+941 |
+942 | useEffect(() => {
+943 | if (!geoQuery) {
+944 | setGeoResults([])
+945 | return
+946 | }
+947 | const timer = window.setTimeout(() => {
+948 | runGeoSearch(geoQuery)
+949 | }, 450)
+950 | return () => window.clearTimeout(timer)
+951 | }, [geoQuery])
+952 |
+953 | useEffect(() => {
+954 | const lat = Number(filters.locationLat)
+955 | const lng = Number(filters.locationLng)
+956 | if (!showMapPreview) return
+957 | if (!Number.isFinite(lat) || !Number.isFinite(lng)) return
+958 | if (!mapRef.current) return
+959 |
+960 | if (!mapInstanceRef.current) {
+961 | mapInstanceRef.current = L.map(mapRef.current, {
+962 | center: [lat, lng],
+963 | zoom: 10,
+964 | zoomControl: false,
+965 | attributionControl: false,
+966 | })
+967 | L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+968 | maxZoom: 19,
+969 | }).addTo(mapInstanceRef.current)
+970 | }
+971 |
+972 | mapInstanceRef.current.setView([lat, lng], 10)
+973 | const marker = L.marker([lat, lng])
+974 | marker.addTo(mapInstanceRef.current)
+975 | return () => {
+976 | if (mapInstanceRef.current && marker) {
+977 | mapInstanceRef.current.removeLayer(marker)
+978 | }
+979 | }
+980 | }, [filters.locationLat, filters.locationLng, showMapPreview])
+981 |
+982 | const loadRecentViews = useCallback(async () => {
+983 | try {
+984 | const data = await apiRequest('/products/views/me?cursor=0&limit=5', { token })
+985 | setRecentViews(Array.isArray(data?.items) ? data.items : [])
+986 | } catch {
+987 | setRecentViews([])
+988 | }
+989 | }, [token])
+990 |
+991 | useEffect(() => {
+992 | const keys = [...new Set(companies.map((c) => String(c.profile_key || '')).filter(Boolean))]
+993 | if (!keys.length) {
+994 | setRatingsByProfileKey({})
+995 | return
+996 | }
+997 |
+998 | apiRequest(`/ratings/search?profile_keys=${encodeURIComponent(keys.join(','))}`, { token })
+999 | .then((data) => setRatingsByProfileKey(data || {}))
+1000 | .catch(() => setRatingsByProfileKey({}))
+1001 | }, [companies, token])
+1002 |
+1003 | useEffect(() => {
+1004 | loadRecentViews()
+1005 | }, [loadRecentViews])
+1006 |
+1007 | function updateAdvancedFilter(key, value) {
+1008 | if (!hasAdvancedAccess) {
+1009 | setUpgradePrompt('Advanced filters require a Premium plan. Upgrade to unlock these filters.')
+1010 | return
+1011 | }
+1012 | setFilters((prev) => ({ ...prev, [key]: value }))
+1013 | }
+1014 |
+1015 | function toggleCategory(option) {
+1016 | setCategory((prev) => {
+1017 | if (prev.includes(option)) return prev.filter((entry) => entry !== option)
+1018 | return [...prev, option]
+1019 | })
+1020 | }
+1021 |
+1022 | function clearCategories() {
+1023 | setCategory([])
+1024 | }
+1025 |
+1026 | function updateCoreFilter(key, value) {
+1027 | setFilters((prev) => ({ ...prev, [key]: value }))
+1028 | }
+1029 |
+1030 | function updateRangeFilter(key, min, max) {
+1031 | setFilters((prev) => ({ ...prev, [key]: rangeToString(min, max) }))
+1032 | }
+1033 |
+1034 | function addPantone(value) {
+1035 | const cleaned = String(value || '').trim()
+1036 | if (!cleaned) return
+1037 | updateAdvancedFilter('colorPantone', [...new Set([...(filters.colorPantone || []), cleaned])])
+1038 | setPantoneDraft('')
+1039 | }
+1040 |
+1041 | function addRoleSeat() {
+1042 | const role = String(roleSeatDraftRole || '').trim()
+1043 | if (!role) return
+1044 | const seats = String(roleSeatDraftSeats || '').trim()
+1045 | const existing = Array.isArray(filters.roleSeats) ? (filters.roleSeats || []) : []
+1046 | const next = existing.filter((e) => String(e?.role || '').toLowerCase() !== role.toLowerCase())
+1047 | next.push({ role, seats })
+1048 | updateAdvancedFilter('roleSeats', next)
+1049 | setRoleSeatDraftRole('')
+1050 | setRoleSeatDraftSeats('')
+1051 | }
+1052 |
+1053 | function removePantone(value) {
+1054 | updateAdvancedFilter('colorPantone', (filters.colorPantone || []).filter((entry) => entry !== value))
+1055 | }
+1056 |
+1057 | async function runGeoSearch(term) {
+1058 | const q = String(term || '').trim()
+1059 | if (!q) {
+1060 | setGeoResults([])
+1061 | return
+1062 | }
+1063 | setGeoLoading(true)
+1064 | setGeoError('')
+1065 | try {
+1066 | const data = await apiRequest(`/geo/search?q=${encodeURIComponent(q)}`)
+1067 | setGeoResults(Array.isArray(data?.items) ? data.items : [])
+1068 | } catch (err) {
+1069 | setGeoResults([])
+1070 | setGeoError(err.message || 'Unable to search location')
+1071 | } finally {
+1072 | setGeoLoading(false)
+1073 | }
+1074 | }
+1075 |
+1076 | function selectGeoResult(result) {
+1077 | if (!result) return
+1078 | updateAdvancedFilter('locationLat', String(result.lat))
+1079 | updateAdvancedFilter('locationLng', String(result.lng))
+1080 | setLocationLabel(result.label || '')
+1081 | setGeoQuery(result.label || '')
+1082 | setGeoResults([])
+1083 | }
+1084 |
+1085 | function useCurrentLocation() {
+1086 | if (!navigator.geolocation) {
+1087 | setAlertFeedback('Geolocation is not available in this browser.')
+1088 | return
+1089 | }
+1090 | navigator.geolocation.getCurrentPosition((position) => {
+1091 | const lat = position.coords.latitude.toFixed(6)
+1092 | const lng = position.coords.longitude.toFixed(6)
+1093 | updateAdvancedFilter('locationLat', lat)
+1094 | updateAdvancedFilter('locationLng', lng)
+1095 | setLocationLabel('Current location')
+1096 | setGeoQuery('Current location')
+1097 | }, () => {
+1098 | setAlertFeedback('Unable to access your location.')
+1099 | })
+1100 | }
+1101 |
+1102 | function updatePriorityFilter(value) {
+1103 | if (!priorityAllowedForTab) {
+1104 | setUpgradePrompt('Priority-only filter requires a Premium plan.')
+1105 | return
+1106 | }
+1107 | setFilters((prev) => ({ ...prev, priorityOnly: value }))
+1108 | }
+1109 |
+1110 | function clearAllFilters() {
+1111 | setQuery('')
+1112 | setCategory([])
+1113 | setFilters(createDefaultFilters(new URLSearchParams()))
+1114 | setGeoQuery('')
+1115 | setGeoResults([])
+1116 | setLocationLabel('')
+1117 | }
+1118 |
+1119 | async function saveAlert(presetLabel = '') {
+1120 | setAlertFeedback('')
+1121 | const q = query.trim()
+1122 | const hasFilters = Object.values(filters || {}).some((v) => hasFilterValue(v))
+1123 | if (!q && category.length === 0 && !hasFilters) {
+1124 | setAlertFeedback('Enter a query or select filters before saving.')
+1125 | return
+1126 | }
+1127 | try {
+1128 | const result = await apiRequest('/search/alerts', {
+1129 | method: 'POST',
+1130 | token,
+1131 | body: { query: q || 'saved-search', filters: { category: toCsv(category), ...filters, preset: presetLabel } },
+1132 | })
+1133 | setAlertFeedback(`Search saved. Remaining alert quota today: ${result?.quota?.remaining ?? '-'}`)
+1134 | } catch (err) {
+1135 | setAlertFeedback(err.message || 'Failed to save alert.')
+1136 | }
+1137 | }
+1138 |
+1139 | function getShareUrl() {
+1140 | try {
+1141 | const qs = buildQueryString({
+1142 | q: query.trim(),
+1143 | category,
+1144 | filters,
+1145 | includeAdvanced: hasAdvancedAccess,
+1146 | includePriority: Boolean(filters.priorityOnly),
+1147 | })
+1148 | const params = new URLSearchParams(qs)
+1149 | if (activeTab) params.set('tab', activeTab)
+1150 | return `${window.location.origin}/search?${params.toString()}`
+1151 | } catch {
+1152 | return `${window.location.origin}/search`
+1153 | }
+1154 | }
+1155 |
+1156 | async function handleShareClick() {
+1157 | const url = getShareUrl()
+1158 | try {
+1159 | if (navigator?.clipboard?.writeText) {
+1160 | await navigator.clipboard.writeText(url)
+1161 | setAlertFeedback('Share link copied to clipboard.')
+1162 | } else {
+1163 | // fallback
+1164 | window.prompt('Copy this link', url)
+1165 | }
+1166 | } catch {
+1167 | setAlertFeedback(`Unable to copy link. ${url}`)
+1168 | }
+1169 | }
+1170 |
+1171 | function listLocalPresets() {
+1172 | try {
+1173 | return PRESET_KEYS.map((k) => {
+1174 | const raw = localStorage.getItem(`gt_search_preset*${k}`)
  1175 |         if (!raw) return null
  1176 |         try { return { key: k, data: JSON.parse(raw) } } catch { return null }
  1177 |       }).filter(Boolean)
@@ -1218,7 +1219,7 @@
  1218 |   function savePresetLocal(presetKey) {
  1219 |     try {
  1220 |       const payload = { query, category, filters }
- 1221 |       localStorage.setItem(`gt_search_preset_${presetKey}`, JSON.stringify(payload))
+ 1221 |       localStorage.setItem(`gt*search_preset*${presetKey}`, JSON.stringify(payload))
  1222 |       localStorage.setItem(PRESET_STORAGE_KEY, presetKey)
  1223 |       setActivePreset(presetKey)
  1224 |     } catch {
@@ -1460,10 +1461,9 @@
  1460 |       const pr = priceRangeValues || { min: '', max: '' }
  1461 |       const minLabel = pr.min ? priceFormatter(pr.min) : ''
  1462 |       const maxLabel = pr.max ? priceFormatter(pr.max) : ''
- 1463 |       const label = `Price: ${minLabel}${(minLabel && maxLabel) ? ` - ${maxLabel}` : ''}`
- 1464 |       chips.push({ key: 'priceRange', label, onRemove: () => setFilters((prev) => ({ ...prev, priceRange: '' })) })
+ 1463 |       const label = `Price: ${minLabel}${(minLabel && maxLabel) ? ` - ${maxLabel}` : ''}` 1464 |       chips.push({ key: 'priceRange', label, onRemove: () => setFilters((prev) => ({ ...prev, priceRange: '' })) })
  1465 |     }
- 1466 |     if (filters.auditScoreMin) chips.push({ key: 'auditScoreMin', label: `Audit score ≥ ${filters.auditScoreMin}`, onRemove: () => setFilters((prev) => ({ ...prev, auditScoreMin: '' })) })
+ 1466 |     if (filters.auditScoreMin) chips.push({ key: 'auditScoreMin', label:`Audit score ≥ ${filters.auditScoreMin}`, onRemove: () => setFilters((prev) => ({ ...prev, auditScoreMin: '' })) })
  1467 |     if (filters.hasPermissionMatrix) chips.push({ key: 'hasPermissionMatrix', label: 'Role-based access', onRemove: () => setFilters((prev) => ({ ...prev, hasPermissionMatrix: false })) })
  1468 |     if (filters.permissionSection) chips.push({ key: 'permissionSection', label: `Permission: ${filters.permissionSection}${filters.permissionSectionEdit ? ' (edit)' : ''}`, onRemove: () => setFilters((prev) => ({ ...prev, permissionSection: '', permissionSectionEdit: false })) })
  1469 |     if (filters.roleSeats && Array.isArray(filters.roleSeats) && filters.roleSeats.length) {
@@ -2466,10 +2466,10 @@
  2466 |                     onClick={() => setActiveTab(t.id)}
  2467 |                     whileTap={reduceMotion ? undefined : { scale: 0.98 }}
  2468 |                     className={`relative inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold transition ring-1${
- 2469 |                       active
- 2470 |                         ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
- 2471 |                         : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
- 2472 |                     }`}
+2469 | active
+2470 | ? 'bg-white text-indigo-700 ring-indigo-200 dark:bg-white/5 dark:text-[#38bdf8] dark:ring-[#38bdf8]/35'
+2471 | : 'bg-white/60 text-slate-700 ring-slate-200/70 hover:bg-white dark:bg-white/5 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-white/8'
+2472 | }`}
  2473 |                   >
  2474 |                     {active ? (
  2475 |                       <motion.span
@@ -2653,135 +2653,135 @@
  2653 |                                 ) : null}
  2654 |                                 {p.boost_active ? (
  2655 |                                   <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-200">
- 2656 |                                     Boosted {p.boost_multiplier && p.boost_multiplier !== 1 ? `x${p.boost_multiplier}` : ""}
- 2657 |                                   </span>
- 2658 |                                 ) : null}
- 2659 |                                 {author.country ? <span className="text-[11px] text-slate-500 dark:text-slate-400">- {author.country}</span> : null}
- 2660 |                                 {author.role ? <span className="text-[11px] text-slate-500 dark:text-slate-400 uppercase">- {String(author.role).replaceAll('_', ' ')}</span> : null}
- 2661 |                               </div>
- 2662 |                               <p className="mt-2 text-sm text-slate-800 dark:text-slate-100 font-semibold">{p.title || 'Product'}</p>
- 2663 |                               <p className="mt-1 text-sm text-slate-700 dark:text-slate-300 line-clamp-2">{p.description || ''}</p>
- 2664 |                               <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-300">
- 2665 |                                 <div>Category: <span className="font-semibold text-slate-800 dark:text-slate-100">{p.category || '-'}</span></div>
- 2666 |                                 <div>MOQ: <span className="font-semibold text-slate-800 dark:text-slate-100">{p.moq || '-'}</span></div>
- 2667 |                                 <div>Lead time: <span className="font-semibold text-slate-800 dark:text-slate-100">{p.lead_time_days || '-'}</span></div>
- 2668 |                                 <div>Material: <span className="font-semibold text-slate-800 dark:text-slate-100">{p.material || '-'}</span></div>
- 2669 |                               </div>
- 2670 | 
- 2671 |                               <div className="mt-3 text-xs text-slate-600 dark:text-slate-300">
- 2672 |                                 Rating: <span className="font-semibold text-slate-800 dark:text-slate-100">{rating?.average_score ?? '0.0'}</span> ({rating?.total_count ?? 0}) - Confidence {Math.round((rating?.score_confidence ?? 0) * 100)}%
- 2673 |                               </div>
- 2674 |                               {p.hasVideo ? <div className="mt-2 text-xs font-semibold text-indigo-700 dark:text-indigo-200">Video available</div> : null}
- 2675 |                             </div>
- 2676 |                             <div className="flex flex-col gap-2 shrink-0">
- 2677 |                               <Link to={profileRoute} className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 text-center dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">
- 2678 |                                 View profile
- 2679 |                               </Link>
- 2680 |                               <button
- 2681 |                                 type="button"
- 2682 |                                 onClick={() => setQuickViewItem({ ...p, author })}
- 2683 |                                 className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5"
- 2684 |                               >
- 2685 |                                 Quick view
- 2686 |                               </button>
- 2687 |                               <button
- 2688 |                                 type="button"
- 2689 |                                 onClick={() => openChatNotice(author.name || 'company', {
- 2690 |                                   type: 'product',
- 2691 |                                   id: p.id,
- 2692 |                                   label: p.title || 'Product',
- 2693 |                                 }, { productId: p.id })}
- 2694 |                                 className="rounded-full bg-[var(--gt-blue)] px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95"
- 2695 |                               >
- 2696 |                                 Contact
- 2697 |                               </button>
- 2698 |                             </div>
- 2699 |                           </div>
- 2700 |                         </motion.div>
- 2701 |                       )
- 2702 |                     })}
- 2703 |                   </div>
- 2704 |                 ) : null}
- 2705 |               </div>
- 2706 |             ) : null}
- 2707 |             </div>
- 2708 |           </div>
- 2709 | 
- 2710 |           <aside className="col-span-12 xl:col-span-3 space-y-4">
- 2711 |             {isBuyer ? (
- 2712 |               <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
- 2713 |                 <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Early verified factories</p>
- 2714 |                 <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Premium-only early access list</p>
- 2715 |                 {!canEarlyAccess ? (
- 2716 |                   <div className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
- 2717 |                     Upgrade to Premium to unlock early access to newly verified factories.
- 2718 |                     <div className="mt-2">
- 2719 |                       <Link to="/pricing" className="text-[11px] font-semibold text-[var(--gt-blue)] hover:underline">View Premium options</Link>
- 2720 |                     </div>
- 2721 |                   </div>
- 2722 |                 ) : earlyVerifiedError ? (
- 2723 |                   <div className="mt-2 text-xs text-rose-600 dark:text-rose-300">{earlyVerifiedError}</div>
- 2724 |                 ) : (
- 2725 |                   <div className="mt-3 space-y-2">
- 2726 |                     {earlyVerifiedFactories.length ? earlyVerifiedFactories.slice(0, 6).map((row) => (
- 2727 |                       <Link
- 2728 |                         key={row.id}
- 2729 |                         to={roleToProfileRoute(row.role, row.id)}
- 2730 |                         className="block rounded-xl bg-white px-3 py-2 text-left ring-1 ring-slate-200/70 transition hover:bg-slate-50 dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/8"
- 2731 |                       >
- 2732 |                         <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{row.name || 'Factory'}</p>
- 2733 |                         <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{row.country || '-'} - verified</p>
- 2734 |                       </Link>
- 2735 |                     )) : (
- 2736 |                       <div className="text-xs text-slate-500 dark:text-slate-400">No new verified factories yet.</div>
- 2737 |                     )}
- 2738 |                   </div>
- 2739 |                 )}
- 2740 |               </div>
- 2741 |             ) : null}
- 2742 |             <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
- 2743 |               <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Recently viewed</p>
- 2744 |               <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Private to you - Recorded on Quick View</p>
- 2745 |               <div className="mt-3 space-y-2">
- 2746 |                 {recentViews.length ? recentViews.map((row) => (
- 2747 |                   <button
- 2748 |                     key={row.id}
- 2749 |                     type="button"
- 2750 |                     onClick={() => setQuickViewItem({ ...row.product, author: row.author })}
- 2751 |                     className="w-full text-left rounded-xl bg-white px-3 py-2 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-[0.99] dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/8"
- 2752 |                     title="Open Quick View"
- 2753 |                   >
- 2754 |                     <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{row.product?.title || 'Product'}</p>
- 2755 |                     <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{row.author?.name || 'Company'} - {new Date(row.viewed_at).toLocaleString()}</p>
- 2756 |                   </button>
- 2757 |                 )) : (
- 2758 |                   <div className="text-xs text-slate-500 dark:text-slate-400">No views yet. Use "Quick view" on a product.</div>
- 2759 |                 )}
- 2760 |               </div>
- 2761 |               <div className="mt-3">
- 2762 |                 <Link to="/notifications" className="text-xs font-semibold text-[var(--gt-blue)] hover:underline">Open full history</Link>
- 2763 |               </div>
- 2764 |             </div>
- 2765 | 
- 2766 |             {premiumLocked ? (
- 2767 |               <div className="rounded-2xl p-4 ring-1 ring-amber-200 bg-amber-50 dark:bg-amber-500/10 dark:ring-amber-500/30">
- 2768 |                 <p className="text-sm font-bold text-amber-900 dark:text-amber-200">Advanced filters locked</p>
- 2769 |                 <p className="mt-1 text-xs text-amber-800 dark:text-amber-200/90">
- 2770 |                   Upgrade to Premium to unlock advanced filters. Core filters remain unlimited on the free plan.
- 2771 |                 </p>
- 2772 |               </div>
- 2773 |             ) : null}
- 2774 |           </aside>
- 2775 |         </div>
- 2776 |       </div>
- 2777 | 
- 2778 |       <ProductQuickViewModal
- 2779 |         open={Boolean(quickViewItem)}
- 2780 |         item={quickViewItem}
- 2781 |         onClose={() => setQuickViewItem(null)}
- 2782 |         onViewed={loadRecentViews}
- 2783 |       />
- 2784 |     </div>
- 2785 |   )
- 2786 | }
- 2787 | 
+ 2656 |                                     Boosted {p.boost_multiplier && p.boost_multiplier !== 1 ? `x${p.boost*multiplier}` : ""}
+2657 | </span>
+2658 | ) : null}
+2659 | {author.country ? <span className="text-[11px] text-slate-500 dark:text-slate-400">- {author.country}</span> : null}
+2660 | {author.role ? <span className="text-[11px] text-slate-500 dark:text-slate-400 uppercase">- {String(author.role).replaceAll('*', ' ')}</span> : null}
+2661 | </div>
+2662 | <p className="mt-2 text-sm text-slate-800 dark:text-slate-100 font-semibold">{p.title || 'Product'}</p>
+2663 | <p className="mt-1 text-sm text-slate-700 dark:text-slate-300 line-clamp-2">{p.description || ''}</p>
+2664 | <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-slate-300">
+2665 | <div>Category: <span className="font-semibold text-slate-800 dark:text-slate-100">{p.category || '-'}</span></div>
+2666 | <div>MOQ: <span className="font-semibold text-slate-800 dark:text-slate-100">{p.moq || '-'}</span></div>
+2667 | <div>Lead time: <span className="font-semibold text-slate-800 dark:text-slate-100">{p.lead_time_days || '-'}</span></div>
+2668 | <div>Material: <span className="font-semibold text-slate-800 dark:text-slate-100">{p.material || '-'}</span></div>
+2669 | </div>
+2670 |
+2671 | <div className="mt-3 text-xs text-slate-600 dark:text-slate-300">
+2672 | Rating: <span className="font-semibold text-slate-800 dark:text-slate-100">{rating?.average_score ?? '0.0'}</span> ({rating?.total_count ?? 0}) - Confidence {Math.round((rating?.score_confidence ?? 0) \* 100)}%
+2673 | </div>
+2674 | {p.hasVideo ? <div className="mt-2 text-xs font-semibold text-indigo-700 dark:text-indigo-200">Video available</div> : null}
+2675 | </div>
+2676 | <div className="flex flex-col gap-2 shrink-0">
+2677 | <Link to={profileRoute} className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 text-center dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5">
+2678 | View profile
+2679 | </Link>
+2680 | <button
+2681 | type="button"
+2682 | onClick={() => setQuickViewItem({ ...p, author })}
+2683 | className="rounded-full px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200/70 hover:bg-slate-50 active:scale-95 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-white/5"
+2684 | >
+2685 | Quick view
+2686 | </button>
+2687 | <button
+2688 | type="button"
+2689 | onClick={() => openChatNotice(author.name || 'company', {
+2690 | type: 'product',
+2691 | id: p.id,
+2692 | label: p.title || 'Product',
+2693 | }, { productId: p.id })}
+2694 | className="rounded-full bg-[var(--gt-blue)] px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--gt-blue-hover)] active:scale-95"
+2695 | >
+2696 | Contact
+2697 | </button>
+2698 | </div>
+2699 | </div>
+2700 | </motion.div>
+2701 | )
+2702 | })}
+2703 | </div>
+2704 | ) : null}
+2705 | </div>
+2706 | ) : null}
+2707 | </div>
+2708 | </div>
+2709 |
+2710 | <aside className="col-span-12 xl:col-span-3 space-y-4">
+2711 | {isBuyer ? (
+2712 | <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+2713 | <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Early verified factories</p>
+2714 | <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Premium-only early access list</p>
+2715 | {!canEarlyAccess ? (
+2716 | <div className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-500/30">
+2717 | Upgrade to Premium to unlock early access to newly verified factories.
+2718 | <div className="mt-2">
+2719 | <Link to="/pricing" className="text-[11px] font-semibold text-[var(--gt-blue)] hover:underline">View Premium options</Link>
+2720 | </div>
+2721 | </div>
+2722 | ) : earlyVerifiedError ? (
+2723 | <div className="mt-2 text-xs text-rose-600 dark:text-rose-300">{earlyVerifiedError}</div>
+2724 | ) : (
+2725 | <div className="mt-3 space-y-2">
+2726 | {earlyVerifiedFactories.length ? earlyVerifiedFactories.slice(0, 6).map((row) => (
+2727 | <Link
+2728 | key={row.id}
+2729 | to={roleToProfileRoute(row.role, row.id)}
+2730 | className="block rounded-xl bg-white px-3 py-2 text-left ring-1 ring-slate-200/70 transition hover:bg-slate-50 dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/8"
+2731 | >
+2732 | <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{row.name || 'Factory'}</p>
+2733 | <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{row.country || '-'} - verified</p>
+2734 | </Link>
+2735 | )) : (
+2736 | <div className="text-xs text-slate-500 dark:text-slate-400">No new verified factories yet.</div>
+2737 | )}
+2738 | </div>
+2739 | )}
+2740 | </div>
+2741 | ) : null}
+2742 | <div className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800">
+2743 | <p className="text-sm font-bold text-slate-900 dark:text-slate-100">Recently viewed</p>
+2744 | <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Private to you - Recorded on Quick View</p>
+2745 | <div className="mt-3 space-y-2">
+2746 | {recentViews.length ? recentViews.map((row) => (
+2747 | <button
+2748 | key={row.id}
+2749 | type="button"
+2750 | onClick={() => setQuickViewItem({ ...row.product, author: row.author })}
+2751 | className="w-full text-left rounded-xl bg-white px-3 py-2 ring-1 ring-slate-200/70 transition hover:bg-slate-50 active:scale-[0.99] dark:bg-white/5 dark:ring-white/10 dark:hover:bg-white/8"
+2752 | title="Open Quick View"
+2753 | >
+2754 | <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{row.product?.title || 'Product'}</p>
+2755 | <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{row.author?.name || 'Company'} - {new Date(row.viewed_at).toLocaleString()}</p>
+2756 | </button>
+2757 | )) : (
+2758 | <div className="text-xs text-slate-500 dark:text-slate-400">No views yet. Use "Quick view" on a product.</div>
+2759 | )}
+2760 | </div>
+2761 | <div className="mt-3">
+2762 | <Link to="/notifications" className="text-xs font-semibold text-[var(--gt-blue)] hover:underline">Open full history</Link>
+2763 | </div>
+2764 | </div>
+2765 |
+2766 | {premiumLocked ? (
+2767 | <div className="rounded-2xl p-4 ring-1 ring-amber-200 bg-amber-50 dark:bg-amber-500/10 dark:ring-amber-500/30">
+2768 | <p className="text-sm font-bold text-amber-900 dark:text-amber-200">Advanced filters locked</p>
+2769 | <p className="mt-1 text-xs text-amber-800 dark:text-amber-200/90">
+2770 | Upgrade to Premium to unlock advanced filters. Core filters remain unlimited on the free plan.
+2771 | </p>
+2772 | </div>
+2773 | ) : null}
+2774 | </aside>
+2775 | </div>
+2776 | </div>
+2777 |
+2778 | <ProductQuickViewModal
+2779 | open={Boolean(quickViewItem)}
+2780 | item={quickViewItem}
+2781 | onClose={() => setQuickViewItem(null)}
+2782 | onViewed={loadRecentViews}
+2783 | />
+2784 | </div>
+2785 | )
+2786 | }
+2787 |

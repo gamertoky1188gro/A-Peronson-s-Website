@@ -6,6 +6,7 @@
 ## 1) Purpose
 
 GarTex Assistant bot logo:
+
 - SVG logo with gradient
 - Color and monochrome variants
 - Customizable size
@@ -13,13 +14,13 @@ GarTex Assistant bot logo:
 
 ## 2) Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `width` | number | 20 | SVG width |
-| `height` | number | 20 | SVG height |
-| `className` | string | "" | Additional classes |
-| `variant` | string | "color" | "color" or "mono" |
-| `title` | string | "GarTex Assistant" | Accessible title |
+| Prop        | Type   | Default            | Description        |
+| ----------- | ------ | ------------------ | ------------------ |
+| `width`     | number | 20                 | SVG width          |
+| `height`    | number | 20                 | SVG height         |
+| `className` | string | ""                 | Additional classes |
+| `variant`   | string | "color"            | "color" or "mono"  |
+| `title`     | string | "GarTex Assistant" | Accessible title   |
 
 ## 3) Accessibility
 
@@ -29,4 +30,4 @@ GarTex Assistant bot logo:
 
 ---
 
-*Generated from source: src/components/ui/BotLogo.jsx*
+_Generated from source: src/components/ui/BotLogo.jsx_

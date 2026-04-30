@@ -6,6 +6,7 @@
 ## 1) Purpose
 
 Card with spotlight hover effect:
+
 - Mouse position tracking
 - Radial gradient spotlight
 - Smooth transition animation
@@ -13,10 +14,10 @@ Card with spotlight hover effect:
 
 ## 2) Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `className` | string | "" | Additional classes |
-| `children` | node | - | Card content |
+| Prop        | Type   | Default | Description        |
+| ----------- | ------ | ------- | ------------------ |
+| `className` | string | ""      | Additional classes |
+| `children`  | node   | -       | Card content       |
 
 ## 3) Styling
 
@@ -27,4 +28,4 @@ Card with spotlight hover effect:
 
 ---
 
-*Generated from source: src/components/ui/SpotlightCard.jsx*
+_Generated from source: src/components/ui/SpotlightCard.jsx_
