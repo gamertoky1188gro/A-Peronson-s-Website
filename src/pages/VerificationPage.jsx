@@ -37,7 +37,15 @@ import {
 } from "../../shared/config/geo.js";
 
 const Icon = ({ d, className = "" }) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
     <path d={d} />
   </svg>
 );
@@ -405,9 +413,14 @@ export default function VerificationPage() {
 
   const softText = isDark ? "text-slate-300" : "text-slate-600";
   const mutedText = isDark ? "text-slate-400" : "text-slate-500";
-  const fieldBg = isDark ? "bg-slate-900/80 border-white/10 text-slate-100" : "bg-white border-slate-200 text-slate-900";
-  const chipBg = isDark ? "bg-sky-500/10 text-sky-200 border-sky-400/20" : "bg-sky-50 text-sky-700 border-sky-200";
-  const buttonPrimary = "bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-400 text-white shadow-lg shadow-sky-500/25 hover:shadow-sky-500/35 hover:-translate-y-0.5";
+  const fieldBg = isDark
+    ? "bg-slate-900/80 border-white/10 text-slate-100"
+    : "bg-white border-slate-200 text-slate-900";
+  const chipBg = isDark
+    ? "bg-sky-500/10 text-sky-200 border-sky-400/20"
+    : "bg-sky-50 text-sky-700 border-sky-200";
+  const buttonPrimary =
+    "bg-gradient-to-r from-sky-500 via-blue-500 to-cyan-400 text-white shadow-lg shadow-sky-500/25 hover:shadow-sky-500/35 hover:-translate-y-0.5";
   const buttonGhost = isDark
     ? "bg-white/5 hover:bg-white/10 border-white/10 text-slate-100"
     : "bg-white hover:bg-sky-50 border-slate-200 text-slate-900";
@@ -427,19 +440,28 @@ export default function VerificationPage() {
       </div>
 
       <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
-        <header className={`mb-6 flex items-center justify-between rounded-3xl border px-4 py-4 ${cardBg}`}>
+        <header
+          className={`mb-6 flex items-center justify-between rounded-3xl border px-4 py-4 ${cardBg}`}
+        >
           <div className="flex items-center gap-3">
             <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-500 text-white shadow-lg shadow-sky-500/25">
               <Icon d={icons.shield} className="h-6 w-6" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Verification Center</h1>
-                <span className={`rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] ${chipBg}`}>
+                <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+                  Verification Center
+                </h1>
+                <span
+                  className={`rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] ${chipBg}`}
+                >
                   {reviewStatus}
                 </span>
               </div>
-              <p className={`mt-1 text-sm ${softText}`}>Verification is subscription-based and renews monthly. First month: $1.99 • Renewals: $6.99/month</p>
+              <p className={`mt-1 text-sm ${softText}`}>
+                Verification is subscription-based and renews monthly. First
+                month: $1.99 • Renewals: $6.99/month
+              </p>
             </div>
           </div>
 
@@ -468,19 +490,31 @@ export default function VerificationPage() {
             <div className={`rounded-[28px] border p-6 sm:p-8 ${cardBg}`}>
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
-                  <div className={`mb-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] ${chipBg}`}>
+                  <div
+                    className={`mb-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] ${chipBg}`}
+                  >
                     <Icon d={icons.spark} className="h-3.5 w-3.5" />
                     Review status: {reviewStatus}
                     {reviewReason && ` • ${reviewReason}`}
                   </div>
-                  <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Build trust with verified proof</h2>
-                  <p className={`mt-4 max-w-2xl text-base leading-7 ${softText}`}>
-                    Upload the right documents for your role, add optional licenses, and strengthen credibility for buyers and partners.
+                  <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+                    Build trust with verified proof
+                  </h2>
+                  <p
+                    className={`mt-4 max-w-2xl text-base leading-7 ${softText}`}
+                  >
+                    Upload the right documents for your role, add optional
+                    licenses, and strengthen credibility for buyers and
+                    partners.
                   </p>
                 </div>
 
-                <div className={`min-w-[240px] rounded-3xl border p-5 ${isDark ? "bg-slate-900/70 border-white/10" : "bg-sky-50/70 border-sky-100"}`}>
-                  <div className={`flex items-center justify-between text-sm ${mutedText}`}>
+                <div
+                  className={`min-w-[240px] rounded-3xl border p-5 ${isDark ? "bg-slate-900/70 border-white/10" : "bg-sky-50/70 border-sky-100"}`}
+                >
+                  <div
+                    className={`flex items-center justify-between text-sm ${mutedText}`}
+                  >
                     <span>Credibility</span>
                     <span>{credibility}/100</span>
                   </div>
@@ -492,8 +526,13 @@ export default function VerificationPage() {
                   </div>
                   <div className="mt-4 flex items-center justify-between">
                     <div>
-                      <div className="text-sm font-semibold">Basic credibility</div>
-                      <div className={`mt-1 text-xs ${mutedText}`}>More licensing proof increases credibility and international trust.</div>
+                      <div className="text-sm font-semibold">
+                        Basic credibility
+                      </div>
+                      <div className={`mt-1 text-xs ${mutedText}`}>
+                        More licensing proof increases credibility and
+                        international trust.
+                      </div>
                     </div>
                     <Icon d={icons.star} className="h-7 w-7 text-sky-400" />
                   </div>
@@ -506,7 +545,9 @@ export default function VerificationPage() {
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <h3 className="text-xl font-semibold">Buyer region</h3>
-                    <p className={`mt-1 text-sm ${softText}`}>Select your country to determine required documents.</p>
+                    <p className={`mt-1 text-sm ${softText}`}>
+                      Select your country to determine required documents.
+                    </p>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-sky-500">
                     <Icon d={icons.help} className="h-4 w-4" />
@@ -522,24 +563,35 @@ export default function VerificationPage() {
                   >
                     <option value="">Select country</option>
                     {BUYER_COUNTRY_OPTIONS.map((country) => (
-                      <option key={country} value={country}>{country}</option>
+                      <option key={country} value={country}>
+                        {country}
+                      </option>
                     ))}
                   </select>
                   {savingCountry && (
-                    <span className={`flex items-center text-sm ${mutedText}`}>Saving...</span>
+                    <span className={`flex items-center text-sm ${mutedText}`}>
+                      Saving...
+                    </span>
                   )}
                 </div>
 
                 <p className={`mt-3 text-sm ${softText}`}>
                   EU buyers need:{" "}
-                  <span className="font-semibold">Business Registration + VAT Number + EORI + Bank proof</span>
+                  <span className="font-semibold">
+                    Business Registration + VAT Number + EORI + Bank proof
+                  </span>
                   . USA buyers need:{" "}
-                  <span className="font-semibold">Business Registration + EIN + IOR + Bank proof</span>
+                  <span className="font-semibold">
+                    Business Registration + EIN + IOR + Bank proof
+                  </span>
                   .
                 </p>
 
                 {!buyerCountry && (
-                  <p className="mt-3 text-sm text-rose-400">Buyer country is required before completing buyer verification.</p>
+                  <p className="mt-3 text-sm text-rose-400">
+                    Buyer country is required before completing buyer
+                    verification.
+                  </p>
                 )}
               </div>
             )}
@@ -548,35 +600,56 @@ export default function VerificationPage() {
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <h3 className="text-xl font-semibold">Your requirements</h3>
-                  <p className={`mt-1 text-sm ${softText}`}>Role-based checklist. Uploading more proof increases credibility.</p>
+                  <p className={`mt-1 text-sm ${softText}`}>
+                    Role-based checklist. Uploading more proof increases
+                    credibility.
+                  </p>
                 </div>
-                <span className={`rounded-full border px-3 py-1 text-sm ${chipBg}`}>
+                <span
+                  className={`rounded-full border px-3 py-1 text-sm ${chipBg}`}
+                >
                   {verified ? "Verified" : "Not verified"}
                 </span>
               </div>
 
               <div className="mt-6 grid gap-4 md:grid-cols-3">
                 {requirements.map((item, idx) => (
-                  <div key={idx} className={`rounded-3xl border p-5 ${isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}>
+                  <div
+                    key={idx}
+                    className={`rounded-3xl border p-5 ${isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
+                  >
                     <div className="flex items-start gap-3">
-                      <div className={`mt-0.5 grid h-10 w-10 place-items-center rounded-2xl ${item.done ? "bg-emerald-500/15 text-emerald-300" : "bg-sky-500/10 text-sky-500"}`}>
-                        <Icon d={item.done ? icons.check : icons.clock} className="h-5 w-5" />
+                      <div
+                        className={`mt-0.5 grid h-10 w-10 place-items-center rounded-2xl ${item.done ? "bg-emerald-500/15 text-emerald-300" : "bg-sky-500/10 text-sky-500"}`}
+                      >
+                        <Icon
+                          d={item.done ? icons.check : icons.clock}
+                          className="h-5 w-5"
+                        />
                       </div>
                       <div>
                         <h4 className="font-semibold">{item.title}</h4>
-                        <p className={`mt-1 text-sm leading-6 ${softText}`}>{item.desc}</p>
+                        <p className={`mt-1 text-sm leading-6 ${softText}`}>
+                          {item.desc}
+                        </p>
                       </div>
                     </div>
                     <button
                       onClick={() => openPicker(requiredDocs[idx])}
-                      disabled={busyDoc === requiredDocs[idx] || (role === "buyer" && !buyerCountry)}
+                      disabled={
+                        busyDoc === requiredDocs[idx] ||
+                        (role === "buyer" && !buyerCountry)
+                      }
                       className={`mt-4 w-full rounded-2xl border px-3 py-2 text-sm font-medium transition-all ${
-                        busyDoc === requiredDocs[idx] || (role === "buyer" && !buyerCountry)
+                        busyDoc === requiredDocs[idx] ||
+                        (role === "buyer" && !buyerCountry)
                           ? "opacity-50 cursor-not-allowed border-white/10"
                           : buttonGhost
                       }`}
                     >
-                      {busyDoc === requiredDocs[idx] ? "Uploading..." : "Upload"}
+                      {busyDoc === requiredDocs[idx]
+                        ? "Uploading..."
+                        : "Upload"}
                     </button>
                   </div>
                 ))}
@@ -587,7 +660,10 @@ export default function VerificationPage() {
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <h3 className="text-xl font-semibold">Optional licenses</h3>
-                  <p className={`mt-1 text-sm ${softText}`}>Optional proofs can be added anytime. More proof = more trust.</p>
+                  <p className={`mt-1 text-sm ${softText}`}>
+                    Optional proofs can be added anytime. More proof = more
+                    trust.
+                  </p>
                 </div>
                 <div className={`flex items-center gap-2 text-sm ${softText}`}>
                   <Icon d={icons.help} className="h-4 w-4 text-sky-400" />
@@ -625,7 +701,11 @@ export default function VerificationPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className={`flex h-full items-center justify-center text-sm ${mutedText}`}>No optional licenses yet.</div>
+                  <div
+                    className={`flex h-full items-center justify-center text-sm ${mutedText}`}
+                  >
+                    No optional licenses yet.
+                  </div>
                 )}
               </div>
             </div>
@@ -639,11 +719,16 @@ export default function VerificationPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold">Subscription</h3>
-                  <p className={`text-sm ${mutedText}`}>Verification approval requires an active verification subscription.</p>
+                  <p className={`text-sm ${mutedText}`}>
+                    Verification approval requires an active verification
+                    subscription.
+                  </p>
                 </div>
               </div>
 
-              <div className={`mt-5 rounded-3xl border p-5 ${isDark ? "border-white/10 bg-slate-900/70" : "border-slate-200 bg-white"}`}>
+              <div
+                className={`mt-5 rounded-3xl border p-5 ${isDark ? "border-white/10 bg-slate-900/70" : "border-slate-200 bg-white"}`}
+              >
                 <div className="flex items-center justify-between text-sm">
                   <span className={softText}>Status</span>
                   <span className="rounded-full bg-rose-500/10 px-3 py-1 font-semibold text-rose-400">
@@ -651,11 +736,13 @@ export default function VerificationPage() {
                   </span>
                 </div>
                 <div className={`mt-3 text-sm leading-6 ${softText}`}>
-                  Activate your verification plan to unlock review eligibility and progress toward approval.
+                  Activate your verification plan to unlock review eligibility
+                  and progress toward approval.
                 </div>
                 {remainingDays > 0 && (
                   <p className={`mt-3 text-xs ${mutedText}`}>
-                    Remaining: {remainingDays} day{remainingDays === 1 ? "" : "s"}
+                    Remaining: {remainingDays} day
+                    {remainingDays === 1 ? "" : "s"}
                   </p>
                 )}
               </div>
@@ -686,17 +773,27 @@ export default function VerificationPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold">Need help?</h3>
-                  <p className={`text-sm ${mutedText}`}>Visit the Help Center.</p>
+                  <p className={`text-sm ${mutedText}`}>
+                    Visit the Help Center.
+                  </p>
                 </div>
               </div>
 
-              <div className={`mt-5 rounded-3xl border p-5 ${isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-sky-50/60"}`}>
+              <div
+                className={`mt-5 rounded-3xl border p-5 ${isDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-sky-50/60"}`}
+              >
                 <div className="flex items-start gap-3">
-                  <Icon d={icons.upload} className="mt-0.5 h-5 w-5 text-sky-400" />
+                  <Icon
+                    d={icons.upload}
+                    className="mt-0.5 h-5 w-5 text-sky-400"
+                  />
                   <div>
-                    <p className="text-sm font-semibold">Upload stronger proof</p>
+                    <p className="text-sm font-semibold">
+                      Upload stronger proof
+                    </p>
                     <p className={`mt-1 text-sm leading-6 ${softText}`}>
-                      Higher-quality documents and licenses can improve review confidence and credibility.
+                      Higher-quality documents and licenses can improve review
+                      confidence and credibility.
                     </p>
                   </div>
                 </div>
@@ -716,11 +813,15 @@ export default function VerificationPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className={softText}>Review status</span>
-                  <span className="font-semibold text-amber-400">{reviewStatus}</span>
+                  <span className="font-semibold text-amber-400">
+                    {reviewStatus}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className={softText}>Verification</span>
-                  <span className="font-semibold text-rose-400">{verified ? "Verified" : "Not verified"}</span>
+                  <span className="font-semibold text-rose-400">
+                    {verified ? "Verified" : "Not verified"}
+                  </span>
                 </div>
               </div>
             </div>

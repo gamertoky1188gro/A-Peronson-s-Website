@@ -2,17 +2,136 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 
 const Icon = {
-  ArrowLeft: (p) => (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>),
-  Check: (p) => (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6L9 17l-5-5"/></svg>),
-  Upload: (p) => (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 16V4"/><path d="M8 8l4-4 4 4"/><path d="M4 20h16"/></svg>),
-  Image: (p) => (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>),
-  Loader: (p) => (<svg {...p} className={p.className+" animate-spin"} viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" opacity="0.2"/><path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="4"/></svg>),
-  Plus: (p) => (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>),
-  Play: (p) => (<svg {...p} viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>),
-  Refresh: (p) => (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>),
-  Sparkles: (p) => (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/></svg>),
-  Trash: (p) => (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></svg>),
-  X: (p) => (<svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 6l12 12M6 18L18 6"/></svg>)
+  ArrowLeft: (p) => (
+    <svg
+      {...p}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M19 12H5" />
+      <path d="M12 19l-7-7 7-7" />
+    </svg>
+  ),
+  Check: (p) => (
+    <svg
+      {...p}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M20 6L9 17l-5-5" />
+    </svg>
+  ),
+  Upload: (p) => (
+    <svg
+      {...p}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M12 16V4" />
+      <path d="M8 8l4-4 4 4" />
+      <path d="M4 20h16" />
+    </svg>
+  ),
+  Image: (p) => (
+    <svg
+      {...p}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="8.5" cy="8.5" r="1.5" />
+      <path d="M21 15l-5-5L5 21" />
+    </svg>
+  ),
+  Loader: (p) => (
+    <svg {...p} className={p.className + " animate-spin"} viewBox="0 0 24 24">
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+        fill="none"
+        opacity="0.2"
+      />
+      <path
+        d="M22 12a10 10 0 0 1-10 10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+    </svg>
+  ),
+  Plus: (p) => (
+    <svg
+      {...p}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  ),
+  Play: (p) => (
+    <svg {...p} viewBox="0 0 24 24" fill="currentColor">
+      <polygon points="5,3 19,12 5,21" />
+    </svg>
+  ),
+  Refresh: (p) => (
+    <svg
+      {...p}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M21 12a9 9 0 1 1-3-6.7" />
+      <path d="M21 3v6h-6" />
+    </svg>
+  ),
+  Sparkles: (p) => (
+    <svg
+      {...p}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
+    </svg>
+  ),
+  Trash: (p) => (
+    <svg
+      {...p}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M3 6h18" />
+      <path d="M8 6V4h8v2" />
+      <path d="M6 6l1 14h10l1-14" />
+    </svg>
+  ),
+  X: (p) => (
+    <svg
+      {...p}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M6 6l12 12M6 18L18 6" />
+    </svg>
+  ),
 };
 
 const initialForm = {
@@ -68,7 +187,9 @@ export default function FeedManagementPage() {
       setTheme(storedTheme);
       return;
     }
-    const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches;
+    const prefersDark = window.matchMedia?.(
+      "(prefers-color-scheme: dark)",
+    ).matches;
     setTheme(prefersDark ? "dark" : "light");
   }, []);
 
@@ -82,7 +203,8 @@ export default function FeedManagementPage() {
       setLoadingPosts(true);
       setError("");
       try {
-const token = localStorage.getItem("jwt") || localStorage.getItem("token");
+        const token =
+          localStorage.getItem("jwt") || localStorage.getItem("token");
         const res = await fetch("/api/feed/posts/mine", {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
@@ -99,7 +221,8 @@ const token = localStorage.getItem("jwt") || localStorage.getItem("token");
             : [];
         setPosts(rows);
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to load your posts";
+        const message =
+          err instanceof Error ? err.message : "Failed to load your posts";
         setError(message);
       } finally {
         setLoadingPosts(false);
@@ -263,23 +386,33 @@ const token = localStorage.getItem("jwt") || localStorage.getItem("token");
     });
   };
 
-  const pageBg = theme === "dark"
-    ? "bg-slate-950 text-slate-100"
-    : "bg-slate-50 text-slate-900";
+  const pageBg =
+    theme === "dark"
+      ? "bg-slate-950 text-slate-100"
+      : "bg-slate-50 text-slate-900";
 
-  const panelBg = theme === "dark"
-    ? "bg-white/5 border-white/10 shadow-[0_20px_80px_-30px_rgba(56,189,248,0.25)]"
-    : "bg-white border-slate-200 shadow-[0_20px_80px_-30px_rgba(14,165,233,0.18)]";
+  const panelBg =
+    theme === "dark"
+      ? "bg-white/5 border-white/10 shadow-[0_20px_80px_-30px_rgba(56,189,248,0.25)]"
+      : "bg-white border-slate-200 shadow-[0_20px_80px_-30px_rgba(14,165,233,0.18)]";
 
   const subtleText = theme === "dark" ? "text-slate-400" : "text-slate-500";
   const mutedBorder = theme === "dark" ? "border-white/10" : "border-slate-200";
-  const inputBase = theme === "dark"
-    ? "bg-slate-900/60 text-slate-100 placeholder:text-slate-500 border-white/10 focus:border-sky-400"
-    : "bg-white text-slate-900 placeholder:text-slate-400 border-slate-200 focus:border-sky-500";
+  const inputBase =
+    theme === "dark"
+      ? "bg-slate-900/60 text-slate-100 placeholder:text-slate-500 border-white/10 focus:border-sky-400"
+      : "bg-white text-slate-900 placeholder:text-slate-400 border-slate-200 focus:border-sky-500";
 
   return (
     <div className={cn("min-h-screen transition-colors duration-300", pageBg)}>
-      <div className={cn("border-b backdrop-blur-xl", theme === "dark" ? "border-white/10 bg-slate-950/70" : "border-slate-200 bg-white/80")}> 
+      <div
+        className={cn(
+          "border-b backdrop-blur-xl",
+          theme === "dark"
+            ? "border-white/10 bg-slate-950/70"
+            : "border-slate-200 bg-white/80",
+        )}
+      >
         <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="space-y-2">
@@ -307,7 +440,9 @@ const token = localStorage.getItem("jwt") || localStorage.getItem("token");
               </a>
               <button
                 type="button"
-                onClick={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}
+                onClick={() =>
+                  setTheme((prev) => (prev === "dark" ? "light" : "dark"))
+                }
                 className={cn(
                   "inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5 hover:shadow-lg",
                   panelBg,
@@ -337,7 +472,12 @@ const token = localStorage.getItem("jwt") || localStorage.getItem("token");
 
         <div className="grid gap-6 lg:grid-cols-5">
           <div className="lg:col-span-3 space-y-6">
-            <section className={cn("overflow-hidden rounded-3xl border backdrop-blur-xl", panelBg)}>
+            <section
+              className={cn(
+                "overflow-hidden rounded-3xl border backdrop-blur-xl",
+                panelBg,
+              )}
+            >
               <div className={cn("border-b px-5 py-4", mutedBorder)}>
                 <div className="flex items-center gap-3">
                   <div className="rounded-2xl bg-sky-500/15 p-2 text-sky-400">
@@ -345,7 +485,9 @@ const token = localStorage.getItem("jwt") || localStorage.getItem("token");
                   </div>
                   <div>
                     <h2 className="text-lg font-semibold">Post Editor</h2>
-                    <p className={cn("text-sm", subtleText)}>Compose, enrich, and publish your feed post.</p>
+                    <p className={cn("text-sm", subtleText)}>
+                      Compose, enrich, and publish your feed post.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -511,16 +653,31 @@ const token = localStorage.getItem("jwt") || localStorage.getItem("token");
                     disabled={uploading}
                     className="inline-flex items-center gap-2 rounded-2xl bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:translate-y-[-1px] hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-70"
                   >
-                    {uploading ? <Icon.Loader className="h-4 w-4 animate-spin" /> : <Icon.Upload className="h-4 w-4" />}
+                    {uploading ? (
+                      <Icon.Loader className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Icon.Upload className="h-4 w-4" />
+                    )}
                     {uploading ? "Uploading..." : "Upload"}
                   </button>
                 </div>
 
                 <div className="mt-5">
                   {mediaRows.length === 0 ? (
-                    <div className={cn("rounded-2xl border border-dashed px-5 py-8 text-center", theme === "dark" ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-slate-50/70")}>
-                      <Icon.Image className={cn("mx-auto h-10 w-10", subtleText)} />
-                      <p className="mt-3 text-sm font-medium">No media uploaded yet</p>
+                    <div
+                      className={cn(
+                        "rounded-2xl border border-dashed px-5 py-8 text-center",
+                        theme === "dark"
+                          ? "border-white/10 bg-slate-950/30"
+                          : "border-slate-200 bg-slate-50/70",
+                      )}
+                    >
+                      <Icon.Image
+                        className={cn("mx-auto h-10 w-10", subtleText)}
+                      />
+                      <p className="mt-3 text-sm font-medium">
+                        No media uploaded yet
+                      </p>
                       <p className={cn("mt-1 text-sm", subtleText)}>
                         Choose one or more images/videos to build a richer post.
                       </p>
@@ -534,13 +691,20 @@ const token = localStorage.getItem("jwt") || localStorage.getItem("token");
                             key={media.id}
                             className={cn(
                               "group overflow-hidden rounded-3xl border transition hover:-translate-y-1",
-                              theme === "dark" ? "border-white/10 bg-slate-950/40" : "border-slate-200 bg-white",
+                              theme === "dark"
+                                ? "border-white/10 bg-slate-950/40"
+                                : "border-slate-200 bg-white",
                             )}
                           >
                             <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-sky-500/20 via-cyan-400/10 to-transparent">
                               {isVideo ? (
                                 <>
-                                  <video src={media.url} className="h-full w-full object-cover" muted playsInline />
+                                  <video
+                                    src={media.url}
+                                    className="h-full w-full object-cover"
+                                    muted
+                                    playsInline
+                                  />
                                   <div className="absolute inset-0 grid place-items-center bg-black/20">
                                     <div className="rounded-full bg-black/40 p-3 text-white backdrop-blur-sm">
                                       <Icon.Play className="h-6 w-6 fill-white" />
@@ -548,7 +712,11 @@ const token = localStorage.getItem("jwt") || localStorage.getItem("token");
                                   </div>
                                 </>
                               ) : (
-                                <img src={media.url} alt={media.name} className="h-full w-full object-cover" />
+                                <img
+                                  src={media.url}
+                                  alt={media.name}
+                                  className="h-full w-full object-cover"
+                                />
                               )}
                               <button
                                 type="button"
@@ -563,7 +731,9 @@ const token = localStorage.getItem("jwt") || localStorage.getItem("token");
                               <div className="text-xs font-medium uppercase tracking-wide text-sky-400">
                                 {isVideo ? "Video" : "Image"}
                               </div>
-                              <p className="truncate text-sm font-medium">{media.name}</p>
+                              <p className="truncate text-sm font-medium">
+                                {media.name}
+                              </p>
                             </div>
                           </div>
                         );
@@ -573,7 +743,12 @@ const token = localStorage.getItem("jwt") || localStorage.getItem("token");
                 </div>
               </div>
 
-              <div className={cn("flex flex-col gap-3 border-t px-5 py-5 sm:flex-row sm:items-center sm:justify-between", mutedBorder)}>
+              <div
+                className={cn(
+                  "flex flex-col gap-3 border-t px-5 py-5 sm:flex-row sm:items-center sm:justify-between",
+                  mutedBorder,
+                )}
+              >
                 <button
                   type="button"
                   onClick={clearForm}
@@ -592,7 +767,11 @@ const token = localStorage.getItem("jwt") || localStorage.getItem("token");
                   disabled={saving}
                   className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 via-cyan-500 to-blue-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:translate-y-[-1px] hover:shadow-xl hover:shadow-sky-500/30 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {saving ? <Icon.Loader className="h-4 w-4 animate-spin" /> : <Icon.Check className="h-4 w-4" />}
+                  {saving ? (
+                    <Icon.Loader className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Icon.Check className="h-4 w-4" />
+                  )}
                   {saving ? "Saving..." : "Save post"}
                 </button>
               </div>
@@ -600,21 +779,46 @@ const token = localStorage.getItem("jwt") || localStorage.getItem("token");
           </div>
 
           <div className="lg:col-span-2 space-y-6">
-            <section className={cn("overflow-hidden rounded-3xl border backdrop-blur-xl", panelBg)}>
+            <section
+              className={cn(
+                "overflow-hidden rounded-3xl border backdrop-blur-xl",
+                panelBg,
+              )}
+            >
               <div className={cn("border-b px-5 py-4", mutedBorder)}>
                 <h2 className="text-lg font-semibold">Live Preview</h2>
-                <p className={cn("text-sm", subtleText)}>Rendered markdown from your README field.</p>
+                <p className={cn("text-sm", subtleText)}>
+                  Rendered markdown from your README field.
+                </p>
               </div>
 
               <div className="px-5 py-5">
                 {previewHasText ? (
-                  <article className={cn("prose max-w-none", theme === "dark" ? "prose-invert prose-headings:text-white prose-a:text-sky-400" : "prose-slate prose-headings:text-slate-900 prose-a:text-sky-600") }>
+                  <article
+                    className={cn(
+                      "prose max-w-none",
+                      theme === "dark"
+                        ? "prose-invert prose-headings:text-white prose-a:text-sky-400"
+                        : "prose-slate prose-headings:text-slate-900 prose-a:text-sky-600",
+                    )}
+                  >
                     <ReactMarkdown>{form.readme}</ReactMarkdown>
                   </article>
                 ) : (
-                  <div className={cn("rounded-2xl border border-dashed px-5 py-10 text-center", theme === "dark" ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-slate-50") }>
-                    <Icon.Sparkles className={cn("mx-auto h-10 w-10", subtleText)} />
-                    <p className="mt-3 text-sm font-medium">No preview content yet</p>
+                  <div
+                    className={cn(
+                      "rounded-2xl border border-dashed px-5 py-10 text-center",
+                      theme === "dark"
+                        ? "border-white/10 bg-slate-950/30"
+                        : "border-slate-200 bg-slate-50",
+                    )}
+                  >
+                    <Icon.Sparkles
+                      className={cn("mx-auto h-10 w-10", subtleText)}
+                    />
+                    <p className="mt-3 text-sm font-medium">
+                      No preview content yet
+                    </p>
                     <p className={cn("mt-1 text-sm", subtleText)}>
                       Start writing markdown to see it rendered instantly.
                     </p>
@@ -632,20 +836,62 @@ const token = localStorage.getItem("jwt") || localStorage.getItem("token");
                   </div>
                 </div>
                 <div className="mt-4 grid gap-3 text-sm">
-                  <InfoRow label="CTA" value={previewCtaVisible ? `${form.ctaText}${form.ctaUrl ? ` → ${form.ctaUrl}` : ""}` : "None"} />
-                  <InfoRow label="Hashtags" value={previewMeta.hashtags.length ? previewMeta.hashtags.join(", ") : "None"} />
-                  <InfoRow label="Mentions" value={previewMeta.mentions.length ? previewMeta.mentions.join(", ") : "None"} />
-                  <InfoRow label="Links" value={previewMeta.links.length ? previewMeta.links.join(", ") : "None"} />
-                  <InfoRow label="Product tags" value={previewMeta.productTags.length ? previewMeta.productTags.join(", ") : "None"} />
+                  <InfoRow
+                    label="CTA"
+                    value={
+                      previewCtaVisible
+                        ? `${form.ctaText}${form.ctaUrl ? ` → ${form.ctaUrl}` : ""}`
+                        : "None"
+                    }
+                  />
+                  <InfoRow
+                    label="Hashtags"
+                    value={
+                      previewMeta.hashtags.length
+                        ? previewMeta.hashtags.join(", ")
+                        : "None"
+                    }
+                  />
+                  <InfoRow
+                    label="Mentions"
+                    value={
+                      previewMeta.mentions.length
+                        ? previewMeta.mentions.join(", ")
+                        : "None"
+                    }
+                  />
+                  <InfoRow
+                    label="Links"
+                    value={
+                      previewMeta.links.length
+                        ? previewMeta.links.join(", ")
+                        : "None"
+                    }
+                  />
+                  <InfoRow
+                    label="Product tags"
+                    value={
+                      previewMeta.productTags.length
+                        ? previewMeta.productTags.join(", ")
+                        : "None"
+                    }
+                  />
                   <InfoRow label="Location" value={form.location || "None"} />
                 </div>
               </div>
             </section>
 
-            <section className={cn("overflow-hidden rounded-3xl border backdrop-blur-xl", panelBg)}>
+            <section
+              className={cn(
+                "overflow-hidden rounded-3xl border backdrop-blur-xl",
+                panelBg,
+              )}
+            >
               <div className={cn("border-b px-5 py-4", mutedBorder)}>
                 <h2 className="text-lg font-semibold">Your posts</h2>
-                <p className={cn("text-sm", subtleText)}>Fetched from /api/feed/posts/mine</p>
+                <p className={cn("text-sm", subtleText)}>
+                  Fetched from /api/feed/posts/mine
+                </p>
               </div>
 
               <div className="p-5">
@@ -655,7 +901,14 @@ const token = localStorage.getItem("jwt") || localStorage.getItem("token");
                     Loading posts...
                   </div>
                 ) : posts.length === 0 ? (
-                  <div className={cn("rounded-2xl border border-dashed px-5 py-10 text-center", theme === "dark" ? "border-white/10 bg-slate-950/30" : "border-slate-200 bg-slate-50") }>
+                  <div
+                    className={cn(
+                      "rounded-2xl border border-dashed px-5 py-10 text-center",
+                      theme === "dark"
+                        ? "border-white/10 bg-slate-950/30"
+                        : "border-slate-200 bg-slate-50",
+                    )}
+                  >
                     <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-sky-500/10 text-sky-400">
                       <Icon.Image className="h-6 w-6" />
                     </div>
@@ -671,12 +924,16 @@ const token = localStorage.getItem("jwt") || localStorage.getItem("token");
                         key={post.id}
                         className={cn(
                           "rounded-3xl border p-4 transition hover:-translate-y-0.5 hover:shadow-xl",
-                          theme === "dark" ? "border-white/10 bg-slate-950/40" : "border-slate-200 bg-white",
+                          theme === "dark"
+                            ? "border-white/10 bg-slate-950/40"
+                            : "border-slate-200 bg-white",
                         )}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <h3 className="truncate text-base font-semibold">{post.title}</h3>
+                            <h3 className="truncate text-base font-semibold">
+                              {post.title}
+                            </h3>
                             <p className="mt-0.5 text-xs uppercase tracking-wide text-slate-400">
                               {post.category || "Uncategorized"}
                             </p>
@@ -691,12 +948,24 @@ const token = localStorage.getItem("jwt") || localStorage.getItem("token");
                           </button>
                         </div>
 
-                        <p className={cn("mt-3 line-clamp-3 text-sm leading-6", subtleText)}>
+                        <p
+                          className={cn(
+                            "mt-3 line-clamp-3 text-sm leading-6",
+                            subtleText,
+                          )}
+                        >
                           {post.caption || "No caption provided."}
                         </p>
 
                         <div className="mt-4 flex items-center justify-between gap-3 text-xs">
-                          <div className={cn("inline-flex items-center gap-2 rounded-full border px-3 py-1.5", theme === "dark" ? "border-white/10 bg-white/5 text-slate-300" : "border-slate-200 bg-slate-50 text-slate-600")}>
+                          <div
+                            className={cn(
+                              "inline-flex items-center gap-2 rounded-full border px-3 py-1.5",
+                              theme === "dark"
+                                ? "border-white/10 bg-white/5 text-slate-300"
+                                : "border-slate-200 bg-slate-50 text-slate-600",
+                            )}
+                          >
                             <span className="h-2 w-2 rounded-full bg-sky-400" />
                             Created {formatDate(post.createdAt)}
                           </div>
@@ -729,7 +998,9 @@ function Field({ label, required, className, children }) {
 function InfoRow({ label, value }) {
   return (
     <div className="flex flex-col gap-1 rounded-2xl border border-white/5 bg-white/5 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-      <span className="text-xs font-semibold uppercase tracking-wide text-sky-400">{label}</span>
+      <span className="text-xs font-semibold uppercase tracking-wide text-sky-400">
+        {label}
+      </span>
       <span className="text-sm text-slate-300 sm:text-right">{value}</span>
     </div>
   );

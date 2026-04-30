@@ -39,7 +39,7 @@ const COUNTRIES = [
 const ACCOUNT_TYPES = [
   { label: "Factory", value: "F" },
   { label: "Buying house", value: "BH" },
-  { label: "Buyer", value: "B"}
+  { label: "Buyer", value: "B" },
 ];
 
 function cn(...classes) {
@@ -50,8 +50,12 @@ function FieldShell({ label, children, hint }) {
   return (
     <div className="space-y-2">
       <div className="flex items-end justify-between gap-3">
-        <label className="text-sm font-medium text-slate-700 dark:text-slate-200">{label}</label>
-        {hint ? <span className="text-xs text-sky-600 dark:text-sky-300">{hint}</span> : null}
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+          {label}
+        </label>
+        {hint ? (
+          <span className="text-xs text-sky-600 dark:text-sky-300">{hint}</span>
+        ) : null}
       </div>
       {children}
     </div>
@@ -61,15 +65,39 @@ function FieldShell({ label, children, hint }) {
 function EyeIcon({ open }) {
   return open ? (
     <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
-      <path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z" stroke="currentColor" strokeWidth="1.7" />
+      <path
+        d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+      />
       <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.7" />
     </svg>
   ) : (
     <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
-      <path d="M3 3l18 18" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      <path d="M9.9 5.1A10.6 10.6 0 0 1 12 5c6 0 9.5 7 9.5 7a18.2 18.2 0 0 1-3.1 4.1" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      <path d="M6.3 6.3C3.8 8.2 2.5 12 2.5 12s3.5 7 9.5 7c1.3 0 2.5-.2 3.6-.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <path
+        d="M3 3l18 18"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+      <path
+        d="M10.6 10.6a2 2 0 0 0 2.8 2.8"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+      <path
+        d="M9.9 5.1A10.6 10.6 0 0 1 12 5c6 0 9.5 7 9.5 7a18.2 18.2 0 0 1-3.1 4.1"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+      <path
+        d="M6.3 6.3C3.8 8.2 2.5 12 2.5 12s3.5 7 9.5 7c1.3 0 2.5-.2 3.6-.5"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -77,7 +105,13 @@ function EyeIcon({ open }) {
 function ChevronDown() {
   return (
     <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
-      <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="m6 9 6 6 6-6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -85,15 +119,21 @@ function ChevronDown() {
 function CheckIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
-      <path d="m5 12 4 4L19 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="m5 12 4 4L19 6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
 
 const ROLE_VALUE_TO_API = {
-  "F": "factory",
-  "BH": "buying_house",
-  "B": "buyer",
+  F: "factory",
+  BH: "buying_house",
+  B: "buyer",
 };
 
 export default function Signup() {
@@ -234,7 +274,12 @@ export default function Signup() {
   };
 
   return (
-    <div className={cn(isDark ? "dark" : "", "min-h-screen overflow-hidden bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#07111f] dark:text-white") }>
+    <div
+      className={cn(
+        isDark ? "dark" : "",
+        "min-h-screen overflow-hidden bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#07111f] dark:text-white",
+      )}
+    >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.30),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.24),transparent_30%),linear-gradient(to_bottom,rgba(255,255,255,0.30),transparent)] dark:bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.20),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.18),transparent_30%),linear-gradient(to_bottom,rgba(255,255,255,0.04),transparent)]" />
 
       <div className="relative mx-auto grid min-h-screen max-w-7xl grid-cols-1 lg:grid-cols-2">
@@ -251,8 +296,12 @@ export default function Signup() {
                   G
                 </div>
                 <div>
-                  <div className="text-sm font-semibold tracking-[0.18em] text-slate-900 dark:text-white">GARTEXHUB</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-300">Garments & Textile sourcing</div>
+                  <div className="text-sm font-semibold tracking-[0.18em] text-slate-900 dark:text-white">
+                    GARTEXHUB
+                  </div>
+                  <div className="text-xs text-slate-500 dark:text-slate-300">
+                    Garments & Textile sourcing
+                  </div>
                 </div>
               </div>
 
@@ -281,7 +330,8 @@ export default function Signup() {
                 transition={{ delay: 0.16, duration: 0.5 }}
                 className="text-4xl font-black leading-tight tracking-tight sm:text-5xl"
               >
-                A clean, professional start for Garments and Textile sourcing teams.
+                A clean, professional start for Garments and Textile sourcing
+                teams.
               </motion.h1>
 
               <motion.p
@@ -290,15 +340,28 @@ export default function Signup() {
                 transition={{ delay: 0.22, duration: 0.5 }}
                 className="mt-5 max-w-lg text-base leading-7 text-slate-600 dark:text-slate-300"
               >
-                Join a modern sourcing network built for factories and buying houses with a premium, polished onboarding experience.
+                Join a modern sourcing network built for factories and buying
+                houses with a premium, polished onboarding experience.
               </motion.p>
 
               <div className="mt-8 grid gap-4 sm:grid-cols-2">
                 {[
-                  ["Secure onboarding", "Clear account selection and identity flow."],
-                  ["Fast setup", "Search countries and complete details quickly."],
-                  ["Premium UI", "Soft gradients, glass panels, and refined spacing."],
-                  ["Dual theme", "Optimized for both light and dark environments."],
+                  [
+                    "Secure onboarding",
+                    "Clear account selection and identity flow.",
+                  ],
+                  [
+                    "Fast setup",
+                    "Search countries and complete details quickly.",
+                  ],
+                  [
+                    "Premium UI",
+                    "Soft gradients, glass panels, and refined spacing.",
+                  ],
+                  [
+                    "Dual theme",
+                    "Optimized for both light and dark environments.",
+                  ],
                 ].map(([title, desc]) => (
                   <div
                     key={title}
@@ -308,7 +371,9 @@ export default function Signup() {
                       <CheckIcon />
                     </div>
                     <div className="text-sm font-semibold">{title}</div>
-                    <div className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">{desc}</div>
+                    <div className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                      {desc}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -339,9 +404,12 @@ export default function Signup() {
               </div>
 
               <div className="mb-8">
-                <h2 className="text-3xl font-black tracking-tight">Create your account</h2>
+                <h2 className="text-3xl font-black tracking-tight">
+                  Create your account
+                </h2>
                 <p className="mt-2 max-w-md text-sm leading-6 text-slate-600 dark:text-slate-300">
-                  A clean, professional start for Garments and Textile sourcing teams.
+                  A clean, professional start for Garments and Textile sourcing
+                  teams.
                 </p>
               </div>
 
@@ -421,7 +489,16 @@ export default function Signup() {
                   </FieldShell>
                 </div>
 
-                <FieldShell label="Account Type" hint={accountType.value === "F" ? "Factory" : accountType.value === "BH" ? "Buying house" : "Buyer"}>
+                <FieldShell
+                  label="Account Type"
+                  hint={
+                    accountType.value === "F"
+                      ? "Factory"
+                      : accountType.value === "BH"
+                        ? "Buying house"
+                        : "Buyer"
+                  }
+                >
                   <div className="relative">
                     <button
                       type="button"
@@ -432,9 +509,13 @@ export default function Signup() {
                         <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 text-xs font-bold text-white">
                           {accountType.value}
                         </span>
-                        <span className="font-medium text-slate-800 dark:text-slate-100">{accountType.label}</span>
+                        <span className="font-medium text-slate-800 dark:text-slate-100">
+                          {accountType.label}
+                        </span>
                       </span>
-                      <span className="text-slate-500 dark:text-slate-300"><ChevronDown /></span>
+                      <span className="text-slate-500 dark:text-slate-300">
+                        <ChevronDown />
+                      </span>
                     </button>
 
                     {accountOpen ? (
@@ -449,13 +530,17 @@ export default function Signup() {
                             }}
                             className={cn(
                               "flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition hover:bg-sky-50 dark:hover:bg-white/5",
-                              accountType.value === item.value ? "bg-sky-50 dark:bg-white/5" : ""
+                              accountType.value === item.value
+                                ? "bg-sky-50 dark:bg-white/5"
+                                : "",
                             )}
                           >
                             <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-xs font-bold text-white dark:bg-white dark:text-slate-900">
                               {item.value}
                             </span>
-                            <span className="font-medium text-slate-800 dark:text-slate-100">{item.label}</span>
+                            <span className="font-medium text-slate-800 dark:text-slate-100">
+                              {item.label}
+                            </span>
                           </button>
                         ))}
                       </div>
@@ -494,7 +579,9 @@ export default function Signup() {
                             </button>
                           ))
                         ) : (
-                          <div className="px-4 py-6 text-sm text-slate-500 dark:text-slate-300">No matching country found.</div>
+                          <div className="px-4 py-6 text-sm text-slate-500 dark:text-slate-300">
+                            No matching country found.
+                          </div>
                         )}
                       </div>
                     ) : null}
@@ -515,13 +602,18 @@ export default function Signup() {
                   disabled={loading}
                   className="group relative mt-2 w-full overflow-hidden rounded-2xl bg-gradient-to-r from-sky-500 via-blue-600 to-cyan-400 px-5 py-4 text-sm font-bold text-white shadow-[0_18px_40px_rgba(14,165,233,0.35)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_60px_rgba(14,165,233,0.45)] disabled:opacity-60"
                 >
-                  <span className="relative z-10">{loading ? "Creating account..." : "Create account"}</span>
+                  <span className="relative z-10">
+                    {loading ? "Creating account..." : "Create account"}
+                  </span>
                   <span className="absolute inset-0 translate-x-[-120%] bg-white/20 transition-transform duration-700 group-hover:translate-x-[120%]" />
                 </button>
 
                 <div className="pt-2 text-center text-sm text-slate-600 dark:text-slate-300">
                   Already have an account?{" "}
-                  <Link to="/login" className="font-semibold text-sky-600 hover:text-sky-700 dark:text-sky-300 dark:hover:text-sky-200">
+                  <Link
+                    to="/login"
+                    className="font-semibold text-sky-600 hover:text-sky-700 dark:text-sky-300 dark:hover:text-sky-200"
+                  >
                     Login
                   </Link>
                 </div>

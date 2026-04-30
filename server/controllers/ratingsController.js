@@ -94,10 +94,8 @@ export async function completeMilestone(req, res) {
   });
 
   if (!response)
-    return res
-      .status(400)
-      .json({
-        error: "profile_key, counterparty_id and milestone are required",
-      });
+    return res.status(400).json({
+      error: "profile_key, counterparty_id and milestone are required",
+    });
   return res.status(201).json(response);
 }

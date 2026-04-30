@@ -229,11 +229,9 @@ export async function rejectRequest(req, res) {
 export async function getPolicyConfig(req, res) {
   const role = String(req.user?.role || "").toLowerCase();
   if (!["admin", "owner", "buying_house", "factory"].includes(role))
-    return res
-      .status(403)
-      .json({
-        error: "Only org managers can access communication policy config",
-      });
+    return res.status(403).json({
+      error: "Only org managers can access communication policy config",
+    });
 
   const orgId = String(
     req.query?.org_id || req.user?.org_owner_id || req.user?.id || "",

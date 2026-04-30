@@ -1952,7 +1952,9 @@ export default function ChatInterface() {
                 );
                 const isActive = activeThreadId === thread.id;
                 const hasUnread = Number(thread.unread || 0) > 0;
-                const isFriendRequest = thread.isFriendThread && thread.friendRequestStatus === "pending";
+                const isFriendRequest =
+                  thread.isFriendThread &&
+                  thread.friendRequestStatus === "pending";
                 return (
                   <button
                     key={thread.id}

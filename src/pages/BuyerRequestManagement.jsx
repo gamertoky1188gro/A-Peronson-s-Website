@@ -2012,7 +2012,9 @@ export default function BuyerRequestManagement() {
                         ) : null}
                       </td>
                       <td className="py-2 pr-3">
-                        <span className={`rounded-full px-2 py-1 text-[11px] font-semibold ${requestStatusBadge(r.status)}`}>
+                        <span
+                          className={`rounded-full px-2 py-1 text-[11px] font-semibold ${requestStatusBadge(r.status)}`}
+                        >
                           {formatRequestStatus(r.status)}
                         </span>
                       </td>
@@ -2187,7 +2189,9 @@ export default function BuyerRequestManagement() {
                               <div className="font-semibold text-slate-900">
                                 {r.title || r.category || "Buyer Request"}
                               </div>
-                              <span className={`rounded-full px-2 py-1 text-[11px] font-semibold ${requestStatusBadge(r.status)}`}>
+                              <span
+                                className={`rounded-full px-2 py-1 text-[11px] font-semibold ${requestStatusBadge(r.status)}`}
+                              >
                                 {formatRequestStatus(r.status)}
                               </span>
                             </div>

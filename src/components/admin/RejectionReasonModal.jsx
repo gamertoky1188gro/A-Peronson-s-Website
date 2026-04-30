@@ -26,7 +26,9 @@ export function RejectionReasonModal({
   if (!open) return null;
 
   const chosenReason =
-    selectedReason === "Other" ? customReason.trim() || customReasons[0] : selectedReason;
+    selectedReason === "Other"
+      ? customReason.trim() || customReasons[0]
+      : selectedReason;
 
   function handleSubmit() {
     if (!chosenReason) return;
@@ -44,8 +46,12 @@ export function RejectionReasonModal({
       <div className="absolute left-1/2 top-1/2 w-[92vw] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white shadow-2xl shadow-borderless dark:shadow-borderlessDark">
         <header className="flex items-center justify-between px-5 py-4 shadow-dividerB dark:shadow-dividerBDark">
           <div>
-            <p className="text-sm font-semibold text-slate-900">Reject {itemTitle}</p>
-            <p className="text-[11px] text-slate-500">Select a reason for rejection</p>
+            <p className="text-sm font-semibold text-slate-900">
+              Reject {itemTitle}
+            </p>
+            <p className="text-[11px] text-slate-500">
+              Select a reason for rejection
+            </p>
           </div>
           <button
             type="button"

@@ -28,10 +28,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -71,10 +68,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -114,10 +108,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -157,10 +148,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -200,10 +188,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -243,10 +228,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -286,10 +268,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -329,10 +308,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -372,10 +348,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -415,10 +388,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -458,10 +428,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -501,10 +468,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -544,10 +508,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -587,10 +548,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -630,10 +588,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -673,10 +628,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -716,10 +668,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -759,10 +708,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -802,10 +748,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -845,10 +788,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -888,10 +828,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -931,10 +868,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -974,10 +908,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -1017,10 +948,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -1060,10 +988,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -1241,10 +1166,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -1597,10 +1519,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -1640,10 +1559,7 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": [
-        "country",
-        "category"
-      ],
+      "requested_dimensions": ["country", "category"],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,

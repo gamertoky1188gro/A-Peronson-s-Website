@@ -13,92 +13,95 @@ async function seed() {
 
   let admin;
   try {
-    admin = await prisma.user.findUnique({ where: { email: "admin@gmail.com" } });
+    admin = await prisma.user.findUnique({
+      where: { email: "admin@gmail.com" },
+    });
   } catch (e) {
     console.log("No admin user found, using default");
     admin = null;
   }
 
-  const [bhUser, facUser1, facUser2, facUser3, buyUser, agentUser] = await Promise.all([
-    prisma.user.upsert({
-      where: { email: "textilehub@example.com" },
-      update: {},
-      create: {
-        id: "user-bh-001",
-        email: "textilehub@example.com",
-        password_hash: "dummy",
-        role: "buying_house",
-        name: "TextileHub Corp",
-        status: "active",
-        org_owner_id: "org-bh-001",
-      },
-    }),
-    prisma.user.upsert({
-      where: { email: "factory@example.com" },
-      update: {},
-      create: {
-        id: "user-fac-001",
-        email: "factory@example.com",
-        password_hash: "dummy",
-        role: "factory",
-        name: "Premium Garments Ltd",
-        status: "active",
-        org_owner_id: "org-fac-001",
-      },
-    }),
-    prisma.user.upsert({
-      where: { email: "factory2@example.com" },
-      update: {},
-      create: {
-        id: "user-fac-002",
-        email: "factory2@example.com",
-        password_hash: "dummy",
-        role: "factory",
-        name: "Style Works",
-        status: "active",
-        org_owner_id: "org-fac-002",
-      },
-    }),
-    prisma.user.upsert({
-      where: { email: "factory3@example.com" },
-      update: {},
-      create: {
-        id: "user-fac-003",
-        email: "factory3@example.com",
-        password_hash: "dummy",
-        role: "factory",
-        name: "Quality Textiles",
-        status: "active",
-        org_owner_id: "org-fac-003",
-      },
-    }),
-    prisma.user.upsert({
-      where: { email: "buyer@example.com" },
-      update: {},
-      create: {
-        id: "user-buy-001",
-        email: "buyer@example.com",
-        password_hash: "dummy",
-        role: "buyer",
-        name: "Retail Buyer",
-        status: "active",
-        org_owner_id: "org-buy-001",
-      },
-    }),
-    prisma.user.upsert({
-      where: { email: "agent@example.com" },
-      update: {},
-      create: {
-        id: "user-agent-001",
-        email: "agent@example.com",
-        password_hash: "dummy",
-        role: "agent",
-        name: "John Agent",
-        status: "active",
-        org_owner_id: "org-bh-001",
-      },
-    }),
-  ]);
+  const [bhUser, facUser1, facUser2, facUser3, buyUser, agentUser] =
+    await Promise.all([
+      prisma.user.upsert({
+        where: { email: "textilehub@example.com" },
+        update: {},
+        create: {
+          id: "user-bh-001",
+          email: "textilehub@example.com",
+          password_hash: "dummy",
+          role: "buying_house",
+          name: "TextileHub Corp",
+          status: "active",
+          org_owner_id: "org-bh-001",
+        },
+      }),
+      prisma.user.upsert({
+        where: { email: "factory@example.com" },
+        update: {},
+        create: {
+          id: "user-fac-001",
+          email: "factory@example.com",
+          password_hash: "dummy",
+          role: "factory",
+          name: "Premium Garments Ltd",
+          status: "active",
+          org_owner_id: "org-fac-001",
+        },
+      }),
+      prisma.user.upsert({
+        where: { email: "factory2@example.com" },
+        update: {},
+        create: {
+          id: "user-fac-002",
+          email: "factory2@example.com",
+          password_hash: "dummy",
+          role: "factory",
+          name: "Style Works",
+          status: "active",
+          org_owner_id: "org-fac-002",
+        },
+      }),
+      prisma.user.upsert({
+        where: { email: "factory3@example.com" },
+        update: {},
+        create: {
+          id: "user-fac-003",
+          email: "factory3@example.com",
+          password_hash: "dummy",
+          role: "factory",
+          name: "Quality Textiles",
+          status: "active",
+          org_owner_id: "org-fac-003",
+        },
+      }),
+      prisma.user.upsert({
+        where: { email: "buyer@example.com" },
+        update: {},
+        create: {
+          id: "user-buy-001",
+          email: "buyer@example.com",
+          password_hash: "dummy",
+          role: "buyer",
+          name: "Retail Buyer",
+          status: "active",
+          org_owner_id: "org-buy-001",
+        },
+      }),
+      prisma.user.upsert({
+        where: { email: "agent@example.com" },
+        update: {},
+        create: {
+          id: "user-agent-001",
+          email: "agent@example.com",
+          password_hash: "dummy",
+          role: "agent",
+          name: "John Agent",
+          status: "active",
+          org_owner_id: "org-bh-001",
+        },
+      }),
+    ]);
   console.log(`- ${6} users created`);
 
   await Promise.all([
@@ -176,14 +179,54 @@ async function seed() {
   console.log(`- ${5} buyer requests created`);
 
   const messagesData = [
-    { senderId: bhUser.id, receiverId: facUser1.id, content: "Hi, interested in your t-shirt production", matchId: "match-001" },
-    { senderId: facUser1.id, receiverId: bhUser.id, content: "Hello! We can definitely help. What are your specifications?", matchId: "match-001" },
-    { senderId: bhUser.id, receiverId: facUser2.id, content: "Do you have MOQ for denim?", matchId: "match-002" },
-    { senderId: bhUser.id, receiverId: facUser3.id, content: "Looking for sports jersey manufacturer", matchId: "match-003" },
-    { senderId: buyUser.id, receiverId: facUser1.id, content: "Can you produce yoga leggings?", matchId: "match-004" },
-    { senderId: facUser1.id, receiverId: buyUser.id, content: "Yes we have experience with activewear", matchId: "match-004" },
-    { senderId: bhUser.id, receiverId: facUser1.id, content: "Need quote for winter jackets", matchId: "match-005" },
-    { senderId: agentUser.id, receiverId: facUser2.id, content: "Hi, I represent a buying house", matchId: "match-006" },
+    {
+      senderId: bhUser.id,
+      receiverId: facUser1.id,
+      content: "Hi, interested in your t-shirt production",
+      matchId: "match-001",
+    },
+    {
+      senderId: facUser1.id,
+      receiverId: bhUser.id,
+      content: "Hello! We can definitely help. What are your specifications?",
+      matchId: "match-001",
+    },
+    {
+      senderId: bhUser.id,
+      receiverId: facUser2.id,
+      content: "Do you have MOQ for denim?",
+      matchId: "match-002",
+    },
+    {
+      senderId: bhUser.id,
+      receiverId: facUser3.id,
+      content: "Looking for sports jersey manufacturer",
+      matchId: "match-003",
+    },
+    {
+      senderId: buyUser.id,
+      receiverId: facUser1.id,
+      content: "Can you produce yoga leggings?",
+      matchId: "match-004",
+    },
+    {
+      senderId: facUser1.id,
+      receiverId: buyUser.id,
+      content: "Yes we have experience with activewear",
+      matchId: "match-004",
+    },
+    {
+      senderId: bhUser.id,
+      receiverId: facUser1.id,
+      content: "Need quote for winter jackets",
+      matchId: "match-005",
+    },
+    {
+      senderId: agentUser.id,
+      receiverId: facUser2.id,
+      content: "Hi, I represent a buying house",
+      matchId: "match-006",
+    },
   ];
 
   for (let i = 0; i < messagesData.length; i++) {
@@ -233,11 +276,41 @@ async function seed() {
 
   // Seed partner requests for Partner Network
   const partnerRequestsData = [
-    { requesterId: bhUser.id, requesterRole: "buying_house", targetId: facUser1.id, targetRole: "factory", status: "connected" },
-    { requesterId: bhUser.id, requesterRole: "buying_house", targetId: facUser2.id, targetRole: "factory", status: "connected" },
-    { requesterId: bhUser.id, requesterRole: "buying_house", targetId: facUser3.id, targetRole: "factory", status: "pending" },
-    { requesterId: buyUser.id, requesterRole: "buyer", targetId: facUser1.id, targetRole: "factory", status: "connected" },
-    { requesterId: bhUser.id, requesterRole: "buying_house", targetId: facUser1.id, targetRole: "factory", status: "rejected" },
+    {
+      requesterId: bhUser.id,
+      requesterRole: "buying_house",
+      targetId: facUser1.id,
+      targetRole: "factory",
+      status: "connected",
+    },
+    {
+      requesterId: bhUser.id,
+      requesterRole: "buying_house",
+      targetId: facUser2.id,
+      targetRole: "factory",
+      status: "connected",
+    },
+    {
+      requesterId: bhUser.id,
+      requesterRole: "buying_house",
+      targetId: facUser3.id,
+      targetRole: "factory",
+      status: "pending",
+    },
+    {
+      requesterId: buyUser.id,
+      requesterRole: "buyer",
+      targetId: facUser1.id,
+      targetRole: "factory",
+      status: "connected",
+    },
+    {
+      requesterId: bhUser.id,
+      requesterRole: "buying_house",
+      targetId: facUser1.id,
+      targetRole: "factory",
+      status: "rejected",
+    },
   ];
 
   for (let i = 0; i < partnerRequestsData.length; i++) {

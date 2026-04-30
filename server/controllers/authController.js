@@ -187,12 +187,10 @@ export async function passkeyLoginVerify(req, res) {
     if (purpose === "admin_security") {
       const role = String(user?.role || "").toLowerCase();
       if (!["owner", "admin"].includes(role)) {
-        return res
-          .status(403)
-          .json({
-            error:
-              "Only admin/owner accounts can use passkey for admin security.",
-          });
+        return res.status(403).json({
+          error:
+            "Only admin/owner accounts can use passkey for admin security.",
+        });
       }
     }
     const token = signToken(user, { authViaPasskey: true });

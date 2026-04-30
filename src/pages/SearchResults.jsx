@@ -27,8 +27,14 @@
     - Skeleton shimmer while loading.
     - Optional premium-locked overlays for advanced filters.
 */
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   Search,
   Filter,
@@ -56,37 +62,43 @@ import {
   Briefcase,
   Building2,
   LayoutGrid,
-} from 'lucide-react';
-import { apiRequest } from '../lib/auth';
+} from "lucide-react";
+import { apiRequest } from "../lib/auth";
 
 const CATEGORY_OPTIONS = [
-  { key: 'all', label: 'All categories' },
-  { key: 'wovens', label: 'Wovens' },
-  { key: 'knits', label: 'Knits' },
-  { key: 'accessories', label: 'Accessories' },
-  { key: 'services', label: 'Services' },
-  { key: 'home-textiles', label: 'Home Textiles' },
-  { key: 'dyes', label: 'Dyes & Chemicals' },
+  { key: "all", label: "All categories" },
+  { key: "wovens", label: "Wovens" },
+  { key: "knits", label: "Knits" },
+  { key: "accessories", label: "Accessories" },
+  { key: "services", label: "Services" },
+  { key: "home-textiles", label: "Home Textiles" },
+  { key: "dyes", label: "Dyes & Chemicals" },
 ];
 
 const DEFAULT_FILTERS = {
-  industries: ['Any', 'Apparel', 'Textile', 'Accessories', 'Home Textiles'],
-  incoterms: ['FOB', 'CIF', 'EXW', 'CFR', 'DAP', 'DDP'],
-  companyTypes: ['Factory', 'Trading Company', 'Agent', 'Buying House'],
-  exportMarkets: ['EU', 'USA', 'Canada', 'UK', 'Japan', 'Middle East'],
-  certifications: ['ISO 9001', 'SA8000', 'BSCI', 'WRAP', 'OEKO-TEX', 'GOTS'],
-  paymentTerms: ['LC', 'TT', 'DP', 'Advance', 'Credit 30 days'],
-  customization: ['OEM', 'ODM', 'Private Label', 'Design Service', 'Sample Making'],
-  currencies: ['USD', 'EUR', 'GBP', 'BDT', 'INR'],
+  industries: ["Any", "Apparel", "Textile", "Accessories", "Home Textiles"],
+  incoterms: ["FOB", "CIF", "EXW", "CFR", "DAP", "DDP"],
+  companyTypes: ["Factory", "Trading Company", "Agent", "Buying House"],
+  exportMarkets: ["EU", "USA", "Canada", "UK", "Japan", "Middle East"],
+  certifications: ["ISO 9001", "SA8000", "BSCI", "WRAP", "OEKO-TEX", "GOTS"],
+  paymentTerms: ["LC", "TT", "DP", "Advance", "Credit 30 days"],
+  customization: [
+    "OEM",
+    "ODM",
+    "Private Label",
+    "Design Service",
+    "Sample Making",
+  ],
+  currencies: ["USD", "EUR", "GBP", "BDT", "INR"],
   locations: [
-    { name: 'Dhaka, Bangladesh', lat: 23.8103, lng: 90.4125 },
-    { name: 'Chattogram, Bangladesh', lat: 22.3569, lng: 91.7832 },
-    { name: 'Hanoi, Vietnam', lat: 21.0278, lng: 105.8342 },
-    { name: 'Istanbul, Turkey', lat: 41.0082, lng: 28.9784 },
-    { name: 'Lahore, Pakistan', lat: 31.5204, lng: 74.3587 },
-    { name: 'Karachi, Pakistan', lat: 24.8607, lng: 67.0011 },
-    { name: 'Guangzhou, China', lat: 23.1291, lng: 113.2644 },
-    { name: 'Delhi, India', lat: 28.6139, lng: 77.209 },
+    { name: "Dhaka, Bangladesh", lat: 23.8103, lng: 90.4125 },
+    { name: "Chattogram, Bangladesh", lat: 22.3569, lng: 91.7832 },
+    { name: "Hanoi, Vietnam", lat: 21.0278, lng: 105.8342 },
+    { name: "Istanbul, Turkey", lat: 41.0082, lng: 28.9784 },
+    { name: "Lahore, Pakistan", lat: 31.5204, lng: 74.3587 },
+    { name: "Karachi, Pakistan", lat: 24.8607, lng: 67.0011 },
+    { name: "Guangzhou, China", lat: 23.1291, lng: 113.2644 },
+    { name: "Delhi, India", lat: 28.6139, lng: 77.209 },
   ],
 };
 
@@ -95,14 +107,14 @@ function fmtNumber(n) {
 }
 
 const initialFilters = {
-  industry: 'Any',
-  moqBucket: 'Any',
+  industry: "Any",
+  moqBucket: "Any",
   moqMin: 0,
   moqMax: 5000,
-  currency: 'USD',
+  currency: "USD",
   priceMin: 0,
   priceMax: 20,
-  incoterms: ['FOB'],
+  incoterms: ["FOB"],
   companyType: [],
   productionMin: 0,
   productionMax: 500000,
@@ -110,52 +122,66 @@ const initialFilters = {
   workersMax: 5000,
   exportMarkets: [],
   roles: [],
-  location: '',
+  location: "",
   locationCoords: null,
   colorPants: [],
   customization: [],
   sampleAvailable: false,
   sampleLeadTime: 30,
   certifications: [],
-  auditDate: '',
+  auditDate: "",
   paymentTerms: [],
-  country: '',
+  country: "",
   verifiedOnly: false,
-  requestType: 'all',
+  requestType: "all",
   allCategories: true,
   selectedCategories: [],
 };
 
 function pillClass(active) {
   return active
-    ? 'bg-sky-600 text-white shadow-lg shadow-sky-500/20 border-sky-500/30'
-    : 'bg-white/70 dark:bg-slate-900/60 border-slate-200/70 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:border-sky-300 dark:hover:border-sky-700';
+    ? "bg-sky-600 text-white shadow-lg shadow-sky-500/20 border-sky-500/30"
+    : "bg-white/70 dark:bg-slate-900/60 border-slate-200/70 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:border-sky-300 dark:hover:border-sky-700";
 }
 
-function SectionCard({ title, icon: Icon, children, className = '' }) {
+function SectionCard({ title, icon: Icon, children, className = "" }) {
   return (
-    <div className={`rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/60 backdrop-blur-xl shadow-[0_20px_60px_-30px_rgba(15,23,42,0.35)] ${className}`}>
+    <div
+      className={`rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/60 backdrop-blur-xl shadow-[0_20px_60px_-30px_rgba(15,23,42,0.35)] ${className}`}
+    >
       <div className="flex items-center gap-3 border-b border-slate-200/70 dark:border-slate-800 px-5 py-4">
         <div className="rounded-2xl bg-sky-500/10 text-sky-600 dark:text-sky-400 p-2">
           <Icon className="h-4 w-4" />
         </div>
-        <h3 className="font-semibold text-slate-900 dark:text-white">{title}</h3>
+        <h3 className="font-semibold text-slate-900 dark:text-white">
+          {title}
+        </h3>
       </div>
       <div className="p-5">{children}</div>
     </div>
   );
 }
 
-function Badge({ children, tone = 'default' }) {
+function Badge({ children, tone = "default" }) {
   const tones = {
-    default: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200',
-    blue: 'bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300',
-    green: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300',
-    amber: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300',
-    red: 'bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300',
-    violet: 'bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300',
+    default:
+      "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
+    blue: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300",
+    green:
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
+    amber:
+      "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
+    red: "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300",
+    violet:
+      "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300",
   };
-  return <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${tones[tone]}`}>{children}</span>;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${tones[tone]}`}
+    >
+      {children}
+    </span>
+  );
 }
 
 function ToastStack({ toasts, onDismiss }) {
@@ -167,14 +193,27 @@ function ToastStack({ toasts, onDismiss }) {
           className="pointer-events-auto rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl p-4 shadow-xl"
         >
           <div className="flex items-start gap-3">
-            <div className={`mt-0.5 rounded-xl p-2 ${t.kind === 'error' ? 'bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-300' : 'bg-sky-100 text-sky-600 dark:bg-sky-500/15 dark:text-sky-300'}`}>
-              {t.kind === 'error' ? <X className="h-4 w-4" /> : <Check className="h-4 w-4" />}
+            <div
+              className={`mt-0.5 rounded-xl p-2 ${t.kind === "error" ? "bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-300" : "bg-sky-100 text-sky-600 dark:bg-sky-500/15 dark:text-sky-300"}`}
+            >
+              {t.kind === "error" ? (
+                <X className="h-4 w-4" />
+              ) : (
+                <Check className="h-4 w-4" />
+              )}
             </div>
             <div className="flex-1">
-              <p className="font-medium text-slate-900 dark:text-white">{t.title}</p>
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{t.message}</p>
+              <p className="font-medium text-slate-900 dark:text-white">
+                {t.title}
+              </p>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                {t.message}
+              </p>
             </div>
-            <button onClick={() => onDismiss(t.id)} className="rounded-xl p-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
+            <button
+              onClick={() => onDismiss(t.id)}
+              className="rounded-xl p-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+            >
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -187,26 +226,30 @@ function ToastStack({ toasts, onDismiss }) {
 export default function SearchResults() {
   const [, setSearchParams] = useSearchParams();
   const token = useMemo(() => {
-    const raw = localStorage.getItem('sessionToken');
+    const raw = localStorage.getItem("sessionToken");
     return raw || null;
   }, []);
 
   const [dark, setDark] = useState(true);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('all');
-  const [viewMode, setViewMode] = useState('all');
+  const [activeTab, setActiveTab] = useState("all");
+  const [viewMode, setViewMode] = useState("all");
   const [filters, setFilters] = useState(initialFilters);
   const [locationSuggestions, setLocationSuggestions] = useState([]);
-  const [roleSeatText, setRoleSeatText] = useState('');
-  const [colorText, setColorText] = useState('PMS 185C');
+  const [roleSeatText, setRoleSeatText] = useState("");
+  const [colorText, setColorText] = useState("PMS 185C");
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [alertsQuota, setAlertsQuota] = useState(0);
   const [toasts, setToasts] = useState([]);
   const [recentViews, setRecentViews] = useState([]);
   const [expandedMore, setExpandedMore] = useState(false);
-  const [estimatedCounts, setEstimatedCounts] = useState({ buyerRequests: 0, companies: 0, total: 0 });
+  const [estimatedCounts, setEstimatedCounts] = useState({
+    buyerRequests: 0,
+    companies: 0,
+    total: 0,
+  });
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [requests, setRequests] = useState([]);
   const [companies, setCompanies] = useState([]);
@@ -238,52 +281,53 @@ export default function SearchResults() {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.toggle('dark', dark);
+    root.classList.toggle("dark", dark);
   }, [dark]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const q = params.get('q');
+    const q = params.get("q");
     if (q) setQuery(q);
   }, []);
 
   useEffect(() => {
     const onKeyDown = (e) => {
       const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform);
-      const shortcut = (isMac ? e.metaKey : e.ctrlKey) && e.key.toLowerCase() === 'k';
+      const shortcut =
+        (isMac ? e.metaKey : e.ctrlKey) && e.key.toLowerCase() === "k";
       if (shortcut) {
         e.preventDefault();
         setSearchModalOpen((v) => !v);
         setTimeout(() => searchInputRef.current?.focus(), 50);
       }
-      if (e.key === 'Escape') setSearchModalOpen(false);
+      if (e.key === "Escape") setSearchModalOpen(false);
     };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
   useEffect(() => {
     if (!searchModalOpen) return;
     const onKey = (e) => {
-      if (e.key === 'Enter') {
+      if (e.key === "Enter") {
         e.preventDefault();
         executeSearchRef.current?.();
       }
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [searchModalOpen]);
 
   useEffect(() => {
     async function fetchRecentViews() {
       if (!token) return;
       try {
-        const data = await apiRequest('/products/views/me?limit=5', { token });
+        const data = await apiRequest("/products/views/me?limit=5", { token });
         if (Array.isArray(data?.items)) {
           setRecentViews(data.items.slice(0, 5));
         }
       } catch (err) {
-        console.warn('Unable to load recent views', err);
+        console.warn("Unable to load recent views", err);
       }
     }
     fetchRecentViews();
@@ -293,14 +337,14 @@ export default function SearchResults() {
     async function fetchQuota() {
       if (!token) return;
       try {
-        const data = await apiRequest('/search/alerts/quota', { token });
+        const data = await apiRequest("/search/alerts/quota", { token });
         if (data?.quota?.remaining !== undefined) {
           setAlertsQuota(Number(data.quota.remaining) || 0);
         } else if (data?.remaining !== undefined) {
           setAlertsQuota(Number(data.remaining) || 0);
         }
       } catch (err) {
-        console.warn('Unable to load quota', err);
+        console.warn("Unable to load quota", err);
       }
     }
     fetchQuota();
@@ -310,51 +354,159 @@ export default function SearchResults() {
     async function fetchFilterOptions() {
       if (!token) return;
       try {
-        const data = await apiRequest('/filters/options', { token });
+        const data = await apiRequest("/filters/options", { token });
         if (data) {
-          setFilterOptions(prev => ({
-            industries: Array.isArray(data.industries) && data.industries.length > 0 ? data.industries : prev.industries,
-            incoterms: Array.isArray(data.incoterms) && data.incoterms.length > 0 ? data.incoterms : prev.incoterms,
-            companyTypes: Array.isArray(data.companyTypes) && data.companyTypes.length > 0 ? data.companyTypes : prev.companyTypes,
-            exportMarkets: Array.isArray(data.exportMarkets) && data.exportMarkets.length > 0 ? data.exportMarkets : prev.exportMarkets,
-            certifications: Array.isArray(data.certifications) && data.certifications.length > 0 ? data.certifications : prev.certifications,
-            paymentTerms: Array.isArray(data.paymentTerms) && data.paymentTerms.length > 0 ? data.paymentTerms : prev.paymentTerms,
-            customization: Array.isArray(data.customization) && data.customization.length > 0 ? data.customization : prev.customization,
-            currencies: Array.isArray(data.currencies) && data.currencies.length > 0 ? data.currencies : prev.currencies,
-            locations: Array.isArray(data.locations) && data.locations.length > 0 ? data.locations : prev.locations,
+          setFilterOptions((prev) => ({
+            industries:
+              Array.isArray(data.industries) && data.industries.length > 0
+                ? data.industries
+                : prev.industries,
+            incoterms:
+              Array.isArray(data.incoterms) && data.incoterms.length > 0
+                ? data.incoterms
+                : prev.incoterms,
+            companyTypes:
+              Array.isArray(data.companyTypes) && data.companyTypes.length > 0
+                ? data.companyTypes
+                : prev.companyTypes,
+            exportMarkets:
+              Array.isArray(data.exportMarkets) && data.exportMarkets.length > 0
+                ? data.exportMarkets
+                : prev.exportMarkets,
+            certifications:
+              Array.isArray(data.certifications) &&
+              data.certifications.length > 0
+                ? data.certifications
+                : prev.certifications,
+            paymentTerms:
+              Array.isArray(data.paymentTerms) && data.paymentTerms.length > 0
+                ? data.paymentTerms
+                : prev.paymentTerms,
+            customization:
+              Array.isArray(data.customization) && data.customization.length > 0
+                ? data.customization
+                : prev.customization,
+            currencies:
+              Array.isArray(data.currencies) && data.currencies.length > 0
+                ? data.currencies
+                : prev.currencies,
+            locations:
+              Array.isArray(data.locations) && data.locations.length > 0
+                ? data.locations
+                : prev.locations,
           }));
         }
       } catch (err) {
-        console.warn('Unable to load filter options', err);
+        console.warn("Unable to load filter options", err);
       }
     }
     fetchFilterOptions();
   }, [token]);
 
-  const addToast = useCallback((title, message, kind = 'success') => {
+  const addToast = useCallback((title, message, kind = "success") => {
     const id = Math.random().toString(36).slice(2, 10);
     setToasts((prev) => [...prev, { id, title, message, kind }]);
-    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3800);
+    setTimeout(
+      () => setToasts((prev) => prev.filter((t) => t.id !== id)),
+      3800,
+    );
   }, []);
 
-  const removeToast = useCallback((id) => setToasts((prev) => prev.filter((t) => t.id !== id)), []);
+  const removeToast = useCallback(
+    (id) => setToasts((prev) => prev.filter((t) => t.id !== id)),
+    [],
+  );
 
   const activeFilterChips = useMemo(() => {
     const chips = [];
-    if (query.trim()) chips.push({ label: `Query: ${query.trim()}`, onRemove: () => setQuery('') });
-    if (filters.industry !== 'Any') chips.push({ label: `Industry: ${filters.industry}`, onRemove: () => setFilters((f) => ({ ...f, industry: 'Any' })) });
-    if (filters.moqBucket !== 'Any') chips.push({ label: `MOQ: ${filters.moqBucket}`, onRemove: () => setFilters((f) => ({ ...f, moqBucket: 'Any', moqMin: 0, moqMax: 5000 })) });
-    if (filters.location) chips.push({ label: `Location: ${filters.location}`, onRemove: () => setFilters((f) => ({ ...f, location: '', locationCoords: null })) });
-    if (filters.country) chips.push({ label: `Country: ${filters.country}`, onRemove: () => setFilters((f) => ({ ...f, country: '' })) });
-    if (filters.verifiedOnly) chips.push({ label: 'Verified only', onRemove: () => setFilters((f) => ({ ...f, verifiedOnly: false })) });
-    filters.companyType.forEach((v) => chips.push({ label: `Type: ${v}`, onRemove: () => toggleArrayFilter('companyType', v) }));
-    filters.incoterms.forEach((v) => chips.push({ label: `Incoterm: ${v}`, onRemove: () => toggleArrayFilter('incoterms', v) }));
-    filters.customization.forEach((v) => chips.push({ label: v, onRemove: () => toggleArrayFilter('customization', v) }));
-    filters.certifications.forEach((v) => chips.push({ label: v, onRemove: () => toggleArrayFilter('certifications', v) }));
-    filters.paymentTerms.forEach((v) => chips.push({ label: v, onRemove: () => toggleArrayFilter('paymentTerms', v) }));
-    filters.selectedCategories.forEach((v) => chips.push({ label: `Category: ${v}`, onRemove: () => toggleCategory(v) }));
-    if (!filters.allCategories) chips.push({ label: 'Filtered categories', onRemove: () => setFilters((f) => ({ ...f, allCategories: true, selectedCategories: [] })) });
-    if (filters.sampleAvailable) chips.push({ label: 'Sample available', onRemove: () => setFilters((f) => ({ ...f, sampleAvailable: false })) });
+    if (query.trim())
+      chips.push({
+        label: `Query: ${query.trim()}`,
+        onRemove: () => setQuery(""),
+      });
+    if (filters.industry !== "Any")
+      chips.push({
+        label: `Industry: ${filters.industry}`,
+        onRemove: () => setFilters((f) => ({ ...f, industry: "Any" })),
+      });
+    if (filters.moqBucket !== "Any")
+      chips.push({
+        label: `MOQ: ${filters.moqBucket}`,
+        onRemove: () =>
+          setFilters((f) => ({
+            ...f,
+            moqBucket: "Any",
+            moqMin: 0,
+            moqMax: 5000,
+          })),
+      });
+    if (filters.location)
+      chips.push({
+        label: `Location: ${filters.location}`,
+        onRemove: () =>
+          setFilters((f) => ({ ...f, location: "", locationCoords: null })),
+      });
+    if (filters.country)
+      chips.push({
+        label: `Country: ${filters.country}`,
+        onRemove: () => setFilters((f) => ({ ...f, country: "" })),
+      });
+    if (filters.verifiedOnly)
+      chips.push({
+        label: "Verified only",
+        onRemove: () => setFilters((f) => ({ ...f, verifiedOnly: false })),
+      });
+    filters.companyType.forEach((v) =>
+      chips.push({
+        label: `Type: ${v}`,
+        onRemove: () => toggleArrayFilter("companyType", v),
+      }),
+    );
+    filters.incoterms.forEach((v) =>
+      chips.push({
+        label: `Incoterm: ${v}`,
+        onRemove: () => toggleArrayFilter("incoterms", v),
+      }),
+    );
+    filters.customization.forEach((v) =>
+      chips.push({
+        label: v,
+        onRemove: () => toggleArrayFilter("customization", v),
+      }),
+    );
+    filters.certifications.forEach((v) =>
+      chips.push({
+        label: v,
+        onRemove: () => toggleArrayFilter("certifications", v),
+      }),
+    );
+    filters.paymentTerms.forEach((v) =>
+      chips.push({
+        label: v,
+        onRemove: () => toggleArrayFilter("paymentTerms", v),
+      }),
+    );
+    filters.selectedCategories.forEach((v) =>
+      chips.push({
+        label: `Category: ${v}`,
+        onRemove: () => toggleCategory(v),
+      }),
+    );
+    if (!filters.allCategories)
+      chips.push({
+        label: "Filtered categories",
+        onRemove: () =>
+          setFilters((f) => ({
+            ...f,
+            allCategories: true,
+            selectedCategories: [],
+          })),
+      });
+    if (filters.sampleAvailable)
+      chips.push({
+        label: "Sample available",
+        onRemove: () => setFilters((f) => ({ ...f, sampleAvailable: false })),
+      });
     return chips;
   }, [query, filters]);
 
@@ -362,36 +514,56 @@ export default function SearchResults() {
     setFilters((prev) => {
       const arr = prev[key] || [];
       const has = arr.includes(value);
-      return { ...prev, [key]: has ? arr.filter((v) => v !== value) : [...arr, value] };
+      return {
+        ...prev,
+        [key]: has ? arr.filter((v) => v !== value) : [...arr, value],
+      };
     });
   }
 
   function toggleCategory(value) {
-    if (value === 'all') {
-      setFilters((prev) => ({ ...prev, allCategories: true, selectedCategories: [] }));
+    if (value === "all") {
+      setFilters((prev) => ({
+        ...prev,
+        allCategories: true,
+        selectedCategories: [],
+      }));
       return;
     }
     setFilters((prev) => {
       const exists = prev.selectedCategories.includes(value);
-      const next = exists ? prev.selectedCategories.filter((v) => v !== value) : [...prev.selectedCategories, value];
-      return { ...prev, allCategories: next.length === 0, selectedCategories: next };
+      const next = exists
+        ? prev.selectedCategories.filter((v) => v !== value)
+        : [...prev.selectedCategories, value];
+      return {
+        ...prev,
+        allCategories: next.length === 0,
+        selectedCategories: next,
+      };
     });
   }
 
   const executeSearch = useCallback(async () => {
     setLoading(true);
-    addToast('Searching', 'Applying your query and selected filters...', 'success');
+    addToast(
+      "Searching",
+      "Applying your query and selected filters...",
+      "success",
+    );
 
     try {
       const params = new URLSearchParams();
-      if (query.trim()) params.set('q', query.trim());
-      if (!filters.allCategories) params.set('category', filters.selectedCategories.join(','));
-      if (filters.industry !== 'Any') params.set('industry', filters.industry);
-      if (filters.country) params.set('country', filters.country);
-      if (filters.incoterms.length) params.set('incoterms', filters.incoterms.join(','));
-      if (filters.companyType.length) params.set('orgType', filters.companyType.join(','));
-      if (filters.location) params.set('location', filters.location);
-      if (filters.verifiedOnly) params.set('verifiedOnly', 'true');
+      if (query.trim()) params.set("q", query.trim());
+      if (!filters.allCategories)
+        params.set("category", filters.selectedCategories.join(","));
+      if (filters.industry !== "Any") params.set("industry", filters.industry);
+      if (filters.country) params.set("country", filters.country);
+      if (filters.incoterms.length)
+        params.set("incoterms", filters.incoterms.join(","));
+      if (filters.companyType.length)
+        params.set("orgType", filters.companyType.join(","));
+      if (filters.location) params.set("location", filters.location);
+      if (filters.verifiedOnly) params.set("verifiedOnly", "true");
 
       const [reqRes, prodRes] = await Promise.all([
         apiRequest(`/requirements/search?${params.toString()}`, { token }),
@@ -401,15 +573,27 @@ export default function SearchResults() {
       setRequests(Array.isArray(reqRes?.items) ? reqRes.items : []);
       setCompanies(Array.isArray(prodRes?.items) ? prodRes.items : []);
 
-      const reqTotal = Number.isFinite(Number(reqRes?.total)) ? Number(reqRes.total) : reqRes?.items?.length || 0;
-      const prodTotal = Number.isFinite(Number(prodRes?.total)) ? Number(prodRes.total) : prodRes?.items?.length || 0;
-      setEstimatedCounts({ buyerRequests: reqTotal, companies: prodTotal, total: reqTotal + prodTotal });
+      const reqTotal = Number.isFinite(Number(reqRes?.total))
+        ? Number(reqRes.total)
+        : reqRes?.items?.length || 0;
+      const prodTotal = Number.isFinite(Number(prodRes?.total))
+        ? Number(prodRes.total)
+        : prodRes?.items?.length || 0;
+      setEstimatedCounts({
+        buyerRequests: reqTotal,
+        companies: prodTotal,
+        total: reqTotal + prodTotal,
+      });
 
       const nextParams = new URLSearchParams(params);
-      nextParams.set('tab', activeTab);
+      nextParams.set("tab", activeTab);
       setSearchParams(nextParams, { replace: true });
     } catch (err) {
-      addToast('Search failed', err.message || 'Unable to complete search', 'error');
+      addToast(
+        "Search failed",
+        err.message || "Unable to complete search",
+        "error",
+      );
     } finally {
       setLoading(false);
     }
@@ -420,14 +604,23 @@ export default function SearchResults() {
   }, [executeSearch]);
 
   async function saveSearch() {
-    const hasFilters = query.trim() || filters.industry !== 'Any' || filters.country || filters.companyType.length || filters.incoterms.length;
+    const hasFilters =
+      query.trim() ||
+      filters.industry !== "Any" ||
+      filters.country ||
+      filters.companyType.length ||
+      filters.incoterms.length;
     if (!hasFilters) {
-      addToast('Nothing to save', 'Enter a query or select filters before saving.', 'error');
+      addToast(
+        "Nothing to save",
+        "Enter a query or select filters before saving.",
+        "error",
+      );
       return;
     }
     try {
       const payload = {
-        query: query || 'saved-search',
+        query: query || "saved-search",
         filters: {
           category: filters.selectedCategories,
           industry: filters.industry,
@@ -438,57 +631,85 @@ export default function SearchResults() {
           verifiedOnly: filters.verifiedOnly,
         },
       };
-      await apiRequest('/search/alerts', {
-        method: 'POST',
+      await apiRequest("/search/alerts", {
+        method: "POST",
         token,
         body: payload,
       });
       const remaining = Math.max(0, alertsQuota - 1);
       setAlertsQuota(remaining);
-      addToast('Search saved', `Remaining alert quota today: ${remaining}`, 'success');
+      addToast(
+        "Search saved",
+        `Remaining alert quota today: ${remaining}`,
+        "success",
+      );
     } catch {
       const remaining = Math.max(0, alertsQuota - 1);
       setAlertsQuota(remaining);
-      addToast('Search saved', `Remaining alert quota today: ${remaining}`, 'success');
+      addToast(
+        "Search saved",
+        `Remaining alert quota today: ${remaining}`,
+        "success",
+      );
     }
   }
 
   async function shareSearch() {
     const params = new URLSearchParams();
-    if (query.trim()) params.set('q', query.trim());
-    if (!filters.allCategories) params.set('cats', filters.selectedCategories.join(','));
-    if (filters.industry !== 'Any') params.set('industry', filters.industry);
-    if (filters.location) params.set('loc', filters.location);
-    if (filters.country) params.set('country', filters.country);
-    if (filters.incoterms.length) params.set('incoterms', filters.incoterms.join(','));
-    if (filters.companyType.length) params.set('types', filters.companyType.join(','));
-    if (filters.certifications.length) params.set('certs', filters.certifications.join(','));
+    if (query.trim()) params.set("q", query.trim());
+    if (!filters.allCategories)
+      params.set("cats", filters.selectedCategories.join(","));
+    if (filters.industry !== "Any") params.set("industry", filters.industry);
+    if (filters.location) params.set("loc", filters.location);
+    if (filters.country) params.set("country", filters.country);
+    if (filters.incoterms.length)
+      params.set("incoterms", filters.incoterms.join(","));
+    if (filters.companyType.length)
+      params.set("types", filters.companyType.join(","));
+    if (filters.certifications.length)
+      params.set("certs", filters.certifications.join(","));
     const url = `${window.location.origin}/search?${params.toString()}`;
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(url);
-        addToast('Share link copied', 'Share link copied to clipboard.', 'success');
+        addToast(
+          "Share link copied",
+          "Share link copied to clipboard.",
+          "success",
+        );
       } else {
-        window.prompt('Copy this link:', url);
-        addToast('Share link ready', 'Clipboard API unavailable, opened copy prompt.', 'success');
+        window.prompt("Copy this link:", url);
+        addToast(
+          "Share link ready",
+          "Clipboard API unavailable, opened copy prompt.",
+          "success",
+        );
       }
     } catch {
-      window.prompt('Copy this link:', url);
-      addToast('Share link ready', 'Clipboard access was blocked, opened copy prompt.', 'success');
+      window.prompt("Copy this link:", url);
+      addToast(
+        "Share link ready",
+        "Clipboard access was blocked, opened copy prompt.",
+        "success",
+      );
     }
   }
 
   function clearAll() {
-    setQuery('');
+    setQuery("");
     setFilters({ ...initialFilters });
     setSelectedLocation(null);
     setLocationSuggestions([]);
-    setRoleSeatText('');
-    setColorText('PMS 185C');
+    setRoleSeatText("");
+    setColorText("PMS 185C");
   }
 
   function setLocationFromSuggestion(item) {
-    setFilters((prev) => ({ ...prev, location: item.name, locationCoords: { lat: item.lat, lng: item.lng } }));
+    setFilters((prev) => ({
+      ...prev,
+      location: item.name,
+      locationCoords: { lat: item.lat, lng: item.lng },
+    }));
     setSelectedLocation(item);
     setLocationSuggestions([]);
   }
@@ -502,43 +723,65 @@ export default function SearchResults() {
     }
     locationDebounceRef.current = setTimeout(() => {
       const v = value.toLowerCase();
-      setLocationSuggestions(SAMPLE_LOCATIONS.filter((item) => item.name.toLowerCase().includes(v)).slice(0, 5));
+      setLocationSuggestions(
+        SAMPLE_LOCATIONS.filter((item) =>
+          item.name.toLowerCase().includes(v),
+        ).slice(0, 5),
+      );
     }, 180);
   }
 
   function useCurrentLocation() {
     if (!navigator.geolocation) {
-      addToast('Location unavailable', 'Geolocation is not supported in this browser.', 'error');
+      addToast(
+        "Location unavailable",
+        "Geolocation is not supported in this browser.",
+        "error",
+      );
       return;
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const loc = {
-          name: 'Current location',
+          name: "Current location",
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
         };
-        setFilters((prev) => ({ ...prev, location: 'Current location', locationCoords: { lat: loc.lat, lng: loc.lng } }));
+        setFilters((prev) => ({
+          ...prev,
+          location: "Current location",
+          locationCoords: { lat: loc.lat, lng: loc.lng },
+        }));
         setSelectedLocation(loc);
-        addToast('Location set', 'Current GPS coordinates applied.', 'success');
+        addToast("Location set", "Current GPS coordinates applied.", "success");
       },
-      () => addToast('Location error', 'Unable to read your current location.', 'error'),
-      { enableHighAccuracy: true, timeout: 8000 }
+      () =>
+        addToast(
+          "Location error",
+          "Unable to read your current location.",
+          "error",
+        ),
+      { enableHighAccuracy: true, timeout: 8000 },
     );
   }
 
   function addColorChip() {
     const chip = colorText.trim();
     if (!chip) return;
-    setFilters((prev) => ({ ...prev, colorPants: prev.colorPants.includes(chip) ? prev.colorPants : [...prev.colorPants, chip] }));
-    setColorText('');
+    setFilters((prev) => ({
+      ...prev,
+      colorPants: prev.colorPants.includes(chip)
+        ? prev.colorPants
+        : [...prev.colorPants, chip],
+    }));
+    setColorText("");
   }
 
   function addRoleSeat() {
     const txt = roleSeatText.trim();
     if (!txt) return;
     setFilters((prev) => ({ ...prev, roles: [...prev.roles, txt] }));
-    setRoleSeatText('');
+    setRoleSeatText("");
   }
 
   const SearchModal = () => {
@@ -557,11 +800,16 @@ export default function SearchResults() {
               className="w-full bg-transparent text-slate-900 dark:text-white outline-none placeholder:text-slate-400"
             />
             <span className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-2.5 py-1 text-xs text-slate-500">
-              {isMac ? '⌘K' : 'Ctrl K'}
+              {isMac ? "⌘K" : "Ctrl K"}
             </span>
           </div>
           <div className="grid gap-3 p-4 sm:grid-cols-2">
-            {['Buyer requests', 'Factories', 'Products', 'Verified suppliers'].map((item) => (
+            {[
+              "Buyer requests",
+              "Factories",
+              "Products",
+              "Verified suppliers",
+            ].map((item) => (
               <button
                 key={item}
                 onClick={() => {
@@ -571,8 +819,12 @@ export default function SearchResults() {
                 }}
                 className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 p-4 text-left hover:border-sky-300 dark:hover:border-sky-700"
               >
-                <div className="text-sm font-medium text-slate-900 dark:text-white">{item}</div>
-                <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">Jump straight to this search theme.</div>
+                <div className="text-sm font-medium text-slate-900 dark:text-white">
+                  {item}
+                </div>
+                <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  Jump straight to this search theme.
+                </div>
               </button>
             ))}
           </div>
@@ -584,14 +836,17 @@ export default function SearchResults() {
   const ResultTabs = () => (
     <div className="inline-flex rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/60 p-1 shadow-sm">
       {[
-        { key: 'all', label: `All (${estimatedCounts.total})` },
-        { key: 'requests', label: `Buyer Requests (${estimatedCounts.buyerRequests})` },
-        { key: 'companies', label: `Companies (${estimatedCounts.companies})` },
+        { key: "all", label: `All (${estimatedCounts.total})` },
+        {
+          key: "requests",
+          label: `Buyer Requests (${estimatedCounts.buyerRequests})`,
+        },
+        { key: "companies", label: `Companies (${estimatedCounts.companies})` },
       ].map((tab) => (
         <button
           key={tab.key}
           onClick={() => setActiveTab(tab.key)}
-          className={`rounded-xl px-4 py-2 text-sm font-medium transition ${activeTab === tab.key ? 'bg-sky-600 text-white shadow-lg shadow-sky-500/20' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'}`}
+          className={`rounded-xl px-4 py-2 text-sm font-medium transition ${activeTab === tab.key ? "bg-sky-600 text-white shadow-lg shadow-sky-500/20" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"}`}
         >
           {tab.label}
         </button>
@@ -606,7 +861,9 @@ export default function SearchResults() {
           <MapPinned className="h-4 w-4 text-sky-500" />
           Map preview
         </div>
-        <span className="text-xs text-slate-500 dark:text-slate-400">OpenStreetMap / Leaflet ready</span>
+        <span className="text-xs text-slate-500 dark:text-slate-400">
+          OpenStreetMap / Leaflet ready
+        </span>
       </div>
       <div className="relative h-44 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(14,165,233,0.18),transparent_25%),radial-gradient(circle_at_80%_30%,rgba(59,130,246,0.16),transparent_22%),linear-gradient(135deg,rgba(255,255,255,0.2),rgba(255,255,255,0.02))]" />
@@ -616,7 +873,9 @@ export default function SearchResults() {
             <MapPinned className="h-5 w-5" />
           </div>
           <div className="mt-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">
-            {selectedLocation?.name || filters.location || 'No location selected'}
+            {selectedLocation?.name ||
+              filters.location ||
+              "No location selected"}
           </div>
         </div>
       </div>
@@ -624,22 +883,29 @@ export default function SearchResults() {
   );
 
   const ResultCards = () => {
-    if (activeTab === 'requests' || activeTab === 'all') {
+    if (activeTab === "requests" || activeTab === "all") {
       const items = requests;
-if (items.length === 0 && !loading) {
+      if (items.length === 0 && !loading) {
         return (
           <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
             <PackageSearch className="h-12 w-12 text-slate-300 dark:text-slate-600" />
-            <p className="text-lg font-medium text-slate-900 dark:text-white">No buyer requests found</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Try adjusting your filters</p>
+            <p className="text-lg font-medium text-slate-900 dark:text-white">
+              No buyer requests found
+            </p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Try adjusting your filters
+            </p>
             {query && (
               <div className="mt-2 rounded-2xl bg-gtBlue/10 p-4 ring-1 ring-gtBlue/20 dark:bg-gtBlue/5">
-                <p className="text-sm font-semibold text-gtBlue dark:text-sky-300">Similar Requests Alert</p>
+                <p className="text-sm font-semibold text-gtBlue dark:text-sky-300">
+                  Similar Requests Alert
+                </p>
                 <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-                  Be the first to know when buyers post matching requests. Save a search alert now.
+                  Be the first to know when buyers post matching requests. Save
+                  a search alert now.
                 </p>
                 <button
-                  onClick={() => saveSearchAlert && saveSearchAlert()}
+                  onClick={() => saveSearch && saveSearch()}
                   className="mt-2 rounded-full bg-gtBlue px-4 py-2 text-xs font-semibold text-white hover:bg-gtBlueHover"
                 >
                   Save Alert
@@ -653,32 +919,61 @@ if (items.length === 0 && !loading) {
         <div className="space-y-4">
           <div className="grid gap-4 xl:grid-cols-2">
             {items.map((item) => (
-              <article key={item.id} className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]">
+              <article
+                key={item.id}
+                className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
+              >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <a href={`/buyer/${item.id}`} className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400">
-                      {item.title || item.name || 'Untitled Request'}
+                    <a
+                      href={`/buyer/${item.id}`}
+                      className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+                    >
+                      {item.title || item.name || "Untitled Request"}
                     </a>
                     <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                      <span>{item.location || item.country || 'N/A'}</span>
-                      {item.category && <><span>•</span><span>{item.category}</span></>}
+                      <span>{item.location || item.country || "N/A"}</span>
+                      {item.category && (
+                        <>
+                          <span>•</span>
+                          <span>{item.category}</span>
+                        </>
+                      )}
                     </div>
                   </div>
                   <div className="flex flex-wrap justify-end gap-2">
-                    {item.status === 'verified' && <Badge tone="green">verified</Badge>}
+                    {item.status === "verified" && (
+                      <Badge tone="green">verified</Badge>
+                    )}
                     {item.isPriority && <Badge tone="violet">priority</Badge>}
-                    {item.status === 'active' && <Badge tone="blue">active</Badge>}
+                    {item.status === "active" && (
+                      <Badge tone="blue">active</Badge>
+                    )}
                   </div>
                 </div>
 
                 {(item.gender || item.season || item.material) && (
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {item.gender && <Badge tone="default">Gender: {item.gender}</Badge>}
-                    {item.season && <Badge tone="default">Season: {item.season}</Badge>}
-                    {item.material && <Badge tone="default">Material: {item.material}</Badge>}
-                    {item.quoteDate && <Badge tone="amber">Quote by {item.quoteDate}</Badge>}
-                    {item.expiryDate && <Badge tone="red">Expires {item.expiryDate}</Badge>}
-                    {item.maxSuppliers && <Badge tone="default">Max suppliers: {item.maxSuppliers}</Badge>}
+                    {item.gender && (
+                      <Badge tone="default">Gender: {item.gender}</Badge>
+                    )}
+                    {item.season && (
+                      <Badge tone="default">Season: {item.season}</Badge>
+                    )}
+                    {item.material && (
+                      <Badge tone="default">Material: {item.material}</Badge>
+                    )}
+                    {item.quoteDate && (
+                      <Badge tone="amber">Quote by {item.quoteDate}</Badge>
+                    )}
+                    {item.expiryDate && (
+                      <Badge tone="red">Expires {item.expiryDate}</Badge>
+                    )}
+                    {item.maxSuppliers && (
+                      <Badge tone="default">
+                        Max suppliers: {item.maxSuppliers}
+                      </Badge>
+                    )}
                   </div>
                 )}
 
@@ -692,19 +987,31 @@ if (items.length === 0 && !loading) {
                   <div className="mt-4 grid gap-3 sm:grid-cols-3">
                     {item.quantity && (
                       <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-                        <div className="text-xs text-slate-500 dark:text-slate-400">Quantity</div>
-                        <div className="mt-1 font-semibold text-slate-900 dark:text-white">{item.quantity}</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          Quantity
+                        </div>
+                        <div className="mt-1 font-semibold text-slate-900 dark:text-white">
+                          {item.quantity}
+                        </div>
                       </div>
                     )}
                     {item.targetPrice && (
                       <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-                        <div className="text-xs text-slate-500 dark:text-slate-400">Target price</div>
-                        <div className="mt-1 font-semibold text-slate-900 dark:text-white">{item.targetPrice}</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          Target price
+                        </div>
+                        <div className="mt-1 font-semibold text-slate-900 dark:text-white">
+                          {item.targetPrice}
+                        </div>
                       </div>
                     )}
                     <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-                      <div className="text-xs text-slate-500 dark:text-slate-400">Discussion</div>
-                      <div className="mt-1 font-semibold text-slate-900 dark:text-white">{item.discussions?.length > 0 ? 'Active' : 'None'}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        Discussion
+                      </div>
+                      <div className="mt-1 font-semibold text-slate-900 dark:text-white">
+                        {item.discussions?.length > 0 ? "Active" : "None"}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -727,22 +1034,29 @@ if (items.length === 0 && !loading) {
       );
     }
 
-    if (activeTab === 'companies') {
+    if (activeTab === "companies") {
       const items = companies;
       if (items.length === 0 && !loading) {
         return (
           <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
             <Factory className="h-12 w-12 text-slate-300 dark:text-slate-600" />
-            <p className="text-lg font-medium text-slate-900 dark:text-white">No companies found</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Try adjusting your search or filters</p>
+            <p className="text-lg font-medium text-slate-900 dark:text-white">
+              No companies found
+            </p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Try adjusting your search or filters
+            </p>
             {query && (
               <div className="mt-2 rounded-2xl bg-gtBlue/10 p-4 ring-1 ring-gtBlue/20 dark:bg-gtBlue/5">
-                <p className="text-sm font-semibold text-gtBlue dark:text-sky-300">Similar Products</p>
+                <p className="text-sm font-semibold text-gtBlue dark:text-sky-300">
+                  Similar Products
+                </p>
                 <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-                  Set a search alert for "{query}" to get notified when matching companies are posted.
+                  Set a search alert for "{query}" to get notified when matching
+                  companies are posted.
                 </p>
                 <button
-                  onClick={() => saveSearchAlert && saveSearchAlert()}
+                  onClick={() => saveSearch && saveSearch()}
                   className="mt-2 rounded-full bg-gtBlue px-4 py-2 text-xs font-semibold text-white hover:bg-gtBlueHover"
                 >
                   Save Alert
@@ -755,20 +1069,33 @@ if (items.length === 0 && !loading) {
       return (
         <div className="grid gap-4 xl:grid-cols-2">
           {items.map((item) => (
-            <article key={item.id} className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]">
+            <article
+              key={item.id}
+              className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/60 p-5 shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]"
+            >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <a href={`/factory/${item.id}`} className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400">
-                    {item.name || item.title || 'Untitled Company'}
+                  <a
+                    href={`/factory/${item.id}`}
+                    className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
+                  >
+                    {item.name || item.title || "Untitled Company"}
                   </a>
                   <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                    <span>{item.location || item.country || 'N/A'}</span>
-                    {item.type && <><span>•</span><span>{item.type}</span></>}
+                    <span>{item.location || item.country || "N/A"}</span>
+                    {item.type && (
+                      <>
+                        <span>•</span>
+                        <span>{item.type}</span>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="flex flex-wrap justify-end gap-2">
                   {item.isVerified && <Badge tone="green">verified</Badge>}
-                  {item.exportsTo?.length > 0 && <Badge tone="blue">export</Badge>}
+                  {item.exportsTo?.length > 0 && (
+                    <Badge tone="blue">export</Badge>
+                  )}
                 </div>
               </div>
 
@@ -776,20 +1103,32 @@ if (items.length === 0 && !loading) {
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
                   {item.moq && (
                     <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-                      <div className="text-xs text-slate-500 dark:text-slate-400">MOQ</div>
-                      <div className="mt-1 font-semibold text-slate-900 dark:text-white">{item.moq}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        MOQ
+                      </div>
+                      <div className="mt-1 font-semibold text-slate-900 dark:text-white">
+                        {item.moq}
+                      </div>
                     </div>
                   )}
                   {item.workerCount && (
                     <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-                      <div className="text-xs text-slate-500 dark:text-slate-400">Workers</div>
-                      <div className="mt-1 font-semibold text-slate-900 dark:text-white">{fmtNumber(item.workerCount)}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        Workers
+                      </div>
+                      <div className="mt-1 font-semibold text-slate-900 dark:text-white">
+                        {fmtNumber(item.workerCount)}
+                      </div>
                     </div>
                   )}
                   {item.capacity && (
                     <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/70 p-3">
-                      <div className="text-xs text-slate-500 dark:text-slate-400">Capacity</div>
-                      <div className="mt-1 font-semibold text-slate-900 dark:text-white">{item.capacity}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        Capacity
+                      </div>
+                      <div className="mt-1 font-semibold text-slate-900 dark:text-white">
+                        {item.capacity}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -812,7 +1151,9 @@ if (items.length === 0 && !loading) {
     return null;
   };
 
-  const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+  const isMac =
+    typeof navigator !== "undefined" &&
+    /Mac|iPhone|iPad|iPod/.test(navigator.platform);
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.95),rgba(248,250,252,0.95))] dark:bg-[radial-gradient(circle_at_top,rgba(14,165,233,0.18),transparent_34%),linear-gradient(180deg,rgba(2,6,23,0.98),rgba(15,23,42,0.96))] text-slate-900 dark:text-white transition-colors">
@@ -830,26 +1171,56 @@ if (items.length === 0 && !loading) {
                   </div>
                   <div>
                     <div className="flex flex-wrap items-center gap-3">
-                      <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Search</h1>
-                      <Badge tone="blue"><Sparkles className="h-3.5 w-3.5" /> Premium discovery</Badge>
+                      <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+                        Search
+                      </h1>
+                      <Badge tone="blue">
+                        <Sparkles className="h-3.5 w-3.5" /> Premium discovery
+                      </Badge>
                     </div>
-                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Garments & Textile marketplace</p>
+                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                      Garments & Textile marketplace
+                    </p>
                     <div className="mt-4 flex flex-wrap gap-2">
-                      <button onClick={() => setFiltersOpen((v) => !v)} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700">
-                        <SlidersHorizontal className="h-4 w-4" /> Filters {filtersOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      <button
+                        onClick={() => setFiltersOpen((v) => !v)}
+                        className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
+                      >
+                        <SlidersHorizontal className="h-4 w-4" /> Filters{" "}
+                        {filtersOpen ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
                       </button>
-                      <button onClick={saveSearch} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700">
+                      <button
+                        onClick={saveSearch}
+                        className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
+                      >
                         <Save className="h-4 w-4" /> Save search
                       </button>
-                      <button onClick={shareSearch} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700">
+                      <button
+                        onClick={shareSearch}
+                        className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
+                      >
                         <Share2 className="h-4 w-4" /> Share
                       </button>
-                      <Link to="/notifications" className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700">
+                      <Link
+                        to="/notifications"
+                        className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
+                      >
                         <Bell className="h-4 w-4" /> Alerts
                       </Link>
-                      <button onClick={() => setDark((v) => !v)} className="ml-auto inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700 lg:ml-0">
-                        {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                        {dark ? 'Light' : 'Dark'} mode
+                      <button
+                        onClick={() => setDark((v) => !v)}
+                        className="ml-auto inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2.5 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700 lg:ml-0"
+                      >
+                        {dark ? (
+                          <Sun className="h-4 w-4" />
+                        ) : (
+                          <Moon className="h-4 w-4" />
+                        )}
+                        {dark ? "Light" : "Dark"} mode
                       </button>
                     </div>
                   </div>
@@ -857,23 +1228,37 @@ if (items.length === 0 && !loading) {
 
                 <div className="grid gap-3 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 p-4 sm:grid-cols-3 lg:w-[420px]">
                   <div className="rounded-2xl bg-white/90 dark:bg-slate-950/60 p-3">
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Requests</div>
-                    <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">{fmtNumber(estimatedCounts.buyerRequests)}</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                      Requests
+                    </div>
+                    <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
+                      {fmtNumber(estimatedCounts.buyerRequests)}
+                    </div>
                   </div>
                   <div className="rounded-2xl bg-white/90 dark:bg-slate-950/60 p-3">
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Companies</div>
-                    <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">{fmtNumber(estimatedCounts.companies)}</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                      Companies
+                    </div>
+                    <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
+                      {fmtNumber(estimatedCounts.companies)}
+                    </div>
                   </div>
                   <div className="rounded-2xl bg-white/90 dark:bg-slate-950/60 p-3">
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Alerts left</div>
-                    <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">{alertsQuota}</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                      Alerts left
+                    </div>
+                    <div className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">
+                      {alertsQuota}
+                    </div>
                   </div>
                 </div>
               </div>
 
               <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_auto]">
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><Search className="h-5 w-5" /></div>
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                    <Search className="h-5 w-5" />
+                  </div>
                   <input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
@@ -884,28 +1269,48 @@ if (items.length === 0 && !loading) {
                     onClick={() => setSearchModalOpen(true)}
                     className="absolute right-2 top-1/2 -translate-y-1/2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-500 dark:bg-slate-900 dark:text-slate-300"
                   >
-                    {isMac ? '⌘K' : 'Ctrl K'}
+                    {isMac ? "⌘K" : "Ctrl K"}
                   </button>
                 </div>
-                <button onClick={executeSearch} disabled={loading} className="inline-flex items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-sky-600 to-blue-600 px-6 py-4 text-base font-semibold text-white shadow-xl shadow-sky-500/25 transition hover:from-sky-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-70">
-                  <Search className="h-5 w-5" /> {loading ? 'Searching...' : 'Search'}
+                <button
+                  onClick={executeSearch}
+                  disabled={loading}
+                  className="inline-flex items-center justify-center gap-2 rounded-3xl bg-gradient-to-r from-sky-600 to-blue-600 px-6 py-4 text-base font-semibold text-white shadow-xl shadow-sky-500/25 transition hover:from-sky-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  <Search className="h-5 w-5" />{" "}
+                  {loading ? "Searching..." : "Search"}
                 </button>
               </div>
 
               <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
                 <ResultTabs />
                 <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                  <Badge tone="blue">{loading ? 'Loading...' : `Estimated: ${fmtNumber(estimatedCounts.buyerRequests)} buyer requests · ${fmtNumber(estimatedCounts.companies)} companies (${fmtNumber(estimatedCounts.total)} total)`}</Badge>
+                  <Badge tone="blue">
+                    {loading
+                      ? "Loading..."
+                      : `Estimated: ${fmtNumber(estimatedCounts.buyerRequests)} buyer requests · ${fmtNumber(estimatedCounts.companies)} companies (${fmtNumber(estimatedCounts.total)} total)`}
+                  </Badge>
                 </div>
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
                 {CATEGORY_OPTIONS.map((cat) => {
-                  const active = cat.key === 'all' ? filters.allCategories : filters.selectedCategories.includes(cat.key);
+                  const active =
+                    cat.key === "all"
+                      ? filters.allCategories
+                      : filters.selectedCategories.includes(cat.key);
                   return (
-                    <button key={cat.key} onClick={() => toggleCategory(cat.key)} className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${pillClass(active)}`}>
+                    <button
+                      key={cat.key}
+                      onClick={() => toggleCategory(cat.key)}
+                      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${pillClass(active)}`}
+                    >
                       {cat.label}
-                      {!active && cat.key !== 'all' ? <span className="text-xs opacity-80">({fmtNumber(150 + cat.key.length * 11)})</span> : null}
+                      {!active && cat.key !== "all" ? (
+                        <span className="text-xs opacity-80">
+                          ({fmtNumber(150 + cat.key.length * 11)})
+                        </span>
+                      ) : null}
                     </button>
                   );
                 })}
@@ -914,14 +1319,23 @@ if (items.length === 0 && !loading) {
               <div className="mt-5 flex flex-wrap items-center gap-2">
                 {activeFilterChips.length ? (
                   activeFilterChips.map((chip) => (
-                    <button key={chip.label} onClick={chip.onRemove} className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300">
+                    <button
+                      key={chip.label}
+                      onClick={chip.onRemove}
+                      className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300"
+                    >
                       {chip.label} <X className="h-3.5 w-3.5" />
                     </button>
                   ))
                 ) : (
-                  <span className="text-sm text-slate-500 dark:text-slate-400">No filters active.</span>
+                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                    No filters active.
+                  </span>
                 )}
-                <button onClick={clearAll} className="ml-auto inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700">
+                <button
+                  onClick={clearAll}
+                  className="ml-auto inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-2 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
+                >
                   Clear all
                 </button>
               </div>
@@ -932,69 +1346,203 @@ if (items.length === 0 && !loading) {
                 <SectionCard title="Product Filters" icon={ClipboardList}>
                   <div className="space-y-5">
                     <div>
-                      <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Industry</label>
-                      <select value={filters.industry} onChange={(e) => setFilters((f) => ({ ...f, industry: e.target.value }))} className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400">
-                        {INDUSTRIES.map((i) => <option key={i}>{i}</option>)}
+                      <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Industry
+                      </label>
+                      <select
+                        value={filters.industry}
+                        onChange={(e) =>
+                          setFilters((f) => ({
+                            ...f,
+                            industry: e.target.value,
+                          }))
+                        }
+                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+                      >
+                        {INDUSTRIES.map((i) => (
+                          <option key={i}>{i}</option>
+                        ))}
                       </select>
                     </div>
 
                     <div>
                       <div className="mb-2 flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
                         <span>MOQ range</span>
-                        <span>{fmtNumber(filters.moqMin)} - {fmtNumber(filters.moqMax)}</span>
+                        <span>
+                          {fmtNumber(filters.moqMin)} -{" "}
+                          {fmtNumber(filters.moqMax)}
+                        </span>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {['Any', '0-500', '500-1K', '1K-5K', '5K+'].map((b) => (
-                          <button key={b} onClick={() => setFilters((f) => ({ ...f, moqBucket: b }))} className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.moqBucket === b)}`}>
+                        {["Any", "0-500", "500-1K", "1K-5K", "5K+"].map((b) => (
+                          <button
+                            key={b}
+                            onClick={() =>
+                              setFilters((f) => ({ ...f, moqBucket: b }))
+                            }
+                            className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.moqBucket === b)}`}
+                          >
                             {b}
                           </button>
                         ))}
                       </div>
                       <div className="mt-4 space-y-3">
-                        <input type="range" min="0" max="5000" value={filters.moqMin} onChange={(e) => setFilters((f) => ({ ...f, moqMin: Math.min(Number(e.target.value), f.moqMax) }))} className="w-full" />
-                        <input type="range" min="0" max="5000" value={filters.moqMax} onChange={(e) => setFilters((f) => ({ ...f, moqMax: Math.max(Number(e.target.value), f.moqMin) }))} className="w-full" />
+                        <input
+                          type="range"
+                          min="0"
+                          max="5000"
+                          value={filters.moqMin}
+                          onChange={(e) =>
+                            setFilters((f) => ({
+                              ...f,
+                              moqMin: Math.min(
+                                Number(e.target.value),
+                                f.moqMax,
+                              ),
+                            }))
+                          }
+                          className="w-full"
+                        />
+                        <input
+                          type="range"
+                          min="0"
+                          max="5000"
+                          value={filters.moqMax}
+                          onChange={(e) =>
+                            setFilters((f) => ({
+                              ...f,
+                              moqMax: Math.max(
+                                Number(e.target.value),
+                                f.moqMin,
+                              ),
+                            }))
+                          }
+                          className="w-full"
+                        />
                       </div>
                     </div>
 
                     <div>
                       <div className="mb-2 flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
                         <span>Price per unit</span>
-                        <span>{filters.currency} {filters.priceMin} - {filters.priceMax}</span>
+                        <span>
+                          {filters.currency} {filters.priceMin} -{" "}
+                          {filters.priceMax}
+                        </span>
                       </div>
                       <div className="grid grid-cols-[110px_1fr] gap-3">
-                        <select value={filters.currency} onChange={(e) => setFilters((f) => ({ ...f, currency: e.target.value }))} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-3 py-3 outline-none focus:border-sky-400">
-                          {CURRENCIES.map((i) => <option key={i}>{i}</option>)}
+                        <select
+                          value={filters.currency}
+                          onChange={(e) =>
+                            setFilters((f) => ({
+                              ...f,
+                              currency: e.target.value,
+                            }))
+                          }
+                          className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-3 py-3 outline-none focus:border-sky-400"
+                        >
+                          {CURRENCIES.map((i) => (
+                            <option key={i}>{i}</option>
+                          ))}
                         </select>
                         <div className="space-y-3 pt-1">
-                          <input type="range" min="0" max="20" step="0.25" value={filters.priceMin} onChange={(e) => setFilters((f) => ({ ...f, priceMin: Math.min(Number(e.target.value), f.priceMax) }))} className="w-full" />
-                          <input type="range" min="0" max="20" step="0.25" value={filters.priceMax} onChange={(e) => setFilters((f) => ({ ...f, priceMax: Math.max(Number(e.target.value), f.priceMin) }))} className="w-full" />
+                          <input
+                            type="range"
+                            min="0"
+                            max="20"
+                            step="0.25"
+                            value={filters.priceMin}
+                            onChange={(e) =>
+                              setFilters((f) => ({
+                                ...f,
+                                priceMin: Math.min(
+                                  Number(e.target.value),
+                                  f.priceMax,
+                                ),
+                              }))
+                            }
+                            className="w-full"
+                          />
+                          <input
+                            type="range"
+                            min="0"
+                            max="20"
+                            step="0.25"
+                            value={filters.priceMax}
+                            onChange={(e) =>
+                              setFilters((f) => ({
+                                ...f,
+                                priceMax: Math.max(
+                                  Number(e.target.value),
+                                  f.priceMin,
+                                ),
+                              }))
+                            }
+                            className="w-full"
+                          />
                         </div>
                       </div>
                     </div>
 
                     <div>
-                      <div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Incoterms</div>
+                      <div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Incoterms
+                      </div>
                       <div className="flex flex-wrap gap-2">
                         {INCOTERMS.map((i) => (
-                          <button key={i} onClick={() => toggleArrayFilter('incoterms', i)} className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.incoterms.includes(i))}`}>
+                          <button
+                            key={i}
+                            onClick={() => toggleArrayFilter("incoterms", i)}
+                            className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.incoterms.includes(i))}`}
+                          >
                             {i}
                           </button>
                         ))}
                       </div>
                     </div>
 
-                    <button onClick={() => setExpandedMore((v) => !v)} className="inline-flex items-center gap-2 text-sm font-medium text-sky-600 dark:text-sky-400">
-                      More filters {expandedMore ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    <button
+                      onClick={() => setExpandedMore((v) => !v)}
+                      className="inline-flex items-center gap-2 text-sm font-medium text-sky-600 dark:text-sky-400"
+                    >
+                      More filters{" "}
+                      {expandedMore ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
                     </button>
 
                     {expandedMore && (
                       <div className="space-y-4 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-4">
                         <div>
-                          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Country</label>
-                          <input value={filters.country} onChange={(e) => setFilters((f) => ({ ...f, country: e.target.value }))} placeholder="Bangladesh, Vietnam, Turkey" className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400" />
+                          <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                            Country
+                          </label>
+                          <input
+                            value={filters.country}
+                            onChange={(e) =>
+                              setFilters((f) => ({
+                                ...f,
+                                country: e.target.value,
+                              }))
+                            }
+                            placeholder="Bangladesh, Vietnam, Turkey"
+                            className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+                          />
                         </div>
                         <label className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
-                          <input type="checkbox" checked={filters.verifiedOnly} onChange={(e) => setFilters((f) => ({ ...f, verifiedOnly: e.target.checked }))} /> Verified only
+                          <input
+                            type="checkbox"
+                            checked={filters.verifiedOnly}
+                            onChange={(e) =>
+                              setFilters((f) => ({
+                                ...f,
+                                verifiedOnly: e.target.checked,
+                              }))
+                            }
+                          />{" "}
+                          Verified only
                         </label>
                       </div>
                     )}
@@ -1004,10 +1552,16 @@ if (items.length === 0 && !loading) {
                 <SectionCard title="Supplier Filters" icon={Factory}>
                   <div className="space-y-5">
                     <div>
-                      <div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Company type</div>
+                      <div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Company type
+                      </div>
                       <div className="flex flex-wrap gap-2">
                         {COMPANY_TYPES.map((i) => (
-                          <button key={i} onClick={() => toggleArrayFilter('companyType', i)} className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.companyType.includes(i))}`}>
+                          <button
+                            key={i}
+                            onClick={() => toggleArrayFilter("companyType", i)}
+                            className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.companyType.includes(i))}`}
+                          >
                             {i}
                           </button>
                         ))}
@@ -1017,24 +1571,62 @@ if (items.length === 0 && !loading) {
                     <div>
                       <div className="mb-2 flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
                         <span>Production capacity</span>
-                        <span>{fmtNumber(filters.productionMin)} - {fmtNumber(filters.productionMax)} / month</span>
+                        <span>
+                          {fmtNumber(filters.productionMin)} -{" "}
+                          {fmtNumber(filters.productionMax)} / month
+                        </span>
                       </div>
-                      <input type="range" min="0" max="500000" value={filters.productionMax} onChange={(e) => setFilters((f) => ({ ...f, productionMax: Number(e.target.value) }))} className="w-full" />
+                      <input
+                        type="range"
+                        min="0"
+                        max="500000"
+                        value={filters.productionMax}
+                        onChange={(e) =>
+                          setFilters((f) => ({
+                            ...f,
+                            productionMax: Number(e.target.value),
+                          }))
+                        }
+                        className="w-full"
+                      />
                     </div>
 
                     <div>
                       <div className="mb-2 flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-300">
                         <span>Worker count</span>
-                        <span>{fmtNumber(filters.workersMin)} - {fmtNumber(filters.workersMax)}</span>
+                        <span>
+                          {fmtNumber(filters.workersMin)} -{" "}
+                          {fmtNumber(filters.workersMax)}
+                        </span>
                       </div>
-                      <input type="range" min="0" max="5000" value={filters.workersMax} onChange={(e) => setFilters((f) => ({ ...f, workersMax: Number(e.target.value) }))} className="w-full" />
+                      <input
+                        type="range"
+                        min="0"
+                        max="5000"
+                        value={filters.workersMax}
+                        onChange={(e) =>
+                          setFilters((f) => ({
+                            ...f,
+                            workersMax: Number(e.target.value),
+                          }))
+                        }
+                        className="w-full"
+                      />
                     </div>
 
                     <div>
-                      <div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Export markets</div>
+                      <div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Export markets
+                      </div>
                       <div className="flex flex-wrap gap-2">
                         {EXPORT_MARKETS.map((i) => (
-                          <button key={i} onClick={() => toggleArrayFilter('exportMarkets', i)} className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.exportMarkets.includes(i))}`}>
+                          <button
+                            key={i}
+                            onClick={() =>
+                              toggleArrayFilter("exportMarkets", i)
+                            }
+                            className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.exportMarkets.includes(i))}`}
+                          >
                             {i}
                           </button>
                         ))}
@@ -1042,14 +1634,35 @@ if (items.length === 0 && !loading) {
                     </div>
 
                     <div>
-                      <div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Role seats</div>
+                      <div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Role seats
+                      </div>
                       <div className="flex gap-2">
-                        <input value={roleSeatText} onChange={(e) => setRoleSeatText(e.target.value)} placeholder="e.g. Merchandiser: 2" className="min-w-0 flex-1 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400" />
-                        <button onClick={addRoleSeat} className="rounded-2xl bg-sky-600 px-4 py-3 text-sm font-medium text-white hover:bg-sky-500">Add</button>
+                        <input
+                          value={roleSeatText}
+                          onChange={(e) => setRoleSeatText(e.target.value)}
+                          placeholder="e.g. Merchandiser: 2"
+                          className="min-w-0 flex-1 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+                        />
+                        <button
+                          onClick={addRoleSeat}
+                          className="rounded-2xl bg-sky-600 px-4 py-3 text-sm font-medium text-white hover:bg-sky-500"
+                        >
+                          Add
+                        </button>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {filters.roles.map((r) => (
-                          <button key={r} onClick={() => setFilters((f) => ({ ...f, roles: f.roles.filter((x) => x !== r) }))} className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300">
+                          <button
+                            key={r}
+                            onClick={() =>
+                              setFilters((f) => ({
+                                ...f,
+                                roles: f.roles.filter((x) => x !== r),
+                              }))
+                            }
+                            className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm text-sky-700 dark:border-sky-500/20 dark:bg-sky-500/10 dark:text-sky-300"
+                          >
                             {r} <X className="h-3.5 w-3.5" />
                           </button>
                         ))}
@@ -1061,7 +1674,9 @@ if (items.length === 0 && !loading) {
                 <SectionCard title="Location & Advanced" icon={Globe2}>
                   <div className="space-y-5">
                     <div className="relative">
-                      <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Location search</label>
+                      <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Location search
+                      </label>
                       <input
                         ref={locationInputRef}
                         value={filters.location}
@@ -1072,9 +1687,15 @@ if (items.length === 0 && !loading) {
                       {locationSuggestions.length > 0 && (
                         <div className="absolute z-10 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xl">
                           {locationSuggestions.map((item) => (
-                            <button key={item.name} onClick={() => setLocationFromSuggestion(item)} className="flex w-full items-center justify-between px-4 py-3 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-900">
+                            <button
+                              key={item.name}
+                              onClick={() => setLocationFromSuggestion(item)}
+                              className="flex w-full items-center justify-between px-4 py-3 text-left text-sm hover:bg-slate-50 dark:hover:bg-slate-900"
+                            >
                               <span>{item.name}</span>
-                              <span className="text-xs text-slate-500">Set location</span>
+                              <span className="text-xs text-slate-500">
+                                Set location
+                              </span>
                             </button>
                           ))}
                         </div>
@@ -1083,19 +1704,43 @@ if (items.length === 0 && !loading) {
 
                     <MapPreview />
 
-                    <button onClick={useCurrentLocation} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-3 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700">
+                    <button
+                      onClick={useCurrentLocation}
+                      className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 px-4 py-3 text-sm font-medium hover:border-sky-300 dark:hover:border-sky-700"
+                    >
                       <LocateFixed className="h-4 w-4" /> Use current location
                     </button>
 
                     <div>
-                      <div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Pantone colors</div>
+                      <div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Pantone colors
+                      </div>
                       <div className="flex gap-2">
-                        <input value={colorText} onChange={(e) => setColorText(e.target.value)} placeholder="PMS 185C" className="min-w-0 flex-1 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400" />
-                        <button onClick={addColorChip} className="rounded-2xl bg-sky-600 px-4 py-3 text-sm font-medium text-white hover:bg-sky-500">Add</button>
+                        <input
+                          value={colorText}
+                          onChange={(e) => setColorText(e.target.value)}
+                          placeholder="PMS 185C"
+                          className="min-w-0 flex-1 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+                        />
+                        <button
+                          onClick={addColorChip}
+                          className="rounded-2xl bg-sky-600 px-4 py-3 text-sm font-medium text-white hover:bg-sky-500"
+                        >
+                          Add
+                        </button>
                       </div>
                       <div className="mt-3 flex flex-wrap gap-2">
                         {filters.colorPants.map((c) => (
-                          <button key={c} onClick={() => setFilters((f) => ({ ...f, colorPants: f.colorPants.filter((x) => x !== c) }))} className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-3 py-1.5 text-sm">
+                          <button
+                            key={c}
+                            onClick={() =>
+                              setFilters((f) => ({
+                                ...f,
+                                colorPants: f.colorPants.filter((x) => x !== c),
+                              }))
+                            }
+                            className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-3 py-1.5 text-sm"
+                          >
                             {c} <X className="h-3.5 w-3.5" />
                           </button>
                         ))}
@@ -1103,10 +1748,18 @@ if (items.length === 0 && !loading) {
                     </div>
 
                     <div>
-                      <div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Customization</div>
+                      <div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Customization
+                      </div>
                       <div className="flex flex-wrap gap-2">
                         {CUSTOMIZATION.map((i) => (
-                          <button key={i} onClick={() => toggleArrayFilter('customization', i)} className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.customization.includes(i))}`}>
+                          <button
+                            key={i}
+                            onClick={() =>
+                              toggleArrayFilter("customization", i)
+                            }
+                            className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.customization.includes(i))}`}
+                          >
                             {i}
                           </button>
                         ))}
@@ -1114,7 +1767,17 @@ if (items.length === 0 && !loading) {
                     </div>
 
                     <label className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
-                      <input type="checkbox" checked={filters.sampleAvailable} onChange={(e) => setFilters((f) => ({ ...f, sampleAvailable: e.target.checked }))} /> Sample available
+                      <input
+                        type="checkbox"
+                        checked={filters.sampleAvailable}
+                        onChange={(e) =>
+                          setFilters((f) => ({
+                            ...f,
+                            sampleAvailable: e.target.checked,
+                          }))
+                        }
+                      />{" "}
+                      Sample available
                     </label>
 
                     <div>
@@ -1122,14 +1785,34 @@ if (items.length === 0 && !loading) {
                         <span>Sample lead time</span>
                         <span>{filters.sampleLeadTime} days</span>
                       </div>
-                      <input type="range" min="1" max="90" value={filters.sampleLeadTime} onChange={(e) => setFilters((f) => ({ ...f, sampleLeadTime: Number(e.target.value) }))} className="w-full" />
+                      <input
+                        type="range"
+                        min="1"
+                        max="90"
+                        value={filters.sampleLeadTime}
+                        onChange={(e) =>
+                          setFilters((f) => ({
+                            ...f,
+                            sampleLeadTime: Number(e.target.value),
+                          }))
+                        }
+                        className="w-full"
+                      />
                     </div>
 
                     <div>
-                      <div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Certifications</div>
+                      <div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Certifications
+                      </div>
                       <div className="flex flex-wrap gap-2">
                         {CERTIFICATIONS.map((i) => (
-                          <button key={i} onClick={() => toggleArrayFilter('certifications', i)} className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.certifications.includes(i))}`}>
+                          <button
+                            key={i}
+                            onClick={() =>
+                              toggleArrayFilter("certifications", i)
+                            }
+                            className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.certifications.includes(i))}`}
+                          >
                             {i}
                           </button>
                         ))}
@@ -1137,15 +1820,33 @@ if (items.length === 0 && !loading) {
                     </div>
 
                     <div>
-                      <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Audit date</label>
-                      <input type="date" value={filters.auditDate} onChange={(e) => setFilters((f) => ({ ...f, auditDate: e.target.value }))} className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400" />
+                      <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Audit date
+                      </label>
+                      <input
+                        type="date"
+                        value={filters.auditDate}
+                        onChange={(e) =>
+                          setFilters((f) => ({
+                            ...f,
+                            auditDate: e.target.value,
+                          }))
+                        }
+                        className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 px-4 py-3 outline-none focus:border-sky-400"
+                      />
                     </div>
 
                     <div>
-                      <div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Payment terms</div>
+                      <div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Payment terms
+                      </div>
                       <div className="flex flex-wrap gap-2">
                         {PAYMENT_TERMS.map((i) => (
-                          <button key={i} onClick={() => toggleArrayFilter('paymentTerms', i)} className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.paymentTerms.includes(i))}`}>
+                          <button
+                            key={i}
+                            onClick={() => toggleArrayFilter("paymentTerms", i)}
+                            className={`rounded-full border px-3 py-1.5 text-sm ${pillClass(filters.paymentTerms.includes(i))}`}
+                          >
                             {i}
                           </button>
                         ))}
@@ -1159,13 +1860,32 @@ if (items.length === 0 && !loading) {
             <section className="rounded-[2rem] border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/55 p-5 shadow-[0_20px_70px_-35px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:p-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Results</h2>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Buyer requests, companies, and marketplace data.</p>
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+                    Results
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    Buyer requests, companies, and marketplace data.
+                  </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <button onClick={() => setViewMode('all')} className={`rounded-full border px-4 py-2 text-sm font-medium ${pillClass(viewMode === 'all')}`}>All</button>
-                  <button onClick={() => setViewMode('requests')} className={`rounded-full border px-4 py-2 text-sm font-medium ${pillClass(viewMode === 'requests')}`}>Buyer Requests</button>
-                  <button onClick={() => setViewMode('companies')} className={`rounded-full border px-4 py-2 text-sm font-medium ${pillClass(viewMode === 'companies')}`}>Companies</button>
+                  <button
+                    onClick={() => setViewMode("all")}
+                    className={`rounded-full border px-4 py-2 text-sm font-medium ${pillClass(viewMode === "all")}`}
+                  >
+                    All
+                  </button>
+                  <button
+                    onClick={() => setViewMode("requests")}
+                    className={`rounded-full border px-4 py-2 text-sm font-medium ${pillClass(viewMode === "requests")}`}
+                  >
+                    Buyer Requests
+                  </button>
+                  <button
+                    onClick={() => setViewMode("companies")}
+                    className={`rounded-full border px-4 py-2 text-sm font-medium ${pillClass(viewMode === "companies")}`}
+                  >
+                    Companies
+                  </button>
                 </div>
               </div>
 
@@ -1173,7 +1893,10 @@ if (items.length === 0 && !loading) {
                 {loading ? (
                   <div className="grid gap-4 xl:grid-cols-2">
                     {Array.from({ length: 4 }).map((_, i) => (
-                      <div key={i} className="h-56 animate-pulse rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/80" />
+                      <div
+                        key={i}
+                        className="h-56 animate-pulse rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/80"
+                      />
                     ))}
                   </div>
                 ) : (
@@ -1186,29 +1909,53 @@ if (items.length === 0 && !loading) {
           <aside className="space-y-5 xl:sticky xl:top-5 xl:h-[calc(100vh-2.5rem)] xl:overflow-auto xl:pr-1">
             <SectionCard title="Recent Views" icon={Eye}>
               <div className="space-y-3">
-                {recentViews.length > 0 ? recentViews.slice(0, 5).map((item) => (
-                  <a key={item.id} href={`/product/${item.id}`} className="flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-3 hover:border-sky-300 dark:hover:border-sky-700">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/20">
-                      <Camera className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium text-slate-900 dark:text-white">{item.title || item.name}</div>
-                      <div className="truncate text-xs text-slate-500 dark:text-slate-400">{item.subtitle || item.description}</div>
-                    </div>
-                    <ArrowUpRight className="h-4 w-4 text-slate-400" />
-                  </a>
-                )) : (
-                  <div className="text-sm text-slate-500 dark:text-slate-400">No recent views</div>
+                {recentViews.length > 0 ? (
+                  recentViews.slice(0, 5).map((item) => (
+                    <a
+                      key={item.id}
+                      href={`/product/${item.id}`}
+                      className="flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-3 hover:border-sky-300 dark:hover:border-sky-700"
+                    >
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/20">
+                        <Camera className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-medium text-slate-900 dark:text-white">
+                          {item.title || item.name}
+                        </div>
+                        <div className="truncate text-xs text-slate-500 dark:text-slate-400">
+                          {item.subtitle || item.description}
+                        </div>
+                      </div>
+                      <ArrowUpRight className="h-4 w-4 text-slate-400" />
+                    </a>
+                  ))
+                ) : (
+                  <div className="text-sm text-slate-500 dark:text-slate-400">
+                    No recent views
+                  </div>
                 )}
               </div>
             </SectionCard>
 
             <SectionCard title="Shortcuts & Actions" icon={WandSparkles}>
               <div className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
-                <div className="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3"><span>Open search modal</span><Badge tone="blue">Ctrl K / ⌘K</Badge></div>
-                <div className="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3"><span>Save search</span><Badge tone="blue">Click Save</Badge></div>
-                <div className="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3"><span>Share search</span><Badge tone="blue">Click Share</Badge></div>
-                <div className="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3"><span>Toggle dark mode</span><Badge tone="blue">Click icon</Badge></div>
+                <div className="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3">
+                  <span>Open search modal</span>
+                  <Badge tone="blue">Ctrl K / ⌘K</Badge>
+                </div>
+                <div className="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3">
+                  <span>Save search</span>
+                  <Badge tone="blue">Click Save</Badge>
+                </div>
+                <div className="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3">
+                  <span>Share search</span>
+                  <Badge tone="blue">Click Share</Badge>
+                </div>
+                <div className="flex items-center justify-between rounded-2xl bg-slate-50 dark:bg-slate-900/60 px-4 py-3">
+                  <span>Toggle dark mode</span>
+                  <Badge tone="blue">Click icon</Badge>
+                </div>
               </div>
             </SectionCard>
           </aside>

@@ -29,7 +29,7 @@ async function ensureStateRow(key, fallback) {
     });
     return created;
   } catch (e) {
-    if (e.code === 'P2002') {
+    if (e.code === "P2002") {
       return await prisma.appState.findUnique({ where: { key } });
     }
     throw e;

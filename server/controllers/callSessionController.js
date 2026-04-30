@@ -60,34 +60,27 @@ export async function updateRecording(req, res) {
   const validStatuses = new Set(["processing", "available", "failed"]);
 
   if (!requestedStatus || !validStatuses.has(requestedStatus)) {
-    return res
-      .status(400)
-      .json({
-        error:
-          "Invalid recording_status. Use processing, available, or failed.",
-      });
+    return res.status(400).json({
+      error: "Invalid recording_status. Use processing, available, or failed.",
+    });
   }
 
   if (
     requestedStatus === "available" &&
     !String(req.body?.recording_url || "").trim()
   ) {
-    return res
-      .status(400)
-      .json({
-        error: "recording_url is required when recording_status is available",
-      });
+    return res.status(400).json({
+      error: "recording_url is required when recording_status is available",
+    });
   }
 
   if (
     requestedStatus === "failed" &&
     !String(req.body?.failure_reason || "").trim()
   ) {
-    return res
-      .status(400)
-      .json({
-        error: "failure_reason is required when recording_status is failed",
-      });
+    return res.status(400).json({
+      error: "failure_reason is required when recording_status is failed",
+    });
   }
 
   const call = await getCallSession(req.params.callId, req.user.id);
@@ -119,17 +112,13 @@ export async function updateRecording(req, res) {
       .status(409)
       .json({ error: "Invalid recording status transition for this call" });
   if (result === "missing_metadata")
-    return res
-      .status(400)
-      .json({
-        error: "recording_url is required when recording_status is available",
-      });
+    return res.status(400).json({
+      error: "recording_url is required when recording_status is available",
+    });
   if (result === "missing_failure_reason")
-    return res
-      .status(400)
-      .json({
-        error: "failure_reason is required when recording_status is failed",
-      });
+    return res.status(400).json({
+      error: "failure_reason is required when recording_status is failed",
+    });
   return res.json(result);
 }
 
@@ -186,11 +175,9 @@ export async function uploadRecordingFile(req, res) {
       .status(409)
       .json({ error: "Invalid recording status transition for this call" });
   if (updated === "missing_metadata")
-    return res
-      .status(400)
-      .json({
-        error: "recording_url is required when recording_status is available",
-      });
+    return res.status(400).json({
+      error: "recording_url is required when recording_status is available",
+    });
 
   return res.status(201).json(updated);
 }

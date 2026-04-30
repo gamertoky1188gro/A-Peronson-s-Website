@@ -288,17 +288,27 @@ export default function BuyerProfile() {
       <div className="relative">
         <div className="h-32 sm:h-40 overflow-hidden rounded-t-2xl bg-gradient-to-r from-[#0A66C2] to-[#2E8BFF]">
           {user.profile?.cover_image_url ? (
-            <img src={user.profile.cover_image_url} alt="Cover" className="h-full w-full object-cover" />
+            <img
+              src={user.profile.cover_image_url}
+              alt="Cover"
+              className="h-full w-full object-cover"
+            />
           ) : null}
         </div>
         <div className="sm:absolute sm:-bottom-12 sm:left-6">
           <div className="relative">
             <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl border-4 border-white dark:border-slate-900 bg-white overflow-hidden shadow-md">
               {user.profile?.profile_image ? (
-                <img src={user.profile.profile_image} alt={user.name} className="h-full w-full object-cover" />
+                <img
+                  src={user.profile.profile_image}
+                  alt={user.name}
+                  className="h-full w-full object-cover"
+                />
               ) : (
                 <div className="h-full w-full bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] flex items-center justify-center">
-                  <span className="text-2xl font-bold text-white">{user.name?.charAt(0) || "U"}</span>
+                  <span className="text-2xl font-bold text-white">
+                    {user.name?.charAt(0) || "U"}
+                  </span>
                 </div>
               )}
             </div>
@@ -314,38 +324,37 @@ export default function BuyerProfile() {
             className="rounded-2xl bg-[#ffffff] p-4 shadow-sm ring-1 ring-slate-200/60 dark:bg-slate-900/50 dark:ring-slate-800"
           >
             <div className="min-w-0 pl-24 sm:pl-0">
-                <p className="text-lg font-bold text-slate-900 dark:text-slate-100 truncate">
-                  {user.name}
-                </p>
-                <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
-                  <span className="uppercase">Buyer</span>
-                  {user.profile?.country ? (
-                    <span>- {user.profile.country}</span>
-                  ) : null}
-                  {user.verified ? (
-                    <span className="verified-shimmer inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:from-emerald-500/12 dark:to-teal-400/10 dark:text-emerald-200 dark:ring-emerald-400/25">
-                      Verified
-                    </span>
-                  ) : null}
-                  {isCertified ? (
-                    <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200">
-                      Certified
-                    </span>
-                  ) : null}
-                  {isPremium ? (
-                    <span
-                      title="Boosted visibility enabled for Premium"
-                      className="inline-flex items-center rounded-full bg-blue-500/15 px-2 py-0.5 text-[10px] font-semibold text-blue-700 ring-1 ring-blue-500/20 dark:text-blue-200"
-                    >
-                      Premium Reach
-                    </span>
-                  ) : null}
-                  {isBoosted ? (
-                    <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:text-emerald-200">
-                      Boosted
-                    </span>
-                  ) : null}
-                </div>
+              <p className="text-lg font-bold text-slate-900 dark:text-slate-100 truncate">
+                {user.name}
+              </p>
+              <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+                <span className="uppercase">Buyer</span>
+                {user.profile?.country ? (
+                  <span>- {user.profile.country}</span>
+                ) : null}
+                {user.verified ? (
+                  <span className="verified-shimmer inline-flex items-center rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:from-emerald-500/12 dark:to-teal-400/10 dark:text-emerald-200 dark:ring-emerald-400/25">
+                    Verified
+                  </span>
+                ) : null}
+                {isCertified ? (
+                  <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200">
+                    Certified
+                  </span>
+                ) : null}
+                {isPremium ? (
+                  <span
+                    title="Boosted visibility enabled for Premium"
+                    className="inline-flex items-center rounded-full bg-blue-500/15 px-2 py-0.5 text-[10px] font-semibold text-blue-700 ring-1 ring-blue-500/20 dark:text-blue-200"
+                  >
+                    Premium Reach
+                  </span>
+                ) : null}
+                {isBoosted ? (
+                  <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 dark:text-emerald-200">
+                    Boosted
+                  </span>
+                ) : null}
               </div>
             </div>
 
@@ -746,21 +755,37 @@ export default function BuyerProfile() {
                   </p>
                   {(user.profile?.companies_worked_with || []).length > 0 ? (
                     <div className="space-y-3">
-                      {(user.profile.companies_worked_with || []).map((company, idx) => (
-                        <div key={idx} className="flex items-center gap-3 rounded-2xl bg-white/60 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
-                          {company.logo ? (
-                            <img src={company.logo} alt={company.name} className="h-12 w-12 rounded-xl object-cover" />
-                          ) : (
-                            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] flex items-center justify-center">
-                              <span className="text-lg font-bold text-white">{company.name?.charAt(0) || "?"}</span>
+                      {(user.profile.companies_worked_with || []).map(
+                        (company, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center gap-3 rounded-2xl bg-white/60 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10"
+                          >
+                            {company.logo ? (
+                              <img
+                                src={company.logo}
+                                alt={company.name}
+                                className="h-12 w-12 rounded-xl object-cover"
+                              />
+                            ) : (
+                              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#0A66C2] to-[#2E8BFF] flex items-center justify-center">
+                                <span className="text-lg font-bold text-white">
+                                  {company.name?.charAt(0) || "?"}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+                                {company.name}
+                              </p>
+                              <p className="text-xs text-slate-600 dark:text-slate-400">
+                                {company.role || "Partner"} -{" "}
+                                {company.period || "Ongoing"}
+                              </p>
                             </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{company.name}</p>
-                            <p className="text-xs text-slate-600 dark:text-slate-400">{company.role || "Partner"} - {company.period || "Ongoing"}</p>
                           </div>
-                        </div>
-                      ))}
+                        ),
+                      )}
                     </div>
                   ) : (
                     <div className="rounded-2xl bg-white/60 p-4 text-sm text-slate-600 dark:text-slate-300 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">

@@ -77,12 +77,10 @@ export async function createSupportTicketController(req, res) {
     priority,
   });
 
-  return res
-    .status(201)
-    .json({
-      ticket: ticketResult.ticket,
-      message: ticketResult.initial_message,
-    });
+  return res.status(201).json({
+    ticket: ticketResult.ticket,
+    message: ticketResult.initial_message,
+  });
 }
 
 export async function listMySupportTicketsController(req, res) {

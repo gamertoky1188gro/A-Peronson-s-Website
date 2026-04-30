@@ -547,8 +547,16 @@ export default function MainFeed() {
         setLoadingMore(false);
       }
     },
-    [activeCategory, activeType, token, unique, user?.role, feedConfig, nextCursor],
-  );  
+    [
+      activeCategory,
+      activeType,
+      token,
+      unique,
+      user?.role,
+      feedConfig,
+      nextCursor,
+    ],
+  );
 
   useEffect(() => {
     loadUser();

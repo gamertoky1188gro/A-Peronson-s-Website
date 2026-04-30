@@ -47,11 +47,9 @@ export async function getProfileProducts(req, res) {
   if (data === "not_found")
     return res.status(404).json({ error: "User not found" });
   if (data === "invalid_role")
-    return res
-      .status(400)
-      .json({
-        error: "Products only available for factory / buying house profiles",
-      });
+    return res.status(400).json({
+      error: "Products only available for factory / buying house profiles",
+    });
   return res.json(data);
 }
 
@@ -63,10 +61,8 @@ export async function getProfilePartnerNetwork(req, res) {
   if (data === "not_found")
     return res.status(404).json({ error: "User not found" });
   if (data === "invalid_role")
-    return res
-      .status(400)
-      .json({
-        error: "Partner network only available for buying house profiles",
-      });
+    return res.status(400).json({
+      error: "Partner network only available for buying house profiles",
+    });
   return res.json(data);
 }

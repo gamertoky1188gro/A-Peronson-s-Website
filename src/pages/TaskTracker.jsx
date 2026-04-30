@@ -22,9 +22,7 @@ function TreeNode({ task, onToggle, depth = 0 }) {
     <div className="select-none">
       <div
         className={`flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors ${
-          task.isCompleted
-            ? "opacity-60"
-            : ""
+          task.isCompleted ? "opacity-60" : ""
         }`}
         style={{ paddingLeft: `${depth * 24 + 12}px` }}
       >
@@ -138,7 +136,13 @@ export default function TaskTracker() {
         }
       } catch {
         const blob = new Blob(
-          [JSON.stringify({ tasks, projectName: tasksData.projectName }, null, 2)],
+          [
+            JSON.stringify(
+              { tasks, projectName: tasksData.projectName },
+              null,
+              2,
+            ),
+          ],
           { type: "application/json" },
         );
         const url = URL.createObjectURL(blob);
@@ -177,14 +181,18 @@ export default function TaskTracker() {
     filter === "all"
       ? tasks
       : filter === "pending"
-        ? tasks.map((t) => ({
-            ...t,
-            children: t.children?.filter((c) => !c.isCompleted),
-          })).filter((t) => t.children?.length > 0 || !t.isCompleted)
-        : tasks.map((t) => ({
-            ...t,
-            children: t.children?.filter((c) => c.isCompleted),
-          })).filter((t) => t.children?.length > 0 || t.isCompleted);
+        ? tasks
+            .map((t) => ({
+              ...t,
+              children: t.children?.filter((c) => !c.isCompleted),
+            }))
+            .filter((t) => t.children?.length > 0 || !t.isCompleted)
+        : tasks
+            .map((t) => ({
+              ...t,
+              children: t.children?.filter((c) => c.isCompleted),
+            }))
+            .filter((t) => t.children?.length > 0 || t.isCompleted);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0b1220] py-8 px-4">
@@ -237,7 +245,10 @@ export default function TaskTracker() {
 
         <div className="space-y-2">
           {filteredTasks.map((task) => (
-            <div key={task.id} className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div
+              key={task.id}
+              className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden"
+            >
               <div
                 className="flex items-center gap-2 p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50"
                 onClick={() => toggleRoot(task.id)}
@@ -259,9 +270,7 @@ export default function TaskTracker() {
                   onClick={(e) => {
                     e.stopPropagation();
                     const allDone = task.children?.every((c) => c.isCompleted);
-                    task.children?.forEach((c) =>
-                      toggleTask(c.id, !allDone),
-                    );
+                    task.children?.forEach((c) => toggleTask(c.id, !allDone));
                   }}
                   className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
                     task.children?.every((c) => c.isCompleted)

@@ -8,14 +8,12 @@ describe("Dropbox Sign provider integration", () => {
     process.env.ESIGN_PROVIDER_URL = "https://api.dropbox.sign.test";
     process.env.ESIGN_DROPBOX_SIGN_API_KEY = "testkey";
 
-    axios.post = jest
-      .fn()
-      .mockResolvedValue({
-        data: {
-          signing_url: "https://provider/sign/abc",
-          session_id: "sess-abc",
-        },
-      });
+    axios.post = jest.fn().mockResolvedValue({
+      data: {
+        signing_url: "https://provider/sign/abc",
+        session_id: "sess-abc",
+      },
+    });
 
     const { createDraftContract } =
       await import("../../server/services/documentService.js");
