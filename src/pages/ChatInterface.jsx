@@ -1952,10 +1952,11 @@ export default function ChatInterface() {
                 );
                 const isActive = activeThreadId === thread.id;
                 const hasUnread = Number(thread.unread || 0) > 0;
+                const isFriendRequest = thread.isFriendThread && thread.friendRequestStatus === "pending";
                 return (
                   <button
                     key={thread.id}
-                    className={`group w-full rounded-[16px] px-3 py-3 text-left transition-all${hasUnread && !isActive ? "ring-1 ring-gtBlue/20" : ""}`}
+                    className={`group w-full rounded-[16px] px-3 py-3 text-left transition-all${hasUnread && !isActive ? "ring-1 ring-gtBlue/20" : ""}${isFriendRequest ? " ring-2 ring-violet-400/30" : ""}`}
                     style={{
                       background: isActive
                         ? theme.threadActiveBg
@@ -2011,6 +2012,11 @@ export default function ChatInterface() {
                             {threadName}
                           </p>
                           <div className="ml-2 flex flex-shrink-0 items-center gap-1">
+                            {thread.isFriendThread ? (
+                              <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[9px] font-bold uppercase text-violet-700">
+                                Request
+                              </span>
+                            ) : null}
                             {thread.policyStatus &&
                             thread.policyStatus !== "delivered" ? (
                               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-bold uppercase text-amber-700">

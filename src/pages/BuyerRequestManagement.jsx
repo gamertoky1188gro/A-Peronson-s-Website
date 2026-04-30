@@ -257,6 +257,29 @@ function Field({ label, children, hint, error }) {
 
 const GARMENT_COMPLIANCE_CERTS = ["BSCI", "WRAP", "SA8000"];
 const GARMENT_SUSTAIN_CERTS = ["GOTS", "OEKO-TEX", "GRS"];
+
+function requestStatusBadge(status = "") {
+  const s = String(status || "open").toLowerCase();
+  if (s === "open" || s === "active") {
+    return "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300";
+  }
+  if (s === "reviewing" || s === "reviewing_quotes") {
+    return "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300";
+  }
+  if (s === "closed" || s === "completed") {
+    return "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400";
+  }
+  return "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400";
+}
+
+function formatRequestStatus(status = "") {
+  const s = String(status || "open").toLowerCase();
+  if (s === "open" || s === "active") return "Active";
+  if (s === "reviewing" || s === "reviewing_quotes") return "Reviewing Quotes";
+  if (s === "closed" || s === "completed") return "Closed";
+  return String(status || "open").replaceAll("_", " ");
+}
+
 export default function BuyerRequestManagement() {
   const user = useMemo(() => getCurrentUser(), []);
   const role = String(user?.role || "").toLowerCase();
@@ -1989,8 +2012,8 @@ export default function BuyerRequestManagement() {
                         ) : null}
                       </td>
                       <td className="py-2 pr-3">
-                        <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-600">
-                          {String(r.status || "open").replaceAll("_", " ")}
+                        <span className={`rounded-full px-2 py-1 text-[11px] font-semibold ${requestStatusBadge(r.status)}`}>
+                          {formatRequestStatus(r.status)}
                         </span>
                       </td>
                       <td className="py-2 pr-3">{r.quantity || "--"}</td>
@@ -2164,11 +2187,8 @@ export default function BuyerRequestManagement() {
                               <div className="font-semibold text-slate-900">
                                 {r.title || r.category || "Buyer Request"}
                               </div>
-                              <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-600">
-                                {String(r.status || "open").replaceAll(
-                                  "_",
-                                  " ",
-                                )}
+                              <span className={`rounded-full px-2 py-1 text-[11px] font-semibold ${requestStatusBadge(r.status)}`}>
+                                {formatRequestStatus(r.status)}
                               </span>
                             </div>
                             <div className="mt-1 text-xs text-slate-500">

@@ -12,6 +12,38 @@ import {
 import { Link } from "react-router-dom";
 import MarkdownReadme from "./MarkdownReadme";
 
+function requestStatusBadgeClass(status = "") {
+  const s = String(status || "open").toLowerCase();
+  if (s === "open" || s === "active") {
+    return "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300";
+  }
+  if (s === "reviewing" || s === "reviewing_quotes") {
+    return "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300";
+  }
+  if (s === "closed" || s === "completed") {
+    return "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400";
+  }
+  return "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400";
+}
+
+function formatRequestStatusLabel(status = "") {
+  const s = String(status || "open").toLowerCase();
+  if (s === "open" || s === "active") return "Active";
+  if (s === "reviewing" || s === "reviewing_quotes") return "Reviewing";
+  if (s === "closed" || s === "completed") return "Closed";
+  return String(status || "open").replaceAll("_", " ");
+}
+
+function RequestStatusBadge({ status }) {
+  return (
+    <span
+      className={`inline-flex items-center rounded-full px-2 py-1 text-[11px] font-semibold ${requestStatusBadgeClass(status)}`}
+    >
+      {formatRequestStatusLabel(status)}
+    </span>
+  );
+}
+
 function compactText(value) {
   return String(value || "").trim();
 }
@@ -104,6 +136,9 @@ export default function FeedItemCard({
                   <span className="inline-flex items-center rounded-full bg-sky-50 px-2 py-1 text-[11px] font-semibold text-sky-700 dark:bg-sky-500/10 dark:text-sky-200">
                     Priority
                   </span>
+                ) : null}
+                {isBuyerRequest ? (
+                  <RequestStatusBadge status={item.status} />
                 ) : null}
                 {item.discussionActive ? (
                   <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-200/70 dark:bg-amber-500/10 dark:text-amber-200 dark:ring-amber-400/25">

@@ -626,12 +626,26 @@ export default function SearchResults() {
   const ResultCards = () => {
     if (activeTab === 'requests' || activeTab === 'all') {
       const items = requests;
-      if (items.length === 0 && !loading) {
+if (items.length === 0 && !loading) {
         return (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Search className="h-12 w-12 text-slate-300 dark:text-slate-600" />
-            <p className="mt-4 text-lg font-medium text-slate-900 dark:text-white">No buyer requests found</p>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Try adjusting your search or filters</p>
+          <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
+            <PackageSearch className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+            <p className="text-lg font-medium text-slate-900 dark:text-white">No buyer requests found</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Try adjusting your filters</p>
+            {query && (
+              <div className="mt-2 rounded-2xl bg-gtBlue/10 p-4 ring-1 ring-gtBlue/20 dark:bg-gtBlue/5">
+                <p className="text-sm font-semibold text-gtBlue dark:text-sky-300">Similar Requests Alert</p>
+                <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
+                  Be the first to know when buyers post matching requests. Save a search alert now.
+                </p>
+                <button
+                  onClick={() => saveSearchAlert && saveSearchAlert()}
+                  className="mt-2 rounded-full bg-gtBlue px-4 py-2 text-xs font-semibold text-white hover:bg-gtBlueHover"
+                >
+                  Save Alert
+                </button>
+              </div>
+            )}
           </div>
         );
       }
@@ -717,10 +731,24 @@ export default function SearchResults() {
       const items = companies;
       if (items.length === 0 && !loading) {
         return (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
             <Factory className="h-12 w-12 text-slate-300 dark:text-slate-600" />
-            <p className="mt-4 text-lg font-medium text-slate-900 dark:text-white">No companies found</p>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Try adjusting your search or filters</p>
+            <p className="text-lg font-medium text-slate-900 dark:text-white">No companies found</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Try adjusting your search or filters</p>
+            {query && (
+              <div className="mt-2 rounded-2xl bg-gtBlue/10 p-4 ring-1 ring-gtBlue/20 dark:bg-gtBlue/5">
+                <p className="text-sm font-semibold text-gtBlue dark:text-sky-300">Similar Products</p>
+                <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
+                  Set a search alert for "{query}" to get notified when matching companies are posted.
+                </p>
+                <button
+                  onClick={() => saveSearchAlert && saveSearchAlert()}
+                  className="mt-2 rounded-full bg-gtBlue px-4 py-2 text-xs font-semibold text-white hover:bg-gtBlueHover"
+                >
+                  Save Alert
+                </button>
+              </div>
+            )}
           </div>
         );
       }

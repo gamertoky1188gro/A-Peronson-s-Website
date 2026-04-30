@@ -85,6 +85,7 @@ import {
 } from "recharts";
 import { startAuthentication } from "@simplewebauthn/browser";
 import AccessDeniedState from "../components/AccessDeniedState";
+import RejectionReasonModal from "../components/admin/RejectionReasonModal";
 import { apiRequest, getCurrentUser, getToken, saveSession } from "../lib/auth";
 import {
   useInventory,
@@ -2963,6 +2964,8 @@ export default function AdminPanel() {
   });
   const [moderationPending, setModerationPending] = useState([]);
   const [moderationRejected, setModerationRejected] = useState([]);
+  const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
+  const [rejectionItem, setRejectionItem] = useState(null);
   const [policyQueueItems, setPolicyQueueItems] = useState([]);
   const [policyReviewRows, setPolicyReviewRows] = useState([]);
   const [policyMetrics, setPolicyMetrics] = useState(null);
@@ -6928,26 +6931,9 @@ export default function AdminPanel() {
                                       </button>
                                       <button
                                         type="button"
-                                        onClick={async () => {
-                                          const reason =
-                                            window.prompt(
-                                              "Reject reason (neutral language):",
-                                            ) || "";
-                                          await apiRequest(
-                                            `/admin/moderation/products/${encodeURIComponent(row.id)}`,
-                                            {
-                                              method: "PATCH",
-                                              token: getToken(),
-                                              headers: buildAdminHeaders({
-                                                stepUp: true,
-                                              }),
-                                              body: {
-                                                status: "rejected",
-                                                reason,
-                                              },
-                                            },
-                                          );
-                                          await refreshModerationQueues();
+                                        onClick={() => {
+                                          setRejectionItem(row);
+                                          setRejectionModalOpen(true);
                                         }}
                                         className="rounded-full shadow-borderless dark:shadow-borderlessDark px-3 py-1 text-[11px] font-semibold text-slate-600"
                                       >
@@ -16474,6 +16460,30 @@ export default function AdminPanel() {
           </div>
         </main>
       </div>
+
+      <RejectionReasonModal
+        open={rejectionModalOpen}
+        onClose={() => {
+          setRejectionModalOpen(false);
+          setRejectionItem(null);
+        }}
+        onConfirm={async (reason) => {
+          if (!rejectionItem) return;
+          await apiRequest(
+            `/admin/moderation/products/${encodeURIComponent(rejectionItem.id)}`,
+            {
+              method: "PATCH",
+              token: getToken(),
+              headers: buildAdminHeaders({ stepUp: true }),
+              body: { status: "rejected", reason },
+            },
+          );
+          setRejectionModalOpen(false);
+          setRejectionItem(null);
+          await refreshModerationQueues();
+        }}
+        itemTitle={rejectionItem?.title || "product"}
+      />
     </>
   );
 }

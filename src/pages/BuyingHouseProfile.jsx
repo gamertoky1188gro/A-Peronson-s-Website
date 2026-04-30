@@ -314,8 +314,26 @@ export default function BuyingHouseProfile() {
     ["factory", "buying_house", "admin"].includes(viewer.role) &&
     !viewerPerms.is_self;
 
-  return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
+return (
+    <div className="min-h- screen bg-slate-50 text-slate-900 dark:bg-[#020617] dark:text-slate-100 transition-colors duration-500 ease-in-out">
+      <div className="relative">
+        <div className="h-32 sm:h-40 overflow-hidden rounded-t-2xl bg-gtBlue">
+          {user.profile?.cover_image_url ? (
+            <img src={user.profile.cover_image_url} alt="Cover" className="h-full w-full object-cover" />
+          ) : null}
+        </div>
+        <div className="sm:absolute sm:-bottom-12 sm:left-6">
+          <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl border-4 border-white dark:border-slate-900 bg-white overflow-hidden shadow- md">
+            {user.profile?.profile_image ? (
+              <img src={user.profile.profile_image} alt={user.name} className="h-full w-full object-cover" />
+            ) : (
+              <div className="h-full w-full bg-gtBlue flex items-center justify-center">
+                <span className="text-2xl font-bold text-white">{user.name?.charAt(0) || "B"}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
       <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-12 gap-4">
         <aside className="col-span-12 lg:col-span-4 space-y-4">
           <motion.div
@@ -476,7 +494,7 @@ export default function BuyingHouseProfile() {
             className="rounded-2xl bg-[#ffffff] shadow-sm ring-1 ring-slate-200/60 overflow-hidden dark:bg-slate-900/50 dark:ring-slate-800"
           >
             <div className="relative flex items-center gap-2 px-4 py-3 bg-white/60 dark:bg-slate-950/30 shadow-dividerB dark:shadow-dividerBDark dark:shadow-[inset_0_-1px_0_rgba(255,255,255,0.08)]">
-              {["overview", "partner", "products", "reviews"].map((tab) => (
+              {["overview", "partner", "products", "work", "reviews"].map((tab) => (
                 <button
                   key={tab}
                   type="button"
@@ -504,7 +522,9 @@ export default function BuyingHouseProfile() {
                       ? "Partner Network"
                       : tab === "products"
                         ? "Products"
-                        : "Reviews"}
+                        : tab === "work"
+                          ? "Work History"
+                          : "Reviews"}
                 </button>
               ))}
             </div>
@@ -873,6 +893,32 @@ export default function BuyingHouseProfile() {
                       No reviews yet.
                     </div>
                   ) : null}
+                </div>
+              ) : null}
+              {activeTab === "work" ? (
+                <div className="space-y-4">
+                  <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">Work History</p>
+                  {(user.profile?.companies_worked_with || []).length > 0 ? (
+                    <div className="space-y-3">
+                      {(user.profile.companies_worked_with || []).map((company, idx) => (
+                        <div key={idx} className="flex items-center gap-3 rounded-2xl bg-white/60 p-4 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">
+                          {company.logo ? (
+                            <img src={company.logo} alt={company.name} className="h-12 w-12 rounded-xl object-cover" />
+                          ) : (
+                            <div className="h-12 w-12 rounded-xl bg-gtBlue flex items-center justify-center">
+                              <span className="text-lg font-bold text-white">{company.name?.charAt(0) || "?"}</span>
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{company.name}</p>
+                            <p className="text-xs text-slate-600 dark:text-slate-400">{company.role || "Partner"} - {company.period || "Ongoing"}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl bg-white/60 p-4 text-sm text-slate-600 dark:text-slate-300 ring-1 ring-slate-200/70 dark:bg-white/5 dark:ring-white/10">No work history added yet.</div>
+                  )}
                 </div>
               ) : null}
             </div>
