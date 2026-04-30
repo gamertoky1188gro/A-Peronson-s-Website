@@ -12,7 +12,7 @@ jobs:
     services:
       opensearch:
         image: opensearchproject/opensearch:2
-        options: --health-cmd="curl -sS http://localhost:9200/_cluster/health || exit 1" --health-interval=10s --health-timeout=5s --health-retries=30 -e OPENSEARCH_INITIAL_ADMIN_PASSWORD=MyP@ssw0rd!
+        options: --health-cmd="curl -sS http://localhost:9200/_cluster/health || exit 1" --health-interval=10s --health-timeout=5s --health-retries=30 -e OPENSEARCH_INITIAL_ADMIN_PASSWORD=123123455@Admin!321
         ports:
           - 9200:9200
 
