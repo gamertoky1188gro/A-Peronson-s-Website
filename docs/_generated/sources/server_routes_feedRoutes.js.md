@@ -1,8 +1,8 @@
-    1 | import { Router } from 'express'
-    2 | import { requireAuth } from '../middleware/auth.js'
-    3 | import { combinedFeed } from '../controllers/feedController.js'
-    4 |
-    5 | const router = Router()
-    6 | router.get('/', requireAuth, combinedFeed)
-    7 | export default router
-    8 |
+import { Router } from 'express'
+import { requireAuth } from '../middleware/auth.js'
+import { combinedFeed } from '../controllers/feedController.js'
+
+const router = Router()
+router.get('/', requireAuth, combinedFeed)
+export default router
+

@@ -1,7 +1,7 @@
-    1 | import { getAdminCatalog } from '../services/adminCatalogService.js'
-    2 |
-    3 | export async function adminCatalogOverview(req, res) {
-    4 |   const catalog = await getAdminCatalog()
-    5 |   return res.json(catalog)
-    6 | }
-    7 |
+import { getAdminCatalog } from '../services/adminCatalogService.js'
+
+export async function adminCatalogOverview(req, res) {
+const catalog = await getAdminCatalog()
+return res.json(catalog)
+}
+

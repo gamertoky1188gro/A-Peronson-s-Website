@@ -1,13 +1,13 @@
-    1 | import { Router } from 'express'
-    2 | import { requireAuth } from '../middleware/auth.js'
-    3 | import { requireAdminSecurity } from '../middleware/adminSecurity.js'
-    4 | import { createCoupon, listCoupons } from '../controllers/couponController.js'
-    5 |
-    6 | const router = Router()
-    7 |
-    8 | router.get('/', requireAuth, requireAdminSecurity, listCoupons)
-    9 | router.post('/', requireAuth, requireAdminSecurity, createCoupon)
+import { Router } from 'express'
+import { requireAuth } from '../middleware/auth.js'
+import { requireAdminSecurity } from '../middleware/adminSecurity.js'
+import { createCoupon, listCoupons } from '../controllers/couponController.js'
 
-10 |
-11 | export default router
-12 |
+const router = Router()
+
+router.get('/', requireAuth, requireAdminSecurity, listCoupons)
+router.post('/', requireAuth, requireAdminSecurity, createCoupon)
+
+
+export default router
+

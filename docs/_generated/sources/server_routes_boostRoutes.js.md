@@ -1,14 +1,14 @@
-    1 | import { Router } from 'express'
-    2 | import { requireAuth } from '../middleware/auth.js'
-    3 | import { cancelBoostController, createBoost, getMyBoosts } from '../controllers/boostController.js'
-    4 |
-    5 | const router = Router()
-    6 |
-    7 | router.get('/me', requireAuth, getMyBoosts)
-    8 | router.post('/', requireAuth, createBoost)
-    9 | router.post('/:boostId/cancel', requireAuth, cancelBoostController)
+import { Router } from 'express'
+import { requireAuth } from '../middleware/auth.js'
+import { cancelBoostController, createBoost, getMyBoosts } from '../controllers/boostController.js'
 
-10 |
-11 | export default router
-12 |
-13 |
+const router = Router()
+
+router.get('/me', requireAuth, getMyBoosts)
+router.post('/', requireAuth, createBoost)
+router.post('/:boostId/cancel', requireAuth, cancelBoostController)
+
+
+export default router
+
+

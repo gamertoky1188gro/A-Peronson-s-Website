@@ -1,15 +1,15 @@
-    1 | import { getSecurityState, performSecurityAction } from '../services/securityService.js'
-    2 |
-    3 | export async function getSecurityStateController(req, res) {
-    4 |   const state = await getSecurityState()
-    5 |   return res.json(state)
-    6 | }
-    7 |
-    8 | export async function securityActionController(req, res) {
-    9 |   const action = req.body?.action || ''
+import { getSecurityState, performSecurityAction } from '../services/securityService.js'
 
-10 | const payload = req.body?.payload || {}
-11 | const result = await performSecurityAction(action, payload)
-12 | return res.json(result)
-13 | }
-14 |
+export async function getSecurityStateController(req, res) {
+const state = await getSecurityState()
+return res.json(state)
+}
+
+export async function securityActionController(req, res) {
+const action = req.body?.action || ''
+
+const payload = req.body?.payload || {}
+const result = await performSecurityAction(action, payload)
+return res.json(result)
+}
+

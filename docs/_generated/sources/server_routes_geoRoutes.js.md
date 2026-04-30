@@ -1,11 +1,11 @@
-    1 | import { Router } from 'express'
-    2 | import { geoLocate, geoSearch } from '../controllers/geoController.js'
-    3 |
-    4 | const router = Router()
-    5 |
-    6 | router.get('/locate', geoLocate)
-    7 | router.get('/search', geoSearch)
-    8 |
-    9 | export default router
+import { Router } from 'express'
+import { geoLocate, geoSearch } from '../controllers/geoController.js'
 
-10 |
+const router = Router()
+
+router.get('/locate', geoLocate)
+router.get('/search', geoSearch)
+
+export default router
+
+

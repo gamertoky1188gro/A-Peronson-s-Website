@@ -1,15 +1,15 @@
-    1 | import { getServerAdminState, performServerAdminAction } from '../services/serverAdminService.js'
-    2 |
-    3 | export async function getServerAdminStateController(req, res) {
-    4 |   const state = await getServerAdminState()
-    5 |   return res.json(state)
-    6 | }
-    7 |
-    8 | export async function serverAdminActionController(req, res) {
-    9 |   const action = req.body?.action || ''
+import { getServerAdminState, performServerAdminAction } from '../services/serverAdminService.js'
 
-10 | const payload = req.body?.payload || {}
-11 | const result = await performServerAdminAction(action, payload)
-12 | return res.json(result)
-13 | }
-14 |
+export async function getServerAdminStateController(req, res) {
+const state = await getServerAdminState()
+return res.json(state)
+}
+
+export async function serverAdminActionController(req, res) {
+const action = req.body?.action || ''
+
+const payload = req.body?.payload || {}
+const result = await performServerAdminAction(action, payload)
+return res.json(result)
+}
+

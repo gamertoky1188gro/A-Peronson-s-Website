@@ -1,14 +1,14 @@
-    1 | import { getCombinedFeed } from '../services/feedService.js'
-    2 |
-    3 | export async function combinedFeed(req, res) {
-    4 |   const unique = req.query.unique === 'true'
-    5 |   const type = req.query.type || 'all'
-    6 |   const category = req.query.category || ''
-    7 |   const cursor = Number.isFinite(Number(req.query.cursor)) ? Math.max(0, Math.floor(Number(req.query.cursor))) : 0
-    8 |   const limitRaw = Number.isFinite(Number(req.query.limit)) ? Math.floor(Number(req.query.limit)) : 12
-    9 |   const limit = Math.min(50, Math.max(1, limitRaw))
+import { getCombinedFeed } from '../services/feedService.js'
 
-10 | const data = await getCombinedFeed({ unique, type, category, cursor, limit, viewer: req.user })
-11 | return res.json(data)
-12 | }
-13 |
+export async function combinedFeed(req, res) {
+const unique = req.query.unique === 'true'
+const type = req.query.type || 'all'
+const category = req.query.category || ''
+const cursor = Number.isFinite(Number(req.query.cursor)) ? Math.max(0, Math.floor(Number(req.query.cursor))) : 0
+const limitRaw = Number.isFinite(Number(req.query.limit)) ? Math.floor(Number(req.query.limit)) : 12
+const limit = Math.min(50, Math.max(1, limitRaw))
+
+const data = await getCombinedFeed({ unique, type, category, cursor, limit, viewer: req.user })
+return res.json(data)
+}
+
