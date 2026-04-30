@@ -13,7 +13,7 @@ const DEFAULT_REJECTION_REASONS = [
 
 const PRESET_REASONS = DEFAULT_REJECTION_REASONS;
 
-export function RejectionReasonModal({
+export default function RejectionReasonModal({
   open,
   onClose,
   onConfirm,
