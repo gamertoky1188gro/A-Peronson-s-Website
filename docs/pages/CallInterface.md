@@ -1971,12 +1971,12 @@ title = "End call" > <PhoneOff size={20} />;
 
 #### `src/pages/CallInterface.jsx:1722`
 
+{% raw %}
 ```jsx
                   className="h-5 w-1.5 rounded-full bg-current transition-transform duration-150 will-change-transform"
                   style={{ transformOrigin: 'bottom', transform: `scaleY(${Math.max(0.18, base + micLevel * 0.9)})` }}
-                />
-              ))}
 ```
+{% endraw %}
 
 **Raw class strings detected (best effort):**
 

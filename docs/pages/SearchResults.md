@@ -8192,12 +8192,14 @@ Share;
 
 #### `src/pages/SearchResults.jsx:2477`
 
+{% raw %}
 ```jsx
                         className="absolute inset-0 rounded-full bg-indigo-500/10 dark:bg-white/10"
                         transition={{ type: 'spring', stiffness: 420, damping: 34 }}
                       />
                     ) : null}
 ```
+{% endraw %}
 
 **Raw class strings detected (best effort):**
 
