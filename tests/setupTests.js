@@ -31,7 +31,9 @@ if (!globalThis.fetch) {
     return {
       ok: method !== "POST" || !url.includes("fail"),
       status: 200,
-      json: async () => ({ choices: [{ message: { content: "Mock response" } }] }),
+      json: async () => ({
+        choices: [{ message: { content: "Mock response" } }],
+      }),
       text: async () => "Mock response",
     };
   };

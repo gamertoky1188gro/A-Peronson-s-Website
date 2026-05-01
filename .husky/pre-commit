@@ -1,0 +1,37 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "Running pre-commit checks..."
+
+echo "1. Running Prettier..."
+npx prettier . --write
+if [ $? -ne 0 ]; then
+  echo "Prettier failed!"
+  exit 1
+fi
+
+echo "2. Running Lint..."
+npm run lint
+if [ $? -ne 0 ]; then
+  echo "Lint failed!"
+  exit 1
+fi
+
+echo "3. Running Tests..."
+npm test 2>&1 | grep -E "(PASS|FAIL|Tests:)"
+if [ $? -ne 0 ]; then
+  echo "Tests failed!"
+  exit 1
+fi
+
+echo "4. Running Build..."
+npm run build
+if [ $? -ne 0 ]; then
+  echo "Build failed!"
+  exit 1
+fi
+
+echo "5. Checking for changes..."
+git diff HEAD --stat
+
+echo "Pre-commit checks passed!"

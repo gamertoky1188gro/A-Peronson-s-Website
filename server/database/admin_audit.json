@@ -16972,5 +16972,48 @@
     },
     "prev_hash": "2d9bba1bd1b782c7eb2d756cd5304cad54f53c3cf3f3a7693e638224e202c617",
     "hash": "16a7b52615c281fb749c9f51fee859934e03b817719a9061eb9055d217d3c5c3"
+  },
+  {
+    "id": "7876f663-12c2-46ce-bfb0-f1a52646e8d3",
+    "at": "2026-05-01T08:14:29.482Z",
+    "actor_id": "owner-test",
+    "actor_role": "owner",
+    "action": "platform_analytics_overview_requested",
+    "path": "/analytics/platform/overview",
+    "status": 200,
+    "payload": {
+      "scope_level": "platform_overview_aggregated",
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "16a7b52615c281fb749c9f51fee859934e03b817719a9061eb9055d217d3c5c3",
+    "hash": "aa7c78b5dc5f83173315eb6949fa9b3c8dce322f12d12c45583110063ac3822b"
+  },
+  {
+    "id": "3a451b4f-c826-4e64-86dc-b954471f2497",
+    "at": "2026-05-01T08:14:29.488Z",
+    "actor_id": "owner-test",
+    "actor_role": "owner",
+    "action": "platform_analytics_trends_requested",
+    "path": "/analytics/platform/trends",
+    "status": 200,
+    "payload": {
+      "scope_level": "platform_trends_global_anonymized",
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
+      "org_scope": "org:global",
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "aa7c78b5dc5f83173315eb6949fa9b3c8dce322f12d12c45583110063ac3822b",
+    "hash": "900c34f947d319edc995cb5f4386fb67c77c15a51cae22050765e20cd0cac86b"
   }
 ]

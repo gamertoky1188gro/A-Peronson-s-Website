@@ -1937,12 +1937,14 @@ Download;
 #### `src/pages/ChatInterface.jsx:1619`
 
 {% raw %}
+
 ```jsx
                           className="absolute bottom-0 right-0 h-3 w-3 rounded-full"
                           style {{
                             background: presenceStatus(thread.senderId) === 'online' ? '#22c55e' : '#94a3b8',
                             boxShadow: `0 0 0 2px ${isLight ? '#e2e8f0' : 'rgba(255,255,255,0.18)'}`,
 ```
+
 {% endraw %}
 
 **Raw class strings detected (best effort):**
@@ -2504,12 +2506,14 @@ Download;
 #### `src/pages/ChatInterface.jsx:1667`
 
 {% raw %}
+
 ```jsx
                       className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full"
                       style={{
                         background: presenceStatus(activeThread?.senderId) === 'online' ? '#22c55e' : '#94a3b8',
                         boxShadow: `0 0 0 2px ${isLight ? '#e2e8f0' : 'rgba(255,255,255,0.18)'}`,
 ```
+
 {% endraw %}
 
 **Raw class strings detected (best effort):**

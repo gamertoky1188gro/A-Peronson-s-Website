@@ -62,7 +62,7 @@ import {
   Briefcase,
   Building2,
   LayoutGrid,
-PackageSearch,
+  PackageSearch,
 } from "lucide-react";
 import { apiRequest } from "../lib/auth";
 import {
