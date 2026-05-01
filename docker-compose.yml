@@ -25,7 +25,7 @@ services:
     command: bash -lc "./scripts/run.sh --dev-or-preview=preview --localrunning-or-incloud=false --iwanttorunrunfrontendby=backend --port-backend=4000"
 
   opensearch:
-    image: opensearchproject/opensearch:2.13.1
+    image: opensearchproject/opensearch:2
     environment:
       discovery.type: single-node
       "plugins.security.disabled": "true"
