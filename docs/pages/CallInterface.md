@@ -77,7 +77,7 @@
     <div className="relative isolate flex h-screen w-screen flex-col overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 font-sans text-slate-900 dark:from-[#050816] dark:via-slate-950/10 dark:to-[#120726] dark:text-slate-100">
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-cyan-400/20 blur-3xl motion-safe:animate-[callFloat_14s_ease-in-out_infinite] dark:bg-cyan-400/10" />
-        <div className="absolute -bottom-32 -right-32 h-[28rem] w-[28rem] rounded-full bg-fuchsia-400/20 blur-3xl motion-safe:animate-[callFloat_18s_ease-in-out_infinite] dark:bg-fuchsia-400/10" style={{ animationDelay: '-6s' }} />
+        <div className="absolute -bottom-32 -right-32 h-[28rem] w-[28rem] rounded-full bg-fuchsia-400/20 blur-3xl motion-safe:animate-[callFloat_18s_ease-in-out_infinite] dark:bg-fuchsia-400/10" style { { animationDelay: '-6s' }} />
 ```
 
 **Raw class strings detected (best effort):**
@@ -139,8 +139,8 @@
 ```jsx
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-cyan-400/20 blur-3xl motion-safe:animate-[callFloat_14s_ease-in-out_infinite] dark:bg-cyan-400/10" />
-        <div className="absolute -bottom-32 -right-32 h-[28rem] w-[28rem] rounded-full bg-fuchsia-400/20 blur-3xl motion-safe:animate-[callFloat_18s_ease-in-out_infinite] dark:bg-fuchsia-400/10" style={{ animationDelay: '-6s' }} />
-        <div className="absolute right-[-6rem] top-[35%] h-80 w-80 rounded-full bg-indigo-400/15 blur-3xl motion-safe:animate-[callFloat_16s_ease-in-out_infinite] dark:bg-indigo-400/10" style={{ animationDelay: '-12s' }} />
+        <div className="absolute -bottom-32 -right-32 h-[28rem] w-[28rem] rounded-full bg-fuchsia-400/20 blur-3xl motion-safe:animate-[callFloat_18s_ease-in-out_infinite] dark:bg-fuchsia-400/10" style { { animationDelay: '-6s' }} />
+        <div className="absolute right-[-6rem] top-[35%] h-80 w-80 rounded-full bg-indigo-400/15 blur-3xl motion-safe:animate-[callFloat_16s_ease-in-out_infinite] dark:bg-indigo-400/10" style { { animationDelay: '-12s' }} />
 ```
 
 **Raw class strings detected (best effort):**
@@ -191,8 +191,8 @@
 
 ```jsx
         <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-cyan-400/20 blur-3xl motion-safe:animate-[callFloat_14s_ease-in-out_infinite] dark:bg-cyan-400/10" />
-        <div className="absolute -bottom-32 -right-32 h-[28rem] w-[28rem] rounded-full bg-fuchsia-400/20 blur-3xl motion-safe:animate-[callFloat_18s_ease-in-out_infinite] dark:bg-fuchsia-400/10" style={{ animationDelay: '-6s' }} />
-        <div className="absolute right-[-6rem] top-[35%] h-80 w-80 rounded-full bg-indigo-400/15 blur-3xl motion-safe:animate-[callFloat_16s_ease-in-out_infinite] dark:bg-indigo-400/10" style={{ animationDelay: '-12s' }} />
+        <div className="absolute -bottom-32 -right-32 h-[28rem] w-[28rem] rounded-full bg-fuchsia-400/20 blur-3xl motion-safe:animate-[callFloat_18s_ease-in-out_infinite] dark:bg-fuchsia-400/10" style { { animationDelay: '-6s' }} />
+        <div className="absolute right-[-6rem] top-[35%] h-80 w-80 rounded-full bg-indigo-400/15 blur-3xl motion-safe:animate-[callFloat_16s_ease-in-out_infinite] dark:bg-indigo-400/10" style { { animationDelay: '-12s' }} />
       </div>
 ```
 
@@ -238,8 +238,8 @@
 #### `src/pages/CallInterface.jsx:1521`
 
 ```jsx
-        <div className="absolute -bottom-32 -right-32 h-[28rem] w-[28rem] rounded-full bg-fuchsia-400/20 blur-3xl motion-safe:animate-[callFloat_18s_ease-in-out_infinite] dark:bg-fuchsia-400/10" style={{ animationDelay: '-6s' }} />
-        <div className="absolute right-[-6rem] top-[35%] h-80 w-80 rounded-full bg-indigo-400/15 blur-3xl motion-safe:animate-[callFloat_16s_ease-in-out_infinite] dark:bg-indigo-400/10" style={{ animationDelay: '-12s' }} />
+        <div className="absolute -bottom-32 -right-32 h-[28rem] w-[28rem] rounded-full bg-fuchsia-400/20 blur-3xl motion-safe:animate-[callFloat_18s_ease-in-out_infinite] dark:bg-fuchsia-400/10" style { { animationDelay: '-6s' }} />
+        <div className="absolute right-[-6rem] top-[35%] h-80 w-80 rounded-full bg-indigo-400/15 blur-3xl motion-safe:animate-[callFloat_16s_ease-in-out_infinite] dark:bg-indigo-400/10" style { { animationDelay: '-12s' }} />
       </div>
       {toast ? (
 ```
@@ -278,7 +278,7 @@
 #### `src/pages/CallInterface.jsx:1522`
 
 ```jsx
-        <div className="absolute right-[-6rem] top-[35%] h-80 w-80 rounded-full bg-indigo-400/15 blur-3xl motion-safe:animate-[callFloat_16s_ease-in-out_infinite] dark:bg-indigo-400/10" style={{ animationDelay: '-12s' }} />
+        <div className="absolute right-[-6rem] top-[35%] h-80 w-80 rounded-full bg-indigo-400/15 blur-3xl motion-safe:animate-[callFloat_16s_ease-in-out_infinite] dark:bg-indigo-400/10" style { { animationDelay: '-12s' }} />
       </div>
       {toast ? (
         <div className="pointer-events-none fixed left-1/2 top-[76px] z-[70] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 px-2">
@@ -1974,7 +1974,7 @@ title = "End call" > <PhoneOff size={20} />;
 {% raw %}
 ```jsx
                   className="h-5 w-1.5 rounded-full bg-current transition-transform duration-150 will-change-transform"
-                  style={{ transformOrigin: 'bottom', transform: `scaleY(${Math.max(0.18, base + micLevel * 0.9)})` }}
+                  style { { transformOrigin: 'bottom', transform: `scaleY(${Math.max(0.18, base + micLevel * 0.9)})` }}
 ```
 {% endraw %}
 
