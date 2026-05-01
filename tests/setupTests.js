@@ -24,3 +24,15 @@ if (!globalThis.clearImmediate) {
 if (typeof window !== "undefined" && !window.scrollTo) {
   window.scrollTo = () => {};
 }
+
+if (!globalThis.fetch) {
+  globalThis.fetch = async (url, options = {}) => {
+    const { method = "GET", headers = {}, body } = options;
+    return {
+      ok: method !== "POST" || !url.includes("fail"),
+      status: 200,
+      json: async () => ({ choices: [{ message: { content: "Mock response" } }] }),
+      text: async () => "Mock response",
+    };
+  };
+}

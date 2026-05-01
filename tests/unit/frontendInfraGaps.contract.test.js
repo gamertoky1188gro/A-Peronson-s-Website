@@ -13,7 +13,7 @@ async function readText(relPath) {
 describe("frontend infra wiring", () => {
   test("jest config uses jsdom harness for DOM tests", async () => {
     const jestConfig = await readText("jest.config.cjs");
-    expect(jestConfig).toMatch(/testEnvironment:\s*'jsdom'/);
+    expect(jestConfig).toMatch(/testEnvironment:\s*"jsdom"/);
     expect(jestConfig).toMatch(/setupFilesAfterEnv/);
   });
 

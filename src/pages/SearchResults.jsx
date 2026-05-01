@@ -62,8 +62,14 @@ import {
   Briefcase,
   Building2,
   LayoutGrid,
+PackageSearch,
 } from "lucide-react";
 import { apiRequest } from "../lib/auth";
+import {
+  ADVANCED_FILTER_KEYS,
+  DEFAULT_CORE_FILTER_KEYS,
+  validateCoreFilterRenderKeys,
+} from "./searchFiltersConfig";
 
 const CATEGORY_OPTIONS = [
   { key: "all", label: "All categories" },
@@ -268,6 +274,12 @@ export default function SearchResults() {
   const searchInputRef = useRef(null);
   const locationDebounceRef = useRef(null);
   const executeSearchRef = useRef(null);
+
+  const renderedDefaultCoreFilterKeys = useMemo(
+    () => [...DEFAULT_CORE_FILTER_KEYS],
+    [],
+  );
+  validateCoreFilterRenderKeys(renderedDefaultCoreFilterKeys);
 
   const INDUSTRIES = filterOptions.industries;
   const INCOTERMS = filterOptions.incoterms;
