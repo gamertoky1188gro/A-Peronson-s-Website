@@ -3,6 +3,11 @@ import { deny, hasRole } from "../utils/permissions.js";
 import { findUserById } from "../services/userService.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "mvp-dev-secret";
+if (!process.env.JWT_SECRET) {
+  console.warn(
+    "[auth] WARNING: Using default JWT secret! Set JWT_SECRET env var for production.",
+  );
+}
 const JWT_ISSUER = process.env.JWT_ISSUER || "gartexhub-api";
 const JWT_AUDIENCE = process.env.JWT_AUDIENCE || "gartexhub-client";
 

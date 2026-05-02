@@ -172,7 +172,12 @@ function cn(...classes) {
 
 export default function FeedManagementPage() {
   const fileInputRef = useRef(null);
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("theme") === "dark" ? "dark" : "light";
+    }
+    return "dark";
+  });
   const [form, setForm] = useState(initialForm);
   const [mediaRows, setMediaRows] = useState([]);
   const [posts, setPosts] = useState([]);
@@ -182,19 +187,15 @@ export default function FeedManagementPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const storedTheme = window.localStorage.getItem("feed-theme");
-    if (storedTheme === "light" || storedTheme === "dark") {
-      setTheme(storedTheme);
-      return;
-    }
-    const prefersDark = window.matchMedia?.(
-      "(prefers-color-scheme: dark)",
-    ).matches;
-    setTheme(prefersDark ? "dark" : "light");
+    const handleThemeChange = () => {
+      const isDark = document.documentElement.classList.contains("dark");
+      setTheme(isDark ? "dark" : "light");
+    };
+    window.addEventListener("theme-change", handleThemeChange);
+    return () => window.removeEventListener("theme-change", handleThemeChange);
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem("feed-theme", theme);
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
 
@@ -440,9 +441,19 @@ export default function FeedManagementPage() {
               </a>
               <button
                 type="button"
-                onClick={() =>
-                  setTheme((prev) => (prev === "dark" ? "light" : "dark"))
-                }
+                onClick={() => {
+                  const newTheme = theme === "dark" ? "light" : "dark";
+                  setTheme(newTheme);
+                  const root = document.documentElement;
+                  if (newTheme === "dark") {
+                    root.classList.add("dark");
+                    localStorage.setItem("theme", "dark");
+                  } else {
+                    root.classList.remove("dark");
+                    localStorage.setItem("theme", "light");
+                  }
+                  window.dispatchEvent(new Event("theme-change"));
+                }}
                 className={cn(
                   "inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5 hover:shadow-lg",
                   panelBg,

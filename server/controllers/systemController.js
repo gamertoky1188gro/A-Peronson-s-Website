@@ -216,6 +216,132 @@ export async function systemHome(req, res) {
         },
       ],
     },
+    whyCards: [
+      {
+        title: "Structured buyer request system",
+        text: "Clear requirements reduce noise and help teams compare responses faster.",
+      },
+      {
+        title: "Factory product visibility engine",
+        text: "Show products, capacity, and proof points in a calm, organized format.",
+      },
+      {
+        title: "Buying house team-based workflow",
+        text: "Assign leads, coordinate follow-ups, and keep everyone aligned.",
+      },
+      {
+        title: "AI-assisted communication + verification",
+        text: "Summaries, suggested replies, and trust signals help teams move with confidence.",
+      },
+    ],
+    workflow: [
+      {
+        step: "Step 1",
+        title: "Post or search",
+        text: "Buyers post structured requirements. Factories publish products and capacity.",
+      },
+      {
+        step: "Step 2",
+        title: "Smart matching + claim lead",
+        text: "Agents claim requests. AI summarizes context so the team moves fast without noise.",
+      },
+      {
+        step: "Step 3",
+        title: "Chat, call, contract",
+        text: "Communicate, schedule meetings, and store agreements inside the Contract Vault.",
+      },
+    ],
+    platformFeatures: [
+      {
+        title: "Professional feed",
+        text: "A calm, LinkedIn-style surface where posts stay readable without heavy frames.",
+        meta: "Buyer Requests • Factory Updates • Buying House Notes",
+      },
+      {
+        title: "Structured buyer requests",
+        text: "Perfectly aligned fields so teams compare requirements instantly.",
+        meta: "Aligned • Clean • Fast",
+      },
+      {
+        title: "Contract Vault",
+        text: "A secure room vibe for agreements, compliance docs, and audit-ready records.",
+        meta: "Draft → Signed • Version history • Team access control",
+      },
+      {
+        title: "Enterprise analytics",
+        text: "Decision-ready reporting for buying houses without turning the UI into a spreadsheet.",
+        meta: "Active leads • Verified matches • Avg. response",
+      },
+    ],
+    categories: [
+      "Shirts",
+      "Pants",
+      "Knitwear",
+      "Woven",
+      "Denim",
+      "Custom production",
+    ],
+    audience: [
+      {
+        title: "For Buyers",
+        text: "Post clear requirements. Get structured replies. Search Bangladesh-centric but global-facing suppliers.",
+        points: [
+          "Structured buyer request posting",
+          "Fast supplier comparison + clearer requirements",
+          "Reduced irrelevant communication",
+          "Contract history + audit-ready records",
+        ],
+      },
+      {
+        title: "For Factories",
+        text: "Show products + capabilities. Receive better leads. Build trust through verification.",
+        points: [
+          "Product posts with specs, media, and capacity highlights",
+          "Clearer inquiries (less back-and-forth)",
+          "AI-assisted responses for repeated questions",
+          "Verification + visibility signals that build trust",
+        ],
+      },
+      {
+        title: "For Buying Houses",
+        text: "Run sourcing as an organization with team seats, lead assignment, and multi-factory coordination.",
+        points: [
+          "Team seats + sub-accounts",
+          "Lead assignment + internal CRM timeline",
+          "Multi-factory coordination in one inbox",
+          "Enterprise analytics (agent outcomes + conversions)",
+        ],
+      },
+    ],
+    aiWorkflow: {
+      eyebrow: "AI Guided Workflow",
+      title:
+        "Clear positioning, calm surfaces, and stronger business workflow.",
+      text: "GarTexHub is presented to strengthen sourcing operations, improve transparency, make communication more efficient, and build trust — without destructive messaging toward any group.",
+      features: [
+        "Professional feed",
+        "Verified factories",
+        "Digital Contract Vault",
+        "AI guided workflow",
+      ],
+    },
+    timeline: [
+      {
+        label: "No live buyer requests yet",
+        status: "Live",
+        icon: "Search",
+      },
+      {
+        label: "Verified factories",
+        status: "Matched by compliance",
+        icon: "ShieldCheck",
+      },
+      {
+        label: "Internal Agent Lock System",
+        status: "Idle",
+        icon: "LockKeyhole",
+      },
+    ],
   });
 }
 
@@ -270,6 +396,166 @@ export async function systemPricing(req, res) {
       ],
     },
     plan_limits: config?.plan_limits || {},
+    comparisonRows: [
+      ["Buyer requests or product posts", "", ""],
+      ["Agent IDs / sub-accounts", "Up to 10", "Unlimited"],
+      ["Contract Vault storage", "Basic", "Extended"],
+      ["Exportable reports", "", ""],
+      ["AI auto-reply customization", "", ""],
+      ["Analytics page", "Basic", ""],
+      ["Search filtering priority", "Standard", "Advanced"],
+      ["Priority request placement", "", ""],
+      ["Support level", "Standard", "Dedicated"],
+      ["Buying pattern analysis", "", ""],
+      ["Order Completion Certification", "", ""],
+      ["Profile / product boost", "", ""],
+    ],
+    buyerFree: [
+      "Post structured buyer requests",
+      "Search factories & suppliers (basic)",
+      "Chat & call access",
+      "Contract Vault (basic)",
+      "Saved searches (limited)",
+    ],
+    buyerPremium: [
+      "Advanced Search Filters",
+      "Priority Buyer Request Placement",
+      "Dedicated Support",
+      "Contract History & Audit Trail",
+      "Early Access to New Verified Factories",
+      "Buying Pattern Analysis",
+      "Order Completion Certification",
+      "AI Auto-reply Customization",
+      "Smart Supplier Matching",
+      "Request Performance Insights",
+      "Profile & product boost with increased reach",
+    ],
+    factoryFree: [
+      "Product management",
+      "Video gallery (approved media)",
+      "Receive buyer requests",
+      "Chat & call access",
+      "Contract Vault (basic)",
+      "Agent IDs / sub-accounts (limit 10)",
+    ],
+    factoryPremium: [
+      "Profile & product boost with increased reach",
+      "Advanced analytics (who viewed, inquiry rate)",
+      "Priority in search results and filter",
+      "AI auto-reply customization",
+      "Dedicated account manager",
+      "Custom branding on profile",
+      "Enterprise analytics dashboard",
+      "Unlimited agent/sub-ID creation",
+      "Buying Pattern Analysis",
+      "Order Completion Certification",
+      "Dedicated Support",
+      "Contract history & audit trail",
+      "Multi-agent management",
+      "Multiple team/agent access management",
+      "Request factory Performance Insights",
+      "Buyer interest analytics",
+      "Agent performance analytics and reporting",
+      "More product/video posting capacity",
+      "Lead distribution across agents",
+      "Buyer communication insights",
+      "Buyer Request Priority Access",
+      "Buyer Conversion Insights",
+      "Unlimited Partner Network request accept",
+    ],
+    houseFree: [
+      "Lead workflow basics",
+      "Buyer request queue access",
+      "Partner Network (Buying House only)",
+      "Chat & call access",
+      "Contract Vault (basic)",
+      "Agent IDs / sub-accounts (limit 10)",
+    ],
+    housePremium: [
+      "Profile & product boost with increased reach",
+      "Advanced analytics (who viewed, inquiry rate)",
+      "Priority in search results and filter",
+      "AI auto-reply customization",
+      "Dedicated account manager",
+      "Custom branding on profile",
+      "Enterprise analytics dashboard",
+      "Unlimited agent/sub-ID creation",
+      "Buying Pattern Analysis",
+      "Order Completion Certification",
+      "Dedicated Support",
+      "Contract history & audit trail",
+      "Multi-agent management",
+      "Multiple team/agent access management",
+      "Request Buying House Performance Insights",
+      "Buyer interest analytics",
+      "Agent performance analytics and reporting",
+      "More product/video posting capacity",
+      "Lead distribution across agents",
+      "Buyer communication insights",
+      "Buyer Request Priority Access",
+      "Buyer Conversion Insights",
+      "Unlimited Partner Network Access",
+    ],
+    faqs: [
+      { q: "Can I upgrade anytime?", a: "Yes — your data stays intact." },
+      { q: "Can I downgrade?", a: "Yes — plan limits apply immediately." },
+      {
+        q: "Does GarTexHub handle payments?",
+        a: "Not yet. The platform focuses on workflow + coordination. Premium can be activated via promo coupon without a card when eligible.",
+      },
+      {
+        q: "Are calls recorded?",
+        a: "Yes — for documentation and compliance.",
+      },
+    ],
+    sectionTitles: {
+      plans: {
+        eyebrow: "Simple, transparent pricing",
+        title:
+          "Choose the surface you need today — upgrade when your team scales.",
+        subtitle:
+          "Role-specific plans keep workflows clean for buyers, factories, and buying houses. Start free, then move into premium when you need analytics, priority placement, export-ready reporting, and secure contract history.",
+      },
+      enterprise: {
+        eyebrow: "Why enterprise matters",
+        title: "When your team scales, structure beats noise.",
+        subtitle: "Premium keeps workflows conflict-free and audit-ready.",
+        items: [
+          "Team scale without limits",
+          "Decision-ready visibility",
+          "Secure contract trail",
+          "Verified trust signals",
+        ],
+      },
+      premiumFeatures: {
+        eyebrow: "Premium feature deep dive",
+        title: "A role-specific roundup of what the Premium plan unlocks.",
+        subtitle:
+          "Buyer, Factory, and Buying House teams all get the right controls, analytics, and trust signals — without bloated UI or confusing add-ons.",
+      },
+      analytics: {
+        eyebrow: "Analytics snapshot",
+        title: "Decision-ready metrics without spreadsheet UI.",
+        subtitle:
+          "Auto-sorted, calm, and clean — the data feels like part of the product instead of a separate dashboard.",
+      },
+      comparison: {
+        eyebrow: "Comparison",
+        title: "Feature comparison",
+        subtitle: "A clear line-by-line look at the Free and Premium surfaces.",
+      },
+      faq: {
+        eyebrow: "FAQ",
+        title: "Short answers, no sales noise.",
+        subtitle: "Everything important, kept simple.",
+      },
+      cta: {
+        eyebrow: "Ready for serious sourcing",
+        title: "Build a structured textile network today",
+        subtitle:
+          "Start free, upgrade when your org needs analytics, export, and secure contract management.",
+      },
+    },
   });
 }
 

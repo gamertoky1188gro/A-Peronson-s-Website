@@ -208,6 +208,7 @@ const TABS = [
   { id: "members", label: "Members", requiredRole: "factory" },
   { id: "subscription", label: "Subscription", requiredRole: "factory" },
   { id: "boosts", label: "Boosts", requiredRole: "manager" },
+  { id: "notifications", label: "Notifications", requiredRole: "viewer" },
   {
     id: "assistant_knowledge",
     label: "Assistant Knowledge",
@@ -224,8 +225,22 @@ export default function OrgSettings() {
   }, [searchParams]);
 
   const [tab, setTab] = useState(initialTab);
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("theme") === "dark" ? "dark" : "light";
+    }
+    return "dark";
+  });
   const [statusMessage, setStatusMessage] = useState("Ready.");
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      const isDark = document.documentElement.classList.contains("dark");
+      setTheme(isDark ? "dark" : "light");
+    };
+    window.addEventListener("theme-change", handleThemeChange);
+    return () => window.removeEventListener("theme-change", handleThemeChange);
+  }, []);
 
   const currentUser = useMemo(() => getCurrentUser(), []);
   const currentUserRole = useMemo(
@@ -874,13 +889,103 @@ export default function OrgSettings() {
       if (!optionsRes?.options?.challenge) {
         throw new Error("Passkey setup failed");
       }
-      // WebAuthn registration would happen here with startRegistration
-      setPasskeys([
-        ...passkeys,
-        { id: crypto.randomUUID(), name: passkeyName, createdAt: "Now" },
-      ]);
+
+      // Convert server options to WebAuthn format
+      // Handle both base64 and base64url encoding
+      const decodeBase64URL = (str) => {
+        // Replace URL-safe chars with standard base64 chars
+        let base64 = str.replace(/-/g, "+").replace(/_/g, "/");
+        // Add padding if needed
+        while (base64.length % 4) base64 += "=";
+        return Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+      };
+
+      const options = {
+        publicKey: {
+          challenge: decodeBase64URL(optionsRes.options.challenge),
+          rp: {
+            name: optionsRes.options.rp?.name || "GarTexHub",
+            id: optionsRes.options.rp?.id || window.location.hostname,
+          },
+          user: {
+            id: decodeBase64URL(optionsRes.options.user.id),
+            name: passkeyName,
+            displayName: passkeyName,
+          },
+          pubKeyCredParams: (optionsRes.options.pubKeyCredParams || []).map(
+            (param) => ({
+              type: param.type,
+              alg: param.alg,
+            }),
+          ),
+          timeout: optionsRes.options.timeout || 60000,
+          excludeCredentials: (optionsRes.options.excludeCredentials || []).map(
+            (cred) => ({
+              id: decodeBase64URL(cred.id),
+              type: cred.type,
+            }),
+          ),
+          attestation: optionsRes.options.attestation || "none",
+        },
+      };
+
+      // Create the passkey using WebAuthn
+      let credential;
+      try {
+        credential = await navigator.credentials.create(options);
+      } catch (webauthnErr) {
+        throw new Error(
+          webauthnErr.message ||
+            "Passkey registration cancelled or not supported",
+        );
+      }
+
+      if (!credential) {
+        throw new Error("No credential created");
+      }
+
+      // Convert credential to JSON for server verification
+      const arrayBufferToBase64URL = (buffer) => {
+        const bytes = new Uint8Array(buffer);
+        let binary = "";
+        for (let i = 0; i < bytes.byteLength; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary)
+          .replace(/\+/g, "-")
+          .replace(/\//g, "_")
+          .replace(/=+$/, "");
+      };
+
+      const credentialData = {
+        id: credential.id,
+        rawId: arrayBufferToBase64URL(credential.rawId),
+        type: credential.type,
+        response: {
+          clientDataJSON: arrayBufferToBase64URL(
+            credential.response.clientDataJSON,
+          ),
+          attestationObject: arrayBufferToBase64URL(
+            credential.response.attestationObject,
+          ),
+        },
+      };
+
+      // Verify and save the passkey on server
+      const verifyRes = await apiRequest("/auth/passkey/registration/verify", {
+        method: "POST",
+        token,
+        body: { credential: credentialData, name: passkeyName },
+      });
+
+      if (!verifyRes?.passkeys) {
+        throw new Error("Failed to save passkey");
+      }
+
+      // Reload passkeys from server
+      await loadPasskeys();
       setPasskeyName("");
-      save("Passkey registered.");
+      save("Passkey registered successfully.");
     } catch (err) {
       setPasskeyError(err.message || "Failed to add passkey");
     }
@@ -925,8 +1030,19 @@ export default function OrgSettings() {
     loadMembers,
   ]);
 
-  const onThemeToggle = () =>
-    setTheme((t) => (t === "dark" ? "light" : "dark"));
+  const onThemeToggle = () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+    const root = document.documentElement;
+    if (newTheme === "dark") {
+      root.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      root.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+    window.dispatchEvent(new Event("theme-change"));
+  };
   const verificationTone =
     verificationStatus === "verified_active"
       ? "green"
@@ -1962,6 +2078,9 @@ export default function OrgSettings() {
             </div>
           )}
 
+        {/* ==================== NOTIFICATIONS TAB ==================== */}
+        {activeTab === "notifications" && <NotificationPreferencesTab />}
+
         {/* ==================== ASSISTANT KNOWLEDGE TAB ==================== */}
         {activeTab === "assistant_knowledge" &&
           hasRoleAccess(currentUserRole, "manager") && (
@@ -2033,6 +2152,154 @@ export default function OrgSettings() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function NotificationPreferencesTab() {
+  const [prefs, setPrefs] = useState({
+    email_enabled: true,
+    push_enabled: true,
+    message_notifs: true,
+    requirement_notifs: true,
+    contract_notifs: true,
+    smart_match_notifs: true,
+    monthly_summary: true,
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [feedback, setFeedback] = useState("");
+
+  useEffect(() => {
+    apiRequest("/api/notifications/preferences")
+      .then((res) => {
+        if (res.ok) return res.json();
+        throw new Error("Failed to load");
+      })
+      .then((data) => setPrefs(data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleToggle = async (key) => {
+    const newPrefs = { ...prefs, [key]: !prefs[key] };
+    setPrefs(newPrefs);
+    setSaving(true);
+    setFeedback("");
+
+    try {
+      const res = await apiRequest("/api/notifications/preferences", {
+        method: "PUT",
+        body: JSON.stringify(newPrefs),
+      });
+      if (!res.ok) throw new Error("Save failed");
+      setFeedback("Preferences saved!");
+    } catch {
+      setFeedback("Failed to save. Please try again.");
+      setPrefs(prefs);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const Toggle = ({ label, description, checked, onChange }) => (
+    <div className="flex items-center justify-between py-3">
+      <div>
+        <div className="font-medium text-slate-900 dark:text-white">
+          {label}
+        </div>
+        {description && (
+          <div className="text-sm text-slate-500">{description}</div>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={onChange}
+        disabled={saving}
+        className={cx(
+          "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+          checked ? "bg-sky-500" : "bg-slate-300 dark:bg-slate-600",
+        )}
+      >
+        <span
+          className={cx(
+            "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+            checked ? "translate-x-6" : "translate-x-1",
+          )}
+        />
+      </button>
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-2">
+      <SectionCard
+        title="Notification Channels"
+        subtitle="Choose how you receive notifications."
+      >
+        <Toggle
+          label="Email Notifications"
+          description="Receive notifications via email."
+          checked={prefs.email_enabled}
+          onChange={() => handleToggle("email_enabled")}
+        />
+        <Toggle
+          label="Push Notifications"
+          description="Receive in-app push notifications."
+          checked={prefs.push_enabled}
+          onChange={() => handleToggle("push_enabled")}
+        />
+      </SectionCard>
+
+      <SectionCard
+        title="Notification Types"
+        subtitle="Select which events trigger notifications."
+      >
+        <Toggle
+          label="Messages"
+          description="New chat messages."
+          checked={prefs.message_notifs}
+          onChange={() => handleToggle("message_notifs")}
+        />
+        <Toggle
+          label="Buyer Requests"
+          description="New requirements matching your interests."
+          checked={prefs.requirement_notifs}
+          onChange={() => handleToggle("requirement_notifs")}
+        />
+        <Toggle
+          label="Contracts"
+          description="Contract updates and signatures."
+          checked={prefs.contract_notifs}
+          onChange={() => handleToggle("contract_notifs")}
+        />
+        <Toggle
+          label="Smart Search Matches"
+          description="When new items match your saved searches."
+          checked={prefs.smart_match_notifs}
+          onChange={() => handleToggle("smart_match_notifs")}
+        />
+        <Toggle
+          label="Monthly Summary"
+          description="Your monthly activity summary."
+          checked={prefs.monthly_summary}
+          onChange={() => handleToggle("monthly_summary")}
+        />
+      </SectionCard>
+
+      {feedback && (
+        <div className="col-span-full rounded-lg p-3 text-sm bg-sky-50 text-sky-700 border border-sky-200">
+          {feedback}
+        </div>
+      )}
     </div>
   );
 }

@@ -82,6 +82,7 @@ import {
   ensureDatabaseConnection,
   closeDatabaseConnection,
 } from "./utils/db.js";
+import { initRedis, closeRedis } from "./utils/redis.js";
 import { revokeExpiredVerifications } from "./services/verificationService.js";
 import { enforcePartnerFreeTierLimits } from "./services/partnerNetworkService.js";
 import { runLeadReminderSweep } from "./services/leadReminderService.js";
@@ -99,7 +100,45 @@ setInterval(() => {
 
 startEventQualityReporter();
 
-app.use(cors());
+// CORS configuration - stricter in production
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      "http://localhost:5173", // dev frontend
+      "http://localhost:4173", // preview
+      "http://127.0.0.1:5173",
+      "https://gartexhub.onrender.com", // production
+    ];
+
+    // Allow requests with no origin (like mobile apps, curl, Postman)
+    // In production, you might want to be stricter
+    if (!origin) {
+      if (process.env.NODE_ENV === "production") {
+        // In production, require specific origins (comment out to allow all for API clients)
+        // callback(null, true); // Uncomment for strict mode
+        callback(null, true); // Temporary: allow no-origin for mobile/API
+      } else {
+        callback(null, true); // Dev: allow all
+      }
+      return;
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      if (process.env.NODE_ENV === "production") {
+        callback(new Error("Not allowed by CORS"));
+      } else {
+        callback(null, true); // Dev: allow all
+      }
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+};
+
+app.use(cors(corsOptions));
 app.use(express.json({ limit: "5mb" }));
 
 const uploadsRoot = path.join(process.cwd(), "server", "uploads");
@@ -194,6 +233,9 @@ const callRooms = new Map();
 const chatRooms = new Map();
 const socketsByUserId = new Map();
 const JWT_SECRET = process.env.JWT_SECRET || "mvp-dev-secret";
+if (process.env.NODE_ENV === "production" && !process.env.JWT_SECRET) {
+  console.error("[server] ERROR: JWT_SECRET must be set in production!");
+}
 const JWT_ISSUER = process.env.JWT_ISSUER || "gartexhub-api";
 const JWT_AUDIENCE = process.env.JWT_AUDIENCE || "gartexhub-client";
 
@@ -764,6 +806,8 @@ wsServer.on("connection", (socket, req) => {
 
 async function start() {
   await ensureDatabaseConnection();
+  // Redis caching (optional - only if REDIS_URL is set)
+  await initRedis();
   // Verification renewals: keep badges in sync with subscription validity.
   revokeExpiredVerifications().catch((error) =>
     logError("verification_expiry_check_failed", error),
@@ -812,6 +856,7 @@ start().catch((error) => {
 
 process.on("SIGINT", async () => {
   try {
+    await closeRedis();
     await closeDatabaseConnection();
   } finally {
     process.exit(0);

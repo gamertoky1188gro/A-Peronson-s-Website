@@ -362,9 +362,7 @@ function isOwnerLevel(user) {
 export default function ContractVaultPage() {
   const [theme, setTheme] = useState(() => {
     if (typeof window !== "undefined") {
-      return document.documentElement.classList.contains("dark")
-        ? "dark"
-        : "dark";
+      return localStorage.getItem("theme") === "dark" ? "dark" : "light";
     }
     return "dark";
   });
@@ -383,6 +381,15 @@ export default function ContractVaultPage() {
     currency: "USD",
     document_file: null,
   });
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      const isDark = document.documentElement.classList.contains("dark");
+      setTheme(isDark ? "dark" : "light");
+    };
+    window.addEventListener("theme-change", handleThemeChange);
+    return () => window.removeEventListener("theme-change", handleThemeChange);
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -539,9 +546,19 @@ export default function ContractVaultPage() {
                   </p>
                 </div>
                 <button
-                  onClick={() =>
-                    setTheme((t) => (t === "dark" ? "light" : "dark"))
-                  }
+                  onClick={() => {
+                    const newTheme = theme === "dark" ? "light" : "dark";
+                    setTheme(newTheme);
+                    const root = document.documentElement;
+                    if (newTheme === "dark") {
+                      root.classList.add("dark");
+                      localStorage.setItem("theme", "dark");
+                    } else {
+                      root.classList.remove("dark");
+                      localStorage.setItem("theme", "light");
+                    }
+                    window.dispatchEvent(new Event("theme-change"));
+                  }}
                   className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
                 >
                   {theme === "dark" ? "Light" : "Dark"}

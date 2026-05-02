@@ -52,5 +52,10 @@ services:
         value: "/"
       - key: VITE_API_PROXY
         value: "http://localhost:10000"
+      - key: JWT_SECRET
+        value: "50733db4ac8942349eb4e78607f98db133318360795845838eadd1ccf6bd9a41"
+      # Optional: Add Redis for caching at scale (e.g., redis://...)
+      # - key: REDIS_URL
+      #   value: "redis://your-redis-host:6379"
     buildCommand: npm install && npm run build && npx prisma migrate deploy && npm run db:generate
     startCommand: SKIP_BUILD=true ./scripts/run.sh --dev-or-preview=preview --localrunning-or-incloud=false --iwanttorunrunfrontendby=backend --port-backend=10000

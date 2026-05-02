@@ -5,6 +5,7 @@ import {
   emitNotificationCreated,
   emitNotificationRead,
 } from "../realtime/realtimeBus.js";
+import prisma from "../utils/prisma.js";
 
 const ALERTS_FILE = "search_alerts.json";
 const NOTIFICATIONS_FILE = "notifications.json";
@@ -226,4 +227,41 @@ async function ensureMonthlySummary(
   allNotifications.push(summary);
   await writeJson(NOTIFICATIONS_FILE, allNotifications);
   return allNotifications;
+}
+
+export async function getNotificationPreferences(userId) {
+  let prefs = await prisma.notificationPreferences.findUnique({
+    where: { user_id: userId },
+  });
+  if (!prefs) {
+    prefs = await prisma.notificationPreferences.create({
+      data: { user_id: userId },
+    });
+  }
+  return prefs;
+}
+
+export async function updateNotificationPreferences(userId, payload = {}) {
+  const data = {};
+  if (typeof payload.email_enabled === "boolean")
+    data.email_enabled = payload.email_enabled;
+  if (typeof payload.push_enabled === "boolean")
+    data.push_enabled = payload.push_enabled;
+  if (typeof payload.message_notifs === "boolean")
+    data.message_notifs = payload.message_notifs;
+  if (typeof payload.requirement_notifs === "boolean")
+    data.requirement_notifs = payload.requirement_notifs;
+  if (typeof payload.contract_notifs === "boolean")
+    data.contract_notifs = payload.contract_notifs;
+  if (typeof payload.smart_match_notifs === "boolean")
+    data.smart_match_notifs = payload.smart_match_notifs;
+  if (typeof payload.monthly_summary === "boolean")
+    data.monthly_summary = payload.monthly_summary;
+
+  const prefs = await prisma.notificationPreferences.upsert({
+    where: { user_id: userId },
+    update: data,
+    create: { user_id: userId, ...data },
+  });
+  return prefs;
 }

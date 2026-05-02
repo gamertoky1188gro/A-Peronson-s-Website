@@ -1334,3 +1334,19 @@ model AdminConfigHistory {
   @@index([config_type, created_at])
   @@map("admin_config_history")
 }
+
+model NotificationPreferences {
+  id              String    @id @default(cuid())
+  user_id         String    @unique
+  email_enabled   Boolean   @default(true)
+  push_enabled    Boolean   @default(true)
+  message_notifs  Boolean   @default(true)
+  requirement_notifs Boolean @default(true)
+  contract_notifs Boolean  @default(true)
+  smart_match_notifs Boolean @default(true)
+  monthly_summary Boolean  @default(true)
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  @@map("notification_preferences")
+}

@@ -9,9 +9,13 @@ const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, "..");
 
 try {
-  const pandocPath = execSync('python -c "import pypandoc; print(pypandoc.get_pandoc_path())"', { encoding: "utf-8" }).trim();
+  const pandocPath = execSync(
+    'python -c "import pypandoc; print(pypandoc.get_pandoc_path())"',
+    { encoding: "utf-8" },
+  ).trim();
   if (pandocPath) {
-    process.env.PATH = path.dirname(pandocPath) + path.delimiter + process.env.PATH;
+    process.env.PATH =
+      path.dirname(pandocPath) + path.delimiter + process.env.PATH;
   }
 } catch {
   console.warn("Could not auto-detect pandoc, using default PATH");
@@ -41,14 +45,18 @@ function runPandoc(inputFile, outputFile) {
   return new Promise((resolve, reject) => {
     const pandocArgs = [
       inputFile,
-      "-o", outputFile,
+      "-o",
+      outputFile,
       "--standalone",
-      "-t", "docx",
+      "-t",
+      "docx",
       "--toc",
       "--toc-depth=2",
     ];
 
-    console.log(`Converting: ${path.basename(inputFile)} -> ${path.basename(outputFile)}`);
+    console.log(
+      `Converting: ${path.basename(inputFile)} -> ${path.basename(outputFile)}`,
+    );
 
     const pandoc = spawn("pandoc", pandocArgs, {
       stdio: "inherit",

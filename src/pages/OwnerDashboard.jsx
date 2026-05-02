@@ -180,8 +180,23 @@ const quickActions = [
 export default function OwnerDashboard() {
   const navigate = useNavigate();
   const [active, setActive] = useState("home");
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("theme") === "dark" ? "dark" : "light";
+    }
+    return "dark";
+  });
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      const isDark = document.documentElement.classList.contains("dark");
+      setTheme(isDark ? "dark" : "light");
+    };
+    window.addEventListener("theme-change", handleThemeChange);
+    return () => window.removeEventListener("theme-change", handleThemeChange);
+  }, []);
+
   const { dashboard, subscription, isEnterprise, loading, error } =
     useAnalyticsDashboard();
   const [policy, setPolicy] = useState(null);
@@ -347,7 +362,19 @@ export default function OwnerDashboard() {
 
               <div className="mt-4 space-y-3 border-t border-slate-200/70 pt-4 dark:border-white/10">
                 <button
-                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  onClick={() => {
+                    const newTheme = theme === "dark" ? "light" : "dark";
+                    const root = document.documentElement;
+                    if (newTheme === "dark") {
+                      root.classList.add("dark");
+                      localStorage.setItem("theme", "dark");
+                    } else {
+                      root.classList.remove("dark");
+                      localStorage.setItem("theme", "light");
+                    }
+                    setTheme(newTheme);
+                    window.dispatchEvent(new Event("theme-change"));
+                  }}
                   className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200"
                 >
                   <span>{theme === "dark" ? "Dark mode" : "Light mode"}</span>

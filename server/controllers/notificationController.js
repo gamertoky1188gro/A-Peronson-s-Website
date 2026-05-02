@@ -4,6 +4,8 @@ import {
   listNotifications,
   markNotificationRead,
   saveSearchAlert,
+  getNotificationPreferences,
+  updateNotificationPreferences,
 } from "../services/notificationService.js";
 import {
   buildLimitError,
@@ -67,4 +69,16 @@ export async function deleteSearchAlert(req, res) {
   const ok = await deleteSearchAlertForUser(req.user.id, req.params.alertId);
   if (!ok) return res.status(404).json({ error: "Search alert not found" });
   return res.json({ ok: true });
+}
+
+export async function getPreferences(req, res) {
+  return res.json(await getNotificationPreferences(req.user.id));
+}
+
+export async function updatePreferences(req, res) {
+  const prefs = await updateNotificationPreferences(
+    req.user.id,
+    req.body || {},
+  );
+  return res.json(prefs);
 }

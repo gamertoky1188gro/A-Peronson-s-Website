@@ -6,6 +6,8 @@ import {
   getNotifications,
   getSearchAlerts,
   readNotification,
+  getPreferences,
+  updatePreferences,
 } from "../controllers/notificationController.js";
 
 const router = Router();
@@ -15,5 +17,7 @@ router.patch("/:notificationId/read", requireAuth, readNotification);
 router.get("/search-alerts", requireAuth, getSearchAlerts);
 router.post("/search-alerts", requireAuth, createSearchAlert);
 router.delete("/search-alerts/:alertId", requireAuth, deleteSearchAlert);
+router.get("/preferences", requireAuth, getPreferences);
+router.put("/preferences", requireAuth, updatePreferences);
 
 export default router;
