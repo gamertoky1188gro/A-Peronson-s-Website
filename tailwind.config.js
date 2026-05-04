@@ -4,6 +4,9 @@ export default {
   content: ["./index.html", "./src/**/*.{js,jsx}"],
   theme: {
     extend: {
+      screens: {
+        'print': {'raw': 'print'},
+      },
       colors: {
         gtBlue: "#0a66c2",
         gtBlueHover: "#004182",

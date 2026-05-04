@@ -46,7 +46,7 @@ export default function ProductManagement() {
   const [saving, setSaving] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [mediaGallery, setMediaGallery] = useState([]);
-  const [mediaUrl, setMediaUrl] = useState("");
+  
   const [mediaBusy, setMediaBusy] = useState(false);
   const [mediaNotice, setMediaNotice] = useState("");
   const [videoBusy, setVideoBusy] = useState(false);
@@ -78,7 +78,6 @@ export default function ProductManagement() {
     setNotice("");
     setMediaNotice("");
     setMediaGallery([]);
-    setMediaUrl("");
     setComplianceChecked(false);
     setVideoNotice("");
     setAdvancedOpen(false);
@@ -112,7 +111,6 @@ export default function ProductManagement() {
     setMediaGallery(
       Array.isArray(item?.image_gallery) ? item.image_gallery : [],
     );
-    setMediaUrl("");
     setComplianceChecked(false);
     setVideoNotice("");
     setAdvancedOpen(false);
@@ -414,64 +412,6 @@ export default function ProductManagement() {
       setVideoNotice(err.message || "Video upload failed");
     } finally {
       setVideoBusy(false);
-    }
-  }
-
-  async function handleAddMediaUrl() {
-    if (!editing?.id || !token) {
-      setMediaNotice("Save the product first to add media URLs.");
-      return;
-    }
-    const url = mediaUrl.trim();
-    if (!url) return;
-    if (!isInternalMediaUrl(url)) {
-      setMediaNotice("Only internal /uploads/... image URLs are allowed.");
-      return;
-    }
-    setMediaBusy(true);
-    setMediaNotice("");
-    try {
-      const data = await apiRequest("/documents/url", {
-        method: "POST",
-        token,
-        body: {
-          entity_type: "company_product",
-          entity_id: editing.id,
-          type: "image",
-          url,
-        },
-      });
-      const entry = {
-        document_id: data.id,
-        source_path: data.file_path || data.url || url,
-        url: data.file_path ? toPublicUrl(data.file_path) : url,
-        status: data.moderation_status || "pending_review",
-        flags: Array.isArray(data.moderation_flags)
-          ? data.moderation_flags
-          : [],
-      };
-      const nextForm = {
-        ...form,
-        image_urls: Array.from(
-          new Set(
-            [...(form.image_urls || []), entry.source_path].filter(Boolean),
-          ),
-        ),
-        cover_image_url: form.cover_image_url || entry.source_path || "",
-      };
-      setMediaUrl("");
-      setForm(nextForm);
-      setMediaGallery((prev) => [...prev, entry]);
-      await syncProductMedia(nextForm);
-      trackClientEvent("product_image_url_added", {
-        entityType: "product",
-        entityId: editing.id,
-        metadata: { document_id: data.id },
-      });
-    } catch (err) {
-      setMediaNotice(err.message || "Unable to register image URL");
-    } finally {
-      setMediaBusy(false);
     }
   }
 
@@ -946,7 +886,7 @@ export default function ProductManagement() {
                     Product media
                   </p>
                   <p className="text-[11px] text-slate-500">
-                    Upload images or register internal /uploads/... URLs.
+                    Upload images or video files.
                     Pending/rejected media stays hidden from buyers.
                   </p>
                 </div>
@@ -973,20 +913,15 @@ export default function ProductManagement() {
 
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                       <input
-                        value={mediaUrl}
-                        onChange={(e) => setMediaUrl(e.target.value)}
-                        placeholder="/uploads/products/images/..."
-                        className="flex-1 rounded-xl shadow-borderless dark:shadow-borderlessDark px-3 py-2 text-xs"
+                        type="file"
+                        accept="video/*"
+                        onChange={(e) => handleUploadFiles(e.target.files)}
                         disabled={mediaBusy}
+                        className="text-xs"
                       />
-                      <button
-                        type="button"
-                        onClick={handleAddMediaUrl}
-                        disabled={mediaBusy || !mediaUrl.trim()}
-                        className="rounded-full bg-[#0A66C2] px-4 py-2 text-xs font-semibold text-white disabled:opacity-60"
-                      >
-                        Add URL
-                      </button>
+                      <span className="text-[11px] text-slate-500">
+                        {mediaBusy ? "Uploading..." : "Video files"}
+                      </span>
                     </div>
 
                     {mediaNotice ? (

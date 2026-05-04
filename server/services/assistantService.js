@@ -83,17 +83,88 @@ const MAX_MATCHED_SNIPPETS = 4;
 const MAX_SNIPPET_LENGTH = 320;
 const MAX_CONTEXT_CHARS = 1_600;
 const MAX_KNOWLEDGE_CONTEXT_CHARS = 1_200;
-const OLLAMA_HOST = process.env.OLLAMA_HOST || "127.0.0.1";
-const OLLAMA_PORT = process.env.OLLAMA_PORT || "11434";
-const LOCAL_LLM_ENDPOINT =
-  process.env.LOCAL_LLM_ENDPOINT ||
-  `http://${OLLAMA_HOST}:${OLLAMA_PORT}/v1/chat/completions`;
-const LOCAL_LLM_FALLBACK_ENDPOINT =
-  process.env.LOCAL_LLM_FALLBACK_ENDPOINT ||
-  `http://${OLLAMA_HOST}:${OLLAMA_PORT}/completion`;
-const LOCAL_LLM_MODEL = process.env.LOCAL_LLM_MODEL || "llama3";
-const LOCAL_LLM_TIMEOUT_MS = Number(process.env.LOCAL_LLM_TIMEOUT_MS || 45000);
 const MAX_AI_ANSWER_CHARS = 1200;
+
+const AI_PROVIDERS = {
+  OLLAMA: "ollama",
+  OPENROUTER: "openrouter",
+  NONE: "none",
+};
+
+const aiConfig = {
+  primary: process.env.AI_PRIMARY_PROVIDER?.toLowerCase() || AI_PROVIDERS.OLLAMA,
+  fallback: process.env.AI_FALLBACK_PROVIDER?.toLowerCase() || AI_PROVIDERS.OPENROUTER,
+  enabled: process.env.AI_ENABLED !== "false",
+  ollama: {
+    host: process.env.OLLAMA_HOST || "127.0.0.1",
+    port: process.env.OLLAMA_PORT || "11434",
+    model: process.env.OLLAMA_MODEL || "llama3",
+    timeoutMs: Number(process.env.OLLAMA_TIMEOUT_MS || 45000),
+    chatEndpoint: process.env.OLLAMA_CHAT_ENDPOINT ||
+      `http://${process.env.OLLAMA_HOST || "127.0.0.1"}:${process.env.OLLAMA_PORT || "11434"}/v1/chat/completions`,
+    completionEndpoint: process.env.OLLAMA_COMPLETION_ENDPOINT ||
+      `http://${process.env.OLLAMA_HOST || "127.0.0.1"}:${process.env.OLLAMA_PORT || "11434"}/completion`,
+  },
+  openrouter: {
+    apiKey: process.env.OPENROUTER_API_KEY || "",
+    model: process.env.OPENROUTER_MODEL || "meta-llama/llama-3.1-8b-instruct",
+    baseUrl: "https://openrouter.ai/api/v1/chat/completions",
+    timeoutMs: Number(process.env.OPENROUTER_TIMEOUT_MS || 60000),
+    referer: process.env.OPENROUTER_REFERER || "https://gartexhub.com",
+    appTitle: process.env.OPENROUTER_APP_TITLE || "GarTexHub",
+  },
+};
+
+function getPrimaryProvider() {
+  if (!aiConfig.enabled) return AI_PROVIDERS.NONE;
+  return aiConfig.primary;
+}
+
+function getFallbackProvider() {
+  if (!aiConfig.enabled) return AI_PROVIDERS.NONE;
+  if (aiConfig.fallback === aiConfig.primary) return AI_PROVIDERS.NONE;
+  return aiConfig.fallback;
+}
+
+function isProviderAvailable(provider) {
+  switch (provider) {
+    case AI_PROVIDERS.OLLAMA:
+      return aiConfig.ollama.model && aiConfig.ollama.host;
+    case AI_PROVIDERS.OPENROUTER:
+      return aiConfig.openrouter.apiKey && aiConfig.openrouter.model;
+    default:
+      return false;
+  }
+}
+
+export function getAiConfig() {
+  return {
+    ...aiConfig,
+    primaryProvider: getPrimaryProvider(),
+    fallbackProvider: getFallbackProvider(),
+    primaryAvailable: isProviderAvailable(getPrimaryProvider()),
+    fallbackAvailable: isProviderAvailable(getFallbackProvider()),
+  };
+}
+
+export function updateAiConfig(newConfig) {
+  if (newConfig.primary !== undefined) {
+    aiConfig.primary = newConfig.primary.toLowerCase();
+  }
+  if (newConfig.fallback !== undefined) {
+    aiConfig.fallback = newConfig.fallback.toLowerCase();
+  }
+  if (newConfig.enabled !== undefined) {
+    aiConfig.enabled = newConfig.enabled;
+  }
+  if (newConfig.ollama) {
+    Object.assign(aiConfig.ollama, newConfig.ollama);
+  }
+  if (newConfig.openrouter) {
+    Object.assign(aiConfig.openrouter, newConfig.openrouter);
+  }
+}
+
 const CODE_CONTEXT_HINTS = new Set([
   "api",
   "route",
@@ -423,38 +494,73 @@ export async function callLlama(
   prompt,
   systemPrompt = "You are a helpful GarTex assistant.",
 ) {
-  try {
-    logInfo("Assistant calling Ollama/Llama", {
-      endpoint: LOCAL_LLM_ENDPOINT,
-      model: LOCAL_LLM_MODEL,
-    });
-    const result = await runWithTimeout((signal) =>
-      callChatCompletions(prompt, signal, systemPrompt),
-    );
-    if (result) return result;
-
-    logInfo("Chat endpoint failed, trying fallback", {
-      endpoint: LOCAL_LLM_FALLBACK_ENDPOINT,
-    });
-    return await runWithTimeout((signal) =>
-      callLegacyCompletion(prompt, signal),
-    );
-  } catch (error) {
-    logError("Llama call failed", error);
+  if (!aiConfig.enabled) {
+    logInfo("AI is disabled");
     return null;
+  }
+
+  const primary = getPrimaryProvider();
+  const fallback = getFallbackProvider();
+
+  if (primary === AI_PROVIDERS.NONE && fallback === AI_PROVIDERS.NONE) {
+    logInfo("No AI provider configured");
+    return null;
+  }
+
+  if (primary !== AI_PROVIDERS.NONE && isProviderAvailable(primary)) {
+    const result = await callAiProvider(primary, prompt, systemPrompt);
+    if (result) return result;
+  }
+
+  if (fallback !== AI_PROVIDERS.NONE && isProviderAvailable(fallback)) {
+    logInfo(`Primary ${primary} failed, trying fallback ${fallback}`);
+    const result = await callAiProvider(fallback, prompt, systemPrompt);
+    if (result) return result;
+  }
+
+  logError("All AI providers failed or unavailable");
+  return null;
+}
+
+async function callAiProvider(provider, prompt, systemPrompt) {
+  switch (provider) {
+    case AI_PROVIDERS.OLLAMA:
+      return callOllama(prompt, systemPrompt);
+    case AI_PROVIDERS.OPENROUTER:
+      return callOpenRouter(prompt, systemPrompt);
+    default:
+      logError("Unknown AI provider", { provider });
+      return null;
   }
 }
 
-async function callChatCompletions(
-  prompt,
-  signal,
-  systemPrompt = "You are a helpful GarTex assistant.",
-) {
-  const response = await fetch(LOCAL_LLM_ENDPOINT, {
+async function callOllama(prompt, systemPrompt = "You are a helpful GarTex assistant.") {
+  const cfg = aiConfig.ollama;
+
+  logInfo("Calling Ollama", { endpoint: cfg.chatEndpoint, model: cfg.model });
+
+  const chatResult = await runWithTimeout(
+    (signal) => callOllamaChat(prompt, signal, systemPrompt),
+    cfg.timeoutMs,
+  );
+  if (chatResult) return chatResult;
+
+  logInfo("Ollama chat failed, trying completion endpoint", {
+    endpoint: cfg.completionEndpoint,
+  });
+  return await runWithTimeout(
+    (signal) => callOllamaCompletion(prompt, signal),
+    cfg.timeoutMs,
+  );
+}
+
+async function callOllamaChat(prompt, signal, systemPrompt = "You are a helpful GarTex assistant.") {
+  const cfg = aiConfig.ollama;
+  const response = await fetch(cfg.chatEndpoint, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      model: LOCAL_LLM_MODEL,
+      model: cfg.model,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: prompt },
@@ -475,12 +581,13 @@ async function callChatCompletions(
   );
 }
 
-async function callLegacyCompletion(prompt, signal) {
-  const response = await fetch(LOCAL_LLM_FALLBACK_ENDPOINT, {
+async function callOllamaCompletion(prompt, signal) {
+  const cfg = aiConfig.ollama;
+  const response = await fetch(cfg.completionEndpoint, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      model: LOCAL_LLM_MODEL,
+      model: cfg.model,
       prompt,
       temperature: 0.2,
       n_predict: 220,
@@ -498,9 +605,65 @@ async function callLegacyCompletion(prompt, signal) {
   );
 }
 
-async function runWithTimeout(callback) {
+async function callOpenRouter(prompt, systemPrompt = "You are a helpful GarTex assistant.") {
+  const cfg = aiConfig.openrouter;
+
+  if (!cfg.apiKey) return null;
+
+  logInfo("Calling OpenRouter", { model: cfg.model });
+
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), LOCAL_LLM_TIMEOUT_MS);
+  const timeout = setTimeout(() => controller.abort(), cfg.timeoutMs);
+
+  try {
+    const response = await fetch(cfg.baseUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${cfg.apiKey}`,
+        "HTTP-Referer": cfg.referer,
+        "X-Title": cfg.appTitle,
+      },
+      body: JSON.stringify({
+        model: cfg.model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: prompt },
+        ],
+        temperature: 0.2,
+        max_tokens: 450,
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      logError("OpenRouter API error", { status: response.status, error: errorText });
+      return null;
+    }
+
+    const payload = await response.json();
+    return (
+      sanitizeString(
+        payload?.choices?.[0]?.message?.content || "",
+        MAX_AI_ANSWER_CHARS,
+      ) || null
+    );
+  } catch (error) {
+    if (error.name === "AbortError") {
+      logError("OpenRouter request timed out");
+    } else {
+      logError("OpenRouter call failed", error);
+    }
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function runWithTimeout(callback, timeoutMs) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
     return await callback(controller.signal);
   } finally {
@@ -513,47 +676,34 @@ async function generateDynamicAnswer(
   codeContext,
   knowledgeContext,
 ) {
-  try {
-    const prompt = buildAgentPrompt(
-      questionText,
-      codeContext,
-      knowledgeContext,
-    );
-    logInfo("Assistant sending request to local LLM", {
-      endpoint: LOCAL_LLM_ENDPOINT,
-      model: LOCAL_LLM_MODEL,
-      prompt_chars: prompt.length,
-      timeout_ms: LOCAL_LLM_TIMEOUT_MS,
-    });
-
-    const chatResult = await runWithTimeout((signal) =>
-      callChatCompletions(prompt, signal),
-    );
-    if (chatResult) {
-      logInfo("Assistant received response from local LLM chat endpoint");
-      return chatResult;
-    }
-
-    logInfo(
-      "Assistant chat endpoint returned no response, trying completion endpoint",
-      {
-        endpoint: LOCAL_LLM_FALLBACK_ENDPOINT,
-      },
-    );
-
-    const completionResult = await runWithTimeout((signal) =>
-      callLegacyCompletion(prompt, signal),
-    );
-    if (completionResult) {
-      logInfo("Assistant received response from local LLM completion endpoint");
-      return completionResult;
-    }
-
-    return null;
-  } catch (error) {
-    logError("Assistant local LLM request failed", error);
+  if (!aiConfig.enabled) {
+    logInfo("AI is disabled");
     return null;
   }
+
+  const prompt = buildAgentPrompt(questionText, codeContext, knowledgeContext);
+  const primary = getPrimaryProvider();
+  const fallback = getFallbackProvider();
+
+  logInfo("Generating dynamic answer", {
+    primary,
+    fallback,
+    prompt_chars: prompt.length,
+  });
+
+  if (primary !== AI_PROVIDERS.NONE && isProviderAvailable(primary)) {
+    const result = await callAiProvider(primary, prompt);
+    if (result) return result;
+  }
+
+  if (fallback !== AI_PROVIDERS.NONE && isProviderAvailable(fallback)) {
+    logInfo(`Primary ${primary} failed, trying fallback ${fallback}`);
+    const result = await callAiProvider(fallback, prompt);
+    if (result) return result;
+  }
+
+  logError("All AI providers failed or unavailable");
+  return null;
 }
 
 export async function listKnowledge(orgId) {

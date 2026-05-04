@@ -28,7 +28,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -68,7 +71,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -108,7 +114,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -148,7 +157,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -188,7 +200,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -228,7 +243,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -268,7 +286,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -308,7 +329,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -348,7 +372,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -388,7 +415,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -428,7 +458,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -468,7 +501,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -508,7 +544,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -548,7 +587,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -588,7 +630,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -628,7 +673,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -668,7 +716,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -708,7 +759,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -748,7 +802,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -788,7 +845,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -828,7 +888,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -868,7 +931,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -908,7 +974,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -948,7 +1017,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -988,7 +1060,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -1166,7 +1241,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -1519,7 +1597,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -1559,7 +1640,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -15671,7 +15755,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -15711,7 +15798,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -15751,7 +15841,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -15791,7 +15884,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -15831,7 +15927,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -15871,7 +15970,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -15911,7 +16013,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -15951,7 +16056,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -15991,7 +16099,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16031,7 +16142,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16071,7 +16185,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16111,7 +16228,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16151,7 +16271,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16191,7 +16314,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16231,7 +16357,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16271,7 +16400,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16311,7 +16443,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16351,7 +16486,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16391,7 +16529,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16431,7 +16572,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16471,7 +16615,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16511,7 +16658,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16551,7 +16701,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16591,7 +16744,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16631,7 +16787,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16671,7 +16830,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16711,7 +16873,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16751,7 +16916,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16791,7 +16959,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16831,7 +17002,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16871,7 +17045,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -16911,7 +17088,10 @@
     "status": 200,
     "payload": {
       "scope_level": "platform_trends_global_anonymized",
-      "requested_dimensions": ["country", "category"],
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
       "org_scope": "org:global",
       "suppression_counts": {
         "suppressed_values": 0,
@@ -19365,5 +19545,848 @@
     },
     "prev_hash": "71b35414a3ffc2809e57d0ce9769bb8790ef3c5e0a41c5c5f7d67c73ebe1c1d1",
     "hash": "bf1ac540e3b13c2ca1a57fcb4cdb4844d71e084971799039b43f58f9f0c4d7a7"
+  },
+  {
+    "id": "38741727-a616-4bf9-9bf7-2edec61f13bf",
+    "at": "2026-05-02T15:59:05.554Z",
+    "actor_id": "owner-test",
+    "actor_role": "owner",
+    "action": "platform_analytics_overview_requested",
+    "path": "/analytics/platform/overview",
+    "status": 200,
+    "payload": {
+      "scope_level": "platform_overview_aggregated",
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "bf1ac540e3b13c2ca1a57fcb4cdb4844d71e084971799039b43f58f9f0c4d7a7",
+    "hash": "b14cfbbdb171d754be0186330feee90456ad0f411102c71b563b75a450025693"
+  },
+  {
+    "id": "343b7398-3b8c-4241-8ffd-61f2076b3e6d",
+    "at": "2026-05-02T15:59:05.569Z",
+    "actor_id": "owner-test",
+    "actor_role": "owner",
+    "action": "platform_analytics_trends_requested",
+    "path": "/analytics/platform/trends",
+    "status": 200,
+    "payload": {
+      "scope_level": "platform_trends_global_anonymized",
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
+      "org_scope": "org:global",
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "b14cfbbdb171d754be0186330feee90456ad0f411102c71b563b75a450025693",
+    "hash": "55a2b89a5fa0462bf139c4524d05b4ecb6c881535ad5a97bef8cd37f810891c9"
+  },
+  {
+    "id": "authz:1777823399505:6nx46uu3",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001",
+      "member_id": "counts"
+    },
+    "created_at": "2026-05-03T15:49:59.523Z",
+    "prev_hash": "55a2b89a5fa0462bf139c4524d05b4ecb6c881535ad5a97bef8cd37f810891c9",
+    "hash": "6b6e97c4febd1d2987685be1643e719b8b25e7144a67ccb9c32b3adbbbacbf60"
+  },
+  {
+    "id": "authz:1777823400708:jsme0nzn",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "members.manage",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "org_id": "admin-001",
+      "member_id": "counts"
+    },
+    "created_at": "2026-05-03T15:50:00.708Z",
+    "prev_hash": "6b6e97c4febd1d2987685be1643e719b8b25e7144a67ccb9c32b3adbbbacbf60",
+    "hash": "8fbc54cce99b1c6bc87071f8fcee55d51a8228b62053fe7f92c942b90a0c8a21"
+  },
+  {
+    "id": "689a9a6e-a91a-4049-8a43-eebfdfecbc27",
+    "at": "2026-05-03T15:50:02.433Z",
+    "duration_ms": 55,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/users",
+    "status": 200,
+    "action": "GET /api/admin/users",
+    "payload": {},
+    "prev_hash": "8fbc54cce99b1c6bc87071f8fcee55d51a8228b62053fe7f92c942b90a0c8a21",
+    "hash": "e1b7d7bd4c8256088c301547e7a4026d9f7cd0727cab72194fc6462b8364edc8"
+  },
+  {
+    "id": "4a84b6a8-3ed1-49e6-ba4a-35049f8e3f93",
+    "at": "2026-05-03T15:50:03.204Z",
+    "duration_ms": 36,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/audit?limit=40",
+    "status": 200,
+    "action": "GET /api/admin/audit?limit=40",
+    "payload": {},
+    "prev_hash": "e1b7d7bd4c8256088c301547e7a4026d9f7cd0727cab72194fc6462b8364edc8",
+    "hash": "39a709cd14d300ebd702dad07d2dcd6dd893d4f89057480e000136c2f7cf4b99"
+  },
+  {
+    "id": "dcc78fbf-3d0d-45c4-bc29-2b4662cc42b6",
+    "at": "2026-05-03T15:50:03.691Z",
+    "duration_ms": 2120,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/master",
+    "status": 200,
+    "action": "GET /api/admin/master",
+    "payload": {},
+    "prev_hash": "39a709cd14d300ebd702dad07d2dcd6dd893d4f89057480e000136c2f7cf4b99",
+    "hash": "8f81ccb5085a269c818aab765f8d31f0213b7fdab232dbe4a0fd0037ebb13991"
+  },
+  {
+    "id": "ccd077e9-56b8-47c8-b1e9-8a9447f9452e",
+    "at": "2026-05-03T15:50:04.304Z",
+    "duration_ms": 227,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/contracts",
+    "status": 200,
+    "action": "GET /api/admin/contracts",
+    "payload": {},
+    "prev_hash": "8f81ccb5085a269c818aab765f8d31f0213b7fdab232dbe4a0fd0037ebb13991",
+    "hash": "93ac17cb2c029dc73e5ade0a1d3d32ca85c8821cace160f5ac4dd5c0d104eb50"
+  },
+  {
+    "id": "ecf7d617-f67e-424f-98d6-cf0dd91272ea",
+    "at": "2026-05-03T15:50:04.441Z",
+    "duration_ms": 120,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/disputes",
+    "status": 200,
+    "action": "GET /api/admin/disputes",
+    "payload": {},
+    "prev_hash": "93ac17cb2c029dc73e5ade0a1d3d32ca85c8821cace160f5ac4dd5c0d104eb50",
+    "hash": "558d37f45ed7dd404aecc72727303b5c031bcb174ab81e295e4df8d236290030"
+  },
+  {
+    "id": "38bdc224-2dfe-48b6-8759-9a18fe5c6fb2",
+    "at": "2026-05-03T15:50:04.845Z",
+    "duration_ms": 111,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/partner-requests",
+    "status": 200,
+    "action": "GET /api/admin/partner-requests",
+    "payload": {},
+    "prev_hash": "558d37f45ed7dd404aecc72727303b5c031bcb174ab81e295e4df8d236290030",
+    "hash": "9f6428e6c281e3928e7941aea0b80e4362a58e4a33898c16fce112acd24a0d20"
+  },
+  {
+    "id": "292e13d5-9262-44f6-b7ab-3f1297a9ff3f",
+    "at": "2026-05-03T15:50:04.925Z",
+    "duration_ms": 116,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/payment-proofs",
+    "status": 200,
+    "action": "GET /api/admin/payment-proofs",
+    "payload": {},
+    "prev_hash": "9f6428e6c281e3928e7941aea0b80e4362a58e4a33898c16fce112acd24a0d20",
+    "hash": "d0df83f570b903b55483a0103d5f3d3b3cb89fe5ef9514c06119a1e122586df4"
+  },
+  {
+    "id": "14885d2e-b396-4539-b491-2dccabc059a8",
+    "at": "2026-05-03T15:50:05.486Z",
+    "duration_ms": 160,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/coupons/report",
+    "status": 200,
+    "action": "GET /api/admin/coupons/report",
+    "payload": {},
+    "prev_hash": "d0df83f570b903b55483a0103d5f3d3b3cb89fe5ef9514c06119a1e122586df4",
+    "hash": "56121988f280916e27e72441a18c179f551bbd29dea24b9fe3a90864a4e9a932"
+  },
+  {
+    "id": "4b618b26-43ff-48eb-92ac-3fad5fb281ed",
+    "at": "2026-05-03T15:50:07.329Z",
+    "duration_ms": 1974,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/catalog",
+    "status": 200,
+    "action": "GET /api/admin/catalog",
+    "payload": {},
+    "prev_hash": "56121988f280916e27e72441a18c179f551bbd29dea24b9fe3a90864a4e9a932",
+    "hash": "becabd5a94306234295b56420852776f3844f7e1444c1d90e3762a9b6158aa20"
+  },
+  {
+    "id": "80f7ec87-f7b2-4804-833c-b5b460b7a541",
+    "at": "2026-05-03T15:50:08.043Z",
+    "duration_ms": 96,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/cms/state",
+    "status": 200,
+    "action": "GET /api/admin/cms/state",
+    "payload": {},
+    "prev_hash": "becabd5a94306234295b56420852776f3844f7e1444c1d90e3762a9b6158aa20",
+    "hash": "8ad3b4673c49ee95c31b4e6ff20829d01152b4e32775e86237676cf7a49ac72e"
+  },
+  {
+    "id": "d35e2d24-8027-4b8c-b9e1-4227335cd0d1",
+    "at": "2026-05-03T15:50:14.933Z",
+    "duration_ms": 8934,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/server-admin/state",
+    "status": 200,
+    "action": "GET /api/admin/server-admin/state",
+    "payload": {},
+    "prev_hash": "8ad3b4673c49ee95c31b4e6ff20829d01152b4e32775e86237676cf7a49ac72e",
+    "hash": "27c4d2561275e3acfcb15371ee2101faa2ab97042bbb90bf763f134ad74cd7b5"
+  },
+  {
+    "id": "77b8ece2-64d8-4864-b175-e66250f9b3fb",
+    "at": "2026-05-03T15:50:15.325Z",
+    "duration_ms": 12946,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/infra/state",
+    "status": 200,
+    "action": "GET /api/infra/state",
+    "payload": {},
+    "prev_hash": "27c4d2561275e3acfcb15371ee2101faa2ab97042bbb90bf763f134ad74cd7b5",
+    "hash": "fa53e5855e80c2a20bdc9eb10270e5708c07672348608687dbcbdc023d0ff151"
+  },
+  {
+    "id": "743052bd-df9e-4355-845d-1d38c17e24f1",
+    "at": "2026-05-03T15:50:15.974Z",
+    "duration_ms": 260,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/integrations/status",
+    "status": 200,
+    "action": "GET /api/admin/integrations/status",
+    "payload": {},
+    "prev_hash": "fa53e5855e80c2a20bdc9eb10270e5708c07672348608687dbcbdc023d0ff151",
+    "hash": "4c7aa61d1c45eba4fc097de03236fa7676888db9e45374938cc2545863c4bcb6"
+  },
+  {
+    "id": "8c570d46-0ce6-4547-912c-a71ead21eb07",
+    "at": "2026-05-03T15:50:16.050Z",
+    "duration_ms": 120,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/signups",
+    "status": 200,
+    "action": "GET /api/admin/signups",
+    "payload": {},
+    "prev_hash": "4c7aa61d1c45eba4fc097de03236fa7676888db9e45374938cc2545863c4bcb6",
+    "hash": "ebf9f7069cf903c28d98fb69dc9fe9bf1933854888abdc034079651f963e050d"
+  },
+  {
+    "id": "d8f53288-c679-4f68-bc46-90b0374dc668",
+    "at": "2026-05-03T15:50:17.588Z",
+    "duration_ms": 154,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/fraud/verification",
+    "status": 200,
+    "action": "GET /api/admin/fraud/verification",
+    "payload": {},
+    "prev_hash": "ebf9f7069cf903c28d98fb69dc9fe9bf1933854888abdc034079651f963e050d",
+    "hash": "1ff027a53063b56505a003142bf4f381e5c7ae5fc4add57d5246bf58e9bc1199"
+  },
+  {
+    "id": "21e32721-a7ba-4836-beb5-d2a7143e6a02",
+    "at": "2026-05-03T15:50:17.687Z",
+    "duration_ms": 205,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/strikes",
+    "status": 200,
+    "action": "GET /api/admin/strikes",
+    "payload": {},
+    "prev_hash": "1ff027a53063b56505a003142bf4f381e5c7ae5fc4add57d5246bf58e9bc1199",
+    "hash": "71e77b512427f4bcda8ab620be8ea0cf9fd53b7661dcecbe185cc17e6384841d"
+  },
+  {
+    "id": "2124368e-91b7-46f9-a7f1-b4f73253686e",
+    "at": "2026-05-03T15:50:18.506Z",
+    "duration_ms": 449,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/orgs/ownership",
+    "status": 200,
+    "action": "GET /api/admin/orgs/ownership",
+    "payload": {},
+    "prev_hash": "71e77b512427f4bcda8ab620be8ea0cf9fd53b7661dcecbe185cc17e6384841d",
+    "hash": "325b543e945b0908595d2a1c763a46a6b614612e4b2938cf1ec7a2c985d73b3f"
+  },
+  {
+    "id": "0e3d94b4-81bf-4c75-8326-d02b9cd1f2ca",
+    "at": "2026-05-03T15:50:19.523Z",
+    "duration_ms": 153,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/wallet/ledger",
+    "status": 200,
+    "action": "GET /api/admin/wallet/ledger",
+    "payload": {},
+    "prev_hash": "325b543e945b0908595d2a1c763a46a6b614612e4b2938cf1ec7a2c985d73b3f",
+    "hash": "4031c7bef4f4332b6c6b5d8f701dffbdcb324d20a8f4e7f6d638525317e38acd"
+  },
+  {
+    "id": "3915019b-1e5b-4b88-b24a-cf51530b0634",
+    "at": "2026-05-03T15:50:20.065Z",
+    "duration_ms": 11637,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/security/state",
+    "status": 200,
+    "action": "GET /api/admin/security/state",
+    "payload": {},
+    "prev_hash": "4031c7bef4f4332b6c6b5d8f701dffbdcb324d20a8f4e7f6d638525317e38acd",
+    "hash": "feaa66746df90b47895c8dd49b0d43e2fa0c1cf5a3e47361a679b2b9db544db8"
+  },
+  {
+    "id": "6dacfbb4-6e16-4032-9002-e805f1ddfff5",
+    "at": "2026-05-03T15:50:25.701Z",
+    "duration_ms": 196,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/users",
+    "status": 200,
+    "action": "GET /api/admin/users",
+    "payload": {},
+    "prev_hash": "feaa66746df90b47895c8dd49b0d43e2fa0c1cf5a3e47361a679b2b9db544db8",
+    "hash": "836c7b89f9c682d48f755d6c1d5c4a8d25cad5095a976b43cea5dd1008e7f1d4"
+  },
+  {
+    "id": "960c15aa-d7f9-40c5-a1a7-9f43ab7176c1",
+    "at": "2026-05-03T15:50:30.574Z",
+    "duration_ms": 5597,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/master",
+    "status": 200,
+    "action": "GET /api/admin/master",
+    "payload": {},
+    "prev_hash": "836c7b89f9c682d48f755d6c1d5c4a8d25cad5095a976b43cea5dd1008e7f1d4",
+    "hash": "b409da940c8f7cb3bbef30021cee75b81650641dbb6dacc29d79d52a8b726c58"
+  },
+  {
+    "id": "52cdc13b-29c1-4480-b078-5b0bf2b37cff",
+    "at": "2026-05-03T15:50:39.006Z",
+    "duration_ms": 12773,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/infra/state",
+    "status": 200,
+    "action": "GET /api/infra/state",
+    "payload": {},
+    "prev_hash": "b409da940c8f7cb3bbef30021cee75b81650641dbb6dacc29d79d52a8b726c58",
+    "hash": "1800f62da6305c2e52e1f990b371c59ec074f868c7994fb8b3e87aabb1a25302"
+  },
+  {
+    "id": "803f0a96-53de-4311-a696-c984a20ffd8a",
+    "at": "2026-05-03T15:50:43.810Z",
+    "duration_ms": 41428,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/network/inventory",
+    "status": 200,
+    "action": "GET /api/network/inventory",
+    "payload": {},
+    "prev_hash": "1800f62da6305c2e52e1f990b371c59ec074f868c7994fb8b3e87aabb1a25302",
+    "hash": "ed8473eefbf936e71083bba5f3ff48742acdf011d945334d58ff9d5076fc0e97"
+  },
+  {
+    "id": "ae635320-c80f-43dc-9dc3-3f8ee0c6b79e",
+    "at": "2026-05-03T15:50:45.163Z",
+    "duration_ms": 298,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/audit?limit=40",
+    "status": 200,
+    "action": "GET /api/admin/audit?limit=40",
+    "payload": {},
+    "prev_hash": "ed8473eefbf936e71083bba5f3ff48742acdf011d945334d58ff9d5076fc0e97",
+    "hash": "ba1796f69847db2762649e27887e9487b9bfe2686c438b8d9e683cbb5d2d494d"
+  },
+  {
+    "id": "4df52491-ddcb-44c0-8e81-93548308dcd9",
+    "at": "2026-05-03T15:50:46.691Z",
+    "duration_ms": 108,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/contracts",
+    "status": 200,
+    "action": "GET /api/admin/contracts",
+    "payload": {},
+    "prev_hash": "ba1796f69847db2762649e27887e9487b9bfe2686c438b8d9e683cbb5d2d494d",
+    "hash": "fcadc55e9ecaf4e7c8fee2f94a0fd463d270fd3c2a8aad3596281640be63f7d7"
+  },
+  {
+    "id": "c449e516-b913-4aa2-8d7b-9a454a944088",
+    "at": "2026-05-03T15:50:46.876Z",
+    "duration_ms": 44634,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/infra/overview",
+    "status": 504,
+    "action": "GET /api/infra/overview",
+    "payload": {},
+    "prev_hash": "fcadc55e9ecaf4e7c8fee2f94a0fd463d270fd3c2a8aad3596281640be63f7d7",
+    "hash": "0a0960cdd322c0a22d8b3b6904d0591db7cb6e0e6e80f999c1638fcd597e357b"
+  },
+  {
+    "id": "259a73e1-98af-4ed2-a4db-efa36f4b10ae",
+    "at": "2026-05-03T15:50:46.910Z",
+    "duration_ms": 44532,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/network/overview",
+    "status": 504,
+    "action": "GET /api/network/overview",
+    "payload": {},
+    "prev_hash": "0a0960cdd322c0a22d8b3b6904d0591db7cb6e0e6e80f999c1638fcd597e357b",
+    "hash": "1da01d0e791a62e7479145d53c1ac3742ad86f7db354c6f3ebeed5d203c99ae6"
+  },
+  {
+    "id": "d82c6245-5bc4-458d-bf50-8f9d66916002",
+    "at": "2026-05-03T15:50:47.323Z",
+    "duration_ms": 139,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/disputes",
+    "status": 200,
+    "action": "GET /api/admin/disputes",
+    "payload": {},
+    "prev_hash": "1da01d0e791a62e7479145d53c1ac3742ad86f7db354c6f3ebeed5d203c99ae6",
+    "hash": "ed80de671036f4cb7603e32ab52b5ce2ad37fee61e0bb8a7d3048427a643a8e6"
+  },
+  {
+    "id": "06e4616f-b3a2-4666-a0da-081ae54a255d",
+    "at": "2026-05-03T15:50:47.377Z",
+    "duration_ms": 79,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/partner-requests",
+    "status": 200,
+    "action": "GET /api/admin/partner-requests",
+    "payload": {},
+    "prev_hash": "ed80de671036f4cb7603e32ab52b5ce2ad37fee61e0bb8a7d3048427a643a8e6",
+    "hash": "4169d503e72ee64aea120bef8e75b37faa3c42ca11ff34373e376aaae38d762b"
+  },
+  {
+    "id": "20a36959-937b-4a2d-be5a-69d7f09dd451",
+    "at": "2026-05-03T15:50:47.628Z",
+    "duration_ms": 283,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/payment-proofs",
+    "status": 200,
+    "action": "GET /api/admin/payment-proofs",
+    "payload": {},
+    "prev_hash": "4169d503e72ee64aea120bef8e75b37faa3c42ca11ff34373e376aaae38d762b",
+    "hash": "f14163b194e4da01dd101d1a46ffe622c7f5fae1da4d4adb06a3db2227de79b5"
+  },
+  {
+    "id": "d56d7fb1-9378-4380-a68e-267df88b29f8",
+    "at": "2026-05-03T15:50:48.316Z",
+    "duration_ms": 404,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/coupons/report",
+    "status": 200,
+    "action": "GET /api/admin/coupons/report",
+    "payload": {},
+    "prev_hash": "f14163b194e4da01dd101d1a46ffe622c7f5fae1da4d4adb06a3db2227de79b5",
+    "hash": "dcb95023c2891b5a8e0f744f7188844e69e220a060d1291914c963a7d757abcd"
+  },
+  {
+    "id": "66f3034e-2072-47eb-bd06-7a413a7930b6",
+    "at": "2026-05-03T15:50:48.831Z",
+    "duration_ms": 88,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/cms/state",
+    "status": 200,
+    "action": "GET /api/admin/cms/state",
+    "payload": {},
+    "prev_hash": "dcb95023c2891b5a8e0f744f7188844e69e220a060d1291914c963a7d757abcd",
+    "hash": "1c9bbe2b77002227b0e8232f19fb28f232699673f7bea940d572624a2496c07c"
+  },
+  {
+    "id": "2deefdc4-2f98-4810-9d03-5b229550bcda",
+    "at": "2026-05-03T15:50:50.306Z",
+    "duration_ms": 1995,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/server-admin/state",
+    "status": 200,
+    "action": "GET /api/admin/server-admin/state",
+    "payload": {},
+    "prev_hash": "1c9bbe2b77002227b0e8232f19fb28f232699673f7bea940d572624a2496c07c",
+    "hash": "d43cc5bfec248a52c3d8186c6b1be4d303ff3a579c574b38dfdfd43a50d94e5f"
+  },
+  {
+    "id": "55877cb2-2e43-433a-8288-47a0e35db5ef",
+    "at": "2026-05-03T15:50:51.120Z",
+    "duration_ms": 394,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/integrations/status",
+    "status": 200,
+    "action": "GET /api/admin/integrations/status",
+    "payload": {},
+    "prev_hash": "d43cc5bfec248a52c3d8186c6b1be4d303ff3a579c574b38dfdfd43a50d94e5f",
+    "hash": "c1e80ad0083538dbf35a90bcee3da6024b9205c7496fe44ac127d66ae336a2fc"
+  },
+  {
+    "id": "1e86c428-b46e-4649-bfd4-36a3c0943841",
+    "at": "2026-05-03T15:50:51.646Z",
+    "duration_ms": 71,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/signups",
+    "status": 200,
+    "action": "GET /api/admin/signups",
+    "payload": {},
+    "prev_hash": "c1e80ad0083538dbf35a90bcee3da6024b9205c7496fe44ac127d66ae336a2fc",
+    "hash": "b16b555e3ab25b297857294a50aa9def45ff10ee11573d3310a5dbc04fd1c8d5"
+  },
+  {
+    "id": "3221ded5-a86a-4ecf-8fc8-3add2c740428",
+    "at": "2026-05-03T15:50:51.837Z",
+    "duration_ms": 3993,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/catalog",
+    "status": 200,
+    "action": "GET /api/admin/catalog",
+    "payload": {},
+    "prev_hash": "b16b555e3ab25b297857294a50aa9def45ff10ee11573d3310a5dbc04fd1c8d5",
+    "hash": "e250d03aff292524761536ad6973ae2d03460615e8a9f24c80f6ac120c96d9c8"
+  },
+  {
+    "id": "cc681c5b-9307-40df-82da-1e57ce3c4d75",
+    "at": "2026-05-03T15:50:52.169Z",
+    "duration_ms": 26720,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/infra/overview",
+    "status": 200,
+    "action": "GET /api/infra/overview",
+    "payload": {},
+    "prev_hash": "e250d03aff292524761536ad6973ae2d03460615e8a9f24c80f6ac120c96d9c8",
+    "hash": "8477bd633621a7a06f12d6b0bd50f96afb98355c0fc71b1d0c80bc3b4ec66438"
+  },
+  {
+    "id": "38d34cba-54ee-4c64-a697-3ca10eb22b5a",
+    "at": "2026-05-03T15:50:52.775Z",
+    "duration_ms": 581,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/strikes",
+    "status": 200,
+    "action": "GET /api/admin/strikes",
+    "payload": {},
+    "prev_hash": "8477bd633621a7a06f12d6b0bd50f96afb98355c0fc71b1d0c80bc3b4ec66438",
+    "hash": "81035511c9daf9105e64d060c55b3ffcf1d64a4b48a6504a682992cc440f7ab2"
+  },
+  {
+    "id": "26bd5bc1-ec02-4760-b669-7a9c72513a7a",
+    "at": "2026-05-03T15:50:52.818Z",
+    "duration_ms": 3557,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/security/state",
+    "status": 200,
+    "action": "GET /api/admin/security/state",
+    "payload": {},
+    "prev_hash": "81035511c9daf9105e64d060c55b3ffcf1d64a4b48a6504a682992cc440f7ab2",
+    "hash": "51788820adeab3f20e83b33eeab37a279abbf4d242d7b4a9a9186e873a2cd8f6"
+  },
+  {
+    "id": "8426b07a-d1ff-4e38-82df-56326d036eea",
+    "at": "2026-05-03T15:50:52.859Z",
+    "duration_ms": 102,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/fraud/verification",
+    "status": 200,
+    "action": "GET /api/admin/fraud/verification",
+    "payload": {},
+    "prev_hash": "51788820adeab3f20e83b33eeab37a279abbf4d242d7b4a9a9186e873a2cd8f6",
+    "hash": "7fa680cfda6acf5bc3ac70691147d353f840ed4b3182a49ff8442dc2cb9ccf5d"
+  },
+  {
+    "id": "454e2d76-a180-4a8c-b8b3-7fc9d9fca9a9",
+    "at": "2026-05-03T15:50:53.082Z",
+    "duration_ms": 138,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/orgs/ownership",
+    "status": 200,
+    "action": "GET /api/admin/orgs/ownership",
+    "payload": {},
+    "prev_hash": "7fa680cfda6acf5bc3ac70691147d353f840ed4b3182a49ff8442dc2cb9ccf5d",
+    "hash": "9e46f73cfe72613950c9922a13884f09892bc1f4d5307108f9aba354494a49a2"
+  },
+  {
+    "id": "981b5107-acf5-42c3-b699-f4fc479768ca",
+    "at": "2026-05-03T15:50:53.398Z",
+    "duration_ms": 179,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/wallet/ledger",
+    "status": 200,
+    "action": "GET /api/admin/wallet/ledger",
+    "payload": {},
+    "prev_hash": "9e46f73cfe72613950c9922a13884f09892bc1f4d5307108f9aba354494a49a2",
+    "hash": "54d35000c9ab90f99398e66ddd34ca49bf75c8634b9c0789addab8ae65d7112e"
+  },
+  {
+    "id": "88a75564-6be6-4d2a-baab-c53fb88fb307",
+    "at": "2026-05-03T15:50:58.780Z",
+    "duration_ms": 16035,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/network/inventory",
+    "status": 200,
+    "action": "GET /api/network/inventory",
+    "payload": {},
+    "prev_hash": "54d35000c9ab90f99398e66ddd34ca49bf75c8634b9c0789addab8ae65d7112e",
+    "hash": "6ede9f4210236075fab148cfc22ce3ef9f303b8ed2904229fc3c53e98b2f25e9"
+  },
+  {
+    "id": "04cb6633-c69e-4ff9-9423-59605a325dac",
+    "at": "2026-05-03T15:50:58.827Z",
+    "duration_ms": 27090,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/network/overview",
+    "status": 200,
+    "action": "GET /api/network/overview",
+    "payload": {},
+    "prev_hash": "6ede9f4210236075fab148cfc22ce3ef9f303b8ed2904229fc3c53e98b2f25e9",
+    "hash": "8888e712adfd68deeafdea44aafaa54cd9427bbcb27dff1eee4bade2e9643529"
+  },
+  {
+    "id": "e2d3a00b-fce8-4405-b12b-0d1562d926f3",
+    "at": "2026-05-03T15:52:09.850Z",
+    "duration_ms": 225,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/integrations/opensearch/status",
+    "status": 200,
+    "action": "GET /api/admin/integrations/opensearch/status",
+    "payload": {},
+    "prev_hash": "8888e712adfd68deeafdea44aafaa54cd9427bbcb27dff1eee4bade2e9643529",
+    "hash": "b5e1a6854e267b22a36aa523f8cf4e5c59cfacd8bac06fb6799c9b10d9e0c7ba"
+  },
+  {
+    "id": "999c7347-6b23-44db-b3bc-6ade5ad5ea73",
+    "at": "2026-05-03T16:20:39.627Z",
+    "duration_ms": 2247,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/master",
+    "status": 200,
+    "action": "GET /api/admin/master",
+    "payload": {},
+    "prev_hash": "b5e1a6854e267b22a36aa523f8cf4e5c59cfacd8bac06fb6799c9b10d9e0c7ba",
+    "hash": "d23631d271b142cc2bd49ed4201b422142bbc4071f8229a8dba68375394ed787"
+  },
+  {
+    "id": "add163d6-d513-4e45-a755-63f67f8c254c",
+    "at": "2026-05-03T16:20:40.392Z",
+    "duration_ms": 2851,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/admin/catalog",
+    "status": 200,
+    "action": "GET /api/admin/catalog",
+    "payload": {},
+    "prev_hash": "d23631d271b142cc2bd49ed4201b422142bbc4071f8229a8dba68375394ed787",
+    "hash": "4935f7c2584c4c84ca8295cd74a1d3df118c2db28604fb021c3ecb6150213075"
+  },
+  {
+    "id": "f7ba474f-4910-44d3-9a56-ccb23d24b6fc",
+    "at": "2026-05-03T16:20:48.947Z",
+    "duration_ms": 12771,
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "ip": "::1",
+    "device_id": "device-o0thfie4",
+    "method": "GET",
+    "path": "/api/infra/state",
+    "status": 200,
+    "action": "GET /api/infra/state",
+    "payload": {},
+    "prev_hash": "4935f7c2584c4c84ca8295cd74a1d3df118c2db28604fb021c3ecb6150213075",
+    "hash": "9c847ee9470558dfe5cfa8bb98e9758f0776b5478931aa37f6fee73f6d71e6a0"
   }
 ]
