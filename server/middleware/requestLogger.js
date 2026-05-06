@@ -133,8 +133,7 @@ function formatEventLog(payload, isStart = false) {
 }
 
 function formatEventLogPayload(payload) {
-  const { type, entity_id, client_id, session_id, duration_ms } =
-    payload;
+  const { type, entity_id, client_id, session_id, duration_ms } = payload;
 
   const parts = [];
 

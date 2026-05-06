@@ -8526,5 +8526,48 @@
     "payload": {},
     "prev_hash": "e36026638598d6de51954fdd95c92c585656c31808aa9ee055e1292e4f260612",
     "hash": "27a9f2da00d19bf6c3ac241dcf1a87092800572500ec2c02b029815883285a24"
+  },
+  {
+    "id": "9fe17a8a-f097-4d1f-b7cc-8255c4423c81",
+    "at": "2026-05-06T18:50:16.853Z",
+    "actor_id": "owner-test",
+    "actor_role": "owner",
+    "action": "platform_analytics_overview_requested",
+    "path": "/analytics/platform/overview",
+    "status": 200,
+    "payload": {
+      "scope_level": "platform_overview_aggregated",
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "27a9f2da00d19bf6c3ac241dcf1a87092800572500ec2c02b029815883285a24",
+    "hash": "08322b90915ebcd1b097062d6b4b4c9fb99b46af0045f64a9241520639babf22"
+  },
+  {
+    "id": "45924b55-aaac-441d-8c44-e3cef18cea27",
+    "at": "2026-05-06T18:50:16.857Z",
+    "actor_id": "owner-test",
+    "actor_role": "owner",
+    "action": "platform_analytics_trends_requested",
+    "path": "/analytics/platform/trends",
+    "status": 200,
+    "payload": {
+      "scope_level": "platform_trends_global_anonymized",
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
+      "org_scope": "org:global",
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "08322b90915ebcd1b097062d6b4b4c9fb99b46af0045f64a9241520639babf22",
+    "hash": "21be65758326a10e350a44258bbc9659466cbbde68875c414610a5f2bc2b3398"
   }
 ]
