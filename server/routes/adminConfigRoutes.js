@@ -1,6 +1,8 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
+import { requireAuth } from "../middleware/auth.js";
 import { requireAdminSecurity } from "../middleware/adminSecurity.js";
+import chalk from "chalk";
 
 const prisma = new PrismaClient();
 
@@ -32,28 +34,36 @@ import { readConfig, writeConfig } from "../services/adminConfigService.js";
 
 const router = express.Router();
 
-router.get("/config", requireAdminSecurity, async (req, res) => {
+router.get("/config", requireAuth, requireAdminSecurity, async (req, res) => {
   try {
     const config = await getAllConfig();
     res.json(config);
   } catch (error) {
-    console.error("[AdminConfig] GET /config error:", error.message);
+    console.error(chalk.red("[AdminConfig] GET /config error:", error.message));
     res.status(500).json({ error: "Failed to fetch config" });
   }
 });
 
-router.get("/config/inventory", requireAdminSecurity, async (req, res) => {
-  try {
-    const inventory = await getInventoryWithFallback();
-    res.json(inventory);
-  } catch (error) {
-    console.error("[AdminConfig] GET /config/inventory error:", error.message);
-    res.status(500).json({ error: "Failed to fetch inventory" });
-  }
-});
+router.get(
+  "/config/inventory",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const inventory = await getInventoryWithFallback();
+      res.json(inventory);
+    } catch (error) {
+      console.error(
+        chalk.red("[AdminConfig] GET /config/inventory error:", error.message),
+      );
+      res.status(500).json({ error: "Failed to fetch inventory" });
+    }
+  },
+);
 
 router.get(
   "/config/inventory/:moduleId",
+  requireAuth,
   requireAdminSecurity,
   async (req, res) => {
     try {
@@ -73,247 +83,382 @@ router.get(
   },
 );
 
-router.put("/config/inventory", requireAdminSecurity, async (req, res) => {
-  try {
-    const { data } = req.body;
-    const actorId = req.user?.id || "admin";
-    const result = await updateInventoryConfig(data, actorId);
-    res.json(result);
-  } catch (error) {
-    console.error("[AdminConfig] PUT /config/inventory error:", error.message);
-    res.status(500).json({ error: "Failed to update inventory" });
-  }
-});
+router.put(
+  "/config/inventory",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const { data } = req.body;
+      const actorId = req.user?.id || "admin";
+      const result = await updateInventoryConfig(data, actorId);
+      res.json(result);
+    } catch (error) {
+      console.error(
+        chalk.red("[AdminConfig] PUT /config/inventory error:", error.message),
+      );
+      res.status(500).json({ error: "Failed to update inventory" });
+    }
+  },
+);
 
-router.get("/config/actions", requireAdminSecurity, async (req, res) => {
-  try {
-    const actions = await getActionsWithFallback();
-    res.json(actions);
-  } catch (error) {
-    console.error("[AdminConfig] GET /config/actions error:", error.message);
-    res.status(500).json({ error: "Failed to fetch actions" });
-  }
-});
+router.get(
+  "/config/actions",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const actions = await getActionsWithFallback();
+      res.json(actions);
+    } catch (error) {
+      console.error(
+        chalk.red("[AdminConfig] GET /config/actions error:", error.message),
+      );
+      res.status(500).json({ error: "Failed to fetch actions" });
+    }
+  },
+);
 
-router.get("/config/actions/groups", requireAdminSecurity, async (req, res) => {
-  try {
-    const groups = await getActionsAsGroups();
-    res.json(groups);
-  } catch (error) {
-    console.error(
-      "[AdminConfig] GET /config/actions/groups error:",
-      error.message,
-    );
-    res.status(500).json({ error: "Failed to fetch action groups" });
-  }
-});
+router.get(
+  "/config/actions/groups",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const groups = await getActionsAsGroups();
+      res.json(groups);
+    } catch (error) {
+      console.error(
+        "[AdminConfig] GET /config/actions/groups error:",
+        error.message,
+      );
+      res.status(500).json({ error: "Failed to fetch action groups" });
+    }
+  },
+);
 
-router.put("/config/actions", requireAdminSecurity, async (req, res) => {
-  try {
-    const { data } = req.body;
-    const actorId = req.user?.id || "admin";
-    const result = await updateActionsConfig(data, actorId);
-    res.json(result);
-  } catch (error) {
-    console.error("[AdminConfig] PUT /config/actions error:", error.message);
-    res.status(500).json({ error: "Failed to update actions" });
-  }
-});
+router.put(
+  "/config/actions",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const { data } = req.body;
+      const actorId = req.user?.id || "admin";
+      const result = await updateActionsConfig(data, actorId);
+      res.json(result);
+    } catch (error) {
+      console.error(
+        chalk.red("[AdminConfig] PUT /config/actions error:", error.message),
+      );
+      res.status(500).json({ error: "Failed to update actions" });
+    }
+  },
+);
 
-router.get("/config/capabilities", requireAdminSecurity, async (req, res) => {
-  try {
-    const { moduleId } = req.query;
-    const capabilities = await getCapabilitiesWithFallback(moduleId);
-    res.json(capabilities);
-  } catch (error) {
-    console.error(
-      "[AdminConfig] GET /config/capabilities error:",
-      error.message,
-    );
-    res.status(500).json({ error: "Failed to fetch capabilities" });
-  }
-});
+router.get(
+  "/config/capabilities",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const { moduleId } = req.query;
+      const capabilities = await getCapabilitiesWithFallback(moduleId);
+      res.json(capabilities);
+    } catch (error) {
+      console.error(
+        "[AdminConfig] GET /config/capabilities error:",
+        error.message,
+      );
+      res.status(500).json({ error: "Failed to fetch capabilities" });
+    }
+  },
+);
 
-router.put("/config/capabilities", requireAdminSecurity, async (req, res) => {
-  try {
-    const { data } = req.body;
-    const actorId = req.user?.id || "admin";
-    const result = await updateCapabilities(data, actorId);
-    res.json(result);
-  } catch (error) {
-    console.error(
-      "[AdminConfig] PUT /config/capabilities error:",
-      error.message,
-    );
-    res.status(500).json({ error: "Failed to update capabilities" });
-  }
-});
+router.put(
+  "/config/capabilities",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const { data } = req.body;
+      const actorId = req.user?.id || "admin";
+      const result = await updateCapabilities(data, actorId);
+      res.json(result);
+    } catch (error) {
+      console.error(
+        "[AdminConfig] PUT /config/capabilities error:",
+        error.message,
+      );
+      res.status(500).json({ error: "Failed to update capabilities" });
+    }
+  },
+);
 
-router.get("/config/ui", requireAdminSecurity, async (req, res) => {
-  try {
-    const uiConfig = await getUiConfigWithFallback();
-    res.json(uiConfig);
-  } catch (error) {
-    console.error("[AdminConfig] GET /config/ui error:", error.message);
-    res.status(500).json({ error: "Failed to fetch UI config" });
-  }
-});
+router.get(
+  "/config/ui",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const uiConfig = await getUiConfigWithFallback();
+      res.json(uiConfig);
+    } catch (error) {
+      console.error(
+        chalk.red("[AdminConfig] GET /config/ui error:", error.message),
+      );
+      res.status(500).json({ error: "Failed to fetch UI config" });
+    }
+  },
+);
 
-router.put("/config/ui", requireAdminSecurity, async (req, res) => {
-  try {
-    const { data } = req.body;
-    const actorId = req.user?.id || "admin";
-    const result = await updateUiConfig(data, actorId);
-    res.json(result);
-  } catch (error) {
-    console.error("[AdminConfig] PUT /config/ui error:", error.message);
-    res.status(500).json({ error: "Failed to update UI config" });
-  }
-});
+router.put(
+  "/config/ui",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const { data } = req.body;
+      const actorId = req.user?.id || "admin";
+      const result = await updateUiConfig(data, actorId);
+      res.json(result);
+    } catch (error) {
+      console.error(
+        chalk.red("[AdminConfig] PUT /config/ui error:", error.message),
+      );
+      res.status(500).json({ error: "Failed to update UI config" });
+    }
+  },
+);
 
-router.get("/config/mock", requireAdminSecurity, async (req, res) => {
-  try {
-    const { type } = req.query;
-    const mockData = await getMockDataWithFallback(type);
-    res.json(mockData);
-  } catch (error) {
-    console.error("[AdminConfig] GET /config/mock error:", error.message);
-    res.status(500).json({ error: "Failed to fetch mock data" });
-  }
-});
+router.get(
+  "/config/mock",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const { type } = req.query;
+      const mockData = await getMockDataWithFallback(type);
+      res.json(mockData);
+    } catch (error) {
+      console.error(
+        chalk.red("[AdminConfig] GET /config/mock error:", error.message),
+      );
+      res.status(500).json({ error: "Failed to fetch mock data" });
+    }
+  },
+);
 
-router.put("/config/mock", requireAdminSecurity, async (req, res) => {
-  try {
-    const { dataKey, payload } = req.body;
-    const actorId = req.user?.id || "admin";
-    const result = await updateMockData(dataKey, payload, actorId);
-    res.json(result);
-  } catch (error) {
-    console.error("[AdminConfig] PUT /config/mock error:", error.message);
-    res.status(500).json({ error: "Failed to update mock data" });
-  }
-});
+router.put(
+  "/config/mock",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const { dataKey, payload } = req.body;
+      const actorId = req.user?.id || "admin";
+      const result = await updateMockData(dataKey, payload, actorId);
+      res.json(result);
+    } catch (error) {
+      console.error(
+        chalk.red("[AdminConfig] PUT /config/mock error:", error.message),
+      );
+      res.status(500).json({ error: "Failed to update mock data" });
+    }
+  },
+);
 
-router.get("/config/roles", requireAdminSecurity, async (req, res) => {
-  try {
-    const roleConfig = await getRoleConfigWithFallback();
-    res.json(roleConfig);
-  } catch (error) {
-    console.error("[AdminConfig] GET /config/roles error:", error.message);
-    res.status(500).json({ error: "Failed to fetch role config" });
-  }
-});
+router.get(
+  "/config/roles",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const roleConfig = await getRoleConfigWithFallback();
+      res.json(roleConfig);
+    } catch (error) {
+      console.error(
+        chalk.red("[AdminConfig] GET /config/roles error:", error.message),
+      );
+      res.status(500).json({ error: "Failed to fetch role config" });
+    }
+  },
+);
 
-router.put("/config/roles", requireAdminSecurity, async (req, res) => {
-  try {
-    const { data } = req.body;
-    const actorId = req.user?.id || "admin";
-    const result = await updateRoleConfig(data, actorId);
-    res.json(result);
-  } catch (error) {
-    console.error("[AdminConfig] PUT /config/roles error:", error.message);
-    res.status(500).json({ error: "Failed to update role config" });
-  }
-});
+router.put(
+  "/config/roles",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const { data } = req.body;
+      const actorId = req.user?.id || "admin";
+      const result = await updateRoleConfig(data, actorId);
+      res.json(result);
+    } catch (error) {
+      console.error(
+        chalk.red("[AdminConfig] PUT /config/roles error:", error.message),
+      );
+      res.status(500).json({ error: "Failed to update role config" });
+    }
+  },
+);
 
-router.get("/config/governance", requireAdminSecurity, async (req, res) => {
-  try {
-    const governanceConfig = await getGovernanceConfigWithFallback();
-    res.json(governanceConfig);
-  } catch (error) {
-    console.error("[AdminConfig] GET /config/governance error:", error.message);
-    res.status(500).json({ error: "Failed to fetch governance config" });
-  }
-});
+router.get(
+  "/config/governance",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const governanceConfig = await getGovernanceConfigWithFallback();
+      res.json(governanceConfig);
+    } catch (error) {
+      console.error(
+        chalk.red("[AdminConfig] GET /config/governance error:", error.message),
+      );
+      res.status(500).json({ error: "Failed to fetch governance config" });
+    }
+  },
+);
 
-router.put("/config/governance", requireAdminSecurity, async (req, res) => {
-  try {
-    const { data } = req.body;
-    const actorId = req.user?.id || "admin";
-    const result = await updateGovernanceConfig(data, actorId);
-    res.json(result);
-  } catch (error) {
-    console.error("[AdminConfig] PUT /config/governance error:", error.message);
-    res.status(500).json({ error: "Failed to update governance config" });
-  }
-});
+router.put(
+  "/config/governance",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const { data } = req.body;
+      const actorId = req.user?.id || "admin";
+      const result = await updateGovernanceConfig(data, actorId);
+      res.json(result);
+    } catch (error) {
+      console.error(
+        chalk.red("[AdminConfig] PUT /config/governance error:", error.message),
+      );
+      res.status(500).json({ error: "Failed to update governance config" });
+    }
+  },
+);
 
-router.get("/config/branding", requireAdminSecurity, async (req, res) => {
-  try {
-    const branding = await getBrandingConfigWithFallback();
-    res.json(branding);
-  } catch (error) {
-    console.error("[AdminConfig] GET /config/branding error:", error.message);
-    res.status(500).json({ error: "Failed to fetch branding" });
-  }
-});
+router.get(
+  "/config/branding",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const branding = await getBrandingConfigWithFallback();
+      res.json(branding);
+    } catch (error) {
+      console.error(
+        chalk.red("[AdminConfig] GET /config/branding error:", error.message),
+      );
+      res.status(500).json({ error: "Failed to fetch branding" });
+    }
+  },
+);
 
-router.put("/config/branding", requireAdminSecurity, async (req, res) => {
-  try {
-    const { data } = req.body;
-    const actorId = req.user?.id || "admin";
-    const result = await updateBrandingConfig(data, actorId);
-    res.json(result);
-  } catch (error) {
-    console.error("[AdminConfig] PUT /config/branding error:", error.message);
-    res.status(500).json({ error: "Failed to update branding" });
-  }
-});
+router.put(
+  "/config/branding",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const { data } = req.body;
+      const actorId = req.user?.id || "admin";
+      const result = await updateBrandingConfig(data, actorId);
+      res.json(result);
+    } catch (error) {
+      console.error(
+        chalk.red("[AdminConfig] PUT /config/branding error:", error.message),
+      );
+      res.status(500).json({ error: "Failed to update branding" });
+    }
+  },
+);
 
-router.get("/config/security", requireAdminSecurity, async (req, res) => {
-  try {
-    const security = await getSecurityPurposesWithFallback();
-    res.json(security);
-  } catch (error) {
-    console.error("[AdminConfig] GET /config/security error:", error.message);
-    res.status(500).json({ error: "Failed to fetch security purposes" });
-  }
-});
+router.get(
+  "/config/security",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const security = await getSecurityPurposesWithFallback();
+      res.json(security);
+    } catch (error) {
+      console.error(
+        chalk.red("[AdminConfig] GET /config/security error:", error.message),
+      );
+      res.status(500).json({ error: "Failed to fetch security purposes" });
+    }
+  },
+);
 
-router.put("/config/security", requireAdminSecurity, async (req, res) => {
-  try {
-    const { data } = req.body;
-    const actorId = req.user?.id || "admin";
-    const result = await updateSecurityPurposes(data, actorId);
-    res.json(result);
-  } catch (error) {
-    console.error("[AdminConfig] PUT /config/security error:", error.message);
-    res.status(500).json({ error: "Failed to update security purposes" });
-  }
-});
+router.put(
+  "/config/security",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const { data } = req.body;
+      const actorId = req.user?.id || "admin";
+      const result = await updateSecurityPurposes(data, actorId);
+      res.json(result);
+    } catch (error) {
+      console.error(
+        chalk.red("[AdminConfig] PUT /config/security error:", error.message),
+      );
+      res.status(500).json({ error: "Failed to update security purposes" });
+    }
+  },
+);
 
-router.get("/config/history", requireAdminSecurity, async (req, res) => {
-  try {
-    const { type, limit } = req.query;
-    const history = await getConfigHistory(type, parseInt(limit) || 20);
-    res.json(history);
-  } catch (error) {
-    console.error("[AdminConfig] GET /config/history error:", error.message);
-    res.status(500).json({ error: "Failed to fetch config history" });
-  }
-});
+router.get(
+  "/config/history",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const { type, limit } = req.query;
+      const history = await getConfigHistory(type, parseInt(limit) || 20);
+      res.json(history);
+    } catch (error) {
+      console.error(
+        chalk.red("[AdminConfig] GET /config/history error:", error.message),
+      );
+      res.status(500).json({ error: "Failed to fetch config history" });
+    }
+  },
+);
 
-router.get("/config/roles-list", requireAdminSecurity, async (req, res) => {
-  try {
-    const roles = await prisma.adminRoleConfig.findMany({
-      where: { active: true },
-    });
-    res.json(
-      roles.map((r) => ({
-        role_key: r.role_key,
-        label: r.label,
-        is_admin_role: r.is_admin_role,
-        benefits: r.benefits,
-      })),
-    );
-  } catch (error) {
-    console.error("[AdminConfig] GET /config/roles-list error:", error.message);
-    res.status(500).json({ error: "Failed to fetch roles" });
-  }
-});
+router.get(
+  "/config/roles-list",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const roles = await prisma.adminRoleConfig.findMany({
+        where: { active: true },
+      });
+      res.json(
+        roles.map((r) => ({
+          role_key: r.role_key,
+          label: r.label,
+          is_admin_role: r.is_admin_role,
+          benefits: r.benefits,
+        })),
+      );
+    } catch (error) {
+      console.error(
+        chalk.red("[AdminConfig] GET /config/roles-list error:", error.message),
+      );
+      res.status(500).json({ error: "Failed to fetch roles" });
+    }
+  },
+);
 
 router.get(
   "/config/infra-capabilities",
+  requireAuth,
   requireAdminSecurity,
   async (req, res) => {
     try {
@@ -342,6 +487,7 @@ router.get(
 
 router.get(
   "/config/network-capabilities",
+  requireAuth,
   requireAdminSecurity,
   async (req, res) => {
     try {
@@ -370,6 +516,7 @@ router.get(
 
 router.get(
   "/config/ultra-capabilities",
+  requireAuth,
   requireAdminSecurity,
   async (req, res) => {
     try {
@@ -396,94 +543,111 @@ router.get(
   },
 );
 
-router.get("/config/total-config", requireAdminSecurity, async (req, res) => {
-  try {
-    const [inventory, ui, roles, infraCaps, networkCaps, ultraCaps, actions] =
-      await Promise.all([
-        getInventoryWithFallback(),
-        getUiConfigWithFallback(),
-        getRoleConfigWithFallback(),
-        prisma.adminCapability.findMany({
-          where: { module_id: "infra", active: true },
-          orderBy: { sort_order: "asc" },
-        }),
-        prisma.adminCapability.findMany({
-          where: { module_id: "network", active: true },
-          orderBy: { sort_order: "asc" },
-        }),
-        prisma.adminCapability.findMany({
-          where: { module_id: "ultra-security", active: true },
-          orderBy: { sort_order: "asc" },
-        }),
-        getActionsWithFallback(),
-      ]);
+router.get(
+  "/config/total-config",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const [inventory, ui, roles, infraCaps, networkCaps, ultraCaps, actions] =
+        await Promise.all([
+          getInventoryWithFallback(),
+          getUiConfigWithFallback(),
+          getRoleConfigWithFallback(),
+          prisma.adminCapability.findMany({
+            where: { module_id: "infra", active: true },
+            orderBy: { sort_order: "asc" },
+          }),
+          prisma.adminCapability.findMany({
+            where: { module_id: "network", active: true },
+            orderBy: { sort_order: "asc" },
+          }),
+          prisma.adminCapability.findMany({
+            where: { module_id: "ultra-security", active: true },
+            orderBy: { sort_order: "asc" },
+          }),
+          getActionsWithFallback(),
+        ]);
 
-    res.json({
-      inventory,
-      ui_config: ui,
-      roles,
-      infra_capabilities: infraCaps.map((c) => ({
-        capability_id: c.capability_id,
-        title: c.title,
-        count: c.count,
-        icon_name: c.icon_name,
-        subtitle: c.subtitle,
-      })),
-      network_capabilities: networkCaps.map((c) => ({
-        capability_id: c.capability_id,
-        title: c.title,
-        count: c.count,
-        icon_name: c.icon_name,
-        subtitle: c.subtitle,
-      })),
-      ultra_capabilities: ultraCaps.map((c) => ({
-        capability_id: c.capability_id,
-        title: c.title,
-        count: c.count,
-        icon_name: c.icon_name,
-        subtitle: c.subtitle,
-      })),
-      actions: actions || [],
-    });
-  } catch (error) {
-    console.error(
-      "[AdminConfig] GET /config/total-config error:",
-      error.message,
-    );
-    res.status(500).json({ error: "Failed to fetch config" });
-  }
-});
+      res.json({
+        inventory,
+        ui_config: ui,
+        roles,
+        infra_capabilities: infraCaps.map((c) => ({
+          capability_id: c.capability_id,
+          title: c.title,
+          count: c.count,
+          icon_name: c.icon_name,
+          subtitle: c.subtitle,
+        })),
+        network_capabilities: networkCaps.map((c) => ({
+          capability_id: c.capability_id,
+          title: c.title,
+          count: c.count,
+          icon_name: c.icon_name,
+          subtitle: c.subtitle,
+        })),
+        ultra_capabilities: ultraCaps.map((c) => ({
+          capability_id: c.capability_id,
+          title: c.title,
+          count: c.count,
+          icon_name: c.icon_name,
+          subtitle: c.subtitle,
+        })),
+        actions: actions || [],
+      });
+    } catch (error) {
+      console.error(
+        "[AdminConfig] GET /config/total-config error:",
+        error.message,
+      );
+      res.status(500).json({ error: "Failed to fetch config" });
+    }
+  },
+);
 
 export default router;
 
 // Feed Page Config Routes
-router.get("/config/feed-page", requireAdminSecurity, async (req, res) => {
-  try {
-    const config = await readConfig();
-    res.json(config.feed_page || {});
-  } catch (error) {
-    console.error("[AdminConfig] GET /config/feed-page error:", error.message);
-    res.status(500).json({ error: "Failed to fetch feed page config" });
-  }
-});
+router.get(
+  "/config/feed-page",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const config = await readConfig();
+      res.json(config.feed_page || {});
+    } catch (error) {
+      console.error(
+        chalk.red("[AdminConfig] GET /config/feed-page error:", error.message),
+      );
+      res.status(500).json({ error: "Failed to fetch feed page config" });
+    }
+  },
+);
 
-router.patch("/config/feed-page", requireAdminSecurity, async (req, res) => {
-  try {
-    const config = await readConfig();
-    config.feed_page = { ...config.feed_page, ...req.body };
-    await writeConfig(config);
-    res.json(config.feed_page);
-  } catch (error) {
-    console.error(
-      "[AdminConfig] PATCH /config/feed-page error:",
-      error.message,
-    );
-    res.status(500).json({ error: "Failed to update feed page config" });
-  }
-});
+router.patch(
+  "/config/feed-page",
+  requireAuth,
+  requireAdminSecurity,
+  async (req, res) => {
+    try {
+      const config = await readConfig();
+      config.feed_page = { ...config.feed_page, ...req.body };
+      await writeConfig(config);
+      res.json(config.feed_page);
+    } catch (error) {
+      console.error(
+        "[AdminConfig] PATCH /config/feed-page error:",
+        error.message,
+      );
+      res.status(500).json({ error: "Failed to update feed page config" });
+    }
+  },
+);
 
 // Admin actions for Feed Page config management
-router.post("/actions", requireAdminSecurity, async (req, res) => {
+router.post("/actions", requireAuth, requireAdminSecurity, async (req, res) => {
   try {
     const { action, payload } = req.body || {};
 
@@ -552,7 +716,9 @@ router.post("/actions", requireAdminSecurity, async (req, res) => {
 
     res.status(400).json({ error: "Unknown action" });
   } catch (error) {
-    console.error("[AdminConfig] POST /actions error:", error.message);
+    console.error(
+      chalk.red("[AdminConfig] POST /actions error:", error.message),
+    );
     res.status(500).json({ error: "Action failed" });
   }
 });

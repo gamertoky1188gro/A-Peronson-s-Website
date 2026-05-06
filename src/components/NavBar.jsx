@@ -507,6 +507,22 @@ export default function NavBar() {
 
   // Add a ref to the mobile menu container
   const mobileMenuRef = useRef(null);
+  const mobileOpenRef = useRef(mobileOpen);
+
+  useEffect(() => {
+    mobileOpenRef.current = mobileOpen;
+  }, [mobileOpen]);
+
+  useEffect(() => {
+    const handleBackButton = () => {
+      if (mobileOpenRef.current) {
+        setMobileOpen(false);
+      }
+    };
+
+    window.addEventListener("popstate", handleBackButton);
+    return () => window.removeEventListener("popstate", handleBackButton);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -848,19 +864,25 @@ export default function NavBar() {
                     })}
 
               {!user ? (
-                <Link
-                  to="/signup"
-                  onClick={() => setMobileOpen(false)}
-                  className="mt-2 inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 active:scale-[0.98] dark:bg-white/10 dark:hover:bg-white/15"
-                >
-                  Signup
-                </Link>
+                <div className="mt-2 flex gap-2">
+                  <Link
+                    to="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex-1 inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 active:scale-[0.98] dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/signup"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex-1 inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 active:scale-[0.98] dark:bg-white/10 dark:hover:bg-white/15"
+                  >
+                    Signup
+                  </Link>
+                </div>
               ) : null}
 
               <div className="mt-4 shadow-dividerT dark:shadow-dividerTDark pt-3">
-                <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Legal
-                </p>
                 <Link
                   to="/terms"
                   onClick={() => setMobileOpen(false)}

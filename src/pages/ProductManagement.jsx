@@ -46,7 +46,7 @@ export default function ProductManagement() {
   const [saving, setSaving] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [mediaGallery, setMediaGallery] = useState([]);
-  
+
   const [mediaBusy, setMediaBusy] = useState(false);
   const [mediaNotice, setMediaNotice] = useState("");
   const [videoBusy, setVideoBusy] = useState(false);
@@ -886,8 +886,8 @@ export default function ProductManagement() {
                     Product media
                   </p>
                   <p className="text-[11px] text-slate-500">
-                    Upload images or video files.
-                    Pending/rejected media stays hidden from buyers.
+                    Upload images or video files. Pending/rejected media stays
+                    hidden from buyers.
                   </p>
                 </div>
 

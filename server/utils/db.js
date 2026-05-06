@@ -1,4 +1,5 @@
 import prisma from "./prisma.js";
+import chalk from "chalk";
 
 let dbConnected = false;
 let dbError = "";
@@ -18,7 +19,9 @@ export async function ensureDatabaseConnection() {
     if (allowOffline) {
       dbConnected = false;
       dbError = "DATABASE_URL missing (offline mode allowed)";
-      console.warn("[db] DATABASE_URL missing; continuing in offline mode.");
+      console.warn(
+        chalk.yellow("[db] DATABASE_URL missing; continuing in offline mode."),
+      );
       return;
     }
     dbConnected = false;
@@ -29,9 +32,12 @@ export async function ensureDatabaseConnection() {
     const safeUrl = new URL(process.env.DATABASE_URL);
     const maskedPass = safeUrl.password ? "***" : "";
     const safe = `${safeUrl.protocol}//${safeUrl.username}${maskedPass ? `:${maskedPass}` : ""}@${safeUrl.host}${safeUrl.pathname}`;
-    console.log("[db] Using DATABASE_URL:", safe);
+    console.log(chalk.green("[db] Using DATABASE_URL:"), safe);
   } catch {
-    console.log("[db] Using DATABASE_URL (unparsed):", "[redacted]");
+    console.log(
+      chalk.green("[db] Using DATABASE_URL (unparsed):"),
+      "[redacted]",
+    );
   }
   try {
     await prisma.$connect();
@@ -42,7 +48,7 @@ export async function ensureDatabaseConnection() {
     dbError = error?.message || "DB connection failed";
     if (allowOffline) {
       console.warn(
-        "[db] Failed to connect; continuing in offline mode:",
+        chalk.yellow("[db] Failed to connect; continuing in offline mode:"),
         dbError,
       );
       return;

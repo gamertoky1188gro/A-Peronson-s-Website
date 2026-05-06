@@ -8,6 +8,33 @@ function isTestEnv() {
 
 const locks = new Map();
 
+const CACHE_TTL = 30000; // 30 second cache
+const dataCache = new Map();
+
+function getCached(key) {
+  const cached = dataCache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data;
+  }
+  return null;
+}
+
+function setCache(key, data) {
+  dataCache.set(key, { data, timestamp: Date.now() });
+}
+
+export function invalidateCache(fileName) {
+  dataCache.delete(fileName);
+}
+
+export function invalidateCachePattern(pattern) {
+  for (const key of dataCache.keys()) {
+    if (key.includes(pattern)) {
+      dataCache.delete(key);
+    }
+  }
+}
+
 function withLock(fileName, action) {
   const prior = locks.get(fileName) || Promise.resolve();
   const next = prior.then(action, action);
@@ -371,9 +398,15 @@ export async function readJson(fileName) {
   if (isTestEnv()) {
     return _mem.get(fileName) || [];
   }
+  const cached = getCached(fileName);
+  if (cached !== null) {
+    return cached;
+  }
   const handler = FILE_HANDLERS[fileName];
   if (!handler) return [];
-  return handler.read();
+  const data = await handler.read();
+  setCache(fileName, data);
+  return data;
 }
 
 export async function writeJson(fileName, data) {
@@ -385,6 +418,7 @@ export async function writeJson(fileName, data) {
     const handler = FILE_HANDLERS[fileName];
     if (!handler) return data;
     await handler.write(data);
+    invalidateCache(fileName);
     return data;
   });
 }
@@ -397,9 +431,12 @@ export async function updateJson(fileName, updater) {
     return next;
   }
   return withLock(fileName, async () => {
-    const existing = await readJson(fileName);
+    const handler = FILE_HANDLERS[fileName];
+    if (!handler) return [];
+    const existing = await handler.read();
     const next = await updater(existing);
-    await writeJson(fileName, next);
+    await handler.write(next);
+    invalidateCache(fileName);
     return next;
   });
 }

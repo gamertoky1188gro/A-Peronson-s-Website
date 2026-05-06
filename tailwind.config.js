@@ -5,7 +5,7 @@ export default {
   theme: {
     extend: {
       screens: {
-        'print': {'raw': 'print'},
+        print: { raw: "print" },
       },
       colors: {
         gtBlue: "#0a66c2",

@@ -11,6 +11,24 @@ const AUDIT_PATH = path.join(
 
 let auditQueue = Promise.resolve();
 
+const AUDIT_CACHE_TTL = 10000; // 10 second cache for audit
+let auditCache = { data: null, timestamp: 0 };
+
+function getAuditCache() {
+  if (auditCache.data && Date.now() - auditCache.timestamp < AUDIT_CACHE_TTL) {
+    return auditCache.data;
+  }
+  return null;
+}
+
+function setAuditCache(data) {
+  auditCache = { data, timestamp: Date.now() };
+}
+
+export function invalidateAuditCache() {
+  auditCache = { data: null, timestamp: 0 };
+}
+
 function normalizeValue(value) {
   if (value === undefined) return null;
   if (value instanceof Date) return value.toISOString();
@@ -40,11 +58,17 @@ async function ensureAuditFile() {
 }
 
 export async function readAuditLog() {
+  const cached = getAuditCache();
+  if (cached !== null) {
+    return cached;
+  }
   await ensureAuditFile();
   const raw = await fs.readFile(AUDIT_PATH, "utf8");
   try {
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    const data = Array.isArray(parsed) ? parsed : [];
+    setAuditCache(data);
+    return data;
   } catch {
     return [];
   }
@@ -87,6 +111,7 @@ export async function appendAuditLog(entry) {
     };
     existing.push(record);
     await fs.writeFile(AUDIT_PATH, JSON.stringify(existing, null, 2), "utf8");
+    invalidateAuditCache();
     return record;
   });
 

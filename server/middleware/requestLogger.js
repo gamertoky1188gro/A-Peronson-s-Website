@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import { getDbStatus } from "../utils/db.js";
+import chalk from "chalk";
 
 const SENSITIVE_KEYS = new Set([
   "password",
@@ -39,31 +39,168 @@ function decodeAuthSubject(authHeader = "") {
   };
 }
 
+function getMethodColor(method) {
+  switch (method) {
+    case "GET":
+      return chalk.green;
+    case "POST":
+      return chalk.magenta;
+    case "PUT":
+    case "PATCH":
+      return chalk.yellow;
+    case "DELETE":
+      return chalk.red;
+    default:
+      return chalk.white;
+  }
+}
+
+function getStatusColor(status) {
+  if (status >= 500) return chalk.red.bold;
+  if (status >= 400) return chalk.yellow;
+  if (status >= 300) return chalk.cyan;
+  if (status >= 200) return chalk.green;
+  return chalk.white;
+}
+
+function getDurationColor(ms) {
+  if (ms < 200) return chalk.green;
+  if (ms <= 1000) return chalk.yellow;
+  return chalk.red;
+}
+
+function getPathColor(path) {
+  if (path.startsWith("/api/admin")) return chalk.magenta;
+  if (path.startsWith("/api/network")) return chalk.cyan;
+  if (path.startsWith("/api/events")) return chalk.yellow;
+  if (path.startsWith("/api/infra")) return chalk.hex("#FF69B4");
+  if (path.startsWith("/api/verification")) return chalk.cyan;
+  return chalk.blue;
+}
+
+function formatEventLog(payload, isStart = false) {
+  const {
+    request_id,
+    method,
+    path,
+    status,
+    duration_ms,
+    response_bytes,
+    user_id,
+    role,
+    ip,
+    event,
+  } = payload;
+
+  const parts = [];
+
+  parts.push(chalk.cyan(`[${event}]`));
+
+  if (isStart) {
+    parts.push(chalk.cyan("START"));
+  } else {
+    parts.push(getStatusColor(status)(status));
+  }
+
+  const methodColor = getMethodColor(method);
+  parts.push(methodColor(method));
+
+  parts.push(getPathColor(path)(path));
+
+  if (!isStart && status !== undefined) {
+    const durColor = getDurationColor(duration_ms);
+    parts.push(durColor(`${duration_ms}ms`));
+    if (response_bytes) {
+      parts.push(chalk.gray(`${(response_bytes / 1024).toFixed(1)}KB`));
+    }
+  }
+
+  if (user_id) {
+    parts.push(chalk.bold.white(`user:${user_id}`));
+  }
+
+  if (role) {
+    parts.push(chalk.gray(`[${role}]`));
+  }
+
+  if (ip) {
+    parts.push(chalk.gray(ip));
+  }
+
+  parts.push(chalk.gray(request_id.slice(0, 8)));
+
+  return parts.join(" ");
+}
+
+function formatEventLogPayload(payload) {
+  const { type, entity_id, client_id, session_id, duration_ms } =
+    payload;
+
+  const parts = [];
+
+  parts.push(chalk.cyan("[event]"));
+
+  if (type === "page_view") {
+    parts.push(chalk.green("page_view"));
+  } else if (type === "page_duration") {
+    parts.push(chalk.blue("page_duration"));
+  } else if (type === "session_end") {
+    parts.push(chalk.magenta("session_end"));
+  } else if (type === "session_start") {
+    parts.push(chalk.cyan("session_start"));
+  } else if (type === "click") {
+    parts.push(chalk.yellow("click"));
+  } else {
+    parts.push(chalk.white(type || "unknown"));
+  }
+
+  if (entity_id) {
+    parts.push(chalk.blue(entity_id));
+  }
+
+  if (duration_ms !== undefined) {
+    const durColor = getDurationColor(duration_ms);
+    parts.push(durColor(`${duration_ms}ms`));
+  }
+
+  if (session_id) {
+    parts.push(chalk.cyan(session_id.slice(0, 8)));
+  }
+
+  if (client_id) {
+    parts.push(chalk.gray(client_id.slice(0, 8)));
+  }
+
+  return parts.join(" ");
+}
+
 export function requestLogger({ timeoutMs = 45000 } = {}) {
   return (req, res, next) => {
     const requestId = crypto.randomUUID();
     const startedAt = Date.now();
     const authInfo = decodeAuthSubject(req.headers.authorization);
-    const dbStatus = getDbStatus();
     const body = redactValue(req.body || {});
-    const bodyBytes = Buffer.byteLength(JSON.stringify(body || {}));
 
-    const startPayload = {
-      level: "info",
-      event: "request_start",
-      request_id: requestId,
-      method: req.method,
-      path: req.originalUrl || req.url,
-      query: req.query || {},
-      ip: req.ip,
-      user_agent: req.headers["user-agent"] || "",
-      user_id: authInfo.user_id || "",
-      role: authInfo.role || "",
-      body_bytes: bodyBytes,
-      body,
-      db_connected: dbStatus.connected,
-    };
-    console.log(JSON.stringify(startPayload));
+    const isEventEndpoint = req.originalUrl?.startsWith("/api/events");
+
+    if (isEventEndpoint && req.method === "POST" && body?.type) {
+      console.log(formatEventLogPayload(req.body));
+    } else {
+      console.log(
+        formatEventLog(
+          {
+            request_id: requestId,
+            method: req.method,
+            path: req.originalUrl || req.url,
+            user_id: authInfo.user_id || "",
+            role: authInfo.role || "",
+            ip: req.ip,
+            event: "request_start",
+          },
+          true,
+        ),
+      );
+    }
 
     let responseBytes = 0;
     const originalWrite = res.write.bind(res);
@@ -92,15 +229,14 @@ export function requestLogger({ timeoutMs = 45000 } = {}) {
       res.status(504).json({ error: "Request timeout" });
       const duration = Date.now() - startedAt;
       console.log(
-        JSON.stringify({
-          level: "error",
-          event: "request_timeout",
+        formatEventLog({
           request_id: requestId,
           method: req.method,
           path: req.originalUrl || req.url,
           status: 504,
           duration_ms: duration,
           response_bytes: responseBytes,
+          event: "timeout",
         }),
       );
     }, timeoutMs);
@@ -109,16 +245,16 @@ export function requestLogger({ timeoutMs = 45000 } = {}) {
       clearTimeout(timer);
       const duration = Date.now() - startedAt;
       const status = res.statusCode;
+
       console.log(
-        JSON.stringify({
-          level: status >= 500 ? "error" : "info",
-          event: eventName,
+        formatEventLog({
           request_id: requestId,
           method: req.method,
           path: req.originalUrl || req.url,
           status,
           duration_ms: duration,
           response_bytes: responseBytes,
+          event: eventName,
         }),
       );
     }

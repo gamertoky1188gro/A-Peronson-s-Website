@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { apiRequest } from "../lib/auth";
+import { apiRequest, getToken } from "../lib/auth";
 
 const DEFAULT_ADMIN_PANEL_FALLBACK_INVENTORY = [
   {
@@ -105,13 +105,14 @@ const NETWORK_CAPABILITIES_DEFAULT = [
   },
 ];
 const ULTRA_CAPABILITIES_DEFAULT = [
-  {
-    capability_id: "zero_trust",
-    title: "Zero-Trust Access Controls",
-    count: 8,
-    icon_name: "Lock",
-    subtitle: "Mandatory MFA, session timeout, IP whitelisting.",
-  },
+  "Zero-Trust Access Controls",
+  "Role-Based Permissions",
+  "Audit Logging",
+  "Encrypted Data Storage",
+  "Multi-Factor Authentication",
+  "Real-Time Threat Detection",
+  "Compliance Management",
+  "Secure API Gateway",
 ];
 const BUYER_BENEFITS_DEFAULT = [
   "Access to factory network",
@@ -139,6 +140,7 @@ export function useAdminFullConfig() {
     try {
       const data = await apiRequest("/admin/config/total-config", {
         method: "GET",
+        token: getToken(),
       });
       setConfig(data);
       setError(null);
@@ -219,6 +221,7 @@ export function useInventory() {
       try {
         const data = await apiRequest("/admin/config/inventory", {
           method: "GET",
+          token: getToken(),
         });
         if (data && data.length > 0) {
           setInventory(data);
@@ -247,7 +250,10 @@ export function useUiConfig() {
     async function fetchUiConfig() {
       setLoading(true);
       try {
-        const data = await apiRequest("/admin/config/ui", { method: "GET" });
+        const data = await apiRequest("/admin/config/ui", {
+          method: "GET",
+          token: getToken(),
+        });
         setUiConfig({
           chart_palette:
             data?.chart_palette?.length >= 2
@@ -291,7 +297,10 @@ export function useCapabilities(moduleId) {
                 ? "/admin/config/ultra-capabilities"
                 : null;
         if (endpoint) {
-          const data = await apiRequest(endpoint, { method: "GET" });
+          const data = await apiRequest(endpoint, {
+            method: "GET",
+            token: getToken(),
+          });
           setCapabilities(data || []);
         }
       } catch (e) {
@@ -316,6 +325,7 @@ export function useActions() {
       try {
         const data = await apiRequest("/admin/config/actions", {
           method: "GET",
+          token: getToken(),
         });
         setActions(data || []);
       } catch (e) {
@@ -340,6 +350,7 @@ export function useActionGroups() {
       try {
         const data = await apiRequest("/admin/config/actions/groups", {
           method: "GET",
+          token: getToken(),
         });
         setGroups(data && data.length > 0 ? data : null);
       } catch (e) {
@@ -368,8 +379,14 @@ export function useRoleConfig() {
       setLoading(true);
       try {
         const [rolesData, rolesList] = await Promise.all([
-          apiRequest("/admin/config/roles", { method: "GET" }),
-          apiRequest("/admin/config/roles-list", { method: "GET" }),
+          apiRequest("/admin/config/roles", {
+            method: "GET",
+            token: getToken(),
+          }),
+          apiRequest("/admin/config/roles-list", {
+            method: "GET",
+            token: getToken(),
+          }),
         ]);
         setRoles({
           ...rolesData,

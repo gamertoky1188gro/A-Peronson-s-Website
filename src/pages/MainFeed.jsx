@@ -563,7 +563,9 @@ export default function MainFeed() {
   }, [loadUser]);
 
   useEffect(() => {
-    apiRequest("/api/admin/config/feed-page")
+    const token = getToken();
+    if (!token) return;
+    apiRequest("/admin/config/feed-page", { token })
       .then((data) => setFeedConfig({ ...DEFAULT_FEED_CONFIG, ...data }))
       .catch(() => {});
   }, []);

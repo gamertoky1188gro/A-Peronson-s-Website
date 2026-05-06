@@ -937,12 +937,12 @@ export default function SearchResults() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <a
-                      href={`/buyer/${item.id}`}
+                    <Link
+                      to={`/buyer/${item.id}`}
                       className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
                     >
                       {item.title || item.name || "Untitled Request"}
-                    </a>
+                    </Link>
                     <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                       <span>{item.location || item.country || "N/A"}</span>
                       {item.category && (
@@ -1087,12 +1087,12 @@ export default function SearchResults() {
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <a
-                    href={`/factory/${item.id}`}
+                  <Link
+                    to={`/factory/${item.id}`}
                     className="text-lg font-semibold text-slate-900 hover:text-sky-600 dark:text-white dark:hover:text-sky-400"
                   >
                     {item.name || item.title || "Untitled Company"}
-                  </a>
+                  </Link>
                   <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                     <span>{item.location || item.country || "N/A"}</span>
                     {item.type && (
@@ -1923,9 +1923,9 @@ export default function SearchResults() {
               <div className="space-y-3">
                 {recentViews.length > 0 ? (
                   recentViews.slice(0, 5).map((item) => (
-                    <a
+                    <Link
                       key={item.id}
-                      href={`/product/${item.id}`}
+                      to={`/product/${item.id}`}
                       className="flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-3 hover:border-sky-300 dark:hover:border-sky-700"
                     >
                       <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-lg shadow-sky-500/20">
@@ -1940,7 +1940,7 @@ export default function SearchResults() {
                         </div>
                       </div>
                       <ArrowUpRight className="h-4 w-4 text-slate-400" />
-                    </a>
+                    </Link>
                   ))
                 ) : (
                   <div className="text-sm text-slate-500 dark:text-slate-400">

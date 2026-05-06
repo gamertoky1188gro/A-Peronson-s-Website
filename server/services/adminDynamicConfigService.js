@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import chalk from "chalk";
 
 const prisma = new PrismaClient();
 
@@ -567,7 +568,9 @@ async function updateUiConfig(data, actorId) {
 
     return { success: true, config };
   } catch (error) {
-    console.error("[AdminDynamicConfig] updateUiConfig error:", error.message);
+    console.error(
+      chalk.red("[AdminDynamicConfig] updateUiConfig error:", error.message),
+    );
     throw error;
   }
 }
@@ -625,7 +628,9 @@ async function updateMockData(dataKey, payload, actorId) {
 
     return { success: true, saved };
   } catch (error) {
-    console.error("[AdminDynamicConfig] updateMockData error:", error.message);
+    console.error(
+      chalk.red("[AdminDynamicConfig] updateMockData error:", error.message),
+    );
     throw error;
   }
 }

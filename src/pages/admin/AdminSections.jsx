@@ -1,9 +1,9 @@
 /**
  * Admin Panel Section Router
- * 
+ *
  * This file handles routing between different admin panel sections
  * based on the activeCategory state.
- * 
+ *
  * Sections:
  * - home: Dashboard/Overview
  * - platform: Users, Verification, Subscriptions, Contracts, etc.
@@ -26,6 +26,7 @@ import { AdminServerSection } from "./sections/AdminServerSection";
 import { AdminCMSSection } from "./sections/AdminCMSSection";
 import { AdminSecuritySection } from "./sections/AdminSecuritySection";
 import { AdminConfigSection } from "./sections/AdminConfigSection";
+import { AdminAISection } from "./sections/AdminAISection";
 
 const SECTIONS = {
   home: AdminHomeSection,
@@ -36,11 +37,12 @@ const SECTIONS = {
   cms: AdminCMSSection,
   "ultra-security": AdminSecuritySection,
   config: AdminConfigSection,
+  ai: AdminAISection,
 };
 
 export function AdminSectionRouter({ activeCategory, ...props }) {
   const SectionComponent = SECTIONS[activeCategory];
-  
+
   if (!SectionComponent) {
     return (
       <div className="p-8 text-center text-slate-500">
@@ -48,7 +50,7 @@ export function AdminSectionRouter({ activeCategory, ...props }) {
       </div>
     );
   }
-  
+
   return <SectionComponent {...props} />;
 }
 

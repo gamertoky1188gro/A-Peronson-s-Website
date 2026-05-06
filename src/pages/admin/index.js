@@ -1,9 +1,9 @@
 /**
  * Admin Panel Modular Components
- * 
+ *
  * This folder contains modular sections extracted from AdminPanel.jsx
  * for better maintainability.
- * 
+ *
  * Structure:
  * - sections/AdminHomeSection.jsx     - Dashboard overview
  * - sections/AdminPlatformSection.jsx - Users, verification, subscriptions
@@ -13,14 +13,14 @@
  * - sections/AdminCMSSection.jsx      - Content management
  * - sections/AdminSecuritySection.jsx - Ultra security
  * - sections/AdminConfigSection.jsx   - Config editor
- * 
+ *
  * Usage:
  * Import the router component to use modular sections:
- * 
+ *
  * import { AdminSectionRouter } from './admin';
- * 
+ *
  * Then render: <AdminSectionRouter activeCategory={activeCategory} {...props} />
- * 
+ *
  * Note: The original AdminPanel.jsx still contains the full implementation.
  * These modular components can be progressively adopted for better maintainability.
  */
@@ -34,55 +34,55 @@ export {
   AdminServerSection,
   AdminCMSSection,
   AdminSecuritySection,
-  AdminConfigSection
-} from './sections';
+  AdminConfigSection,
+} from "./sections";
 
 // Category constants
 export const ADMIN_CATEGORIES = {
-  HOME: 'home',
-  PLATFORM: 'platform',
-  INFRA: 'infra',
-  NETWORK: 'network',
-  SERVER_ADMIN: 'server-admin',
-  CMS: 'cms',
-  ULTRA_SECURITY: 'ultra-security',
-  CONFIG: 'config'
+  HOME: "home",
+  PLATFORM: "platform",
+  INFRA: "infra",
+  NETWORK: "network",
+  SERVER_ADMIN: "server-admin",
+  CMS: "cms",
+  ULTRA_SECURITY: "ultra-security",
+  CONFIG: "config",
 };
 
 export const CATEGORY_LABELS = {
-  home: 'Dashboard',
-  platform: 'Platform',
-  infra: 'Infrastructure',
-  network: 'Network',
-  'server-admin': 'Server Admin',
-  cms: 'CMS',
-  'ultra-security': 'Ultra Security',
-  config: 'Config'
+  home: "Dashboard",
+  platform: "Platform",
+  infra: "Infrastructure",
+  network: "Network",
+  "server-admin": "Server Admin",
+  cms: "CMS",
+  "ultra-security": "Ultra Security",
+  config: "Config",
 };
 
 // Default props for each section (to be used with original state)
 export const getDefaultSectionProps = (adminDark = false) => ({
   adminDark,
   // Platform nav states
-  platformNav: 'overview',
+  platformNav: "overview",
   setPlatformNav: () => {},
   // Infra nav states
-  infraNav: 'overview',
+  infraNav: "overview",
   setInfraNav: () => {},
   // Network nav states
-  networkNav: 'overview',
+  networkNav: "overview",
   setNetworkNav: () => {},
   // Server nav states
-  serverNav: 'overview',
+  serverNav: "overview",
   setServerNav: () => {},
   // CMS nav states
-  cmsNav: 'pages',
+  cmsNav: "pages",
   setCmsNav: () => {},
   // Security nav states
-  securityNav: 'overview',
+  securityNav: "overview",
   setSecurityNav: () => {},
   // Config editor states
-  configEditorTab: 'inventory',
+  configEditorTab: "inventory",
   setConfigEditorTab: () => {},
   // Data placeholders (would come from parent state)
   metricsData: [],
@@ -100,10 +100,10 @@ export const getDefaultSectionProps = (adminDark = false) => ({
   securityData: {},
   configEditorData: {},
   configEditorLoading: false,
-  configEditorError: '',
-  configEditorNotice: '',
+  configEditorError: "",
+  configEditorNotice: "",
   configEditorSaving: false,
   setConfigEditorSaving: () => {},
   setConfigEditorNotice: () => {},
-  setConfigEditorError: () => {}
+  setConfigEditorError: () => {},
 });

@@ -1,4 +1,5 @@
 import { createClient } from "redis";
+import chalk from "chalk";
 
 let client = null;
 let isConnected = false;
@@ -7,7 +8,7 @@ export async function initRedis() {
   const redisUrl = process.env.REDIS_URL;
 
   if (!redisUrl) {
-    console.log("[redis] REDIS_URL not set - caching disabled");
+    console.log(chalk.yellow("[redis] REDIS_URL not set - caching disabled"));
     return null;
   }
 
@@ -17,7 +18,9 @@ export async function initRedis() {
       socket: {
         reconnectStrategy: (retries) => {
           if (retries > 3) {
-            console.error("[redis] Max reconnection attempts reached");
+            console.error(
+              chalk.red("[redis] Max reconnection attempts reached"),
+            );
             return new Error("Max retries reached");
           }
           return Math.min(retries * 100, 3000);
@@ -26,24 +29,24 @@ export async function initRedis() {
     });
 
     client.on("error", (err) => {
-      console.error("[redis] Client error:", err.message);
+      console.error(chalk.red("[redis] Client error:"), err.message);
       isConnected = false;
     });
 
     client.on("connect", () => {
-      console.log("[redis] Connected to Redis");
+      console.log(chalk.green("[redis] Connected to Redis"));
       isConnected = true;
     });
 
     client.on("disconnect", () => {
-      console.log("[redis] Disconnected from Redis");
+      console.log(chalk.yellow("[redis] Disconnected from Redis"));
       isConnected = false;
     });
 
     await client.connect();
     return client;
   } catch (err) {
-    console.error("[redis] Failed to connect:", err.message);
+    console.error(chalk.red("[redis] Failed to connect:"), err.message);
     return null;
   }
 }
@@ -62,7 +65,7 @@ export async function cacheGet(key) {
     const value = await client.get(key);
     return value ? JSON.parse(value) : null;
   } catch (err) {
-    console.error("[redis] cacheGet error:", err.message);
+    console.error(chalk.red("[redis] cacheGet error:"), err.message);
     return null;
   }
 }
@@ -73,7 +76,7 @@ export async function cacheSet(key, value, ttlSeconds = 3600) {
     await client.setEx(key, ttlSeconds, JSON.stringify(value));
     return true;
   } catch (err) {
-    console.error("[redis] cacheSet error:", err.message);
+    console.error(chalk.red("[redis] cacheSet error:"), err.message);
     return false;
   }
 }
@@ -84,7 +87,7 @@ export async function cacheDelete(key) {
     await client.del(key);
     return true;
   } catch (err) {
-    console.error("[redis] cacheDelete error:", err.message);
+    console.error(chalk.red("[redis] cacheDelete error:"), err.message);
     return false;
   }
 }
@@ -98,7 +101,10 @@ export async function cacheInvalidatePattern(pattern) {
     }
     return true;
   } catch (err) {
-    console.error("[redis] cacheInvalidatePattern error:", err.message);
+    console.error(
+      chalk.red("[redis] cacheInvalidatePattern error:"),
+      err.message,
+    );
     return false;
   }
 }

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 
 const Icon = {
@@ -432,13 +433,13 @@ export default function FeedManagementPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <a
-                href="/feed"
+              <Link
+                to="/feed"
                 className="inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5 hover:shadow-lg"
               >
                 <Icon.ArrowLeft className="h-4 w-4" />
                 Back to Feed
-              </a>
+              </Link>
               <button
                 type="button"
                 onClick={() => {

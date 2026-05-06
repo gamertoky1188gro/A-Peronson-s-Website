@@ -3,9 +3,11 @@
   Route: /signup
   Access: Public
 */
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
+import PasswordStrengthBar from "react-password-strength-bar";
+import PasswordChecklist from "react-password-checklist";
 import {
   apiRequest,
   getCurrentUser,
@@ -164,6 +166,28 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const accountDropdownRef = useRef(null);
+  const countryDropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (
+        accountDropdownRef.current &&
+        !accountDropdownRef.current.contains(e.target)
+      ) {
+        setAccountOpen(false);
+      }
+      if (
+        countryDropdownRef.current &&
+        !countryDropdownRef.current.contains(e.target)
+      ) {
+        setCountryOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const filteredCountries = useMemo(() => {
     const q = countryQuery.trim().toLowerCase();
     if (!q) return COUNTRIES;
@@ -171,37 +195,6 @@ export default function Signup() {
   }, [countryQuery]);
 
   const isDark = theme === "dark";
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (isDark) {
-      root.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      root.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [isDark]);
-
-  useEffect(() => {
-    const handleStorage = () => {
-      const saved = localStorage.getItem("theme");
-      if (saved && saved !== theme) {
-        setTheme(saved);
-      }
-    };
-    window.addEventListener("storage", handleStorage);
-    const interval = setInterval(() => {
-      const saved = localStorage.getItem("theme");
-      if (saved && saved !== theme) {
-        setTheme(saved);
-      }
-    }, 500);
-    return () => {
-      window.removeEventListener("storage", handleStorage);
-      clearInterval(interval);
-    };
-  }, [existingUser?.role, navigate, theme]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -443,25 +436,51 @@ export default function Signup() {
 
                 <div className="grid gap-5 sm:grid-cols-2">
                   <FieldShell label="Password">
-                    <div className="relative">
-                      <input
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        type={showPassword ? "text" : "password"}
-                        placeholder="•••••••••••"
-                        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-20 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-white/10 dark:bg-white/5 dark:placeholder:text-slate-500"
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((v) => !v)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl px-3 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-50 dark:text-sky-200 dark:hover:bg-white/10"
-                      >
-                        <span className="inline-flex items-center gap-1">
-                          <EyeIcon open={showPassword} />
-                          {showPassword ? "Hide" : "Show"}
-                        </span>
-                      </button>
+                    <div className="space-y-3">
+                      <div className="relative">
+                        <input
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          type={showPassword ? "text" : "password"}
+                          placeholder="•••••••••••"
+                          minLength={8}
+                          maxLength={32}
+                          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-20 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-white/10 dark:bg-white/5 dark:placeholder:text-slate-500"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((v) => !v)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl px-3 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-50 dark:text-sky-200 dark:hover:bg-white/10"
+                        >
+                          <span className="inline-flex items-center gap-1">
+                            <EyeIcon open={showPassword} />
+                            {showPassword ? "Hide" : "Show"}
+                          </span>
+                        </button>
+                      </div>
+                      {password && (
+                        <>
+                          <PasswordStrengthBar
+                            password={password}
+                            minLength={8}
+                            maxLength={32}
+                          />
+                          <PasswordChecklist
+                            password={password}
+                            valueAgain={confirmPassword}
+                            minLength={8}
+                            maxLength={32}
+                            specialChar
+                            number
+                            capital
+                            letter
+                            lowercase
+                            notEmpty
+                            noSpaces={false}
+                          />
+                        </>
+                      )}
                     </div>
                   </FieldShell>
 
@@ -472,6 +491,8 @@ export default function Signup() {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="•••••••••••"
+                        minLength={8}
+                        maxLength={32}
                         className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-20 text-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-500/10 dark:border-white/10 dark:bg-white/5 dark:placeholder:text-slate-500"
                         required
                       />
@@ -499,7 +520,7 @@ export default function Signup() {
                         : "Buyer"
                   }
                 >
-                  <div className="relative">
+                  <div className="relative" ref={accountDropdownRef}>
                     <button
                       type="button"
                       onClick={() => setAccountOpen((v) => !v)}
@@ -549,7 +570,7 @@ export default function Signup() {
                 </FieldShell>
 
                 <FieldShell label="Country">
-                  <div className="relative">
+                  <div className="relative" ref={countryDropdownRef}>
                     <input
                       value={countryOpen ? countryQuery : country}
                       onChange={(e) => {

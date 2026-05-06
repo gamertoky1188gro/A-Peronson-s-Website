@@ -7,57 +7,77 @@ import { logError, logInfo } from "../utils/logger.js";
 import { updateLocalJson } from "../utils/localStore.js";
 
 const FILE = "assistant_knowledge.json";
+const RULES_FILE = "assistant_rules.json";
+const CONFIG_FILE = "assistant_config.json";
 const KNOWLEDGE_TYPES = {
   FAQ: "faq",
   FACT: "fact",
 };
 
-const globalRules = [
-  {
-    source: "global_rule:onboarding",
-    keywords: ["setup", "onboarding", "profile"],
-    response:
-      "Start with onboarding: profile image, organization name, and category selection.",
-  },
-  {
-    source: "global_rule:verification",
-    keywords: ["verification", "badge", "verified"],
-    response:
-      "Submit required verification documents, keep premium active, then request admin approval.",
-  },
-  {
-    source: "global_rule:subscription",
-    keywords: ["subscription", "premium", "plan"],
-    response:
-      "Premium unlocks higher visibility and advanced analytics for your account type.",
-  },
-  {
-    source: "global_rule:help",
-    keywords: ["help", "support"],
-    response:
-      "I can route you to Help Center and suggest next dashboard actions.",
-  },
-];
+const DEFAULT_SYSTEM_PROMPT = "You are a helpful GarTex assistant.";
+const DEFAULT_AGENT_PROMPT = `You are the GarTex Assistant, an expert on the GarTexHub textile marketplace platform.
+Your goal is to help users understand and navigate this specific web application.
+Use the following context to provide accurate, specific answers. If the answer isn't in the context, use your general knowledge but stay professional.
+Always be helpful and detailed. Never say "message is incomplete" unless it is truly gibberish.`;
 
-const smallTalkRules = [
-  {
-    source: "smalltalk:greeting",
-    keywords: [
-      "hi",
-      "hello",
-      "hey",
-      "goodmorning",
-      "goodafternoon",
-      "goodevening",
-    ],
-    response: "Greet the user briefly and offer textile business help.",
-  },
-  {
-    source: "smalltalk:identity",
-    keywords: ["name", "whoareyou", "whatsyourname", "whatisyourname"],
-    response: "Introduce yourself as GarTex Assistant in one short sentence.",
-  },
-];
+async function loadAssistantConfig() {
+  try {
+    const data = await readJson(CONFIG_FILE);
+    return {
+      systemPrompt: data.systemPrompt || DEFAULT_SYSTEM_PROMPT,
+      agentPrompt: data.agentPrompt || DEFAULT_AGENT_PROMPT,
+      codeContextEnabled: data.codeContextEnabled !== false,
+      codeContextKeywords: data.codeContextKeywords || [
+        "api",
+        "route",
+        "server",
+        "controller",
+        "service",
+        "code",
+        "bug",
+        "error",
+        "endpoint",
+        "json",
+        "database",
+        "model",
+        "function",
+      ],
+    };
+  } catch {
+    return {
+      systemPrompt: DEFAULT_SYSTEM_PROMPT,
+      agentPrompt: DEFAULT_AGENT_PROMPT,
+      codeContextEnabled: true,
+      codeContextKeywords: [
+        "api",
+        "route",
+        "server",
+        "controller",
+        "service",
+        "code",
+        "bug",
+        "error",
+        "endpoint",
+        "json",
+        "database",
+        "model",
+        "function",
+      ],
+    };
+  }
+}
+
+async function loadAssistantRules() {
+  try {
+    const data = await readJson(RULES_FILE);
+    return {
+      globalRules: data.globalRules || [],
+      smallTalkRules: data.smallTalkRules || [],
+    };
+  } catch {
+    return { globalRules: [], smallTalkRules: [] };
+  }
+}
 
 const CODE_EXTENSIONS = new Set([
   ".js",
@@ -88,21 +108,26 @@ const MAX_AI_ANSWER_CHARS = 1200;
 const AI_PROVIDERS = {
   OLLAMA: "ollama",
   OPENROUTER: "openrouter",
+  GEMINI: "gemini",
   NONE: "none",
 };
 
 const aiConfig = {
-  primary: process.env.AI_PRIMARY_PROVIDER?.toLowerCase() || AI_PROVIDERS.OLLAMA,
-  fallback: process.env.AI_FALLBACK_PROVIDER?.toLowerCase() || AI_PROVIDERS.OPENROUTER,
+  primary:
+    process.env.AI_PRIMARY_PROVIDER?.toLowerCase() || AI_PROVIDERS.OLLAMA,
+  fallback:
+    process.env.AI_FALLBACK_PROVIDER?.toLowerCase() || AI_PROVIDERS.OPENROUTER,
   enabled: process.env.AI_ENABLED !== "false",
   ollama: {
     host: process.env.OLLAMA_HOST || "127.0.0.1",
     port: process.env.OLLAMA_PORT || "11434",
     model: process.env.OLLAMA_MODEL || "llama3",
     timeoutMs: Number(process.env.OLLAMA_TIMEOUT_MS || 45000),
-    chatEndpoint: process.env.OLLAMA_CHAT_ENDPOINT ||
+    chatEndpoint:
+      process.env.OLLAMA_CHAT_ENDPOINT ||
       `http://${process.env.OLLAMA_HOST || "127.0.0.1"}:${process.env.OLLAMA_PORT || "11434"}/v1/chat/completions`,
-    completionEndpoint: process.env.OLLAMA_COMPLETION_ENDPOINT ||
+    completionEndpoint:
+      process.env.OLLAMA_COMPLETION_ENDPOINT ||
       `http://${process.env.OLLAMA_HOST || "127.0.0.1"}:${process.env.OLLAMA_PORT || "11434"}/completion`,
   },
   openrouter: {
@@ -112,6 +137,12 @@ const aiConfig = {
     timeoutMs: Number(process.env.OPENROUTER_TIMEOUT_MS || 60000),
     referer: process.env.OPENROUTER_REFERER || "https://gartexhub.com",
     appTitle: process.env.OPENROUTER_APP_TITLE || "GarTexHub",
+  },
+  gemini: {
+    apiKey: process.env.GEMINI_API_KEY || "",
+    model: process.env.GEMINI_MODEL || "gemini-2.0-flash",
+    baseUrl: "https://generativelanguage.googleapis.com/v1beta",
+    timeoutMs: Number(process.env.GEMINI_TIMEOUT_MS || 60000),
   },
 };
 
@@ -132,6 +163,8 @@ function isProviderAvailable(provider) {
       return aiConfig.ollama.model && aiConfig.ollama.host;
     case AI_PROVIDERS.OPENROUTER:
       return aiConfig.openrouter.apiKey && aiConfig.openrouter.model;
+    case AI_PROVIDERS.GEMINI:
+      return aiConfig.gemini.apiKey && aiConfig.gemini.model;
     default:
       return false;
   }
@@ -194,12 +227,6 @@ function tokenize(text = "") {
   return normalize(text)
     .split(/[^a-z0-9]+/)
     .filter((word) => word.length > 2);
-}
-
-function compactTokenKey(token = "") {
-  return String(token || "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "");
 }
 
 function scoreMatch(questionText, candidateQuestion, candidateKeywords = []) {
@@ -385,22 +412,43 @@ async function searchCodeContext(questionText) {
   };
 }
 
-function findBestKeywordRule(questionText, rules = []) {
+async function shouldSearchCodeContext(questionText) {
+  const config = await loadAssistantConfig();
+  if (!config.codeContextEnabled) return false;
+  const tokens = tokenize(questionText);
+  if (tokens.length < 3) return false;
+  const keywordSet = new Set(
+    config.codeContextKeywords.map((k) => k.toLowerCase()),
+  );
+  return tokens.some((token) => keywordSet.has(token));
+}
+
+function findBestRule(questionText, rules = []) {
   const normalizedQuestion = normalize(questionText);
-  const compactQuestion = compactTokenKey(normalizedQuestion);
   const rawQuestionTokens = normalizedQuestion
     .split(/[^a-z0-9]+/)
     .filter(Boolean);
   const compactQuestionTokens = new Set(
-    rawQuestionTokens.map((token) => compactTokenKey(token)).filter(Boolean),
+    rawQuestionTokens
+      .map((token) =>
+        String(token || "")
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, ""),
+      )
+      .filter(Boolean),
   );
 
   let bestRule = null;
   let bestRuleScore = 0;
 
   for (const rule of rules) {
+    if (!Array.isArray(rule.keywords)) continue;
     const normalizedKeywords = rule.keywords
-      .map((keyword) => compactTokenKey(keyword))
+      .map((keyword) =>
+        String(keyword || "")
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, ""),
+      )
       .filter(Boolean);
     let score = 0;
     for (const keyword of normalizedKeywords) {
@@ -409,7 +457,8 @@ function findBestKeywordRule(questionText, rules = []) {
         score += 1;
         continue;
       }
-      if (keyword.length > 3 && compactQuestion.includes(keyword)) score += 1;
+      if (keyword.length > 3 && normalizedQuestion.includes(keyword))
+        score += 1;
     }
 
     if (score > bestRuleScore) {
@@ -421,13 +470,8 @@ function findBestKeywordRule(questionText, rules = []) {
   return { bestRule, bestRuleScore };
 }
 
-function shouldSearchCodeContext(questionText) {
-  const tokens = tokenize(questionText);
-  if (tokens.length < 3) return false;
-  return tokens.some((token) => CODE_CONTEXT_HINTS.has(token));
-}
-
-function buildKnowledgeContext(questionText, entries) {
+async function buildKnowledgeContext(questionText, entries) {
+  const rules = await loadAssistantRules();
   const rankedEntries = entries
     .map((entry) => ({
       entry,
@@ -446,13 +490,13 @@ function buildKnowledgeContext(questionText, entries) {
   });
 
   const { bestRule: bestGlobalRule, bestRuleScore: bestGlobalRuleScore } =
-    findBestKeywordRule(questionText, globalRules);
+    findBestRule(questionText, rules.globalRules);
   if (bestGlobalRule && bestGlobalRuleScore > 0) {
     lines.push(`Global guidance: ${bestGlobalRule.response}`);
   }
 
   const { bestRule: bestSmallTalkRule, bestRuleScore: bestSmallTalkScore } =
-    findBestKeywordRule(questionText, smallTalkRules);
+    findBestRule(questionText, rules.smallTalkRules);
   if (bestSmallTalkRule && bestSmallTalkScore > 0) {
     lines.push(`Tone guidance: ${bestSmallTalkRule.response}`);
   }
@@ -460,19 +504,18 @@ function buildKnowledgeContext(questionText, entries) {
   return sanitizeString(lines.join("\n\n"), MAX_KNOWLEDGE_CONTEXT_CHARS);
 }
 
-function buildAgentPrompt(questionText, codeContext, knowledgeContext) {
-  const sections = [
-    "You are the GarTex Assistant, an expert on the GarTexHub textile marketplace platform.",
-    "Your goal is to help users understand and navigate this specific web application.",
-    "Use the following context to provide accurate, specific answers. If the answer isn't in the context, use your general knowledge but stay professional.",
-    'Always be helpful and detailed. Never say "message is incomplete" unless it is truly gibberish.',
-  ];
+async function buildAgentPrompt(questionText, codeContext, knowledgeContext) {
+  const config = await loadAssistantConfig();
+  const sections = [config.agentPrompt];
 
   if (knowledgeContext) {
     sections.push(`PROJECT KNOWLEDGE BASE:\n${knowledgeContext}`);
   }
 
-  if (codeContext?.summary || codeContext?.prompt_context) {
+  if (
+    config.codeContextEnabled &&
+    (codeContext?.summary || codeContext?.prompt_context)
+  ) {
     const codeBlock = [
       "TECHNICAL CONTEXT (Source Code):",
       codeContext.summary ? `Relevant files: ${codeContext.summary}` : "",
@@ -490,14 +533,14 @@ function buildAgentPrompt(questionText, codeContext, knowledgeContext) {
   return sections.join("\n\n");
 }
 
-export async function callLlama(
-  prompt,
-  systemPrompt = "You are a helpful GarTex assistant.",
-) {
+export async function callLlama(prompt, systemPromptOverride = null) {
   if (!aiConfig.enabled) {
     logInfo("AI is disabled");
     return null;
   }
+
+  const config = await loadAssistantConfig();
+  const systemPrompt = systemPromptOverride || config.systemPrompt;
 
   const primary = getPrimaryProvider();
   const fallback = getFallbackProvider();
@@ -528,13 +571,18 @@ async function callAiProvider(provider, prompt, systemPrompt) {
       return callOllama(prompt, systemPrompt);
     case AI_PROVIDERS.OPENROUTER:
       return callOpenRouter(prompt, systemPrompt);
+    case AI_PROVIDERS.GEMINI:
+      return callGemini(prompt, systemPrompt);
     default:
       logError("Unknown AI provider", { provider });
       return null;
   }
 }
 
-async function callOllama(prompt, systemPrompt = "You are a helpful GarTex assistant.") {
+async function callOllama(
+  prompt,
+  systemPrompt = "You are a helpful GarTex assistant.",
+) {
   const cfg = aiConfig.ollama;
 
   logInfo("Calling Ollama", { endpoint: cfg.chatEndpoint, model: cfg.model });
@@ -554,7 +602,11 @@ async function callOllama(prompt, systemPrompt = "You are a helpful GarTex assis
   );
 }
 
-async function callOllamaChat(prompt, signal, systemPrompt = "You are a helpful GarTex assistant.") {
+async function callOllamaChat(
+  prompt,
+  signal,
+  systemPrompt = "You are a helpful GarTex assistant.",
+) {
   const cfg = aiConfig.ollama;
   const response = await fetch(cfg.chatEndpoint, {
     method: "POST",
@@ -605,7 +657,10 @@ async function callOllamaCompletion(prompt, signal) {
   );
 }
 
-async function callOpenRouter(prompt, systemPrompt = "You are a helpful GarTex assistant.") {
+async function callOpenRouter(
+  prompt,
+  systemPrompt = "You are a helpful GarTex assistant.",
+) {
   const cfg = aiConfig.openrouter;
 
   if (!cfg.apiKey) return null;
@@ -620,7 +675,7 @@ async function callOpenRouter(prompt, systemPrompt = "You are a helpful GarTex a
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${cfg.apiKey}`,
+        Authorization: `Bearer ${cfg.apiKey}`,
         "HTTP-Referer": cfg.referer,
         "X-Title": cfg.appTitle,
       },
@@ -638,7 +693,10 @@ async function callOpenRouter(prompt, systemPrompt = "You are a helpful GarTex a
 
     if (!response.ok) {
       const errorText = await response.text();
-      logError("OpenRouter API error", { status: response.status, error: errorText });
+      logError("OpenRouter API error", {
+        status: response.status,
+        error: errorText,
+      });
       return null;
     }
 
@@ -654,6 +712,69 @@ async function callOpenRouter(prompt, systemPrompt = "You are a helpful GarTex a
       logError("OpenRouter request timed out");
     } else {
       logError("OpenRouter call failed", error);
+    }
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function callGemini(
+  prompt,
+  systemPrompt = "You are a helpful GarTex assistant.",
+) {
+  const cfg = aiConfig.gemini;
+
+  if (!cfg.apiKey) return null;
+
+  logInfo("Calling Gemini", { model: cfg.model });
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), cfg.timeoutMs);
+
+  try {
+    const url = `${cfg.baseUrl}/models/${cfg.model}:generateContent?key=${cfg.apiKey}`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: prompt }],
+          },
+        ],
+        systemInstruction: {
+          role: "system",
+          parts: [{ text: systemPrompt }],
+        },
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 450,
+        },
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      logError("Gemini API error", {
+        status: response.status,
+        error: errorText,
+      });
+      return null;
+    }
+
+    const payload = await response.json();
+    const content = payload?.candidates?.[0]?.content?.parts?.[0]?.text;
+    return sanitizeString(content || "", MAX_AI_ANSWER_CHARS) || null;
+  } catch (error) {
+    if (error.name === "AbortError") {
+      logError("Gemini request timed out");
+    } else {
+      logError("Gemini call failed", error);
     }
     return null;
   } finally {
@@ -818,6 +939,111 @@ export async function deleteKnowledgeEntry(orgId, entryId) {
   return deleted;
 }
 
+export async function listAssistantRules() {
+  return await loadAssistantRules();
+}
+
+export async function updateAssistantRules(globalRules, smallTalkRules) {
+  await updateJson(RULES_FILE, () => ({
+    globalRules: Array.isArray(globalRules) ? globalRules : [],
+    smallTalkRules: Array.isArray(smallTalkRules) ? smallTalkRules : [],
+    updated_at: new Date().toISOString(),
+  }));
+  return await loadAssistantRules();
+}
+
+export async function getAssistantConfig() {
+  return await loadAssistantConfig();
+}
+
+export async function updateAssistantConfig(payload) {
+  const current = await loadAssistantConfig();
+  const updated = {
+    systemPrompt: sanitizeString(
+      payload.systemPrompt || current.systemPrompt,
+      2000,
+    ),
+    agentPrompt: sanitizeString(
+      payload.agentPrompt || current.agentPrompt,
+      4000,
+    ),
+    codeContextEnabled:
+      payload.codeContextEnabled !== undefined
+        ? Boolean(payload.codeContextEnabled)
+        : current.codeContextEnabled,
+    codeContextKeywords: Array.isArray(payload.codeContextKeywords)
+      ? payload.codeContextKeywords
+          .map((k) => String(k).toLowerCase().trim())
+          .filter(Boolean)
+      : current.codeContextKeywords,
+  };
+  await updateJson(CONFIG_FILE, () => ({
+    ...updated,
+    updated_at: new Date().toISOString(),
+  }));
+  return updated;
+}
+
+export async function addAssistantRule(type, payload) {
+  const rules = await loadAssistantRules();
+  const rule = {
+    id: crypto.randomUUID(),
+    source: payload.source || `${type}:${Date.now()}`,
+    keywords: Array.isArray(payload.keywords)
+      ? payload.keywords
+          .map((k) => String(k).toLowerCase().trim())
+          .filter(Boolean)
+      : [],
+    response: sanitizeString(payload.response || "", 500),
+    created_at: new Date().toISOString(),
+  };
+
+  if (type === "global") {
+    rules.globalRules.push(rule);
+  } else if (type === "smalltalk") {
+    rules.smallTalkRules.push(rule);
+  } else {
+    const error = new Error("Invalid rule type");
+    error.status = 400;
+    throw error;
+  }
+
+  await updateJson(RULES_FILE, () => ({
+    ...rules,
+    updated_at: new Date().toISOString(),
+  }));
+
+  return rule;
+}
+
+export async function removeAssistantRule(type, ruleId) {
+  const rules = await loadAssistantRules();
+  let deleted = false;
+
+  if (type === "global") {
+    const idx = rules.globalRules.findIndex((r) => r.id === ruleId);
+    if (idx >= 0) {
+      rules.globalRules.splice(idx, 1);
+      deleted = true;
+    }
+  } else if (type === "smalltalk") {
+    const idx = rules.smallTalkRules.findIndex((r) => r.id === ruleId);
+    if (idx >= 0) {
+      rules.smallTalkRules.splice(idx, 1);
+      deleted = true;
+    }
+  }
+
+  if (deleted) {
+    await updateJson(RULES_FILE, () => ({
+      ...rules,
+      updated_at: new Date().toISOString(),
+    }));
+  }
+
+  return deleted;
+}
+
 function buildMatchedResponse({
   matchedAnswer,
   source,
@@ -848,7 +1074,7 @@ export async function assistantReply(orgId, question = "") {
     ? await searchCodeContext(questionText)
     : { summary: "", snippets: [], prompt_context: "" };
   const entries = await listKnowledge(orgId);
-  const knowledgeContext = buildKnowledgeContext(questionText, entries);
+  const knowledgeContext = await buildKnowledgeContext(questionText, entries);
 
   const dynamicAnswer = await generateDynamicAnswer(
     questionText,

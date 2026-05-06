@@ -4,6 +4,12 @@ import {
   deleteKnowledgeEntry,
   listKnowledge,
   updateKnowledgeEntry,
+  listAssistantRules,
+  updateAssistantRules,
+  addAssistantRule,
+  removeAssistantRule,
+  getAssistantConfig,
+  updateAssistantConfig,
 } from "../services/assistantService.js";
 import aiOrchestration from "../services/aiOrchestrationService.js";
 import {
@@ -214,5 +220,85 @@ export async function postValidateResponse(req, res) {
     return res.json(result);
   } catch (error) {
     return handleControllerError(res, error);
+  }
+}
+
+export async function getAssistantRules(req, res) {
+  if (!canManageMembers(req.user)) return deny(res);
+  try {
+    const rules = await listAssistantRules();
+    return res.json(rules);
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+export async function putAssistantRules(req, res) {
+  if (!canManageMembers(req.user)) return deny(res);
+  try {
+    const { globalRules, smallTalkRules } = req.body || {};
+    const rules = await updateAssistantRules(globalRules, smallTalkRules);
+    return res.json(rules);
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+export async function postAssistantRule(req, res) {
+  if (!canManageMembers(req.user)) return deny(res);
+  try {
+    const { type, ...payload } = req.body || {};
+    if (!type || !["global", "smalltalk"].includes(type)) {
+      return res
+        .status(400)
+        .json({ error: "type must be 'global' or 'smalltalk'" });
+    }
+    if (!payload.response) {
+      return res.status(400).json({ error: "response is required" });
+    }
+    const rule = await addAssistantRule(type, payload);
+    return res.status(201).json(rule);
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+export async function deleteAssistantRule(req, res) {
+  if (!canManageMembers(req.user)) return deny(res);
+  try {
+    const { type, ruleId } = req.params;
+    if (!type || !["global", "smalltalk"].includes(type)) {
+      return res
+        .status(400)
+        .json({ error: "type must be 'global' or 'smalltalk'" });
+    }
+    if (!ruleId) {
+      return res.status(400).json({ error: "ruleId is required" });
+    }
+    const deleted = await removeAssistantRule(type, ruleId);
+    if (!deleted) return res.status(404).json({ error: "Rule not found" });
+    return res.json({ ok: true });
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+export async function getAssistantConfigHandler(req, res) {
+  if (!canManageMembers(req.user)) return deny(res);
+  try {
+    const config = await getAssistantConfig();
+    return res.json(config);
+  } catch (error) {
+    return handleError(res, error);
+  }
+}
+
+export async function putAssistantConfigHandler(req, res) {
+  if (!canManageMembers(req.user)) return deny(res);
+  try {
+    const config = await updateAssistantConfig(req.body || {});
+    return res.json(config);
+  } catch (error) {
+    return handleError(res, error);
   }
 }

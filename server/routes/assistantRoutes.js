@@ -12,6 +12,12 @@ import {
   getNegotiationHelper,
   removeAssistantKnowledge,
   updateAssistantKnowledge,
+  getAssistantRules,
+  putAssistantRules,
+  postAssistantRule,
+  deleteAssistantRule,
+  getAssistantConfigHandler,
+  putAssistantConfigHandler,
 } from "../controllers/assistantController.js";
 
 const router = Router();
@@ -41,6 +47,44 @@ router.delete(
   requireAuth,
   allowRoles("owner", "admin"),
   removeAssistantKnowledge,
+);
+
+router.get(
+  "/rules",
+  requireAuth,
+  allowRoles("owner", "admin"),
+  getAssistantRules,
+);
+router.put(
+  "/rules",
+  requireAuth,
+  allowRoles("owner", "admin"),
+  putAssistantRules,
+);
+router.post(
+  "/rules",
+  requireAuth,
+  allowRoles("owner", "admin"),
+  postAssistantRule,
+);
+router.delete(
+  "/rules/:type/:ruleId",
+  requireAuth,
+  allowRoles("owner", "admin"),
+  deleteAssistantRule,
+);
+
+router.get(
+  "/config",
+  requireAuth,
+  allowRoles("owner", "admin"),
+  getAssistantConfigHandler,
+);
+router.put(
+  "/config",
+  requireAuth,
+  allowRoles("owner", "admin"),
+  putAssistantConfigHandler,
 );
 
 export default router;

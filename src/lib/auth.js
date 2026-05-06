@@ -143,23 +143,8 @@ export async function apiRequest(
   return data;
 }
 
-export function getRoleHome(role) {
-  switch (role) {
-    case "admin":
-      return "/owner";
-    case "owner":
-      return "/owner";
-    case "buying_house":
-      return "/owner";
-    case "factory":
-      return "/product-management";
-    case "buyer":
-      return "/buyer-requests";
-    case "agent":
-      return "/agent";
-    default:
-      return "/feed";
-  }
+export function getRoleHome(_role) {
+  return "/feed";
 }
 
 export async function fetchCurrentUser(token = getToken()) {
