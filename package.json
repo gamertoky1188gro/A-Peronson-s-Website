@@ -27,7 +27,7 @@
     "ci:smoke": "node scripts/ci/smoke-search.mjs",
     "ci:full": "npm run ci:reindex && npm test && npm run ci:smoke",
     "worker:lead-reminders": "node server/workers/leadRemindersWorker.js",
-    "prepare": "husky"
+    "prepare": "husky install || true"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.2.0",
