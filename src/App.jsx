@@ -13,7 +13,7 @@ import Pricing from "./pages/Pricing";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import SignupUltra from "./pages/auth/SignupUltra";
-import OnboardingWizard from "./pages/auth/OnboardingWizard";
+import OnboardingPage from "./pages/auth/OnboardingPage";
 import MainFeed from "./pages/MainFeed";
 import SearchResults from "./pages/SearchResults";
 import BuyerProfile from "./pages/BuyerProfile";
@@ -47,7 +47,7 @@ import AccessDenied from "./pages/AccessDenied";
 import VerificationPage from "./pages/VerificationPage";
 import FeedManagement from "./pages/FeedManagement";
 import TaskTracker from "./pages/TaskTracker";
-import { getCurrentUser } from "./lib/auth";
+import { getCurrentUser, verifyAndSyncUser, getToken } from "./lib/auth";
 import { trackClientEvent } from "./lib/events";
 
 const AUTH_ROLES = [
@@ -64,13 +64,27 @@ const MEMBER_MANAGEMENT_ROLES = ["owner", "admin", "buying_house", "factory"];
 
 function ProtectedRoute({ children, roles }) {
   const location = useLocation();
-  const user = getCurrentUser();
-
-  if (!user) {
+  const token = getToken();
+  
+  // Simple check - if no token, redirect to login
+  if (!token) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
-  if (Array.isArray(roles) && roles.length && !roles.includes(user.role)) {
+  // Get user - might be from cache or need to wait for sync
+  const user = getCurrentUser();
+
+  if (!user) {
+    // User is loading - show spinner while auth is being verified
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-sky-500 border-t-transparent" />
+      </div>
+    );
+  }
+
+  const userRole = user?.role;
+  if (Array.isArray(roles) && roles.length && userRole && !roles.includes(userRole)) {
     return (
       <Navigate
         to="/access-denied"
@@ -99,7 +113,7 @@ function AppRoutes() {
         path="/onboarding"
         element={
           <ProtectedRoute roles={AUTH_ROLES}>
-            <OnboardingWizard />
+            <OnboardingPage />
           </ProtectedRoute>
         }
       />
@@ -324,6 +338,14 @@ function AppLayout() {
   const hideChrome = isImmersiveRoute || isAdminRoute;
   const navigationRef = useRef({ path: "", startedAt: 0 });
   const sessionRef = useRef({ startedAt: 0, ended: false });
+
+  // Sync user data from API on first load - security critical
+  useEffect(() => {
+    const token = getToken();
+    if (token) {
+      verifyAndSyncUser(token).catch(console.error);
+    }
+  }, []);
 
   useEffect(() => {
     // Reset scroll so new routes don't inherit the old scroll position.

@@ -7,6 +7,7 @@ import {
   API_BASE,
   hasEntitlement,
 } from "../lib/auth";
+import { useSecureUser, useEntitlements } from "../hooks/useSecureUser";
 import { mapExtractedToForm } from "../lib/aiPrefill";
 import {
   getBuyerRequestErrorStep,
@@ -282,8 +283,10 @@ function formatRequestStatus(status = "") {
 
 export default function BuyerRequestManagement() {
   const user = useMemo(() => getCurrentUser(), []);
-  const role = String(user?.role || "").toLowerCase();
-  const canSmartMatch = hasEntitlement(user, "smart_supplier_matching");
+  const { user: secureUser } = useSecureUser();
+  const { hasEntitlement: secureHasEntitlement } = useEntitlements();
+  const role = secureUser?.role || String(user?.role || "").toLowerCase();
+  const canSmartMatch = secureHasEntitlement("smart_supplier_matching") || hasEntitlement(user, "smart_supplier_matching");
 
   const [moreFieldsOpen, setMoreFieldsOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);

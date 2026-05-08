@@ -38,16 +38,26 @@ import { flushSync } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Bell,
+  Building2,
+  ChevronRight,
   DollarSign,
+  Factory,
   FileText,
   LayoutDashboard,
   Menu,
   MessageSquare,
   Moon,
   NotebookPen,
+  Package,
+  PlusCircle,
   Search,
+  Settings,
   ShieldCheck,
+  ShoppingCart,
+  Star,
   Sun,
+  Users,
+  Vote,
 } from "lucide-react";
 import {
   motion as Motion,
@@ -75,21 +85,68 @@ const publicLinks = [
   { to: "/support", label: "Support" },
 ];
 
-// Auth navigation (shown for logged-in users). Each item maps to a page route + lucide icon.
-const authenticatedLinks = [
-  { to: "/feed", label: "Feed", icon: LayoutDashboard },
-  { to: "/feed/manage", label: "Manage Feeds", icon: NotebookPen },
-  { to: "/search", label: "Search", icon: Search },
-  { to: "/pricing", label: "Pricing", icon: DollarSign },
-  { to: "/contracts", label: "Contracts", icon: FileText },
-  { to: "/notifications", label: "Notifications", icon: Bell },
-  { to: "/chat", label: "Chat", icon: MessageSquare },
-  { to: "/verification", label: "Verification", icon: ShieldCheck },
+// Auth navigation dropdown structure
+const navigationGroups = [
   {
-    to: "/admin",
+    label: "Core",
+    icon: LayoutDashboard,
+    items: [
+      { to: "/feed", label: "Feed" },
+      { to: "/search", label: "Search" },
+      { to: "/contracts", label: "Contracts" },
+      { to: "/verification", label: "Verification" },
+    ]
+  },
+  {
+    label: "Communication",
+    icon: MessageSquare,
+    items: [
+      { to: "/notifications", label: "Notifications", badge: true },
+      { to: "/chat", label: "Chat" },
+    ]
+  },
+  {
+    label: "Business",
+    icon: ShoppingCart,
+    items: [
+      { to: "/buyer-requests", label: "Requests", roles: ["buyer", "buying_house", "admin"] },
+      { to: "/product-management", label: "Products", roles: ["factory", "buying_house", "admin"] },
+      { to: "/partner-network", label: "Partners", roles: ["buying_house", "factory", "owner", "admin", "agent"] },
+      { to: "/ratings/feedback", label: "Ratings", roles: ["buyer", "buying_house", "factory", "owner", "admin", "agent"] },
+    ]
+  },
+  {
+    label: "Organization",
+    icon: Building2,
+    items: [
+      { to: "/member-management", label: "Members", roles: ["owner", "admin", "buying_house", "factory"] },
+      { to: "/org-settings", label: "Settings", roles: ["owner", "admin", "buying_house", "factory"] },
+      { to: "/insights", label: "Insights", roles: ["owner", "admin", "buying_house", "factory", "buyer"] },
+    ]
+  },
+  {
+    label: "Management",
+    icon: Star,
+    items: [
+      { to: "/owner", label: "Owner Dashboard", roles: ["owner", "admin", "buying_house", "factory"] },
+      { to: "/agent", label: "Agent Dashboard", roles: ["buying_house", "owner", "admin", "agent"] },
+    ]
+  },
+  {
     label: "Admin",
     icon: ShieldCheck,
-    roles: ["owner", "admin"],
+    items: [
+      { to: "/admin", label: "Admin Panel", roles: ["owner", "admin"] },
+      { to: "/admin/governance", label: "Governance", roles: ["owner", "admin"] },
+    ]
+  },
+  {
+    label: "Support",
+    icon: Settings,
+    items: [
+      { to: "/support", label: "Support" },
+      { to: "/onboarding", label: "Onboarding", roles: ["buyer", "buying_house", "factory", "owner", "admin", "agent"] },
+    ]
   },
 ];
 
@@ -208,6 +265,75 @@ function IconNavLink({ to, label, active, Icon, badgeCount = 0 }) {
   );
 }
 
+// Dropdown navigation component - hover on desktop, click on mobile
+function NavDropdown({ group, isOpen, onToggle, userRole, badgeCount = 0, isTouchDevice }) {
+  const location = useLocation();
+  const IconComponent = group.icon;
+  
+  // Filter items by role
+  const visibleItems = group.items.filter(item => 
+    !item.roles || item.roles.includes(userRole)
+  );
+  
+  if (visibleItems.length === 0) return null;
+  
+  const handleToggle = (e) => {
+    e.stopPropagation();
+    onToggle(isOpen ? null : group.label);
+  };
+  
+  return (
+    <div className={`relative group ${isTouchDevice ? '' : 'nav-dropdown'}`}>
+      <button
+        onClick={isTouchDevice ? handleToggle : undefined}
+        className={`flex items-center gap-2 rounded-full px-3 py-2 text-sm transition-colors ${
+          isOpen 
+            ? "text-gtBlue bg-sky-50 dark:bg-sky-900/30" 
+            : "text-slate-600 hover:text-gtBlue dark:text-slate-300 dark:hover:text-gtBlue"
+        }`}
+      >
+        <IconComponent className="h-4 w-4" />
+        <span className="hidden lg:inline">{group.label}</span>
+        <ChevronRight className={`h-3 w-3 transition-transform ${isOpen ? "rotate-90" : ""}`} />
+      </button>
+      
+      {/* Dropdown Menu - hover on desktop, visible on mobile click */}
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className={`absolute left-0 top-0 pt-10 w-48 rounded-2xl border border-slate-200/60 bg-white/95 backdrop-blur-xl py-2 shadow-xl dark:border-slate-800/60 dark:bg-slate-900/95 ${
+          isTouchDevice 
+            ? (isOpen ? "block" : "hidden")
+            : "hidden group-hover:block"
+        }`}
+      >
+        {visibleItems.map((item) => {
+          const isActive = location.pathname === item.to;
+          const showBadge = item.badge && item.to === "/notifications" && badgeCount > 0;
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              onClick={() => onToggle(null)}
+              className={`flex items-center justify-between px-4 py-2.5 text-sm transition-colors ${
+                isActive
+                  ? "bg-sky-50 text-gtBlue dark:bg-sky-900/30 dark:text-sky-300"
+                  : "text-slate-700 hover:bg-slate-100/60 dark:text-slate-200 dark:hover:bg-slate-800/60"
+              }`}
+            >
+              <span>{item.label}</span>
+              {showBadge && (
+                <span className="rounded-full bg-gradient-to-tr from-red-500 to-pink-500 px-2 py-0.5 text-[10px] font-semibold text-white">
+                  {badgeCount > 99 ? "99+" : badgeCount}
+                </span>
+              )}
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function NavBar() {
   // Theme preference: read on first render; subsequent changes sync to <html class="dark"> + localStorage.
   const [dark, setDark] = useState(
@@ -215,6 +341,14 @@ export default function NavBar() {
   );
   // Mobile nav drawer open/close state.
   const [mobileOpen, setMobileOpen] = useState(false);
+  // Navigation dropdown state
+  const [openDropdown, setOpenDropdown] = useState(null);
+  // Detect touch device for dropdown behavior
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  
+  useEffect(() => {
+    setIsTouchDevice("ontouchstart" in window || navigator.maxTouchPoints > 0);
+  }, []);
   // Global user search input + dropdown state (suggestions list).
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -256,6 +390,15 @@ export default function NavBar() {
     }
     window.dispatchEvent(new Event("theme-change"));
   }, [dark]);
+
+  // Close dropdowns when clicking outside (only on touch devices, desktop uses hover)
+  useEffect(() => {
+    const handleClickOutside = () => setOpenDropdown(null);
+    if (openDropdown && isTouchDevice) {
+      document.addEventListener("click", handleClickOutside);
+      return () => document.removeEventListener("click", handleClickOutside);
+    }
+  }, [openDropdown, isTouchDevice]);
 
   useEffect(() => {
     // Global shortcut to focus search (mirrors modern SaaS patterns).
@@ -549,8 +692,8 @@ export default function NavBar() {
     // Top navigation shell.
     // Glass nav: translucent background + blur + subtle divider shadow (Tailwind-only).
     // `sticky top-0 z-50` keeps the nav pinned and above content during scroll.
-    <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md shadow-dividerB ring-1 ring-slate-200/60 dark:bg-slate-950/75 dark:shadow-dividerBDark dark:ring-white/10">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <nav className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md shadow-dividerB ring-1 ring-slate-200/60 dark:bg-slate-950/75 dark:shadow-dividerBDark dark:ring-white/10">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex min-h-16 flex-wrap items-center justify-between gap-3 py-2">
           {/* Left cluster: brand + primary nav (desktop). */}
           <div className="flex items-center gap-4">
@@ -589,36 +732,28 @@ export default function NavBar() {
                       />
                     </Motion.div>
                   ))
-                : // Authenticated Links (Icons with Tooltip)
-                  authenticatedLinks
-                    .filter(
-                      (link) =>
-                        !link.roles ||
-                        link.roles.includes(
-                          String(user?.role || "").toLowerCase(),
-                        ),
-                    )
-                    .map(({ to, label, icon: Icon }, idx) => (
-                      <Motion.div
-                        key={to}
-                        initial={{ opacity: 0, y: -8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{
-                          duration: 0.35,
-                          delay: idx ? 0.05 : 0,
-                          ease: easePremium,
-                        }}
-                      >
-                        {/* IconNavLink = icon button + tooltip + animated active pill + unread ping for notifications. */}
-                        <IconNavLink
-                          to={to}
-                          label={label}
-                          Icon={Icon}
-                          active={location.pathname === to}
-                          badgeCount={to === "/notifications" ? unreadCount : 0}
-                        />
-                      </Motion.div>
-                    ))}
+                : // Authenticated Links (Dropdown System)
+                  navigationGroups.map((group, idx) => (
+                    <Motion.div
+                      key={group.label}
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        duration: 0.35,
+                        delay: idx ? 0.05 : 0,
+                        ease: easePremium,
+                      }}
+                    >
+                      <NavDropdown
+                        group={group}
+                        isOpen={openDropdown === group.label}
+                        onToggle={setOpenDropdown}
+                        userRole={String(user?.role || "").toLowerCase()}
+                        badgeCount={unreadCount}
+                        isTouchDevice={isTouchDevice}
+                      />
+                    </Motion.div>
+                  ))}
             </div>
           </div>
 
@@ -629,7 +764,7 @@ export default function NavBar() {
                 - Shows shortcut hint chip (Ctrl/Cmd + K)
                 - Shows suggestion dropdown for authenticated users
             */}
-            <div className="relative hidden items-center md:flex md:flex-none w-[320px] focus-within:w-[420px] transition-[width] duration-300">
+            <div className="relative hidden items-center md:flex md:flex-none w-[400px] focus-within:w-[550px] transition-[width] duration-300">
               <input
                 ref={searchInputRef}
                 value={searchQuery}
@@ -835,33 +970,35 @@ export default function NavBar() {
                       {label}
                     </Link>
                   ))
-                : authenticatedLinks
-                    .filter(
-                      (link) =>
-                        !link.roles ||
-                        link.roles.includes(
-                          String(user?.role || "").toLowerCase(),
-                        ),
-                    )
-                    .map(({ to, label, icon }) => {
-                      const IconComponent = icon;
-                      return (
-                        <Link
-                          key={to}
-                          to={to}
-                          onClick={() => setMobileOpen(false)}
-                          className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100/60 active:scale-[0.98] dark:text-slate-100 dark:hover:bg-slate-800/50"
-                        >
-                          <IconComponent className="h-4 w-4" />
-                          <span className="flex-1">{label}</span>
-                          {to === "/notifications" && unreadCount > 0 ? (
-                            <span className="rounded-full bg-gradient-to-tr from-red-500 to-pink-500 px-2 py-0.5 text-[11px] font-semibold text-white">
-                              {unreadCount > 99 ? "99+" : unreadCount}
-                            </span>
-                          ) : null}
-                        </Link>
-                      );
-                    })}
+                : // Mobile menu with groups
+                    navigationGroups.map((group) => (
+                      <div key={group.label} className="space-y-1">
+                        <div className="px-3 py-2 text-xs font-semibold text-slate-400 dark:text-slate-500">
+                          {group.label}
+                        </div>
+                        {group.items
+                          .filter(item => !item.roles || item.roles.includes(String(user?.role || "").toLowerCase()))
+                          .map((item) => (
+                            <Link
+                              key={item.to}
+                              to={item.to}
+                              onClick={() => setMobileOpen(false)}
+                              className={`flex items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
+                                location.pathname === item.to
+                                  ? "bg-sky-50 text-gtBlue dark:bg-sky-900/30 dark:text-sky-300"
+                                  : "text-slate-700 hover:bg-slate-100/60 dark:text-slate-100 dark:hover:bg-slate-800/50"
+                              }`}
+                            >
+                              <span>{item.label}</span>
+                              {item.badge && item.to === "/notifications" && unreadCount > 0 && (
+                                <span className="rounded-full bg-gradient-to-tr from-red-500 to-pink-500 px-2 py-0.5 text-[10px] font-semibold text-white">
+                                  {unreadCount > 99 ? "99+" : unreadCount}
+                                </span>
+                              )}
+                            </Link>
+                          ))}
+                      </div>
+                    ))}
 
               {!user ? (
                 <div className="mt-2 flex gap-2">

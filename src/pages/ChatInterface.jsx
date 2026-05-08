@@ -53,6 +53,7 @@ import {
   VolumeX,
 } from "lucide-react";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
+import { useSecureUser } from "../hooks/useSecureUser";
 import { trackClientEvent } from "../lib/events";
 import { consumeLeadSource } from "../lib/leadSource";
 import AttachmentPreviewModal from "../components/chat/AttachmentPreviewModal";
@@ -477,10 +478,11 @@ export default function ChatInterface() {
   const activeThreadMatchIdRef = useRef("");
   const pendingMatchIdRef = useRef("");
   const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
+  const { user: secureUser } = useSecureUser();
   const navigate = useNavigate();
   const location = useLocation();
   const isLight = themeMode === "light";
-  const userRole = String(currentUser?.role || "").toLowerCase();
+  const userRole = secureUser?.role || String(currentUser?.role || "").toLowerCase();
   const isBuyerUser = userRole === "buyer";
   const isAdminUser = ["owner", "admin"].includes(userRole);
 

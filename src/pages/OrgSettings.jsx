@@ -7,6 +7,7 @@ import {
   getToken,
   hasEntitlement,
 } from "../lib/auth";
+import { useEntitlements } from "../hooks/useSecureUser";
 
 function cx(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -243,6 +244,7 @@ export default function OrgSettings() {
   }, []);
 
   const currentUser = useMemo(() => getCurrentUser(), []);
+  const { entitlements: secureEntitlements } = useEntitlements();
   const currentUserRole = useMemo(
     () => String(currentUser?.role || "").toLowerCase(),
     [currentUser],
@@ -389,7 +391,7 @@ export default function OrgSettings() {
   const [walletRestricted, setWalletRestricted] = useState(0);
   const [verification, setVerification] = useState(null);
   const [_billingFeedback, setBillingFeedback] = useState("");
-  const [entitlements] = useState(() => currentUser?.entitlements || null);
+  const [entitlements] = useState(() => secureEntitlements || currentUser?.entitlements || null);
   const [_planLimits] = useState(null);
 
   // Members state

@@ -144,11 +144,14 @@ app.use(express.json({ limit: "5mb" }));
 const uploadsRoot = path.join(process.cwd(), "server", "uploads");
 const chatUploadsRoot = path.join(uploadsRoot, "chat");
 const feedUploadsRoot = path.join(uploadsRoot, "feed");
+const profileUploadsRoot = path.join(uploadsRoot, "profile");
 if (!fs.existsSync(uploadsRoot)) fs.mkdirSync(uploadsRoot, { recursive: true });
 if (!fs.existsSync(chatUploadsRoot))
   fs.mkdirSync(chatUploadsRoot, { recursive: true });
 if (!fs.existsSync(feedUploadsRoot))
   fs.mkdirSync(feedUploadsRoot, { recursive: true });
+if (!fs.existsSync(profileUploadsRoot))
+  fs.mkdirSync(profileUploadsRoot, { recursive: true });
 
 app.use("/uploads", express.static(uploadsRoot));
 

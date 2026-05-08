@@ -16,6 +16,7 @@
 */
 import React, { useMemo, useState } from "react";
 import BackButton from "../../components/ui/BackButton";
+import ProfileImageUpload from "../../components/ui/ProfileImageUpload";
 import { useNavigate } from "react-router-dom";
 import {
   apiRequest,
@@ -128,14 +129,13 @@ export default function OnboardingWizard() {
 
   function next() {
     setError("");
-    // Validate current step before advancing
     const validate = (s) => {
       if (s === 1) {
         if (profileImage) {
-          try {
-            // simple URL validation
-            new URL(profileImage);
-          } catch {
+          const isUrl = profileImage.startsWith("http://") ||
+            profileImage.startsWith("https://");
+          const isRelativePath = profileImage.startsWith("/uploads/");
+          if (!isUrl && !isRelativePath) {
             setError("Please enter a valid image URL or leave it blank.");
             return false;
           }
@@ -168,29 +168,14 @@ export default function OnboardingWizard() {
               <StepHeader
                 step={1}
                 title="Add your profile image"
-                subtitle="Optional. You can paste a URL for now."
+                subtitle="Optional. You can paste a URL or upload an image."
               />
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">
-                Profile image URL
-              </label>
-              <input
+              <ProfileImageUpload
                 value={profileImage}
-                onChange={(e) => setProfileImage(e.target.value)}
+                onChange={setProfileImage}
+                label="Profile image URL"
                 placeholder="https://..."
-                className="mt-2 w-full rounded-xl shadow-borderless dark:shadow-borderlessDark bg-white px-4 py-3 text-sm outline-none transition dark:bg-[#0b1224]"
               />
-              {profileImage ? (
-                <div className="mt-4 flex items-center gap-3">
-                  <img
-                    src={profileImage}
-                    alt="Preview"
-                    className="h-12 w-12 rounded-full object-cover ring-1 ring-slate-200/60 dark:ring-slate-800"
-                  />
-                  <div className="text-xs text-slate-600 dark:text-slate-300">
-                    Preview
-                  </div>
-                </div>
-              ) : null}
             </>
           ) : null}
 

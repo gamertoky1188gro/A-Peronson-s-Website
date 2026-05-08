@@ -8741,5 +8741,117 @@
     },
     "prev_hash": "d846048a153acfc6ee0fee899e4b3e35cf79469a73f086ec0fc7957df4a7b5d5",
     "hash": "d0efe59e917ea125492cdd1f1f590040cf40ce7d2f417f469ed8eed7f7ea22da"
+  },
+  {
+    "id": "a8a71961-4df9-4683-b3ef-775c789f8f8b",
+    "at": "2026-05-07T14:16:06.891Z",
+    "actor_id": "owner-test",
+    "actor_role": "owner",
+    "action": "platform_analytics_overview_requested",
+    "path": "/analytics/platform/overview",
+    "status": 200,
+    "payload": {
+      "scope_level": "platform_overview_aggregated",
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "d0efe59e917ea125492cdd1f1f590040cf40ce7d2f417f469ed8eed7f7ea22da",
+    "hash": "aeb6a53a6eff0df525c6546c96f2a03c368668abddf2d9ffbd67296323b7d778"
+  },
+  {
+    "id": "4fe64336-17c7-4c9d-8748-68b5fc7c9ff0",
+    "at": "2026-05-07T14:16:06.897Z",
+    "actor_id": "owner-test",
+    "actor_role": "owner",
+    "action": "platform_analytics_trends_requested",
+    "path": "/analytics/platform/trends",
+    "status": 200,
+    "payload": {
+      "scope_level": "platform_trends_global_anonymized",
+      "requested_dimensions": [
+        "country",
+        "category"
+      ],
+      "org_scope": "org:global",
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "aeb6a53a6eff0df525c6546c96f2a03c368668abddf2d9ffbd67296323b7d778",
+    "hash": "04f351d3e29f696f14f3d28de1908636c5a6135af6a4ae2b806aace11bd29e0b"
+  },
+  {
+    "id": "authz:1778256222300:3k24dvdd",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "company"
+    },
+    "created_at": "2026-05-08T16:03:42.300Z",
+    "prev_hash": "04f351d3e29f696f14f3d28de1908636c5a6135af6a4ae2b806aace11bd29e0b",
+    "hash": "db6588f39412240a8fef2626bf1bff23284c45e7f3e5550c366a3f247a65b347"
+  },
+  {
+    "id": "authz:1778256222302:0n62z5uo",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_org",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "platform_admin"
+    },
+    "created_at": "2026-05-08T16:03:42.302Z",
+    "prev_hash": "db6588f39412240a8fef2626bf1bff23284c45e7f3e5550c366a3f247a65b347",
+    "hash": "d8dfebc4b1feac7eaa749d9b8e4b607c4d1c41670c9958ffb6b106500bc100cb"
+  },
+  {
+    "id": "authz:1778256222458:pnuky8ok",
+    "type": "authorization.granted",
+    "actor_id": "admin-001",
+    "action": "analytics.view_agent",
+    "policy_id": "org-policy-base-role-allow",
+    "decision": "allow",
+    "reason": "Role allow-list passed",
+    "resource_context": {
+      "scope": "premium"
+    },
+    "created_at": "2026-05-08T16:03:42.458Z",
+    "prev_hash": "d8dfebc4b1feac7eaa749d9b8e4b607c4d1c41670c9958ffb6b106500bc100cb",
+    "hash": "048f2e9d498aea63cc86091fc03928a3761990b113fbb2de14c1f9c99302060b"
+  },
+  {
+    "id": "b4dcee41-3e82-4960-b359-eef228db54c4",
+    "at": "2026-05-08T16:03:42.505Z",
+    "actor_id": "admin-001",
+    "actor_role": "admin",
+    "action": "platform_analytics_admin_requested",
+    "path": "/analytics/platform/admin",
+    "status": 200,
+    "payload": {
+      "requested_scope": "platform_admin",
+      "export_requested": false,
+      "governance_mode": "view",
+      "governance_retention_days": 365,
+      "governance_geo_granularity": "country",
+      "governance_min_cohort_size": 10,
+      "suppression_counts": {
+        "suppressed_values": 0,
+        "suppressed_cohorts": 0,
+        "noise_injected": false
+      }
+    },
+    "prev_hash": "048f2e9d498aea63cc86091fc03928a3761990b113fbb2de14c1f9c99302060b",
+    "hash": "7f229e6d5fd9bd7a7c434f967085c9ba3b7087c864144c89a01cc15ccf1231c3"
   }
 ]

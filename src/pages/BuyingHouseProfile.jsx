@@ -22,6 +22,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
+import { usePremiumCheck } from "../hooks/useSecureUser";
 import { trackClientEvent } from "../lib/events";
 import { recordLeadSource } from "../lib/leadSource";
 import VerificationPanel from "../components/profile/VerificationPanel";
@@ -52,6 +53,7 @@ export default function BuyingHouseProfile() {
   const navigate = useNavigate();
   const token = useMemo(() => getToken(), []);
   const viewer = getCurrentUser();
+  const { isPremium: isPremiumFromApi } = usePremiumCheck();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -82,7 +84,7 @@ export default function BuyingHouseProfile() {
     is_admin: false,
   };
   const isBoosted = Boolean(profileBoost);
-  const isPremium =
+  const isPremium = isPremiumFromApi || 
     String(user?.subscription_status || "").toLowerCase() === "premium";
   const brandProfile = user?.profile || {};
   const hasBrandKit = Boolean(

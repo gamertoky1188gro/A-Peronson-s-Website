@@ -181,3 +181,22 @@ export async function deleteMyAccount(req, res) {
       .json({ error: err.message || "Unable to delete account" });
   }
 }
+
+export async function uploadAvatar(req, res) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+    const avatarUrl = `/uploads/profile/${req.file.filename}`;
+    const user = await updateProfile(req.user.id, {
+      profile_image: avatarUrl,
+      avatar_url: avatarUrl,
+    });
+    if (!user) return res.status(404).json({ error: "User not found" });
+    return res.json({ avatar_url: avatarUrl, profile_image: avatarUrl });
+  } catch (err) {
+    return res
+      .status(err.status || 400)
+      .json({ error: err.message || "Unable to upload avatar" });
+  }
+}

@@ -21,6 +21,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { Check } from "lucide-react";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
+import { useSecureUser } from "../hooks/useSecureUser";
 
 function planKeyForUserRole(role) {
   const normalized = String(role || "").toLowerCase();
@@ -505,10 +506,12 @@ export default function PricingPage() {
   }, []);
 
   const sessionUser = getCurrentUser();
+  const { user: secureUser } = useSecureUser();
   const token = getToken();
   const isLoggedIn = Boolean(token && sessionUser);
+  const userRole = secureUser?.role || sessionUser?.role;
   const activePlanKey = isLoggedIn
-    ? planKeyForUserRole(sessionUser?.role)
+    ? planKeyForUserRole(userRole)
     : "neutral";
 
   useEffect(() => {

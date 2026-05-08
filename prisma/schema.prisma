@@ -33,6 +33,7 @@ model User {
   created_at                                        DateTime         @default(now())
   updated_at                                        DateTime?
   password_reset_at                                 DateTime?
+  policy_updated_at                               DateTime?
   agentCapacityRecords                              AgentCapacity[]  @relation("AgentCapacityAgent")
   event_logs_event_logs_actor_idTousers             EventLog[]       @relation("event_logs_actor_idTousers")
   event_logs_event_logs_org_owner_idTousers         EventLog[]       @relation("event_logs_org_owner_idTousers")
@@ -176,6 +177,16 @@ model Product {
   priceOriginal              Float?
   currencyOriginal           String?
   priceNormalizedBase        Float?
+  content_review_status     String?
+  content_review_reason      String?
+  content_review_flags       Json?
+  content_reviewed_at        DateTime?
+  content_reviewed_by        String?
+  priceOriginalMin           Float?
+  priceOriginalMax          Float?
+  priceBaseMin               Float?
+  priceBaseMax               Float?
+  currency                   String?
 
   @@map("company_products")
 }

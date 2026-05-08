@@ -23,6 +23,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
+import { usePremiumCheck } from "../hooks/useSecureUser";
 import { trackClientEvent } from "../lib/events";
 import { recordLeadSource } from "../lib/leadSource";
 import VerificationPanel from "../components/profile/VerificationPanel";
@@ -61,6 +62,7 @@ export default function FactoryProfile() {
   const navigate = useNavigate();
   const token = useMemo(() => getToken(), []);
   const currentUser = useMemo(() => getCurrentUser(), []);
+  const { isPremium: isPremiumFromApi } = usePremiumCheck();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -86,7 +88,7 @@ export default function FactoryProfile() {
     is_self: false,
     is_admin: false,
   };
-  const isPremium =
+  const isPremium = isPremiumFromApi || 
     String(user?.subscription_status || "").toLowerCase() === "premium";
   const brandProfile = user?.profile || {};
   const hasBrandKit = Boolean(

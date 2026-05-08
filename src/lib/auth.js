@@ -9,27 +9,98 @@ export function getToken() {
   );
 }
 
+let userFetchPromise = null;
+let cachedUser = null;
+let cacheTime = 0;
+const CACHE_TTL_MS = 5000;
+
 export function getCurrentUser() {
-  if (!getToken()) return null;
-  const raw = localStorage.getItem(USER_KEY);
-  if (!raw) return null;
+  const token = getToken();
+  if (!token) return null;
+  
+  // First check localStorage for immediate availability
+  const stored = localStorage.getItem(USER_KEY);
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      // Return stored user immediately
+      cachedUser = parsed;
+      cacheTime = Date.now();
+    } catch {
+      // ignore parse errors
+    }
+  }
+  
+  // If we have recent cache, return it
+  const now = Date.now();
+  if (cachedUser && (now - cacheTime) < CACHE_TTL_MS) {
+    return cachedUser;
+  }
+  
+  // Start background fetch to update cache
+  if (!userFetchPromise) {
+    userFetchPromise = apiRequest("/users/me", { token })
+      .then((user) => {
+        if (user) {
+          cachedUser = user;
+          cacheTime = Date.now();
+          persistUser(user);
+        }
+        return user;
+      })
+      .catch(() => cachedUser)
+      .finally(() => {
+        userFetchPromise = null;
+      });
+  }
+  
+  return cachedUser;
+}
+
+// Sync user data from API before page loads - security critical
+export async function syncUserFromApi(token = getToken()) {
+  if (!token) return null;
   try {
-    return JSON.parse(raw);
-  } catch {
+    const user = await apiRequest("/users/me", { token });
+    if (user) {
+      persistUser(user);
+      return user;
+    }
+  } catch (err) {
+    console.error("User sync failed:", err);
+  }
+  return null;
+}
+
+// Check and sync user data - compares localStorage with DB and updates if needed
+export async function verifyAndSyncUser(token = getToken()) {
+  if (!token) {
+    clearSession();
     return null;
   }
+  
+  // Always fetch fresh from API - never trust localStorage for security
+  return syncUserFromApi(token);
 }
 
 export function persistUser(user) {
   if (!user) return null;
-  const existing = getCurrentUser() || {};
-  const merged = {
-    ...existing,
-    ...user,
-    entitlements: user.entitlements || existing.entitlements || null,
+  // Only store minimal essential data - never trust sensitive data from localStorage
+  // subscription_status, entitlements, capabilities should NOT be stored
+  // role is stored but ALWAYS synced from API on page load via verifyAndSyncUser
+  const minimalUser = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    profile: user.profile ? {
+      avatar_url: user.profile.avatar_url,
+      profile_image: user.profile.profile_image,
+      organization_name: user.profile.organization_name,
+    } : null,
   };
-  localStorage.setItem(USER_KEY, JSON.stringify(merged));
-  return merged;
+  localStorage.setItem(USER_KEY, JSON.stringify(minimalUser));
+  return minimalUser;
 }
 
 export function saveSession(user, token, { remember = true } = {}) {
@@ -155,6 +226,25 @@ export async function fetchCurrentUser(token = getToken()) {
     persistUser(user);
   }
   return user;
+}
+
+// Fetch fresh user data from API - use this for sensitive/permission checks
+// Never trust localStorage for security decisions
+export async function getUserFromApi(token = getToken()) {
+  if (!token) return null;
+  try {
+    const user = await apiRequest("/users/me", { token });
+    return user;
+  } catch (err) {
+    console.error("Failed to fetch user from API:", err);
+    return null;
+  }
+}
+
+// Check if user has role (fetches fresh from API for security-critical checks)
+export async function hasRole(requiredRole, token = getToken()) {
+  const user = await getUserFromApi(token);
+  return user?.role === requiredRole;
 }
 
 export function hasEntitlement(user, feature) {

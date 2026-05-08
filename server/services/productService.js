@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { readJson, writeJson } from "../utils/jsonStore.js";
 import { sanitizeString } from "../utils/validators.js";
+import prisma from "../utils/prisma.js";
 import { trackEvent } from "./eventTrackingService.js";
 import {
   createNotification,
@@ -446,7 +447,13 @@ export async function createProduct(user, payload) {
   ]);
   const { ownerId, ownerRole } = resolveProductOwner(user, users);
   const ownerUser = users.find((u) => String(u.id) === String(ownerId)) || user;
-  const title = sanitizeString(payload.title, 120);
+  const isDraft = payload.createAsDraft === true;
+  const title = sanitizeString(payload.title, 120) || (isDraft ? "Untitled Draft" : "");
+  
+  if (!isDraft && !title) {
+    throw new Error("Product title is required");
+  }
+  
   let description = sanitizeString(payload.description || "", 1200);
   const videoUrl = sanitizeString(payload.video_url || "", 260);
 
@@ -456,7 +463,7 @@ export async function createProduct(user, payload) {
     nextVideoUrl: videoUrl,
   });
 
-  const status = normalizeProductStatus(payload.status || "published");
+  const status = normalizeProductStatus(payload.status || (isDraft ? "draft" : "published"));
   const imageCandidates = extractImageUrlCandidates(
     payload.image_urls || payload.imageUrls,
   );
@@ -464,18 +471,22 @@ export async function createProduct(user, payload) {
   const coverSeed = sanitizeImageUrl(
     payload.cover_image_url || payload.coverImageUrl || "",
   );
-  assertInternalMediaUrls(imageCandidates, "product images");
-  assertInternalMediaUrl(coverSeed, "product cover image");
-  assertInternalMediaUrl(videoUrl, "product video");
+  if (!isDraft) {
+    assertInternalMediaUrls(imageCandidates, "product images");
+    assertInternalMediaUrl(coverSeed, "product cover image");
+    assertInternalMediaUrl(videoUrl, "product video");
+  }
   const { cover_image_url, image_urls } = syncCoverImage(imageUrls, coverSeed);
-  const moderation = getVideoModerationResult({ title, description, videoUrl });
-  const clothingReview = await evaluateClothingModeration({
-    title,
-    description,
-    category: sanitizeString(payload.category, 80),
-    material: sanitizeString(payload.material, 80),
-    media: [videoUrl, coverSeed, ...imageCandidates],
-  });
+  const moderation = isDraft ? { status: "approved" } : getVideoModerationResult({ title, description, videoUrl });
+  const clothingReview = isDraft 
+    ? { status: "approved", reason: "", flags: [] }
+    : await evaluateClothingModeration({
+        title,
+        description,
+        category: sanitizeString(payload.category, 80),
+        material: sanitizeString(payload.material, 80),
+        media: [videoUrl, coverSeed, ...imageCandidates],
+      });
   const row = {
     id: crypto.randomUUID(),
     company_id: ownerId,
@@ -905,21 +916,60 @@ export async function updateProductById(actor, productId, patch = {}) {
 export async function removeProduct(actor, productId) {
   const id = sanitizeString(String(productId || ""), 120);
   if (!id) return null;
-  const all = await readJson(FILE);
-  const existing = all.find((p) => String(p.id) === id);
-  if (!existing) return null;
-  if (!canMutateProduct(actor, existing)) return "forbidden";
-  const next = all.filter((p) => String(p.id) !== id);
-  await writeJson(FILE, next);
   try {
-    await deleteProductIndex(id);
-  } catch {
-    // ignore index failures
+    // Try JSON file first (fallback for some setups)
+    let existing = null;
+    try {
+      const all = await readJson(FILE);
+      existing = all.find((p) => String(p.id) === id);
+    } catch {
+      // JSON read failed, try database directly
+    }
+    
+    // If not in JSON, try Prisma database
+    if (!existing) {
+      try {
+        existing = await prisma.product.findUnique({ where: { id } });
+      } catch {
+        // Database might not have the table
+      }
+    }
+    
+    if (!existing) {
+      console.error("[deleteProduct] Product not found:", id);
+      return null;
+    }
+    
+    // Check permission
+    if (!canMutateProduct(actor, existing)) return "forbidden";
+    
+    // Delete from database (Prisma)
+    try {
+      await prisma.product.delete({ where: { id } });
+    } catch {
+      // If Prisma fails, try JSON
+      try {
+        const all = await readJson(FILE);
+        const next = all.filter((p) => String(p.id) !== id);
+        await writeJson(FILE, next);
+      } catch (e) {
+        console.error("[deleteProduct] JSON fallback error:", e.message);
+      }
+    }
+    
+    try {
+      await deleteProductIndex(id);
+    } catch {
+      // ignore index failures
+    }
+    await trackEvent({
+      type: "product_deleted",
+      actor_id: actor.id,
+      entity_id: id,
+    });
+    return true;
+  } catch (err) {
+    console.error("[deleteProduct] Error:", err.message);
+    throw err;
   }
-  await trackEvent({
-    type: "product_deleted",
-    actor_id: actor.id,
-    entity_id: id,
-  });
-  return true;
 }

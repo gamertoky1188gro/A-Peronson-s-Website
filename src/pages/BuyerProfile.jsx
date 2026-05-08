@@ -28,6 +28,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { apiRequest, getCurrentUser, getToken } from "../lib/auth";
+import { usePremiumCheck } from "../hooks/useSecureUser";
 import { trackClientEvent } from "../lib/events";
 import { recordLeadSource } from "../lib/leadSource";
 import VerificationPanel from "../components/profile/VerificationPanel";
@@ -60,6 +61,7 @@ export default function BuyerProfile() {
   const location = useLocation();
   const token = useMemo(() => getToken(), []);
   const currentUser = useMemo(() => getCurrentUser(), []);
+  const { isPremium: isPremiumFromApi } = usePremiumCheck();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -90,7 +92,7 @@ export default function BuyerProfile() {
     is_admin: false,
   };
   const isBoosted = Boolean(profileBoost);
-  const isPremium =
+  const isPremium = isPremiumFromApi || 
     String(user?.subscription_status || "").toLowerCase() === "premium";
   const brandProfile = user?.profile || {};
   const hasBrandKit = Boolean(
